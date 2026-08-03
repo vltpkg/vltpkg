@@ -14,6 +14,8 @@ vlt access <command> [<args>]
 
 Set or get access levels for published packages and manage team-based package permissions.
 
+Target a specific configured registry by alias with \`vlt registry <alias> access <subcommand>\`.
+
 ## Subcommands
 
 ### list packages

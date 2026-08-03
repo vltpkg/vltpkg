@@ -9,7 +9,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
-      "b": "npm:a@1.0.0",
+      "b": "^1.0.0",
       "becomeprod": "1.0.0",
       "git": "github:a/b",
     },

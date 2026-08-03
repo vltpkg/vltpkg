@@ -12,8 +12,13 @@ import {
 } from '../src/browser.ts'
 
 // there is no default registry any more; most of these cases predate
-// that change, so keep exercising them against the npm registry.
-const defaultOptions = { registry: 'https://registry.npmjs.org/' }
+// that change, so keep exercising them against the npm registry. The
+// `npm` alias is also no longer built in, so configure it explicitly for
+// the many cases that rely on `npm:` specs.
+const defaultOptions = {
+  registry: 'https://registry.npmjs.org/',
+  registries: { npm: 'https://registry.npmjs.org/' },
+}
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](
@@ -453,10 +458,9 @@ t.test('no default registry', t => {
   t.strictSame(
     getOptions({}).registries,
     {
-      npm: 'https://registry.npmjs.org/',
       gh: 'https://npm.pkg.github.com/',
     },
-    'named registry aliases are kept',
+    'only built-in aliases (gh) are kept; npm is not pre-registered',
   )
 
   const s = Spec.parse('foo@latest', {})
@@ -477,8 +481,16 @@ t.test('no default registry', t => {
 
   t.equal(
     Spec.parse('foo@npm:foo@1.2.3', {}).final.registry,
+    undefined,
+    'the npm: alias no longer resolves without configuration',
+  )
+
+  t.equal(
+    Spec.parse('foo@npm:foo@1.2.3', {
+      registries: { npm: 'https://registry.npmjs.org/' },
+    }).final.registry,
     'https://registry.npmjs.org/',
-    'the npm: alias still resolves',
+    'the npm: alias resolves once configured',
   )
 
   t.equal(
@@ -492,10 +504,26 @@ t.test('no default registry', t => {
 })
 
 t.test(
-  'setting default registry does not sets npm: alias',
+  'setting default registry does not configure the npm: alias',
   async t => {
+    // with only --registry set, `npm:` is not a configured alias, so it
+    // is not recognized as a named-registry spec (no subspec/namedRegistry).
     const s = Spec.parse('a@npm:a@1', { registry: 'https://a.com/' })
     t.matchStrict(s, {
+      type: 'registry',
+      spec: 'a@npm:a@1',
+      name: 'a',
+      bareSpec: 'npm:a@1',
+      namedRegistry: undefined,
+      subspec: undefined,
+    })
+
+    // configuring the alias explicitly makes it resolve.
+    const configured = Spec.parse('a@npm:a@1', {
+      registry: 'https://a.com/',
+      registries: { npm: 'https://registry.npmjs.org/' },
+    })
+    t.matchStrict(configured, {
       type: 'registry',
       spec: 'a@npm:a@1',
       name: 'a',
@@ -612,7 +640,7 @@ t.test('invalid workspace specs', t => {
 })
 
 t.test('get final subspec in chain', t => {
-  const subby = Spec.parse('x@npm:y@npm:z@latest')
+  const subby = Spec.parse('x@npm:y@npm:z@latest', defaultOptions)
   const final = subby.final
   t.not(subby, final, 'final is not the alias spec')
   t.not(subby.subspec, final, 'final is not the first alias value')
@@ -622,7 +650,10 @@ t.test('get final subspec in chain', t => {
 })
 
 t.test('simplify in the toString result', t => {
-  const spec = Spec.parse('x@npm:y@npm:z@npm:a@npm:b@latest')
+  const spec = Spec.parse(
+    'x@npm:y@npm:z@npm:a@npm:b@latest',
+    defaultOptions,
+  )
   t.equal(spec.toString(), 'x@npm:b@latest')
   // test the memoization
   t.equal(spec.toString(), 'x@npm:b@latest')
@@ -752,6 +783,7 @@ t.test('try to guess the conventional tarball URL', t => {
   const options = {
     ...defaultOptions,
     registries: {
+      npm: 'https://registry.npmjs.org/',
       vlt: 'https://registry.vlt.sh',
     },
   }
@@ -883,7 +915,11 @@ t.test('gh: registry support (basic functionality)', async t => {
 
 t.test('gh: registry support (additional test cases)', async t => {
   // Test multiple subspecs
-  const spec1 = Spec.parse('test', 'npm:foo@gh:@octocat/bar@1.0.0')
+  const spec1 = Spec.parse(
+    'test',
+    'npm:foo@gh:@octocat/bar@1.0.0',
+    defaultOptions,
+  )
   t.equal(spec1.type, 'registry', 'should be registry type')
   t.equal(spec1.namedRegistry, 'npm', 'should use npm registry')
   t.equal(spec1.name, 'test', 'should preserve package name')
@@ -931,7 +967,11 @@ t.test('gh: registry support (additional test cases)', async t => {
 t.test('catalogs', async t => {
   const catalog = { a: '1.2.3' }
   const catalogs = { x: { a: '1.2.3' }, y: { a: '2.3.4' } }
-  const opts = { catalog, catalogs }
+  const opts = {
+    catalog,
+    catalogs,
+    registries: { npm: 'https://registry.npmjs.org/' },
+  }
 
   t.match(Spec.parse('a@catalog:', opts), {
     name: 'a',

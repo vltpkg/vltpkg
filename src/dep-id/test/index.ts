@@ -48,6 +48,7 @@ t.test('valid specs', t => {
     'x@registry:https://c.example.com/#asfd@1.2.3', // <- not configured
   ]
   const registries = {
+    npm: defaultRegistry,
     a: 'https://a.example.com/',
     b: 'https://b.example.com/',
   }
@@ -93,7 +94,7 @@ t.test('valid specs', t => {
   ]
   for (const s of scopedSpecs) {
     t.test(s, t => {
-      const spec = Spec.parse(s)
+      const spec = Spec.parse(s, options)
       const tuple = getTuple(spec, scopedMani)
       const id = getId(spec, scopedMani)
       t.matchSnapshot([id, tuple])
@@ -150,30 +151,40 @@ t.test('hydrate only', t => {
 
 t.test('hydrate from memoized entry', t => {
   resetCaches()
-  const options = getOptions({ registry: defaultRegistry })
+  const options = getOptions({
+    registry: defaultRegistry,
+    registries: { npm: defaultRegistry },
+  })
   const id = `${delimiter}${delimiter}x@1.2.3` as DepID
-  t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
-  t.equal(String(hydrate(id, 'x', options)), 'x@1.2.3')
+  const first = hydrate(id, 'x', options)
+  const second = hydrate(id, 'x', options)
+  t.equal(String(first), 'x@1.2.3')
+  t.equal(first, second, 'returns the memoized instance')
   t.end()
 })
 
 t.test('hydrate with no configured registry', t => {
   // there is no default registry, so a `~npm~` id is hydrated through
-  // the `npm:` alias instead of as a plain semver spec
+  // the `npm:` alias. When the `npm` alias is not configured, the spec
+  // keeps the literal `npm:` form but cannot resolve to a URL.
   resetCaches()
   const options = getOptions({})
   t.equal(options.registry, undefined, 'no registry filled in')
   const id = `${delimiter}${delimiter}x@1.2.3` as DepID
   const spec = hydrate(id, 'x', options)
   t.equal(String(spec), 'x@npm:x@1.2.3')
-  t.equal(spec.namedRegistry, 'npm')
-  t.ok(spec.subspec, 'gains a subspec')
+  t.equal(
+    spec.namedRegistry,
+    undefined,
+    'npm alias is not recognized when unconfigured',
+  )
+  t.notOk(spec.subspec, 'no subspec without a configured npm alias')
   t.equal(
     spec.final.registry,
-    'https://registry.npmjs.org/',
-    'still resolves against npm via the kept alias',
+    undefined,
+    'cannot resolve to a URL without a configured npm alias',
   )
-  // round-trips back to the equivalent id, via namedRegistry
+  // round-trips back to the equivalent id via the `npm:` prefix
   t.equal(
     getId(spec, { name: 'x', version: '1.2.3' }),
     `${delimiter}npm${delimiter}x@1.2.3`,
@@ -181,9 +192,27 @@ t.test('hydrate with no configured registry', t => {
   // and is no longer flagged as a confused package name
   t.equal(isPackageNameConfused(spec, 'x'), false)
 
-  // with a registry configured, the plain form is preserved
+  // with the npm alias configured, it resolves through the mirror URL
   resetCaches()
-  const configured = getOptions({ registry: defaultRegistry })
+  const withNpm = getOptions({
+    registries: { npm: defaultRegistry },
+  })
+  const resolved = hydrate(id, 'x', withNpm)
+  t.equal(String(resolved), 'x@npm:x@1.2.3')
+  t.equal(resolved.namedRegistry, 'npm')
+  t.ok(
+    resolved.subspec,
+    'gains a subspec once the alias is configured',
+  )
+  t.equal(resolved.final.registry, defaultRegistry)
+
+  // with the npm alias pointing at the configured registry, the plain
+  // form is preserved (the id's registry matches the default alias)
+  resetCaches()
+  const configured = getOptions({
+    registry: defaultRegistry,
+    registries: { npm: defaultRegistry },
+  })
   t.equal(String(hydrate(id, 'x', configured)), 'x@1.2.3')
   t.end()
 })
@@ -633,9 +662,14 @@ t.test('isPackageNameConfused', t => {
 
   t.test('getTuple', t => {
     t.strictSame(
-      getTuple(Spec.parse('bar', 'npm:foo@^1.0.0'), {
-        version: '1.0.0',
-      }),
+      getTuple(
+        Spec.parse('bar', 'npm:foo@^1.0.0', {
+          registries: { npm: defaultRegistry },
+        }),
+        {
+          version: '1.0.0',
+        },
+      ),
       ['registry', 'npm', 'foo@1.0.0', undefined],
       'should normalize npm named registry to empty string',
     )
@@ -645,7 +679,9 @@ t.test('isPackageNameConfused', t => {
   t.test('aliased and non-aliased generate same DepID', t => {
     const manifest = { name: 'abbrev', version: '4.0.0' }
     const direct = Spec.parse('abbrev', '^4.0.0')
-    const aliased = Spec.parse('foo', 'npm:abbrev@^4.0.0')
+    const aliased = Spec.parse('foo', 'npm:abbrev@^4.0.0', {
+      registries: { npm: defaultRegistry },
+    })
 
     t.equal(
       getId(direct, manifest),

@@ -19,8 +19,13 @@ const { Spec } = await t.mockImport<typeof import('../src/index.ts')>(
 )
 
 // there is no default registry any more; most of these cases predate
-// that change, so keep exercising them against the npm registry.
-const defaultOptions = { registry: 'https://registry.npmjs.org/' }
+// that change, so keep exercising them against the npm registry. The
+// `npm` alias is also no longer built in, so configure it explicitly for
+// the many cases that rely on `npm:` specs.
+const defaultOptions = {
+  registry: 'https://registry.npmjs.org/',
+  registries: { npm: 'https://registry.npmjs.org/' },
+}
 
 t.strictSame(Spec.parseGitSelector(''), [{}])
 
@@ -447,7 +452,7 @@ t.test('invalid workspace specs', t => {
 })
 
 t.test('get final subspec in chain', t => {
-  const subby = Spec.parse('x@npm:y@npm:z@latest')
+  const subby = Spec.parse('x@npm:y@npm:z@latest', defaultOptions)
   const final = subby.final
   t.not(subby, final, 'final is not the alias spec')
   t.not(subby.subspec, final, 'final is not the first alias value')
@@ -457,7 +462,10 @@ t.test('get final subspec in chain', t => {
 })
 
 t.test('simplify in the toString result', t => {
-  const spec = Spec.parse('x@npm:y@npm:z@npm:a@npm:b@latest')
+  const spec = Spec.parse(
+    'x@npm:y@npm:z@npm:a@npm:b@latest',
+    defaultOptions,
+  )
   t.equal(spec.toString(), 'x@npm:b@latest')
   // test the memoization
   t.equal(spec.toString(), 'x@npm:b@latest')
@@ -587,6 +595,7 @@ t.test('try to guess the conventional tarball URL', t => {
   const options = {
     ...defaultOptions,
     registries: {
+      npm: 'https://registry.npmjs.org/',
       vlt: 'https://registry.vlt.sh',
     },
   }

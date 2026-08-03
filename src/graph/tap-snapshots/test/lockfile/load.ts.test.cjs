@@ -57,6 +57,7 @@ Spec {
   "options": Object {
     "catalog": Object {},
     "catalogs": Object {},
+    "default-registry-alias": "npm",
     "git-host-archives": Object {
       "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
       "example": "git+ssh://example.com/$1/$2/archive/$3.tar.gz",
@@ -139,6 +140,7 @@ Spec {
   "options": Object {
     "catalog": Object {},
     "catalogs": Object {},
+    "default-registry-alias": "npm",
     "git-host-archives": Object {
       "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
       "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",

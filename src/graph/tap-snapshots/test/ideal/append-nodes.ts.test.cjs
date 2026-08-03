@@ -41,7 +41,10 @@ Array [
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
-  options: { registry: 'https://registry.npmjs.org/' },
+  options: {
+    registry: 'https://registry.npmjs.org/',
+    registries: { npm: 'https://registry.npmjs.org/' }
+  },
   nodes: {
     '~npm~bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
     '~npm~foo@1.0.0': [

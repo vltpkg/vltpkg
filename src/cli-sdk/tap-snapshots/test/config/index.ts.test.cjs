@@ -19,11 +19,9 @@ exports[`test/config/index.ts > TAP > load both configs, project writes over use
   catalogs: undefined,
   'jsr-registries': { jsr: 'https://npm.jsr.io/' },
   registry: undefined,
+  'default-registry-alias': 'npm',
   'scoped-registries': {},
-  registries: {
-    npm: 'https://registry.npmjs.org/',
-    gh: 'https://npm.pkg.github.com/'
-  },
+  registries: { gh: 'https://npm.pkg.github.com/' },
   'git-host-archives': {
     github: 'https://api.github.com/repos/$1/$2/tarball/$committish',
     bitbucket: 'https://bitbucket.org/$1/$2/get/$committish.tar.gz',

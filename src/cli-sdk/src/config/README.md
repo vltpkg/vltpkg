@@ -55,13 +55,21 @@ environment, or options specified on the command line.
 `vlt.json` file, `VLT_REGISTRY`, or `--registry`. Command modules that
 resolve or fetch packages export `needsRegistry = true`, and
 `outputCommand()` throws an `ECONFIG` error before invoking them when
-nothing is configured. `--help` is still answered first, so usage is
-readable with nothing set up. Inside a command, use the
+nothing is configured (neither `--registry` nor the
+`--default-registry-alias` alias). `--help` is still answered first,
+so usage is readable with nothing set up. Inside a command, use the
 `requireRegistry(conf)` helper rather than a non-null assertion.
 
-Note that this only removes the _unnamed_ default. Named registry
-aliases (`npm:`, `gh:`, `jsr:`) and the `@jsr` scope mapping keep
-their built-in URLs.
+### The `npm` alias is no longer built in
+
+Bare specifiers (`foo`, `foo@latest`) and transitive dependencies
+without an explicit registry protocol resolve through the registry
+alias named by `--default-registry-alias` (`npm` by default). The
+`npm` alias itself has **no** built-in URL -- run `vlt setup` (which
+points it at your vlt.io account registry) or configure
+`registries.npm` yourself. Only the `gh:` and `jsr:` aliases (and the
+`@jsr` scope mapping) keep built-in URLs; all aliases are
+user-overridable.
 
 ## Configuration Definitions and Patterns
 

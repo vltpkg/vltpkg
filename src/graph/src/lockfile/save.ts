@@ -7,6 +7,7 @@ import {
   defaultGitHosts,
   defaultJsrRegistries,
   defaultRegistries,
+  defaultRegistryName,
   defaultScopeRegistries,
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -180,6 +181,7 @@ export const lockfileData = ({
   modifiers,
   registry,
   registries,
+  'default-registry-alias': defaultRegistryAlias,
   saveManifests,
   saveBuildData,
   'scoped-registries': scopeRegistries,
@@ -227,6 +229,12 @@ export const lockfileData = ({
         { 'jsr-registries': cleanJsrRegistries }
       : undefined),
       ...(registry !== undefined ? { registry } : undefined),
+      ...((
+        defaultRegistryAlias !== undefined &&
+        defaultRegistryAlias !== defaultRegistryName
+      ) ?
+        { 'default-registry-alias': defaultRegistryAlias }
+      : undefined),
       ...(hasItems(cleanRegistries) ?
         { registries: cleanRegistries }
       : undefined),

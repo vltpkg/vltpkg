@@ -1,0 +1,72 @@
+---
+title: vlt setup
+sidebar:
+  label: setup
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt setup [<account>]" title="Terminal" lang="bash" />
+
+Configure the registry aliases for your vlt.io account so that
+`vlt install` and `vlx` work out of the box.
+
+The `npm` registry alias has no built-in URL, so a fresh project can't
+resolve bare specifiers (like `vlt install express`) until a registry
+is configured. `vlt setup` is the guided way to do that: sign up or log
+in at [https://www.vlt.io](https://www.vlt.io) first, then run the
+wizard.
+
+## What it does
+
+1. Prompts for your vlt.io account (or organization) slug if not passed
+   as an argument.
+2. Stages the two registry aliases every account is provisioned with:
+   - `npm` → `https://registry.vlt.io/<account>/npm/` (the default
+     [bare-spec alias](/cli/registries#bare-specs-and---default-registry-alias))
+   - `main` → `https://registry.vlt.io/<account>/main/` (your account's
+     primary private registry)
+3. Optionally authenticates against those registries via the browser
+   web-login flow.
+4. Loops to let you add any additional custom aliases (for partner or
+   team registries), optionally authenticating against each.
+5. Writes the staged aliases into your user `vlt.json` (merging with,
+   not clobbering, existing entries).
+
+## Options
+
+| Flag                     | Description                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project. |
+| `--registries=<name=url>` | Additional registry aliases to stage non-interactively. Can be set multiple times.  |
+| `--yes`                  | Skip interactive prompts. Requires `<account>` and does not open a browser.          |
+
+## Examples
+
+Interactive setup for an account:
+
+<Code code="$ vlt setup my-account" title="Terminal" lang="bash" />
+
+Unattended setup (for CI or setup scripts):
+
+<Code
+  code="$ vlt setup my-account --yes --registries team=https://registry.example.com/"
+  title="Terminal"
+  lang="bash"
+/>
+
+Write to the project's `vlt.json` instead of your user config:
+
+<Code
+  code="$ vlt setup my-account --config=project"
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [Working with Named Registries](/cli/registries)
+- [Authentication](/cli/auth)
+- [`vlt login`](/cli/commands/login)

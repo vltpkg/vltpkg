@@ -47,7 +47,10 @@ export const usage: CommandUsage = () =>
   commandUsage({
     command: 'token',
     usage: ['list', 'add', 'rm'],
-    description: `Manage registry authentication tokens in the vlt keychain.`,
+    description: `Manage registry authentication tokens in the vlt keychain.
+
+                  Target a specific configured registry by alias with
+                  \`vlt registry <alias> token <subcommand>\`.`,
     subcommands: {
       list: {
         usage: '',

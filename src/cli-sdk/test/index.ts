@@ -297,3 +297,24 @@ t.test('registry config resolution', async t => {
     t.equal(config.options.registry, 'https://registry.npmjs.org/')
   })
 })
+
+t.test('vlt registry <alias> <cmd> dispatch', async t => {
+  const cwd = t.testdir({
+    'vlt.json': JSON.stringify({
+      config: { registries: { npm: 'https://npm.example/' } },
+    }),
+    'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+  })
+  const { error, config } = await run(t, {
+    argv: ['registry', 'npm', 'whoami'],
+    cwd,
+  })
+  t.equal(error, null)
+  t.equal(config.command, 'whoami', 'rewrote command to whoami')
+  t.strictSame(config.positionals, [], 'consumed alias + subcommand')
+  t.equal(
+    config.options.registry,
+    'https://npm.example/',
+    'injected resolved registry',
+  )
+})

@@ -3,7 +3,7 @@ import { RegistryClient } from '@vltpkg/registry-client'
 import type { JSONField } from '@vltpkg/types'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
-import { requireRegistry } from '../require-registry.ts'
+import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -89,7 +89,7 @@ const getProfile = async (
   args: string[],
 ): Promise<ProfileResult> => {
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(requireRegistry(conf))
+  const registryUrl = new URL(await resolveRegistry(conf))
   const url = new URL('-/npm/v1/user', registryUrl)
   const response = await rc.request(url, { useCache: false })
   const data = response.json()
@@ -120,7 +120,7 @@ const setProfile = async (
     })
   }
   const rc = new RegistryClient(conf.options)
-  const registryUrl = new URL(requireRegistry(conf))
+  const registryUrl = new URL(await resolveRegistry(conf))
   const url = new URL('-/npm/v1/user', registryUrl)
   const response = await rc.request(url, {
     method: 'POST',

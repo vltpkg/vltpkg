@@ -45,6 +45,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --color
     --config=<all | user | project>
     --dashboard-root=<path>
+    --default-registry-alias=<name>
     --dry-run
     --editor=<program>
     --expect-lockfile
@@ -112,6 +113,7 @@ Unknown config option: asdf
     color
     config
     dashboard-root
+    default-registry-alias
     dry-run
     editor
     expect-lockfile

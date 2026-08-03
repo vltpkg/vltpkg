@@ -4,6 +4,7 @@ import {
   defaultGitHostArchives,
   defaultGitHosts,
   defaultRegistries,
+  defaultRegistryName,
   defaultScopeRegistries,
 } from '@vltpkg/spec/browser'
 import { stringifyNode } from '../stringify-node.ts'
@@ -28,6 +29,7 @@ const loadSpecOptions = (
     catalogs = {},
     registries,
     registry,
+    'default-registry-alias': defaultRegistryAlias,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
     'scoped-registries': scopedRegistriesOption,
@@ -46,6 +48,8 @@ const loadSpecOptions = (
     catalogs,
     registries: { ...defaultRegistries, ...registries },
     registry,
+    'default-registry-alias':
+      defaultRegistryAlias ?? defaultRegistryName,
     'jsr-registries': { ...jsrRegistries },
     'git-hosts': { ...defaultGitHosts, ...gitHosts },
     'git-host-archives': {

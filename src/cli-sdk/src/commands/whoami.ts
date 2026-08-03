@@ -1,7 +1,7 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { JSONField } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
-import { requireRegistry } from '../require-registry.ts'
+import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -12,7 +12,10 @@ export const usage: CommandUsage = () =>
     command: 'whoami',
     usage: [''],
     description: `Look up the username for the currently active token,
-                  when logged into a registry.`,
+                  when logged into a registry.
+
+                  Target a specific configured registry by alias with
+                  \`vlt registry <alias> whoami\`.`,
     options: {
       registry: {
         value: '<url>',
@@ -39,7 +42,7 @@ export const views = {
 export const command: CommandFn<CommandResult> = async conf => {
   const rc = new RegistryClient(conf.options)
   const response = await rc.request(
-    new URL('-/whoami', requireRegistry(conf)),
+    new URL('-/whoami', await resolveRegistry(conf)),
     { useCache: false },
   )
   const { username } = response.json()

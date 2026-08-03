@@ -44,9 +44,11 @@ const canonicalCommands = {
   profile: 'profile',
   publish: 'publish',
   query: 'query',
+  registry: 'registry',
   repo: 'repo',
   'run-exec': 'run-exec',
   run: 'run',
+  setup: 'setup',
   token: 'token',
   uninstall: 'uninstall',
   unpublish: 'unpublish',
@@ -193,17 +195,32 @@ export const definition = j
                     For example, \`express@latest\` will be resolved by looking
                     up the metadata from this registry.
 
-                    There is **no default**. A registry must be configured in
-                    \`vlt.json\`, with this flag, or via the \`VLT_REGISTRY\`
-                    environment variable. Commands that need a registry fail
-                    with a config error when none is set; \`vlt login\` will
-                    configure one for you.
-
-                    Note that alias specifiers starting with \`npm:\` will
-                    still map to \`https://registry.npmjs.org/\`, unless a new
-                    mapping is created via the \`--registries\` option.
+                    There is **no default**. When unset, bare specifiers fall
+                    back to the registry alias named by
+                    \`--default-registry-alias\` (\`npm\` by default). If that
+                    alias is also unconfigured, commands that need a registry
+                    fail with a config error. Run \`vlt setup\` (or
+                    \`vlt login\`) to configure one.
 
                     See https://docs.vlt.sh/cli
+      `,
+    },
+
+    'default-registry-alias': {
+      hint: 'name',
+      default: 'npm',
+      description: `The name of the registry alias (a key in
+                    \`--registries\`) that bare specifiers (e.g.
+                    \`express@latest\`) and transitive dependencies without an
+                    explicit registry protocol resolve through, when neither
+                    \`--registry\` nor a matching \`--scoped-registries\` entry
+                    applies.
+
+                    Defaults to \`npm\`. Note that the \`npm\` alias has **no**
+                    built-in URL -- it must be configured (for example via
+                    \`vlt setup\`, which points it at your vlt.io registry),
+                    otherwise bare specifiers will have no registry to resolve
+                    against.
       `,
     },
   })
@@ -211,9 +228,9 @@ export const definition = j
   .optList({
     registries: {
       hint: 'name=url',
-      description: `Specify named registry hosts by their prefix. To set the
-                    default registry used for non-namespaced specifiers,
-                    use the \`--registry\` option.
+      description: `Specify named registry hosts by their prefix. To choose
+                    which alias is used for non-namespaced specifiers, use the
+                    \`--default-registry-alias\` option.
 
                     Prefixes can be used as a package alias. For example:
 
@@ -221,9 +238,10 @@ export const definition = j
                     vlt --registries loc=http://reg.local install foo@loc:foo@1.x
                     \`\`\`
 
-                    By default, the public npm registry is registered to the
-                    \`npm:\` prefix. It is not recommended to change this
-                    mapping in most cases.
+                    There is **no** built-in \`npm\` registry URL; the \`npm\`
+                    alias must be configured (e.g. via \`vlt setup\`) before it
+                    can be used. The \`gh\` and \`jsr\` aliases have built-in
+                    defaults that can be overridden here.
                     `,
     },
 

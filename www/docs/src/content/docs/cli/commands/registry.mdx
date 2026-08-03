@@ -1,0 +1,71 @@
+---
+title: vlt registry
+sidebar:
+  label: registry
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt registry <alias> <command> [<args>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Run an account command against a specific configured registry, selected
+by its [`registries`](/cli/registries) alias instead of a full URL.
+
+vlt has no default registry, so account and authentication commands need
+to know _which_ registry to act against. `vlt registry <alias> <command>`
+scopes any of those commands to the registry configured under `<alias>`
+in your `vlt.json` — handy when you have more than one (for example the
+`npm` and `main` aliases created by [`vlt setup`](/cli/commands/setup)).
+
+## Groupable commands
+
+`<command>` is any of the account/authentication commands:
+
+`whoami`, `logout`, `login`, `token`, `access`, `publish`, `unpublish`,
+`deprecate`, `dist-tag`, `profile`, `ping`.
+
+## Alias resolution
+
+The registry is resolved in this order:
+
+1. A `--registry=<url>` on the command line always wins.
+2. An explicit `<alias>` (as in `vlt registry main whoami`) is looked up
+   in `registries`; an unknown alias is an error.
+3. With no explicit target and a single configured registry, that one is
+   used.
+4. With multiple configured registries and no explicit target:
+   - on an interactive terminal you are prompted to pick one (the
+     [`--default-registry-alias`](/cli/registries#bare-specs-and---default-registry-alias)
+     is pre-selected);
+   - otherwise (CI, pipes) it falls back to `--default-registry-alias`,
+     erroring if that alias is not configured.
+
+The same resolution applies to the top-level commands, so
+`vlt whoami` behaves like `vlt registry whoami`.
+
+## Examples
+
+Check who you are on the `main` registry:
+
+<Code code="$ vlt registry main whoami" title="Terminal" lang="bash" />
+
+List tokens for the `npm` registry:
+
+<Code code="$ vlt registry npm token list" title="Terminal" lang="bash" />
+
+Omit the alias to choose interactively (or fall back to the default
+alias when non-interactive):
+
+<Code code="$ vlt registry whoami" title="Terminal" lang="bash" />
+
+## See also
+
+- [Working with Named Registries](/cli/registries)
+- [`vlt setup`](/cli/commands/setup)
+- [Authentication](/cli/auth)

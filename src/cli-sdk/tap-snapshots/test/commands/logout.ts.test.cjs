@@ -14,6 +14,8 @@ vlt logout
 
 Log out of the default registry, deleting the token from the local keychain, as well as destroying it on the server.
 
+Target a specific configured registry by alias with \`vlt registry <alias> logout\`.
+
 ## Options
 
 ### registry
