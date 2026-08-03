@@ -2,7 +2,8 @@ import { actual, GraphModifier } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
-import { stdout } from '../output.ts'
+import { stdout, stderr } from '../output.ts'
+import { isWarnEnabled } from '../verbose-log.ts'
 import {
   buildAuditQuery,
   aggregateBySeverity,
@@ -91,7 +92,9 @@ export const command: CommandFn<AuditResult> = async conf => {
   })
 
   const importers = new Set([graph.mainImporter])
-  const result = aggregateBySeverity(nodes, importers)
+  const result = aggregateBySeverity(nodes, importers, message => {
+    if (isWarnEnabled(conf.values.loglevel)) stderr(message)
+  })
   return filterAuditResult(result, auditLevel as SeverityLevel)
 }
 

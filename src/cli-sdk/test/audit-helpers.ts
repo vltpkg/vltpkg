@@ -284,6 +284,7 @@ t.test('aggregateBySeverity', async t => {
   )
 
   t.test('ignores nodes with malformed or missing data', async t => {
+    const warnings: string[] = []
     const nodes = [
       // fails isLeveledInsights: missing the "low" key
       {
@@ -307,9 +308,32 @@ t.test('aggregateBySeverity', async t => {
       // has insights, but no id
       { insights: { malware: leveled({ critical: true }) } },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregateBySeverity(nodes, importers, message =>
+      warnings.push(message),
+    )
     t.equal(result.total, 0)
+    // only the three nodes with a present-but-malformed category warn;
+    // the missing-id/null-insights nodes are dropped before that check
+    t.equal(warnings.length, 3)
+    t.match(warnings[0], /malformed-malware-id/)
+    t.match(warnings[1], /malformed-severity-id/)
+    t.match(warnings[2], /malformed-squat-id/)
   })
+
+  t.test(
+    'does not warn for absent (as opposed to malformed) insights',
+    async t => {
+      const warnings: string[] = []
+      const nodes = [
+        { id: 'clean-id', insights: {} },
+        { id: 'no-alerts-id', insights: { malware: leveled() } },
+      ]
+      aggregateBySeverity(nodes, importers, message =>
+        warnings.push(message),
+      )
+      t.equal(warnings.length, 0)
+    },
+  )
 
   t.test(
     'accumulates alerts from multiple insight categories on one node',
