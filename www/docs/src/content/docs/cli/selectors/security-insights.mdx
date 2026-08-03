@@ -26,6 +26,7 @@ package either has malware or it doesn't:
 
 <Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
 
+<<<<<<< HEAD
 <Aside type="tip">
   `:malware` matches only high-confidence malware alerts (`malware`
   and `gptMalware`). For broader vulnerability detection with
@@ -130,12 +131,16 @@ Matches packages by CVE severity level:
 | `medium` or `2`   | Medium severity CVEs   |
 | `low` or `3`      | Low severity CVEs      |
 
-Comparators are supported:
+Comparators are supported. Severity ranks from most to least severe as
+`0` (critical) through `3` (low) -- lower numbers are more severe.
+Prefer the numeric form with comparators, since it makes the direction
+explicit instead of relying on remembering which word maps to which
+number:
 
 <Code
   code={`$ vlt query ':severity(critical)'
-$ vlt query ':severity(">1")'
-$ vlt query ':severity(">=medium")'`}
+$ vlt query ':severity("<=1")'
+$ vlt query ':severity("<=2")'`}
   title="Terminal"
   lang="bash"
 />

@@ -40,12 +40,15 @@ scanning.
 The `:malware` selector is **binary** — it takes no parameters. Any
 matching result may have alerts or CVEs assigned to it.
 
+Lower numbers are more severe. When using comparators, prefer the
+numeric form -- it makes the direction explicit instead of relying on
+remembering which word maps to which number:
+
 <Code
   code={`# Find any malware
 $ vlt query ':malware'
 
 # Find direct dependencies with malware
-
 $ vlt query ':root > :malware'
 
 # Find malware in production dependencies
@@ -93,10 +96,13 @@ $ vlt query ':cve(CVE-2023-1234)'
 
 $ vlt query ':cwe(CWE-79)'
 
-# Find packages based on CVE severity
+# Find critical CVEs
 
-$ vlt query ':severity(critical)' $ vlt query ':severity(">medium")'`}
-title="Terminal" lang="bash" />
+$ vlt query ':severity(critical)'
+
+# Find high severity and above
+
+$ vlt query ':severity("<=1")'`} title="Terminal" lang="bash" />
 
 ## Behavioral Security Risks
 
