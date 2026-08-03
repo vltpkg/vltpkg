@@ -8,7 +8,10 @@ import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
-import { missingRegistryError } from './require-registry.ts'
+import {
+  hasConfiguredRegistry,
+  missingRegistryError,
+} from './require-registry.ts'
 import type { View, ViewOptions, Views } from './view.ts'
 import { isViewClass } from './view.ts'
 import {
@@ -187,14 +190,8 @@ export const outputCommand = async <T>(
     // error is rendered, tracked and exited like any other command
     // error, and so that the `--help` return above still works when
     // nothing is configured.
-    if (needsRegistry) {
-      const alias = conf.options['default-registry-alias']
-      const hasRegistry =
-        !!conf.options.registry ||
-        (!!alias && !!conf.options.registries[alias])
-      if (!hasRegistry) {
-        throw missingRegistryError()
-      }
+    if (needsRegistry && !hasConfiguredRegistry(conf)) {
+      throw missingRegistryError()
     }
 
     const output = await onDone(await command(conf))

@@ -183,3 +183,79 @@ t.test('resolveRegistry (interactive prompt)', async t => {
   )
   t.equal(url, 'https://m/', 'prompt selection honored')
 })
+
+const ghDefaultURL = 'https://npm.pkg.github.com/'
+
+t.test('built-in defaults are not candidates', async t => {
+  const mod = await load()
+
+  // gh left at its default URL is a built-in default, not something
+  // the user configured, so it does not satisfy resolution
+  await t.rejects(
+    mod.resolveRegistry(
+      mkConf({ registries: { gh: ghDefaultURL } }),
+      {
+        interactive: false,
+      },
+    ),
+    { message: /Missing registry configuration/ },
+    'only built-in gh -> missing',
+  )
+
+  // a single user-configured alias resolves even when the built-in gh
+  // default is also present
+  t.equal(
+    await mod.resolveRegistry(
+      mkConf({
+        registries: { gh: ghDefaultURL, main: 'https://m/' },
+      }),
+      { interactive: false },
+    ),
+    'https://m/',
+    'gh default ignored, single user alias resolves',
+  )
+
+  // overriding a built-in alias to a non-default URL counts as
+  // user-configured
+  t.equal(
+    await mod.resolveRegistry(
+      mkConf({ registries: { gh: 'https://custom/' } }),
+      { interactive: false },
+    ),
+    'https://custom/',
+    'overridden gh counts as configured',
+  )
+})
+
+t.test('hasConfiguredRegistry', async t => {
+  const mod = await load()
+
+  t.notOk(
+    mod.hasConfiguredRegistry(mkConf({})),
+    'no registries -> false',
+  )
+  t.notOk(
+    mod.hasConfiguredRegistry(
+      mkConf({ registries: { gh: ghDefaultURL } }),
+    ),
+    'only built-in gh default -> false',
+  )
+  t.ok(
+    mod.hasConfiguredRegistry(
+      mkConf({ registry: 'https://scalar/' }),
+    ),
+    'registry scalar -> true',
+  )
+  t.ok(
+    mod.hasConfiguredRegistry(
+      mkConf({ registries: { main: 'https://m/' } }),
+    ),
+    'non-default alias -> true',
+  )
+  t.ok(
+    mod.hasConfiguredRegistry(
+      mkConf({ registries: { gh: 'https://custom/' } }),
+    ),
+    'overridden built-in alias -> true',
+  )
+})
