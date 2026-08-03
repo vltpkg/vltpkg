@@ -93,32 +93,34 @@ t.test('isSecuritySelector', async t => {
 })
 
 t.test('buildAuditQuery', async t => {
+  // Pin the exact comparator strings, not just substring presence --
+  // the query engine's scale is critical=0 ... low=3 (lower = more
+  // severe), so "at or above" a level must use `<=`, not `>`/`>=`.
+  // A previous version used `>`/`>=` here, which silently inverted
+  // every non-critical level (e.g. --audit-level=high matched only
+  // low-severity results).
+
   t.test('returns full query for low level', async t => {
     const q = buildAuditQuery('low')
-    t.match(q, /:malware/)
-    t.match(q, /:vulnerable/)
-    t.match(q, /:severity/)
-    t.match(q, /:scripts/)
-    t.match(q, /:squat/)
+    t.equal(
+      q,
+      ':malware, :vulnerable, :severity(<=low), :scripts, :squat',
+    )
   })
 
   t.test('returns filtered query for moderate level', async t => {
     const q = buildAuditQuery('moderate')
-    t.match(q, /:malware/)
-    t.match(q, /:severity/)
-    t.notMatch(q, /:scripts/)
+    t.equal(q, ':malware(<=medium), :severity(<=medium)')
   })
 
   t.test('returns filtered query for high level', async t => {
     const q = buildAuditQuery('high')
-    t.match(q, /:malware/)
-    t.match(q, /:severity/)
+    t.equal(q, ':malware(<=high), :severity(<=high)')
   })
 
   t.test('returns filtered query for critical level', async t => {
     const q = buildAuditQuery('critical')
-    t.match(q, /:malware\(critical\)/)
-    t.match(q, /:severity\(critical\)/)
+    t.equal(q, ':malware(critical), :severity(critical)')
   })
 
   t.test('defaults to low for unknown level', async t => {
