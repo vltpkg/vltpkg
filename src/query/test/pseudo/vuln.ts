@@ -450,10 +450,7 @@ t.test('cveId matching', async t => {
         names.includes('a'),
         'should include a (socketUpstreamVulnerability with high severity cveId)',
       )
-      t.ok(
-        names.includes('c'),
-        'should include c (criticalCVE)',
-      )
+      t.ok(names.includes('c'), 'should include c (criticalCVE)')
       t.notOk(
         names.includes('b'),
         'should exclude b (socketUpstreamVulnerability with low severity cveId)',
@@ -490,10 +487,7 @@ t.test('cveId matching', async t => {
         names.includes('a'),
         'should include a (cveId with high severity)',
       )
-      t.ok(
-        names.includes('c'),
-        'should include c (criticalCVE)',
-      )
+      t.ok(names.includes('c'), 'should include c (criticalCVE)')
       t.notOk(
         names.includes('b'),
         'should exclude b (cveId with low severity)',

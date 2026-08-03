@@ -88,12 +88,14 @@ Package properties:
 Severity args accept names or numbers (`critical`/`0`, `high`/`1`,
 `medium`/`2`, `low`/`3`) and comparators: `:severity(">=medium")`.
 
-Threats: `:malware` (binary, no params), `:squat(sev?)`, `:suspicious`, `:confused`.
+Threats: `:malware` (binary, no params), `:squat(sev?)`,
+`:suspicious`, `:confused`.
 
-Vulnerabilities: `:vuln(sev?)` (alias `:vulnerable`), `:cve(CVE-2023-1234)`,
-`:cve(*)`, `:cwe(CWE-79)`, `:severity(level)`.
-`:vuln` without params matches severity ≥ medium; `:vuln(critical)` exact-matches;
-`:vuln(">=high")` uses comparators. Also matches alerts carrying a `cveId` prop.
+Vulnerabilities: `:vuln(sev?)` (alias `:vulnerable`),
+`:cve(CVE-2023-1234)`, `:cve(*)`, `:cwe(CWE-79)`, `:severity(level)`.
+`:vuln` without params matches severity ≥ medium; `:vuln(critical)`
+exact-matches; `:vuln(">=high")` uses comparators. Also matches alerts
+carrying a `cveId` prop.
 
 Licensing: `:license(type)` — types: `unlicensed`, `misc`,
 `restricted`, `ambiguous`, `copyleft`, `unknown`, `none`, `exception`.

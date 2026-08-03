@@ -143,12 +143,12 @@ so the dependency graph doubles as a security scanner. Selectors group
 into four families — compose them with anchors and combinators like
 any other filter:
 
-| Family          | Selectors                                                                   | Ask                            |
-| --------------- | --------------------------------------------------------------------------- | ------------------------------ |
-| Threats         | `:malware` `:squat` `:obfuscated` `:suspicious`                             | is anything actively hostile?  |
+| Family          | Selectors                                                                        | Ask                                    |
+| --------------- | -------------------------------------------------------------------------------- | -------------------------------------- |
+| Threats         | `:malware` `:squat` `:obfuscated` `:suspicious`                                  | is anything actively hostile?          |
 | Vulnerabilities | `:vuln(critical)` `:cve(CVE-…)` `:cve(*)` `:cwe(CWE-79)` `:severity(">=medium")` | known CVEs / vulns, filter by severity |
-| Capabilities    | `:eval` `:network` `:fs` `:shell` `:env`                                    | what _can_ this code do?       |
-| Hygiene         | `:abandoned` `:unmaintained` `:deprecated` `:score("<=0.5", "maintenance")` | will this rot on us?           |
+| Capabilities    | `:eval` `:network` `:fs` `:shell` `:env`                                         | what _can_ this code do?               |
+| Hygiene         | `:abandoned` `:unmaintained` `:deprecated` `:score("<=0.5", "maintenance")`      | will this rot on us?                   |
 
 Audit recipes:
 
