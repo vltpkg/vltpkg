@@ -37,8 +37,8 @@ scanning.
 
 ## Malware Detection
 
-The `:malware` selector is **binary** — it takes no parameters. A node
-matches if it has at least one `malware` or `gptMalware` alert.
+The `:malware` selector is **binary** — it takes no parameters. Any
+matching result may have alerts or CVEs assigned to it.
 
 <Code
   code={`# Find any malware
@@ -64,16 +64,8 @@ $ vlt query ':workspace :malware'`} title="Terminal" lang="bash" />
 
 ### Severity-Based Filtering
 
-Use `:vuln` for severity-based vulnerability detection. VLT maps
-vulnerability alerts into four severity levels:
-
-- **Critical (0)** — `criticalCVE`
-- **High (1)** — `cve`
-- **Medium (2)** — `potentialVulnerability`, `gptSecurity`
-- **Low (3)** — `mildCVE`, `gptAnomaly`
-
-Alerts carrying a `cveId` prop (e.g. `socketUpstreamVulnerability`)
-are also matched, using their `severity` field for level comparison.
+Use `:vuln` for severity-based vulnerability detection with four
+severity levels: **critical**, **high**, **medium**, and **low**.
 
 <Code
   code={`# Find critical vulnerabilities only
