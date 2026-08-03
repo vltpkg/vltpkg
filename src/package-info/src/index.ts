@@ -883,7 +883,8 @@ export class PackageInfoClient {
   ): Promise<Packument> {
     const response = await this.registryClient.request(pakuURL, {
       headers: {
-        accept: 'application/json',
+        accept:
+          'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*',
       },
     })
     if (response.statusCode !== 200) {
