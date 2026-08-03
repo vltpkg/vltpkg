@@ -1,10 +1,14 @@
 import t from 'tap'
 import {
   isSecuritySelector,
+  isSecurityAuditSelector,
   buildAuditQuery,
   aggregateBySeverity,
+  emptySummary,
   filterAuditResult,
   formatAuditSummary,
+  nonEmptySeverityBuckets,
+  formatDirectTransitiveFooter,
 } from '../src/audit-helpers.ts'
 import type {
   AuditPackage,
@@ -47,13 +51,6 @@ const makePkg = (
   ...overrides,
 })
 
-const emptySummary = () => ({
-  critical: [] as AuditPackage[],
-  high: [] as AuditPackage[],
-  moderate: [] as AuditPackage[],
-  low: [] as AuditPackage[],
-})
-
 /** AuditResult fixture; pass a full `summary` to populate buckets. */
 const makeResult = (
   overrides: Partial<AuditResult> = {},
@@ -92,13 +89,44 @@ t.test('isSecuritySelector', async t => {
   })
 })
 
+t.test('isSecurityAuditSelector', async t => {
+  t.test('detects genuine audit selectors', async t => {
+    t.equal(isSecurityAuditSelector(':malware'), true)
+    t.equal(isSecurityAuditSelector(':vulnerable'), true)
+    t.equal(isSecurityAuditSelector(':vuln'), true)
+    t.equal(isSecurityAuditSelector(':severity(critical)'), true)
+    t.equal(isSecurityAuditSelector(':cve'), true)
+    t.equal(isSecurityAuditSelector(':cwe'), true)
+    t.equal(isSecurityAuditSelector(':squat'), true)
+  })
+
+  t.test(
+    'rejects a standalone :scripts selector, unlike isSecuritySelector',
+    async t => {
+      t.equal(isSecurityAuditSelector(':scripts'), false)
+      t.equal(isSecuritySelector(':scripts'), true)
+    },
+  )
+
+  t.test(
+    'still detects audit selectors combined with :scripts',
+    async t => {
+      t.equal(isSecurityAuditSelector(':scripts, :malware'), true)
+      t.equal(isSecurityAuditSelector(':scripts:squat'), true)
+    },
+  )
+
+  t.test('rejects non-security selectors', async t => {
+    t.equal(isSecurityAuditSelector(':prod'), false)
+    t.equal(isSecurityAuditSelector('*'), false)
+    t.equal(isSecurityAuditSelector('#foo'), false)
+  })
+})
+
 t.test('buildAuditQuery', async t => {
   // Pin the exact comparator strings, not just substring presence --
   // the query engine's scale is critical=0 ... low=3 (lower = more
   // severe), so "at or above" a level must use `<=`, not `>`/`>=`.
-  // A previous version used `>`/`>=` here, which silently inverted
-  // every non-critical level (e.g. --audit-level=high matched only
-  // low-severity results).
 
   t.test('returns full query for low level', async t => {
     const q = buildAuditQuery('low')
@@ -285,6 +313,25 @@ t.test('aggregateBySeverity', async t => {
     },
   )
 
+  t.test(
+    'defaults to a no-op warn callback when none is provided',
+    async t => {
+      const nodes = [
+        // fails isLeveledInsights: missing the "low" key, would warn
+        // if a callback were supplied
+        {
+          id: 'malformed-malware-id',
+          insights: {
+            malware: { critical: true, high: false, medium: false },
+          },
+        },
+      ]
+      // no warn callback passed -- exercises the default `() => {}`
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.total, 0)
+    },
+  )
+
   t.test('ignores nodes with malformed or missing data', async t => {
     const warnings: string[] = []
     const nodes = [
@@ -429,6 +476,53 @@ t.test('filterAuditResult', async t => {
     t.equal(filtered.total, 0)
     t.equal(filtered.directCount, 0)
     t.equal(filtered.indirectCount, 0)
+  })
+})
+
+t.test('nonEmptySeverityBuckets', async t => {
+  t.test(
+    'returns only non-empty buckets in severityOrder',
+    async t => {
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          critical: [makePkg({ name: 'pkg-c' })],
+          low: [makePkg({ name: 'pkg-l' })],
+        },
+        total: 2,
+      })
+      const buckets = nonEmptySeverityBuckets(result)
+      t.strictSame(
+        buckets.map(b => b.severity),
+        ['critical', 'low'],
+      )
+      t.equal(buckets[0]?.pkgs[0]?.name, 'pkg-c')
+      t.equal(buckets[1]?.pkgs[0]?.name, 'pkg-l')
+    },
+  )
+
+  t.test('returns an empty array for an empty result', async t => {
+    t.strictSame(nonEmptySeverityBuckets(makeResult()), [])
+  })
+})
+
+t.test('formatDirectTransitiveFooter', async t => {
+  t.test('singularizes a single direct dependency', async t => {
+    t.equal(
+      formatDirectTransitiveFooter(
+        makeResult({ directCount: 1, indirectCount: 0 }),
+      ),
+      '1 direct dependency, 0 transitive',
+    )
+  })
+
+  t.test('pluralizes multiple direct dependencies', async t => {
+    t.equal(
+      formatDirectTransitiveFooter(
+        makeResult({ directCount: 2, indirectCount: 3 }),
+      ),
+      '2 direct dependencies, 3 transitive',
+    )
   })
 })
 
