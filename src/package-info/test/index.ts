@@ -172,6 +172,14 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', j.byteLength)
       return res.end(j)
     }
+    case '/coalesced': {
+      coalescedPackumentRequests++
+      coalescedPackumentAccept = req.headers.accept
+      const json = Buffer.from(JSON.stringify(pakuAbbrev))
+      res.setHeader('content-length', json.byteLength)
+      setTimeout(() => res.end(json), 50)
+      return
+    }
     case '/corrupted/-/corrupted-1.0.0.tgz': {
       // Serve a tarball whose content does NOT match the integrity
       // in the manifest (simulates a supply-chain attack / registry bug)
@@ -318,6 +326,8 @@ const server = createServer((req, res) => {
 
 const notFoundURLs: string[] = []
 let corruptedOnceServed = 0
+let coalescedPackumentRequests = 0
+let coalescedPackumentAccept: string | undefined
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
@@ -1892,49 +1902,50 @@ t.test('path git selector', async t => {
 })
 
 t.test(
-  'packument request coalescing avoids duplicate requests',
+  'full packument requests coalesce and retain manifest metadata',
   async t => {
-    const pi = new PackageInfoClient(options)
+    const pi = new PackageInfoClient({
+      ...options,
+      cache: t.testdir(),
+    })
+    coalescedPackumentRequests = 0
+    coalescedPackumentAccept = undefined
 
-    // Multiple concurrent packument requests for the same package
-    // should be coalesced into a single fetch.
-    const [p1, p2] = await Promise.all([
-      pi.packument('abbrev'),
-      pi.packument('abbrev'),
+    const [paku, fullPaku, exact, range] = await Promise.all([
+      pi.packument('coalesced'),
+      pi.packument('coalesced', { fullPackument: true }),
+      pi.manifest('coalesced@2.0.0'),
+      pi.manifest('coalesced@2'),
     ])
-    t.strictSame(p1, pakuAbbrev, 'first packument matches')
-    t.strictSame(p2, pakuAbbrev, 'second packument matches')
-    t.equal(p1, p2, 'both return the same object (coalesced)')
 
-    // Concurrent manifest requests for the same package also
-    // coalesce via the shared packument() call.
-    const [m1, m2] = await Promise.all([
-      pi.manifest('abbrev@2.0.0'),
-      pi.manifest('abbrev@2'),
-    ])
-    t.strictSame(
-      m1,
-      pakuAbbrev.versions['2.0.0'],
-      'first manifest matches',
+    t.equal(
+      coalescedPackumentRequests,
+      1,
+      'made one registry request',
     )
-    t.strictSame(
-      m2,
-      pakuAbbrev.versions['2.0.0'],
-      'second manifest matches',
+    t.equal(
+      coalescedPackumentAccept,
+      'application/json',
+      'requested the full packument',
     )
+    t.equal(
+      paku,
+      fullPaku,
+      'packument requests returned the same object',
+    )
+    t.equal(
+      exact,
+      paku.versions['2.0.0'],
+      'exact manifest came from the coalesced packument',
+    )
+    t.equal(
+      range,
+      paku.versions['2.0.0'],
+      'range manifest came from the coalesced packument',
+    )
+    t.equal(exact.license, 'ISC', 'manifest retains license metadata')
   },
 )
-
-t.test('fullPackument bypasses coalescing', async t => {
-  const pi = new PackageInfoClient(options)
-
-  // A fullPackument request should not be coalesced with
-  // abbreviated requests and should return the full document.
-  const paku = await pi.packument('abbrev', {
-    fullPackument: true,
-  })
-  t.strictSame(paku, pakuAbbrev, 'full packument matches')
-})
 
 t.test('no registry configured', async t => {
   // there is no default registry -- both places that build a registry
