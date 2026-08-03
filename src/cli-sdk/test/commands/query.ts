@@ -884,8 +884,32 @@ t.test('query', async t => {
       )
     })
 
-    await t.test('workspace filter matches nothing', async t => {
-      logged.length = 0
+    await t.test(
+      'scope query matches nothing (non-human view)',
+      async t => {
+        logged.length = 0
+        const Command = await mockQueryWithStdout(t)
+
+        const values = {
+          scope: '[name="nonexistent"]',
+          view: 'json',
+        }
+        await Command.command({
+          positionals: [],
+          values,
+          options,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(
+          logged.length,
+          0,
+          'should not log message for json view',
+        )
+      },
+    )
+
+    const setupWorkspace = async (t: Test) => {
       const mainManifest = {
         name: 'my-project',
         version: '1.0.0',
@@ -941,18 +965,28 @@ t.test('query', async t => {
         '../../src/output.ts': { stdout, stderr },
       })
 
-      const values = {
-        workspace: ['nonexistent'],
-        view: 'human',
-      }
-      await Command.command({
-        positionals: [],
-        values,
+      return {
+        Command,
         options: {
           ...sharedOptions,
           projectRoot: dir,
           monorepo,
         },
+      }
+    }
+
+    await t.test('workspace filter matches nothing', async t => {
+      logged.length = 0
+      const { Command: WorkspaceCmd, options: wsOptions } =
+        await setupWorkspace(t)
+      const values = {
+        workspace: ['nonexistent'],
+        view: 'human',
+      }
+      await WorkspaceCmd.command({
+        positionals: [],
+        values,
+        options: wsOptions,
         get: (key: string) => (values as any)[key],
       } as unknown as LoadedConfig)
 
@@ -963,6 +997,32 @@ t.test('query', async t => {
         'should show workspace filter message',
       )
     })
+
+    await t.test(
+      'workspace filter matches nothing (non-human view)',
+      async t => {
+        logged.length = 0
+
+        const { Command: WorkspaceCmd, options: wsOptions } =
+          await setupWorkspace(t)
+        const values = {
+          workspace: ['nonexistent'],
+          view: 'count',
+        }
+        await WorkspaceCmd.command({
+          positionals: [],
+          values,
+          options: wsOptions,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(
+          logged.length,
+          0,
+          'should not log message for count view',
+        )
+      },
+    )
 
     await t.test(
       'main query matches nothing (with graph)',
@@ -985,6 +1045,30 @@ t.test('query', async t => {
           logged[0],
           [/No packages found matching query/],
           'should show main query message',
+        )
+      },
+    )
+
+    await t.test(
+      'main query matches nothing (non-human view)',
+      async t => {
+        logged.length = 0
+        const Command = await mockQueryWithStdout(t)
+
+        const values = {
+          view: 'json',
+        }
+        await Command.command({
+          positionals: ['[name="nonexistent"]'],
+          values,
+          options,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(
+          logged.length,
+          0,
+          'should not log message for json view',
         )
       },
     )

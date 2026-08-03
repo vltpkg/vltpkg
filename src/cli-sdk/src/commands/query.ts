@@ -202,10 +202,12 @@ export const command: CommandFn<QueryResult> = async conf => {
     )
     scopeNodes = resultNodes
     if (scopeNodes.length === 0) {
-      stdout(
-        'No packages found matching scope query:',
-        scopeQueryString,
-      )
+      if (conf.values.view === 'human') {
+        stdout(
+          'No packages found matching scope query:',
+          scopeQueryString,
+        )
+      }
       return {
         importers: new Set(),
         edges: [],
@@ -234,7 +236,9 @@ export const command: CommandFn<QueryResult> = async conf => {
       }
     }
     if (importers.size === 0) {
-      stdout('No matching workspaces found:', conf.values.workspace)
+      if (conf.values.view === 'human') {
+        stdout('No matching workspaces found:', conf.values.workspace)
+      }
       return {
         importers: new Set(),
         edges: [],
@@ -288,7 +292,9 @@ export const command: CommandFn<QueryResult> = async conf => {
     edges.length === 0 &&
     !conf.values['expect-results']
   ) {
-    stdout('No packages found matching query:', query)
+    if (conf.values.view === 'human') {
+      stdout('No packages found matching query:', query)
+    }
     return {
       importers: new Set(),
       edges: [],
