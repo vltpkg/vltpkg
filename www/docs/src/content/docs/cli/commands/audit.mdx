@@ -1,0 +1,171 @@
+---
+title: vlt audit
+sidebar:
+  label: audit
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt audit
+$ vlt audit <query> --view=[human | json]
+"
+  title="Terminal"
+  lang="bash"
+/>
+
+Run a security audit of the installed dependency graph.
+
+Uses the [Dependency Selector Syntax](/cli/selectors) (the same engine
+that powers [`vlt query`](/cli/commands/query)) together with the
+[Socket](https://socket.dev/) security database to surface packages
+that may need attention: known malware, published vulnerabilities
+(CVEs), typosquats, license problems, unmaintained or deprecated
+packages, and more.
+
+By default it scans every package that has security metadata and
+reports any finding with a severity of **moderate or higher**. Provide
+a DSS query as a positional argument to narrow the scope of the audit.
+
+## Output
+
+The human-readable view renders a color-coded table sorted by
+severity:
+
+<Code
+  code={`Security Audit
+
+SEVERITY  PACKAGE           TYPE           ISSUE
+critical  evil-pkg@1.0.0    malware        known malware
+high      risky-lib@2.3.1   vulnerability  high severity CVE (CVE-2024-1234)
+medium    old-util@0.9.0    maintenance    deprecated
+medium    gpl-lib@3.0.0     license        copyleft license
+
+Summary: 1 critical, 1 high, 2 moderate across 4 packages (128 scanned).
+Run with --all to include low-severity capability findings.`}
+  title="Terminal"
+  lang="ansi"
+/>
+
+## Examples
+
+Audit all installed dependencies
+
+<Code code="$ vlt audit" title="Terminal" lang="bash" />
+
+Only audit direct dependencies of your workspaces
+
+<Code
+  code="$ vlt audit ':workspace > *'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Audit only production dependencies
+
+<Code code="$ vlt audit ':prod'" title="Terminal" lang="bash" />
+
+Include low-severity findings (behavioral capabilities, minor hygiene
+issues)
+
+<Code code="$ vlt audit --all" title="Terminal" lang="bash" />
+
+Emit the audit report as JSON for tooling or CI
+
+<Code code="$ vlt audit --view=json" title="Terminal" lang="bash" />
+
+## What Gets Flagged
+
+The audit maps each package's security insights into severity-ranked
+findings. The categories below are ordered from most to least severe.
+
+### Critical & High
+
+- **Malware** — known malware, AI-detected malware
+- **Vulnerabilities** — critical/high severity CVEs (with CVE IDs)
+- **Typosquats** — likely typosquat (`:squat(critical)`)
+- **Integrity** — manifest confusion (`:confused`)
+
+### Medium (Moderate)
+
+- **Malware** — AI-flagged security issues
+- **Vulnerabilities** — potential vulnerabilities
+- **Code** — obfuscated code
+- **Trust** — suspicious activity, flagged as undesirable
+- **License** — copyleft, non-permissive, unlicensed, no license found
+- **Maintenance** — deprecated, abandoned, unmaintained (5+ years)
+
+### Low (shown with `--all`)
+
+- **Code** — high-entropy strings, minified without source
+- **License** — misc issues, ambiguous, unidentified
+- **Maintenance** — unpopular, unstable ownership, new/unknown author,
+  trivial package
+- **Capabilities** — uses eval, shell access, network access,
+  filesystem access, reads env vars, dynamic require, debug access,
+  native code, telemetry, install scripts, bundled shrinkwrap
+
+## Options
+
+### view
+
+Output format. Defaults to human-readable, or json if there is no tty.
+
+```
+--view=[human | json]
+```
+
+The JSON output includes a structured `reports` array with per-package
+findings, a `summary` object with severity counts, and metadata like
+`packagesScanned` and `packagesAffected`.
+
+### all
+
+Include low-severity findings. Without this flag, behavioral
+capability alerts and minor hygiene issues are omitted to keep the
+output focused on actionable security concerns.
+
+```
+--all
+```
+
+## CI / CD Integration
+
+Use `vlt audit` in pipelines to surface security issues. Pair it with
+`--view=json` and your preferred JSON tool, or use
+[`vlt query`](/cli/commands/query) with `--expect-results=0` to fail a
+build when specific selectors match:
+
+<Code
+  code={`# Human-readable audit summary in CI logs
+$ vlt audit
+
+# Machine-readable for post-processing
+
+$ vlt audit --view=json | jq '.summary'
+
+# Fail the build if any malware is found (via query)
+
+$ vlt query ':malware' --expect-results=0
+
+# Fail on copyleft licenses
+
+$ vlt query ':license(copyleft)' --expect-results=0`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Relationship to `vlt query`
+
+`vlt audit` is a convenience command built on top of `vlt query`. It
+runs a query (`:scanned` by default), then transforms the structured
+[security insights](/cli/selectors/security-insights) attached to each
+matching node into a categorized, severity-ranked report. If you need
+more control — custom selectors, graph views, `--expect-results` gates,
+or image output — use `vlt query` directly.
+
+For a full reference of security-related selectors, see the
+[Security Insights](/cli/selectors/security-insights) selector docs and
+the [Security & Malware Detection](/cli/security) guide.

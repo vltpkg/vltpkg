@@ -198,6 +198,31 @@ $ vlt query ':license(copyleft)'`} title="Terminal" lang="bash" />
 
 ## Comprehensive Security Audit
 
+The fastest way to get a complete picture is with
+[`vlt audit`](/cli/commands/audit), which scans every dependency and
+renders a severity-ranked table:
+
+<Code
+  code={`# Full audit — moderate+ findings by default
+$ vlt audit
+
+# Include low-severity capability findings
+
+$ vlt audit --all
+
+# Only audit direct workspace dependencies
+
+$ vlt audit ':workspace > *'
+
+# JSON output for CI tooling
+
+$ vlt audit --view=json`}
+  title="Terminal"
+  lang="bash"
+/>
+
+You can also compose multi-criteria queries manually with `vlt query`:
+
 <Code
   code={
     "# Multi-criteria security check - combine multiple selectors\n$ vlt query ':malware, :eval, :shell, :obfuscated'\n\n# Production dependencies security audit\n$ vlt query ':prod (:malware, :cve(*), :deprecated, :abandoned)'\n\n# Workspace security overview\n$ vlt query ':workspace (:malware, :score(\"<0.5\"), :unmaintained)'"
@@ -222,10 +247,12 @@ $ vlt query ':license(copyleft)'`} title="Terminal" lang="bash" />
 
 ### Regular Security Audits
 
-1. **Daily Quick Check**: `vlt query ':malware'`
+1. **Daily Quick Check**: `vlt audit` or `vlt query ':malware'`
 2. **Weekly Comprehensive Scan**:
+   `vlt audit --all` or
    `vlt query ':host(local) :is(:malware, :not(:scanned))'`
 3. **Before Releasing Projects**:
+   `vlt audit ':workspace > :prod'` or
    `vlt query ':root :is(:malware, :score("<0.6"))'`
 
 ### Automated Security Monitoring
