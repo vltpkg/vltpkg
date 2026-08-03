@@ -28,9 +28,9 @@ jobs:
         with:
           filters: |
             src:
+              - '**'
               - '!www/docs/**'
-              - '!*.md'
-
+              - '!**/*.md'
   pre-check:
     name: Pre-Check
     runs-on: ubuntu-latest

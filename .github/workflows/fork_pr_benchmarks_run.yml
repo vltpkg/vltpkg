@@ -5,7 +5,7 @@ on:
     types: [opened, reopened, edited, synchronize]
     paths-ignore:
       - 'www/docs/**'
-      - '*.md'
+      - '**/*.md'
 
 jobs:
   benchmark_fork_pr_branch:
