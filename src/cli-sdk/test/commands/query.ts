@@ -827,4 +827,275 @@ t.test('query', async t => {
       'should handle complex query string',
     )
   })
+
+  await t.test('empty result messages', async t => {
+    const logged: unknown[][] = []
+    const stdout = (...a: unknown[]) => logged.push(a)
+    const stderr = (..._a: unknown[]) => {}
+
+    const mockQueryWithStdout = async (t: Test) =>
+      t.mockImport<typeof import('../../src/commands/query.ts')>(
+        '../../src/commands/query.ts',
+        {
+          '@vltpkg/graph': t.createMock(Graph, {
+            actual: {
+              load: () => graph,
+            },
+            install: () => {},
+            uninstall: () => {},
+            reify: {},
+            ideal: {},
+            asDependency: () => {},
+          }),
+          '@vltpkg/security-archive': {
+            SecurityArchive: {
+              async start() {
+                return {
+                  ok: false,
+                  get: () => undefined,
+                }
+              },
+            },
+          },
+          '../../src/output.ts': { stdout, stderr },
+        },
+      )
+
+    await t.test('scope query matches nothing', async t => {
+      logged.length = 0
+      const Command = await mockQueryWithStdout(t)
+
+      const values = {
+        scope: '[name="nonexistent"]',
+        view: 'human',
+      }
+      await Command.command({
+        positionals: [],
+        values,
+        options,
+        get: (key: string) => (values as any)[key],
+      } as unknown as LoadedConfig)
+
+      t.equal(logged.length, 1, 'should log one message')
+      t.match(
+        logged[0],
+        [/No packages found matching scope query/],
+        'should show scope query message',
+      )
+    })
+
+    await t.test(
+      'scope query matches nothing (non-human view)',
+      async t => {
+        logged.length = 0
+        const Command = await mockQueryWithStdout(t)
+
+        const values = {
+          scope: '[name="nonexistent"]',
+          view: 'json',
+        }
+        await Command.command({
+          positionals: [],
+          values,
+          options,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(
+          logged.length,
+          0,
+          'should not log message for json view',
+        )
+      },
+    )
+
+    const setupWorkspace = async (t: Test) => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(mainManifest),
+        'vlt.json': JSON.stringify({
+          workspaces: { packages: ['./packages/*'] },
+        }),
+        packages: {
+          a: {
+            'package.json': JSON.stringify({
+              name: 'a',
+              version: '1.0.0',
+            }),
+          },
+        },
+      })
+      t.chdir(dir)
+      unload()
+
+      const monorepo = Monorepo.load(dir)
+      const graph = new Graph.Graph({
+        ...specOptions,
+        projectRoot: dir,
+        mainManifest,
+        monorepo,
+      })
+
+      const Command = await t.mockImport<
+        typeof import('../../src/commands/query.ts')
+      >('../../src/commands/query.ts', {
+        '@vltpkg/graph': t.createMock(Graph, {
+          actual: {
+            load: () => graph,
+          },
+          install: () => {},
+          uninstall: () => {},
+          reify: {},
+          ideal: {},
+          asDependency: () => {},
+        }),
+        '@vltpkg/security-archive': {
+          SecurityArchive: {
+            async start() {
+              return {
+                ok: false,
+                get: () => undefined,
+              }
+            },
+          },
+        },
+        '../../src/output.ts': { stdout, stderr },
+      })
+
+      return {
+        Command,
+        options: {
+          ...sharedOptions,
+          projectRoot: dir,
+          monorepo,
+        },
+      }
+    }
+
+    await t.test('workspace filter matches nothing', async t => {
+      logged.length = 0
+      const { Command: WorkspaceCmd, options: wsOptions } =
+        await setupWorkspace(t)
+      const values = {
+        workspace: ['nonexistent'],
+        view: 'human',
+      }
+      await WorkspaceCmd.command({
+        positionals: [],
+        values,
+        options: wsOptions,
+        get: (key: string) => (values as any)[key],
+      } as unknown as LoadedConfig)
+
+      t.equal(logged.length, 1, 'should log one message')
+      t.match(
+        logged[0],
+        [/No matching workspaces found/],
+        'should show workspace filter message',
+      )
+    })
+
+    await t.test(
+      'workspace filter matches nothing (non-human view)',
+      async t => {
+        logged.length = 0
+
+        const { Command: WorkspaceCmd, options: wsOptions } =
+          await setupWorkspace(t)
+        const values = {
+          workspace: ['nonexistent'],
+          view: 'count',
+        }
+        await WorkspaceCmd.command({
+          positionals: [],
+          values,
+          options: wsOptions,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(
+          logged.length,
+          0,
+          'should not log message for count view',
+        )
+      },
+    )
+
+    await t.test(
+      'main query matches nothing (with graph)',
+      async t => {
+        logged.length = 0
+        const Command = await mockQueryWithStdout(t)
+
+        const values = {
+          view: 'human',
+        }
+        await Command.command({
+          positionals: ['[name="nonexistent"]'],
+          values,
+          options,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(logged.length, 1, 'should log one message')
+        t.match(
+          logged[0],
+          [/No packages found matching query/],
+          'should show main query message',
+        )
+      },
+    )
+
+    await t.test(
+      'main query matches nothing (non-human view)',
+      async t => {
+        logged.length = 0
+        const Command = await mockQueryWithStdout(t)
+
+        const values = {
+          view: 'json',
+        }
+        await Command.command({
+          positionals: ['[name="nonexistent"]'],
+          values,
+          options,
+          get: (key: string) => (values as any)[key],
+        } as unknown as LoadedConfig)
+
+        t.equal(
+          logged.length,
+          0,
+          'should not log message for json view',
+        )
+      },
+    )
+
+    await t.test(
+      'expect-results overrides empty result message',
+      async t => {
+        logged.length = 0
+        const Command = await mockQueryWithStdout(t)
+
+        const values = {
+          'expect-results': '1',
+          view: 'human',
+        }
+        await t.rejects(
+          Command.command({
+            positionals: ['[name="nonexistent"]'],
+            values,
+            options,
+            get: (key: string) => (values as any)[key],
+          } as unknown as LoadedConfig),
+          /Unexpected number of items/,
+          'should throw validation error instead of empty message',
+        )
+
+        t.equal(logged.length, 0, 'should not log empty message')
+      },
+    )
+  })
 })
