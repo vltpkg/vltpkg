@@ -21,6 +21,12 @@ import {
 // Re-export all named exports from node-gyp.ts
 export * from './node-gyp.ts'
 
+/**
+ * The user agent string set as `npm_config_user_agent` in lifecycle script
+ * environments. Follows the conventional format used by package managers.
+ */
+export const npmConfigUserAgent = `vlt/${process.version.slice(1)} node/${process.version} ${process.platform} ${process.arch}`
+
 /** map of which node_modules/.bin folders exist */
 const dotBins = new Map<string, boolean>()
 
@@ -298,6 +304,7 @@ const runImpl = async <
       args: preOrPost ? [] : (execArgs.args ?? []),
       env: {
         ...execArgs.env,
+        npm_config_user_agent: npmConfigUserAgent,
         npm_package_json: pjPath,
         npm_lifecycle_event: `${preOrPost ?? ''}${arg0}`,
         npm_lifecycle_script: command,

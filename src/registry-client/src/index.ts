@@ -6,6 +6,7 @@ import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
+import { randomUUID } from 'node:crypto'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
@@ -217,6 +218,7 @@ export class RegistryClient {
   cache: Cache
   identity: string
   staleWhileRevalidateFactor: number
+  #session = randomUUID()
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -468,12 +470,16 @@ export class RegistryClient {
     options.origin = u.origin
     options.headers = addHeader(
       addHeader(
-        options.headers,
-        'accept-encoding',
-        'gzip;q=1.0, identity;q=0.5',
+        addHeader(
+          options.headers,
+          'accept-encoding',
+          'gzip;q=1.0, identity;q=0.5',
+        ),
+        'user-agent',
+        userAgent,
       ),
-      'user-agent',
-      userAgent,
+      'npm-session',
+      this.#session,
     )
     if (otp) {
       options.headers = addHeader(options.headers, 'npm-otp', otp)
