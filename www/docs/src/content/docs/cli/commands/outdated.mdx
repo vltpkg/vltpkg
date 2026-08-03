@@ -1,0 +1,64 @@
+---
+title: vlt outdated
+sidebar:
+  label: outdated
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt outdated
+$ vlt outdated [package-names...]
+$ vlt outdated [<query>] --view=[human | json]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Display a table of installed dependencies that have newer versions
+available in the registry.
+
+Under the hood this uses the vlt Dependency Selector Syntax (the same
+engine that powers [`vlt query`](/cli/commands/query)) with the
+[`:outdated`](/cli/selectors/pseudo-classes/outdated) pseudo-selector. A
+registry request is made for each candidate package to determine the
+"wanted" (the highest version matching the declared range) and "latest"
+(the `latest` dist-tag) versions.
+
+The report highlights how far behind each dependency is: package names
+turn red when a new major version is available, and the changed portion
+of the target version is colored by the kind of update — red for a major
+bump, cyan for a minor bump, and green for a patch.
+
+## Examples
+
+Show all outdated dependencies
+
+<Code code="$ vlt outdated" title="Terminal" lang="bash" />
+
+Only check the `foo` and `bar` packages
+
+<Code code="$ vlt outdated foo bar" title="Terminal" lang="bash" />
+
+Only check direct dependencies of the project root
+
+<Code
+  code={`$ vlt outdated ':root > *'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Output the results as JSON
+
+<Code code="$ vlt outdated --view=json" title="Terminal" lang="bash" />
+
+## Options
+
+### view
+
+Output format. Defaults to human-readable or json if no tty.
+
+```
+--view=[human | json]
+```

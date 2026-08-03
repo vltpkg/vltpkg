@@ -1,0 +1,58 @@
+---
+title: vlt fund
+sidebar:
+  label: fund
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt fund
+$ vlt fund [package-names...]
+$ vlt fund <query>"
+  title="Terminal"
+  lang="bash"
+/>
+
+Display a list of installed dependencies that declare funding
+information, along with the URLs where they can be funded.
+
+Under the hood this uses the vlt Dependency Selector Syntax (the same
+engine that powers `vlt query`) to collect installed dependencies, then
+reports the ones whose `package.json` includes a `funding` field.
+Defaults to checking every dependency of the project and its
+workspaces.
+
+## Examples
+
+List all dependencies looking for funding
+
+<Code code="$ vlt fund" title="Terminal" lang="bash" />
+
+Only check the 'foo' and 'bar' packages
+
+<Code code="$ vlt fund foo bar" title="Terminal" lang="bash" />
+
+Only check direct dependencies of the project root
+
+<Code
+  code={`$ vlt fund ':root > *'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Output the results as JSON
+
+<Code code="$ vlt fund --view=json" title="Terminal" lang="bash" />
+
+## Options
+
+### view
+
+Output format. Defaults to human-readable or json if no tty.
+
+```
+--view=[human | json]
+```

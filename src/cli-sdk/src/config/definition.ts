@@ -20,6 +20,7 @@ export const defaultEditor = () =>
 
 const canonicalCommands = {
   access: 'access',
+  audit: 'audit',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',
@@ -31,6 +32,7 @@ const canonicalCommands = {
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
+  fund: 'fund',
   help: 'help',
   init: 'init',
   install: 'install',
@@ -38,6 +40,7 @@ const canonicalCommands = {
   logout: 'logout',
   list: 'list',
   ls: 'ls',
+  outdated: 'outdated',
   pack: 'pack',
   ping: 'ping',
   pkg: 'pkg',
@@ -77,6 +80,7 @@ const aliases = {
   '?': 'help',
   info: 'view',
   ls: 'list',
+  out: 'outdated',
   show: 'view',
   xc: 'exec-cache',
 } as const
@@ -633,6 +637,43 @@ export const definition = j
         'inspect',
         'silent',
       ] as const,
+    },
+  })
+
+  .opt({
+    loglevel: {
+      hint: 'level',
+      default: 'info',
+      description: `Sets the verbosity of diagnostic logging written to
+                    stderr (registry requests, warnings, etc). This is
+                    independent of \`--view\`, which controls a command's
+                    result output on stdout.
+
+                    - silent: No diagnostic logging.
+                    - error: Only errors.
+                    - warn: Errors and warnings.
+                    - info: Default. High-level progress.
+                    - verbose: Adds per-request logging (each registry URL
+                      with its cache/stale/fetch outcome and status code).
+                    - debug: Everything, including low-level detail.
+
+                    \`--verbose\` is shorthand for \`--loglevel=verbose\`.`,
+      validOptions: [
+        'silent',
+        'error',
+        'warn',
+        'info',
+        'verbose',
+        'debug',
+      ] as const,
+    },
+  })
+
+  .flag({
+    verbose: {
+      description: `Shorthand for \`--loglevel=verbose\`. Streams each
+                    registry request to stderr with its cache/fetch outcome
+                    and status code, useful for debugging request behavior.`,
     },
   })
 

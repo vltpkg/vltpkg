@@ -23,6 +23,7 @@ import {
   trackCommand,
   trackError,
 } from './telemetry.ts'
+import { startRequestLog } from './verbose-log.ts'
 
 /* c8 ignore start - CI env detection is a best-effort heuristic */
 const isCI = (): boolean =>
@@ -174,6 +175,14 @@ export const outputCommand = async <T>(
   if (stderrColor) styleTextStderr = styleText
   /* c8 ignore stop */
 
+  // Stream per-request diagnostics to stderr when `--loglevel` is verbose
+  // or higher (e.g. via `--verbose`). No-op otherwise.
+  const stopRequestLog = startRequestLog(
+    conf.values.loglevel,
+    line => stderr(line),
+    styleTextStderr,
+  )
+
   const { onDone, onError } = startView(
     conf,
     // assume views will always output to stdout so use color support from there
@@ -195,6 +204,7 @@ export const outputCommand = async <T>(
     }
 
     const output = await onDone(await command(conf))
+    stopRequestLog()
 
     const duration_ms = Date.now() - start
     trackCommand(
@@ -232,6 +242,7 @@ export const outputCommand = async <T>(
     // can still exit promptly.
     await flushTelemetry()
   } catch (err) {
+    stopRequestLog()
     onError?.(err)
     process.exitCode ||= 1
 

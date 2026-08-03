@@ -10,6 +10,7 @@ Object {
   "?": "help",
   "access": "access",
   "add": "install",
+  "audit": "audit",
   "b": "build",
   "bugs": "bugs",
   "build": "build",
@@ -23,6 +24,7 @@ Object {
   "exec": "exec",
   "exec-cache": "exec-cache",
   "exec-local": "exec-local",
+  "fund": "fund",
   "h": "help",
   "help": "help",
   "i": "install",
@@ -33,6 +35,8 @@ Object {
   "login": "login",
   "logout": "logout",
   "ls": "list",
+  "out": "outdated",
+  "outdated": "outdated",
   "p": "pkg",
   "pack": "pack",
   "ping": "ping",
@@ -196,6 +200,7 @@ Object {
     "type": "string",
     "validOptions": Array [
       "access",
+      "audit",
       "bugs",
       "build",
       "cache",
@@ -207,6 +212,7 @@ Object {
       "docs",
       "exec",
       "exec-local",
+      "fund",
       "help",
       "init",
       "install",
@@ -214,6 +220,7 @@ Object {
       "logout",
       "list",
       "ls",
+      "outdated",
       "pack",
       "ping",
       "pkg",
@@ -346,6 +353,30 @@ Object {
   "lockfile-only": Object {
     "description": "Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.",
     "type": "boolean",
+  },
+  "loglevel": Object {
+    "description": String(
+      Sets the verbosity of diagnostic logging written to stderr (registry requests, warnings, etc). This is independent of \`--view\`, which controls a command's result output on stdout.
+      
+      - silent: No diagnostic logging.
+      - error: Only errors.
+      - warn: Errors and warnings.
+      - info: Default. High-level progress.
+      - verbose: Adds per-request logging (each registry URL with its cache/stale/fetch outcome and status code).
+      - debug: Everything, including low-level detail.
+      
+      \`--verbose\` is shorthand for \`--loglevel=verbose\`.
+    ),
+    "hint": "level",
+    "type": "string",
+    "validOptions": Array [
+      "silent",
+      "error",
+      "warn",
+      "info",
+      "verbose",
+      "debug",
+    ],
   },
   "no-bail": Object {
     "description": "When running scripts across multiple workspaces, continue on failure, running the script for all workspaces.",
@@ -514,6 +545,10 @@ Object {
     ),
     "type": "boolean",
   },
+  "verbose": Object {
+    "description": "Shorthand for \`--loglevel=verbose\`. Streams each registry request to stderr with its cache/fetch outcome and status code, useful for debugging request behavior.",
+    "type": "boolean",
+  },
   "version": Object {
     "description": "Print the version",
     "short": "v",
@@ -609,6 +644,7 @@ Array [
   "--jsr-registries=<name=url>",
   "--libc=<libc>",
   "--lockfile-only",
+  "--loglevel=<level>",
   "--no-bail",
   "--no-color",
   "--node-version=<version>",
@@ -632,6 +668,7 @@ Array [
   "--tag=<tag>",
   "--target=<query>",
   "--telemetry",
+  "--verbose",
   "--version",
   "--view=<output>",
   "--workspace=<ws>",
@@ -674,6 +711,7 @@ Array [
   "jsr-registries",
   "libc",
   "lockfile-only",
+  "loglevel",
   "no-bail",
   "no-color",
   "node-version",
@@ -697,6 +735,7 @@ Array [
   "tag",
   "target",
   "telemetry",
+  "verbose",
   "version",
   "view",
   "workspace",
