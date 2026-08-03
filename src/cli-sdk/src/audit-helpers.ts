@@ -106,6 +106,21 @@ const maxSeverity = (
 ): SeverityLevel => (severityRank[a] <= severityRank[b] ? a : b)
 
 /**
+ * True if any edge in `edgesIn` comes from a node whose id is in
+ * `ids`. Iterates directly rather than spreading into an array, and
+ * short-circuits on the first match.
+ */
+const hasEdgeFrom = (
+  edgesIn: Iterable<{ from: { id: string } }>,
+  ids: Set<string>,
+): boolean => {
+  for (const edge of edgesIn) {
+    if (ids.has(edge.from.id)) return true
+  }
+  return false
+}
+
+/**
  * Typeguard for objects with an id property.
  */
 export const isNodeWithId = (
@@ -282,7 +297,7 @@ export const aggregateBySeverity = (
     const direct =
       importerIds.has(node.id) ||
       (isNodeWithEdgesIn(node) &&
-        [...node.edgesIn].some(edge => importerIds.has(edge.from.id)))
+        hasEdgeFrom(node.edgesIn, importerIds))
 
     const pkg: AuditPackage = {
       name: node.name ?? 'unknown',
