@@ -6,6 +6,64 @@ import {
   filterAuditResult,
   formatAuditSummary,
 } from '../src/audit-helpers.ts'
+import type {
+  AuditPackage,
+  AuditResult,
+} from '../src/audit-helpers.ts'
+
+/** LeveledInsights fixture for malware/severity insights. */
+const leveled = (
+  overrides: Partial<{
+    critical: boolean
+    high: boolean
+    medium: boolean
+    low: boolean
+  }> = {},
+) => ({
+  critical: false,
+  high: false,
+  medium: false,
+  low: false,
+  ...overrides,
+})
+
+/** SquatInsights fixture. */
+const squatInsights = (
+  overrides: Partial<{ critical: boolean; medium: boolean }> = {},
+) => ({
+  critical: false,
+  medium: false,
+  ...overrides,
+})
+
+/** AuditPackage fixture, for tests that don't care about identity. */
+const makePkg = (
+  overrides: Partial<AuditPackage> = {},
+): AuditPackage => ({
+  name: 'pkg',
+  version: '1.0.0',
+  alerts: [],
+  direct: false,
+  ...overrides,
+})
+
+const emptySummary = () => ({
+  critical: [] as AuditPackage[],
+  high: [] as AuditPackage[],
+  moderate: [] as AuditPackage[],
+  low: [] as AuditPackage[],
+})
+
+/** AuditResult fixture; pass a full `summary` to populate buckets. */
+const makeResult = (
+  overrides: Partial<AuditResult> = {},
+): AuditResult => ({
+  summary: emptySummary(),
+  total: 0,
+  directCount: 0,
+  indirectCount: 0,
+  ...overrides,
+})
 
 t.test('isSecuritySelector', async t => {
   t.test('detects security selectors', async t => {
@@ -80,40 +138,19 @@ t.test('aggregateBySeverity', async t => {
         id: 'pkg-critical-id',
         name: 'pkg-critical',
         version: '1.0.0',
-        insights: {
-          malware: {
-            critical: true,
-            high: false,
-            medium: false,
-            low: false,
-          },
-        },
+        insights: { malware: leveled({ critical: true }) },
       },
       {
         id: 'pkg-high-id',
         name: 'pkg-high',
         version: '2.0.0',
-        insights: {
-          malware: {
-            critical: false,
-            high: true,
-            medium: false,
-            low: false,
-          },
-        },
+        insights: { malware: leveled({ high: true }) },
       },
       {
         id: 'pkg-low-id',
         name: 'pkg-low',
         version: '3.0.0',
-        insights: {
-          severity: {
-            critical: false,
-            high: false,
-            medium: false,
-            low: true,
-          },
-        },
+        insights: { severity: leveled({ low: true }) },
       },
     ]
     const result = aggregateBySeverity(nodes, importers)
@@ -131,14 +168,7 @@ t.test('aggregateBySeverity', async t => {
           id: 'pkg-medium-id',
           name: 'pkg-medium',
           version: '1.0.0',
-          insights: {
-            severity: {
-              critical: false,
-              high: false,
-              medium: true,
-              low: false,
-            },
-          },
+          insights: { severity: leveled({ medium: true }) },
         },
       ]
       const result = aggregateBySeverity(nodes, importers)
@@ -155,27 +185,13 @@ t.test('aggregateBySeverity', async t => {
       id: 'importer-1',
       name: 'direct-pkg',
       version: '1.0.0',
-      insights: {
-        malware: {
-          critical: false,
-          high: true,
-          medium: false,
-          low: false,
-        },
-      },
+      insights: { malware: leveled({ high: true }) },
     }
     const transitiveNode = {
       id: 'other-id',
       name: 'transitive-pkg',
       version: '2.0.0',
-      insights: {
-        malware: {
-          critical: false,
-          high: true,
-          medium: false,
-          low: false,
-        },
-      },
+      insights: { malware: leveled({ high: true }) },
     }
     const result = aggregateBySeverity(
       [directNode, transitiveNode],
@@ -211,7 +227,7 @@ t.test('aggregateBySeverity', async t => {
         id: 'squat-pkg-id',
         name: 'squat-pkg',
         version: '1.0.0',
-        insights: { squat: { critical: true, medium: false } },
+        insights: { squat: squatInsights({ critical: true }) },
       },
     ]
     const result = aggregateBySeverity(nodes, importers)
@@ -226,7 +242,7 @@ t.test('aggregateBySeverity', async t => {
         id: 'squat-medium-id',
         name: 'squat-medium-pkg',
         version: '1.0.0',
-        insights: { squat: { critical: false, medium: true } },
+        insights: { squat: squatInsights({ medium: true }) },
       },
     ]
     const result = aggregateBySeverity(nodes, importers)
@@ -243,14 +259,7 @@ t.test('aggregateBySeverity', async t => {
           id: 'clean-id',
           name: 'clean-pkg',
           version: '1.0.0',
-          insights: {
-            malware: {
-              critical: false,
-              high: false,
-              medium: false,
-              low: false,
-            },
-          },
+          insights: { malware: leveled() },
         },
       ]
       const result = aggregateBySeverity(nodes, importers)
@@ -266,7 +275,7 @@ t.test('aggregateBySeverity', async t => {
           id: 'clean-squat-id',
           name: 'clean-squat-pkg',
           version: '1.0.0',
-          insights: { squat: { critical: false, medium: false } },
+          insights: { squat: squatInsights() },
         },
       ]
       const result = aggregateBySeverity(nodes, importers)
@@ -283,19 +292,9 @@ t.test('aggregateBySeverity', async t => {
           name: 'multi-pkg',
           version: '1.0.0',
           insights: {
-            malware: {
-              critical: false,
-              high: true,
-              medium: false,
-              low: false,
-            },
-            severity: {
-              critical: true,
-              high: false,
-              medium: false,
-              low: false,
-            },
-            squat: { critical: false, medium: true },
+            malware: leveled({ high: true }),
+            severity: leveled({ critical: true }),
+            squat: squatInsights({ medium: true }),
           },
         },
       ]
@@ -316,14 +315,7 @@ t.test('aggregateBySeverity', async t => {
     const nodes = [
       {
         id: 'no-name-id',
-        insights: {
-          malware: {
-            critical: true,
-            high: false,
-            medium: false,
-            low: false,
-          },
-        },
+        insights: { malware: leveled({ critical: true }) },
       },
     ]
     const result = aggregateBySeverity(nodes, importers)
@@ -335,25 +327,17 @@ t.test('aggregateBySeverity', async t => {
 
 t.test('filterAuditResult', async t => {
   t.test('filters out severities below minimum', async t => {
-    const result = {
+    const result = makeResult({
       summary: {
-        critical: [
-          { name: 'a', version: '1.0.0', alerts: [], direct: true },
-        ],
-        high: [
-          { name: 'b', version: '1.0.0', alerts: [], direct: false },
-        ],
-        moderate: [
-          { name: 'c', version: '1.0.0', alerts: [], direct: true },
-        ],
-        low: [
-          { name: 'd', version: '1.0.0', alerts: [], direct: false },
-        ],
+        critical: [makePkg({ name: 'a', direct: true })],
+        high: [makePkg({ name: 'b' })],
+        moderate: [makePkg({ name: 'c', direct: true })],
+        low: [makePkg({ name: 'd' })],
       },
       total: 4,
       directCount: 2,
       indirectCount: 2,
-    }
+    })
 
     const high = filterAuditResult(result, 'high')
     t.equal(high.total, 2)
@@ -387,13 +371,7 @@ t.test('filterAuditResult', async t => {
   })
 
   t.test('preserves empty result structure', async t => {
-    const empty = {
-      summary: { critical: [], high: [], moderate: [], low: [] },
-      total: 0,
-      directCount: 0,
-      indirectCount: 0,
-    }
-    const filtered = filterAuditResult(empty, 'high')
+    const filtered = filterAuditResult(makeResult(), 'high')
     t.equal(filtered.total, 0)
     t.equal(filtered.directCount, 0)
     t.equal(filtered.indirectCount, 0)
@@ -402,34 +380,28 @@ t.test('filterAuditResult', async t => {
 
 t.test('formatAuditSummary', async t => {
   t.test('returns zero issues message', async t => {
-    const result = {
-      summary: { critical: [], high: [], moderate: [], low: [] },
-      total: 0,
-      directCount: 0,
-      indirectCount: 0,
-    }
-    t.equal(formatAuditSummary(result), 'found 0 security issues\n')
+    t.equal(
+      formatAuditSummary(makeResult()),
+      'found 0 security issues\n',
+    )
   })
 
   t.test('formats singular issue and dependency', async t => {
-    const result = {
+    const result = makeResult({
       summary: {
-        critical: [],
+        ...emptySummary(),
         high: [
-          {
+          makePkg({
             name: 'pkg-a',
-            version: '1.0.0',
             alerts: ['malware: high'],
             direct: true,
-          },
+          }),
         ],
-        moderate: [],
-        low: [],
       },
       total: 1,
       directCount: 1,
       indirectCount: 0,
-    }
+    })
     const output = formatAuditSummary(result)
     t.match(output, /^found 1 security issue\n/)
     t.match(output, /high \(1\)/)
@@ -441,31 +413,28 @@ t.test('formatAuditSummary', async t => {
   t.test(
     'formats plural issues across multiple severities in order',
     async t => {
-      const result = {
+      const result = makeResult({
         summary: {
+          ...emptySummary(),
           critical: [
-            {
+            makePkg({
               name: 'pkg-c',
               version: '2.0.0',
               alerts: ['malware: critical'],
-              direct: false,
-            },
+            }),
           ],
           high: [
-            {
+            makePkg({
               name: 'pkg-h',
-              version: '1.0.0',
               alerts: ['severity: high'],
               direct: true,
-            },
+            }),
           ],
-          moderate: [],
-          low: [],
         },
         total: 2,
         directCount: 1,
         indirectCount: 1,
-      }
+      })
       const output = formatAuditSummary(result)
       t.match(output, /^found 2 security issues\n/)
       t.match(output, /critical \(1\)/)
@@ -479,20 +448,18 @@ t.test('formatAuditSummary', async t => {
   )
 
   t.test('pluralizes direct dependencies', async t => {
-    const result = {
+    const result = makeResult({
       summary: {
-        critical: [],
+        ...emptySummary(),
         high: [
-          { name: 'a', version: '1.0.0', alerts: [], direct: true },
-          { name: 'b', version: '1.0.0', alerts: [], direct: true },
+          makePkg({ name: 'a', direct: true }),
+          makePkg({ name: 'b', direct: true }),
         ],
-        moderate: [],
-        low: [],
       },
       total: 2,
       directCount: 2,
       indirectCount: 0,
-    }
+    })
     const output = formatAuditSummary(result)
     t.match(output, /2 direct dependencies, 0 transitive/)
   })
