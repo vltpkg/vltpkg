@@ -119,7 +119,13 @@ const server = createServer((req, res) => {
     case '/no-dist': {
       const json = JSON.stringify({
         name: 'no-dist',
-        version: '1.2.3',
+        'dist-tags': { latest: '1.2.3' },
+        versions: {
+          '1.2.3': {
+            name: 'no-dist',
+            version: '1.2.3',
+          },
+        },
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
@@ -127,8 +133,14 @@ const server = createServer((req, res) => {
     case '/no-tgz': {
       const json = JSON.stringify({
         name: 'no-tgz',
-        version: '1.2.3',
-        dist: {},
+        'dist-tags': { latest: '1.2.3' },
+        versions: {
+          '1.2.3': {
+            name: 'no-tgz',
+            version: '1.2.3',
+            dist: {},
+          },
+        },
       })
       res.setHeader('content-length', json.length)
       return res.end(json)
