@@ -103,6 +103,12 @@ const run = async () => {
     return process.exit(process.exitCode || 1)
   }
 
+  if (vlt.command === 'registry') {
+    const { dispatchRegistry } =
+      await import('./commands/registry.ts')
+    await dispatchRegistry(vlt)
+  }
+
   const command = await loadCommand(vlt.command)
   await outputCommand(command, vlt, { start, vltVersion: version })
 }

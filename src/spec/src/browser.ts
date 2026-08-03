@@ -17,7 +17,6 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 export const defaultRegistryName = 'npm'
 
 export const defaultRegistries = {
-  npm: 'https://registry.npmjs.org/',
   gh: 'https://npm.pkg.github.com/',
 }
 
@@ -63,11 +62,14 @@ export const getOptions = (
   catalog: {},
   catalogs: {},
   ...options,
+  // built-in aliases are user/service-overridable: user config wins
   'jsr-registries': {
-    ...(options?.['jsr-registries'] ?? {}),
     ...defaultJsrRegistries,
+    ...(options?.['jsr-registries'] ?? {}),
   },
   registry: options?.registry,
+  'default-registry-alias':
+    options?.['default-registry-alias'] ?? defaultRegistryName,
   'scoped-registries': options?.['scoped-registries'] ?? {},
   'git-hosts':
     options?.['git-hosts'] ?
@@ -77,8 +79,8 @@ export const getOptions = (
       }
     : defaultGitHosts,
   registries: {
-    ...(options?.registries ?? {}),
     ...defaultRegistries,
+    ...(options?.registries ?? {}),
   },
   'git-host-archives':
     options?.['git-host-archives'] ?
@@ -642,9 +644,14 @@ export class Spec implements SpecLike<Spec> {
       this.distTag = this.bareSpec
     }
     this.registrySpec = this.bareSpec
-    const { 'scoped-registries': scopeRegs, registry } = this.options
+    const {
+      'scoped-registries': scopeRegs,
+      registry,
+      registries,
+      'default-registry-alias': defaultAlias,
+    } = this.options
     const scopeReg = this.scope && scopeRegs[this.scope]
-    this.registry = scopeReg ?? registry
+    this.registry = scopeReg ?? registry ?? registries[defaultAlias]
     // no guessing the tarball for JSR registries
     for (const r of Object.values(this.options['jsr-registries'])) {
       if (this.registry === r) return

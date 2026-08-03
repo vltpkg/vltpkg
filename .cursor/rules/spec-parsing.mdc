@@ -43,8 +43,12 @@ const s = Spec.parse('react', '^18.0.0', specOptions)
 
 ```typescript
 type SpecOptions = {
-  registry?: string              // default: 'https://registry.npmjs.org/'
-  registries?: Record<string, string>  // named registries (npm, gh, custom)
+  registry?: string              // NO default — must be configured
+  registries?: Record<string, string>  // named registries (gh; npm is
+                                        // NOT built-in, must be configured)
+  'default-registry-alias'?: string     // default: 'npm' — the alias key
+                                        // in `registries` that bare specs
+                                        // resolve through
   'jsr-registries'?: Record<string, string>
   'scoped-registries'?: Record<string, string>
   'git-hosts'?: Record<string, string>  // template: $1/$2/$committish
@@ -54,14 +58,43 @@ type SpecOptions = {
 }
 ```
 
+## Bare-spec resolution & the `npm` alias
+
+There is **no built-in default registry URL**. A bare spec (`foo`,
+`foo@latest`) or a transitive dep with no explicit registry protocol
+resolves its registry via, in precedence order:
+
+1. `scoped-registries[scope]` (if the name is scoped)
+2. `registry` (the `--registry` scalar)
+3. `registries[<default-registry-alias>]` (default alias is `npm`)
+
+If none is configured, `spec.registry === undefined` and anything that
+needs to build a registry URL fails with a missing-registry error.
+
+The `npm` alias has **no baked-in URL** — real traffic goes through a
+per-account vlt mirror whose URL isn't known ahead of time. Configure it
+via `vlt setup` (writes `registries.npm` + `registries.main`),
+`vlt login --registry=<url>`, `vlt.json`, or `--registry`. In tests,
+pass `registries: { npm: 'https://registry.npmjs.org/' }` so `npm:`
+aliases and bare specs resolve.
+
+`getOptions` merges user config **over** built-in defaults, so every
+built-in alias (`gh`, `jsr`) is user/service-overridable.
+
 ## Defaults
 
 ```typescript
-defaultRegistry = 'https://registry.npmjs.org/'
-defaultRegistries = { npm: defaultRegistry, gh: 'https://npm.pkg.github.com/' }
+defaultRegistryName = 'npm'   // DepID canonicalization constant only;
+                              // NOT a URL and NOT pre-registered
+defaultRegistries = { gh: 'https://npm.pkg.github.com/' }  // no `npm`
 defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }
 defaultScopeRegistries = { '@jsr': 'https://npm.jsr.io/' }
 ```
+
+`defaultRegistryName` stays `'npm'` because a configured mirror URL maps
+back to the `npm` alias name via `convertToKnownShortRegistryName`, so
+the mirror URL never leaks into DepIDs (empty-registry DepIDs stay
+canonical).
 
 ## Architecture
 

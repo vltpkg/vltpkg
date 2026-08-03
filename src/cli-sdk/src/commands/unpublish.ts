@@ -3,7 +3,7 @@ import { RegistryClient } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { asError } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
-import { requireRegistry } from '../require-registry.ts'
+import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -76,7 +76,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   }
 
   const { otp, force } = conf.options
-  const registry = requireRegistry(conf)
+  const registry = await resolveRegistry(conf)
   const registryUrl = new URL(registry)
 
   const spec = Spec.parseArgs(specArg, conf.options)

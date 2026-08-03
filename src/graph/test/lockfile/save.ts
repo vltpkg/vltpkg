@@ -288,6 +288,40 @@ t.test('overrides default registries', async t => {
   t.matchSnapshot(JSON.stringify(lockfile, null, 2))
 })
 
+t.test('persists a non-default default-registry-alias', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+    },
+  }
+  const specOptions = {
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      internal: 'https://internal.example.com/',
+      // matches a built-in default, so it is stripped from the lockfile
+      gh: 'https://npm.pkg.github.com/',
+    },
+    'default-registry-alias': 'internal',
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest,
+  })
+  const lockfile = lockfileData({ ...specOptions, graph })
+  t.equal(
+    lockfile.options['default-registry-alias'],
+    'internal',
+    'non-default alias is persisted',
+  )
+  t.matchSnapshot(JSON.stringify(lockfile, null, 2))
+})
+
 t.test('workspaces', async t => {
   const mainManifest = {
     name: 'my-project',

@@ -16,9 +16,21 @@ v2+ (berry)**. Key differences are called out where they apply.
   code={`# Install vlt globally
 $ npm install -g vlt
 
+# Configure a registry -- vlt has no default
+
+$ vlt config set registry=https://registry.npmjs.org/
+
 # In your existing project, run:
 
 $ vlt install $ vlt build`} title="Terminal" lang="bash" />
+
+Unlike yarn, **vlt has no default registry** — commands that resolve
+or fetch packages fail with a config error until one is set. The
+snippet above points it at the public npm registry; if you have a
+vlt.io account, run
+[`vlt setup`](/cli/registries#getting-started-with-vlt-setup) instead
+to configure your account's registry aliases. See
+[Registries](/cli/registries).
 
 vlt reads your existing `package.json` files and resolves
 dependencies. The `yarn.lock` file is not migrated — vlt performs a

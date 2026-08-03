@@ -252,6 +252,12 @@ t.test(
 
     const graph = await build({
       ...specOptions,
+      // the `npm` alias is no longer built in; configure it so the
+      // `npm:foo` alias resolves
+      registries: {
+        ...specOptions.registries,
+        npm: 'https://registry.npmjs.org/',
+      },
       scurry: new PathScurry(projectRoot),
       monorepo: Monorepo.maybeLoad(projectRoot),
       packageJson: new PackageJson(),

@@ -9,6 +9,10 @@ import type { SpecLike } from '@vltpkg/spec/browser'
 
 export const specOptions = getOptions({
   registries: {
+    // the `npm` alias is no longer a built-in default; configure it so
+    // bare specs resolve to the npm registry (and register as `npm`
+    // ecosystem packages for the security API)
+    npm: 'https://registry.npmjs.org/',
     custom: 'http://example.com',
   },
 })

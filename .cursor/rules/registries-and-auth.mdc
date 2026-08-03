@@ -7,10 +7,49 @@ alwaysApply: false
 
 ## Registry Types
 
-1. **Default**: `--registry=<url>` (default: `https://registry.npmjs.org/`)
+1. **Default registry**: `--registry=<url>` — **no default value**; there
+   is no built-in registry URL (see bare-spec resolution below)
 2. **Named aliases**: `--registries=<name>=<url>` → use as `name:pkg@ver` in dependencies
 3. **Scope registries**: `--scoped-registries=@scope=<url>` → `@scope/*` auto-routes
-4. **Built-in aliases**: `npm:` (public npm), `jsr:` (jsr.io), `gh:` (GitHub packages)
+4. **Built-in aliases**: `jsr:` (jsr.io), `gh:` (GitHub packages). All are
+   user/service-overridable. `npm:` is **not** built-in — it has no baked
+   URL and must be configured (see below).
+
+## Bare specs & `--default-registry-alias`
+
+A bare spec (`vlt install foo`, `foo@latest`) or transitive dep with no
+explicit registry protocol resolves through, in order:
+`scoped-registries[scope]` > `--registry <url>` >
+`registries[<default-registry-alias>]`. `--default-registry-alias`
+defaults to `npm`.
+
+Because `npm` has no built-in URL, a **fresh/unconfigured** install
+(`vlt install`/`vlx`) does **not** "just work" — it errors with an
+actionable message pointing to https://www.vlt.io and `vlt setup`. This
+is the intended trade-off; a per-account vlt mirror URL isn't known ahead
+of time.
+
+## `vlt setup`
+
+Onboarding wizard (`src/cli-sdk/src/commands/setup.ts`). Authenticates
+against a vlt.io account (reusing `RegistryClient.login()` web auth) and
+writes the account's registry aliases to `vlt.json` via
+`conf.addConfigToFile`:
+
+- `registries.npm  = https://registry.vlt.io/<account>/npm/`
+- `registries.main = https://registry.vlt.io/<account>/main/`
+
+It then loops to add optional custom aliases (partner/team registries).
+Runs unattended with `vlt setup <account> --yes` (+ `--registries name=url`).
+Writes user config by default; `--config=project` targets the project.
+
+## Lockfile reproducibility
+
+Lockfiles persist the resolved `registries` map (incl. `npm`/`main`) and
+a non-default `default-registry-alias` in `options`, so a lockfile is
+self-contained. `vlt install --frozen-lockfile` / `vlt ci` error on
+config drift (`graph.optionsChanged`). Persisting these is additive —
+`LOCKFILE_VERSION` is unchanged.
 
 ## Registry Consistency
 
@@ -20,12 +59,19 @@ Child deps inherit parent's registry by default. If `foo` comes from registry X,
 
 ```json
 {
-  "registry": "https://registry.npmjs.org/",
-  "registries": { "internal": "https://npm.internal.co/" },
+  "registries": {
+    "npm": "https://registry.vlt.io/my-account/npm/",
+    "main": "https://registry.vlt.io/my-account/main/",
+    "internal": "https://npm.internal.co/"
+  },
+  "default-registry-alias": "npm",
   "scoped-registries": { "@myco": "https://npm.myco.com/" },
   "jsr-registries": { "jsr": "https://npm.jsr.io/" }
 }
 ```
+
+`registry` (scalar) may still be set to force a single registry, but the
+alias-based `registries` + `default-registry-alias` model is preferred.
 
 ## Authentication
 

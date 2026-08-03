@@ -30,7 +30,14 @@ import {
 import { basename, resolve } from 'node:path'
 import { extract } from 'tar'
 
-const realPackageInfo = new PackageInfoClient({})
+// the `npm` alias is no longer a built-in default, so it must be
+// configured explicitly for `npm:` aliased specs to collapse to their
+// resolved target (which is how the fixture maps are keyed).
+const specOptions = {
+  registries: { npm: 'https://registry.npmjs.org/' },
+}
+
+const realPackageInfo = new PackageInfoClient(specOptions)
 export const fixtureDir = resolve(import.meta.dirname, 'reify')
 
 const fixtureMapFile = resolve(fixtureDir, 'map.json')
@@ -62,14 +69,15 @@ export const fixtureManifest = (name: string) =>
     ),
   )
 
-const actualPackageInfo = new PackageInfoClient()
+const actualPackageInfo = new PackageInfoClient(specOptions)
 
 export const mockPackageInfo = {
   resolve: async (
     spec: string | Spec,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> => {
-    spec = typeof spec === 'string' ? Spec.parse(spec) : spec
+    spec =
+      typeof spec === 'string' ? Spec.parse(spec, specOptions) : spec
     if (spec.type === 'file') {
       return actualPackageInfo.resolve(spec, options)
     }
@@ -88,7 +96,7 @@ export const mockPackageInfo = {
     spec: string | Spec,
     options: PackageInfoClientRequestOptions = {},
   ) => {
-    spec = Spec.parse(String(spec)).final
+    spec = Spec.parse(String(spec), specOptions).final
     if (spec.type === 'file') {
       return actualPackageInfo.manifest(spec, options)
     }
@@ -108,7 +116,7 @@ export const mockPackageInfo = {
     target: string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> => {
-    spec = Spec.parse(String(spec)).final
+    spec = Spec.parse(String(spec), specOptions).final
     if (spec.type === 'file') {
       return actualPackageInfo.extract(spec, target, options)
     }

@@ -2,6 +2,12 @@ import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 import { calculateSaveValue } from '../../src/reify/calculate-save-value.ts'
 
+// the `npm` alias is no longer built in; configure it so `npm:` specs
+// resolve in these cases.
+const specOptions = {
+  registries: { npm: 'https://registry.npmjs.org/' },
+}
+
 t.test('non-registry type, just saved as-is', t => {
   const s = Spec.parse('x', 'github:a/b')
   t.equal(calculateSaveValue('git', s, 'a/b', '1.2.3'), 'github:a/b')
@@ -90,7 +96,7 @@ t.test('catalog spec preserved as-is', t => {
 t.test('registry cases', t => {
   t.plan(cases.length)
   for (const [bareSpec, existing, expect, comment] of cases) {
-    const spec = Spec.parse('@x/y', bareSpec)
+    const spec = Spec.parse('@x/y', bareSpec, specOptions)
     t.equal(
       calculateSaveValue('registry', spec, existing, '1.2.3'),
       expect,
@@ -160,7 +166,7 @@ t.test('save-exact registry cases', t => {
     expect,
     comment,
   ] of saveExactCases) {
-    const spec = Spec.parse('@x/y', bareSpec)
+    const spec = Spec.parse('@x/y', bareSpec, specOptions)
     t.equal(
       calculateSaveValue('registry', spec, existing, '1.2.3', true),
       expect,
@@ -255,7 +261,7 @@ t.test('save-prefix ~ registry cases', t => {
     expect,
     comment,
   ] of savePrefixTildeCases) {
-    const spec = Spec.parse('@x/y', bareSpec)
+    const spec = Spec.parse('@x/y', bareSpec, specOptions)
     t.equal(
       calculateSaveValue(
         'registry',

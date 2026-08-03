@@ -153,7 +153,9 @@ t.test('do not be confused by subspecs', t => {
   } as unknown as Packument
   const manifest = pickManifest(
     metadata,
-    Spec.parse('foo@npm:bar@^1.0.0'),
+    Spec.parse('foo@npm:bar@^1.0.0', {
+      registries: { npm: 'https://registry.npmjs.org/' },
+    }),
   )
   t.equal(
     manifest?.version,
@@ -828,7 +830,9 @@ t.test('handles complex Spec objects with subspecs correctly', t => {
   } as unknown as Packument
 
   // Create a nested spec: foo@npm:bar@npm:baz@^1.0.0
-  const nestedSpec = Spec.parse('foo@npm:bar@npm:baz@^1.0.0')
+  const nestedSpec = Spec.parse('foo@npm:bar@npm:baz@^1.0.0', {
+    registries: { npm: 'https://registry.npmjs.org/' },
+  })
 
   // Verify it's recognized correctly
   t.equal(
@@ -854,6 +858,7 @@ t.test('handles complex Spec objects with subspecs correctly', t => {
   // Create a more deeply nested spec
   const deeplyNestedSpec = Spec.parse(
     'pkg1@npm:pkg2@npm:pkg3@npm:baz@^1.0.0',
+    { registries: { npm: 'https://registry.npmjs.org/' } },
   )
   const manifestFromDeeplyNestedSpec = pickManifest(
     metadata,

@@ -218,6 +218,14 @@ const allCommands = [
     defaultOrder: 3,
   },
   {
+    name: 'registry',
+    aliases: [],
+    args: '<alias> <command>',
+    desc: 'Run an account command against a named registry',
+    showByDefault: true,
+    defaultOrder: 9,
+  },
+  {
     name: 'repo',
     aliases: [],
     args: '[<spec>]',
@@ -238,6 +246,14 @@ const allCommands = [
     args: '<script>',
     desc: 'Run a script &/or fallback to executing a binary',
     showByDefault: false,
+  },
+  {
+    name: 'setup',
+    aliases: [],
+    args: '[<account>]',
+    desc: 'Configure your vlt.io account registries',
+    showByDefault: true,
+    defaultOrder: 0,
   },
   {
     name: 'token',

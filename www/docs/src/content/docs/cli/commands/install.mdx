@@ -55,6 +55,12 @@ described above.
 
 ### Registry packages
 
+Installing by name (a **bare spec**) requires a registry to be
+configured — the `npm` alias has no built-in URL. Run
+[`vlt setup`](/cli/registries#getting-started-with-vlt-setup) once to
+configure your account's registries, otherwise these commands fail
+with a missing-registry error.
+
 <Code
   code={`# Latest version
 $ vlt install express

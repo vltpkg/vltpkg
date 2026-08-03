@@ -78,7 +78,7 @@ Array [
     "optional": false,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
+    "resolved": undefined,
     "version": "1.0.0",
   },
   Object {
@@ -129,7 +129,7 @@ Array [
     "optional": false,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": "https://registry.npmjs.org/baz/-/baz-1.0.0.tgz",
+    "resolved": undefined,
     "version": "1.0.0",
   },
   Object {
@@ -199,7 +199,7 @@ Object {
     "name": "test",
     "version": "1.0.0",
   },
-  "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
+  "resolved": undefined,
   "version": "1.0.0",
 }
 `
@@ -307,7 +307,7 @@ Array [
     "optional": true,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": "https://registry.npmjs.org/bar/-/bar-1.0.0.tgz",
+    "resolved": undefined,
     "version": "1.0.0",
   },
   Object {
@@ -330,7 +330,7 @@ Array [
     "optional": false,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
+    "resolved": undefined,
     "version": "1.0.0",
   },
   Object {
@@ -397,7 +397,7 @@ Array [
     "integrity": undefined,
     "name": "standalone",
     "optional": false,
-    "resolved": "https://registry.npmjs.org/standalone/-/standalone-1.0.0.tgz",
+    "resolved": undefined,
     "version": "1.0.0",
   },
 ]

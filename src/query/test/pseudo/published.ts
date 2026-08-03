@@ -12,7 +12,15 @@ import {
   getSimpleGraph,
 } from '../fixtures/graph.ts'
 import type { NodeLike } from '@vltpkg/types'
+import type { SpecOptions } from '@vltpkg/spec'
 import type { ParserState } from '../../src/types.ts'
+
+// the `npm` alias is no longer built in; configure it so the
+// default-registry DepIDs hydrate to the npm registry URL. Typed as
+// SpecOptions so the surrounding `as NodeLike` casts stay valid.
+const npmSpecOptions: SpecOptions = {
+  registries: { npm: 'https://registry.npmjs.org/' },
+}
 
 global.fetch = (async (url: string) => {
   if (url === 'https://registry.npmjs.org/h') {
@@ -332,6 +340,7 @@ t.test('retrieveRemoteDate', async t => {
       name: 'h',
       version: '1.0.0',
       id: joinDepIDTuple(['registry', '', 'h@1.0.0']),
+      options: npmSpecOptions,
     } as NodeLike
     await t.rejects(
       retrieveRemoteDate(node),
@@ -344,6 +353,7 @@ t.test('retrieveRemoteDate', async t => {
     const node = {
       name: 'i',
       id: joinDepIDTuple(['registry', '', 'i@1.0.0']),
+      options: npmSpecOptions,
     } as NodeLike
     t.strictSame(
       await retrieveRemoteDate(node),
@@ -357,6 +367,7 @@ t.test('retrieveRemoteDate', async t => {
       name: 'c',
       version: '1.0.0',
       id: joinDepIDTuple(['registry', '', 'c@1.0.0']),
+      options: npmSpecOptions,
     } as NodeLike
     await t.rejects(
       retrieveRemoteDate(node),

@@ -13,9 +13,24 @@ export type SpecOptionsFilled = {
    * There is **no default**. If no registry is configured, registry-type
    * specs parsed without one will have `spec.registry === undefined`, and
    * anything that needs to build a registry URL will fail. Named registry
-   * aliases (`npm:`, `gh:`, `jsr:`) and `scoped-registries` are unaffected.
+   * aliases (`gh:`, `jsr:`) and `scoped-registries` are unaffected.
+   *
+   * For bare specs, this takes precedence over the
+   * `default-registry-alias` lookup but not over a matching
+   * `scoped-registries` entry.
    */
   registry?: string
+  /**
+   * The name of the registry alias (a key in `registries`) that bare specs
+   * (e.g. `foo@latest`) and transitive deps without an explicit registry
+   * protocol resolve through, when no `registry` or `scoped-registries`
+   * entry applies.
+   *
+   * Defaults to `'npm'`. The `npm` alias itself has **no** built-in URL --
+   * it must be configured (e.g. via `vlt setup`), otherwise bare specs
+   * resolve with `spec.registry === undefined`.
+   */
+  'default-registry-alias': string
   /** shorthand prefix names for known registries */
   registries: Record<string, string>
   /** shorthand prefix names for known git hosts */

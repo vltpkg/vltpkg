@@ -14,6 +14,8 @@ vlt whoami
 
 Look up the username for the currently active token, when logged into a registry.
 
+Target a specific configured registry by alias with \`vlt registry <alias> whoami\`.
+
 ## Options
 
 ### registry
