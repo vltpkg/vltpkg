@@ -42,17 +42,19 @@ export type AuditResult = {
 
 export type SeverityLevel = 'critical' | 'high' | 'moderate' | 'low'
 
+// lower number = more severe, matching kindLevelMap in
+// src/query/src/pseudo/severity.ts
 const severityRank: Record<SeverityLevel, number> = {
-  critical: 3,
-  high: 2,
-  moderate: 1,
-  low: 0,
+  critical: 0,
+  high: 1,
+  moderate: 2,
+  low: 3,
 }
 
 const maxSeverity = (
   a: SeverityLevel,
   b: SeverityLevel,
-): SeverityLevel => (severityRank[a] >= severityRank[b] ? a : b)
+): SeverityLevel => (severityRank[a] <= severityRank[b] ? a : b)
 
 /**
  * Typeguard for objects with an id property.
@@ -240,7 +242,7 @@ export const filterAuditResult = (
     'low',
   ]
   for (const sev of severityOrder) {
-    if (severityRank[sev] < minRank) continue
+    if (severityRank[sev] > minRank) continue
     const pkgs = result.summary[sev]
     filtered.summary[sev] = pkgs
     filtered.total += pkgs.length

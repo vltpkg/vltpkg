@@ -93,6 +93,12 @@ Object {
     "description": "CPU architecture to use as the selector when choosing packages based on their \`cpu\` value.",
     "type": "string",
   },
+  "audit-level": Object {
+    "description": "Minimum severity level to report when running \`vlt audit\`. Defaults to \`low\`.",
+    "hint": "level",
+    "type": "string",
+    "validate": Function validate(v),
+  },
   "bail": Object {
     "description": "When running scripts across multiple workspaces, stop on the first failure.",
     "short": "b",
@@ -609,6 +615,7 @@ Array [
   "--all",
   "--allow-scripts=<query>",
   "--arch=<arch>",
+  "--audit-level=<level>",
   "--bail",
   "--before=<date>",
   "--cache=<path>",
@@ -676,6 +683,7 @@ Array [
   "all",
   "allow-scripts",
   "arch",
+  "audit-level",
   "bail",
   "before",
   "cache",
