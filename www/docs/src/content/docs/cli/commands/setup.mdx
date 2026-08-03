@@ -15,19 +15,19 @@ Configure the registry aliases for your vlt.io account so that
 
 The `npm` registry alias has no built-in URL, so a fresh project can't
 resolve bare specifiers (like `vlt install express`) until a registry
-is configured. `vlt setup` is the guided way to do that: sign up or log
-in at [https://www.vlt.io](https://www.vlt.io) first, then run the
+is configured. `vlt setup` is the guided way to do that: sign up or
+log in at [https://www.vlt.io](https://www.vlt.io) first, then run the
 wizard.
 
 ## What it does
 
-1. Prompts for your vlt.io account (or organization) slug if not passed
-   as an argument.
+1. Prompts for your vlt.io account (or organization) slug if not
+   passed as an argument.
 2. Stages the two registry aliases every account is provisioned with:
    - `npm` → `https://registry.vlt.io/<account>/npm/` (the default
      [bare-spec alias](/cli/registries#bare-specs-and---default-registry-alias))
-   - `main` → `https://registry.vlt.io/<account>/main/` (your account's
-     primary private registry)
+   - `main` → `https://registry.vlt.io/<account>/main/` (your
+     account's primary private registry)
 3. Optionally authenticates against those registries via the browser
    web-login flow.
 4. Loops to let you add any additional custom aliases (for partner or
@@ -37,11 +37,11 @@ wizard.
 
 ## Options
 
-| Flag                     | Description                                                                          |
-| ------------------------ | ------------------------------------------------------------------------------------ |
-| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project. |
-| `--registries=<name=url>` | Additional registry aliases to stage non-interactively. Can be set multiple times.  |
-| `--yes`                  | Skip interactive prompts. Requires `<account>` and does not open a browser.          |
+| Flag                       | Description                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------- |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.  |
+| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times. |
+| `--yes`                    | Skip interactive prompts. Requires `<account>` and does not open a browser.        |
 
 ## Examples
 
