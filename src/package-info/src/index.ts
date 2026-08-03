@@ -462,7 +462,6 @@ export class PackageInfoClient {
     return pathResolve(this.#cachePath, 'package-info', key)
   }
 
-
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
