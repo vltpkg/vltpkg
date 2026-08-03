@@ -6,8 +6,9 @@ import {
   mermaidOutput,
   GraphModifier,
 } from '@vltpkg/graph'
-import { error } from '@vltpkg/error-cause'
 import { Query } from '@vltpkg/query'
+import { stdout } from '../output.ts'
+import { error } from '@vltpkg/error-cause'
 import { createDiffFilesProvider } from '../query-diff-files.ts'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
@@ -200,6 +201,19 @@ export const command: CommandFn<QueryResult> = async conf => {
       },
     )
     scopeNodes = resultNodes
+    if (scopeNodes.length === 0) {
+      stdout(
+        'No packages found matching scope query:',
+        scopeQueryString,
+      )
+      return {
+        importers: new Set(),
+        edges: [],
+        nodes: [],
+        highlightSelection: false,
+        queryString: scopeQueryString,
+      }
+    }
   }
 
   if (scopeQueryString && scopeNodes) {
@@ -217,6 +231,16 @@ export const command: CommandFn<QueryResult> = async conf => {
           importers.add(w)
           scopeIDs.push(workspace.id)
         }
+      }
+    }
+    if (importers.size === 0) {
+      stdout('No matching workspaces found:', conf.values.workspace)
+      return {
+        importers: new Set(),
+        edges: [],
+        nodes: [],
+        highlightSelection: false,
+        queryString: queryString ?? '',
       }
     }
   }
@@ -258,6 +282,21 @@ export const command: CommandFn<QueryResult> = async conf => {
     })
   }
 
+  if (
+    graph &&
+    nodes.length === 0 &&
+    edges.length === 0 &&
+    !conf.values['expect-results']
+  ) {
+    stdout('No packages found matching query:', query)
+    return {
+      importers: new Set(),
+      edges: [],
+      nodes: [],
+      highlightSelection: false,
+      queryString: query,
+    }
+  }
   return {
     importers:
       importers.size === 0 ?
