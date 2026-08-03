@@ -30,7 +30,10 @@
       "typescript": "5.7.3",
       "walk-up-path": "^4.0.0"
     },
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "registries": {
+      "npm": "https://registry.npmjs.org/"
+    }
   },
   "nodes": {
     "~jsr~@jsr+std____semver@1.0.8": [2,"@jsr/std__semver","sha512-YhkykPU2Majz66e+rQbP0okYc7kKv+U32aguLPCXZZAL+vEVmBA+khHjPHhLBpWR073gzU3WHqGRgB7a/aXCjg==","https://npm.jsr.io/~/11/@jsr/std__semver/1.0.8.tgz"],
