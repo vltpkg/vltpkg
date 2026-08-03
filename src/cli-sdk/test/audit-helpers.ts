@@ -40,6 +40,10 @@ const squatInsights = (
   ...overrides,
 })
 
+/** Inbound-edges fixture: a node's `edgesIn`, one edge per parent. */
+const edgesFrom = (...parents: { id: string }[]) =>
+  new Set(parents.map(from => ({ from })))
+
 /** AuditPackage fixture, for tests that don't care about identity. */
 const makePkg = (
   overrides: Partial<AuditPackage> = {},
@@ -212,16 +216,19 @@ t.test('aggregateBySeverity', async t => {
 
   t.test('identifies direct vs transitive dependencies', async t => {
     const directNode = {
-      id: 'importer-1',
+      id: 'direct-id',
       name: 'direct-pkg',
       version: '1.0.0',
       insights: { malware: leveled({ high: true }) },
+      edgesIn: edgesFrom(importer),
     }
     const transitiveNode = {
-      id: 'other-id',
+      id: 'transitive-id',
       name: 'transitive-pkg',
       version: '2.0.0',
       insights: { malware: leveled({ high: true }) },
+      // parent is directNode, not an importer
+      edgesIn: edgesFrom(directNode),
     }
     const result = aggregateBySeverity(
       [directNode, transitiveNode],
@@ -234,6 +241,41 @@ t.test('aggregateBySeverity', async t => {
     t.equal(result.summary.high[0]!.direct, true)
     t.equal(result.summary.high[1]!.direct, false)
   })
+
+  t.test(
+    'treats a flagged importer itself as direct (no edgesIn needed)',
+    async t => {
+      const nodes = [
+        {
+          id: 'importer-1',
+          name: 'importer-pkg',
+          version: '1.0.0',
+          insights: { malware: leveled({ high: true }) },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.directCount, 1)
+      t.equal(result.summary.high[0]?.direct, true)
+    },
+  )
+
+  t.test(
+    'treats a node with no edgesIn and no importer match as transitive',
+    async t => {
+      const nodes = [
+        {
+          id: 'orphan-id',
+          name: 'orphan-pkg',
+          version: '1.0.0',
+          insights: { malware: leveled({ high: true }) },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, importers)
+      t.equal(result.directCount, 0)
+      t.equal(result.indirectCount, 1)
+      t.equal(result.summary.high[0]?.direct, false)
+    },
+  )
 
   t.test('skips nodes without insights', async t => {
     const nodes = [
