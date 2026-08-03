@@ -76,10 +76,7 @@ export const isNodeWithInsights = (
   name?: string
   version?: string
 } =>
-  typeof o === 'object' &&
-  o !== null &&
-  'id' in o &&
-  typeof (o as { id: unknown }).id === 'string' &&
+  isNodeWithId(o) &&
   'insights' in o &&
   typeof (o as { insights: unknown }).insights === 'object' &&
   (o as { insights: unknown }).insights !== null
@@ -251,4 +248,48 @@ export const filterAuditResult = (
     filtered.total += pkgs.length
   }
   return filtered
+}
+
+const severityOrder = [
+  'critical',
+  'high',
+  'moderate',
+  'low',
+] as const
+
+/**
+ * Format audit result as human-readable summary text.
+ */
+export const formatAuditSummary = (result: AuditResult): string => {
+  if (result.total === 0) {
+    return 'found 0 security issues\n'
+  }
+
+  const lines: string[] = []
+  lines.push(
+    `found ${result.total} security issue${result.total === 1 ? '' : 's'}`,
+  )
+  lines.push('')
+
+  for (const severity of severityOrder) {
+    const pkgs = result.summary[severity]
+    if (pkgs.length === 0) continue
+
+    lines.push(`  ${severity} (${pkgs.length})`)
+    for (const pkg of pkgs) {
+      lines.push(`    ${pkg.name}@${pkg.version}`)
+      for (const alert of pkg.alerts) {
+        lines.push(`      ${alert}`)
+      }
+    }
+    lines.push('')
+  }
+
+  const directWord =
+    result.directCount === 1 ? 'dependency' : 'dependencies'
+  lines.push(
+    `${result.directCount} direct ${directWord}, ${result.indirectCount} transitive`,
+  )
+
+  return lines.join('\n')
 }
