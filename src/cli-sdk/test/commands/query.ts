@@ -1190,12 +1190,9 @@ t.test('query', async t => {
       'a genuine security selector triggers the footer, singular wording for one issue',
     )
     t.match(malwareSingle, /critical \(1\)/)
-    // aggregateBySeverity's direct/indirect split is keyed on whether
-    // the flagged node's id equals one of the importer ids directly
-    // (not whether it's reachable by an edge from an importer), so a
-    // regular dependency like has-scripts is counted as transitive
-    // here even though it's a direct dependency of the project.
-    t.match(malwareSingle, /0 direct dependencies, 1 transitive/)
+    // has-scripts is placed directly on the main importer, so it's a
+    // genuine direct dependency.
+    t.match(malwareSingle, /1 direct dependency, 0 transitive/)
 
     const malwareMultiple = await runCommand(
       {

@@ -117,6 +117,24 @@ export const isNodeWithId = (
   typeof o.id === 'string'
 
 /**
+ * Typeguard for a node exposing an `edgesIn` set, each edge having a
+ * `.from` node with an id -- used to detect direct dependencies.
+ */
+export const isNodeWithEdgesIn = (
+  o: unknown,
+): o is { edgesIn: Iterable<{ from: { id: string } }> } => {
+  if (typeof o !== 'object' || o === null || !('edgesIn' in o)) {
+    return false
+  }
+  const edgesIn = o.edgesIn
+  return (
+    typeof edgesIn === 'object' &&
+    edgesIn !== null &&
+    Symbol.iterator in edgesIn
+  )
+}
+
+/**
  * Typeguard for objects with an id and insights property.
  */
 export const isNodeWithInsights = (
@@ -206,6 +224,9 @@ export const aggregateBySeverity = (
   warn: (message: string) => void = () => {},
 ): AuditResult => {
   const result: AuditResult = emptyAuditResult()
+  const importerIds = new Set(
+    [...importers].filter(isNodeWithId).map(imp => imp.id),
+  )
 
   for (const node of nodes) {
     if (!isNodeWithInsights(node)) continue
@@ -255,14 +276,13 @@ export const aggregateBySeverity = (
 
     if (alerts.length === 0) continue
 
-    // Check if node is a direct dependency (in importers set)
-    let direct = false
-    for (const imp of importers) {
-      if (isNodeWithId(imp) && imp.id === node.id) {
-        direct = true
-        break
-      }
-    }
+    // Direct dependency: the node itself is an importer (e.g. a
+    // workspace root with its own findings), or some importer has an
+    // edge directly into it.
+    const direct =
+      importerIds.has(node.id) ||
+      (isNodeWithEdgesIn(node) &&
+        [...node.edgesIn].some(edge => importerIds.has(edge.from.id)))
 
     const pkg: AuditPackage = {
       name: node.name ?? 'unknown',
