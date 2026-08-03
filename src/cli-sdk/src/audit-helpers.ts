@@ -357,19 +357,51 @@ const severityFormat: Record<
 }
 
 /**
+ * Style `text` with the conventional color for `severity`, when
+ * `colors` is true.
+ */
+const colorizeBySeverity = (
+  severity: SeverityLevel,
+  text: string,
+  colors?: boolean,
+): string =>
+  colors ? styleText(severityFormat[severity], text) : text
+
+// Deliberately distinct from severityFormat's reds/yellows -- these
+// label alert type (what kind of finding), not severity (how bad),
+// so reusing the severity palette here would read as a severity cue.
+const categoryFormat: Record<
+  keyof CategoryCounts,
+  Parameters<typeof utilStyleText>[0]
+> = {
+  malware: 'magenta',
+  vulnerable: 'cyan',
+  squat: 'blue',
+}
+
+/**
+ * Style `text` with the conventional color for `category`, when
+ * `colors` is true.
+ */
+const colorizeByCategory = (
+  category: keyof CategoryCounts,
+  text: string,
+  colors?: boolean,
+): string =>
+  colors ? styleText(categoryFormat[category], text) : text
+
+/**
  * Format a severity bucket heading (e.g. "critical (2)"), styled with
  * the conventional severity color when `colors` is true. Shared by
- * any view that renders a severity breakdown (e.g. `vlt audit`'s
- * human view and `vlt query`'s security-summary footer).
+ * any view that renders a severity breakdown (e.g. `vlt query`'s
+ * security-summary footer).
  */
 export const formatSeverityHeading = (
   severity: SeverityLevel,
   count: number,
   colors?: boolean,
-): string => {
-  const label = `${severity} (${count})`
-  return colors ? styleText(severityFormat[severity], label) : label
-}
+): string =>
+  colorizeBySeverity(severity, `${severity} (${count})`, colors)
 
 /**
  * Return the non-empty severity buckets of an audit result, in
@@ -384,18 +416,119 @@ export const nonEmptySeverityBuckets = (
     .map(severity => ({ severity, pkgs: result.summary[severity] }))
     .filter(({ pkgs }) => pkgs.length > 0)
 
+export type CategoryCounts = {
+  malware: number
+  vulnerable: number
+  squat: number
+}
+
 /**
- * Format the "N direct dependency/dependencies, M transitive" footer
- * line shared by `formatAuditSummary` and `vlt query`'s
+ * Count alerts by category (malware, vulnerable, squat) across every
+ * package in an audit result. A package with alerts in more than one
+ * category contributes to each -- these are alert counts, not
+ * package counts, so they don't necessarily sum to `result.total`.
+ */
+export const categoryCounts = (
+  result: AuditResult,
+): CategoryCounts => {
+  const counts: CategoryCounts = {
+    malware: 0,
+    vulnerable: 0,
+    squat: 0,
+  }
+  for (const pkgs of Object.values(result.summary)) {
+    for (const pkg of pkgs) {
+      for (const alert of pkg.alerts) {
+        if (alert.startsWith('malware:')) counts.malware++
+        else if (alert.startsWith('severity:')) counts.vulnerable++
+        else if (alert.startsWith('squat:')) counts.squat++
+      }
+    }
+  }
+  return counts
+}
+
+/**
+ * Format the "N direct dependency/dependencies, M transitive"
+ * breakdown line shared by `formatAuditSummary` and `vlt query`'s
  * security-summary footer.
  */
-export const formatDirectTransitiveFooter = (
+export const formatDependencyBreakdown = (
   result: AuditResult,
 ): string => {
   const directWord =
     result.directCount === 1 ? 'dependency' : 'dependencies'
   return `${result.directCount} direct ${directWord}, ${result.indirectCount} transitive`
 }
+
+/**
+ * Build one aligned line per flagged package, most severe first:
+ * `severity  name@version  alert, alert`. Column widths are computed
+ * from unstyled text so ANSI color codes (applied only after
+ * padding) don't throw off alignment.
+ */
+const formatAuditRows = (
+  result: AuditResult,
+  colors?: boolean,
+): string[] => {
+  const rows = nonEmptySeverityBuckets(result).flatMap(
+    ({ severity, pkgs }) =>
+      pkgs.map(pkg => ({
+        severity,
+        pkgName: `${pkg.name}@${pkg.version}`,
+        alerts: pkg.alerts.join(', '),
+      })),
+  )
+  const severityWidth = Math.max(...rows.map(r => r.severity.length))
+  const pkgWidth = Math.max(...rows.map(r => r.pkgName.length))
+
+  return rows.map(({ severity, pkgName, alerts }) => {
+    const severityCell = colorizeBySeverity(
+      severity,
+      severity.padEnd(severityWidth),
+      colors,
+    )
+    return `  ${severityCell}  ${pkgName.padEnd(pkgWidth)}  ${alerts}`
+  })
+}
+
+/**
+ * Format the "N malware, N vulnerable, N squat" category breakdown
+ * line, each count styled with its category color when `colors` is
+ * true. Omits categories with zero alerts.
+ */
+const formatCategoryCountsLine = (
+  result: AuditResult,
+  colors?: boolean,
+): string => {
+  const counts = categoryCounts(result)
+  const parts = (
+    Object.entries(counts) as [keyof CategoryCounts, number][]
+  )
+    .filter(([, count]) => count > 0)
+    .map(([category, count]) =>
+      colorizeByCategory(category, `${count} ${category}`, colors),
+    )
+  return parts.length > 0 ? parts.join(', ') : 'no alerts'
+}
+
+/**
+ * Format the "N critical, N high, ..." severity breakdown line, each
+ * count styled with its severity color when `colors` is true.
+ */
+const formatSeverityCountsLine = (
+  result: AuditResult,
+  colors?: boolean,
+): string =>
+  nonEmptySeverityBuckets(result)
+    .map(({ severity, pkgs }) =>
+      colorizeBySeverity(
+        severity,
+        `${pkgs.length} ${severity}`,
+        colors,
+      ),
+    )
+    .join(', ')
 
 /**
  * Format audit result as human-readable summary text.
@@ -412,22 +545,11 @@ export const formatAuditSummary = (
   lines.push(
     `${result.total} package${result.total === 1 ? '' : 's'} with security issues`,
   )
+  lines.push(formatCategoryCountsLine(result, colors))
+  lines.push(formatSeverityCountsLine(result, colors))
+  lines.push(formatDependencyBreakdown(result))
   lines.push('')
-
-  for (const { severity, pkgs } of nonEmptySeverityBuckets(result)) {
-    lines.push(
-      `  ${formatSeverityHeading(severity, pkgs.length, colors)}`,
-    )
-    for (const pkg of pkgs) {
-      lines.push(`    ${pkg.name}@${pkg.version}`)
-      for (const alert of pkg.alerts) {
-        lines.push(`      ${alert}`)
-      }
-    }
-    lines.push('')
-  }
-
-  lines.push(formatDirectTransitiveFooter(result))
+  lines.push(...formatAuditRows(result, colors))
 
   return lines.join('\n')
 }
