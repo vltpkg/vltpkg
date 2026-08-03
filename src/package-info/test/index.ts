@@ -1948,3 +1948,34 @@ t.test('path git selector', async t => {
     t.strictSame(found, pkg)
   })
 })
+
+t.test(
+  'packument request coalescing avoids duplicate requests',
+  async t => {
+    const pi = new PackageInfoClient(options)
+    // Issue a packument request (range spec) and a manifest request
+    // (pinned spec) concurrently for the same package. The pinned
+    // spec should detect the in-flight packument and reuse it
+    // instead of making a separate HTTP request.
+    const [paku, mani] = await Promise.all([
+      pi.packument('abbrev'),
+      pi.manifest('abbrev@2.0.0'),
+    ])
+    t.strictSame(paku, pakuAbbrev, 'packument matches')
+    t.strictSame(
+      mani,
+      pakuAbbrev.versions['2.0.0'],
+      'manifest extracted from in-flight packument',
+    )
+
+    // Multiple concurrent packument requests for the same package
+    // should be coalesced into a single fetch.
+    const [p1, p2] = await Promise.all([
+      pi.packument('abbrev'),
+      pi.packument('abbrev'),
+    ])
+    t.strictSame(p1, pakuAbbrev, 'first packument matches')
+    t.strictSame(p2, pakuAbbrev, 'second packument matches')
+    t.equal(p1, p2, 'both return the same object (coalesced)')
+  },
+)

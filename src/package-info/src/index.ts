@@ -100,6 +100,7 @@ export class PackageInfoClient {
   #trustedIntegrities = new Map<string, Integrity>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
+  #packumentPromises = new Map<string, Promise<Packument>>()
 
   get registryClient() {
     if (!this.#registryClient) {
@@ -711,14 +712,26 @@ export class PackageInfoClient {
           }
         }
 
-        const mani =
-          spec.range?.isSingle ?
-            await this.#registryManifestRequest(spec, options)
-          : pickManifest(
-              await this.packument(f, options),
-              spec,
-              options,
-            )
+        // When a pinned spec (e.g. debug@1.0.0) is requested, check if
+        // a full packument fetch is already in-flight for the same
+        // package. If so, extract the manifest from it instead of
+        // making a separate single-version HTTP request.
+        let mani: Manifest | undefined
+        if (spec.range?.isSingle) {
+          const packumentKey = `${f.registry}${f.name}`
+          const inflight = this.#packumentPromises.get(packumentKey)
+          if (inflight) {
+            mani = pickManifest(await inflight, spec, options)
+          } else {
+            mani = await this.#registryManifestRequest(spec, options)
+          }
+        } else {
+          mani = pickManifest(
+            await this.packument(f, options),
+            spec,
+            options,
+          )
+        }
         if (!mani) throw this.#resolveError(spec, options)
 
         // Cache the manifest data
@@ -893,26 +906,46 @@ export class PackageInfoClient {
 
       case 'registry': {
         const { registry, name } = f
+        const packumentKey = `${registry}${name}`
+        const inflight = this.#packumentPromises.get(packumentKey)
+        if (inflight) return inflight
         const pakuURL = new URL(name, registry)
-        const response = await this.registryClient.request(pakuURL, {
-          headers: {
-            accept: 'application/json',
-          },
-        })
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            'failed to fetch packument',
-            {
-              url: pakuURL,
-              response,
-            },
-          )
-        }
-        return response.json() as Packument
+        const promise = this.#fetchPackument(spec, options, pakuURL)
+        this.#packumentPromises.set(packumentKey, promise)
+        // Clean up once settled so we don't leak memory.
+        // Use .then/.catch instead of .finally to avoid creating
+        // an unhandled rejection from the derived promise.
+        promise.then(
+          () => this.#packumentPromises.delete(packumentKey),
+          () => this.#packumentPromises.delete(packumentKey),
+        )
+        return promise
       }
     }
+  }
+
+  async #fetchPackument(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+    pakuURL: URL,
+  ): Promise<Packument> {
+    const response = await this.registryClient.request(pakuURL, {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    if (response.statusCode !== 200) {
+      throw this.#resolveError(
+        spec,
+        options,
+        'failed to fetch packument',
+        {
+          url: pakuURL,
+          response,
+        },
+      )
+    }
+    return response.json() as Packument
   }
 
   async resolve(
