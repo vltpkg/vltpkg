@@ -12,11 +12,7 @@ import { RegistryClient } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import type {
-  Integrity,
-  Manifest,
-  Packument,
-} from '@vltpkg/types'
+import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
