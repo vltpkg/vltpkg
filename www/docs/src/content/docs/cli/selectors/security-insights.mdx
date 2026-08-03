@@ -26,7 +26,6 @@ package either has malware or it doesn't:
 
 <Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
 
-<<<<<<< HEAD
 <Aside type="tip">
   `:malware` matches only high-confidence malware alerts (`malware`
   and `gptMalware`). For broader vulnerability detection with
@@ -139,11 +138,14 @@ number:
 
 <Code
   code={`$ vlt query ':severity(critical)'
+
+# high severity and above
+
 $ vlt query ':severity("<=1")'
-$ vlt query ':severity("<=2")'`}
-  title="Terminal"
-  lang="bash"
-/>
+
+# medium severity and above
+
+$ vlt query ':severity("<=2")'`} title="Terminal" lang="bash" />
 
 ## Licensing
 
