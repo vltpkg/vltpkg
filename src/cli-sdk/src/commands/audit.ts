@@ -95,7 +95,10 @@ export const command: CommandFn<AuditResult> = async conf => {
 }
 
 export const views = {
-  human: (result: AuditResult) => formatAuditSummary(result),
+  human: (
+    result: AuditResult,
+    { colors }: { colors?: boolean } = {},
+  ) => formatAuditSummary(result, { colors }),
   json: (result: AuditResult) => result,
   count: (result: AuditResult) => result.total,
 }

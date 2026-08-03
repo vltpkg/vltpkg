@@ -1,4 +1,10 @@
+import { styleText as utilStyleText } from 'node:util'
 import type { Insights } from '@vltpkg/query'
+
+const styleText = (
+  format: Parameters<typeof utilStyleText>[0],
+  s: string,
+) => utilStyleText(format, s, { validateStream: false })
 
 /**
  * Detect if a DSS query string uses security selectors.
@@ -337,6 +343,31 @@ export const filterAuditResult = (
   return filtered
 }
 
+const severityFormat: Record<
+  SeverityLevel,
+  Parameters<typeof utilStyleText>[0]
+> = {
+  critical: 'redBright',
+  high: 'red',
+  moderate: 'yellow',
+  low: 'dim',
+}
+
+/**
+ * Format a severity bucket heading (e.g. "critical (2)"), styled with
+ * the conventional severity color when `colors` is true. Shared by
+ * any view that renders a severity breakdown (e.g. `vlt audit`'s
+ * human view and `vlt query`'s security-summary footer).
+ */
+export const formatSeverityHeading = (
+  severity: SeverityLevel,
+  count: number,
+  colors?: boolean,
+): string => {
+  const label = `${severity} (${count})`
+  return colors ? styleText(severityFormat[severity], label) : label
+}
+
 /**
  * Return the non-empty severity buckets of an audit result, in
  * `severityOrder` (most severe first). Shared by any view that needs
@@ -366,7 +397,10 @@ export const formatDirectTransitiveFooter = (
 /**
  * Format audit result as human-readable summary text.
  */
-export const formatAuditSummary = (result: AuditResult): string => {
+export const formatAuditSummary = (
+  result: AuditResult,
+  { colors }: { colors?: boolean } = {},
+): string => {
   if (result.total === 0) {
     return 'found 0 security issues\n'
   }
@@ -378,7 +412,7 @@ export const formatAuditSummary = (result: AuditResult): string => {
   lines.push('')
 
   for (const { severity, pkgs } of nonEmptySeverityBuckets(result)) {
-    lines.push(`  ${severity} (${pkgs.length})`)
+    lines.push(`  ${formatSeverityHeading(severity, pkgs.length, colors)}`)
     for (const pkg of pkgs) {
       lines.push(`    ${pkg.name}@${pkg.version}`)
       for (const alert of pkg.alerts) {
