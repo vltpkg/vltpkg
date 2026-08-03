@@ -76,7 +76,7 @@ export const command: CommandFn<AuditResult> = async conf => {
     nodes: [...graph.nodes.values()],
   })
 
-  const auditLevel = conf.get('audit-level') as string
+  const auditLevel = conf.get('audit-level')
   const queryString = buildAuditQuery(auditLevel)
 
   const q = new Query({
