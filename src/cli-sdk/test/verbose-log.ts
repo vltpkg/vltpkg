@@ -4,6 +4,7 @@ import t from 'tap'
 import {
   formatRequestEvent,
   isVerbose,
+  isWarnEnabled,
   startRequestLog,
 } from '../src/verbose-log.ts'
 
@@ -17,6 +18,15 @@ t.test('isVerbose', async t => {
   t.equal(isVerbose('info'), false)
   t.equal(isVerbose('verbose'), true)
   t.equal(isVerbose('debug'), true)
+})
+
+t.test('isWarnEnabled', async t => {
+  t.equal(isWarnEnabled('silent'), false)
+  t.equal(isWarnEnabled('error'), false)
+  t.equal(isWarnEnabled('warn'), true)
+  t.equal(isWarnEnabled('info'), true)
+  t.equal(isWarnEnabled('verbose'), true)
+  t.equal(isWarnEnabled('debug'), true)
 })
 
 t.test('formatRequestEvent', async t => {

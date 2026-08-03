@@ -149,11 +149,14 @@ const getSquatSeverity = (insights: {
 }
 
 /**
- * Aggregate query results by severity for audit output.
+ * Aggregate query results by severity for audit output. `warn`, if
+ * provided, is called for nodes whose insights data is present but
+ * does not match the expected shape (as opposed to simply absent).
  */
 export const aggregateBySeverity = (
   nodes: Iterable<unknown>,
   importers: Set<unknown>,
+  warn: (message: string) => void = () => {},
 ): AuditResult => {
   const result: AuditResult = {
     summary: { critical: [], high: [], moderate: [], low: [] },
@@ -170,29 +173,41 @@ export const aggregateBySeverity = (
     let newSeverity: SeverityLevel = 'low'
 
     // Check malware alerts (LeveledInsights)
-    if (insights.malware && isLeveledInsights(insights.malware)) {
-      const s = getLeveledSeverity(insights.malware)
-      if (s) {
-        alerts.push(`malware: ${s}`)
-        newSeverity = maxSeverity(newSeverity, s)
+    if (insights.malware) {
+      if (isLeveledInsights(insights.malware)) {
+        const s = getLeveledSeverity(insights.malware)
+        if (s) {
+          alerts.push(`malware: ${s}`)
+          newSeverity = maxSeverity(newSeverity, s)
+        }
+      } else {
+        warn(`ignoring malformed malware insights for ${node.id}`)
       }
     }
 
     // Check severity alerts (LeveledInsights)
-    if (insights.severity && isLeveledInsights(insights.severity)) {
-      const s = getLeveledSeverity(insights.severity)
-      if (s) {
-        alerts.push(`severity: ${s}`)
-        newSeverity = maxSeverity(newSeverity, s)
+    if (insights.severity) {
+      if (isLeveledInsights(insights.severity)) {
+        const s = getLeveledSeverity(insights.severity)
+        if (s) {
+          alerts.push(`severity: ${s}`)
+          newSeverity = maxSeverity(newSeverity, s)
+        }
+      } else {
+        warn(`ignoring malformed severity insights for ${node.id}`)
       }
     }
 
     // Check squat alerts (SquatInsights)
-    if (insights.squat && isSquatInsights(insights.squat)) {
-      const s = getSquatSeverity(insights.squat)
-      if (s) {
-        alerts.push(`squat: ${s}`)
-        newSeverity = maxSeverity(newSeverity, s)
+    if (insights.squat) {
+      if (isSquatInsights(insights.squat)) {
+        const s = getSquatSeverity(insights.squat)
+        if (s) {
+          alerts.push(`squat: ${s}`)
+          newSeverity = maxSeverity(newSeverity, s)
+        }
+      } else {
+        warn(`ignoring malformed squat insights for ${node.id}`)
       }
     }
 
