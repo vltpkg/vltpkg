@@ -1911,9 +1911,9 @@ t.test(
     coalescedPackumentRequests = 0
     coalescedPackumentAccept = undefined
 
-    const [paku, fullPaku, exact, range] = await Promise.all([
+    const [paku, pakuAgain, exact, range] = await Promise.all([
       pi.packument('coalesced'),
-      pi.packument('coalesced', { fullPackument: true }),
+      pi.packument('coalesced'),
       pi.manifest('coalesced@2.0.0'),
       pi.manifest('coalesced@2'),
     ])
@@ -1930,7 +1930,7 @@ t.test(
     )
     t.equal(
       paku,
-      fullPaku,
+      pakuAgain,
       'packument requests returned the same object',
     )
     t.equal(

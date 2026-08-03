@@ -66,11 +66,6 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   RegistryClientRequestOptions & {
     /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
     from?: string
-    /**
-     * @deprecated Packuments always include the full registry metadata.
-     * This option is retained for backwards compatibility.
-     */
-    fullPackument?: boolean
   }
 
 export type PackageInfoClientExtractOptions =
