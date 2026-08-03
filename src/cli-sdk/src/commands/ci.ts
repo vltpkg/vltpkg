@@ -43,8 +43,7 @@ export const command: CommandFn<CIResult> = async conf => {
     ...conf.options,
     // allow scripts but filter out malware via security archive
     allowScripts:
-      conf.get('allow-scripts') ??
-      ':scripts:not(:malware):not(:vuln)',
+      conf.get('allow-scripts') ?? ':scripts:not(:malware)',
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,

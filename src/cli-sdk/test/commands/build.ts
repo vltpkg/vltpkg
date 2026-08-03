@@ -140,7 +140,7 @@ t.test('command execution', async t => {
         monorepo: { name: 'test-mono' },
         scurry: { name: 'test-scurry' },
         projectRoot: '/test/project',
-        target: ':scripts:not(:built):not(:malware):not(:vuln)',
+        target: ':scripts:not(:built):not(:malware)',
       },
       'should pass correct options to build function',
     )
