@@ -470,6 +470,7 @@ t.test('aggregateBySeverity', async t => {
 
 t.test('filterAuditResult', async t => {
   t.test('filters out severities below minimum', async t => {
+    // a and c are direct, b and d are transitive
     const result = makeResult({
       summary: {
         critical: [makePkg({ name: 'a', direct: true })],
@@ -488,8 +489,10 @@ t.test('filterAuditResult', async t => {
     t.equal(high.summary.high.length, 1)
     t.equal(high.summary.moderate.length, 0)
     t.equal(high.summary.low.length, 0)
-    t.equal(high.directCount, 2)
-    t.equal(high.indirectCount, 2)
+    // recomputed from a (direct) and b (transitive) only, not the
+    // pre-filter totals covering all four packages
+    t.equal(high.directCount, 1)
+    t.equal(high.indirectCount, 1)
 
     const moderate = filterAuditResult(result, 'moderate')
     t.equal(moderate.total, 3)
@@ -497,6 +500,8 @@ t.test('filterAuditResult', async t => {
     t.equal(moderate.summary.high.length, 1)
     t.equal(moderate.summary.moderate.length, 1)
     t.equal(moderate.summary.low.length, 0)
+    t.equal(moderate.directCount, 2)
+    t.equal(moderate.indirectCount, 1)
 
     const critical = filterAuditResult(result, 'critical')
     t.equal(critical.total, 1)
@@ -504,6 +509,8 @@ t.test('filterAuditResult', async t => {
     t.equal(critical.summary.high.length, 0)
     t.equal(critical.summary.moderate.length, 0)
     t.equal(critical.summary.low.length, 0)
+    t.equal(critical.directCount, 1)
+    t.equal(critical.indirectCount, 0)
 
     const low = filterAuditResult(result, 'low')
     t.equal(low.total, 4)
@@ -511,6 +518,8 @@ t.test('filterAuditResult', async t => {
     t.equal(low.summary.high.length, 1)
     t.equal(low.summary.moderate.length, 1)
     t.equal(low.summary.low.length, 1)
+    t.equal(low.directCount, 2)
+    t.equal(low.indirectCount, 2)
   })
 
   t.test('preserves empty result structure', async t => {

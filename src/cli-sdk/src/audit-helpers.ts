@@ -322,23 +322,26 @@ export const aggregateBySeverity = (
 }
 
 /**
- * Filter audit results to only include severities at or above the minimum.
+ * Filter audit results to only include severities at or above the
+ * minimum. `directCount`/`indirectCount` are recomputed from the
+ * filtered packages, so the direct/transitive footer always matches
+ * the issues actually shown, not the pre-filter totals.
  */
 export const filterAuditResult = (
   result: AuditResult,
   minSeverity: SeverityLevel,
 ): AuditResult => {
   const minRank = severityRank[minSeverity]
-  const filtered: AuditResult = {
-    ...emptyAuditResult(),
-    directCount: result.directCount,
-    indirectCount: result.indirectCount,
-  }
+  const filtered: AuditResult = emptyAuditResult()
   for (const sev of severityOrder) {
     if (severityRank[sev] > minRank) continue
     const pkgs = result.summary[sev]
     filtered.summary[sev] = pkgs
     filtered.total += pkgs.length
+    for (const pkg of pkgs) {
+      if (pkg.direct) filtered.directCount++
+      else filtered.indirectCount++
+    }
   }
   return filtered
 }
