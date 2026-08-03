@@ -71,7 +71,7 @@ const runCommand = async (
     options,
     positionals,
     values,
-    get: (key: string) => (values as any)[key],
+    get: (key: string) => (values as Record<string, unknown>)[key],
   } as LoadedConfig
   const res = await cmd.command(config)
   const output =
