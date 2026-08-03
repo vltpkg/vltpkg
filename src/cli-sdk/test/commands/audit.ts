@@ -123,4 +123,27 @@ t.test('audit', async t => {
     })
     t.equal(result, 0)
   })
+
+  t.test('no package.json found in project root', async t => {
+    const logs = t.capture(console, 'log').args
+    const noPkgOptions = {
+      scurry: new PathScurry(),
+      packageJson: new PackageJson(),
+      projectRoot: t.testdirName,
+    }
+    noPkgOptions.packageJson.maybeRead = () => undefined
+
+    const result = await runCommand({
+      values: { view: 'json' },
+      options: noPkgOptions,
+    })
+
+    t.strictSame(logs(), [['No package.json found in project root']])
+    t.strictSame(JSON.parse(result as string), {
+      summary: { critical: [], high: [], moderate: [], low: [] },
+      total: 0,
+      directCount: 0,
+      indirectCount: 0,
+    })
+  })
 })
