@@ -18,6 +18,7 @@ import {
   isSecurityAuditSelector,
   nonEmptySeverityBuckets,
   formatDirectTransitiveFooter,
+  formatSeverityHeading,
 } from '../audit-helpers.ts'
 import type {
   HumanReadableOutputGraph,
@@ -159,7 +160,9 @@ export const views = {
         for (const { severity, pkgs } of nonEmptySeverityBuckets(
           summary,
         )) {
-          lines.push(`  ${severity} (${pkgs.length})`)
+          lines.push(
+            `  ${formatSeverityHeading(severity, pkgs.length, opts.colors)}`,
+          )
         }
         lines.push(formatDirectTransitiveFooter(summary))
         output = lines.join('\n')
