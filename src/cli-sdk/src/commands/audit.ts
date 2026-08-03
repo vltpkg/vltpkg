@@ -8,11 +8,9 @@ import {
   aggregateBySeverity,
   filterAuditResult,
   formatAuditSummary,
-  type SeverityLevel,
 } from '../audit-helpers.ts'
-import type { AuditResult } from '../audit-helpers.ts'
+import type { SeverityLevel, AuditResult } from '../audit-helpers.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import type { LoadedConfig } from '../config/index.ts'
 
 export const needsRegistry = true
 
@@ -41,10 +39,6 @@ export const usage: CommandUsage = () =>
         value: '[low | moderate | high | critical]',
         description:
           'Minimum severity level to report. Defaults to low.',
-      },
-      omit: {
-        value: '[dev | optional | peer]',
-        description: 'Dependency types to skip.',
       },
       view: {
         value: '[human | json | count]',
@@ -82,7 +76,7 @@ export const command: CommandFn<AuditResult> = async conf => {
     nodes: [...graph.nodes.values()],
   })
 
-  const auditLevel = (conf.get('audit-level') as string) ?? 'low'
+  const auditLevel = conf.get('audit-level') as string
   const queryString = buildAuditQuery(auditLevel)
 
   const q = new Query({
@@ -102,8 +96,7 @@ export const command: CommandFn<AuditResult> = async conf => {
 }
 
 export const views = {
-  human: (result: AuditResult, { colors }: { colors?: boolean }) =>
-    formatAuditSummary(result),
+  human: (result: AuditResult) => formatAuditSummary(result),
   json: (result: AuditResult) => result,
   count: (result: AuditResult) => result.total,
 }
