@@ -1,4 +1,5 @@
 import t from 'tap'
+import { gzipSync } from 'node:zlib'
 import type { Dispatcher } from 'undici'
 import type { RegistryClient } from '../src/index.ts'
 import type { WebAuthChallenge } from '../src/web-auth-challenge.ts'
@@ -34,6 +35,11 @@ const mockClient = {
     return { token: 'token' }
   },
 } as unknown as RegistryClient
+
+const body = (text: string, gzip = false) =>
+  gzip ?
+    { arrayBuffer: async () => gzipSync(text) }
+  : { text: async () => text }
 
 const { otplease } = await t.mockImport<
   typeof import('../src/otplease.ts')
@@ -92,9 +98,7 @@ t.test('unknown www-authenticate challenges', async t => {
       headers: {
         'www-authenticate': 'otp',
       },
-      body: {
-        json: async () => ({}),
-      },
+      body: body('{}'),
     } as unknown as Dispatcher.ResponseData),
     {
       message: 'Unrecognized OTP authentication challenge',
@@ -107,15 +111,34 @@ t.test('www-authenticate otp challenge', async t => {
     headers: {
       'www-authenticate': 'otp',
     },
-    body: {
-      json: async () => ({
+    body: body(
+      JSON.stringify({
         loginUrl: 'login url',
         doneUrl: 'done url',
       }),
-    },
+    ),
   } as unknown as Dispatcher.ResponseData)
   t.strictSame(doneUrlsOpened, ['done url'])
   t.strictSame(urlsOpened, ['login url'])
+  t.match(result, { retry: { otp: 'token' } })
+})
+
+t.test('gzip-compressed www-authenticate otp challenge', async t => {
+  const result = await otplease(mockClient, {}, {
+    headers: {
+      'www-authenticate': 'otp',
+      'content-encoding': 'gzip',
+    },
+    body: body(
+      JSON.stringify({
+        authUrl: 'auth url',
+        doneUrl: 'done url',
+      }),
+      true,
+    ),
+  } as unknown as Dispatcher.ResponseData)
+  t.strictSame(doneUrlsOpened, ['done url'])
+  t.strictSame(urlsOpened, ['auth url'])
   t.match(result, { retry: { otp: 'token' } })
 })
 
@@ -126,9 +149,7 @@ t.test('npm-notice prompting for OTP', async t => {
       'npm-notice':
         'Open {login-url} to use your security key for authentication or enter OTP from your authenticator app',
     },
-    body: {
-      json: async () => ({}),
-    },
+    body: body('{}'),
   } as unknown as Dispatcher.ResponseData)
   t.strictSame(doneUrlsOpened, [])
   t.strictSame(urlsOpened, ['{login-url}'])
@@ -146,6 +167,20 @@ t.test('body prompting for OTP', async t => {
     body: {
       text: async () => 'oNe-TiME pAsS',
     },
+  } as unknown as Dispatcher.ResponseData
+  const result = await otplease(mockClient, {}, resp)
+  t.ok(result && 'retry' in result)
+  if (result && 'retry' in result) {
+    t.equal(result.retry.otp, 'oNe-TiME pAsS')
+  }
+})
+
+t.test('gzip-compressed body prompting for OTP', async t => {
+  const resp = {
+    headers: {
+      'content-encoding': 'gzip',
+    },
+    body: body('oNe-TiME pAsS', true),
   } as unknown as Dispatcher.ResponseData
   const result = await otplease(mockClient, {}, resp)
   t.ok(result && 'retry' in result)
