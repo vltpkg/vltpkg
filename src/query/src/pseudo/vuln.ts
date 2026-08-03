@@ -72,9 +72,6 @@ const alertLevelMap = new Map<string, number>([
   ['gptAnomaly', 3],
 ])
 
-// All vuln-related alert types
-const vulnAlertTypes = new Set(alertLevelMap.keys())
-
 const kinds = new Set(kindsMap.keys())
 
 export const isVulnKind = (value?: string): value is VulnKinds =>
@@ -173,7 +170,6 @@ export const vuln = async (state: ParserState) => {
   }
 
   const { kind, comparator } = internals
-  const alertName = comparator ? undefined : kindsMap.get(kind)
 
   for (const node of state.partial.nodes) {
     const report = state.securityArchive.get(node.id)
