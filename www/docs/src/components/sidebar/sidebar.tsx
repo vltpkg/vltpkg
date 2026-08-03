@@ -13,6 +13,7 @@ const AppSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
   return (
     <aside
       className="sticky top-[101px] hidden max-h-[calc(100svh-104.25px)] min-h-[calc(100svh-104.25px)] w-[260px] flex-col bg-white pl-4 pr-4 dark:bg-black md:block"
+      data-pagefind-ignore
       id="sidebar">
       <ScrollArea
         id="sidebar-scroll-area"

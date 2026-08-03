@@ -15,12 +15,12 @@
 /* ***************************************************** */
 /** Search Button */
 button[aria-label='Search'] {
-  height: 56.25px;
+  height: 44px;
   border-radius: 1rem;
   border-width: 1px;
   box-sizing: border-box;
   width: 50px;
-  padding: 1rem 1rem;
+  padding: 1rem;
   margin-left: 1rem;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
