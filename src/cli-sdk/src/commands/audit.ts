@@ -7,6 +7,7 @@ import { isWarnEnabled } from '../verbose-log.ts'
 import {
   buildAuditQuery,
   aggregateBySeverity,
+  emptyAuditResult,
   filterAuditResult,
   formatAuditSummary,
 } from '../audit-helpers.ts'
@@ -57,12 +58,7 @@ export const command: CommandFn<AuditResult> = async conf => {
 
   if (!mainManifest) {
     stdout('No package.json found in project root')
-    return {
-      summary: { critical: [], high: [], moderate: [], low: [] },
-      total: 0,
-      directCount: 0,
-      indirectCount: 0,
-    }
+    return emptyAuditResult()
   }
 
   const graph = actual.load({

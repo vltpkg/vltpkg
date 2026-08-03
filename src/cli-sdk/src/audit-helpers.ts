@@ -9,6 +9,18 @@ export const isSecuritySelector = (query: string): boolean =>
   )
 
 /**
+ * Detect if a DSS query string uses a security selector that signals
+ * genuine audit intent (malware, vulnerability, severity, squat, cve,
+ * cwe). Unlike `isSecuritySelector`, this deliberately excludes a
+ * standalone `:scripts` selector -- listing packages with lifecycle
+ * scripts is a legitimate query on its own and shouldn't by itself be
+ * treated as a security audit (e.g. for deciding whether to append a
+ * security-summary footer to query output).
+ */
+export const isSecurityAuditSelector = (query: string): boolean =>
+  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(query)
+
+/**
  * Build a DSS query string from an audit level.
  *
  * `:malware()`/`:severity()` comparators operate on the query engine's
@@ -48,6 +60,36 @@ export type AuditResult = {
 }
 
 export type SeverityLevel = 'critical' | 'high' | 'moderate' | 'low'
+
+/**
+ * Severity levels in display order, most severe first.
+ */
+export const severityOrder: SeverityLevel[] = [
+  'critical',
+  'high',
+  'moderate',
+  'low',
+]
+
+/**
+ * Build an empty `AuditResult['summary']` (no findings in any bucket).
+ */
+export const emptySummary = (): AuditResult['summary'] => ({
+  critical: [],
+  high: [],
+  moderate: [],
+  low: [],
+})
+
+/**
+ * Build an empty `AuditResult` (no findings, zeroed counts).
+ */
+export const emptyAuditResult = (): AuditResult => ({
+  summary: emptySummary(),
+  total: 0,
+  directCount: 0,
+  indirectCount: 0,
+})
 
 // lower number = more severe, matching kindLevelMap in
 // src/query/src/pseudo/severity.ts
@@ -163,12 +205,7 @@ export const aggregateBySeverity = (
   importers: Set<unknown>,
   warn: (message: string) => void = () => {},
 ): AuditResult => {
-  const result: AuditResult = {
-    summary: { critical: [], high: [], moderate: [], low: [] },
-    total: 0,
-    directCount: 0,
-    indirectCount: 0,
-  }
+  const result: AuditResult = emptyAuditResult()
 
   for (const node of nodes) {
     if (!isNodeWithInsights(node)) continue
@@ -252,17 +289,10 @@ export const filterAuditResult = (
 ): AuditResult => {
   const minRank = severityRank[minSeverity]
   const filtered: AuditResult = {
-    summary: { critical: [], high: [], moderate: [], low: [] },
-    total: 0,
+    ...emptyAuditResult(),
     directCount: result.directCount,
     indirectCount: result.indirectCount,
   }
-  const severityOrder: SeverityLevel[] = [
-    'critical',
-    'high',
-    'moderate',
-    'low',
-  ]
   for (const sev of severityOrder) {
     if (severityRank[sev] > minRank) continue
     const pkgs = result.summary[sev]
@@ -272,7 +302,31 @@ export const filterAuditResult = (
   return filtered
 }
 
-const severityOrder = ['critical', 'high', 'moderate', 'low'] as const
+/**
+ * Return the non-empty severity buckets of an audit result, in
+ * `severityOrder` (most severe first). Shared by any view that needs
+ * to render a severity breakdown (e.g. `vlt audit`'s human view and
+ * `vlt query`'s security-summary footer).
+ */
+export const nonEmptySeverityBuckets = (
+  result: AuditResult,
+): { severity: SeverityLevel; pkgs: AuditPackage[] }[] =>
+  severityOrder
+    .map(severity => ({ severity, pkgs: result.summary[severity] }))
+    .filter(({ pkgs }) => pkgs.length > 0)
+
+/**
+ * Format the "N direct dependency/dependencies, M transitive" footer
+ * line shared by `formatAuditSummary` and `vlt query`'s
+ * security-summary footer.
+ */
+export const formatDirectTransitiveFooter = (
+  result: AuditResult,
+): string => {
+  const directWord =
+    result.directCount === 1 ? 'dependency' : 'dependencies'
+  return `${result.directCount} direct ${directWord}, ${result.indirectCount} transitive`
+}
 
 /**
  * Format audit result as human-readable summary text.
@@ -288,10 +342,7 @@ export const formatAuditSummary = (result: AuditResult): string => {
   )
   lines.push('')
 
-  for (const severity of severityOrder) {
-    const pkgs = result.summary[severity]
-    if (pkgs.length === 0) continue
-
+  for (const { severity, pkgs } of nonEmptySeverityBuckets(result)) {
     lines.push(`  ${severity} (${pkgs.length})`)
     for (const pkg of pkgs) {
       lines.push(`    ${pkg.name}@${pkg.version}`)
@@ -302,11 +353,7 @@ export const formatAuditSummary = (result: AuditResult): string => {
     lines.push('')
   }
 
-  const directWord =
-    result.directCount === 1 ? 'dependency' : 'dependencies'
-  lines.push(
-    `${result.directCount} direct ${directWord}, ${result.indirectCount} transitive`,
-  )
+  lines.push(formatDirectTransitiveFooter(result))
 
   return lines.join('\n')
 }
