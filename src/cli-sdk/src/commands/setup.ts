@@ -18,6 +18,21 @@ export const VLT_REGISTRY_BASE = 'https://registry.vlt.io'
  */
 export const accountRegistries = ['npm', 'main'] as const
 
+/**
+ * What each account registry is, in the order {@link accountRegistries}
+ * is authenticated. Every registry has its own credentials, so the
+ * web-login flow opens the browser once per registry -- naming what is
+ * being authenticated keeps the second prompt from reading like a repeat
+ * of the first.
+ */
+const accountRegistryAuthPrompts: Record<
+  (typeof accountRegistries)[number],
+  string
+> = {
+  npm: `First, let's authenticate your public npm registry mirror`,
+  main: `Now let's authenticate your private registry`,
+}
+
 /** Build the per-account registry URL for a given registry name. */
 export const accountRegistryURL = (
   account: string,
@@ -149,8 +164,12 @@ export const command: CommandFn<SetupResult> = async conf => {
         'Authenticate with your vlt.io account now? (Y/n) ',
       )
       if (!/^n/i.test(doAuth)) {
+        stdout(
+          'Each registry is authenticated separately, so the browser ' +
+            'opens once per registry.',
+        )
         for (const name of accountRegistries) {
-          stdout(`Authenticating against the "${name}" registry...`)
+          stdout(`${accountRegistryAuthPrompts[name]} ("${name}")...`)
           await rc.login(accountRegistryURL(account, name))
         }
       }
