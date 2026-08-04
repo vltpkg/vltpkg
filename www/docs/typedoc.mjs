@@ -19,7 +19,18 @@ if (process.env.VERCEL) {
   const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: repo } =
     process.env
   const remote = `https://github.com/${owner}/${repo}.git`
-  execSync(`git remote add origin ${remote}`)
+  try {
+    execSync(`git remote add origin ${remote}`)
+  } catch {
+    // git may not be initialized in Vercel build environment
+    try {
+      execSync('git init')
+      execSync(`git remote add origin ${remote}`)
+    } catch {
+      // if git operations fail, continue — typedoc will use fallback for source links
+      console.info(`failed to add ${remote} as origin`)
+    }
+  }
 }
 
 const { tsconfig, entryPoints } = await (async () => {
