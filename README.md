@@ -10,7 +10,7 @@
 
 **Develop. Run. Distribute.**
 
-This is the source monorepo for the [vlt](https://www.vlt.sh) package
+This is the source monorepo for the [vlt](https://www.vlt.io) package
 manager.
 
 ### Documentation
@@ -18,22 +18,39 @@ manager.
 Full documentation, startup guides & API references can be found at
 [docs.vlt.sh](https://docs.vlt.sh).
 
-#### Development
+## Contributing
+
+Development requires Git, Node.js 22.22.x, and the latest released
+`vlt` CLI. The repository's [`.nvmrc`](./.nvmrc) selects the supported
+Node.js major when using `nvm`.
 
 ```bash
-# Clone the repo
-git clone git@github.com:vltpkg/vltpkg.git
+# Clone the repository
+git clone https://github.com/vltpkg/vltpkg.git
 cd vltpkg
 
-# Install deps (and run prepare scripts)
-vlt install
+# Install and select the Node.js version from .nvmrc
+nvm install
+nvm use
 
-# Run the locally built CLI
-vlr vlt # OR ./node_modules/.bin/vlt
+# Install the released CLI used to bootstrap the repository
+curl -fsSL https://install.vlt.sh | bash
+
+# Install dependencies and prepare generated workspace files
+vlt install
+vlr --recursive prepare
+
+# Run the CLI directly from source
+./scripts/bins/vlt --version
 ```
 
-See the [contributing guide](./CONTRIBUTING.md) for more information
-on how to build and develop the various workspaces.
+`vlt setup` is not required for this repository. That command connects
+the CLI to a vlt.io account; this repository's checked-in
+[`vlt.json`](./vlt.json) already configures the registry used to
+bootstrap its dependencies.
+
+See the [contributing guide](./CONTRIBUTING.md) for development
+commands and workspace-specific guidance.
 
 ### Contributors
 
