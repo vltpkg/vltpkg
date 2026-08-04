@@ -214,8 +214,8 @@ export default defineConfig({
     webAnalytics: {
       enabled: true,
     },
+    redirects: {
+      '/migration/from-pnpm': '/cli/migration/from-pnpm',
+    },
   }),
-  redirects: {
-    '/migration/from-pnpm': '/cli/migration/from-pnpm',
-  },
 })
