@@ -20,7 +20,7 @@ const LinearMenu = () => {
       title: 'Platform',
       children: [
         {
-          icon: 'registry',
+          icon: 'serverless-registry',
           title: 'Registry',
           path: 'https://www.vlt.io/platform/registry',
         },
