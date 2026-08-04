@@ -210,10 +210,5 @@ export default defineConfig({
     sitemapAlias(),
   ],
   output: 'static',
-  redirects: {
-    '/migration/from-pnpm': {
-      status: 308,
-      destination: '/cli/migration/from-pnpm'
-    }
-  }
+  adapter: vercel(),
 })
