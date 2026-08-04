@@ -109,7 +109,7 @@ export type Insights = {
   eval?: boolean
   fs?: boolean
   license?: LicenseInsights
-  malware?: MalwareInsights
+  malware?: boolean
   minified?: boolean
   native?: boolean
   network?: boolean
@@ -129,6 +129,7 @@ export type Insights = {
   unmaintained?: boolean
   unpopular?: boolean
   unstable?: boolean
+  vuln?: VulnInsights
 }
 
 export type LicenseInsights = {
@@ -149,8 +150,8 @@ export type LeveledInsights = {
   critical: boolean
 }
 
-export type MalwareInsights = LeveledInsights
 export type SeverityInsights = LeveledInsights
+export type VulnInsights = LeveledInsights
 
 export type SquatInsights = {
   medium: boolean

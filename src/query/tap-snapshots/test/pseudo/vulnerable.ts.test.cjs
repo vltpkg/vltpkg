@@ -5,13 +5,15 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/pseudo/vulnerable.ts > TAP > selects packages with any CVE > filter out nodes without CVE alerts > must match snapshot 1`] = `
+exports[`test/pseudo/vulnerable.ts > TAP > :vulnerable alias works the same as :vuln > parameterless :vulnerable matches severity >= medium > must match snapshot 1`] = `
 Object {
   "edges": Array [
+    "a",
     "e",
     "e",
   ],
   "nodes": Array [
+    "a",
     "e",
   ],
 }

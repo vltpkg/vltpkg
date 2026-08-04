@@ -21,31 +21,16 @@ network call to fetch package report data.
 
 ### `:malware`
 
-Matches packages that may contain malware with severity >= medium
-(critical, high, medium — excludes low).
+Matches packages that contain malware. This is a binary selector — a
+package either has malware or it doesn't:
 
 <Code code="$ vlt query ':malware'" title="Terminal" lang="bash" />
 
-#### `:malware(<type>)`
-
-Filter by severity level:
-
-| Type              | Description       |
-| ----------------- | ----------------- |
-| `critical` or `0` | Critical severity |
-| `high` or `1`     | High severity     |
-| `medium` or `2`   | Medium severity   |
-| `low` or `3`      | Low severity      |
-
-Comparators are supported:
-
-<Code
-  code={`$ vlt query ':malware(critical)'
-$ vlt query ':malware(">1")'
-$ vlt query ':malware(">=medium")'`}
-  title="Terminal"
-  lang="bash"
-/>
+<Aside type="tip">
+  `:malware` matches only high-confidence malware alerts (`malware`
+  and `gptMalware`). For broader vulnerability detection with
+  configurable severity levels, use [`:vuln`](#vulnerable--vuln).
+</Aside>
 
 ### `:squat` / `:squat(<type>)`
 
@@ -80,13 +65,35 @@ Matches packages affected by manifest confusion — the published
 
 ### `:vulnerable` / `:vuln`
 
-Matches packages that have any CVE associated with them:
+Matches packages with vulnerability or security anomaly alerts with
+severity >= medium (excludes low-severity alerts by default):
 
 <Code code="$ vlt query ':vulnerable'" title="Terminal" lang="bash" />
 
 The `:vuln` alias works identically:
 
 <Code code="$ vlt query ':vuln'" title="Terminal" lang="bash" />
+
+#### `:vuln(<level>)`
+
+Filter by severity level:
+
+| Level             | Alert types matched                     |
+| ----------------- | --------------------------------------- |
+| `critical` or `0` | `criticalCVE`                           |
+| `high` or `1`     | `cve`                                   |
+| `medium` or `2`   | `potentialVulnerability`, `gptSecurity` |
+| `low` or `3`      | `mildCVE`, `gptAnomaly`                 |
+
+Comparators are supported:
+
+<Code
+  code={`$ vlt query ':vuln(critical)'
+$ vlt query ':vuln(">1")'
+$ vlt query ':vuln(">=medium")'`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ### `:cve(<id>)`
 
@@ -344,7 +351,11 @@ Run a comprehensive security audit:
 
 <Code
   code={`# Critical issues
-$ vlt query ':malware(critical), :cve(*), :obfuscated'
+$ vlt query ':malware, :cve(*), :obfuscated'
+
+# Vulnerability scan with severity
+
+$ vlt query ':vuln(critical), :vuln(high)'
 
 # Supply chain risks
 

@@ -143,17 +143,17 @@ so the dependency graph doubles as a security scanner. Selectors group
 into four families — compose them with anchors and combinators like
 any other filter:
 
-| Family          | Selectors                                                                   | Ask                            |
-| --------------- | --------------------------------------------------------------------------- | ------------------------------ |
-| Threats         | `:malware(critical)` `:squat` `:obfuscated` `:suspicious`                   | is anything actively hostile?  |
-| Vulnerabilities | `:cve(CVE-…)` `:cve(*)` `:cwe(CWE-79)` `:severity(">=medium")`              | known CVEs, filter by severity |
-| Capabilities    | `:eval` `:network` `:fs` `:shell` `:env`                                    | what _can_ this code do?       |
-| Hygiene         | `:abandoned` `:unmaintained` `:deprecated` `:score("<=0.5", "maintenance")` | will this rot on us?           |
+| Family          | Selectors                                                                        | Ask                                    |
+| --------------- | -------------------------------------------------------------------------------- | -------------------------------------- |
+| Threats         | `:malware` `:squat` `:obfuscated` `:suspicious`                                  | is anything actively hostile?          |
+| Vulnerabilities | `:vuln(critical)` `:cve(CVE-…)` `:cve(*)` `:cwe(CWE-79)` `:severity(">=medium")` | known CVEs / vulns, filter by severity |
+| Capabilities    | `:eval` `:network` `:fs` `:shell` `:env`                                         | what _can_ this code do?               |
+| Hygiene         | `:abandoned` `:unmaintained` `:deprecated` `:score("<=0.5", "maintenance")`      | will this rot on us?                   |
 
 Audit recipes:
 
 ```bash
-vlt query ':malware(critical), :squat, :obfuscated'   # supply-chain sweep
+vlt query ':malware, :vuln(critical), :squat, :obfuscated'   # supply-chain sweep
 vlt query ':workspace > :prod:severity(">=high")'     # release blockers
 vlt query ':dev:shell, :dev:network'                  # dev deps that spawn/phone home
 ```

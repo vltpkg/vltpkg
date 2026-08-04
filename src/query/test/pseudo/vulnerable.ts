@@ -4,9 +4,9 @@ import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
 import { parse } from '../../src/parser.ts'
-import { vulnerable } from '../../src/pseudo/vulnerable.ts'
+import { vuln } from '../../src/pseudo/vuln.ts'
 
-t.test('selects packages with any CVE', async t => {
+t.test(':vulnerable alias works the same as :vuln', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
     const ast = parse(query)
     const current = ast.first.first
@@ -32,23 +32,21 @@ t.test('selects packages with any CVE', async t => {
           [
             joinDepIDTuple(['registry', '', 'e@1.0.0']),
             {
-              alerts: [
-                {
-                  type: 'socketUpstreamVulnerability',
-                  severity: 'high' as const,
-                  category: 'vulnerability',
-                  key: 'some-key',
-                  props: {
-                    lastPublish: '',
-                    cveId: 'CVE-2023-1234' as const,
-                  },
-                },
-              ],
+              id: joinDepIDTuple(['registry', '', 'e@1.0.0']),
+              alerts: [{ type: 'criticalCVE' }],
+            },
+          ],
+          [
+            joinDepIDTuple(['registry', '', 'a@1.0.0']),
+            {
+              id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
+              alerts: [{ type: 'potentialVulnerability' }],
             },
           ],
           [
             joinDepIDTuple(['registry', '', 'c@1.0.0']),
             {
+              id: joinDepIDTuple(['registry', '', 'c@1.0.0']),
               alerts: [
                 {
                   type: 'deprecated',
@@ -69,27 +67,36 @@ t.test('selects packages with any CVE', async t => {
     return state
   }
 
-  await t.test('filter out nodes without CVE alerts', async t => {
-    const res = await vulnerable(getState(':vulnerable'))
-    t.strictSame(
-      [...res.partial.nodes].map(n => n.name),
-      ['e'],
-      'should select only packages with CVEs',
-    )
-    t.matchSnapshot({
-      nodes: [...res.partial.nodes].map(n => n.name),
-      edges: [...res.partial.edges].map(e => e.name),
-    })
-  })
+  await t.test(
+    'parameterless :vulnerable matches severity >= medium',
+    async t => {
+      const res = await vuln(getState(':vulnerable'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name).sort(),
+        ['a', 'e'],
+        'should select packages with vuln severity >= medium',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name).sort(),
+        edges: [...res.partial.edges].map(e => e.name).sort(),
+      })
+    },
+  )
 
-  await t.test('vuln alias works the same way', async t => {
-    const res = await vulnerable(getState(':vuln'))
-    t.strictSame(
-      [...res.partial.nodes].map(n => n.name),
-      ['e'],
-      'should select only packages with CVEs',
-    )
-  })
+  await t.test(
+    ':vulnerable(critical) matches same as :vuln(critical)',
+    async t => {
+      const resVulnerable = await vuln(
+        getState(':vulnerable(critical)'),
+      )
+      const resVuln = await vuln(getState(':vuln(critical)'))
+      t.strictSame(
+        [...resVulnerable.partial.nodes].map(n => n.name).sort(),
+        [...resVuln.partial.nodes].map(n => n.name).sort(),
+        'alias :vulnerable(critical) should produce identical results to :vuln(critical)',
+      )
+    },
+  )
 })
 
 t.test('missing security archive', async t => {
@@ -123,7 +130,7 @@ t.test('missing security archive', async t => {
   }
 
   await t.rejects(
-    vulnerable(getState(':vulnerable')),
+    vuln(getState(':vulnerable')),
     { message: /Missing security archive/ },
     'should throw an error',
   )
