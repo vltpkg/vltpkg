@@ -210,7 +210,5 @@ export default defineConfig({
     sitemapAlias(),
   ],
   output: 'static',
-  adapter: vercel({
-    middlewareMode: 'edge',
-  }),
+  adapter: vercel(),
 })
