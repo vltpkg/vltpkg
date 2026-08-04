@@ -7,6 +7,7 @@ import type {
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { urlOpen } from '@vltpkg/url-open'
 import { createInterface } from 'node:readline/promises'
+import { gunzipSync } from 'node:zlib'
 
 // eslint-disable-next-line no-console
 const log = (msg: string) => console.error(msg)
@@ -23,6 +24,18 @@ const question = async (text: string): Promise<string> => {
 
 const otpChallengeNotice =
   /^Open ([^ ]+) to use your security key for authentication or enter OTP from your authenticator app/i
+
+const responseBodyText = async (
+  response: Dispatcher.ResponseData,
+): Promise<string> => {
+  const contentEncoding = String(
+    response.headers['content-encoding'] ?? '',
+  )
+  if (/\bgzip\b/i.test(contentEncoding)) {
+    return gunzipSync(await response.body.arrayBuffer()).toString()
+  }
+  return await response.body.text()
+}
 
 export type OtpResult =
   | { retry: RegistryClientRequestOptions }
@@ -48,7 +61,9 @@ export const otplease = async (
   if (wwwAuth.has('otp')) {
     // do a web auth opener to get otp token
     const challenge = getWebAuthChallenge(
-      await response.body.json().catch(() => null),
+      await responseBodyText(response)
+        .then(text => JSON.parse(text) as unknown)
+        .catch(() => null),
     )
     if (challenge) {
       return {
@@ -94,7 +109,7 @@ export const otplease = async (
   // Consume the body to check if it's prompting for OTP.
   // We must return the consumed text so the caller doesn't try to
   // re-read from the already-drained stream.
-  const text = await response.body.text().catch(() => '')
+  const text = await responseBodyText(response).catch(() => '')
   if (text.toLowerCase().includes('one-time pass')) {
     return {
       retry: {
