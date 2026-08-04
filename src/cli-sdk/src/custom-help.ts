@@ -1,5 +1,7 @@
 import { loadPackageJson } from 'package-json-from-dist'
 import chalk from 'chalk'
+import { commandAliases } from './config/definition.ts'
+import type { Commands } from './config/definition.ts'
 
 const { version } = loadPackageJson(
   import.meta.filename,
@@ -12,6 +14,20 @@ const { version } = loadPackageJson(
 const customYellow = chalk.hex('#FFE15D')
 
 type StylerFn = (style: string | string[], text: string) => string
+
+type CommandName = Commands[keyof Commands]
+
+type CommandHelpMetadata = {
+  args: string
+  desc: string
+  /** Position in the abbreviated help output. Omit for full help only. */
+  defaultOrder?: number
+}
+
+type CommandHelp = CommandHelpMetadata & {
+  name: string
+  aliases: string[]
+}
 
 const makeStyler = (colors: boolean): StylerFn => {
   if (!colors) return (_, s) => s
@@ -61,243 +77,179 @@ const makeStyler = (colors: boolean): StylerFn => {
   }
 }
 
-// Single source of truth for all commands with metadata
-const allCommands = [
-  {
-    name: 'bugs',
-    aliases: [],
+/**
+ * Help metadata for every command target in the command registry. Using a
+ * record keyed by CommandName makes missing or stale entries a type error;
+ * aliases are derived separately from the registry below.
+ */
+const commandHelp = {
+  access: {
+    args: '<command> [<args>]',
+    desc: 'Manage package access and team permissions',
+  },
+  bugs: {
     args: '[<spec>]',
     desc: 'Open the bug tracker for a package',
-    showByDefault: false,
   },
-  {
-    name: 'build',
-    aliases: ['b'],
+  build: {
     args: '<selector>',
     desc: 'Build packages with lifecycle scripts',
-    showByDefault: true,
     defaultOrder: 4,
   },
-  {
-    name: 'cache',
-    aliases: [],
+  cache: {
     args: '[add|ls|info|clean|delete|delete-before|delete-all]',
     desc: 'Manage the package cache',
-    showByDefault: false,
   },
-  {
-    name: 'ci',
-    aliases: [],
+  ci: {
     args: '',
     desc: 'Clean install (frozen lockfile)',
-    showByDefault: false,
   },
-  {
-    name: 'config',
-    aliases: [],
+  config: {
     args: '[get|pick|list|set|delete|edit|location]',
     desc: 'Get or set configuration',
-    showByDefault: false,
   },
-  {
-    name: 'create',
-    aliases: [],
+  create: {
     args: '<initializer> [args...]',
     desc: 'Create a new project from a template',
-    showByDefault: false,
   },
-  {
-    name: 'docs',
-    aliases: [],
+  deprecate: {
+    args: '<pkg>[@<version>] <message>',
+    desc: 'Deprecate a package or version range',
+  },
+  'dist-tag': {
+    args: '[add|rm|ls] [<args>]',
+    desc: 'Manage package distribution tags',
+  },
+  docs: {
     args: '',
     desc: 'Open the docs of the current project',
-    showByDefault: false,
   },
-  {
-    name: 'exec',
-    aliases: ['x'],
+  exec: {
     args: '<executable>',
     desc: 'Execute a package bin',
-    showByDefault: true,
     defaultOrder: 6,
   },
-  {
-    name: 'exec-cache',
-    aliases: ['xc'],
+  'exec-cache': {
     args: '[ls|delete|info|install]',
     desc: 'Manage the exec cache',
-    showByDefault: false,
   },
-  {
-    name: 'exec-local',
-    aliases: ['xl'],
+  'exec-local': {
     args: '<command>',
     desc: 'Execute a local package bin',
-    showByDefault: false,
   },
-  {
-    name: 'help',
-    aliases: ['h', '?'],
+  help: {
     args: '[<command>]',
     desc: 'Show help for a command',
-    showByDefault: false,
   },
-  {
-    name: 'init',
-    aliases: [],
+  init: {
     args: '',
     desc: 'Initialize a new project',
-    showByDefault: true,
     defaultOrder: 1,
   },
-  {
-    name: 'install',
-    aliases: ['i', 'add'],
+  install: {
     args: '[<package>...]',
     desc: 'Install dependencies',
-    showByDefault: true,
     defaultOrder: 2,
   },
-  {
-    name: 'list',
-    aliases: ['ls'],
+  list: {
     args: '',
     desc: 'List installed packages',
-    showByDefault: false,
   },
-  {
-    name: 'login',
-    aliases: [],
+  login: {
     args: '',
     desc: 'Authenticate with a registry',
-    showByDefault: false,
   },
-  {
-    name: 'logout',
-    aliases: [],
+  logout: {
     args: '',
     desc: 'Log out from a registry',
-    showByDefault: false,
   },
-  {
-    name: 'pack',
-    aliases: [],
+  pack: {
     args: '',
     desc: 'Create a tarball from a package',
-    showByDefault: false,
   },
-  {
-    name: 'ping',
-    aliases: [],
+  ping: {
     args: '[<registry-alias>]',
     desc: 'Ping configured registries',
-    showByDefault: false,
   },
-  {
-    name: 'pkg',
-    aliases: ['p'],
+  pkg: {
     args: '<command>',
     desc: 'Manage package metadata',
-    showByDefault: true,
     defaultOrder: 7,
   },
-  {
-    name: 'publish',
-    aliases: ['pub'],
+  profile: {
+    args: '<command> [<args>]',
+    desc: 'Get or set registry profile properties',
+  },
+  publish: {
     args: '',
     desc: 'Publish package to registry',
-    showByDefault: true,
     defaultOrder: 8,
   },
-  {
-    name: 'query',
-    aliases: ['q'],
+  query: {
     args: '<selector>',
     desc: 'Query for packages in the project',
-    showByDefault: true,
     defaultOrder: 3,
   },
-  {
-    name: 'registry',
-    aliases: [],
+  registry: {
     args: '<alias> <command>',
     desc: 'Run an account command against a named registry',
-    showByDefault: true,
     defaultOrder: 9,
   },
-  {
-    name: 'repo',
-    aliases: [],
+  repo: {
     args: '[<spec>]',
     desc: 'Open the repository page for a package',
-    showByDefault: false,
   },
-  {
-    name: 'run',
-    aliases: ['r'],
+  run: {
     args: '<script>',
     desc: 'Run a script defined in package.json',
-    showByDefault: true,
     defaultOrder: 5,
   },
-  {
-    name: 'run-exec',
-    aliases: ['rx'],
+  'run-exec': {
     args: '<script>',
     desc: 'Run a script &/or fallback to executing a binary',
-    showByDefault: false,
   },
-  {
-    name: 'setup',
-    aliases: [],
+  setup: {
     args: '[<account>]',
     desc: 'Configure your vlt.io account registries',
-    showByDefault: true,
     defaultOrder: 0,
   },
-  {
-    name: 'token',
-    aliases: [],
+  token: {
     args: '[add|rm]',
     desc: 'Manage authentication tokens',
-    showByDefault: false,
   },
-  {
-    name: 'uninstall',
-    aliases: ['rm'],
+  uninstall: {
     args: '[<package>...]',
     desc: 'Remove dependencies',
-    showByDefault: false,
   },
-  {
-    name: 'unpublish',
-    aliases: [],
+  unpublish: {
     args: '<pkg>[@<version>]',
     desc: 'Remove a package from the registry',
-    showByDefault: false,
   },
-  {
-    name: 'update',
-    aliases: ['u'],
+  update: {
     args: '',
     desc: 'Update package versions to latest in-range',
-    showByDefault: false,
   },
-  {
-    name: 'version',
-    aliases: [],
+  version: {
     args: '<increment>',
     desc: 'Bump package version',
-    showByDefault: false,
   },
-  {
-    name: 'whoami',
-    aliases: [],
+  view: {
+    args: '<pkg>[@<version>] [<field>]',
+    desc: 'View registry information about a package',
+  },
+  whoami: {
     args: '',
     desc: 'Display the current user',
-    showByDefault: false,
   },
-]
+} as const satisfies Record<CommandName, CommandHelpMetadata>
+
+const allCommands: CommandHelp[] = Object.entries(commandHelp).map(
+  ([name, metadata]) => ({
+    name,
+    aliases: commandAliases.get(name) ?? [],
+    ...metadata,
+  }),
+)
 
 /**
  * Generates the custom default help output for vlt
@@ -307,8 +259,8 @@ export const generateDefaultHelp = (colors = false): string => {
 
   // Get default commands and sort by defaultOrder
   const defaultCommands = allCommands
-    .filter(cmd => cmd.showByDefault)
-    .sort((a, b) => (a.defaultOrder || 0) - (b.defaultOrder || 0))
+    .filter(cmd => cmd.defaultOrder !== undefined)
+    .sort((a, b) => (a.defaultOrder ?? 0) - (b.defaultOrder ?? 0))
 
   // Generate commands with tighter alias spacing but proper table structure
   const commandsSection = defaultCommands
@@ -322,7 +274,7 @@ export const generateDefaultHelp = (colors = false): string => {
       // Consistent args column (14 chars)
       const argsColumn = cmd.args.padEnd(16)
 
-      return `  ${s('dim', aliasColumn)}${s(['yellow', 'bold'], nameColumn)}${s('dim', argsColumn)}${cmd.desc}`
+      return `  ${s('dim', aliasColumn)}${s(['yellow', 'bold'], nameColumn)}${s('dim', argsColumn)} ${cmd.desc}`
     })
     .join('\n')
 
@@ -362,6 +314,12 @@ export const generateFullHelp = (colors = false): string => {
   // Use all commands sorted alphabetically
   const commands = [...allCommands].sort((a, b) =>
     a.name.localeCompare(b.name),
+  )
+  const aliasLabels = commands.map(cmd =>
+    cmd.aliases.length ? `${cmd.aliases.join(', ')},` : '',
+  )
+  const aliasWidth = Math.max(
+    ...aliasLabels.map(label => label.length),
   )
 
   // Define only globally applicable flags (alphabetically sorted by long name)
@@ -422,11 +380,7 @@ export const generateFullHelp = (colors = false): string => {
       commandsSection += '\n'
     }
 
-    // Fixed width columns for proper alignment with space after comma
-    const aliasColumn =
-      cmd.aliases.length > 0 ?
-        (cmd.aliases.join(', ') + ', ').padEnd(9)
-      : '         '
+    const aliasColumn = aliasLabels[index]?.padEnd(aliasWidth) ?? ''
     const nameColumn = cmd.name.padEnd(12)
     // Truncate args if longer than 16 chars and add ellipsis
     const truncatedArgs =
@@ -435,7 +389,7 @@ export const generateFullHelp = (colors = false): string => {
       : cmd.args
     const argsColumn = truncatedArgs.padEnd(16)
 
-    commandsSection += `${s('dim', aliasColumn)}${s(['yellow', 'bold'], nameColumn)}${s('dim', argsColumn)}${cmd.desc}`
+    commandsSection += `  ${s('dim', aliasColumn)} ${s(['yellow', 'bold'], nameColumn)} ${s('dim', argsColumn)} ${cmd.desc}`
 
     if (index < commands.length - 1) {
       commandsSection += '\n'
