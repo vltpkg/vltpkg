@@ -50,6 +50,8 @@ export type AuditPackage = {
   name: string
   version: string
   alerts: string[]
+  /** CVE ids associated with this package's known vulnerabilities. */
+  cves: string[]
   direct: boolean
 }
 
@@ -309,6 +311,7 @@ export const aggregateBySeverity = (
       name: node.name ?? 'unknown',
       version: node.version ?? 'unknown',
       alerts,
+      cves: Array.isArray(insights.cve) ? insights.cve : [],
       direct,
     }
 
@@ -462,10 +465,32 @@ export const formatDependencyBreakdown = (
 }
 
 /**
+ * NVD's vulnerability detail page for a CVE id -- a stable, publicly
+ * documented URL scheme, not something specific to this package.
+ */
+const nvdUrl = (cve: string): string =>
+  `https://nvd.nist.gov/vuln/detail/${cve}`
+
+/**
+ * Render `text` as a clickable OSC 8 terminal hyperlink to `url` when
+ * `enabled`, matching the pattern in `@vltpkg/url-open`. Terminals
+ * that don't support OSC 8 just show `text`, so this only degrades
+ * gracefully when `enabled` is backed by real TTY detection --
+ * otherwise fall back to printing the URL alongside the text, since
+ * a hidden link is useless in piped/non-interactive output.
+ */
+const hyperlink = (
+  text: string,
+  url: string,
+  enabled?: boolean,
+): string =>
+  enabled ? `]8;;${url}\\${text}]8;;\\` : `${text} (${url})`
+
+/**
  * Build one aligned line per flagged package, most severe first:
- * `severity  name@version  alert, alert`. Column widths are computed
- * from unstyled text so ANSI color codes (applied only after
- * padding) don't throw off alignment.
+ * `severity  name@version  alert, alert, CVE-...`. Column widths are
+ * computed from unstyled text so ANSI/OSC 8 escape codes (applied
+ * only after padding) don't throw off alignment.
  */
 const formatAuditRows = (
   result: AuditResult,
@@ -476,7 +501,10 @@ const formatAuditRows = (
       pkgs.map(pkg => ({
         severity,
         pkgName: `${pkg.name}@${pkg.version}`,
-        alerts: pkg.alerts.join(', '),
+        alerts: [
+          ...pkg.alerts,
+          ...pkg.cves.map(cve => hyperlink(cve, nvdUrl(cve), colors)),
+        ].join(', '),
       })),
   )
   const severityWidth = Math.max(...rows.map(r => r.severity.length))
