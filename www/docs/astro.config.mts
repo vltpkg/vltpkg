@@ -210,4 +210,7 @@ export default defineConfig({
     sitemapAlias(),
   ],
   output: 'static',
+  redirects: {
+    '/migration/*': '/cli/migration/*',
+  },
 })
