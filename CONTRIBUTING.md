@@ -161,10 +161,10 @@ will contain any release related commits, usually just the bumping of
 When that PR is merged the same workflow will then publish the bumped
 packages.
 
-By default, the workflow increments the current prerelease version. To
-set an exact version for the next release, add a `.release-version`
-file at the repository root containing a valid semver without a
-leading `v`. It must be greater than the current version:
+By default, the workflow increments the current patch version. To set
+an exact version for the next release, add a `.release-version` file
+at the repository root containing a valid semver without a leading
+`v`. It must be greater than the current version:
 
 ```text
 1.0.0
