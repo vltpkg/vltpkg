@@ -1,0 +1,59 @@
+---
+title: Packuments
+sidebar:
+  label: Packuments
+  order: 4
+---
+
+A **packument** (package document) is the complete metadata document
+returned by a package registry for a given package. It contains all
+published versions, dist-tags, timestamps, maintainers, and other
+registry-level metadata.
+
+When you query a registry for a package (e.g., `vlt pkg react` or
+`npm view react`), the registry returns a packument — not a single
+package manifest.
+
+## What's in a packument
+
+A packument includes:
+
+- **`name`** — the package name
+- **`versions`** — a record mapping each version string to its full
+  [manifest](/get-started/concepts/manifest)
+- **`dist-tags`** — named aliases like `latest`, `next`, `canary`
+  pointing to specific versions
+- **`time`** — publication timestamps for each version, plus `created`
+  and `modified` for the package itself
+- **`maintainers`** — list of users with publish access
+- **`readme`** — the package's README content
+- **`contributors`** — contributors listed in package.json
+
+## Packument vs. Manifest
+
+| Aspect   | Packument                                        | Manifest                                |
+| -------- | ------------------------------------------------ | --------------------------------------- |
+| Scope    | Entire package (all versions)                    | Single version                          |
+| Source   | Registry response                                | `package.json` + registry metadata      |
+| Includes | `dist-tags`, `time`, `maintainers`, all versions | `name`, `version`, `dependencies`, etc. |
+| Used for | Version resolution, dist-tag lookup              | Installation, runtime                   |
+
+When you install a package, vlt fetches the packument, resolves the
+requested specifier (version, range, or dist-tag) to a specific
+version, then fetches that version's manifest and tarball.
+
+## Minified packuments
+
+Registries may return a **minified packument** for version lookups —
+containing only the requested version's manifest and essential
+metadata — to reduce payload size. vlt handles both full and minified
+packuments transparently.
+
+## Related concepts
+
+- [Package Registry](/get-started/concepts/package-registry) — the
+  server that stores and serves packuments
+- [Manifest](/get-started/concepts/manifest) — the per-version package
+  metadata
+- [Dependencies](/get-started/concepts/dependencies) — how versions
+  are resolved from packuments

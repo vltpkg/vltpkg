@@ -153,7 +153,14 @@ export default defineConfig({
         {
           label: 'Registry',
           collapsed: true,
-          autogenerate: { directory: 'registry' },
+          items: [
+            'registry',
+            'registry/using-packages',
+            'registry/access',
+            'registry/dashboard',
+            'registry/tokens',
+            'registry/publishing',
+          ],
         },
         {
           label: 'Client',
