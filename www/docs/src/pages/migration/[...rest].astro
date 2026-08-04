@@ -1,0 +1,9 @@
+---
+// Redirect old /migration/* routes to /cli/migration/*
+export const prerender = false
+
+const { rest } = Astro.params
+const destination = rest ? `/cli/migration/${rest}` : '/cli/migration'
+
+return Astro.redirect(destination, 301)
+---

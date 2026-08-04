@@ -209,10 +209,4 @@ export default defineConfig({
     sitemapAlias(),
   ],
   output: 'static',
-  redirects: {
-    '/migration/[...params]': {
-      status: 308,
-      destination: '/cli/migration/[...params]'
-    },
-  }
 })
