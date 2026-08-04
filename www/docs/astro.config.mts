@@ -154,7 +154,7 @@ export default defineConfig({
           label: 'Registry',
           collapsed: true,
           items: [
-            'registry/index',
+            'registry',
             'registry/using-packages',
             'registry/access',
             'registry/dashboard',
