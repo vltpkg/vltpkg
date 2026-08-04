@@ -104,7 +104,7 @@ const MenuLinkIcon = ({ item }: { item: MenuItem }) => {
   }
   return (
     <span className="group-hover:border-white/3 flex size-[1.75rem] flex-shrink-0 items-center justify-center rounded-[6px] border border-black/5 bg-black/5 group-hover:bg-white/15 dark:bg-white/10">
-      <Icon name={item.icon} className="size-[1rem] text-neutral" />
+      <Icon name={item.icon} className="text-neutral size-[1rem]" />
     </span>
   )
 }
