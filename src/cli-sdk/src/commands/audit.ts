@@ -57,7 +57,9 @@ export const command: CommandFn<AuditResult> = async conf => {
   )
 
   if (!mainManifest) {
-    stdout('No package.json found in project root')
+    if (isWarnEnabled(conf.values.loglevel)) {
+      stderr('No package.json found in project root')
+    }
     return emptyAuditResult()
   }
 
@@ -73,7 +75,15 @@ export const command: CommandFn<AuditResult> = async conf => {
     nodes: [...graph.nodes.values()],
   })
 
-  const auditLevel = conf.get('audit-level')
+  const auditLevelRaw = conf.get('audit-level')
+  const auditLevel: SeverityLevel =
+    auditLevelRaw === 'critical' ||
+    auditLevelRaw === 'high' ||
+    auditLevelRaw === 'moderate' ||
+    auditLevelRaw === 'low' ?
+      auditLevelRaw
+    : 'low'
+
   const queryString = buildAuditQuery(auditLevel)
 
   const q = new Query({
@@ -91,7 +101,7 @@ export const command: CommandFn<AuditResult> = async conf => {
   const result = aggregateBySeverity(nodes, importers, message => {
     if (isWarnEnabled(conf.values.loglevel)) stderr(message)
   })
-  return filterAuditResult(result, auditLevel as SeverityLevel)
+  return filterAuditResult(result, auditLevel)
 }
 
 export const views = {
