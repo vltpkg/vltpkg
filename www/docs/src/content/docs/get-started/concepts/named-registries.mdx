@@ -1,0 +1,62 @@
+---
+title: Named Registries
+sidebar:
+  label: Named Registries
+  order: 1
+---
+
+A **named registry** is an alias you assign to a registry URL, so you can
+refer to it by a short name instead of the full URL.
+
+For example, instead of writing `https://registry.example.com/` every
+time, you can configure an alias:
+
+```bash
+vlt config set registries=myreg=https://registry.example.com/
+```
+
+Now you can use `myreg:` as a prefix to explicitly specify that a
+package should come from that registry:
+
+```bash
+vlt install myreg:my-package@1.0.0
+```
+
+Or in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "my-package": "myreg:my-package@1.0.0"
+  }
+}
+```
+
+## Why use named registries?
+
+- **Multi-registry workflows** — Configure different registries for
+  different scopes or purposes (e.g., `npm:` for public packages,
+  `internal:` for private company packages)
+- **Explicit resolution** — Ensure a specific package comes from a
+  specific registry, avoiding ambiguity
+- **Portability** — Share configuration via `vlt.json` so team members
+  use the same registry aliases
+
+## Built-in aliases
+
+vlt provides these built-in registry aliases:
+
+| Alias | Registry | Notes |
+|-------|----------|-------|
+| `npm:` | Configurable (no default) | Default for bare specs; must be configured |
+| `jsr:` | `https://npm.jsr.io/` | JavaScript Registry |
+| `gh:` | `https://npm.pkg.github.com/` | GitHub Packages |
+
+## See also
+
+- [Registry Aliases](/cli/registries#registry-aliases) — Full
+  configuration details
+- [Scoped Registries](/cli/registries#named-scope-registries-npm-compatibility)
+  — Map scopes like `@mycompany/` to specific registries
+- [Registry URL Specifiers](/cli/registries#registry-url-specifiers)
+  — Inline `registry:https://...` syntax

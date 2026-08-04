@@ -81,6 +81,15 @@ registry — and many teams also run private registries inside their
 company. When your package manager "goes to fetch" something, the
 registry is where it goes.
 
+## Named Registry
+
+An alias for a registry URL (e.g., `npm:`, `internal:`, `myreg:`).
+Configured via `vlt config set registries=name=url`. Used to explicitly
+specify which registry a package comes from: `vlt install myreg:pkg`.
+
+See [Named Registries concept](/get-started/concepts/named-registries)
+and [Working with Named Registries](/cli/registries).
+
 ## Version
 
 The label pinned to a specific release of some software, usually found

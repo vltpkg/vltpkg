@@ -10,27 +10,7 @@ import { Code } from '@astrojs/starlight/components'
 The vlt client supports working with multiple registries in a variety
 of ways.
 
-## What is a Registry? (skip if you know this already)
-
-A registry is a server that provides the metadata and artifacts for a
-package manager to install.
-
-The most popular package registry is
-[the public npm registry](https://registry.npmjs.org), which
-JavaScript package managers use for the bulk of their content. It is
-common for organizations to set up private internal registries for use
-with their non-OSS code, or to mirror public registries for
-redundancy, security, and auditing capability.
-
-[VSR](https://vlt.io/open-source/serverless-registry) is a hosted
-serverless registry that vlt provides for this purpose.
-
-Packages that are referenced by a name and version or version range
-(or a `dist-tag` like `latest`) are resolved using a registry.
-Packages specified as a git remote URL or `https://` remote URL, are
-resolved without using a registry. And obviously, packages referenced
-as a `file://` URL or `workspace:` specifier do not need to be fetched
-from anywhere at all, because they are local on the current machine.
+> For a conceptual overview, see [Named Registries](/get-started/concepts/named-registries).
 
 ## Setting the Registry
 
