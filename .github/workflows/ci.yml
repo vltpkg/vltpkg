@@ -136,8 +136,8 @@ jobs:
         continue-on-error: true
         run: |
           vlr fix:pkg
-          if [ -n "$(git status --porcelain -- . ':!vlt-lock.json')" ]; then
-            git diff -- . ':!vlt-lock.json'
+          if [ -n "$(git status --porcelain)" ]; then
+            git diff
             exit 1
           fi
 
