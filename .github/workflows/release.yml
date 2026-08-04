@@ -71,17 +71,19 @@ jobs:
         id: previous-version
         run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
 
-      # TODO: Replace with `vlt version prerelease --workspace="./infra/cli*" --no-git-tag-version`
+      # TODO: Replace with `vlt version patch --workspace="./infra/cli*" --no-git-tag-version`
       # once vlt version supports --no-git-tag-version (see: https://github.com/vltpkg/vltpkg/issues/1514)
       - name: Version CLI Packages
         run: |
           release_version=""
           if [[ -f .release-version ]]; then
             release_version="$(< .release-version)"
-            if ! node --eval "
+            if ! node --input-type=module --eval '
+              import { parse } from "@vltpkg/semver";
               const value = process.argv[1];
-              if (require('semver').valid(value) !== value) process.exit(1);
-            " "$release_version"; then
+              const parsed = parse(value);
+              if (!parsed || parsed.toString() !== value) process.exit(1);
+            ' "$release_version"; then
               echo "Invalid version in .release-version: $release_version" >&2
               exit 1
             fi
@@ -89,39 +91,26 @@ jobs:
             rm .release-version
           fi
 
-          bump_prerelease() {
+          bump_patch() {
             local current="$1"
-            node --eval "
-              // Parse semver and compute prerelease bump
-              const v = '$current';
-              const m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z]+)(?:\.(\d+))?)?$/);
-              if (!m) { console.error('Invalid semver: ' + v); process.exit(1); }
-              const [, major, minor, patch, id, num] = m;
-              if (id && num !== undefined) {
-                // Has identifier with number (e.g. -rc.18) — increment the number
-                console.log(major + '.' + minor + '.' + patch + '-' + id + '.' + (parseInt(num) + 1));
-              } else if (id) {
-                // Has identifier without number (e.g. -pre) — add .0
-                console.log(major + '.' + minor + '.' + patch + '-' + id + '.0');
-              } else {
-                // Not a prerelease — bump patch and add -pre.0
-                console.log(major + '.' + minor + '.' + (parseInt(patch) + 1) + '-pre.0');
-              }
-            "
+            node --input-type=module --eval '
+              import { inc } from "@vltpkg/semver";
+              console.log(inc(process.argv[1], "patch").toString());
+            ' "$current"
           }
           for pkg in ./infra/cli*/package.json; do
             current=$(jq -r .version "$pkg")
             if [[ -n "$release_version" ]]; then
-              if ! node --eval "
-                const semver = require('semver');
-                if (!semver.gt(process.argv[1], process.argv[2])) process.exit(1);
-              " "$release_version" "$current"; then
+              if ! node --input-type=module --eval '
+                import { gt } from "@vltpkg/semver";
+                if (!gt(process.argv[1], process.argv[2])) process.exit(1);
+              ' "$release_version" "$current"; then
                 echo ".release-version must be greater than $current: $release_version" >&2
                 exit 1
               fi
               new_version="$release_version"
             else
-              new_version=$(bump_prerelease "$current")
+              new_version=$(bump_patch "$current")
             fi
             jq --arg v "$new_version" '.version = $v' "$pkg" > "$pkg.tmp" && mv "$pkg.tmp" "$pkg"
           done
