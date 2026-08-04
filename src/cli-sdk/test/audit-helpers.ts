@@ -52,6 +52,7 @@ const makePkg = (
   name: 'pkg',
   version: '1.0.0',
   alerts: [],
+  cves: [],
   direct: false,
   ...overrides,
 })
@@ -214,6 +215,38 @@ t.test('aggregateBySeverity', async t => {
       )
     },
   )
+
+  t.test('collects CVE ids from insights.cve', async t => {
+    const nodes = [
+      {
+        id: 'pkg-cve-id',
+        name: 'pkg-cve',
+        version: '1.0.0',
+        insights: {
+          severity: leveled({ high: true }),
+          cve: ['CVE-2021-1234', 'CVE-2021-5678'],
+        },
+      },
+    ]
+    const result = aggregateBySeverity(nodes, importers)
+    t.strictSame(result.summary.high[0]?.cves, [
+      'CVE-2021-1234',
+      'CVE-2021-5678',
+    ])
+  })
+
+  t.test('defaults cves to an empty array when absent', async t => {
+    const nodes = [
+      {
+        id: 'pkg-no-cve-id',
+        name: 'pkg-no-cve',
+        version: '1.0.0',
+        insights: { severity: leveled({ high: true }) },
+      },
+    ]
+    const result = aggregateBySeverity(nodes, importers)
+    t.strictSame(result.summary.high[0]?.cves, [])
+  })
 
   t.test('identifies direct vs transitive dependencies', async t => {
     const directNode = {
@@ -650,6 +683,31 @@ t.test('formatAuditSummary', async t => {
       output.indexOf('1 direct dependency') <
         output.indexOf('pkg-a@1.0.0'),
       'direct/transitive breakdown renders before the rows',
+    )
+  })
+
+  t.test('includes an NVD link for each CVE id', async t => {
+    const result = makeResult({
+      summary: {
+        ...emptySummary(),
+        high: [
+          makePkg({
+            name: 'vuln-pkg',
+            version: '1.2.3',
+            alerts: ['severity: high'],
+            cves: ['CVE-2021-1234'],
+            direct: true,
+          }),
+        ],
+      },
+      total: 1,
+      directCount: 1,
+      indirectCount: 0,
+    })
+    const output = formatAuditSummary(result)
+    t.match(
+      output,
+      /CVE-2021-1234 \(https:\/\/nvd\.nist\.gov\/vuln\/detail\/CVE-2021-1234\)/,
     )
   })
 
