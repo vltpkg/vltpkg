@@ -25,7 +25,7 @@ const LinearMenu = () => {
           path: 'https://www.vlt.io/platform/registry',
         },
         {
-          icon: 'security',
+          icon: 'shield',
           title: 'Security',
           path: 'https://www.vlt.io/platform/security',
         },
