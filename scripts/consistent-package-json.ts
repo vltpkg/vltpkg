@@ -314,22 +314,6 @@ const fixCliVariants = async (ws: Workspace) => {
   }
 
   ws.pj.description = 'The vlt CLI'
-  const readmeContent = readFileSync(
-    resolve(ws.dir, 'README.md'),
-    'utf8',
-  )
-  const parts = readmeContent.split(/(```[\s\S]*?```)/g)
-  const processedContent = parts
-    .map((part, i) => {
-      if (i % 2 === 0) {
-        return part
-          .replaceAll(/`vlt`( \(.*\))?/g, '`vlt`')
-          .replaceAll(/^# .*$/gm, `# ${ws.pj.name}`)
-      }
-      return part
-    })
-    .join('')
-  await writeFormatted(resolve(ws.dir, 'README.md'), processedContent)
 }
 
 const fixEngines = async (ws: Workspace) => {

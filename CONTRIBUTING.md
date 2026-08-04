@@ -1,5 +1,36 @@
 # Contributing Guide
 
+## Getting Started
+
+Development requires Git, Node.js 22.22.x, and the latest released
+`vlt` CLI. If you use [`nvm`](https://github.com/nvm-sh/nvm), the
+repository's `.nvmrc` selects the supported Node.js major.
+
+```bash
+# Clone the repository
+git clone https://github.com/vltpkg/vltpkg.git
+cd vltpkg
+
+# Install and select the Node.js version from .nvmrc
+nvm install
+nvm use
+
+# Install the released CLI used to bootstrap the repository
+curl -fsSL https://install.vlt.sh | bash
+
+# Install dependencies and prepare generated workspace files
+vlt install
+vlr --recursive prepare
+
+# Run the CLI directly from source
+./scripts/bins/vlt --version
+```
+
+You do not need to run `vlt setup` to work on this repository. That
+command configures registry aliases and authentication for a vlt.io
+account. The checked-in [`vlt.json`](./vlt.json) already points this
+project at the public registry used to install its dependencies.
+
 ## Workspace Structure
 
 The workspaces are divided among a few top-level directories.
@@ -10,24 +41,24 @@ specific to that component.
 
 ### [`src`](./src/)
 
-These workspaces are all are direct dependencies of the `vlt` CLI.
+These workspaces are direct dependencies of the `vlt` CLI.
 
-The actual CLI is also a workspace in [`src/cli-sdk`](./src/cli-sdk/).
+The CLI framework is also a workspace in
+[`src/cli-sdk`](./src/cli-sdk/).
 
 Most of these are also published separately under the `@vltpkg` scope.
 
 ### [`infra`](./infra/)
 
-These workspaces are internal tools that we use for tasks like
-building, bundling, and benchmarking the other workspaces.
-
-These are internal and highly coupled to our monorepo setup, so they
-are not published to any registry.
+These workspaces contain tools for building, bundling, and
+benchmarking the other workspaces. They also contain the publishable
+CLI distributions in [`infra/cli`](./infra/cli/) and
+[`infra/cli-js`](./infra/cli-js/).
 
 ### [`www`](./www/)
 
 These are websites that get deployed. Currently only
-[docs.vlt.io](https://docs.vlt.io).
+[docs.vlt.sh](https://docs.vlt.sh).
 
 ## Linting / Formatting
 
@@ -36,18 +67,19 @@ code, and to attempt to fix them.
 
 ## Running TypeScript Directly
 
-If you are on the latest version of Node, you can run TypeScript files
-directly using `node ./path/to/file.ts`.
+This repository uses Node.js 22.22.x, where type stripping is enabled
+by default. TypeScript files that use erasable syntax can be run
+directly:
 
-If you are on Node 22, you can use `node --experimental-strip-types`.
+```bash
+node ./path/to/file.ts
+```
 
-For both of those options you will see a warning. If that bothers you
-then you can run with `--no-warnings` as well.
-
-In order to make this work for all places where we might spawn a node
-process, run
-`export NODE_OPTIONS=--experimental-strip-types --no-warnings` to set
-this in the environment, rather than on each command.
+Node's built-in type stripping does not type-check files or support
+TypeScript syntax that requires transformation. The launchers in
+`./scripts/bins` set the repository's required `NODE_OPTIONS`
+automatically, so no global environment configuration is needed for
+normal development.
 
 ## Using `nave`
 
@@ -72,9 +104,9 @@ of this project.
 
 ## Using NVM
 
-If you use [`nvm`](https://github.com/nvm-sh/nvm), a compatible
-version of `node` should be automatically installed & used as defined
-in our project's root `.nvmrc` file. Notably, there are
+If you use [`nvm`](https://github.com/nvm-sh/nvm), run `nvm install`
+and `nvm use` to install and select the version defined in the root
+`.nvmrc` file. Notably, there are
 [known issues](https://nodejs.org/en/blog/vulnerability/december-2025-security-releases#downloads-and-release-details)
 in `node` versions `<22.22` and unknown compatibility for `>=23`. If
 you are using a version outside of the known-good range set you are
@@ -83,9 +115,9 @@ in-range version.
 
 ## Using `setup-node` in CI
 
-Our CI uses the `setup-node` action and is explictely configured to
-use the "latest", known-good version of `node` (`^22.14.0`) available.
-You can find this configuration in `.github/workflows/*.yml`.
+Our CI uses the `setup-node` action and is explicitly configured to
+use the latest known-good version of Node.js (`^22.22.0`). You can
+find this configuration in `.github/workflows/*.yml`.
 
 ## Root Level Scripts
 
