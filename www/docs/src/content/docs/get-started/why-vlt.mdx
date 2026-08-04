@@ -10,10 +10,9 @@ as a dependency graph to understand, and builds everything else on
 that.
 
 That's what makes vlt the package registry built for JavaScript:
-install the same npm packages in less time, block malicious
-dependencies before they reach your builds, publish privately, and
-query every relationship in your graph, all without changing the tools
-your team already uses.
+install the same packages in less time, block malicious dependencies
+before they reach your builds, publish privately, and query every
+relationship in your graph.
 
 ## A new package registry
 
@@ -37,13 +36,13 @@ vlt serves npm-compatible packages through infrastructure tuned for
 JavaScript metadata and install patterns, cutting download size, cache
 misses, and CI time.
 
-- **Real-project benchmarks.** We measure against actual Next, Vue,
-  and Svelte apps.
+- **Real-project benchmarks.** Our benchmarks measure against popular
+  project setups such as Next, Vue, and Svelte apps.
 - **Faster clean installs.** vlt serves the same packages 3–6x faster
   than AWS CodeArtifact and 4–9x faster than GitHub Packages, and
   leads npm on typical framework apps (Astro 1.7x, Svelte 1.6x, Vue
   1.25x). Numbers move daily; see the
-  [live benchmarks](https://benchmarks.vlt.sh/#/registries/registry-clean).
+  [live benchmarks](https://benchmarks.vlt.sh/#/registries/average).
 - **Slimmer packuments.** 76% smaller than the ten thousand
   most-downloaded npm packages, bloat big enough to have
   [blocked a library's releases for a month](https://www.vlt.io/blog/packument-size-limits).
@@ -52,16 +51,6 @@ misses, and CI time.
 
 Every public package request passes through a security layer that
 flags known malware and vulnerabilities before the package is served.
-
-- **Registry protection.** Known-malicious packages blocked before
-  delivery, on a safe npm mirror backed by continuous malware
-  intelligence.
-- **Safer installs.** A two-phase install (download, then opt-in
-  build) restricts
-  [lifecycle scripts](https://www.vlt.io/blog/npm-12-breaking-changes)
-  by default. Secure defaults, not opt-in hardening.
-- **Verifiable integrity.** Content-addressable storage reverifies
-  each package on every fetch.
 
 It matters more every release: despite 63% download growth,
 [Sonatype's 2026 supply-chain report](https://www.sonatype.com/state-of-the-software-supply-chain/introduction)
@@ -84,8 +73,11 @@ JavaScript:
 - **Query.** Match packages with Dependency Selector Syntax (DSS),
   including
   [security insights from Socket](https://www.vlt.io/blog/insights-selectors).
-- **Control.** Turn queries into enforceable CI rules and
-  [graph transformations](https://www.vlt.io/blog/introducing-graph-modifiers).
+- **Control.** Turn queries into
+  [enforceable CI rules](https://github.com/vltpkg/policies) and
+  define custom
+  [graph transformations](https://www.vlt.io/blog/introducing-graph-modifiers)
+  to your project.
 
 ## Built in the open
 
