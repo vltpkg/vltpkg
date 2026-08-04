@@ -3,7 +3,6 @@ import starlight from '@astrojs/starlight'
 import react from '@astrojs/react'
 import sitemap from '@astrojs/sitemap'
 import tailwind from '@astrojs/tailwind'
-import vercel from '@astrojs/vercel'
 import { ExpressiveCodeTheme } from '@astrojs/starlight/expressive-code'
 import * as TypedocPlugin from './src/plugins/typedoc.ts'
 import { sitemapAlias } from './src/plugins/sitemap.ts'
@@ -211,6 +210,9 @@ export default defineConfig({
   ],
   output: 'static',
   redirects: {
-    '/migration/*': '/cli/migration/*',
-  },
+    '/migration/[...params]': {
+      status: 308,
+      destination: '/cli/migration/[...params]'
+    },
+  }
 })
