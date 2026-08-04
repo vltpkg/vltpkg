@@ -29,19 +29,22 @@ export const isSecurityAuditSelector = (query: string): boolean =>
 /**
  * Build a DSS query string from an audit level.
  *
- * `:malware()`/`:severity()` comparators operate on the query engine's
+ * `:vuln()`/`:severity()` comparators operate on the query engine's
  * own numeric scale (critical=0 ... low=3, lower = more severe; see
- * src/query/src/pseudo/severity.ts and malware.ts), so "at or above"
+ * src/query/src/pseudo/severity.ts and vuln.ts), so "at or above"
  * a given level is expressed as `<=` that level's value, not `>`/`>=`.
+ *
+ * `:malware` is a binary selector (no parameters), so we use `:vuln`
+ * for severity-based filtering.
  */
 export const buildAuditQuery = (level: string): string => {
   const defaultQuery =
     ':malware, :vulnerable, :severity(<=low), :scripts, :squat'
   const queries: Record<string, string> = {
     low: defaultQuery,
-    moderate: ':malware(<=medium), :severity(<=medium)',
-    high: ':malware(<=high), :severity(<=high)',
-    critical: ':malware(critical), :severity(critical)',
+    moderate: ':vuln(<=medium), :severity(<=medium)',
+    high: ':vuln(<=high), :severity(<=high)',
+    critical: ':vuln(critical), :severity(critical)',
   }
   return queries[level] ?? defaultQuery
 }

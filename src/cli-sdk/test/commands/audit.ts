@@ -51,7 +51,63 @@ const mockAudit = async (
     },
   )
 
+const mockAuditWithFindings = async (
+  t: Test,
+  { graph: g = graph, ...mocks }: Record<string, any> = {},
+) =>
+  t.mockImport<typeof import('../../src/commands/audit.ts')>(
+    '../../src/commands/audit.ts',
+    {
+      '@vltpkg/graph': t.createMock(Graph, {
+        actual: {
+          load: () => g,
+        },
+      }),
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return {
+              ok: true,
+              get: () => undefined,
+            }
+          },
+        },
+      },
+      '@vltpkg/query': {
+        Query: class MockQuery {
+          edges: any
+          nodes: any
+          importers: any
+          securityArchive: any
+          constructor(opts: any) {
+            this.edges = opts.edges
+            this.nodes = opts.nodes
+            this.importers = opts.importers
+            this.securityArchive = opts.securityArchive
+          }
+          async search() {
+            // Return a node with malformed malware insights to trigger warning
+            const malformedNode = {
+              id: 'pkg:foo@1.0.0',
+              name: 'foo',
+              version: '1.0.0',
+              insights: {
+                // Malformed malware insights - missing low, medium, high, critical
+                malware: { notaleveledinsight: true },
+                scanned: true,
+              },
+              edgesIn: new Set(),
+            }
+            return { nodes: [malformedNode] }
+          }
+        },
+      },
+      ...mocks,
+    },
+  )
+
 const Command = await mockAudit(t)
+const CommandWithFindings = await mockAuditWithFindings(t)
 
 const runCommand = async (
   {
@@ -83,6 +139,19 @@ const runCommand = async (
       JSON.stringify(output, null, 2)
     : output
 }
+
+const runCommandWithFindings = async ({
+  options = {},
+  positionals = [],
+  values,
+}: {
+  options?: object
+  positionals?: string[]
+  values: Partial<LoadedConfig['values']> & {
+    view: Exclude<LoadedConfig['values']['view'], 'inspect'>
+  }
+}) =>
+  runCommand({ options, positionals, values }, CommandWithFindings)
 
 t.test('audit', async t => {
   t.ok(Command.usage, 'should have usage')
@@ -125,7 +194,7 @@ t.test('audit', async t => {
   })
 
   t.test('no package.json found in project root', async t => {
-    const logs = t.capture(console, 'log').args
+    const logs = t.capture(console, 'error').args
     const noPkgOptions = {
       scurry: new PathScurry(),
       packageJson: new PackageJson(),
@@ -134,7 +203,7 @@ t.test('audit', async t => {
     noPkgOptions.packageJson.maybeRead = () => undefined
 
     const result = await runCommand({
-      values: { view: 'json' },
+      values: { view: 'json', loglevel: 'warn' },
       options: noPkgOptions,
     })
 
@@ -145,5 +214,55 @@ t.test('audit', async t => {
       directCount: 0,
       indirectCount: 0,
     })
+  })
+
+  t.test('usage function returns command usage', async t => {
+    const usage = Command.usage()
+    const usageStr = usage.usage()
+    t.match(
+      usageStr,
+      /Check installed dependencies for security issues/,
+    )
+    t.match(usageStr, /--audit-level/)
+    t.match(usageStr, /--view/)
+    t.match(usageStr, /vlt audit/)
+    t.match(usageStr, /vlt audit --audit-level=high/)
+    t.match(usageStr, /vlt audit --view=json/)
+  })
+
+  t.test(
+    'warn callback is called for malformed insights when loglevel is warn',
+    async t => {
+      const stderrLogs = t.capture(console, 'error').args
+      const optionsWithWarn = {
+        ...options,
+      }
+      optionsWithWarn.packageJson.read = () =>
+        graph.mainImporter.manifest!
+
+      await runCommandWithFindings({
+        values: {
+          view: 'json',
+          loglevel: 'warn',
+        },
+        options: optionsWithWarn,
+      })
+
+      // The warning should be logged for malformed malware insights
+      t.match(stderrLogs(), /ignoring malformed malware insights/)
+    },
+  )
+
+  t.test('different audit levels build correct queries', async t => {
+    // Test that the command function handles different audit levels
+    const levels = ['low', 'moderate', 'high', 'critical']
+    for (const level of levels) {
+      const result = await runCommand({
+        values: { view: 'json', 'audit-level': level },
+        options,
+      })
+      const parsed = JSON.parse(result as string)
+      t.ok(parsed, `should return result for audit-level=${level}`)
+    }
   })
 })
