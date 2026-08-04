@@ -305,9 +305,13 @@ export class Query {
         confused: securityArchiveEntry.alerts.some(
           i => i.type === 'manifestConfusion',
         ),
-        cve: securityArchiveEntry.alerts
-          .map(i => i.props?.cveId)
-          .filter(i => i !== undefined),
+        cve: Array.from(
+          new Set(
+            securityArchiveEntry.alerts
+              .map(i => i.props?.cveId)
+              .filter(i => i !== undefined),
+          ),
+        ),
         cwe: Array.from(
           new Set(
             securityArchiveEntry.alerts
