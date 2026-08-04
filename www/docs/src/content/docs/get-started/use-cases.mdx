@@ -5,29 +5,39 @@ sidebar:
   order: 0
 ---
 
-vlt was created with the needs of open source maintainers and
-development teams in mind.
+The vlt platform was created with the needs of both open source
+maintainers and professional development teams in mind.
 
-These are some primary use cases for choosing vlt.
+1. **Private registry for internal packages** — Use the vlt Registry
+   to share private packages within your org, while keeping them out
+   of the public npm registry.
 
-1. Private registry for internal packages — Share private packages
-   within your org, while keeping them out of the public npm registry.
+1. **Ensure deliverability of your software and own your pipeline** —
+   The vlt Registry provides high-availability for critical
+   open-source packages and libraries used by thousands of developers.
 
-1. High-availability for critical open-source packages and libraries
-   used by thousands of developers.
+1. **Resiliency** — The vlt Registry infrastructure ensures your
+   mirror stays up even when the npm public registry is down.
 
-1. Multi-registry workflows — Configure named registries in vlt to
-   pull from npm, a private mirror, and an internal registry
-   simultaneously, routing specific scopes (e.g. `@internal/`) to the
-   right source.
+1. **Multi-registry workflows** — Configure named registries in the
+   `vlt` CLI to pull from the public npm registry, a private mirror,
+   and an internal registry simultaneously, while also keeping the
+   ability to route specific scopes (e.g. `@internal/`) to the right
+   source.
 
-1. Supply chain protection for your team vlt offers security scanning
-   of dependencies — Run `vlt query ':malware'` with our CLI to detect
-   malware, vulnerabilities, and license issues in your dep graph via
-   Socket integration, without leaving the CLI.
+1. **Supply chain protection for your team** — vlt offers security
+   scanning of dependencies. Run `vlt query ':malware'` with our CLI
+   to detect malware, vulnerabilities, and license issues in your dep
+   graph via Socket integration, without leaving the CLI. Stick with
+   the vlt registry to also benefit from a registry that is safe by
+   default.
 
-1. Full transparency on dependencies inside package artifacts.
-
-1. Monorepo package management — vlt's workspace-aware client can
-   install, query, and manage dependencies across a multi-package
-   monorepo with a single tool, replacing fragmented workflows.
+1. **A JavaScript package manager client for JavaScript developers** —
+   Our package manager internals are all published as open source
+   packages under the `@vltpkg` scope on the npm public registry
+   providing an SDK that works just the same as the real CLI app. Want
+   to write a personalized script to help your team build a customized
+   pipeline? Just point your agents at our SKILL files and get a
+   script that you can also read and review. Do you prefer writing it
+   yourself? All packages have conventional README.md files made for
+   humans to read, just like the good old days.
