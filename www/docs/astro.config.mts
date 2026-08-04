@@ -210,5 +210,12 @@ export default defineConfig({
     sitemapAlias(),
   ],
   output: 'static',
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+  }),
+  redirects: {
+    '/migration/from-pnpm': '/cli/migration/from-pnpm',
+  },
 })
