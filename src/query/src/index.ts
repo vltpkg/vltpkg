@@ -309,7 +309,7 @@ export class Query {
           new Set(
             securityArchiveEntry.alerts
               .map(i => i.props?.cveId)
-              .filter(i => i !== undefined),
+              .filter((i): i is `CVE-${string}` => i !== undefined),
           ),
         ),
         cwe: Array.from(
