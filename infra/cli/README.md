@@ -8,8 +8,6 @@
 ![Discord Server Status](https://img.shields.io/discord/1093366081067954178?logo=discord&label=Discord)
 [![Socket Security Status](https://socket.dev/api/badge/npm/package/vlt)](https://socket.dev/npm/package/vlt)
 
-## Commands you know, With more possibility
-
 vlt delivers the tools and infrastructure developers need to
 streamline package management, scale efficiently, and secure a faster,
 more tailored web experience.
