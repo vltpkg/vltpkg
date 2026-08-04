@@ -20,7 +20,6 @@ export const defaultEditor = () =>
 
 const canonicalCommands = {
   access: 'access',
-  audit: 'audit',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',
@@ -32,7 +31,6 @@ const canonicalCommands = {
   docs: 'docs',
   exec: 'exec',
   'exec-local': 'exec-local',
-  fund: 'fund',
   help: 'help',
   init: 'init',
   install: 'install',
@@ -40,7 +38,6 @@ const canonicalCommands = {
   logout: 'logout',
   list: 'list',
   ls: 'ls',
-  outdated: 'outdated',
   pack: 'pack',
   ping: 'ping',
   pkg: 'pkg',
@@ -80,7 +77,6 @@ const aliases = {
   '?': 'help',
   info: 'view',
   ls: 'list',
-  out: 'outdated',
   show: 'view',
   xc: 'exec-cache',
 } as const

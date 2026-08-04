@@ -14,52 +14,58 @@ USAGE
 
 COMMANDS
 
-         bugs        [<spec>]        Open the bug tracker for a package
-b,       build       <selector>      Build packages with lifecycle scripts
+                 access       <command> [<a... Manage package access and team permissions
 
-         cache       [add|ls|info|...Manage the package cache
-         ci                          Clean install (frozen lockfile)
-         config      [get|pick|lis...Get or set configuration
-         create      <initializer>...Create a new project from a template
+                 bugs         [<spec>]         Open the bug tracker for a package
+  b,             build        <selector>       Build packages with lifecycle scripts
 
-         docs                        Open the docs of the current project
+                 cache        [add|ls|info|... Manage the package cache
+                 ci                            Clean install (frozen lockfile)
+                 config       [get|pick|lis... Get or set configuration
+                 create       <initializer>... Create a new project from a template
 
-x,       exec        <executable>    Execute a package bin
-xc,      exec-cache  [ls|delete|in...Manage the exec cache
-xl,      exec-local  <command>       Execute a local package bin
+                 deprecate    <pkg>[@<versi... Deprecate a package or version range
+                 dist-tag     [add|rm|ls] [... Manage package distribution tags
+                 docs                          Open the docs of the current project
 
-h, ?,    help        [<command>]     Show help for a command
+  x,             exec         <executable>     Execute a package bin
+  xc,            exec-cache   [ls|delete|in... Manage the exec cache
+  xl,            exec-local   <command>        Execute a local package bin
 
-         init                        Initialize a new project
-i, add,  install     [<package>...]  Install dependencies
+  h, ?,          help         [<command>]      Show help for a command
 
-ls,      list                        List installed packages
-         login                       Authenticate with a registry
-         logout                      Log out from a registry
+                 init                          Initialize a new project
+  i, add,        install      [<package>...]   Install dependencies
 
-         pack                        Create a tarball from a package
-         ping        [<registry-al...Ping configured registries
-p,       pkg         <command>       Manage package metadata
-pub,     publish                     Publish package to registry
+  ls,            list                          List installed packages
+                 login                         Authenticate with a registry
+                 logout                        Log out from a registry
 
-q,       query       <selector>      Query for packages in the project
+                 pack                          Create a tarball from a package
+                 ping         [<registry-al... Ping configured registries
+  p,             pkg          <command>        Manage package metadata
+                 profile      <command> [<a... Get or set registry profile properties
+  pub,           publish                       Publish package to registry
 
-         registry    <alias> <comm...Run an account command against a named registry
-         repo        [<spec>]        Open the repository page for a package
-r,       run         <script>        Run a script defined in package.json
-rx,      run-exec    <script>        Run a script &/or fallback to executing a binary
+  q,             query        <selector>       Query for packages in the project
 
-         setup       [<account>]     Configure your vlt.io account registries
+                 registry     <alias> <comm... Run an account command against a named registry
+                 repo         [<spec>]         Open the repository page for a package
+  r, run-script, run          <script>         Run a script defined in package.json
+  rx,            run-exec     <script>         Run a script &/or fallback to executing a binary
 
-         token       [add|rm]        Manage authentication tokens
+                 setup        [<account>]      Configure your vlt.io account registries
 
-rm,      uninstall   [<package>...]  Remove dependencies
-         unpublish   <pkg>[@<versi...Remove a package from the registry
-u,       update                      Update package versions to latest in-range
+                 token        [add|rm]         Manage authentication tokens
 
-         version     <increment>     Bump package version
+  rm,            uninstall    [<package>...]   Remove dependencies
+                 unpublish    <pkg>[@<versi... Remove a package from the registry
+  u,             update                        Update package versions to latest in-range
 
-         whoami                      Display the current user
+                 version      <increment>      Bump package version
+  info, show,    view         <pkg>[@<versi... View registry information about a package
+
+                 whoami                        Display the current user
 
 COMPANION BINS
 
@@ -91,16 +97,16 @@ USAGE
 
 COMMON COMMANDS
 
-       setup     [<account>]     Configure your vlt.io account registries
-       init                      Initialize a new project
-  i,   install   [<package>...]  Install dependencies
-  q,   query     <selector>      Query for packages in the project
-  b,   build     <selector>      Build packages with lifecycle scripts
-  r,   run       <script>        Run a script defined in package.json
-  x,   exec      <executable>    Execute a package bin
-  p,   pkg       <command>       Manage package metadata
-  pub, publish                   Publish package to registry
-       registry  <alias> <command>Run an account command against a named registry
+       setup     [<account>]      Configure your vlt.io account registries
+       init                       Initialize a new project
+  i,   install   [<package>...]   Install dependencies
+  q,   query     <selector>       Query for packages in the project
+  b,   build     <selector>       Build packages with lifecycle scripts
+  r,   run       <script>         Run a script defined in package.json
+  x,   exec      <executable>     Execute a package bin
+  p,   pkg       <command>        Manage package metadata
+  pub, publish                    Publish package to registry
+       registry  <alias> <command> Run an account command against a named registry
  
 COMPANION BINS
 
