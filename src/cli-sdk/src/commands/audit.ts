@@ -2,7 +2,7 @@ import { actual, GraphModifier } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
-import { stdout, stderr } from '../output.ts'
+import { stderr } from '../output.ts'
 import { isWarnEnabled } from '../verbose-log.ts'
 import {
   buildAuditQuery,
@@ -77,10 +77,12 @@ export const command: CommandFn<AuditResult> = async conf => {
 
   const auditLevelRaw = conf.get('audit-level')
   const auditLevel: SeverityLevel =
-    auditLevelRaw === 'critical' ||
-    auditLevelRaw === 'high' ||
-    auditLevelRaw === 'moderate' ||
-    auditLevelRaw === 'low' ?
+    (
+      auditLevelRaw === 'critical' ||
+      auditLevelRaw === 'high' ||
+      auditLevelRaw === 'moderate' ||
+      auditLevelRaw === 'low'
+    ) ?
       auditLevelRaw
     : 'low'
 
