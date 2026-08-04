@@ -374,6 +374,14 @@ t.test('Query.hasSecuritySelectors', async t => {
     Query.hasSecuritySelectors(':unmaintained'),
     'should return true',
   )
+  t.ok(
+    Query.hasSecuritySelectors(':vuln'),
+    'should return true for :vuln',
+  )
+  t.ok(
+    Query.hasSecuritySelectors(':vulnerable'),
+    'should return true for :vulnerable',
+  )
   t.notOk(Query.hasSecuritySelectors(':foo'), 'should return false')
   t.notOk(Query.hasSecuritySelectors(':has'), 'should return false')
 })

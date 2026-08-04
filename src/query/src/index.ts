@@ -186,6 +186,8 @@ const securitySelectors = new Set([
   ':unmaintained',
   ':unpopular',
   ':unstable',
+  ':vuln',
+  ':vulnerable',
 ])
 
 const setMethodToJSON = (node: QueryResponseNode) => {
@@ -360,20 +362,9 @@ export class Query {
             i => i.type === 'licenseException',
           ),
         },
-        malware: {
-          low: securityArchiveEntry.alerts.some(
-            i => i.type === 'gptAnomaly',
-          ),
-          medium: securityArchiveEntry.alerts.some(
-            i => i.type === 'gptSecurity',
-          ),
-          high: securityArchiveEntry.alerts.some(
-            i => i.type === 'gptMalware',
-          ),
-          critical: securityArchiveEntry.alerts.some(
-            i => i.type === 'malware',
-          ),
-        },
+        malware: securityArchiveEntry.alerts.some(
+          i => i.type === 'malware' || i.type === 'gptMalware',
+        ),
         minified: securityArchiveEntry.alerts.some(
           i => i.type === 'minifiedFile',
         ),
@@ -441,6 +432,22 @@ export class Query {
         unstable: securityArchiveEntry.alerts.some(
           i => i.type === 'unstableOwnership',
         ),
+        vuln: {
+          low: securityArchiveEntry.alerts.some(
+            i => i.type === 'mildCVE' || i.type === 'gptAnomaly',
+          ),
+          medium: securityArchiveEntry.alerts.some(
+            i =>
+              i.type === 'potentialVulnerability' ||
+              i.type === 'gptSecurity',
+          ),
+          high: securityArchiveEntry.alerts.some(
+            i => i.type === 'cve',
+          ),
+          critical: securityArchiveEntry.alerts.some(
+            i => i.type === 'criticalCVE',
+          ),
+        },
       }
 
       setMethodToJSON(node)

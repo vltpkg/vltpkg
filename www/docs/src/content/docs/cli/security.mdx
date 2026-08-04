@@ -37,38 +37,15 @@ scanning.
 
 ## Malware Detection
 
-### Severity-Based Detection
-
-VLT categorizes malware alerts into four severity levels:
-
-- **Critical (0)** - Immediate security threat
-- **High (1)** - Serious security risk
-- **Medium (2)** - Moderate security concern
-- **Low (3)** - Minor security note
+The `:malware` selector is **binary** — it takes no parameters. Any
+matching result may have alerts or CVEs assigned to it.
 
 <Code
-  code={`# Find critical malware only
-$ vlt query ':malware(critical)'
+  code={`# Find any malware
+$ vlt query ':malware'
 
-# Find high severity and above
+# Find direct dependencies with malware
 
-$ vlt query ':malware(">=high")'
-
-# Find specific severity levels
-
-$ vlt query ':malware(medium)'
-
-# Include low severity alerts
-
-$ vlt query ':malware(low)'`} title="Terminal" lang="bash" />
-
-> [!NOTE] Low severity malware alerts are AI-generated and may detect
-> benign behavior.
-
-### Advanced Malware Queries
-
-<Code
-  code={`# Find direct dependencies with malware
 $ vlt query ':root > :malware'
 
 # Find malware in production dependencies
@@ -80,6 +57,31 @@ $ vlt query ':prod :malware'
 $ vlt query ':workspace :malware'`} title="Terminal" lang="bash" />
 
 ## Vulnerability Detection
+
+### Severity-Based Filtering
+
+Use `:vuln` for severity-based vulnerability detection with four
+severity levels: **critical**, **high**, **medium**, and **low**.
+
+<Code
+  code={`# Find critical vulnerabilities only
+$ vlt query ':vuln(critical)'
+
+# Find high severity and above
+
+$ vlt query ':vuln(">=high")'
+
+# Find medium or lower vulnerabilities
+
+$ vlt query ':vuln(">=medium")'
+
+# Include low severity alerts
+
+$ vlt query ':vuln(low)'
+
+# Parameterless :vuln matches severity >= medium
+
+$ vlt query ':vuln'`} title="Terminal" lang="bash" />
 
 ### CVE, CWE, and Severity-Based Searches
 
