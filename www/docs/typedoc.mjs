@@ -16,20 +16,23 @@ import { fileURLToPath } from 'node:url'
 // can be used but they do not play well with the packages strategy
 // and will not link to the correct workspace.
 if (process.env.VERCEL) {
-  const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: repo } =
-    process.env
-  const remote = `https://github.com/${owner}/${repo}.git`
   try {
-    execSync(`git remote add origin ${remote}`)
-  } catch {
-    // git may not be initialized in Vercel build environment
+    const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: repo } =
+      process.env
+    const remote = `https://github.com/${owner}/${repo}.git`
     try {
-      execSync('git init')
       execSync(`git remote add origin ${remote}`)
     } catch {
-      // if git operations fail, continue — typedoc will use fallback for source links
-      console.info(`failed to add ${remote} as origin`)
+      // git may not be initialized in Vercel build environment
+      try {
+        execSync('git init')
+        execSync(`git remote add origin ${remote}`)
+      } catch {
+        // if git operations fail, continue — typedoc will use fallback for source links
+      }
     }
+  } catch (e) {
+    // silently ignore any git setup errors
   }
 }
 
