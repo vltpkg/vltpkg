@@ -366,9 +366,17 @@ export class Query {
             i => i.type === 'licenseException',
           ),
         },
-        malware: securityArchiveEntry.alerts.some(
-          i => i.type === 'malware' || i.type === 'gptMalware',
-        ),
+        malware: (() => {
+          const hasMalware = securityArchiveEntry.alerts.some(
+            i => i.type === 'malware' || i.type === 'gptMalware',
+          )
+          return {
+            low: false,
+            medium: false,
+            high: false,
+            critical: hasMalware,
+          }
+        })(),
         minified: securityArchiveEntry.alerts.some(
           i => i.type === 'minifiedFile',
         ),
