@@ -210,5 +210,4 @@ export default defineConfig({
     sitemapAlias(),
   ],
   output: 'static',
-  adapter: vercel(),
 })
