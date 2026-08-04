@@ -26,13 +26,13 @@ export const usage: CommandUsage = () =>
       vulnerable packages, and typosquats. Use --audit-level to filter
       by minimum severity.`,
     examples: {
-      [`vlt audit`]: {
+      ['']: {
         description: 'Scan all dependencies for security issues',
       },
-      [`vlt audit --audit-level=high`]: {
+      [`--audit-level=high`]: {
         description: 'Only show high and critical severity issues',
       },
-      [`vlt audit --view=json`]: {
+      [`--view=json`]: {
         description: 'Output results as JSON',
       },
     },
