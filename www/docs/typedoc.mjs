@@ -17,8 +17,10 @@ import { fileURLToPath } from 'node:url'
 // and will not link to the correct workspace.
 if (process.env.VERCEL) {
   try {
-    const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: repo } =
-      process.env
+    const {
+      VERCEL_GIT_REPO_OWNER: owner,
+      VERCEL_GIT_REPO_SLUG: repo,
+    } = process.env
     const remote = `https://github.com/${owner}/${repo}.git`
     try {
       execSync(`git remote add origin ${remote}`)
@@ -31,7 +33,7 @@ if (process.env.VERCEL) {
         // if git operations fail, continue — typedoc will use fallback for source links
       }
     }
-  } catch (e) {
+  } catch (_e) {
     // silently ignore any git setup errors
   }
 }
