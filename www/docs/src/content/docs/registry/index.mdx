@@ -11,6 +11,12 @@ import {
   Tabs,
   TabItem,
 } from '@astrojs/starlight/components'
+import { Image } from 'astro:assets'
+import signinImg from '@/assets/images/signin.png'
+import otpEmailImg from '@/assets/images/otp-email.png'
+import accountSetupImg from '@/assets/images/account-setup.png'
+import dashboardImg from '@/assets/images/dashboard.png'
+import loginImg from '@/assets/images/login.png'
 
 ## Sign Up
 
@@ -24,10 +30,10 @@ To publish packages to the vlt registry, you first have to
     You can sign up with Github, Google (Gmail) or with an email and
     password.
 
-    <img
-      src="/images/signin.png"
+    <Image
+      src={signinImg}
       alt="Sign up form on vlt's sign up view with first name and last name fields, and login buttons connecting to Google and Github"
-      className="border-sm"
+      class="border-sm"
       style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
     />
 
@@ -37,19 +43,19 @@ To publish packages to the vlt registry, you first have to
     a one-time passcode (OTP). Paste it into the verification view to
     confirm your account.
 
-    <img
-      src="/images/otp-email.png"
+    <Image
+      src={otpEmailImg}
       alt="Screenshot of vlt signup one-time passcode email"
-      className="border-sm"
+      class="border-sm"
       style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
     />
 
 3.  Set up your account
 
-    <img
-      src="/images/account-setup.png"
+    <Image
+      src={accountSetupImg}
       alt="Screenshot of vlt account setup view with display name and slug fields, and a grid of plans for user selection"
-      className="border-sm"
+      class="border-sm"
       style={{ width: '100%', height: 'auto' }}
     />
 
@@ -58,10 +64,10 @@ To publish packages to the vlt registry, you first have to
 
 4.  You've signed up! You'll be logged into the Dashboard.
 
-    <img
-      src="/images/dashboard.png"
+    <Image
+      src={dashboardImg}
       alt="Screenshot of vlt Dashboard view displaying left side side navigation where using can browse through registries and account settings"
-      className="border-sm"
+      class="border-sm"
       style={{ width: '100%', height: 'auto' }}
     />
 
@@ -76,8 +82,8 @@ To publish packages to the vlt registry, you first have to
    Log in with your email address, or continue with Github or Google.
    You can also use a passkey if you've set one up.
 
-   <img
-     src="/images/login.png"
+   <Image
+     src={loginImg}
      alt="Login view on vlt.io with Email address input, continue button, and Github and Google login buttons. Below are links to Use passkey and a call to action to sign up if the user does not have an account"
      style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
    />

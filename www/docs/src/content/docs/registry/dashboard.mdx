@@ -6,9 +6,11 @@ sidebar:
 ---
 
 import { Aside, Badge, Code } from '@astrojs/starlight/components'
+import { Image } from 'astro:assets'
+import dashboardImg from '@/assets/images/dashboard.png'
 
-<img
-  src="/images/dashboard.png"
+<Image
+  src={dashboardImg}
   alt="vlt Registry Dashboard showing the account overview, recent publishes, and navigation menu"
   style={{ width: '100%', maxWidth: '1200px', height: 'auto' }}
 />
