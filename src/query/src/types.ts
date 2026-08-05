@@ -109,7 +109,7 @@ export type Insights = {
   eval?: boolean
   fs?: boolean
   license?: LicenseInsights
-  malware?: boolean
+  malware?: LeveledInsights
   minified?: boolean
   native?: boolean
   network?: boolean
