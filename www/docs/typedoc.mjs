@@ -33,8 +33,8 @@ if (process.env.VERCEL) {
         // if git operations fail, continue — typedoc will use fallback for source links
       }
     }
-  } catch {
-    // silently ignore any git setup errors
+  } catch (err) {
+    console.error(err)
   }
 }
 
