@@ -3541,3 +3541,84 @@ t.test('normalizeBinPaths', async t => {
 
   t.strictSame(normalizeBinPaths({}), undefined)
 })
+
+t.test('normalizeBinPaths clamps into the package dir', async t => {
+  t.strictSame(
+    normalizeBinPaths({
+      name: 'x',
+      bin: {
+        // values are clamped
+        a: '../../../../etc/forbidden',
+        b: '/abs/forbidden',
+        c: 'bin/../../forbidden',
+        d: 'C:\\x',
+        e: 'a\\b\\c',
+        f: 'file.txt:forbidden',
+        // untouched in effect
+        cli: './bin/cli.js',
+        // keys are reduced to their basename
+        '../forbidden': 'ok.js',
+      },
+    }),
+    {
+      a: 'etc/forbidden',
+      b: 'abs/forbidden',
+      c: 'forbidden',
+      d: 'C/x',
+      e: 'a/b/c',
+      f: 'file.txt/forbidden',
+      cli: 'bin/cli.js',
+      forbidden: 'ok.js',
+    },
+  )
+
+  t.strictSame(
+    normalizeBinPaths({
+      name: 'x',
+      bin: { z: 'a.js', 'y/z': 'b.js' },
+    }),
+    { z: 'b.js' },
+    'clamped keys may collide, last one wins',
+  )
+
+  t.strictSame(
+    normalizeBinPaths({ name: 'x', bin: '../../forbidden' }),
+    { x: 'forbidden' },
+    'string form is sanitized too',
+  )
+
+  t.strictSame(
+    normalizeBinPaths({
+      name: 'x',
+      bin: { drop: '.', '..': 'ok.js', '': 'ok.js', keep: 'ok.js' },
+    }),
+    { keep: 'ok.js' },
+    'degenerate entries are dropped',
+  )
+
+  t.strictSame(
+    normalizeBinPaths({
+      name: 'x',
+      bin: { nope: { nested: 'y' } } as unknown as Record<
+        string,
+        string
+      >,
+    }),
+    {},
+    'non-string values are dropped',
+  )
+})
+
+t.test('normalizeManifest rejects path-unsafe names', async t => {
+  t.throws(
+    () => normalizeManifest({ name: '../../forbidden' }, 'x@1.2.3'),
+    {
+      message: 'Invalid package name: not usable as a path segment',
+      cause: { code: 'EINVALIDNAME', from: 'x@1.2.3' },
+    },
+  )
+  t.throws(() => normalizeManifest({ name: 'node_modules' }))
+
+  const manifest = { name: 'ok', version: '1.0.0' }
+  t.equal(normalizeManifest(manifest), normalizeManifest(manifest))
+})

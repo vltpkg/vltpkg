@@ -629,7 +629,8 @@ t.test('git path selector must be relative', async t => {
   ]
   for (const bad of nogood) {
     t.throws(
-      () => Spec.parse(bad),
+      // named form, since a bare URL is not a valid package name
+      () => Spec.parse('x', bad),
       {
         message: 'Invalid path in git selector',
         cause: { spec: Spec },

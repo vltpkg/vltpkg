@@ -208,6 +208,22 @@ t.test('validate unpack path sanitization', async t => {
     }
   })
 
+  // a prefix comparison would let an entry escape into a sibling dir
+  // whose name merely extends the target's
+  t.test('blocks escapes into name-extending siblings', async t => {
+    for (const path of [
+      'package/../foobar/forbidden',
+      'package/../foo.bar',
+    ]) {
+      const brokenTar = makeTar([{ path, size: 4 }, 'broken'])
+      const dir = t.testdir()
+      await t.rejects(
+        unpack(brokenTar, resolve(dir, 'foo')),
+        'throws an error when no file is extracted',
+      )
+    }
+  })
+
   // Test: Windows drive-relative paths should be blocked
   t.test('blocks Windows drive-relative path escapes', async t => {
     const driveRelativePaths = [

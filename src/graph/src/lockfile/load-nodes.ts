@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { splitDepID, splitExtra } from '@vltpkg/dep-id/browser'
+import {
+  asDepID,
+  splitDepID,
+  splitExtra,
+} from '@vltpkg/dep-id/browser'
 import {
   getBooleanFlagsFromNum,
   getBuildStateFromNum,
@@ -25,6 +29,9 @@ export const loadNodes = (
     nodeCount > 50 ? new Map<string, string>() : null
 
   for (const [id, lockfileNode] of entries) {
+    // lockfile keys have never been through `encode`, so they can hold
+    // anything, and the id is the store directory name
+    asDepID(id)
     const [
       flags,
       name,

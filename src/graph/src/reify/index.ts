@@ -22,6 +22,7 @@ import { addEdges } from './add-edges.ts'
 import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
+import { ensureStoreDirs } from './ensure-store-dirs.ts'
 import { checkNeededBuild } from './check-needed-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
@@ -216,6 +217,10 @@ const reify_ = async (
   // any failed/removed optional deps are not reflected in the lockfile
   // data as it is saved.
   const lfData = lockfileData(options)
+
+  // never write through a symlinked store
+  await ensureStoreDirs(scurry, remover)
+
   const actions: (() => Promise<unknown>)[] = addNodes(
     diff,
     scurry,

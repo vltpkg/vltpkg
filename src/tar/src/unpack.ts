@@ -1,7 +1,14 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
-import { basename, dirname, resolve, sep } from 'node:path'
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  relative,
+  resolve,
+  sep,
+} from 'node:path'
 import { rimraf } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
@@ -44,14 +51,13 @@ const checkFs = (
   // packages should always be in a 'package' tarDir in the archive
   if (!h.path.startsWith(tarDir)) return false
 
-  // Package root
-  const absoluteBasePath = target
-  const itemAbsolutePath = resolve(
+  // entries must stay within the package root. separator-aware, so that
+  // a sibling dir whose name extends the target's is not a prefix match.
+  const rel = relative(
     target,
-    h.path.slice(tarDir.length),
+    resolve(target, h.path.slice(tarDir.length)),
   )
-
-  if (!itemAbsolutePath.startsWith(absoluteBasePath)) {
+  if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
     return false
   }
   return true

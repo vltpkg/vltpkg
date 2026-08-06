@@ -18,6 +18,7 @@ import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
 import { removeOptionalSubgraph } from '../remove-optional-subgraph.ts'
+import { isPathSecurityError } from '../path-security-error.ts'
 import type {
   GraphModifier,
   ModifierActiveEntry,
@@ -368,7 +369,9 @@ const fetchManifestsForDeps = async (
           .manifest(spec, { from: scurry.resolve(fromNode.location) })
           .then(manifest => manifest as Manifest | undefined)
           .catch((er: unknown) => {
-            // optional deps ignored if inaccessible
+            // optional deps ignored if inaccessible, but a dep that tried
+            // to escape the project is never silently dropped
+            if (isPathSecurityError(er)) throw er
             if (edgeOptional || fromNode.optional) {
               return undefined
             }
@@ -503,7 +506,8 @@ const processPlacementTasks = async (
       fromNode,
       type,
       spec,
-      normalizeManifest(manifest),
+      // report broken manifest names against the dependency spec
+      normalizeManifest(manifest, String(spec)),
       fileTypeInfo?.id,
       joinExtra({ peerSetHash, modifier: queryModifier }),
     )

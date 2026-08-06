@@ -3,6 +3,7 @@ import { graphStep } from '@vltpkg/output'
 import { load as loadActual } from '../actual/load.ts'
 import { load as loadVirtual } from '../lockfile/load.ts'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
+import { isPathSecurityError } from '../path-security-error.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions as LoadActualOptions } from '../actual/load.ts'
 import type {
@@ -88,6 +89,8 @@ export const build = async (
       monorepo,
     })
   } catch (err) {
+    // a path-safety verdict must not be silently rebuilt away
+    if (isPathSecurityError(err)) throw err
     // Check if this is a lockfile version mismatch
     const cause = (
       err as Error & {

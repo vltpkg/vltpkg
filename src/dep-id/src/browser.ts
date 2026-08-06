@@ -72,12 +72,21 @@ const depIDRegExp = new RegExp(
     }]*)(${delimiter}[^${delimiter}]*)?$`,
 )
 
+/** Parsed dependency IDs must be safe store directory names. */
+const pathUnsafeDepID = (str: string): boolean =>
+  /[/\\\x00-\x1f\x7f]/.test(str) ||
+  /^[A-Za-z]:/.test(str) ||
+  str.split(delimiter).some(p => p === '.' || p === '..')
+
 export const isDepID = (str: unknown): str is DepID =>
-  typeof str === 'string' && depIDRegExp.test(str)
+  typeof str === 'string' &&
+  depIDRegExp.test(str) &&
+  !pathUnsafeDepID(str)
 
 export const asDepID = (str: string): DepID => {
   if (!isDepID(str)) {
-    throw error('Expected dep id', {
+    throw error(`Expected dep id.`, {
+      code: 'EINVALIDNAME',
       found: str,
     })
   }
@@ -461,10 +470,9 @@ export const hydrateTuple = (
       if (!first) {
         throw error('no name/path on workspace id', { found: tuple })
       }
-      res =
-        name && name !== first ?
-          Spec.parse(name, `workspace:${first}@*`, options)
-        : Spec.parse(first, `workspace:*`, options)
+      const workspaceName =
+        name ?? first.slice(first.lastIndexOf('/') + 1)
+      res = Spec.parse(workspaceName, 'workspace:*', options)
       break
     }
   }

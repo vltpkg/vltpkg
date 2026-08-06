@@ -54,23 +54,23 @@ exports[`test/index.ts > TAP > hydrate only > file~x.tgz > hydrated with scoped 
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~./a > hydrated with name asdf 1`] = `
-asdf@workspace:./a@*
+asdf@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~./a > hydrated with name unknown 1`] = `
-./a@workspace:*
+a@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~./a > hydrated with name y 1`] = `
-y@workspace:./a@*
+y@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~./a > hydrated with scoped name 1`] = `
-@scoped/x@workspace:./a@*
+@scoped/x@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~a > hydrated with name asdf 1`] = `
-asdf@workspace:a@*
+asdf@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~a > hydrated with name unknown 1`] = `
@@ -78,11 +78,27 @@ a@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~a > hydrated with name y 1`] = `
-y@workspace:a@*
+y@workspace:*
 `
 
 exports[`test/index.ts > TAP > hydrate only > workspace~a > hydrated with scoped name 1`] = `
-@scoped/x@workspace:a@*
+@scoped/x@workspace:*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace~packages+foo > hydrated with name asdf 1`] = `
+asdf@workspace:*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace~packages+foo > hydrated with name unknown 1`] = `
+foo@workspace:*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace~packages+foo > hydrated with name y 1`] = `
+y@workspace:*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace~packages+foo > hydrated with scoped name 1`] = `
+@scoped/x@workspace:*
 `
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name asdf 1`] = `
