@@ -20,6 +20,7 @@ export const defaultEditor = () =>
 
 const canonicalCommands = {
   access: 'access',
+  audit: 'audit',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',

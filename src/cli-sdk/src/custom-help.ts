@@ -87,6 +87,10 @@ const commandHelp = {
     args: '<command> [<args>]',
     desc: 'Manage package access and team permissions',
   },
+  audit: {
+    args: '',
+    desc: 'Check installed dependencies for security issues',
+  },
   bugs: {
     args: '[<spec>]',
     desc: 'Open the bug tracker for a package',
