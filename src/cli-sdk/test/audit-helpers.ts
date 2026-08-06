@@ -41,9 +41,9 @@ const squatInsights = (
   ...overrides,
 })
 
-/** Inbound-edges fixture: a node's `edgesIn`, one edge per parent. */
-const edgesFrom = (...parents: { id: string }[]) =>
-  new Set(parents.map(from => ({ from })))
+/** Outbound-edges fixture: an importer's `edgesOut`, one entry per direct dependency. */
+const edgesOutTo = (...deps: { id: string; name?: string }[]) =>
+  new Map(deps.map(to => [to.name ?? to.id, { to }]))
 
 /** AuditPackage fixture, for tests that don't care about identity. */
 const makePkg = (
@@ -257,19 +257,24 @@ t.test('aggregateBySeverity', async t => {
       name: 'direct-pkg',
       version: '1.0.0',
       insights: { malware: leveled({ high: true }) },
-      edgesIn: edgesFrom(importer),
     }
     const transitiveNode = {
       id: 'transitive-id',
       name: 'transitive-pkg',
       version: '2.0.0',
       insights: { malware: leveled({ high: true }) },
-      // parent is directNode, not an importer
-      edgesIn: edgesFrom(directNode),
+      // not declared in any importer's edgesOut -- only reachable
+      // through directNode, not an importer
+    }
+    // scopedImporter's edgesOut declares directNode as a direct
+    // dependency; transitiveNode isn't, so it's transitive.
+    const scopedImporter = {
+      id: 'importer-1',
+      edgesOut: edgesOutTo(directNode),
     }
     const result = aggregateBySeverity(
       [directNode, transitiveNode],
-      importers,
+      new Set([scopedImporter]),
     )
     t.equal(result.directCount, 1)
     t.equal(result.indirectCount, 1)

@@ -117,21 +117,6 @@ const maxSeverity = (
 ): SeverityLevel => (severityRank[a] <= severityRank[b] ? a : b)
 
 /**
- * True if any edge in `edgesIn` comes from a node whose id is in
- * `ids`. Iterates directly rather than spreading into an array, and
- * short-circuits on the first match.
- */
-const hasEdgeFrom = (
-  edgesIn: Iterable<{ from: { id: string } }>,
-  ids: Set<string>,
-): boolean => {
-  for (const edge of edgesIn) {
-    if (ids.has(edge.from.id)) return true
-  }
-  return false
-}
-
-/**
  * Typeguard for objects with an id property.
  */
 export const isNodeWithId = (
@@ -143,20 +128,25 @@ export const isNodeWithId = (
   typeof o.id === 'string'
 
 /**
- * Typeguard for a node exposing an `edgesIn` set, each edge having a
- * `.from` node with an id -- used to detect direct dependencies.
+ * Typeguard for a node exposing an `edgesOut` map, each edge having a
+ * `.to` node with an id -- used to precompute an importer's direct
+ * dependencies. `edgesOut` is bounded by that importer's own declared
+ * dependencies, unlike a dependency's `edgesIn` which grows with
+ * however many packages in the whole graph depend on it.
  */
-export const isNodeWithEdgesIn = (
+export const isNodeWithEdgesOut = (
   o: unknown,
-): o is { edgesIn: Iterable<{ from: { id: string } }> } => {
-  if (typeof o !== 'object' || o === null || !('edgesIn' in o)) {
+): o is {
+  edgesOut: { values: () => Iterable<{ to?: { id: string } }> }
+} => {
+  if (typeof o !== 'object' || o === null || !('edgesOut' in o)) {
     return false
   }
-  const edgesIn = o.edgesIn
+  const edgesOut = o.edgesOut
   return (
-    typeof edgesIn === 'object' &&
-    edgesIn !== null &&
-    Symbol.iterator in edgesIn
+    typeof edgesOut === 'object' &&
+    edgesOut !== null &&
+    typeof (edgesOut as { values?: unknown }).values === 'function'
   )
 }
 
@@ -250,9 +240,25 @@ export const aggregateBySeverity = (
   warn: (message: string) => void = () => {},
 ): AuditResult => {
   const result: AuditResult = emptyAuditResult()
-  const importerIds = new Set(
-    [...importers].filter(isNodeWithId).map(imp => imp.id),
-  )
+
+  // Precompute importer ids and their direct dependencies from the
+  // importers' own `edgesOut` (bounded by what each importer declares
+  // in its package.json). This is cheaper than checking, per flagged
+  // node, whether any of that node's `edgesIn` comes from an
+  // importer -- `edgesIn` grows with how many packages in the whole
+  // graph depend on that node, which for a popular/shared package can
+  // be large.
+  const importerIds = new Set<string>()
+  const directDepIds = new Set<string>()
+  for (const imp of importers) {
+    if (!isNodeWithId(imp)) continue
+    importerIds.add(imp.id)
+    if (isNodeWithEdgesOut(imp)) {
+      for (const edge of imp.edgesOut.values()) {
+        if (edge.to) directDepIds.add(edge.to.id)
+      }
+    }
+  }
 
   for (const node of nodes) {
     if (!isNodeWithInsights(node)) continue
@@ -303,12 +309,10 @@ export const aggregateBySeverity = (
     if (alerts.length === 0) continue
 
     // Direct dependency: the node itself is an importer (e.g. a
-    // workspace root with its own findings), or some importer has an
-    // edge directly into it.
+    // workspace root with its own findings), or it's one of the
+    // importers' declared direct dependencies.
     const direct =
-      importerIds.has(node.id) ||
-      (isNodeWithEdgesIn(node) &&
-        hasEdgeFrom(node.edgesIn, importerIds))
+      importerIds.has(node.id) || directDepIds.has(node.id)
 
     const pkg: AuditPackage = {
       name: node.name ?? 'unknown',
