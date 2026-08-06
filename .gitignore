@@ -1,6 +1,6 @@
 .DS_Store
 .claude/**
-.env
+.env*
 .env.production
 .build-*/
 *.tsbuildinfo
