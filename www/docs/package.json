@@ -16,7 +16,6 @@
     "@astrojs/starlight": "^0.30.6",
     "@astrojs/starlight-tailwind": "^3.0.1",
     "@astrojs/tailwind": "^5.1.5",
-    "@astrojs/vercel": "^8.2.11",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-scroll-area": "^1.2.10",
