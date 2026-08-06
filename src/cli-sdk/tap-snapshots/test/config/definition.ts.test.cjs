@@ -10,6 +10,7 @@ Object {
   "?": "help",
   "access": "access",
   "add": "install",
+  "audit": "audit",
   "b": "build",
   "bugs": "bugs",
   "build": "build",
@@ -202,6 +203,7 @@ Object {
     "type": "string",
     "validOptions": Array [
       "access",
+      "audit",
       "bugs",
       "build",
       "cache",
