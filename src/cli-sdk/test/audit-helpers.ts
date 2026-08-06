@@ -7,6 +7,7 @@ import {
   emptySummary,
   filterAuditResult,
   formatAuditSummary,
+  formatSeverityHeading,
   nonEmptySeverityBuckets,
   formatDependencyBreakdown,
   categoryCounts,
@@ -335,6 +336,27 @@ t.test('aggregateBySeverity', async t => {
     t.equal(result.indirectCount, 0)
   })
 
+  t.test(
+    'skips importers without an id instead of throwing',
+    async t => {
+      const malformedImporters = new Set([
+        { notAnId: 'oops' },
+        importer,
+      ])
+      const nodes = [
+        {
+          id: 'importer-1',
+          name: 'importer-pkg',
+          version: '1.0.0',
+          insights: { malware: leveled({ high: true }) },
+        },
+      ]
+      const result = aggregateBySeverity(nodes, malformedImporters)
+      t.equal(result.directCount, 1)
+      t.equal(result.summary.high[0]?.direct, true)
+    },
+  )
+
   t.test('handles squat alerts', async t => {
     const nodes = [
       {
@@ -599,6 +621,28 @@ t.test('nonEmptySeverityBuckets', async t => {
   })
 })
 
+t.test('formatSeverityHeading', async t => {
+  t.test('formats without color styling by default', async t => {
+    t.equal(formatSeverityHeading('critical', 2), 'critical (2)')
+  })
+
+  t.test('formats each severity level with its count', async t => {
+    t.equal(formatSeverityHeading('high', 1), 'high (1)')
+    t.equal(formatSeverityHeading('moderate', 3), 'moderate (3)')
+    t.equal(formatSeverityHeading('low', 0), 'low (0)')
+  })
+
+  t.test(
+    'applies color styling without altering the text when colors is true',
+    async t => {
+      t.match(
+        formatSeverityHeading('critical', 2, true),
+        /critical \(2\)/,
+      )
+    },
+  )
+})
+
 t.test('categoryCounts', async t => {
   t.test(
     'counts alerts by category across all severities',
@@ -774,4 +818,36 @@ t.test('formatAuditSummary', async t => {
     const output = formatAuditSummary(result)
     t.match(output, /2 direct dependencies, 0 transitive/)
   })
+
+  t.test(
+    'applies color styling without altering the text when colors is true',
+    async t => {
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          high: [
+            makePkg({
+              name: 'vuln-pkg',
+              alerts: ['malware: high', 'severity: high'],
+              cves: ['CVE-2021-1234'],
+              direct: true,
+            }),
+          ],
+        },
+        total: 1,
+        directCount: 1,
+        indirectCount: 0,
+      })
+      const output = formatAuditSummary(result, { colors: true })
+      t.match(output, /1 malware/)
+      t.match(output, /1 high/)
+      // colors: true renders CVEs as OSC 8 terminal hyperlinks
+      // (ESC ]8;;URL ESC \ TEXT ESC ]8;; ESC \) instead of the plain
+      // "text (url)" fallback used when colors is false.
+      t.match(
+        output,
+        /\x1b]8;;https:\/\/nvd\.nist\.gov\/vuln\/detail\/CVE-2021-1234\x1b\\CVE-2021-1234/,
+      )
+    },
+  )
 })
