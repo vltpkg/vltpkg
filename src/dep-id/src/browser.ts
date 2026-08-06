@@ -472,7 +472,10 @@ export const hydrateTuple = (
       }
       const workspaceName =
         name ?? first.slice(first.lastIndexOf('/') + 1)
-      res = Spec.parse(workspaceName, 'workspace:*', options)
+      res =
+        workspaceName !== first ?
+          Spec.parse(workspaceName, `workspace:${first}@*`, options)
+        : Spec.parse(first, 'workspace:*', options)
       break
     }
   }

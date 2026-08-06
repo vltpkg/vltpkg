@@ -17,6 +17,7 @@ import {
   joinExtra,
   splitExtra,
 } from '../src/index.ts'
+import { hydrate as browserHydrate } from '../src/browser.ts'
 import type { DepID } from '../src/index.ts'
 
 // there is no default registry any more; these cases still want one
@@ -145,6 +146,35 @@ t.test('hydrate only', t => {
       t.matchSnapshot(String(hy), 'hydrated with name y')
       t.end()
     })
+  }
+
+  t.end()
+})
+
+t.test('hydrate preserves a workspace path under an alias', t => {
+  const id = joinDepIDTuple(['workspace', 'packages/real'])
+  const hydrators = [
+    ['node', hydrate],
+    ['browser', browserHydrate],
+  ] as const
+
+  for (const [implementation, hydrateWorkspace] of hydrators) {
+    const spec = hydrateWorkspace(id, 'alias')
+    t.equal(
+      spec.name,
+      'alias',
+      `${implementation} uses the safe alias`,
+    )
+    t.equal(
+      spec.workspace,
+      'packages/real',
+      `${implementation} preserves the workspace path`,
+    )
+    t.equal(
+      String(spec),
+      'alias@workspace:packages/real@*',
+      `${implementation} preserves the explicit workspace spec`,
+    )
   }
 
   t.end()
