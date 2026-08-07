@@ -24,6 +24,10 @@ export const isVerbose = (level: LogLevel): boolean =>
 const isDebug = (level: LogLevel): boolean =>
   rank[level] >= rank.debug
 
+/** True when the given level should emit warnings (i.e. not silent/error-only). */
+export const isWarnEnabled = (level: LogLevel): boolean =>
+  rank[level] >= rank.warn
+
 /** The subset of `styleText` color names this module applies. */
 export type StyleColor = 'green' | 'red' | 'gray'
 

@@ -305,9 +305,13 @@ export class Query {
         confused: securityArchiveEntry.alerts.some(
           i => i.type === 'manifestConfusion',
         ),
-        cve: securityArchiveEntry.alerts
-          .map(i => i.props?.cveId)
-          .filter(i => i !== undefined),
+        cve: Array.from(
+          new Set(
+            securityArchiveEntry.alerts
+              .map(i => i.props?.cveId)
+              .filter((i): i is `CVE-${string}` => i !== undefined),
+          ),
+        ),
         cwe: Array.from(
           new Set(
             securityArchiveEntry.alerts
@@ -362,9 +366,17 @@ export class Query {
             i => i.type === 'licenseException',
           ),
         },
-        malware: securityArchiveEntry.alerts.some(
-          i => i.type === 'malware' || i.type === 'gptMalware',
-        ),
+        malware: (() => {
+          const hasMalware = securityArchiveEntry.alerts.some(
+            i => i.type === 'malware' || i.type === 'gptMalware',
+          )
+          return {
+            low: false,
+            medium: false,
+            high: false,
+            critical: hasMalware,
+          }
+        })(),
         minified: securityArchiveEntry.alerts.some(
           i => i.type === 'minifiedFile',
         ),

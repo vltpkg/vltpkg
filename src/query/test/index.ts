@@ -289,6 +289,68 @@ t.test('insights', async t => {
   }
 })
 
+t.test('insights.cve dedupes repeated cve ids', async t => {
+  const graph = getSimpleGraph()
+  const query = new Query({
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
+    securityArchive: asSecurityArchiveLike(
+      new Map([
+        [
+          joinDepIDTuple(['registry', '', 'e@1.0.0']),
+          asPackageReportData({
+            id: 'e@1.0.0',
+            author: [],
+            size: 0,
+            type: 'npm',
+            name: 'e',
+            version: '1.0.0',
+            license: 'MIT',
+            score: {
+              overall: 0.5,
+              security: 0.3,
+              maintenance: 0.7,
+              popularity: 0.6,
+            },
+            alerts: [
+              {
+                key: 'alert-1',
+                type: 'cve',
+                severity: 'high',
+                category: 'security',
+                props: {
+                  cveId: 'CVE-2023-1234',
+                  lastPublish: '2023-01-01',
+                },
+              },
+              // same CVE reported again under a different alert type --
+              // insights.cve should still list it once
+              {
+                key: 'alert-2',
+                type: 'criticalCVE',
+                severity: 'critical',
+                category: 'security',
+                props: {
+                  cveId: 'CVE-2023-1234',
+                  lastPublish: '2023-01-01',
+                },
+              },
+            ],
+          }),
+        ],
+      ]),
+    ),
+  })
+  const result = await query.search('*', mockSearchOptions)
+  const nodeE = result.nodes.find(n => n.name === 'e')
+  t.strictSame(
+    nodeE?.insights.cve,
+    ['CVE-2023-1234'],
+    'duplicate cve ids across alerts collapse to one entry',
+  )
+})
+
 t.test('bad selector type', async t => {
   await t.rejects(
     walk(testBrokenState()),
