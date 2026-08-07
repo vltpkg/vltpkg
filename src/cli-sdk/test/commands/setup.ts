@@ -9,6 +9,7 @@ type Added = [string, Record<string, unknown>]
 const loadSetup = async (answers: string[]) => {
   const loginCalls: string[] = []
   const questions: string[] = []
+  const logged: string[] = []
   const queue = [...answers]
   const mod = await t.mockImport<
     typeof import('../../src/commands/setup.ts')
@@ -29,8 +30,11 @@ const loadSetup = async (answers: string[]) => {
         close: () => {},
       }),
     },
+    '../../src/output.ts': {
+      stdout: (...a: unknown[]) => logged.push(a.join(' ')),
+    },
   })
-  return { mod, loginCalls, questions }
+  return { mod, loginCalls, questions, logged }
 }
 
 const makeConf = (
@@ -152,7 +156,7 @@ t.test('non-interactive writes to project config', async t => {
 
 t.test('interactive: prompt account, auth, add alias', async t => {
   const added: Added[] = []
-  const { mod, loginCalls } = await loadSetup([
+  const { mod, loginCalls, logged } = await loadSetup([
     'acme', // account slug
     'y', // authenticate now
     'y', // add another alias?
@@ -173,6 +177,16 @@ t.test('interactive: prompt account, auth, add alias', async t => {
     partner: 'https://partner.example.com/',
   })
   t.equal(added[0]?.[0], 'user')
+  // each browser login says which registry it is for, so the second
+  // prompt does not look like a repeat of the first
+  t.match(
+    logged.filter(l => /authenticat/i.test(l)),
+    [
+      /browser opens once per registry/,
+      /First, let's authenticate your public npm registry mirror \("npm"\)/,
+      /Now let's authenticate your private registry \("main"\)/,
+    ],
+  )
 })
 
 t.test(
