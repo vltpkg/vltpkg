@@ -2,6 +2,9 @@ import t from 'tap'
 import * as Graph from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
+import { Spec } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
+import { unload } from '@vltpkg/vlt-json'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { Test } from 'tap'
 
@@ -99,6 +102,50 @@ const mockAuditWithFindings = async (
               edgesIn: new Set(),
             }
             return { nodes: [malformedNode] }
+          }
+        },
+      },
+      ...mocks,
+    },
+  )
+
+/**
+ * Mocks `@vltpkg/query`'s `Query` to return a caller-supplied set of
+ * nodes from `search()`, regardless of query string -- used to test
+ * how `audit.ts` itself classifies/aggregates whatever the query
+ * returns (e.g. direct vs transitive), independent of the real DSS
+ * engine's selector matching.
+ */
+const mockAuditWithNodes = async (
+  t: Test,
+  {
+    graph: g,
+    nodes,
+    ...mocks
+  }: { graph: Graph.Graph; nodes: unknown[] } & Record<string, any>,
+) =>
+  t.mockImport<typeof import('../../src/commands/audit.ts')>(
+    '../../src/commands/audit.ts',
+    {
+      '@vltpkg/graph': t.createMock(Graph, {
+        actual: {
+          load: () => g,
+        },
+      }),
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return {
+              ok: true,
+              get: () => undefined,
+            }
+          },
+        },
+      },
+      '@vltpkg/query': {
+        Query: class MockQuery {
+          async search() {
+            return { nodes }
           }
         },
       },
@@ -265,4 +312,93 @@ t.test('audit', async t => {
       t.ok(parsed, `should return result for audit-level=${level}`)
     }
   })
+
+  t.test(
+    'classifies a workspace-declared dependency as direct',
+    async t => {
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(mainManifest),
+        'vlt.json': JSON.stringify({
+          workspaces: { packages: ['./packages/*'] },
+        }),
+        packages: {
+          b: {
+            'package.json': JSON.stringify({
+              name: 'b',
+              version: '1.0.0',
+              dependencies: { evil: '^1.0.0' },
+            }),
+          },
+        },
+      })
+      t.chdir(dir)
+      unload()
+
+      const monorepo = Monorepo.load(dir)
+      const workspaceGraph = new Graph.Graph({
+        ...specOptions,
+        projectRoot: dir,
+        mainManifest,
+        monorepo,
+      })
+      const wsNode = [...workspaceGraph.importers].find(
+        i => i.name === 'b',
+      )
+      if (!wsNode) throw new Error('workspace b not found')
+      const evilNode = workspaceGraph.placePackage(
+        wsNode,
+        'prod',
+        Spec.parse('evil@^1.0.0', specOptions),
+        { name: 'evil', version: '1.0.0' },
+      )
+      if (!evilNode) throw new Error('failed to place evil@1.0.0')
+
+      const workspaceOptions = {
+        scurry: new PathScurry(dir),
+        packageJson: new PackageJson(),
+        projectRoot: dir,
+        monorepo,
+      }
+      workspaceOptions.packageJson.read = () => mainManifest
+      workspaceOptions.packageJson.maybeRead = () => mainManifest
+
+      const CommandWithWorkspaceFinding = await mockAuditWithNodes(
+        t,
+        {
+          graph: workspaceGraph,
+          nodes: [
+            {
+              id: evilNode.id,
+              name: 'evil',
+              version: '1.0.0',
+              insights: {
+                malware: {
+                  low: false,
+                  medium: false,
+                  high: false,
+                  critical: true,
+                },
+              },
+            },
+          ],
+        },
+      )
+
+      const result = await runCommand(
+        { values: { view: 'json' }, options: workspaceOptions },
+        CommandWithWorkspaceFinding,
+      )
+      const parsed = JSON.parse(result as string)
+      const evilPkg = parsed.summary.critical.find(
+        (p: { name: string }) => p.name === 'evil',
+      )
+      t.ok(evilPkg, 'evil should be reported as a critical finding')
+      t.equal(
+        evilPkg.direct,
+        true,
+        'a dependency declared directly by a non-main workspace should be direct, not transitive',
+      )
+    },
+  )
 })
