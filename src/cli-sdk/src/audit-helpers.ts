@@ -44,8 +44,13 @@ export const isSecurityAuditSelector = (query: string): boolean =>
  * severity filtering instead.
  */
 export const buildAuditQuery = (level: string): string => {
+  // :scripts is deliberately excluded -- aggregateBySeverity has no
+  // handling for lifecycle-script findings (no insights.scripts
+  // bucket, no "scripts" category), so matches were fetched from the
+  // DSS query and then silently discarded, doing work for no
+  // user-visible output.
   const defaultQuery =
-    ':malware, :vulnerable, :severity(<=low), :scripts, :squat'
+    ':malware, :vulnerable, :severity(<=low), :squat'
   const queries: Record<string, string> = {
     low: defaultQuery,
     moderate:
