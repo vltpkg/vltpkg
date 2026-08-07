@@ -136,7 +136,40 @@ t.test('buildAuditQuery', async t => {
   // severe), so "at or above" a level must use `<=`, not `>`/`>=`.
   //
   // :malware is a binary selector (no parameters), so we use :vuln
-  // for severity-based filtering.
+  // for severity-based filtering. It (and :squat, which only has
+  // critical/medium kinds) must still appear at every level -- see
+  // the "queries :malware/:squat at every level" tests below, which
+  // encode that requirement independently of the exact comparator
+  // syntax so a future refactor can't silently drop a category again
+  // the way the pinned strings alone let happen here.
+
+  t.test('queries :malware at every level, not just low', async t => {
+    // :malware has no comparator, so it must appear unqualified at
+    // every level -- if it's missing at moderate/high/critical, the
+    // DSS query drops malware-only findings before they ever reach
+    // aggregateBySeverity, regardless of --audit-level.
+    for (const level of ['low', 'moderate', 'high', 'critical']) {
+      t.match(
+        buildAuditQuery(level),
+        /:malware\b/,
+        `${level} includes :malware`,
+      )
+    }
+  })
+
+  t.test('queries :squat at every level, not just low', async t => {
+    // :squat only has two kinds (critical=0, medium=2 -- see
+    // src/query/src/pseudo/squat.ts), but it must appear in some form
+    // at every level, or typosquat findings vanish above low even
+    // though the engine can express e.g. :squat(critical).
+    for (const level of ['low', 'moderate', 'high', 'critical']) {
+      t.match(
+        buildAuditQuery(level),
+        /:squat\b/,
+        `${level} includes :squat`,
+      )
+    }
+  })
 
   t.test('returns full query for low level', async t => {
     const q = buildAuditQuery('low')
@@ -148,17 +181,26 @@ t.test('buildAuditQuery', async t => {
 
   t.test('returns filtered query for moderate level', async t => {
     const q = buildAuditQuery('moderate')
-    t.equal(q, ':vuln(<=medium), :severity(<=medium)')
+    t.equal(
+      q,
+      ':malware, :vuln(<=medium), :severity(<=medium), :squat(<=medium)',
+    )
   })
 
   t.test('returns filtered query for high level', async t => {
     const q = buildAuditQuery('high')
-    t.equal(q, ':vuln(<=high), :severity(<=high)')
+    t.equal(
+      q,
+      ':malware, :vuln(<=high), :severity(<=high), :squat(critical)',
+    )
   })
 
   t.test('returns filtered query for critical level', async t => {
     const q = buildAuditQuery('critical')
-    t.equal(q, ':vuln(critical), :severity(critical)')
+    t.equal(
+      q,
+      ':malware, :vuln(critical), :severity(critical), :squat(critical)',
+    )
   })
 
   t.test('defaults to low for unknown level', async t => {

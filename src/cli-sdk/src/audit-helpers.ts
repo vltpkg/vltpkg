@@ -29,22 +29,30 @@ export const isSecurityAuditSelector = (query: string): boolean =>
 /**
  * Build a DSS query string from an audit level.
  *
- * `:vuln()`/`:severity()` comparators operate on the query engine's
- * own numeric scale (critical=0 ... low=3, lower = more severe; see
- * src/query/src/pseudo/severity.ts and vuln.ts), so "at or above"
- * a given level is expressed as `<=` that level's value, not `>`/`>=`.
+ * `:vuln()`/`:severity()`/`:squat()` comparators operate on the query
+ * engine's own numeric scale (critical=0 ... low=3, lower = more
+ * severe; see src/query/src/pseudo/severity.ts, vuln.ts, squat.ts),
+ * so "at or above" a given level is expressed as `<=` that level's
+ * value, not `>`/`>=`. `:squat` only has two kinds (critical=0,
+ * medium=2) -- there is no `:squat(high)`/`:squat(low)`.
  *
- * `:malware` is a binary selector (no parameters), so we use `:vuln`
- * for severity-based filtering.
+ * `:malware` is a binary selector (no parameters, always matches any
+ * malware alert regardless of severity), so it must appear
+ * unqualified at every level -- omitting it above `low` would drop
+ * malware-only findings from the query entirely, not just from a
+ * severity bucket. Use `:vuln` for comparator-based vulnerability
+ * severity filtering instead.
  */
 export const buildAuditQuery = (level: string): string => {
   const defaultQuery =
     ':malware, :vulnerable, :severity(<=low), :scripts, :squat'
   const queries: Record<string, string> = {
     low: defaultQuery,
-    moderate: ':vuln(<=medium), :severity(<=medium)',
-    high: ':vuln(<=high), :severity(<=high)',
-    critical: ':vuln(critical), :severity(critical)',
+    moderate:
+      ':malware, :vuln(<=medium), :severity(<=medium), :squat(<=medium)',
+    high: ':malware, :vuln(<=high), :severity(<=high), :squat(critical)',
+    critical:
+      ':malware, :vuln(critical), :severity(critical), :squat(critical)',
   }
   return queries[level] ?? defaultQuery
 }
