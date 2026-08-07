@@ -88,10 +88,15 @@ export const command: CommandFn<AuditResult> = async conf => {
 
   const queryString = buildAuditQuery(auditLevel)
 
+  // graph.importers includes workspace roots, not just the main
+  // importer -- a dependency declared directly by a workspace should
+  // be classified as direct, not transitive.
+  const importers = graph.importers
+
   const q = new Query({
     edges: graph.edges,
     nodes: new Set(graph.nodes.values()),
-    importers: new Set([graph.mainImporter]),
+    importers,
     securityArchive,
   })
 
@@ -99,7 +104,6 @@ export const command: CommandFn<AuditResult> = async conf => {
     signal: new AbortController().signal,
   })
 
-  const importers = new Set([graph.mainImporter])
   const result = aggregateBySeverity(nodes, importers, message => {
     if (isWarnEnabled(conf.values.loglevel)) stderr(message)
   })
