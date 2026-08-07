@@ -881,3 +881,23 @@ t.test('throwOnMissingManifest option', async t => {
     'should not throw when throwOnMissingManifest is not set',
   )
 })
+
+t.test('rejects broken lockfile data', async t => {
+  const graph = new Graph({
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot: t.testdirName,
+  })
+
+  t.throws(
+    () =>
+      loadNodes(
+        graph,
+        {
+          [`file~../../../tmp/forbidden`]: [0, 'forbidden'],
+        },
+        {},
+      ),
+    { cause: { code: 'EINVALIDNAME' } },
+    'the id is the store directory name',
+  )
+})

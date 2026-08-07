@@ -68,6 +68,7 @@ export class PackageJson {
         asManifest(
           parse(readFileSync(filename, { encoding: 'utf8' })),
         ),
+        filename,
       )
       this.#cache.set(dir, res)
       this.#pathCache.set(res, dir)

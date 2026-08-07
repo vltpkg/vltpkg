@@ -1621,8 +1621,10 @@ t.test(
 
 t.test('remote dependency integrity in lockfile', async t => {
   const remoteIntegrity = 'sha512-remote-computed-integrity'
-  const remoteDepId =
-    'remote~~https://example.com/remote-pkg-1.0.0.tgz'
+  const remoteDepId = joinDepIDTuple([
+    'remote',
+    'https://example.com/remote-pkg-1.0.0.tgz',
+  ])
 
   // Create mock packageInfo that returns integrity for remote deps
   const mockPackageInfoWithIntegrity = createMockPackageInfo({

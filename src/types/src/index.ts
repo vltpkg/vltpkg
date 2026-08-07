@@ -1,7 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { Version } from '@vltpkg/semver'
+import { assertPathSafeName } from '@vltpkg/spec/browser'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Spec, SpecLikeBase, SpecOptions } from '@vltpkg/spec'
+import { posix } from 'node:path'
+import { debuglog } from 'node:util'
+
+const debug = debuglog('vlt')
 
 /**
  * Utility type that overrides specific properties of type T with new types
@@ -769,6 +774,42 @@ export const isNormalizedLibc = (o: unknown): o is NormalizedLibc => {
   )
 }
 
+const unixify = (ref: string) => ref.replace(/[\\:]/g, '/')
+
+/**
+ * Clamp a manifest-supplied relative path into the package dir. The result
+ * is always a `..`-free, non-absolute path, so resolving it under the
+ * package dir cannot escape. Returns `''` for `.`, `..` and `''`.
+ */
+const secure = (ref: string) => {
+  const s = unixify(posix.join('.', posix.join('/', unixify(ref))))
+  return s === './' ? '' : s
+}
+
+/**
+ * Clamp bin keys (which become path segments under `.bin/`) and bin values
+ * (resolved under the package dir) into safe relative paths.
+ */
+const secureBinPaths = (
+  bin: Record<string, string>,
+): Record<string, string> => {
+  const res: Record<string, string> = {}
+  for (const [key, val] of Object.entries(bin)) {
+    // types say string, but manifests are untrusted
+    const v = typeof val === 'string' ? secure(val) : ''
+    const k = posix.basename(secure(key))
+    if (!k || !v) {
+      debug('dropped unusable bin entry', key, val)
+      continue
+    }
+    if (k !== key || v !== val) {
+      debug('rewrote unsafe bin entry', key, val, '->', k, v)
+    }
+    res[k] = v
+  }
+  return res
+}
+
 /**
  * Normalizes the bin paths.
  */
@@ -780,9 +821,9 @@ export const normalizeBinPaths = (
   if (bin) {
     if (name && typeof bin === 'string') {
       const [_scope, pkg] = parseScope(name)
-      return { [pkg]: bin }
+      return secureBinPaths({ [pkg]: bin })
     } else if (typeof bin === 'object') {
-      return bin
+      return secureBinPaths(bin)
     }
   }
 }
@@ -1162,11 +1203,17 @@ export const normalizeManifest = <
   T extends Manifest | ManifestRegistry,
 >(
   manifest: T,
+  from?: string,
 ): SomeNormalizedManifest<T> => {
   // Check cache first using manifest object reference
   const cached = normalizeManifestCache.get(manifest)
   if (cached) {
     return cached as SomeNormalizedManifest<T>
+  }
+
+  // the single choke point every manifest passes through, from any source
+  if (manifest.name !== undefined) {
+    assertPathSafeName(manifest.name, from)
   }
 
   manifest = fixManifestVersion(manifest)

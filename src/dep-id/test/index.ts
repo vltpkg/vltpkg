@@ -17,6 +17,7 @@ import {
   joinExtra,
   splitExtra,
 } from '../src/index.ts'
+import { hydrate as browserHydrate } from '../src/browser.ts'
 import type { DepID } from '../src/index.ts'
 
 // there is no default registry any more; these cases still want one
@@ -131,6 +132,7 @@ t.test('hydrate only', t => {
     `file${delimiter}///x.tgz`,
     `workspace${delimiter}./a`,
     `workspace${delimiter}a`,
+    joinDepIDTuple(['workspace', 'packages/foo']),
   ]
   for (const id of hydrateOnlyDepIDs) {
     t.test(id, t => {
@@ -144,6 +146,35 @@ t.test('hydrate only', t => {
       t.matchSnapshot(String(hy), 'hydrated with name y')
       t.end()
     })
+  }
+
+  t.end()
+})
+
+t.test('hydrate preserves a workspace path under an alias', t => {
+  const id = joinDepIDTuple(['workspace', 'packages/real'])
+  const hydrators = [
+    ['node', hydrate],
+    ['browser', browserHydrate],
+  ] as const
+
+  for (const [implementation, hydrateWorkspace] of hydrators) {
+    const spec = hydrateWorkspace(id, 'alias')
+    t.equal(
+      spec.name,
+      'alias',
+      `${implementation} uses the safe alias`,
+    )
+    t.equal(
+      spec.workspace,
+      'packages/real',
+      `${implementation} preserves the workspace path`,
+    )
+    t.equal(
+      String(spec),
+      'alias@workspace:packages/real@*',
+      `${implementation} preserves the explicit workspace spec`,
+    )
   }
 
   t.end()
@@ -584,14 +615,27 @@ const validDepIDs: DepID[] = [
   `workspace${delimiter}a${delimiter}extra`,
 ]
 const invalidDepIDs = ['', 'git', 'abobrinha', 'https://example.com']
+// Parsed ids must be safe single-segment store directory names.
+const pathUnsafeDepIDs = [
+  `file${delimiter}../../../tmp/forbidden`,
+  `remote${delimiter}/etc/passwd`,
+  `remote${delimiter}C:\\x`,
+  `file${delimiter}..`,
+  `${delimiter}npm${delimiter}.`,
+  `file${delimiter}a\u0000b`,
+]
 t.test('asDepID', t => {
   const typeCheckDepID = (id: DepID) => id
   for (const id of validDepIDs) {
     t.ok(typeCheckDepID(asDepID(id)), id)
     t.equal(joinDepIDTuple(splitDepID(id)), id)
   }
-  for (const id of invalidDepIDs) {
-    t.throws(() => asDepID(id), id)
+  for (const id of [...invalidDepIDs, ...pathUnsafeDepIDs]) {
+    t.throws(
+      () => asDepID(id),
+      { cause: { code: 'EINVALIDNAME' } },
+      id,
+    )
   }
   t.end()
 })
@@ -600,7 +644,7 @@ t.test('isDepID', t => {
   for (const id of validDepIDs) {
     t.ok(isDepID(id), id)
   }
-  for (const id of invalidDepIDs) {
+  for (const id of [...invalidDepIDs, ...pathUnsafeDepIDs]) {
     t.notOk(isDepID(id), id)
   }
   t.end()
@@ -636,8 +680,10 @@ t.test('isPackageNameConfused', t => {
     'should return true when name is undefined',
   )
 
-  // Test with nameless spec
-  const namelessSpec = Spec.parse('', 'file:./local-package')
+  // Test with nameless spec. `Spec.parse` no longer accepts an empty
+  // name, so set it after the fact.
+  const namelessSpec = Spec.parse('x', 'file:./local-package')
+  namelessSpec.name = ''
   t.equal(
     isPackageNameConfused(namelessSpec, 'local-package'),
     false,

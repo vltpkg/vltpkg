@@ -697,7 +697,7 @@ export class Workspace {
     this.path = path
     this.fullpath = fullpath
     this.manifest = manifest
-    this.name = manifest.name ?? path
+    this.name = manifest.name ?? basename(path)
   }
 
   get keys(): string[] {

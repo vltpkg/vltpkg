@@ -155,10 +155,12 @@ export const hydrateTuple = (
       if (!first) {
         throw error('no name/path on workspace id', { found: tuple })
       }
+      const workspaceName =
+        name ?? first.slice(first.lastIndexOf('/') + 1)
       res =
-        name && name !== first ?
-          Spec.parse(name, `workspace:${first}@*`, options)
-        : Spec.parse(first, `workspace:*`, options)
+        workspaceName !== first ?
+          Spec.parse(workspaceName, `workspace:${first}@*`, options)
+        : Spec.parse(first, 'workspace:*', options)
       break
     }
   }

@@ -208,6 +208,7 @@ export type Codes =
   | 'EREQUEST'
   | 'ECONFIG'
   | 'ELOCKFILEVERSION'
+  | 'EINVALIDNAME'
 
 // `captureStackTrace` is non-standard so explicitly type it as possibly
 // undefined since it might be in browsers.

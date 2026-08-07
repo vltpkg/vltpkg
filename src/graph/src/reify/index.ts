@@ -216,6 +216,7 @@ const reify_ = async (
   // any failed/removed optional deps are not reflected in the lockfile
   // data as it is saved.
   const lfData = lockfileData(options)
+
   const actions: (() => Promise<unknown>)[] = addNodes(
     diff,
     scurry,

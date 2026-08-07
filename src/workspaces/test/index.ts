@@ -54,6 +54,7 @@ t.test('load some workspaces', async t => {
       'src/bar',
       '@company/bar',
       'src/noname',
+      'noname',
     ]),
   )
 
@@ -67,8 +68,8 @@ t.test('load some workspaces', async t => {
     new Set([
       'foo',
       '@company/bar',
-      // name is path if not set in manifest
-      'src/noname',
+      // name is the directory name if not set in manifest
+      'noname',
     ]),
   )
   t.equal(
@@ -84,8 +85,7 @@ t.test('load some workspaces', async t => {
     new Set([
       { name: 'foo' },
       { name: '@company/bar' },
-      // name is path if not set in manifest
-      { name: 'src/noname' },
+      { name: 'noname' },
     ]),
   )
 
@@ -112,7 +112,7 @@ t.test('load some workspaces', async t => {
     new Map([
       [{ name: 'foo' }, 'foo'],
       [{ name: '@company/bar' }, '@company/bar'],
-      [{ name: 'src/noname' }, 'src/noname'],
+      [{ name: 'noname' }, 'noname'],
     ]),
   )
 
@@ -169,7 +169,7 @@ t.test('load some workspaces', async t => {
   }
   t.strictSame(
     globResult,
-    ['src/noname', '@company/bar', 'foo'],
+    ['noname', '@company/bar', 'foo'],
     'should return the selected workspace from a glob pattern match',
   )
 
@@ -180,7 +180,7 @@ t.test('load some workspaces', async t => {
   }
   t.strictSame(
     otherGlobResult,
-    ['src/noname', '@company/bar', 'foo'],
+    ['noname', '@company/bar', 'foo'],
     'should return the selected workspace from a glob pattern match',
   )
 })
@@ -354,7 +354,7 @@ export const isOdd = (n) => !isEven(n)
   }
   t.strictSame(
     multiResult,
-    ['is-even', 'is-odd', 'app/noname', '@company/bar', 'foo'],
+    ['is-even', 'is-odd', 'noname', '@company/bar', 'foo'],
     'should return the group workspaces',
   )
 
