@@ -741,7 +741,7 @@ export class PackageInfoClient {
             const { path } = gitSelectorParsed ?? {}
             const pkgDir =
               path !== undefined ? pathResolve(dir, path) : dir
-            return this.packageJson.read(pkgDir)
+            return this.#readExtracted(pkgDir, s, options)
           })
         }
         // fallthrough to remote
@@ -787,7 +787,7 @@ export class PackageInfoClient {
           }
 
           // return manifest with computed integrity
-          const mani = this.packageJson.read(dir)
+          const mani = this.#readExtracted(dir, s, options)
           mani.dist = { integrity: computed as Integrity }
           return mani
         })
@@ -814,7 +814,7 @@ export class PackageInfoClient {
               { cause: er },
             )
           }
-          return this.packageJson.read(dir)
+          return this.#readExtracted(dir, s, options)
         })
       }
 
@@ -1027,6 +1027,28 @@ export class PackageInfoClient {
           return r
         })
       }
+    }
+  }
+
+  /**
+   * Read the manifest out of a directory we cloned or unpacked. Failures are
+   * labeled with the spec, because the internal directory says nothing about
+   * which dependency is at fault.
+   */
+  #readExtracted(
+    dir: string,
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+  ) {
+    try {
+      return this.packageJson.read(dir)
+    } catch (er) {
+      throw this.#resolveError(
+        spec,
+        options,
+        'invalid package manifest',
+        { cause: er },
+      )
     }
   }
 

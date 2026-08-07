@@ -379,3 +379,38 @@ t.test('lockfile version handling', async t => {
     )
   })
 })
+
+t.test('broken lockfile fails loud, does not rebuild', async t => {
+  const { LOCKFILE_VERSION } = await t.mockImport<
+    typeof import('../../src/lockfile/types.ts')
+  >('../../src/lockfile/types.ts')
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0' },
+    }),
+    'vlt-lock.json': JSON.stringify({
+      lockfileVersion: LOCKFILE_VERSION,
+      options: {},
+      nodes: {
+        [`file~../../../tmp/forbidden`]: [0, 'forbidden'],
+      },
+      edges: {},
+    }),
+  })
+
+  await t.rejects(
+    build({
+      ...specOptions,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      remover: new RollbackRemove(),
+    }),
+    { cause: { code: 'EINVALIDNAME' } },
+    'does not silently fall back to loading the actual tree',
+  )
+})

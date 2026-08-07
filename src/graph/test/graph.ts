@@ -2578,3 +2578,52 @@ t.test(
     )
   },
 )
+
+t.test('workspace with no name in its manifest', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({ name: 'root' }),
+    'vlt.json': JSON.stringify({ workspaces: 'packages/*' }),
+    packages: {
+      a: { 'package.json': JSON.stringify({ version: '1.0.0' }) },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...configData,
+    mainManifest: { name: 'root' },
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  const edge = graph.mainImporter.workspaces?.get('a')
+  t.equal(
+    String(edge?.spec),
+    'a@workspace:*',
+    'uses the workspace directory name',
+  )
+})
+
+t.test('addEdge rejects a traversing node name', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'root' },
+  })
+  // a broken node name becomes the symlink segment
+  const to = graph.addNode(
+    joinDepIDTuple(['registry', '', 'x@1.0.0']),
+    undefined,
+    undefined,
+    '../../forbidden',
+  )
+  t.throws(
+    () =>
+      graph.addEdge(
+        'prod',
+        Spec.parse('(unknown)', '^1.0.0', configData),
+        graph.mainImporter,
+        to,
+      ),
+    { cause: { code: 'EINVALIDNAME' } },
+  )
+})

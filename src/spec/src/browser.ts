@@ -10,7 +10,9 @@ import type {
   SpecOptionsFilled,
   SpecType,
 } from './types.ts'
+import { assertPathSafeName } from './valid-name.ts'
 export * from './types.ts'
+export * from './valid-name.ts'
 
 export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -230,6 +232,7 @@ export class Spec implements SpecLike<Spec> {
           parsed.name = parsed.subspec.name
         }
         parsed.spec = `${parsed.name}@${parsed.bareSpec}`
+        assertPathSafeName(parsed.name, parsed.spec)
       }
       return parsed
     } else {
@@ -345,6 +348,8 @@ export class Spec implements SpecLike<Spec> {
       this.#parseScope(spec)
       this.bareSpec = bareOrOptions
       this.spec = `${this.name}@${bareOrOptions}`
+      // the dependency alias becomes a path segment
+      assertPathSafeName(this.name, this.spec)
     } else {
       this.spec = spec
       // Check if this spec starts with a known registry identifier
@@ -372,6 +377,7 @@ export class Spec implements SpecLike<Spec> {
           spec += '@'
         }
         this.name = spec.substring(0, at)
+        assertPathSafeName(this.name, spec)
         if (hasScope) this.#parseScope(this.name)
         this.bareSpec = spec.substring(at + 1)
       }
@@ -543,6 +549,8 @@ export class Spec implements SpecLike<Spec> {
         if (this.subspec && this.name === this.bareSpec) {
           this.name = this.subspec.name
           this.spec = `${this.name}@${this.bareSpec}`
+          // name derived from the bareSpec, eg `npm:../../x@1`
+          assertPathSafeName(this.name, this.spec)
         }
 
         this.#guessRegistryTarball()
@@ -770,6 +778,8 @@ export class Spec implements SpecLike<Spec> {
       } else {
         this.name = s.substring(0, s.indexOf('@', 1))
       }
+      // name derived from the bareSpec, eg `jsr:../../x@1`
+      assertPathSafeName(this.name, s)
     }
     const reg = `${this.namedJsrRegistry}:`
     const n = `${reg}${this.name}`

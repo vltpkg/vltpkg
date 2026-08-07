@@ -2,7 +2,7 @@ import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
-import { getOptions, Spec } from '@vltpkg/spec'
+import { assertPathSafeName, getOptions, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
   GraphLike,
@@ -304,6 +304,8 @@ export class Graph implements GraphLike {
       if (to) {
         spec.name = to.name /* c8 ignore next */ || '(unknown)'
         spec.spec = `${to.name}@${spec.bareSpec}`
+        // this alias becomes the symlink segment in add-edge
+        assertPathSafeName(spec.name, spec.spec)
       } else {
         throw error(
           'Impossible to place a missing, nameless dependency',

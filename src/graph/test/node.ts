@@ -169,11 +169,12 @@ t.test('Node', async t => {
   const unnamedMani = {
     version: '0.0.0',
   }
-  const unnamedSpec = Spec.parse('', '0.0.0')
+  // the spec still needs a usable name, only the manifest lacks one
+  const unnamedSpec = Spec.parse('unnamed', '0.0.0')
   const unnamed = new Node(opts, undefined, unnamedMani, unnamedSpec)
   t.strictSame(
     unnamed.location,
-    `./node_modules/.vlt/${delimiter}npm${delimiter}@0.0.0/node_modules/${delimiter}npm${delimiter}@0.0.0`,
+    `./node_modules/.vlt/${delimiter}npm${delimiter}unnamed@0.0.0/node_modules/${delimiter}npm${delimiter}unnamed@0.0.0`,
     'should have a location for unnamed manifests',
   )
 

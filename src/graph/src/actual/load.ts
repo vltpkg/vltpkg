@@ -504,7 +504,10 @@ export const load = (options: LoadOptions): Graph => {
       return graph
     } catch {
       // Hidden lockfile is cache-only, safe to regenerate on any error
-      // as it will fall back to filesystem traversal
+      // as it will fall back to filesystem traversal. Deliberately also
+      // swallows EINVALIDNAME, unlike ideal/build.ts: this cache lives
+      // inside node_modules and regenerating it is the right response,
+      // whereas failing loud would let it brick installs.
       // TODO: Warn version mismatch to @vltpkg/output for debugging
     }
   }

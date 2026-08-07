@@ -1,4 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
@@ -3370,3 +3371,42 @@ t.test(
     )
   },
 )
+
+t.test('broken optional dep is not silently dropped', async t => {
+  const mainManifest = asNormalizedManifest({
+    name: 'my-project',
+    version: '1.0.0',
+  })
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+  const packageInfo = {
+    async manifest() {
+      // what normalizeManifest throws for a traversing name
+      throw error('Invalid package name', {
+        code: 'EINVALIDNAME',
+        found: '../../forbidden',
+      })
+    },
+  } as unknown as PackageInfoClient
+  const dep = asDependency({
+    spec: Spec.parse('broken', '^1.0.0'),
+    type: 'optional',
+  })
+
+  await t.rejects(
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['broken', dep]]),
+    ),
+    { cause: { code: 'EINVALIDNAME' } },
+  )
+})
