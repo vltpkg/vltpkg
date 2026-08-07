@@ -171,12 +171,24 @@ t.test('buildAuditQuery', async t => {
     }
   })
 
+  t.test('never queries :scripts at any level', async t => {
+    // aggregateBySeverity has no handling for lifecycle-script
+    // findings (no insights.scripts bucket, no "scripts" category),
+    // so :scripts matches were being fetched and then silently
+    // discarded -- query work with no output. Drop it until scripts
+    // are surfaced as an actual audit category.
+    for (const level of ['low', 'moderate', 'high', 'critical']) {
+      t.notMatch(
+        buildAuditQuery(level),
+        /:scripts\b/,
+        `${level} excludes :scripts`,
+      )
+    }
+  })
+
   t.test('returns full query for low level', async t => {
     const q = buildAuditQuery('low')
-    t.equal(
-      q,
-      ':malware, :vulnerable, :severity(<=low), :scripts, :squat',
-    )
+    t.equal(q, ':malware, :vulnerable, :severity(<=low), :squat')
   })
 
   t.test('returns filtered query for moderate level', async t => {
