@@ -25,8 +25,8 @@ export interface CopyMarkdownButtonProps {
  */
 export const CopyMarkdownButton: React.FC<CopyMarkdownButtonProps> = ({
   docSlug,
-  label = 'Copy as Markdown',
-  className = '',
+  label,
+  className,
 }) => {
   const [state, setState] = useState<
     'idle' | 'loading' | 'success' | 'error'
@@ -40,7 +40,6 @@ export const CopyMarkdownButton: React.FC<CopyMarkdownButtonProps> = ({
     try {
       // Fetch markdown from API
       const url = `/api/markdown/${docSlug.replace(/\/$/, '')}`
-      console.log('[CopyMarkdownButton] Fetching markdown from:', url)
 
       const response = await fetch(url)
 
@@ -53,7 +52,6 @@ export const CopyMarkdownButton: React.FC<CopyMarkdownButtonProps> = ({
       }
 
       const markdown = await response.text()
-      console.log('[CopyMarkdownButton] Received markdown:', markdown.length, 'characters')
 
       // Copy to clipboard
       if (!navigator.clipboard) {
@@ -102,33 +100,69 @@ export const CopyMarkdownButton: React.FC<CopyMarkdownButtonProps> = ({
 
   const iconComponent =
     state === 'success' ? (
-      <Check size={16} />
+      <Check size={16} aria-hidden="true" />
     ) : state === 'error' ? (
-      <AlertCircle size={16} />
+      <AlertCircle size={16} aria-hidden="true" />
     ) : (
-      <Copy size={16} />
+      <Copy size={16} aria-hidden="true" />
     )
+
+  // Generate ARIA labels based on state
+  const ariaLabel =
+    state === 'loading'
+      ? `Copying ${label ?? 'document'} as markdown to clipboard`
+      : state === 'success'
+        ? `Successfully copied ${label ?? 'document'} as markdown to clipboard`
+        : state === 'error'
+          ? `Failed to copy ${label ?? 'document'} as markdown: ${error}`
+          : `Copy ${label ?? 'document'} as markdown to clipboard`
+
+  const errorId = state === 'error' && error ? 'copy-error-message' : undefined
 
   return (
     <div className="flex flex-col gap-2">
       <button
         onClick={handleCopy}
-        disabled={state === 'loading'}
-        title={error || 'Copy this page as markdown'}
+        disabled={state === 'loading' || state === 'error'}
+        title={
+          state === 'error'
+            ? `Error: ${error}`
+            : state === 'success'
+              ? 'Successfully copied to clipboard'
+              : state === 'loading'
+                ? 'Copying to clipboard...'
+                : `Copy this page as markdown to your clipboard`
+        }
+        aria-label={ariaLabel}
+        aria-busy={state === 'loading'}
+        aria-disabled={state === 'loading' || state === 'error'}
+        aria-describedby={errorId}
         className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-colors ${
           buttonVariant === 'success'
             ? 'bg-green-100 text-green-900 dark:bg-green-900 dark:text-green-100'
             : buttonVariant === 'destructive'
               ? 'bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100'
               : 'bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'
-        } ${state === 'loading' ? 'cursor-not-allowed opacity-50' : ''} ${className}`}>
+        } ${
+          state === 'loading' || state === 'error'
+            ? 'cursor-not-allowed opacity-50'
+            : 'cursor-pointer'
+        } ${className}`}>
         {iconComponent}
-        <span>{buttonLabel}</span>
+        <span aria-live="polite" aria-atomic="true">
+          {buttonLabel}
+        </span>
       </button>
 
-      {/* Error message */}
+      {/* Error message with ARIA attributes */}
       {state === 'error' && error && (
-        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+        <p
+          id={errorId}
+          role="alert"
+          className="text-xs text-red-600 dark:text-red-400">
+          <span className="sr-only">Error: </span>
+          {error}
+        </p>
       )}
     </div>
   )
