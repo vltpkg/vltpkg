@@ -18,19 +18,29 @@ export const prerender = false
 export const GET: APIRoute = async ({ params, request }) => {
   try {
     const slug = params.slug
+    console.log('[markdown API] Received slug:', slug)
+
     if (!slug) {
+      console.error('[markdown API] Missing slug parameter')
       return new Response('Missing slug parameter', { status: 400 })
     }
 
     // Convert path like "cli/commands/install" to doc ID
     // In Starlight, the doc ID is the file path relative to src/content/docs
     const docId = slug.replace(/\/$/, '') // Remove trailing slash
+    console.log('[markdown API] Using docId:', docId)
 
     // Convert to markdown
     const markdown = await toMarkdown({
       docId,
       request,
     })
+
+    console.log(
+      '[markdown API] Successfully converted to markdown:',
+      markdown.length,
+      'characters',
+    )
 
     // Return with markdown content type
     return new Response(markdown, {
@@ -41,7 +51,7 @@ export const GET: APIRoute = async ({ params, request }) => {
       },
     })
   } catch (error) {
-    console.error('Error converting to markdown:', error)
+    console.error('[markdown API] Error converting to markdown:', error)
 
     const message =
       error instanceof Error ? error.message : 'Unknown error'

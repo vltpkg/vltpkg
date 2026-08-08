@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useState, useCallback } from 'react'
 import { Copy, Check, AlertCircle } from 'lucide-react'
 
@@ -41,21 +39,28 @@ export const CopyMarkdownButton: React.FC<CopyMarkdownButtonProps> = ({
 
     try {
       // Fetch markdown from API
-      const response = await fetch(
-        `/api/markdown/${docSlug.replace(/\/$/, '')}`,
-      )
+      const url = `/api/markdown/${docSlug.replace(/\/$/, '')}`
+      console.log('[CopyMarkdownButton] Fetching markdown from:', url)
+
+      const response = await fetch(url)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(
-          errorData.message || `Failed to fetch markdown (${response.status})`,
-        )
+        const errorMsg =
+          errorData.message || `Failed to fetch markdown (${response.status})`
+        console.error('[CopyMarkdownButton] API error:', errorMsg, errorData)
+        throw new Error(errorMsg)
       }
 
       const markdown = await response.text()
+      console.log('[CopyMarkdownButton] Received markdown:', markdown.length, 'characters')
 
       // Copy to clipboard
+      if (!navigator.clipboard) {
+        throw new Error('Clipboard API not available in this browser')
+      }
       await navigator.clipboard.writeText(markdown)
+      console.log('[CopyMarkdownButton] Successfully copied to clipboard')
 
       // Show success state
       setState('success')
@@ -67,6 +72,7 @@ export const CopyMarkdownButton: React.FC<CopyMarkdownButtonProps> = ({
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Unknown error'
+      console.error('[CopyMarkdownButton] Error:', message, err)
       setError(message)
       setState('error')
 
