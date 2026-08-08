@@ -30,7 +30,7 @@ export const PageTitle = ({
                   className="cursor-pointer text-sm text-muted-foreground no-underline transition-all hover:text-foreground">
                   {crumb.label}
                 </a>
-              : <span
+                : <span
                   className={`text-sm ${idx === crumbs.length - 1 ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {crumb.label}
                 </span>
@@ -40,17 +40,17 @@ export const PageTitle = ({
                   className="text-muted-foreground"
                   size={16}
                 />
-              : null}
+                : null}
             </React.Fragment>
           ))}
         </div>
       )}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between lg:items-baseline">
         <h1 id="_top" className="mb-4 mt-8 text-3xl font-bold">
           {title}
         </h1>
         <div className="mt-2">
-          <CopyMarkdownButton docSlug={entry.id} />
+          <CopyMarkdownButton slug={entry.id} label="Copy Markdown" />
         </div>
       </div>
     </div>
