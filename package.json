@@ -6,7 +6,11 @@
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git"
   },
-  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "author": {
+    "name": "vlt technology inc.",
+    "email": "support@vlt.sh",
+    "url": "http://vlt.sh"
+  },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
@@ -54,8 +58,12 @@
   },
   "prettier": "./.prettierrc.js",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/vltpkg/vltpkg/issues"
-  },
-  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/.#readme"
+  "bugs": [
+    {
+      "type": "link",
+      "url": "https://github.com/vltpkg/vltpkg/issues"
+    }
+  ],
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/.#readme",
+  "dependencies": {}
 }
