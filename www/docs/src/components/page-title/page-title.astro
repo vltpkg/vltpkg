@@ -11,5 +11,5 @@ const crumbs = getBreadcrumbs(Astro.url.pathname, props.sidebar)
 {
   isHome ?
     <div class="mt-4" />
-  : <ReactPageTitle crumbs={crumbs} {...props} />
+  : <ReactPageTitle client:load crumbs={crumbs} {...props} />
 }
