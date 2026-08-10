@@ -1,5 +1,38 @@
 # Agent Guide to the vltpkg Monorepo
 
+## Git & Branch Safety
+
+**NEVER commit or push to `main`.** Always verify with `git branch --show-current` and `git worktree list` BEFORE any `git add`/`commit`/`push`.
+
+- All work happens on a feature branch in a worktree. If the current branch is `main`, stop and create/switch to a branch first, then confirm with me.
+- After committing, **ALWAYS push in the same step** — do not leave commits local.
+- Before opening a PR, print the exact branch and remote you're about to push to and wait for confirmation.
+
+## Project Commands
+
+Use the project's own tooling for tests and scripts: **`vlt <script>`** — NOT `npm test`, `npm run`, or `npx`.
+
+- Never claim CI or tests are 'fixed' until you have shown the passing output. Background tasks can report exit code 0 while the log contains failures — always grep the log for `FAIL|Error|✗` before reporting status.
+- The full test suite must pass locally before pushing.
+
+## MCP Tools First
+
+When a service has an MCP server available (Buffer, Notion, Figma, GitHub), call the MCP tools directly. Do NOT shell out to `curl`/CLI or ask for org IDs, tokens, or account IDs that the MCP tool already resolves.
+
+## Scope Discipline
+
+- Change only what was asked for. Do not add images, refactor adjacent code, or alter defaults as a bonus.
+- Defaults must follow ecosystem convention (npm/pnpm behavior) unless explicitly asked to diverge.
+- Before a multi-file or >50-line change, summarize the plan in 3 bullets and wait for approval.
+
+## Content & Marketing Rules
+
+- Do not promote the vlt registry or oversell the CLI in social copy unless explicitly asked.
+- Never write copy identical across X and Bluesky — tailor per platform. Bluesky has a hard 300-character limit.
+- Every factual/statistical claim in a blog or post must have a verifiable source link. If you cannot source it, omit it and flag it for removal.
+
+---
+
 vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces
 published as `@vltpkg/*`, the built vlt CLI itself is published as
 `vlt`.
