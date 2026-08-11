@@ -40,6 +40,21 @@ Object {
 }
 `
 
+exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > greater than comparator with 0 (critical level) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "f",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "f",
+  ],
+}
+`
+
 exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > greater than comparator with number (unquoted) > must match snapshot 1`] = `
 Object {
   "edges": Array [
@@ -76,6 +91,18 @@ Object {
   "nodes": Array [
     "e",
     "f",
+  ],
+}
+`
+
+exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > less than or equal to comparator with critical kind (level 0) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "e",
+  ],
+  "nodes": Array [
+    "e",
   ],
 }
 `

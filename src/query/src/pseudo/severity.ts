@@ -164,10 +164,10 @@ export const severity = async (state: ParserState) => {
         // retrieve the value to compare against
         const kindLevel = kindLevelMap.get(kind)
         // the kindLevel value has already been validated at this point
-        // and thus can never return an undefined/falsy value but ts doesn't
+        // and thus can never return an undefined value but ts doesn't
         // know about that, so we have the extra check here
         /* c8 ignore next - impossible */
-        if (!kindLevel) break
+        if (kindLevel == null) break
 
         // Check each alert to find any that match our comparison criteria
         for (const alert of report.alerts) {

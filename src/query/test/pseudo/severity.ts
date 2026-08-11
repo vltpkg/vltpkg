@@ -178,6 +178,38 @@ t.test('selects packages with a specific severity kind', async t => {
     },
   )
 
+  await t.test(
+    'less than or equal to comparator with critical kind (level 0)',
+    async t => {
+      const res = await severity(getState(':severity(<=critical)'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name).sort(),
+        ['e'],
+        'should select only packages with critical severity',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name).sort(),
+        edges: [...res.partial.edges].map(e => e.name).sort(),
+      })
+    },
+  )
+
+  await t.test(
+    'greater than comparator with 0 (critical level)',
+    async t => {
+      const res = await severity(getState(':severity(>0)'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name).sort(),
+        ['a', 'b', 'f'],
+        'should select packages with severity less severe than critical',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name).sort(),
+        edges: [...res.partial.edges].map(e => e.name).sort(),
+      })
+    },
+  )
+
   await t.test('wrong parameter', async t => {
     await t.rejects(
       severity(getState(':severity')),
