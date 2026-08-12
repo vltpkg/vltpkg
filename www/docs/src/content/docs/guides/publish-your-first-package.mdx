@@ -58,47 +58,35 @@ function:
 
 ## Step 2: Update the package name and author
 
-The `package.json` defines your package's metadata. Update it to match
-your account:
+Edit `package.json` and make these changes:
 
-<Tabs>
-  <TabItem label="1. Change the name">
-    Replace `hello-vlt` with `@YOUR-ACCOUNT/hello-vlt`:
+1. **Change the name** from `hello-vlt` to `@YOUR-ACCOUNT/hello-vlt`
 
-    <Code
-      code={`{
+   Replace `YOUR-ACCOUNT` with your vlt account slug (find it on your
+   [account settings page](https://registry.vlt.io/account)).
 
-"name": "@YOUR-ACCOUNT/hello-vlt", "version": "1.0.0", "description":
-"Hello World package", ... }`} title="package.json" lang="json" />
+2. **Update the version** to `1.0.0` to mark this as your first release
 
-    (Replace `YOUR-ACCOUNT` with your vlt account slug — you can find this on your
-    [account settings page](https://registry.vlt.io/account).)
+3. **Update the author** with your information
 
-  </TabItem>
-  <TabItem label="2. Update the version">
-    Reset to `1.0.0` to mark this as your first release:
+Here's the complete updated `package.json`:
 
-    <Code
-      code={`{
-
-"name": "@YOUR-ACCOUNT/hello-vlt", "version": "1.0.0", ... }`}
-title="package.json" lang="json" />
-
-  </TabItem>
-  <TabItem label="3. Update the author">
-    <Code
-      code={`{
+<Code
+  code={`{
+  "name": "@YOUR-ACCOUNT/hello-vlt",
+  "version": "1.0.0",
+  "description": "Hello World package",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": {
     "name": "Your Name",
     "email": "your-email@example.com"
   },
   ...
 }`}
-      title="package.json"
-      lang="json"
-    />
-  </TabItem>
-</Tabs>
+  title="package.json"
+  lang="json"
+/>
 
 ## Step 3: Configure your registry
 
