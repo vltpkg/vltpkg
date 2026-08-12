@@ -21,20 +21,6 @@ In this tutorial, we'll walk through publishing a simple TypeScript
 package step by step using the
 [hello-vlt starter](https://github.com/vltpkg/hello-vlt).
 
-### Select your package manager
-
-Choose the package manager you'll use. All commands and configuration below will
-update to match your selection:
-
-<Tabs syncKey="pkg-manager">
-  <TabItem label="vlt" />
-  <TabItem label="npm" />
-  <TabItem label="pnpm" />
-  <TabItem label="yarn" />
-  <TabItem label="bun" />
-  <TabItem label="deno" />
-</Tabs>
-
 ## Before you begin
 
 You'll need:
@@ -205,7 +191,7 @@ EOF`}
   </TabItem>
 </Tabs>
 
-## Step 4: Authenticate
+## Step 5: Authenticate
 
 Before you can publish, you need to authenticate with the vlt
 registry:
@@ -266,6 +252,31 @@ registry:
     Pass `--env-file` when installing dependencies later.
 
   </TabItem>
+</Tabs>
+
+## Step 4.5: Install dependencies
+
+Before building, install the dev dependencies (TypeScript):
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="$ vlt install" title="Terminal" lang="bash" />
+
+    Note: If you haven't set up a default registry, you can use `npm install` instead and vlt will use npm's registry for dependencies.
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="$ npm install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="$ pnpm install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="$ yarn install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="$ bun install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno" />
 </Tabs>
 
 ## Step 5: Build your package
