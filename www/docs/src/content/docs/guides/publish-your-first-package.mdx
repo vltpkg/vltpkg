@@ -17,28 +17,36 @@ You may have a component or function library to share at work, or you
 simply want to keep a tool you wrote offline. Here's how to do that
 using the vlt registry.
 
-In this tutorial, we'll walk through publishing a simple TypeScript package
-step by step using the [hello-vlt starter](https://github.com/vltpkg/hello-vlt).
+In this tutorial, we'll walk through publishing a simple TypeScript
+package step by step using the
+[hello-vlt starter](https://github.com/vltpkg/hello-vlt).
 
 ## Before you begin
 
 You'll need:
 
-- A vlt account. If you don't have one yet, [sign up here](https://registry.vlt.io).
+- A vlt account. If you don't have one yet,
+  [sign up here](https://registry.vlt.io).
 - Node.js 18 or later
-- Your preferred package manager installed (vlt, npm, pnpm, yarn, bun, or deno)
+- Your preferred package manager installed (vlt, npm, pnpm, yarn, bun,
+  or deno)
 
 You can follow along this tutorial using our
-["hello-vlt" starter](https://github.com/vltpkg/hello-vlt), or apply these
-steps to your own package.
+["hello-vlt" starter](https://github.com/vltpkg/hello-vlt), or apply
+these steps to your own package.
 
 ## Step 1: Clone the starter
 
-<Code code="$ git clone https://github.com/vltpkg/hello-vlt my-package\n$ cd my-package" title="Terminal" lang="bash" />
+<Code
+  code="$ git clone https://github.com/vltpkg/hello-vlt my-package\n$ cd my-package"
+  title="Terminal"
+  lang="bash"
+/>
 
 (Replace `my-package` with your desired directory name.)
 
-This starter is a minimal TypeScript package that exports a simple function:
+This starter is a minimal TypeScript package that exports a simple
+function:
 
 <Code
   code={`export function helloWorld(): string {
@@ -50,7 +58,8 @@ This starter is a minimal TypeScript package that exports a simple function:
 
 ## Step 2: Update the package name and author
 
-The `package.json` defines your package's metadata. Update it to match your account:
+The `package.json` defines your package's metadata. Update it to match
+your account:
 
 <Tabs>
   <TabItem label="1. Change the name">
@@ -58,30 +67,23 @@ The `package.json` defines your package's metadata. Update it to match your acco
 
     <Code
       code={`{
-  "name": "@YOUR-ACCOUNT/hello-vlt",
-  "version": "1.0.0",
-  "description": "Hello World package",
-  ...
-}`}
-      title="package.json"
-      lang="json"
-    />
+
+"name": "@YOUR-ACCOUNT/hello-vlt", "version": "1.0.0", "description":
+"Hello World package", ... }`} title="package.json" lang="json" />
 
     (Replace `YOUR-ACCOUNT` with your vlt account slug — you can find this on your
     [account settings page](https://registry.vlt.io/account).)
+
   </TabItem>
   <TabItem label="2. Update the version">
     Reset to `1.0.0` to mark this as your first release:
 
     <Code
       code={`{
-  "name": "@YOUR-ACCOUNT/hello-vlt",
-  "version": "1.0.0",
-  ...
-}`}
-      title="package.json"
-      lang="json"
-    />
+
+"name": "@YOUR-ACCOUNT/hello-vlt", "version": "1.0.0", ... }`}
+title="package.json" lang="json" />
+
   </TabItem>
   <TabItem label="3. Update the author">
     <Code
@@ -100,8 +102,9 @@ The `package.json` defines your package's metadata. Update it to match your acco
 
 ## Step 3: Configure your registry
 
-Map your account scope to the vlt registry so your package manager knows where to
-publish. Replace `YOUR-ACCOUNT` with your vlt account slug.
+Map your account scope to the vlt registry so your package manager
+knows where to publish. Replace `YOUR-ACCOUNT` with your vlt account
+slug.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
@@ -111,7 +114,20 @@ publish. Replace `YOUR-ACCOUNT` with your vlt account slug.
       lang="bash"
     />
 
-    This updates `vlt.json` with the registry mapping.
+    This updates `vlt.json` with the registry mapping. Your `vlt.json` will now contain:
+
+    <Code
+      code={`{
+  "config": {
+    "scoped-registries": {
+      "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+    }
+  }
+}`}
+      title="vlt.json"
+      lang="json"
+    />
+
   </TabItem>
   <TabItem label="npm">
     <Code
@@ -121,6 +137,7 @@ publish. Replace `YOUR-ACCOUNT` with your vlt account slug.
     />
 
     This updates `.npmrc` with the scoped registry.
+
   </TabItem>
   <TabItem label="pnpm">
     <Code
@@ -130,6 +147,7 @@ publish. Replace `YOUR-ACCOUNT` with your vlt account slug.
     />
 
     This updates `.npmrc` with the scoped registry.
+
   </TabItem>
   <TabItem label="yarn">
     <Code
@@ -140,6 +158,7 @@ yarn config set npmScopes.YOUR-ACCOUNT.npmPublishRegistry "https://registry.vlt.
     />
 
     This updates `.yarnrc.yml` with the scoped registry.
+
   </TabItem>
   <TabItem label="bun">
     <Code
@@ -163,9 +182,17 @@ EOF`}
   </TabItem>
 </Tabs>
 
+<Aside type="tip">
+  **VLT users:** This step creates or updates `vlt.json` with your registry
+  configuration. When you run `vlt install` or other vlt commands, a `vlt-lock.json`
+  file is created to lock dependency versions. Both files should be committed to
+  version control.
+</Aside>
+
 ## Step 4: Authenticate
 
-Before you can publish, you need to authenticate with the vlt registry:
+Before you can publish, you need to authenticate with the vlt
+registry:
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
@@ -173,6 +200,7 @@ Before you can publish, you need to authenticate with the vlt registry:
 
     This opens your browser to log in. Once authenticated, your credentials are
     stored locally for future publishes.
+
   </TabItem>
   <TabItem label="npm">
     <Code
@@ -182,6 +210,7 @@ Before you can publish, you need to authenticate with the vlt registry:
     />
 
     This prompts you to enter your vlt credentials.
+
   </TabItem>
   <TabItem label="pnpm">
     <Code
@@ -190,7 +219,8 @@ Before you can publish, you need to authenticate with the vlt registry:
       lang="bash"
     />
 
-    This prompts you to enter your vlt credentials.
+    This will prompt you to enter your vlt credentials.
+
   </TabItem>
   <TabItem label="yarn">
     <Code
@@ -200,6 +230,7 @@ Before you can publish, you need to authenticate with the vlt registry:
     />
 
     This opens your browser to log in.
+
   </TabItem>
   <TabItem label="bun">
     Create a personal token on your [account tokens page](https://registry.vlt.io/tokens)
@@ -208,6 +239,7 @@ Before you can publish, you need to authenticate with the vlt registry:
     <Code code="$ export VLT_TOKEN=<your-token>" title="Terminal" lang="bash" />
 
     (Or add it to `.env` in your project.)
+
   </TabItem>
   <TabItem label="deno">
     Create a personal token on your [account tokens page](https://registry.vlt.io/tokens)
@@ -215,7 +247,8 @@ Before you can publish, you need to authenticate with the vlt registry:
 
     <Code code="$ echo 'VLT_TOKEN=<your-token>' >> .env" title="Terminal" lang="bash" />
 
-    You'll pass `--env-file` when installing dependencies later.
+    Pass `--env-file` when installing dependencies later.
+
   </TabItem>
 </Tabs>
 
@@ -241,14 +274,15 @@ The starter includes TypeScript, so build it before publishing:
   </TabItem>
   <TabItem label="deno">
     <Aside type="note">
-      The starter uses TypeScript, but Deno loads TypeScript natively, so you may
-      not need a separate build step depending on your setup.
+      The starter uses TypeScript, but Deno loads TypeScript natively,
+      so you may not need a separate build step depending on your
+      setup.
     </Aside>
   </TabItem>
 </Tabs>
 
-This compiles the TypeScript to JavaScript in the `dist/` directory, which is
-what users will actually install.
+This compiles the TypeScript to JavaScript in the `dist/` directory,
+which is what users will actually install.
 
 ## Step 6: Publish
 
@@ -272,19 +306,20 @@ Now you're ready to publish:
   </TabItem>
   <TabItem label="deno">
     <Aside type="caution">
-      Deno does not support publishing to npm registries directly. You'll need to use
-      a different tool (like `npm publish` or `pnpm publish`) to publish your package.
+      Deno does not support publishing to npm registries directly.
+      You'll need to use a different tool (like `npm publish` or `pnpm
+      publish`) to publish your package.
     </Aside>
   </TabItem>
 </Tabs>
 
-The registry validates your package and displays a confirmation with the
-published version and scope. Your package is now live!
+The registry validates your package and displays a confirmation with
+the published version and scope. Your package is now live!
 
 ## What happens next
 
-Your package is published to your private registry. Other members of your account
-can install it with:
+Your package is published to your private registry. Other members of
+your account can install it with:
 
 <Code
   code="$ vlt add @YOUR-ACCOUNT/hello-vlt"
@@ -292,23 +327,25 @@ can install it with:
   lang="bash"
 />
 
-To make your package publicly visible, you can change its visibility in your
-[account settings](https://registry.vlt.io/account).
+To make your package publicly visible, you can change its visibility
+in your [account settings](https://registry.vlt.io/account).
 
 ## Troubleshooting
 
 <Tabs>
   <TabItem label="403 Forbidden error">
-    The package name must be scoped to your account (e.g., `@YOUR-ACCOUNT/hello-vlt`).
-    Check your `package.json` and make sure the scope matches your account slug.
+    The package name must be scoped to your account (e.g.,
+    `@YOUR-ACCOUNT/hello-vlt`). Check your `package.json` and make
+    sure the scope matches your account slug.
   </TabItem>
   <TabItem label="Authentication required">
-    Run `vlt auth login` to authenticate, or set a `VLT_TOKEN` environment variable
-    with a personal token from your account settings.
+    Run `vlt auth login` to authenticate, or set a `VLT_TOKEN`
+    environment variable with a personal token from your account
+    settings.
   </TabItem>
   <TabItem label="Version conflict">
-    Each version can only be published once. If you get a conflict error, bump
-    the version in `package.json` and try again.
+    Each version can only be published once. If you get a conflict
+    error, bump the version in `package.json` and try again.
   </TabItem>
 </Tabs>
 
