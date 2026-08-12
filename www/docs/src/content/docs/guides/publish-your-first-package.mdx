@@ -375,6 +375,28 @@ variable with a personal token from your account settings.
 Each version can only be published once. If you get a conflict error, bump
 the version in `package.json` and try again.
 
+### Config Error: Missing registry configuration
+
+If you're using vlt and see this error when running `vlt install`, it means vlt
+needs a default registry configured for downloading dependencies. You have two
+options:
+
+1. **Use npm instead** (simpler for dependency installation):
+   ```bash
+   npm install
+   ```
+   npm will download dependencies from the public npm registry, while `vlt publish`
+   will still use your scoped registry configuration.
+
+2. **Configure a default registry** (if you want vlt to manage all packages):
+   ```bash
+   vlt config set registry=https://registry.vlt.io/YOUR-ACCOUNT/npm/
+   ```
+   Then run `vlt install` to download dependencies through your vlt mirror.
+
+For most users, option 1 is simpler — you only need the scoped registry
+configured for publishing your own packages.
+
 ## Next steps
 
 - Learn about [working with registries](/cli/registries)
