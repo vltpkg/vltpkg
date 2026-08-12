@@ -331,22 +331,21 @@ in your [account settings](https://registry.vlt.io/account).
 
 ## Troubleshooting
 
-<Tabs>
-  <TabItem label="403 Forbidden error">
-    The package name must be scoped to your account (e.g.,
-    `@YOUR-ACCOUNT/hello-vlt`). Check your `package.json` and make
-    sure the scope matches your account slug.
-  </TabItem>
-  <TabItem label="Authentication required">
-    Run `vlt auth login` to authenticate, or set a `VLT_TOKEN`
-    environment variable with a personal token from your account
-    settings.
-  </TabItem>
-  <TabItem label="Version conflict">
-    Each version can only be published once. If you get a conflict
-    error, bump the version in `package.json` and try again.
-  </TabItem>
-</Tabs>
+### 403 Forbidden error
+
+The package name must be scoped to your account (e.g.,
+`@YOUR-ACCOUNT/hello-vlt`). Check your `package.json` and make sure the
+scope matches your account slug.
+
+### Authentication required
+
+Run `vlt auth login` to authenticate, or set a `VLT_TOKEN` environment
+variable with a personal token from your account settings.
+
+### Version conflict
+
+Each version can only be published once. If you get a conflict error, bump
+the version in `package.json` and try again.
 
 ## Next steps
 
