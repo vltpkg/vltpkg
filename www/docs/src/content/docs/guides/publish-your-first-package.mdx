@@ -88,10 +88,20 @@ Here's the complete updated `package.json`:
   lang="json"
 />
 
-<Aside type="tip">
-  **Using vlt?** You can manage versions from the CLI with `vlt version major|minor|patch`
-  instead of manually editing `package.json`. This is useful for future releases too.
-</Aside>
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Aside type="tip">
+      You can also manage versions from the CLI with `vlt version major|minor|patch`
+      instead of manually editing `package.json`. This is especially useful for future
+      releases.
+    </Aside>
+  </TabItem>
+  <TabItem label="npm" />
+  <TabItem label="pnpm" />
+  <TabItem label="yarn" />
+  <TabItem label="bun" />
+  <TabItem label="deno" />
+</Tabs>
 
 ## Step 3: Configure your registry
 
