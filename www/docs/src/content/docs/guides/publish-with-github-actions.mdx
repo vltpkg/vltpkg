@@ -1,0 +1,220 @@
+---
+title: Publish packages with GitHub Actions
+sidebar:
+  label: Publish with GitHub Actions
+  order: 1
+---
+
+import {
+  Aside,
+  Code,
+  Steps,
+  Tabs,
+  TabItem,
+} from '@astrojs/starlight/components'
+
+Automate publishing your vlt packages whenever you push a new version tag or release to GitHub.
+
+## Before you begin
+
+- A vlt account with a private registry set up
+- A GitHub repository with your package code
+- Permission to create repository secrets
+
+## Step 1: Create a service token
+
+Service tokens allow CI/CD systems to publish without requiring two-factor authentication.
+
+1. Go to your [vlt account tokens page](https://registry.vlt.io/tokens)
+2. Click "Create token"
+3. Give it a descriptive name (e.g., `github-actions-publish`)
+4. Select the **`package:write`** privilege to allow publishing
+5. Copy the token (you won't be able to see it again)
+
+## Step 2: Add the token to GitHub secrets
+
+1. Go to your GitHub repository
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Name it `VLT_TOKEN`
+5. Paste the service token you created
+6. Click **Add secret**
+
+## Step 3: Create the workflow file
+
+Create a new file at `.github/workflows/publish.yml` in your repository:
+
+<Code
+  code={`name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: vltpkg/setup-vlt@v1
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: vlt install
+
+      - name: Build
+        run: vlt run build
+
+      - name: Publish
+        run: vlt publish
+        env:
+          VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main: \${{ secrets.VLT_TOKEN }}
+`}
+  title=".github/workflows/publish.yml"
+  lang="yaml"
+/>
+
+Replace `YOUR_ACCOUNT` with your vlt account slug.
+
+## Step 4: Configure your scoped registry
+
+Make sure your `vlt.json` has your scoped registry configured:
+
+<Code
+  code={`{
+  "config": {
+    "scoped-registries": {
+      "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+    }
+  }
+}
+`}
+  title="vlt.json"
+  lang="json"
+/>
+
+## Publishing your package
+
+Once the workflow is configured, publishing is automatic:
+
+1. **Bump the version** in `package.json`
+2. **Commit and create a tag:**
+
+   <Code
+     code="$ git tag v1.0.0\n$ git push origin v1.0.0"
+     title="Terminal"
+     lang="bash"
+   />
+
+3. GitHub Actions automatically triggers the workflow
+4. Your package is published to vlt when the build passes
+
+## Customizing the workflow
+
+### Publish on release instead of tags
+
+If you prefer to publish when you create a GitHub Release:
+
+<Code
+  code={`on:
+  release:
+    types: [published]
+`}
+  title=".github/workflows/publish.yml (trigger section)"
+  lang="yaml"
+/>
+
+### Publish on manual trigger
+
+To allow publishing with a button click:
+
+<Code
+  code={`on:
+  workflow_dispatch
+`}
+  title=".github/workflows/publish.yml (trigger section)"
+  lang="yaml"
+/>
+
+### Use Node.js version matrix
+
+Test and build against multiple Node versions:
+
+<Code
+  code={`jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: \${{ matrix.node-version }}
+
+      - uses: vltpkg/setup-vlt@v1
+        with:
+          version: latest
+
+      - name: Install and build
+        run: |
+          vlt install
+          vlt run build
+
+      - name: Publish
+        if: matrix.node-version == '20'
+        run: vlt publish
+        env:
+          VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main: \${{ secrets.VLT_TOKEN }}
+`}
+  title=".github/workflows/publish.yml (with matrix)"
+  lang="yaml"
+/>
+
+This example only publishes on Node 20, but tests on all versions.
+
+## Troubleshooting
+
+### "Unable to authenticate" error
+
+Make sure:
+- The `VLT_TOKEN` secret is set in your GitHub repository
+- The token has the `package:write` privilege
+- The environment variable name matches your registry URL exactly
+
+The variable name format is: `VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main`
+
+### "Missing registry configuration"
+
+If you see this error:
+- Verify `vlt.json` includes your scoped registry configuration
+- Check that the scope in `package.json` matches your account slug
+
+### Build fails but workflow shows success
+
+Make sure to check the build logs:
+- `vlt install` step must succeed
+- `vlt run build` step must succeed
+- Only then will `vlt publish` run
+
+Add the `--verbose` flag for more detailed output:
+
+<Code
+  code={`- name: Publish (verbose)
+  run: vlt publish --verbose
+  env:
+    VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main: \${{ secrets.VLT_TOKEN }}`}
+  title=".github/workflows/publish.yml"
+  lang="yaml"
+/>
+
+## Next steps
+
+- Learn about [version management](/guides/publish-your-first-package#step-2-update-the-package-name-and-author)
+- Explore [dist-tags](/registry/publishing#dist-tags) for pre-releases
+- Read the full [publishing documentation](/registry/publishing)
