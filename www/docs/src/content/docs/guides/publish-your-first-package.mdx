@@ -128,6 +128,12 @@ slug.
       lang="json"
     />
 
+    <Aside type="tip">
+      When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
+      created to lock dependency versions. Both `vlt.json` and `vlt-lock.json` should
+      be committed to version control.
+    </Aside>
+
   </TabItem>
   <TabItem label="npm">
     <Code
@@ -181,13 +187,6 @@ EOF`}
     />
   </TabItem>
 </Tabs>
-
-<Aside type="tip">
-  **VLT users:** This step creates or updates `vlt.json` with your registry
-  configuration. When you run `vlt install` or other vlt commands, a `vlt-lock.json`
-  file is created to lock dependency versions. Both files should be committed to
-  version control.
-</Aside>
 
 ## Step 4: Authenticate
 
