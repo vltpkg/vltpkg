@@ -22,15 +22,11 @@ step by step using the [hello-vlt starter](https://github.com/vltpkg/hello-vlt).
 
 ## Before you begin
 
-This guide walks through publishing with **vlt**. If you're using npm, pnpm, or
-another package manager, the registry and authentication steps are the same, but
-the commands differ.
-
 You'll need:
 
 - A vlt account. If you don't have one yet, [sign up here](https://registry.vlt.io).
 - Node.js 18 or later
-- The vlt CLI installed on your machine (`npm install -g vlt`)
+- Your preferred package manager installed (vlt, npm, pnpm, yarn, bun, or deno)
 
 You can follow along this tutorial using our
 ["hello-vlt" starter](https://github.com/vltpkg/hello-vlt), or apply these
@@ -104,36 +100,152 @@ The `package.json` defines your package's metadata. Update it to match your acco
 
 ## Step 3: Configure your registry
 
-Map your account scope to the vlt registry so `vlt` knows where to publish:
+Map your account scope to the vlt registry so your package manager knows where to
+publish. Replace `YOUR-ACCOUNT` with your vlt account slug.
 
-<Code
-  code="$ vlt config set scoped-registries=@YOUR-ACCOUNT=https://registry.vlt.io/YOUR-ACCOUNT/main/"
-  title="Terminal"
-  lang="bash"
-/>
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code
+      code="$ vlt config set scoped-registries=@YOUR-ACCOUNT=https://registry.vlt.io/YOUR-ACCOUNT/main/"
+      title="Terminal"
+      lang="bash"
+    />
 
-This command updates `vlt.json` in your project with the registry mapping.
+    This updates `vlt.json` with the registry mapping.
+  </TabItem>
+  <TabItem label="npm">
+    <Code
+      code="$ npm config set @YOUR-ACCOUNT:registry https://registry.vlt.io/YOUR-ACCOUNT/main/ --location=project"
+      title="Terminal"
+      lang="bash"
+    />
+
+    This updates `.npmrc` with the scoped registry.
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code
+      code="$ pnpm config set @YOUR-ACCOUNT:registry https://registry.vlt.io/YOUR-ACCOUNT/main/ --location=project"
+      title="Terminal"
+      lang="bash"
+    />
+
+    This updates `.npmrc` with the scoped registry.
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      code={`yarn config set npmScopes.YOUR-ACCOUNT.npmRegistryServer "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+yarn config set npmScopes.YOUR-ACCOUNT.npmPublishRegistry "https://registry.vlt.io/YOUR-ACCOUNT/main/"`}
+      title="Terminal"
+      lang="bash"
+    />
+
+    This updates `.yarnrc.yml` with the scoped registry.
+  </TabItem>
+  <TabItem label="bun">
+    <Code
+      code={`# Edit or create bunfig.toml and add:
+[install.scopes.YOUR-ACCOUNT]
+url = "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+token = "$VLT_TOKEN"`}
+      title="bunfig.toml"
+      lang="toml"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <Code
+      code={`cat >> .npmrc <<'EOF'
+@YOUR-ACCOUNT:registry=https://registry.vlt.io/YOUR-ACCOUNT/main/
+//registry.vlt.io/YOUR-ACCOUNT/main/:_authToken=\${VLT_TOKEN}
+EOF`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+</Tabs>
 
 ## Step 4: Authenticate
 
 Before you can publish, you need to authenticate with the vlt registry:
 
-<Code code="$ vlt auth login" title="Terminal" lang="bash" />
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="$ vlt login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/" title="Terminal" lang="bash" />
 
-This opens your browser to log in. Once authenticated, your credentials are
-stored locally so future publishes work without re-authenticating.
+    This opens your browser to log in. Once authenticated, your credentials are
+    stored locally for future publishes.
+  </TabItem>
+  <TabItem label="npm">
+    <Code
+      code="$ npm login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/ --scope=@YOUR-ACCOUNT"
+      title="Terminal"
+      lang="bash"
+    />
 
-<Aside type="tip">
-  If you prefer not to open a browser, you can generate a personal token on your
-  [account settings page](https://registry.vlt.io/account) and set the
-  `VLT_TOKEN` environment variable instead.
-</Aside>
+    This prompts you to enter your vlt credentials.
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code
+      code="$ pnpm login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/ --scope=@YOUR-ACCOUNT"
+      title="Terminal"
+      lang="bash"
+    />
+
+    This prompts you to enter your vlt credentials.
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      code="$ yarn npm login --scope YOUR-ACCOUNT --always-auth --web-login"
+      title="Terminal"
+      lang="bash"
+    />
+
+    This opens your browser to log in.
+  </TabItem>
+  <TabItem label="bun">
+    Create a personal token on your [account tokens page](https://registry.vlt.io/tokens)
+    and set it as an environment variable:
+
+    <Code code="$ export VLT_TOKEN=<your-token>" title="Terminal" lang="bash" />
+
+    (Or add it to `.env` in your project.)
+  </TabItem>
+  <TabItem label="deno">
+    Create a personal token on your [account tokens page](https://registry.vlt.io/tokens)
+    and add it to a `.env` file (make sure it's in `.gitignore`):
+
+    <Code code="$ echo 'VLT_TOKEN=<your-token>' >> .env" title="Terminal" lang="bash" />
+
+    You'll pass `--env-file` when installing dependencies later.
+  </TabItem>
+</Tabs>
 
 ## Step 5: Build your package
 
 The starter includes TypeScript, so build it before publishing:
 
-<Code code="$ vlt run build" title="Terminal" lang="bash" />
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="$ vlt run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="$ npm run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="$ pnpm run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="$ yarn build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="$ bun run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno">
+    <Aside type="note">
+      The starter uses TypeScript, but Deno loads TypeScript natively, so you may
+      not need a separate build step depending on your setup.
+    </Aside>
+  </TabItem>
+</Tabs>
 
 This compiles the TypeScript to JavaScript in the `dist/` directory, which is
 what users will actually install.
@@ -142,7 +254,29 @@ what users will actually install.
 
 Now you're ready to publish:
 
-<Code code="$ vlt publish" title="Terminal" lang="bash" />
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="$ vlt publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="$ npm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="$ pnpm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="$ yarn npm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="$ bun publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno">
+    <Aside type="caution">
+      Deno does not support publishing to npm registries directly. You'll need to use
+      a different tool (like `npm publish` or `pnpm publish`) to publish your package.
+    </Aside>
+  </TabItem>
+</Tabs>
 
 The registry validates your package and displays a confirmation with the
 published version and scope. Your package is now live!
