@@ -119,6 +119,12 @@ export default defineConfig({
           ],
           customSets: [
             {
+              label: 'Guides',
+              description:
+                'Step-by-step tutorials for common vlt tasks like publishing packages.',
+              paths: ['guides/**'],
+            },
+            {
               label: 'Registry',
               description:
                 'Documentation for the vlt registry — publishing, access control, tokens, and dashboard.',
