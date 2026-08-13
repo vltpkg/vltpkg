@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'www/docs/**'
+      - '**/*.md'
 
 jobs:
   benchmark_base_branch:
