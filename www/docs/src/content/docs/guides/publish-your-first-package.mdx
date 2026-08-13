@@ -425,6 +425,30 @@ variable with a personal token from your account settings.
 Each version can only be published once. If you get a conflict error,
 bump the version in `package.json` and try again.
 
+### mkdir: . No such file or directory
+
+This error occurs when the `my-package` directory already exists. You
+have two options:
+
+1. **Use a different directory name**:
+
+   Replace `my-package` with a unique name in the command. For example:
+
+   ```bash
+   mkdir my-awesome-package && \
+   curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \
+   tar -xz -C my-awesome-package --strip-components=3 package-examples-main/packages/npm && \
+   cd my-awesome-package
+   ```
+
+2. **Remove the existing directory**:
+
+   ```bash
+   rm -rf my-package
+   ```
+
+   Then run the original download command again.
+
 ### Config Error: Missing registry configuration
 
 If you're using vlt and see this error when running `vlt install`, it
