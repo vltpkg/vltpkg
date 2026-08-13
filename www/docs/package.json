@@ -51,6 +51,8 @@
     "github-slugger": "^2.0.0",
     "mdast-util-to-string": "^4.0.0",
     "prettier": "catalog:",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "unified": "^11.0.5",

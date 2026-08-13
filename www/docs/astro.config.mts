@@ -9,6 +9,8 @@ import { sitemapAlias } from './src/plugins/sitemap.ts'
 import { readFileSync } from 'node:fs'
 import starlightLinksValidator from 'starlight-links-validator'
 import starlightLlmsTxt from 'starlight-llms-txt'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -85,6 +87,17 @@ export default defineConfig({
       tableOfContents: {
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
+      },
+      markdown: {
+        rehypePlugins: [
+          rehypeSlug,
+          [
+            rehypeAutolinkHeadings,
+            {
+              behavior: 'prepend',
+            },
+          ],
+        ],
       },
       plugins: [
         TypedocPlugin.plugin,
