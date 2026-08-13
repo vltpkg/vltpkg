@@ -155,6 +155,11 @@ export default defineConfig({
       ],
       sidebar: [
         {
+          label: 'Guides',
+          collapsed: false,
+          autogenerate: { directory: 'guides' },
+        },
+        {
           label: 'Get Started',
           collapsed: false,
           items: [
