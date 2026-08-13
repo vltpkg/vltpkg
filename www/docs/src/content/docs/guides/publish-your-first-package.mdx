@@ -39,66 +39,56 @@ repository, or apply these steps to your own package.
 
 ## Step 1: Clone the starter
 
-Choose your package manager and clone the corresponding example:
+Choose your package manager and download the corresponding example:
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
     <Code
-      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/vlt && cd packages/vlt"
+      code="$ mkdir my-package && curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | tar -xz -C my-package --strip-components=3 package-examples-main/packages/vlt\n$ cd my-package"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="npm">
     <Code
-      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/npm && cd packages/npm"
+      code="$ mkdir my-package && curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | tar -xz -C my-package --strip-components=3 package-examples-main/packages/npm\n$ cd my-package"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="pnpm">
     <Code
-      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/pnpm && cd packages/pnpm"
+      code="$ mkdir my-package && curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | tar -xz -C my-package --strip-components=3 package-examples-main/packages/pnpm\n$ cd my-package"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="yarn">
     <Code
-      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/yarn && cd packages/yarn"
+      code="$ mkdir my-package && curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | tar -xz -C my-package --strip-components=3 package-examples-main/packages/yarn\n$ cd my-package"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="bun">
     <Code
-      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/bun && cd packages/bun"
+      code="$ mkdir my-package && curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | tar -xz -C my-package --strip-components=3 package-examples-main/packages/bun\n$ cd my-package"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="deno">
     <Code
-      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/deno && cd packages/deno"
+      code="$ mkdir my-package && curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | tar -xz -C my-package --strip-components=3 package-examples-main/packages/deno\n$ cd my-package"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
 </Tabs>
 
-This clones only the files for your package manager, keeping the download small. Each starter is a minimal TypeScript package that exports a simple function, with the correct configuration for your package manager included.
+(Replace `my-package` with your desired directory name.)
 
-<Aside type="tip">
-**Want to rename the project?** After cloning, you can rename the directory to something like `my-package`:
-
-```bash
-cd ../..
-mv package-examples my-package
-cd my-package/packages/<manager>
-```
-
-Alternatively, use `git clone --depth 1 --filter=blob:none --sparse <url> my-package` and adjust the sparse-checkout path if you prefer a custom directory name from the start.
-</Aside>
+This downloads only the files for your package manager. Each starter is a minimal TypeScript package that exports a simple function, with the correct configuration for your package manager included.
 
 ## Step 2: Update the package name and author
 
