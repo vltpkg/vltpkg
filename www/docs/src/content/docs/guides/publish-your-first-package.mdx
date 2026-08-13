@@ -52,7 +52,7 @@ repository, or apply these steps to your own package.
 Choose your package manager and download the corresponding example:
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt">
+  <TabItem label="vlt" icon="code">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -62,7 +62,7 @@ cd my-package`}
       lang="bash"
     />
   </TabItem>
-  <TabItem label="npm">
+  <TabItem label="npm" icon="npm">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -72,7 +72,7 @@ cd my-package`}
       lang="bash"
     />
   </TabItem>
-  <TabItem label="pnpm">
+  <TabItem label="pnpm" icon="pnpm">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -82,7 +82,7 @@ cd my-package`}
       lang="bash"
     />
   </TabItem>
-  <TabItem label="yarn">
+  <TabItem label="yarn" icon="code">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -92,7 +92,7 @@ cd my-package`}
       lang="bash"
     />
   </TabItem>
-  <TabItem label="bun">
+  <TabItem label="bun" icon="bun">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -102,7 +102,7 @@ cd my-package`}
       lang="bash"
     />
   </TabItem>
-  <TabItem label="deno">
+  <TabItem label="deno" icon="deno">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -155,7 +155,7 @@ Here's the complete updated `package.json`:
 />
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt">
+  <TabItem label="vlt" icon="code">
     <Aside type="tip">
       You can also manage versions from the CLI with `vlt version
       major|minor|patch` instead of manually editing `package.json`.
@@ -285,7 +285,7 @@ stored locally for future publishes.
 Before building, install the dev dependencies (TypeScript):
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt">
+  <TabItem label="vlt" icon="code">
     <Code code="vlt install" title="Terminal" lang="bash" />
 
     Note: If you haven't set up a default registry, you can use `npm install` instead and vlt will use npm's registry for dependencies.
@@ -296,19 +296,19 @@ Before building, install the dev dependencies (TypeScript):
     be committed to version control.
   </Aside>
   </TabItem>
-  <TabItem label="npm">
+  <TabItem label="npm" icon="npm">
     <Code code="npm install" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="pnpm">
+  <TabItem label="pnpm" icon="pnpm">
     <Code code="pnpm install" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="yarn">
+  <TabItem label="yarn" icon="code">
     <Code code="yarn install" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="bun">
+  <TabItem label="bun" icon="bun">
     <Code code="bun install" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="deno" />
+  <TabItem label="deno" icon="deno" />
 </Tabs>
 
 ## Step 6: Build your package
@@ -319,19 +319,19 @@ The starter includes TypeScript, so build it before publishing:
   <TabItem label="vlt">
     <Code code="vlr build" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="npm">
+  <TabItem label="npm" icon="npm">
     <Code code="npm run build" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="pnpm">
+  <TabItem label="pnpm" icon="pnpm">
     <Code code="pnpm run build" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="yarn">
+  <TabItem label="yarn" icon="code">
     <Code code="yarn build" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="bun">
+  <TabItem label="bun" icon="bun">
     <Code code="bun run build" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="deno">
+  <TabItem label="deno" icon="deno">
     <Aside type="note">
       The starter uses TypeScript, but Deno loads TypeScript natively,
       so you may not need a separate build step depending on your
@@ -357,22 +357,22 @@ publishes from CI, use a service token instead — see
 Now you're ready to publish:
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt">
+  <TabItem label="vlt" icon="code">
     <Code code="vlt publish" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="npm">
+  <TabItem label="npm" icon="npm">
     <Code code="npm publish" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="pnpm">
+  <TabItem label="pnpm" icon="pnpm">
     <Code code="pnpm publish" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="yarn">
+  <TabItem label="yarn" icon="code">
     <Code code="yarn npm publish" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="bun">
+  <TabItem label="bun" icon="bun">
     <Code code="bun publish" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="deno">
+  <TabItem label="deno" icon="deno">
     <Aside type="caution">
       Deno does not support publishing to npm registries directly.
       You'll need to use a different tool (like `npm publish` or `pnpm
