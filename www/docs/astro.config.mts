@@ -24,6 +24,17 @@ const MIXPANEL_TOKEN = '7853b372fb0f20e238be6d11e53f60fe'
 export default defineConfig({
   site: 'https://docs.vlt.io',
   trailingSlash: 'never',
+  markdown: {
+    rehypePlugins: [
+      rehypeSlug,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: 'prepend',
+        },
+      ],
+    ],
+  },
   integrations: [
     starlight({
       editLink: {
@@ -87,17 +98,6 @@ export default defineConfig({
       tableOfContents: {
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
-      },
-      markdown: {
-        rehypePlugins: [
-          rehypeSlug,
-          [
-            rehypeAutolinkHeadings,
-            {
-              behavior: 'prepend',
-            },
-          ],
-        ],
       },
       plugins: [
         TypedocPlugin.plugin,
