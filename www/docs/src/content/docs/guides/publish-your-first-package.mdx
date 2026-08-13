@@ -19,7 +19,8 @@ using the vlt registry.
 
 In this tutorial, we'll walk through publishing a simple TypeScript
 package step by step using one of our
-[starter examples](https://github.com/vltpkg/package-examples) for your package manager.
+[starter examples](https://github.com/vltpkg/package-examples) for
+your package manager.
 
 ## Before you begin
 
@@ -31,9 +32,10 @@ You'll need:
 - Your preferred package manager installed (vlt, npm, pnpm, yarn, bun,
   or deno)
 
-You can follow along this tutorial using one of our starter examples from the
-[package-examples](https://github.com/vltpkg/package-examples) repository, or apply
-these steps to your own package.
+You can follow along this tutorial using one of our starter examples
+from the
+[package-examples](https://github.com/vltpkg/package-examples)
+repository, or apply these steps to your own package.
 
 ## Step 1: Clone the starter
 
@@ -42,51 +44,61 @@ Choose your package manager and clone the corresponding example:
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
     <Code
-      code="$ git clone https://github.com/vltpkg/package-examples packages/vlt my-package\n$ cd my-package"
+      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/vlt && cd packages/vlt"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="npm">
     <Code
-      code="$ git clone https://github.com/vltpkg/package-examples packages/npm my-package\n$ cd my-package"
+      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/npm && cd packages/npm"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="pnpm">
     <Code
-      code="$ git clone https://github.com/vltpkg/package-examples packages/pnpm my-package\n$ cd my-package"
+      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/pnpm && cd packages/pnpm"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="yarn">
     <Code
-      code="$ git clone https://github.com/vltpkg/package-examples packages/yarn my-package\n$ cd my-package"
+      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/yarn && cd packages/yarn"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="bun">
     <Code
-      code="$ git clone https://github.com/vltpkg/package-examples packages/bun my-package\n$ cd my-package"
+      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/bun && cd packages/bun"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
   <TabItem label="deno">
     <Code
-      code="$ git clone https://github.com/vltpkg/package-examples packages/deno my-package\n$ cd my-package"
+      code="$ git clone --depth 1 --filter=blob:none --sparse https://github.com/vltpkg/package-examples\n$ cd package-examples && git sparse-checkout set packages/deno && cd packages/deno"
       title="Terminal"
       lang="bash"
     />
   </TabItem>
 </Tabs>
 
-(Replace `my-package` with your desired directory name.)
+This clones only the files for your package manager, keeping the download small. Each starter is a minimal TypeScript package that exports a simple function, with the correct configuration for your package manager included.
 
-Each starter is a minimal TypeScript package that exports a simple function. Your cloned example includes the correct configuration for your package manager.
+<Aside type="tip">
+**Want to rename the project?** After cloning, you can rename the directory to something like `my-package`:
+
+```bash
+cd ../..
+mv package-examples my-package
+cd my-package/packages/<manager>
+```
+
+Alternatively, use `git clone --depth 1 --filter=blob:none --sparse <url> my-package` and adjust the sparse-checkout path if you prefer a custom directory name from the start.
+</Aside>
 
 ## Step 2: Update the package name and author
 
@@ -95,9 +107,11 @@ Edit `package.json` and make these changes:
 1. **Change the name** to `@YOUR-ACCOUNT/my-package`
 
    Replace `YOUR-ACCOUNT` with your vlt account slug (find it on your
-   [account settings page](https://registry.vlt.io/account)). You can use any name for `my-package`.
+   [account settings page](https://registry.vlt.io/account)). You can
+   use any name for `my-package`.
 
-2. **Update the version** to `1.0.0` to mark this as your first release
+2. **Update the version** to `1.0.0` to mark this as your first
+   release
 
 3. **Update the author** with your information
 
@@ -123,9 +137,9 @@ Here's the complete updated `package.json`:
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
     <Aside type="tip">
-      You can also manage versions from the CLI with `vlt version major|minor|patch`
-      instead of manually editing `package.json`. This is especially useful for future
-      releases.
+      You can also manage versions from the CLI with `vlt version
+      major|minor|patch` instead of manually editing `package.json`.
+      This is especially useful for future releases.
     </Aside>
   </TabItem>
   <TabItem label="npm" />
@@ -144,7 +158,7 @@ slug.
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
     <Code
-      code="$ vlt config set scoped-registries=@YOUR-ACCOUNT=https://registry.vlt.io/YOUR-ACCOUNT/main/"
+      code="vlt config set scoped-registries=@YOUR-ACCOUNT=https://registry.vlt.io/YOUR-ACCOUNT/main/"
       title="Terminal"
       lang="bash"
     />
@@ -153,15 +167,10 @@ slug.
 
     <Code
       code={`{
-  "config": {
-    "scoped-registries": {
-      "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/"
-    }
-  }
-}`}
-      title="vlt.json"
-      lang="json"
-    />
+
+"config": { "scoped-registries": { "@YOUR-ACCOUNT":
+"<https://registry.vlt.io/YOUR-ACCOUNT/main/>" } } }`}
+title="vlt.json" lang="json" />
 
     <Aside type="tip">
       When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
@@ -172,7 +181,7 @@ slug.
   </TabItem>
   <TabItem label="npm">
     <Code
-      code="$ npm config set @YOUR-ACCOUNT:registry https://registry.vlt.io/YOUR-ACCOUNT/main/ --location=project"
+      code="npm config set @YOUR-ACCOUNT:registry https://registry.vlt.io/YOUR-ACCOUNT/main/ --location=project"
       title="Terminal"
       lang="bash"
     />
@@ -295,6 +304,7 @@ Before building, install the dev dependencies (TypeScript):
     <Code code="$ vlt install" title="Terminal" lang="bash" />
 
     Note: If you haven't set up a default registry, you can use `npm install` instead and vlt will use npm's registry for dependencies.
+
   </TabItem>
   <TabItem label="npm">
     <Code code="$ npm install" title="Terminal" lang="bash" />
@@ -394,8 +404,8 @@ in your [account settings](https://registry.vlt.io/account).
 ### 403 Forbidden error
 
 The package name must be scoped to your account (e.g.,
-`@YOUR-ACCOUNT/hello-vlt`). Check your `package.json` and make sure the
-scope matches your account slug.
+`@YOUR-ACCOUNT/hello-vlt`). Check your `package.json` and make sure
+the scope matches your account slug.
 
 ### Authentication required
 
@@ -404,30 +414,36 @@ variable with a personal token from your account settings.
 
 ### Version conflict
 
-Each version can only be published once. If you get a conflict error, bump
-the version in `package.json` and try again.
+Each version can only be published once. If you get a conflict error,
+bump the version in `package.json` and try again.
 
 ### Config Error: Missing registry configuration
 
-If you're using vlt and see this error when running `vlt install`, it means vlt
-needs a default registry configured for downloading dependencies. You have two
-options:
+If you're using vlt and see this error when running `vlt install`, it
+means vlt needs a default registry configured for downloading
+dependencies. You have two options:
 
 1. **Use npm instead** (simpler for dependency installation):
+
    ```bash
    npm install
    ```
-   npm will download dependencies from the public npm registry, while `vlt publish`
-   will still use your scoped registry configuration.
 
-2. **Configure a default registry** (if you want vlt to manage all packages):
+   npm will download dependencies from the public npm registry, while
+   `vlt publish` will still use your scoped registry configuration.
+
+2. **Configure a default registry** (if you want vlt to manage all
+   packages):
+
    ```bash
    vlt config set registry=https://registry.vlt.io/YOUR-ACCOUNT/npm/
    ```
-   Then run `vlt install` to download dependencies through your vlt mirror.
 
-For most users, option 1 is simpler — you only need the scoped registry
-configured for publishing your own packages.
+   Then run `vlt install` to download dependencies through your vlt
+   mirror.
+
+For most users, option 1 is simpler — you only need the scoped
+registry configured for publishing your own packages.
 
 ## Next steps
 
