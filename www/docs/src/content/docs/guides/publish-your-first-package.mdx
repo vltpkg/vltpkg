@@ -18,8 +18,8 @@ simply want to keep a tool you wrote offline. Here's how to do that
 using the vlt registry.
 
 In this tutorial, we'll walk through publishing a simple TypeScript
-package step by step using the
-[hello-vlt starter](https://github.com/vltpkg/hello-vlt).
+package step by step using one of our
+[starter examples](https://github.com/vltpkg/package-examples) for your package manager.
 
 ## Before you begin
 
@@ -31,39 +31,71 @@ You'll need:
 - Your preferred package manager installed (vlt, npm, pnpm, yarn, bun,
   or deno)
 
-You can follow along this tutorial using our
-["hello-vlt" starter](https://github.com/vltpkg/hello-vlt), or apply
+You can follow along this tutorial using one of our starter examples from the
+[package-examples](https://github.com/vltpkg/package-examples) repository, or apply
 these steps to your own package.
 
 ## Step 1: Clone the starter
 
-<Code
-  code="$ git clone https://github.com/vltpkg/hello-vlt my-package\n$ cd my-package"
-  title="Terminal"
-  lang="bash"
-/>
+Choose your package manager and clone the corresponding example:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code
+      code="$ git clone https://github.com/vltpkg/package-examples packages/vlt my-package\n$ cd my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <Code
+      code="$ git clone https://github.com/vltpkg/package-examples packages/npm my-package\n$ cd my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code
+      code="$ git clone https://github.com/vltpkg/package-examples packages/pnpm my-package\n$ cd my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      code="$ git clone https://github.com/vltpkg/package-examples packages/yarn my-package\n$ cd my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <Code
+      code="$ git clone https://github.com/vltpkg/package-examples packages/bun my-package\n$ cd my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <Code
+      code="$ git clone https://github.com/vltpkg/package-examples packages/deno my-package\n$ cd my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+</Tabs>
 
 (Replace `my-package` with your desired directory name.)
 
-This starter is a minimal TypeScript package that exports a simple
-function:
-
-<Code
-  code={`export function helloWorld(): string {
-  return "Hello, World!";
-}`}
-  title="index.ts"
-  lang="typescript"
-/>
+Each starter is a minimal TypeScript package that exports a simple function. Your cloned example includes the correct configuration for your package manager.
 
 ## Step 2: Update the package name and author
 
 Edit `package.json` and make these changes:
 
-1. **Change the name** from `hello-vlt` to `@YOUR-ACCOUNT/hello-vlt`
+1. **Change the name** to `@YOUR-ACCOUNT/my-package`
 
    Replace `YOUR-ACCOUNT` with your vlt account slug (find it on your
-   [account settings page](https://registry.vlt.io/account)).
+   [account settings page](https://registry.vlt.io/account)). You can use any name for `my-package`.
 
 2. **Update the version** to `1.0.0` to mark this as your first release
 
@@ -73,9 +105,9 @@ Here's the complete updated `package.json`:
 
 <Code
   code={`{
-  "name": "@YOUR-ACCOUNT/hello-vlt",
+  "name": "@YOUR-ACCOUNT/my-package",
   "version": "1.0.0",
-  "description": "Hello World package",
+  "description": "My awesome package",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": {
