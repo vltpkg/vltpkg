@@ -193,6 +193,31 @@ html {
   font-size: 1.25rem;
 }
 
+/* Autolink heading styling - headings wrapped in links */
+.sl-markdown-content a[href^='#'] {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sl-markdown-content a[href^='#']:hover {
+  text-decoration: underline;
+}
+
+.sl-markdown-content .icon-link {
+  margin-right: 0.25rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.sl-markdown-content a[href^='#']:hover .icon-link {
+  opacity: 1;
+}
+
+.sl-markdown-content .icon-link::before {
+  content: '🔗';
+  font-size: 0.9em;
+}
+
 .sl-markdown-content h3 {
   font-size: 1rem;
   padding-top: 1rem;

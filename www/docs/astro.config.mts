@@ -30,7 +30,7 @@ export default defineConfig({
       [
         rehypeAutolinkHeadings,
         {
-          behavior: 'prepend',
+          behavior: 'wrap',
         },
       ],
     ],
