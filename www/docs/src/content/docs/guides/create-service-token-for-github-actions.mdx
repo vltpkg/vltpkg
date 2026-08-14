@@ -1,0 +1,132 @@
+---
+title: Create a service token for GitHub Actions
+sidebar:
+  label: Create service token for GitHub Actions
+  order: 1
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components'
+
+Service tokens allow your CI/CD workflows to publish packages without
+requiring two-factor authentication or storing personal credentials. This
+guide covers creating, storing, and rotating service tokens for GitHub
+Actions.
+
+## Prerequisites
+
+- A vlt account with owner or admin privileges
+- Access to your repository settings (to add GitHub secrets)
+
+## Create the service token in vlt.io
+
+<Steps>
+
+1. Go to [vlt.io](https://www.vlt.io/) and sign in.
+
+2. Navigate to **Account Settings** → **Tokens**.
+
+3. Click **Create Token**.
+
+4. Fill in the token details:
+   - **Name**: `github-actions-publish` (or another descriptive name)
+   - **Description**: `Publish token for GitHub Actions CI/CD`
+   - **Privileges**: Select `package:write` (this includes
+     `package:read`)
+   - **Expiration**: Set to 90 days (recommended for publishing
+     tokens)
+
+5. Click **Generate**.
+
+6. **Copy the full token value** (starts with `vlt_1_`) and paste it
+   somewhere temporary—it won't be shown again.
+
+</Steps>
+
+<Aside type="caution">
+  The token is displayed only once. If you close this dialog without copying it,
+  you must revoke the token and create a new one.
+</Aside>
+
+## Store the token in GitHub
+
+<Steps>
+
+1. Go to your GitHub repository.
+
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**.
+
+3. Click **New repository secret**.
+
+4. Name the secret: `VLT_PUBLISH_TOKEN`
+
+5. Paste the token value you copied from vlt.io.
+
+6. Click **Add secret**.
+
+</Steps>
+
+Your token is now stored as a GitHub secret and encrypted by GitHub.
+
+<Aside type="tip">
+  For a complete end-to-end setup guide, see
+  [Publish with GitHub Actions](/guides/publish-with-github-actions).
+</Aside>
+
+## Rotating the token
+
+When your token approaches expiration (or sooner if you suspect
+compromise):
+
+1. Create a new token in vlt.io following the steps above
+2. Update the `VLT_PUBLISH_TOKEN` secret in GitHub with the new value
+3. Revoke the old token in vlt.io
+
+This ensures your CI/CD pipeline continues to work without disruption.
+
+## Managing your token
+
+### View token information
+
+To see all your tokens in vlt.io:
+
+1. Navigate to **Account Settings** → **Tokens**
+2. View created date, expiration, and last used timestamp
+3. See which privileges each token has
+
+### Revoke a token
+
+To immediately revoke a token:
+
+1. Go to **Account Settings** → **Tokens**
+2. Find the token you want to revoke
+3. Click the **Revoke** button
+4. Update any GitHub secrets that reference it
+
+Revoked tokens are immediately invalid and cannot be used.
+
+## Troubleshooting
+
+**Token expired:**
+
+- Check the expiration date in vlt.io
+- Create a new token and update the GitHub secret
+- See [Rotating the token](#rotating-the-token) section above
+
+**"Unauthorized" error when publishing:**
+
+- Verify the token hasn't been revoked in vlt.io
+- Ensure the token has `package:write` privilege
+- Confirm the secret is correctly named in GitHub
+
+**Accidentally exposed the token:**
+
+1. Revoke it immediately in vlt.io
+2. Create a new token
+3. Update the GitHub secret with the new value
+
+Any exposed tokens should be considered compromised and revoked promptly.
+
+## Next steps
+
+For a deeper understanding of service token security, see
+[Best practices for token management](/guides/best-practices-for-token-management).
