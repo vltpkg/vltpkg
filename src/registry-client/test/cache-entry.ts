@@ -306,6 +306,25 @@ t.equal(
   false,
 )
 
+t.test('fromCache', t => {
+  const entry = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-type': 'application/octet-stream' }),
+  )
+  entry.addBody(Buffer.from('hello'))
+  t.equal(
+    entry.fromCache,
+    false,
+    'constructed entries are not from cache',
+  )
+  t.equal(
+    CacheEntry.decode(entry.encode()).fromCache,
+    true,
+    'decoded entries are from cache',
+  )
+  t.end()
+})
+
 t.test('isGzip', t => {
   const c = new CacheEntry(
     200,

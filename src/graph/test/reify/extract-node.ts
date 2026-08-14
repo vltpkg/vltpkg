@@ -50,6 +50,7 @@ t.beforeEach(() => {
 
 const mockNode = (props: Record<string, any>) =>
   ({
+    resolvedFromLockfile: false,
     ...props,
     resolvedLocation: (scurry: PathScurry) =>
       scurry.cwd.resolve(props.location).fullpath(),
@@ -78,6 +79,7 @@ t.test('successfully extract a node', async t => {
     manifest: { name: 'foo', version: '1.2.3' },
     integrity: 'sha512-abc123',
     resolved: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+    resolvedFromLockfile: true,
   })
 
   const scurry = new PathScurry(t.testdirName)
@@ -119,6 +121,7 @@ t.test('successfully extract a node', async t => {
     'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
     'resolved passed',
   )
+  t.equal(options.fromLockfile, true, 'fromLockfile passed')
 })
 
 t.test('handle extraction failure for optional node', async t => {
@@ -346,6 +349,11 @@ t.test('extract node without diff object', async t => {
       'extraction successful without diff',
     )
     t.equal(extracted.length, 1, 'package extracted')
+    t.equal(
+      extracted[0]?.[2].fromLockfile,
+      false,
+      'fromLockfile false when not from lockfile',
+    )
   })
 
   t.test(

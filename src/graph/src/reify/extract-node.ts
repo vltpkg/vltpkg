@@ -84,16 +84,23 @@ export const extractNode = async (
     }
   }
 
+  const extractOptions = {
+    from,
+    integrity,
+    resolved,
+    fromLockfile: node.resolvedFromLockfile,
+  }
+
   try {
     await remover.rm(target)
 
     if (removeOptionalFailedNode) {
       try {
-        const result = await packageInfo.extract(spec, target, {
-          from,
-          integrity,
-          resolved,
-        })
+        const result = await packageInfo.extract(
+          spec,
+          target,
+          extractOptions,
+        )
         // Store computed integrity for git/remote deps
         if (result.integrity && !node.integrity) {
           node.integrity = result.integrity
@@ -104,11 +111,11 @@ export const extractNode = async (
         return { success: false, node, error }
       }
     } else {
-      const result = await packageInfo.extract(spec, target, {
-        from,
-        integrity,
-        resolved,
-      })
+      const result = await packageInfo.extract(
+        spec,
+        target,
+        extractOptions,
+      )
       // Store computed integrity for git/remote deps
       if (result.integrity && !node.integrity) {
         node.integrity = result.integrity

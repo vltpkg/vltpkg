@@ -108,6 +108,18 @@ t.test('load', async t => {
     projectRoot,
     mainManifest,
   })
+  t.equal(
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0']))
+      ?.resolvedFromLockfile,
+    true,
+    'integrity+resolved from lockfile',
+  )
+  t.equal(
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'foo@1.0.0']))
+      ?.resolvedFromLockfile,
+    false,
+    'integrity without resolved is not lockfile-verified',
+  )
   t.matchSnapshot(objectLikeOutput(graph))
 })
 
@@ -219,6 +231,18 @@ t.test('loadHidden', async t => {
     projectRoot,
     mainManifest,
   })
+  t.equal(
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0']))
+      ?.resolvedFromLockfile,
+    true,
+    'integrity+resolved from hidden lockfile',
+  )
+  t.equal(
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'foo@1.0.0']))
+      ?.resolvedFromLockfile,
+    false,
+    'integrity without resolved is not lockfile-verified',
+  )
   t.matchSnapshot(objectLikeOutput(graph))
 })
 

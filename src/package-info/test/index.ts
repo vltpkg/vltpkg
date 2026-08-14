@@ -21,6 +21,7 @@ import type {
   PackageInfoClientOptions,
   PackageInfoClientRequestOptions,
 } from '../src/index.ts'
+import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import { PackageInfoClient } from '../src/index.ts'
 
 t.saveFixture = true
@@ -102,6 +103,7 @@ const server = createServer((req, res) => {
   res.setHeader('connection', 'close')
   switch (req.url) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
+      abbrevTgzRequests++
       res.setHeader('content-type', 'application/octet-stream')
       res.setHeader('content-length', tgzAbbrev.byteLength)
       res.setHeader(
@@ -328,6 +330,7 @@ const notFoundURLs: string[] = []
 let corruptedOnceServed = 0
 let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
+let abbrevTgzRequests = 0
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
@@ -1103,6 +1106,63 @@ t.test('registry tarball integrity verification', async t => {
         'should verify tarball integrity even with integrity+resolved provided',
       )
       await pi.registryClient.cache.promise()
+    },
+  )
+
+  await t.test(
+    'extract from unzipped cache does not re-fetch tarball',
+    async t => {
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const cacheDir = dir + '/cache'
+      const tarballUrl = `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`
+      const pi = new PackageInfoClient({
+        ...options,
+        cache: cacheDir,
+      })
+      await pi.extract('abbrev@2', dir + '/first')
+      await pi.registryClient.cache.promise()
+
+      const cache = pi.registryClient.cache
+      const buf = await cache.fetch(tarballUrl)
+      t.ok(buf, 'tarball is in cache')
+      if (!buf) return
+      const e = CacheEntry.decode(buf)
+      e.unzip()
+      cache.set(tarballUrl, e.encode(), {
+        integrity: e.integrity,
+      })
+      await cache.promise()
+
+      const before = abbrevTgzRequests
+      const pi2 = new PackageInfoClient({
+        ...options,
+        cache: cacheDir,
+      })
+      await pi2.extract('abbrev@2', dir + '/second')
+      t.equal(
+        abbrevTgzRequests,
+        before,
+        'no tarball requests on warm cache',
+      )
+      const json = readFileSync(`${dir}/second/package.json`, 'utf8')
+      const pkg = JSON.parse(json) as Manifest
+      t.match(pkg, { name: 'abbrev', version: '2.0.0' })
+
+      const pi3 = new PackageInfoClient({
+        ...options,
+        cache: cacheDir,
+      })
+      const tb = await pi3.tarball('abbrev@2')
+      t.equal(
+        abbrevTgzRequests,
+        before,
+        'tarball() also issues no tarball requests on warm cache',
+      )
+      t.ok(tb.length > 0, 'returned cached tarball bytes')
+      await pi2.registryClient.cache.promise()
+      await pi3.registryClient.cache.promise()
     },
   )
 
@@ -1944,6 +2004,7 @@ t.test(
       'range manifest came from the coalesced packument',
     )
     t.equal(exact.license, 'ISC', 'manifest retains license metadata')
+    await pi.registryClient.cache.promise()
   },
 )
 

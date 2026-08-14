@@ -123,6 +123,7 @@ export const loadNodes = (
       type === 'remote' ? filepath : (
         (resolved ?? referenceNode?.resolved)
       )
+    node.resolvedFromLockfile = !!(node.integrity && node.resolved)
     node.projectRoot = graph.projectRoot
     if (!node.resolved) node.setResolved()
     if (location) {

@@ -17,6 +17,7 @@ Node [@vltpkg/graph.Node] {
   mainImporter: true,
   graph: {},
   integrity: undefined,
+  resolvedFromLockfile: false,
   manifest: [Object],
   projectRoot: #
   registry: undefined,

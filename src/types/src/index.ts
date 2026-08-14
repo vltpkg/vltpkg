@@ -1585,6 +1585,7 @@ export type NodeLike = {
   version?: string | null
   integrity?: string | null
   resolved?: string | null
+  resolvedFromLockfile?: boolean
   importer: boolean
   graph: GraphLike
   mainImporter: boolean

@@ -247,20 +247,17 @@ export class PackageInfoClient {
 
           const buf = response.buffer()
 
-          // Verify tarball integrity against the manifest's
-          // dist.integrity. This is a supply-chain security measure:
-          // the registry may not validate integrity, so we do it
-          // client-side on every fresh download. Skip when integrity
-          // came from lockfile/cache (it was already verified on
-          // first install).
-          /* c8 ignore start - defense-in-depth: registry client's
-           * checkIntegrity() usually catches mismatches first since
-           * it checks the same gzip bytes. This fires only when the
-           * registry client check is skipped (trustIntegrity=true). */
-          if (r.integrity && !fromLockfile) {
+          // Verify network-delivered tarball bytes against dist.integrity.
+          // Skip cache-served bodies: they were verified on the fetch that
+          // populated the cache, and cache-unzip rewrites them un-gzipped
+          // so the gzip-hash can never match. Skip lockfile-sourced
+          // integrity: it was verified on first install.
+          if (r.integrity && !fromLockfile && !response.fromCache) {
             const hash = createHash('sha512')
             hash.update(buf)
             const computed: Integrity = `sha512-${hash.digest('base64')}`
+            /* c8 ignore start - defense-in-depth: registry client's
+             * checkIntegrity() usually catches mismatches first. */
             if (computed !== r.integrity) {
               throw error('Tarball integrity check failed', {
                 code: 'EINTEGRITY',
@@ -270,8 +267,8 @@ export class PackageInfoClient {
                 found: computed,
               })
             }
+            /* c8 ignore stop */
           }
-          /* c8 ignore stop */
 
           return buf
         }
@@ -532,13 +529,12 @@ export class PackageInfoClient {
 
           const buf = response.buffer()
 
-          // Verify tarball integrity against the manifest's
-          // dist.integrity.
-          /* c8 ignore start - defense-in-depth (see extract) */
-          if (integrity) {
+          // Same as extract(): only hash network-delivered bodies.
+          if (integrity && !response.fromCache) {
             const hash = createHash('sha512')
             hash.update(buf)
             const computed: Integrity = `sha512-${hash.digest('base64')}`
+            /* c8 ignore start - defense-in-depth (see extract) */
             if (computed !== integrity) {
               throw error('Tarball integrity check failed', {
                 code: 'EINTEGRITY',
@@ -548,8 +544,8 @@ export class PackageInfoClient {
                 found: computed,
               })
             }
+            /* c8 ignore stop */
           }
-          /* c8 ignore stop */
 
           return buf
         }

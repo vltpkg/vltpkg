@@ -128,6 +128,7 @@ export class CacheEntry {
   #json?: JSONObj
   #trustIntegrity
   #staleWhileRevalidateFactor
+  #fromCache = false
 
   constructor(
     statusCode: number,
@@ -316,6 +317,11 @@ export class CacheEntry {
       this.#body.set(b, this.#bodyLength)
       this.#bodyLength += b.byteLength
     }
+  }
+
+  /** True when this entry was decoded from the on-disk cache. */
+  get fromCache(): boolean {
+    return this.#fromCache
   }
 
   get statusCode() {
@@ -563,6 +569,7 @@ export class CacheEntry {
         contentLength: body.byteLength,
       },
     )
+    c.#fromCache = true
 
     if (c.isJSON) {
       try {
