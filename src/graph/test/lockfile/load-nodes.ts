@@ -52,6 +52,18 @@ t.test('load nodes', async t => {
     ],
   } as LockfileData['nodes']
   loadNodes(graph, nodes, {})
+  t.equal(
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0']))
+      ?.resolvedFromLockfile,
+    true,
+    'integrity+resolved from lockfile',
+  )
+  t.equal(
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'foo@1.0.0']))
+      ?.resolvedFromLockfile,
+    false,
+    'integrity without resolved is not lockfile-verified',
+  )
   t.matchSnapshot(
     [...graph.nodes.values()].map(n => n.toJSON()),
     'should load nodes into graph',

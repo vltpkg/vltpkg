@@ -172,6 +172,7 @@ Set {
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
+    "resolvedFromLockfile": false,
     "version": "1.0.0",
     "workspaces": Map {
       "b" => Edge {
@@ -294,6 +295,7 @@ Set {
           "projectRoot": #
           "registry": undefined,
           "resolved": undefined,
+          "resolvedFromLockfile": false,
           "version": "1.0.0",
           "workspaces": undefined,
         },
@@ -419,6 +421,7 @@ Set {
           "projectRoot": #
           "registry": undefined,
           "resolved": undefined,
+          "resolvedFromLockfile": false,
           "version": "1.0.0",
           "workspaces": undefined,
         },
@@ -452,6 +455,7 @@ Set {
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
+    "resolvedFromLockfile": false,
     "version": "1.0.0",
     "workspaces": undefined,
   },
@@ -481,6 +485,7 @@ Set {
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
+    "resolvedFromLockfile": false,
     "version": "1.0.0",
     "workspaces": undefined,
   },

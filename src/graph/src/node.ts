@@ -140,6 +140,12 @@ export class Node implements NodeLike {
   integrity?: Integrity
 
   /**
+   * True when `integrity` and `resolved` came from a lockfile, i.e. they were
+   * verified by the install that wrote them.
+   */
+  resolvedFromLockfile = false
+
+  /**
    * The manifest this node represents in the graph.
    */
   manifest?: NormalizedManifest
