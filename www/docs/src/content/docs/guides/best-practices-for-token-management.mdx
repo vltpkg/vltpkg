@@ -1,0 +1,289 @@
+---
+title: Best practices for token management
+sidebar:
+  label: Best practices for token management
+  order: 2
+---
+
+import {
+  Aside,
+  Code,
+} from '@astrojs/starlight/components'
+
+Service tokens are credentials that grant access to the vlt registry
+from automated systems like CI/CD pipelines. Unlike personal tokens
+tied to a user, service tokens belong to your account and are designed
+for secure, unattended authentication. This guide explains the
+security principles and best practices that should guide your token
+management strategy.
+
+## Understanding token types
+
+vlt supports two kinds of tokens, each with different security
+implications:
+
+**Personal tokens** are tied to your user account and carry your full
+account privileges. Because they represent you as an individual, they
+are subject to two-factor authentication (OTP) prompts—a friction
+point that discourages accidental misuse and imposterism. Personal
+tokens are appropriate for local development and manual operations
+where human judgment is involved.
+
+**Service tokens** belong to your account rather than a person. They
+are designed specifically for CI/CD automation and are not subject to
+OTP requirements, making them suitable for unattended, repetitive
+operations.
+
+**Service tokens should be treated as high-value credentials** as they
+represent your automated systems, not your personal judgment. If
+compromised, a service token grants access to your entire registry
+without any human-in-the-loop safeguards.
+
+All tokens start with the `vlt_1_` prefix and are stored as hashes on
+the server—the full value is displayed only once at creation, by
+design.
+
+## Why token creation requires constraints
+
+When you create a service token, you configure three critical
+properties: its **permissions**, its **scope**, and its **lifetime**.
+Each of these decisions directly impacts how much damage a compromised
+token could cause.
+
+### Least privilege: limiting what a token can do
+
+Service tokens carry a set of permissions such as `package:read`,
+`package:write`, or `member:read`. A request succeeds only if **both**
+the token and the requesting user's account role grant the permission.
+This is important: **a token can never grant more access than its
+creator already has**.
+
+The principle of least privilege says you should grant only the
+permissions a token actually needs. A token that only installs
+packages needs just `package:read`; a token that publishes packages
+needs both `package:read` and `package:write`. A token that manages
+team membership should be rare and carefully controlled.
+
+Why this matters: if a token is compromised, the attacker gains only
+the permissions that token carries. A read-only token stays read-only.
+A token scoped to one project can't access others. This containment
+principle dramatically reduces the blast radius of a security incident
+[1][2].
+
+### Account role interaction
+
+Token permissions don't exist in isolation. When you create a token,
+your own account role constrains what permissions you can grant. An
+admin can create a full-privilege token; a member can only create
+tokens limited to their own permissions. This means **you cannot
+accidentally grant a token more power than you personally have**—the
+system enforces this constraint at creation time.
+
+This design reflects a fundamental security principle: delegation
+should never amplify privilege.
+
+## Understanding token expiration
+
+Every service token should have an expiration date. But how far in the
+future?
+
+The answer depends on how much privilege the token carries and how
+often you can rotate it:
+
+**High-privilege tokens** (publishing, account management) should
+expire in **30-90 days**. These tokens can change what's published to
+your registry. The shorter window forces frequent rotation, reducing
+the exposure window if a token is compromised [3].
+
+**Read-only tokens** (installing packages) can safely expire in **365
+days** (1 year). Since these tokens cannot modify anything, the lower
+rotation burden is justified by the lower privilege [1][2]. Many
+organizations don't rotate read-only credentials as frequently because
+the risk is lower.
+
+**Why expiration is critical**: without expiration, a compromised
+token remains valid indefinitely. A developer who left the company
+years ago, whose token was leaked, whose laptop was stolen—any of
+these could still grant access. Expiration dates force periodic
+rotation, ensuring that stale or compromised tokens eventually stop
+working without manual revocation [3].
+
+The practical trade-off: shorter expiration windows increase security
+but require more operational effort. Organizations should set
+expiration periods that balance their risk tolerance with their
+ability to rotate tokens regularly.
+
+## Storage: where tokens live
+
+Service tokens must be stored securely because they represent
+unattended access. There are two viable strategies: **static tokens**
+stored in secrets management systems, or **dynamic tokens** generated
+on-demand via OIDC.
+
+### Static tokens: secrets management as the control point
+
+When you store a token in GitHub Actions secrets, GitLab CI variables,
+or a similar system, you're relying on the platform's secret storage
+to prevent leakage. This is reasonable—these platforms are designed
+specifically to protect secrets.
+
+The risk model: if the secrets system is compromised, so is your
+token. If an attacker gains access to your CI/CD platform (through a
+supply chain compromise, insider threat, or platform vulnerability),
+they can extract stored tokens.
+
+To mitigate this, apply the principle of least privilege at the
+storage level:
+
+- **Create separate tokens for separate systems.** Don't reuse the
+  same token across your GitHub Actions, GitLab pipelines, and local
+  development. If one is compromised, the others remain valid.
+- **Use organization-level secrets instead of repository-level when
+  possible.** This reduces the number of copies of the same token in
+  existence.
+- **Never commit tokens to version control,** even in `.gitignore`d
+  files. Version control history is forever; even "deleted" files can
+  be recovered.
+
+### Dynamic tokens: OIDC as a better alternative
+
+Some registries support OpenID Connect (OIDC), which allows your CI/CD
+platform to exchange a short-lived ID token for a registry credential
+without ever storing a permanent secret [4]. With OIDC:
+
+- Your CI/CD platform generates an ID token that proves "this is a
+  GitHub Actions run in this repository"
+- Your CI/CD job exchanges that ID token with the registry for a
+  short-lived credential
+- That credential is used for one operation (e.g., `vlt publish`),
+  then expires
+- **No persistent token is stored anywhere**
+
+This is dramatically more secure than static tokens. The tradeoff:
+OIDC requires registry support and careful configuration to ensure
+tokens are only issued to authorized CI/CD runs. But when available,
+OIDC eliminates entire categories of token-leakage risks.
+
+## Rotation: ensuring tokens don't persist longer than needed
+
+Even with expiration dates, tokens should be rotated before they
+expire—rotated not because they're compromised, but because you don't
+know if they are. The assumption is: tokens older than a certain age
+_might_ have been leaked or compromised.
+
+**Rotation schedule:**
+
+- **High-privilege tokens**: quarterly (every 90 days) at minimum
+- **Read-only tokens**: annually (every year)
+
+Why quarterly for high-privilege? [3] recommends that high-risk
+credentials be rotated frequently because the potential for damage is
+greatest. An old publishing token is a risk: it could be in stolen
+credentials databases, on compromised developer laptops, or in old
+Slack messages.
+
+During rotation, the old token and new token can coexist briefly—long
+enough for all systems to pick up the new value. Once you're confident
+the new token is in use everywhere, revoke the old one.
+
+## Monitoring and revocation: token lifecycle visibility
+
+Tokens are most dangerous when you don't know they exist or when
+they're in use. Good token management means maintaining visibility
+over the entire lifecycle:
+
+**Creation**: When a token is created, document its purpose, who
+created it, and when it expires. This isn't just audit; it's
+operational knowledge.
+
+**Usage**: Monitor which tokens are actually being used and when they
+were last used. Unused tokens are candidates for revocation—if a token
+hasn't been used in months, why is it still valid?
+
+**Expiration**: Track when tokens expire. Ideally, this is automatic
+(the registry rejects expired tokens on every request). But knowing
+which tokens are about to expire lets you rotate before they fail your
+CI/CD pipeline.
+
+**Revocation**: When a token is suspected of being compromised—or when
+it's simply no longer needed—revoke it immediately. Revoked tokens are
+rejected on every request, eliminating the risk without waiting for
+expiration.
+
+The mental model: tokens have a lifespan. From creation to first use
+to last use to expiration to eventual revocation, every stage offers
+an opportunity for visibility and control.
+
+## The risks of ignoring these practices
+
+What happens when you don't follow these practices?
+
+**No expiration** means a compromised token grants access forever. A
+developer's leaked credentials from five years ago could still publish
+packages.
+
+**Over-privileged tokens** mean a compromised publishing token could
+be used to steal read access to private packages, modify package
+metadata, or worse.
+
+**No rotation** means you're blindly trusting that old tokens haven't
+been compromised. Over time, the probability that a token has leaked
+approaches certainty.
+
+**Centralized storage** (one token used everywhere) means a compromise
+in any system (GitHub, GitLab, Jenkins, your laptop) leaks the same
+credential to all of them.
+
+**No visibility** means you might not even know when you've been
+compromised. A leaked token could be in use for weeks before anyone
+notices.
+
+Each of these practices exists because it directly mitigates a real
+attack vector. The best practices aren't arbitrary—they're the
+accumulated wisdom of how tokens get stolen and how to make that theft
+as difficult and short-lived as possible.
+
+## Summary
+
+✅ **Foundational principles:**
+
+- Service tokens represent automated, unattended access—treat them as
+  high-value credentials
+- Least privilege: grant only the permissions a token needs
+- Expiration forces rotation and limits the damage window of a
+  compromise
+- Storage strategy (static vs. dynamic via OIDC) affects your entire
+  risk model
+- Visibility into token creation, usage, and expiration is essential
+  for security
+- Rotation is not about preventing leaks; it's about accepting that
+  leaks happen and limiting their window
+
+For hands-on guidance on creating and storing tokens, see
+[Creating a personal access token (GitHub)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+or the equivalent documentation from your CI/CD platform. For
+technical details on vlt token permissions and configuration, see the
+reference documentation in [Authentication](/cli/auth) and
+[Publishing in CI](/cli/commands/publish#publishing-in-ci).
+
+## References
+
+[1] GitHub, "Creating a personal access token," GitHub Documentation.
+[Online]. Available:
+<https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>.
+[Accessed: Aug. 14, 2026].
+
+[2] GitLab, "Personal access tokens," GitLab Documentation. [Online].
+Available:
+<https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html>.
+[Accessed: Aug. 14, 2026].
+
+[3] OWASP, "Session Management Cheat Sheet," OWASP Cheat Sheet Series.
+[Online]. Available:
+<https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html>.
+[Accessed: Aug. 14, 2026].
+
+[4] GitHub, "Encrypted secrets," GitHub Actions Documentation.
+[Online]. Available:
+<https://docs.uithub.com/en/actions/security-giides/encrypted-secrets>.
+[Accessed: Aug. 14, 2026].
