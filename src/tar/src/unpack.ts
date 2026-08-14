@@ -37,26 +37,119 @@ let id = 1
 const tmp = randomBytes(6).toString('hex') + '.'
 const tmpSuffix = () => tmp + String(id++)
 
-const checkFs = (
-  h: Header,
+type FileEntry = {
+  path: string
+  body: Buffer
+  executable: boolean
+  dir: false
+}
+type DirEntry = {
+  path: string
+  dir: true
+}
+type Entry = FileEntry | DirEntry
+
+/* c8 ignore start - case-folding is platform-specific */
+const foldKeys =
+  process.platform === 'darwin' || process.platform === 'win32'
+const entryKey = (p: string) => (foldKeys ? p.toLowerCase() : p)
+/* c8 ignore stop */
+
+// Shared across concurrent unpacks. Reify runs many extractions at
+// once; a per-tarball pool would multiply in-flight writeFile fds.
+const parseWriteLanes = (raw: string | undefined): number => {
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 64
+}
+const writeLaneLimit = parseWriteLanes(
+  process.env.VLT_TAR_WRITE_LANES,
+)
+let writeLanesUsed = 0
+const writeLaneWaiters: (() => void)[] = []
+
+const acquireWriteLane = async () => {
+  if (writeLanesUsed < writeLaneLimit) {
+    writeLanesUsed++
+    return
+  }
+  await new Promise<void>(res => writeLaneWaiters.push(res))
+}
+
+const releaseWriteLane = () => {
+  const next = writeLaneWaiters.shift()
+  if (next) next()
+  else writeLanesUsed--
+}
+
+const withWriteLane = async <T>(fn: () => Promise<T>): Promise<T> => {
+  await acquireWriteLane()
+  try {
+    return await fn()
+  } finally {
+    releaseWriteLane()
+  }
+}
+
+const rethrowFirst = (
+  results: PromiseSettledResult<unknown>[],
+): void => {
+  for (const result of results) {
+    if (result.status === 'rejected') throw result.reason
+  }
+}
+
+// Fast path: accept only paths that cannot escape. Anything else
+// falls through to relative()/resolve() so drive-relative and
+// `./`-segment cases keep today's exact (platform/cwd-dependent)
+// behavior.
+const isClearlySafeRelPath = (sub: string): boolean => {
+  const len = sub.length
+  if (len === 0) return true
+  // leading /
+  if (sub.charCodeAt(0) === 47) return false
+  // <letter>: prefix (drive-relative)
+  if (len >= 2 && sub.charCodeAt(1) === 58) {
+    const c = sub.charCodeAt(0)
+    if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122)) {
+      return false
+    }
+  }
+  let i = 0
+  while (i < len) {
+    let j = i
+    while (j < len && sub.charCodeAt(j) !== 47) j++
+    const slen = j - i
+    if (slen === 1 && sub.charCodeAt(i) === 46) return false
+    if (
+      slen === 2 &&
+      sub.charCodeAt(i) === 46 &&
+      sub.charCodeAt(i + 1) === 46
+    ) {
+      return false
+    }
+    i = j + 1
+  }
+  return true
+}
+
+export const checkFs = (
+  h: { path?: string },
   tarDir: string | undefined,
   target: string,
-): h is Header & { path: string } => {
-  /* c8 ignore start - impossible */
+): h is { path: string } => {
   if (!h.path) return false
   if (!tarDir) return false
-  /* c8 ignore stop */
   h.path = h.path.replace(/[\\/]+/g, '/')
 
   // packages should always be in a 'package' tarDir in the archive
   if (!h.path.startsWith(tarDir)) return false
 
+  const sub = h.path.slice(tarDir.length)
+  if (isClearlySafeRelPath(sub)) return true
+
   // entries must stay within the package root. separator-aware, so that
   // a sibling dir whose name extends the target's is not a prefix match.
-  const rel = relative(
-    target,
-    resolve(target, h.path.slice(tarDir.length)),
-  )
+  const rel = relative(target, resolve(target, sub))
   if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
     return false
   }
@@ -68,28 +161,12 @@ const write = async (
   body: Buffer,
   executable = false,
 ) => {
-  await mkdirp(dirname(path))
   // if the mode is world-executable, then make it executable
   // this is needed for some packages that have a file that is
   // not a declared bin, but still used as a cli executable.
   await writeFile(path, body, {
     mode: executable ? 0o777 : 0o666,
   })
-}
-
-const made = new Set<string>()
-const making = new Map<string, Promise<boolean>>()
-const mkdirp = async (d: string) => {
-  if (!made.has(d)) {
-    const m =
-      making.get(d) ??
-      mkdir(d, { recursive: true, mode: 0o777 }).then(() =>
-        making.delete(d),
-      )
-    making.set(d, m)
-    await m
-    made.add(d)
-  }
 }
 
 export const unpack = async (
@@ -142,10 +219,10 @@ const unpackUnzipped = async (
   const tmp =
     dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()
   const og = tmp + '.ORIGINAL'
-  await Promise.all([rimraf(tmp), rimraf(og)])
 
   let succeeded = false
   try {
+    const entries = new Map<string, Entry>()
     let tarDir: string | undefined = undefined
     let offset = 0
     let h: Header
@@ -172,13 +249,15 @@ const unpackUnzipped = async (
           /* c8 ignore next */
           if (!tarDir) continue
           if (!checkFs(h, tarDir, tmp)) continue
-          await write(
-            resolve(tmp, h.path.substring(tarDir.length)),
-            body,
-            // if it's world-executable, it's an executable
-            // otherwise, make it read-only.
-            1 === ((h.mode ?? 0x666) & 1),
-          )
+          {
+            const dest = resolve(tmp, h.path.substring(tarDir.length))
+            entries.set(entryKey(dest), {
+              path: dest,
+              body,
+              executable: 1 === ((h.mode ?? 0x666) & 1),
+              dir: false,
+            })
+          }
           break
 
         case 'Directory':
@@ -186,7 +265,13 @@ const unpackUnzipped = async (
           if (!tarDir) tarDir = findTarDir(h.path, tarDir)
           if (!tarDir) continue
           if (!checkFs(h, tarDir, tmp)) continue
-          await mkdirp(resolve(tmp, h.path.substring(tarDir.length)))
+          {
+            const dest = resolve(tmp, h.path.substring(tarDir.length))
+            entries.set(entryKey(dest), {
+              path: dest,
+              dir: true,
+            })
+          }
           break
 
         case 'GlobalExtendedHeader':
@@ -205,6 +290,34 @@ const unpackUnzipped = async (
           break
       }
     }
+
+    // Per-unpack memo: paths are tmp-scoped and never reused across
+    // unpacks. The unique dir set is the memo; making/made globals
+    // previously leaked ~18k strings per install.
+    const dirs = new Set<string>()
+    const files: FileEntry[] = []
+    for (const e of entries.values()) {
+      if (e.dir) dirs.add(e.path)
+      else {
+        dirs.add(dirname(e.path))
+        files.push(e)
+      }
+    }
+
+    rethrowFirst(
+      await Promise.allSettled(
+        [...dirs].map(d =>
+          mkdir(d, { recursive: true, mode: 0o777 }),
+        ),
+      ),
+    )
+    rethrowFirst(
+      await Promise.allSettled(
+        files.map(f =>
+          withWriteLane(() => write(f.path, f.body, f.executable)),
+        ),
+      ),
+    )
 
     const targetExists = await exists(target)
     if (targetExists) await rename(target, og)
