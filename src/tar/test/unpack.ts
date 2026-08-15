@@ -1,10 +1,11 @@
-import { lstatSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { lstatSync, readFileSync, readdirSync } from 'node:fs'
+import { isAbsolute, relative, resolve, sep } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { Pax } from 'tar'
 import { gzipSync } from 'node:zlib'
-import { unpack } from '../src/unpack.ts'
+import { checkFs, unpack } from '../src/unpack.ts'
+import { findTarDir } from '../src/find-tar-dir.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const pj = JSON.stringify({
@@ -293,5 +294,351 @@ t.test('validate unpack path sanitization', async t => {
     )
   })
 
+  t.end()
+})
+
+const makeFilesTar = (files: Record<string, string>) => {
+  const chunks: (string | { path: string; size: number })[] = []
+  for (const [name, body] of Object.entries(files)) {
+    chunks.push(
+      { path: `package/${name}`, size: Buffer.byteLength(body) },
+      body,
+    )
+  }
+  return makeTar(chunks)
+}
+
+t.test('last-wins under parallelism', async t => {
+  const tar = makeTar([
+    { path: 'package/x', size: 1 },
+    'a',
+    { path: 'package/x', size: 1 },
+    'b',
+    { path: 'package/x', size: 1 },
+    'c',
+  ])
+  const dir = t.testdirName
+  await unpack(tar, dir)
+  t.equal(readFileSync(dir + '/x', 'utf8'), 'c')
+})
+
+t.test('last-wins collapsed . and .. segments', async t => {
+  const tar = makeTar([
+    { path: 'package/a/b', size: 1 },
+    '1',
+    { path: 'package/a/./b', size: 1 },
+    '2',
+    { path: 'package/bar', size: 1 },
+    '3',
+    { path: 'package/foo/../bar', size: 1 },
+    '4',
+  ])
+  const dir = t.testdirName
+  await unpack(tar, dir)
+  t.equal(readFileSync(dir + '/a/b', 'utf8'), '2')
+  t.equal(readFileSync(dir + '/bar', 'utf8'), '4')
+})
+
+t.test('file/dir collision at same path rejects', async t => {
+  const dir = t.testdir()
+  const fileThenDir = makeTar([
+    { path: 'package/a', size: 1 },
+    'x',
+    { path: 'package/a/', type: 'Directory' },
+  ])
+  await t.rejects(
+    unpack(fileThenDir, resolve(dir, 'out')),
+    { message: 'file/directory collision in tarball' },
+    'file then directory',
+  )
+  const dirThenFile = makeTar([
+    { path: 'package/a/', type: 'Directory' },
+    { path: 'package/a', size: 1 },
+    'x',
+  ])
+  await t.rejects(
+    unpack(dirThenFile, resolve(dir, 'out2')),
+    { message: 'file/directory collision in tarball' },
+    'directory then file',
+  )
+})
+
+t.test(
+  'A/a last-wins on case-insensitive fs',
+  {
+    skip:
+      process.platform !== 'darwin' &&
+      process.platform !== 'win32' &&
+      'case-sensitive file system',
+  },
+  async t => {
+    const tar = makeTar([
+      { path: 'package/A', size: 1 },
+      '1',
+      { path: 'package/a', size: 1 },
+      '2',
+    ])
+    const dir = t.testdirName
+    await unpack(tar, dir)
+    t.equal(readdirSync(dir).length, 1)
+    t.equal(readFileSync(dir + '/A', 'utf8'), '2')
+    t.equal(readFileSync(dir + '/a', 'utf8'), '2')
+  },
+)
+
+t.test('empty-after-filter still rejects', async t => {
+  const tar = makeTar([
+    {
+      path: 'package/slinky',
+      linkpath: 'package/target',
+      type: 'SymbolicLink',
+    },
+    { path: '../outside/x', size: 1 },
+    'x',
+  ])
+  await t.rejects(
+    unpack(tar, t.testdir()),
+    'throws an error when no file is extracted',
+  )
+})
+
+t.test('no preclean on successful unpack', async t => {
+  const FSP = await import('node:fs/promises')
+  const lstatCalls: string[] = []
+  const rimrafCalls: string[] = []
+  const { unpack } = await t.mockImport<
+    typeof import('../src/unpack.ts')
+  >('../src/unpack.ts', {
+    'node:fs/promises': t.createMock(FSP, {
+      lstat: async (path: Parameters<typeof FSP.lstat>[0]) => {
+        lstatCalls.push(String(path))
+        return FSP.lstat(path)
+      },
+    }),
+    rimraf: {
+      rimraf: async (path: string) => {
+        rimrafCalls.push(path)
+      },
+    },
+  })
+  const dir = resolve(t.testdir(), 'out')
+  await unpack(makeFilesTar({ 'hello.txt': 'hello' }), dir)
+  t.equal(readFileSync(dir + '/hello.txt', 'utf8'), 'hello')
+  t.strictSame(lstatCalls, [dir])
+  t.strictSame(rimrafCalls, [])
+})
+
+t.test('concurrent write failure', async t => {
+  const dir = t.testdir({ still: 'here' })
+  const FSP = await import('node:fs/promises')
+  const poop = new Error('poop')
+  let n = 0
+  const unhandled: unknown[] = []
+  const onUnhandled = (er: unknown) => unhandled.push(er)
+  process.on('unhandledRejection', onUnhandled)
+  t.teardown(() =>
+    process.removeListener('unhandledRejection', onUnhandled),
+  )
+  const { unpack } = await t.mockImport<
+    typeof import('../src/unpack.ts')
+  >('../src/unpack.ts', {
+    'node:fs/promises': t.createMock(FSP, {
+      writeFile: async (
+        path: Parameters<typeof FSP.writeFile>[0],
+        data: Parameters<typeof FSP.writeFile>[1],
+        options?: Parameters<typeof FSP.writeFile>[2],
+      ) => {
+        n++
+        if (n === 3) throw poop
+        return FSP.writeFile(path, data, options)
+      },
+    }),
+  })
+  const files: Record<string, string> = {}
+  for (let i = 0; i < 8; i++) files[`f${i}.txt`] = String(i)
+  await t.rejects(() => unpack(makeFilesTar(files), dir), poop)
+  await new Promise<void>(res => setImmediate(res))
+  t.equal(unhandled.length, 0, 'no unhandledRejection')
+  t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
+  t.throws(() => lstatSync(dir + '/f0.txt'))
+})
+
+t.test('lane pool saturation', async t => {
+  const prev = process.env.VLT_TAR_WRITE_LANES
+  process.env.VLT_TAR_WRITE_LANES = '2'
+  t.teardown(() => {
+    if (prev === undefined) {
+      delete process.env.VLT_TAR_WRITE_LANES
+    } else {
+      process.env.VLT_TAR_WRITE_LANES = prev
+    }
+  })
+  const { unpack } = await t.mockImport<
+    typeof import('../src/unpack.ts')
+  >('../src/unpack.ts')
+  const files: Record<string, string> = {}
+  for (let i = 0; i < 5; i++) files[`f${i}.txt`] = `body-${i}`
+  const dir = t.testdirName
+  await unpack(makeFilesTar(files), dir)
+  for (let i = 0; i < 5; i++) {
+    t.equal(readFileSync(dir + `/f${i}.txt`, 'utf8'), `body-${i}`)
+  }
+})
+
+t.test('invalid VLT_TAR_WRITE_LANES falls back', async t => {
+  for (const raw of ['nope', '0', '-1']) {
+    const prev = process.env.VLT_TAR_WRITE_LANES
+    process.env.VLT_TAR_WRITE_LANES = raw
+    t.teardown(() => {
+      if (prev === undefined) {
+        delete process.env.VLT_TAR_WRITE_LANES
+      } else {
+        process.env.VLT_TAR_WRITE_LANES = prev
+      }
+    })
+    const { unpack } = await t.mockImport<
+      typeof import('../src/unpack.ts')
+    >('../src/unpack.ts')
+    const dir = t.testdirName
+    await unpack(makeFilesTar({ z: 'z' }), dir)
+    t.equal(readFileSync(dir + '/z', 'utf8'), 'z', raw)
+  }
+})
+
+t.test('checkFs differential vs relative() impl', t => {
+  const checkFsOld = (
+    h: { path?: string },
+    tarDir: string | undefined,
+    target: string,
+  ): boolean => {
+    if (!h.path) return false
+    if (!tarDir) return false
+    h.path = h.path.replace(/[\\/]+/g, '/')
+    if (!h.path.startsWith(tarDir)) return false
+    const rel = relative(
+      target,
+      resolve(target, h.path.slice(tarDir.length)),
+    )
+    if (
+      rel === '..' ||
+      rel.startsWith(`..${sep}`) ||
+      isAbsolute(rel)
+    ) {
+      return false
+    }
+    return true
+  }
+
+  const fixturePaths = [
+    'package/package.json',
+    resolve('ignore/absolute/paths'),
+    'package/some/empty/dir',
+    'package/some/e',
+    'outside/directory',
+    'package/dir/some-file',
+    'package/asdfasdfasdfasdf',
+    'package/a',
+    'package/slinky',
+    '../dots',
+    'outside/ignoreme',
+    '////package/safe.txt',
+    '../etc/passwd',
+    'package/../../../etc/passwd',
+    'package/foo/../../../../../../tmp/evil',
+    '..\\windows\\system32\\config',
+    'package/../foobar/forbidden',
+    'package/../foo.bar',
+    'c:../../../windows/system32/evil.dll',
+    'd:..\\..\\important\\file.txt',
+    'c:foo/../../../escape.txt',
+    'c:\\c:\\d:\\package/safe.txt',
+    '../../../tmp/evil-dir',
+    'package/../../escape-dir',
+  ]
+
+  const permutations = [
+    '',
+    '.',
+    '..',
+    './.',
+    'package',
+    'package/',
+    'package/.',
+    'package/..',
+    'package/./foo',
+    'package/foo/.',
+    'package/foo/..',
+    'package/foo/../bar',
+    'package/foo/../../bar',
+    'package/a/./b',
+    'package/a/b/c/../../d',
+    'package/.hidden',
+    'package/foo.',
+    'package/...',
+    'package/foo/bar/baz',
+    'package//foo',
+    'package\\\\foo',
+    'package/c:foo',
+    'package/C:foo',
+    'package/1:foo',
+    'package/:foo',
+    '/package/foo',
+    'package/../package/foo',
+    'package/foo/../../../etc/passwd',
+    'foo/bar',
+    'package/foo\\bar',
+    'package/foo/bar/',
+    'package/././foo',
+    'package/foo/././bar',
+    'package/foo/bar/..',
+    'package/foo/bar/../..',
+    'package/foo/bar/../../..',
+    'package/n:foo',
+    'package/foo/bar/baz/qux',
+    'PACKAGE/foo',
+    'package/foo/./../bar',
+    'package/.',
+    'package/..',
+    'package/../',
+    'package/foo//bar',
+    'package/./',
+    'package/c:/windows/x',
+  ]
+
+  const targets = ['/tmp/extract-target', 'C:\\Users\\extract-target']
+
+  const tarDirs = (path: string) => {
+    const found = findTarDir(path)
+    const dirs: (string | undefined)[] = [
+      'package/',
+      'package',
+      undefined,
+    ]
+    if (found !== undefined && !dirs.includes(found)) {
+      dirs.push(found)
+    }
+    return dirs
+  }
+
+  t.equal(
+    checkFs({}, 'package/', targets[0] ?? ''),
+    false,
+    'missing path',
+  )
+  t.equal(
+    checkFs({ path: 'package/foo' }, undefined, targets[0] ?? ''),
+    false,
+    'missing tarDir',
+  )
+
+  for (const path of [...fixturePaths, ...permutations]) {
+    for (const target of targets) {
+      for (const tarDir of tarDirs(path)) {
+        const next = checkFs({ path }, tarDir, target)
+        const old = checkFsOld({ path }, tarDir, target)
+        t.equal(next, old, JSON.stringify({ path, tarDir, target }))
+      }
+    }
+  }
   t.end()
 })

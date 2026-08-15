@@ -7,7 +7,7 @@ import * as index from '../src/index.ts'
 t.strictSame(
   index,
   Object.assign(Object.create(null), {
-    ...unpack,
+    unpack: unpack.unpack,
     ...pool,
     ...unpackRequest,
   }),
