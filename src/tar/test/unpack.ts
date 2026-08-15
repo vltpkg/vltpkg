@@ -339,6 +339,30 @@ t.test('last-wins collapsed . and .. segments', async t => {
   t.equal(readFileSync(dir + '/bar', 'utf8'), '4')
 })
 
+t.test('file/dir collision at same path rejects', async t => {
+  const dir = t.testdir()
+  const fileThenDir = makeTar([
+    { path: 'package/a', size: 1 },
+    'x',
+    { path: 'package/a/', type: 'Directory' },
+  ])
+  await t.rejects(
+    unpack(fileThenDir, resolve(dir, 'out')),
+    { message: 'file/directory collision in tarball' },
+    'file then directory',
+  )
+  const dirThenFile = makeTar([
+    { path: 'package/a/', type: 'Directory' },
+    { path: 'package/a', size: 1 },
+    'x',
+  ])
+  await t.rejects(
+    unpack(dirThenFile, resolve(dir, 'out2')),
+    { message: 'file/directory collision in tarball' },
+    'directory then file',
+  )
+})
+
 t.test(
   'A/a last-wins on case-insensitive fs',
   {

@@ -251,7 +251,15 @@ const unpackUnzipped = async (
           if (!checkFs(h, tarDir, tmp)) continue
           {
             const dest = resolve(tmp, h.path.substring(tarDir.length))
-            entries.set(entryKey(dest), {
+            const key = entryKey(dest)
+            // a repeated path is fine (last wins), but flipping between
+            // file and directory would silently discard data.
+            if (entries.get(key)?.dir === true) {
+              throw error('file/directory collision in tarball', {
+                path: dest,
+              })
+            }
+            entries.set(key, {
               path: dest,
               body,
               executable: 1 === ((h.mode ?? 0x666) & 1),
@@ -267,7 +275,13 @@ const unpackUnzipped = async (
           if (!checkFs(h, tarDir, tmp)) continue
           {
             const dest = resolve(tmp, h.path.substring(tarDir.length))
-            entries.set(entryKey(dest), {
+            const key = entryKey(dest)
+            if (entries.get(key)?.dir === false) {
+              throw error('file/directory collision in tarball', {
+                path: dest,
+              })
+            }
+            entries.set(key, {
               path: dest,
               dir: true,
             })
