@@ -13,6 +13,7 @@ import { asDependency } from '../../src/dependencies.ts'
 import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { appendNodes } from '../../src/ideal/append-nodes.ts'
+import { peerSpecKey } from '../../src/ideal/peers.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { Node } from '../../src/node.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
@@ -39,6 +40,9 @@ const configData = {
     npm: 'https://registry.npmjs.org/',
   },
 } satisfies SpecOptions
+
+/** Build a single-entry `specs` map for a `PeerContextEntry` test fixture. */
+const oneSpec = (spec: Spec) => new Map([[peerSpecKey(spec), spec]])
 
 t.test('append a new node to a graph from a registry', async t => {
   const fooManifest = {
@@ -2114,7 +2118,7 @@ t.test(
     const peerContext = graph.peerContexts[0]!
     peerContext.set('react', {
       active: true,
-      specs: new Set([Spec.parse('react', '>=18.3.0', configData)]),
+      specs: oneSpec(Spec.parse('react', '>=18.3.0', configData)),
       target: react183,
       type: 'prod',
       contextDependents: new Set(),
@@ -2222,7 +2226,7 @@ t.test(
     const peerContext = graph.peerContexts[0]!
     peerContext.set('react', {
       active: true,
-      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
       target: react18,
       type: 'prod',
       contextDependents: new Set(),
@@ -2479,7 +2483,7 @@ t.test(
     const peerContext = graph.peerContexts[0]!
     peerContext.set('react', {
       active: true,
-      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
       target: react183,
       type: 'prod',
       contextDependents: new Set(),
@@ -2629,7 +2633,7 @@ t.test(
     const peerContext = graph.peerContexts[0]!
     peerContext.set('react', {
       active: true,
-      specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+      specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
       target: react18,
       type: 'prod',
       contextDependents: new Set(),

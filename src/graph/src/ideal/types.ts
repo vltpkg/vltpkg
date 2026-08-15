@@ -105,8 +105,12 @@ export type PeerContextEntry = {
    * peer context set and should not be considered for resolution.
    */
   active: boolean
-  /** List of full Spec objects that are part of this peer context entry */
-  specs: Set<Spec>
+  /**
+   * Full Spec objects that are part of this peer context entry, keyed by
+   * `peerSpecKey()` so textually identical specs collapse into one entry
+   * instead of piling up per dependent.
+   */
+  specs: Map<string, Spec>
   /** The target Node that satisfies all specs for this peer context entry */
   target: Node | undefined
   /** The type of dependency this entry represents */

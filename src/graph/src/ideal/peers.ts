@@ -284,7 +284,7 @@ export const checkPeerEdgesCompatible = (
       )
       if (
         existingTargetSatisfiesPeer &&
-        nodeSatisfiesAll(existingTarget, contextEntry.specs)
+        nodeSatisfiesAll(existingTarget, contextEntry.specs.values())
       ) {
         continue // Truly no conflict
       }
@@ -394,6 +394,21 @@ export const retrievePeerContextHash = (
 }
 
 /**
+ * Generate a dedupe key for a spec stored in a peer context entry's
+ * `specs` map. Two specs with the same key are interchangeable for the
+ * purposes of `incompatibleSpecs()`/`satisfies()` checks, so only one
+ * needs to be retained regardless of how many dependents contribute it.
+ *
+ * Keyed on type + textual spec (name@bareSpec) + registry, since specs
+ * that are textually identical but resolve against different registries
+ * are not interchangeable.
+ */
+export const peerSpecKey = (spec: Spec): string => {
+  const f = spec.final
+  return `${f.type}\0${String(f)}\0${f.registry ?? ''}`
+}
+
+/**
  * Checks if a given spec is compatible with the specs already
  * assigned to a peer context entry.
  *
@@ -413,7 +428,7 @@ export const incompatibleSpecs = (
   entry: PeerContextEntry,
 ): boolean => {
   if (entry.specs.size > 0) {
-    for (const s_ of entry.specs) {
+    for (const s_ of entry.specs.values()) {
       const s = s_.final
       if (
         // Registry types: check semver range intersection
@@ -491,7 +506,7 @@ export const addEntriesToPeerContext = (
     if (!entry) {
       entry = {
         active: true,
-        specs: new Set([spec]),
+        specs: new Map([[peerSpecKey(spec), spec]]),
         target,
         type,
         contextDependents: new Set(),
@@ -507,7 +522,7 @@ export const addEntriesToPeerContext = (
     // update target if compatible with all specs
     if (
       target &&
-      [...entry.specs].every(s =>
+      [...entry.specs.values()].every(s =>
         satisfies(
           target.id,
           s,
@@ -535,7 +550,8 @@ export const addEntriesToPeerContext = (
       entry.target ??= target
     }
 
-    entry.specs.add(spec)
+    const specKey = peerSpecKey(spec)
+    if (!entry.specs.has(specKey)) entry.specs.set(specKey, spec)
     if (dependent) entry.contextDependents.add(dependent)
   }
 
@@ -569,7 +585,7 @@ export const forkPeerContext = (
   for (const [name, entry] of peerContext.entries()) {
     nextPeerContext.set(name, {
       active: false,
-      specs: new Set(entry.specs),
+      specs: new Map(entry.specs),
       target: undefined,
       type: entry.type,
       contextDependents: new Set(entry.contextDependents),
@@ -583,7 +599,7 @@ export const forkPeerContext = (
     const name = target?.name /* c8 ignore next */ ?? spec.final.name
     const newEntry = {
       active: true,
-      specs: new Set([spec]),
+      specs: new Map([[peerSpecKey(spec), spec]]),
       target,
       type,
       contextDependents:
@@ -858,7 +874,10 @@ export const endPeerPlacement = (
         nodeSatisfiesSpec(entry.target, spec, fromNode, graph)
       ) {
         graph.addEdge(type, spec, node, entry.target)
-        entry.specs.add(spec.final)
+        const finalKey = peerSpecKey(spec.final)
+        if (!entry.specs.has(finalKey)) {
+          entry.specs.set(finalKey, spec.final)
+        }
         continue
       }
 
