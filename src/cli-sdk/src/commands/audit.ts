@@ -107,7 +107,14 @@ export const command: CommandFn<AuditResult> = async conf => {
   const result = aggregateBySeverity(nodes, importers, message => {
     if (isWarnEnabled(conf.values.loglevel)) stderr(message)
   })
-  return filterAuditResult(result, auditLevel)
+  const filtered = filterAuditResult(result, auditLevel)
+
+  // Exit with error code when findings are present, matching npm/pnpm behavior
+  if (filtered.total > 0) {
+    process.exitCode = 1
+  }
+
+  return filtered
 }
 
 export const views = {

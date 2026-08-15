@@ -401,4 +401,61 @@ t.test('audit', async t => {
       )
     },
   )
+
+  t.test(
+    'exit code is 1 when findings exist, 0 when none',
+    async t => {
+      const originalExitCode = process.exitCode
+      try {
+        // Test with findings
+        const CommandWithFindings = await mockAuditWithNodes(t, {
+          nodes: [
+            {
+              id: 'pkg:foo@1.0.0',
+              name: 'foo',
+              version: '1.0.0',
+              insights: {
+                malware: {
+                  low: false,
+                  medium: false,
+                  high: false,
+                  critical: true,
+                },
+              },
+            },
+          ],
+        })
+
+        process.exitCode = 0
+        const config = {
+          options: {},
+          positionals: [],
+          values: { view: 'json' },
+          get: (key: string) => ({ view: 'json' })[key],
+        } as LoadedConfig
+
+        await CommandWithFindings.command(config)
+        t.equal(
+          process.exitCode,
+          1,
+          'should exit with code 1 when findings are present',
+        )
+
+        // Test without findings
+        const CommandWithoutFindings = await mockAuditWithNodes(t, {
+          nodes: [],
+        })
+
+        process.exitCode = 0
+        await CommandWithoutFindings.command(config)
+        t.equal(
+          process.exitCode,
+          0,
+          'should exit with code 0 when no findings exist',
+        )
+      } finally {
+        process.exitCode = originalExitCode
+      }
+    },
+  )
 })
