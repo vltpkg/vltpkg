@@ -65,7 +65,8 @@ const writeLaneLimit = parseWriteLanes(
   process.env.VLT_TAR_WRITE_LANES,
 )
 let writeLanesUsed = 0
-const writeLaneWaiters: (() => void)[] = []
+const writeLaneWaiters: ((() => void) | undefined)[] = []
+let writeLaneHead = 0
 
 const acquireWriteLane = async () => {
   if (writeLanesUsed < writeLaneLimit) {
@@ -76,9 +77,20 @@ const acquireWriteLane = async () => {
 }
 
 const releaseWriteLane = () => {
-  const next = writeLaneWaiters.shift()
-  if (next) next()
-  else writeLanesUsed--
+  // consume from a head index instead of shift(): shift is O(n) per
+  // release, quadratic when many writes queue behind the lane limit.
+  const next = writeLaneWaiters[writeLaneHead]
+  if (next) {
+    writeLaneWaiters[writeLaneHead] = undefined
+    writeLaneHead++
+    if (writeLaneHead === writeLaneWaiters.length) {
+      writeLaneWaiters.length = 0
+      writeLaneHead = 0
+    }
+    next()
+  } else {
+    writeLanesUsed--
+  }
 }
 
 const withWriteLane = async <T>(fn: () => Promise<T>): Promise<T> => {
