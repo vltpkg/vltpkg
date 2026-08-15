@@ -1,4 +1,5 @@
 import { styleText as utilStyleText } from 'node:util'
+import { isNode } from '@vltpkg/graph'
 import type { Insights } from '@vltpkg/query'
 
 const styleText = (
@@ -264,7 +265,7 @@ export const aggregateBySeverity = (
   const importerIds = new Set<string>()
   const directDepIds = new Set<string>()
   for (const imp of importers) {
-    if (!isNodeWithId(imp)) continue
+    if (!isNode(imp)) continue
     importerIds.add(imp.id)
     if (isNodeWithEdgesOut(imp)) {
       for (const edge of imp.edgesOut.values()) {
