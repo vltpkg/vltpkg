@@ -2008,6 +2008,63 @@ t.test(
   },
 )
 
+t.test('late parse failure refetches packument', async t => {
+  const pi = new PackageInfoClient({
+    ...options,
+    cache: t.testdir(),
+  })
+  const paku = {
+    name: 'badjson',
+    'dist-tags': { latest: '1.0.0' },
+    versions: {
+      '1.0.0': { name: 'badjson', version: '1.0.0' },
+    },
+  }
+  const jsonHeaders = [
+    Buffer.from('content-type'),
+    Buffer.from('application/json'),
+  ]
+  let calls = 0
+  const rc = pi.registryClient
+  rc.request = async (_url, reqOptions) => {
+    calls++
+    if (reqOptions?.useCache === false) {
+      const good = new CacheEntry(200, jsonHeaders)
+      good.addBody(Buffer.from(JSON.stringify(paku)))
+      return good
+    }
+    const bad = new CacheEntry(200, jsonHeaders)
+    bad.addBody(Buffer.from('{not json}'))
+    return bad
+  }
+
+  const result = await pi.packument('badjson')
+  t.equal(calls, 2)
+  t.equal(result.name, 'badjson')
+})
+
+t.test('packument parse failure retries once', async t => {
+  const pi = new PackageInfoClient({
+    ...options,
+    cache: t.testdir(),
+  })
+  const jsonHeaders = [
+    Buffer.from('content-type'),
+    Buffer.from('application/json'),
+  ]
+  let calls = 0
+  const rc = pi.registryClient
+  rc.request = async () => {
+    calls++
+    const bad = new CacheEntry(200, jsonHeaders)
+    bad.addBody(Buffer.from('{not json}'))
+    return bad
+  }
+
+  await t.rejects(pi.packument('badjson-forever'))
+  t.equal(calls, 2, 'does not retry twice')
+})
+
 t.test('no registry configured', async t => {
   // there is no default registry -- both places that build a registry
   // URL throw ECONFIG rather than a bare `Invalid URL` TypeError

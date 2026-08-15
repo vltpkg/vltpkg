@@ -559,6 +559,7 @@ t.test('user-agent', t => {
 })
 
 t.test('npm-session header', async t => {
+  dropConnection = false
   t.test('is a valid UUID, consistent across requests', async t => {
     const rc = t.context.rc as RegistryClient
     const res1 = await rc.request(`${registryURL}/abbrev`)
@@ -568,6 +569,7 @@ t.test('npm-session header', async t => {
     // that the same client produces a consistent session id.
     const res2 = await rc.request(`${registryURL}/abbrev`)
     t.equal(res2.statusCode, 200)
+    await rc.cache.promise()
   })
 
   t.test('different clients have different sessions', async t => {
@@ -582,6 +584,7 @@ t.test('npm-session header', async t => {
     ])
     t.equal(r1.statusCode, 200)
     t.equal(r2.statusCode, 200)
+    await Promise.all([rc1.cache.promise(), rc2.cache.promise()])
   })
 })
 
@@ -853,4 +856,84 @@ t.test('staleWhileRevalidate', async t => {
     'revalidated, got fresh response',
   )
   await cache.promise()
+})
+
+t.test('undecodable cache entry is a miss', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  const key = `${registryURL}/abbrev`
+  rc.cache.set(key, Buffer.alloc(0))
+  await rc.cache.promise()
+  const result = await rc.request(key)
+  t.equal(result.statusCode, 200)
+  t.strictSame(result.json(), { hello: 'world' })
+  await rc.cache.promise()
+})
+
+t.test('decoded json entries are memoized', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  await rc.request(`${registryURL}/abbrev`)
+  await rc.cache.promise()
+  const a = await rc.request(`${registryURL}/abbrev`)
+  const b = await rc.request(`${registryURL}/abbrev`)
+  t.equal(a, b, 'same CacheEntry instance')
+
+  rc.cache.set(`${registryURL}/abbrev`, a.encode())
+  await rc.cache.promise()
+  const c = await rc.request(`${registryURL}/abbrev`)
+  t.not(a, c, 'cache.set busts the memo')
+})
+
+t.test('tarball entries are not memoized', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  await rc.request(`${registryURL}/some/tarball`)
+  await rc.cache.promise()
+  const a = await rc.request(`${registryURL}/some/tarball`)
+  const b = await rc.request(`${registryURL}/some/tarball`)
+  t.not(a, b)
+})
+
+t.test('VLT_CACHE_MAX_SIZE', async t => {
+  t.test('oversized entries skip memory', async t => {
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_CACHE_MAX_SIZE: '50' },
+    })
+    const small = new RC({ cache: t.testdir() })
+    const big = Buffer.alloc(100, 7)
+    small.cache.set('k', big)
+    t.equal(
+      small.cache.get('k'),
+      undefined,
+      'oversized not in memory',
+    )
+    await small.cache.promise()
+    t.same(await small.cache.fetch('k'), big)
+    t.equal(small.cache.get('k'), undefined)
+  })
+
+  for (const raw of ['nope', '0', '-1']) {
+    t.test(`${raw} falls back to default`, async t => {
+      t.intercept(process, 'env', {
+        value: { ...process.env, VLT_CACHE_MAX_SIZE: raw },
+      })
+      const fallback = new RC({ cache: t.testdir() })
+      const tiny = Buffer.from('ok')
+      fallback.cache.set('k', tiny)
+      t.same(fallback.cache.get('k'), tiny)
+      await fallback.cache.promise()
+    })
+  }
+
+  t.test('floors fractional sizes', async t => {
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_CACHE_MAX_SIZE: '50.9' },
+    })
+    const floored = new RC({ cache: t.testdir() })
+    const over = Buffer.alloc(51, 1)
+    floored.cache.set('k', over)
+    t.equal(floored.cache.get('k'), undefined)
+    await floored.cache.promise()
+  })
 })

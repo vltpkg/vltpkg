@@ -886,9 +886,11 @@ export class PackageInfoClient {
     spec: Spec,
     options: PackageInfoClientRequestOptions,
     pakuURL: URL,
+    useCache?: false,
   ): Promise<Packument> {
     const response = await this.registryClient.request(pakuURL, {
       headers: { accept: 'application/json' },
+      ...(useCache === false ? { useCache } : {}),
     })
     if (response.statusCode !== 200) {
       throw this.#resolveError(
@@ -901,7 +903,14 @@ export class PackageInfoClient {
         },
       )
     }
-    return response.json() as Packument
+    try {
+      return response.json() as Packument
+    } catch (er) {
+      if (useCache !== false) {
+        return this.#fetchPackument(spec, options, pakuURL, false)
+      }
+      throw er
+    }
   }
 
   async resolve(

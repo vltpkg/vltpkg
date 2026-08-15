@@ -213,12 +213,22 @@ const agentOptions: Agent.Options = {
 
 const xdg = new XDG('vlt')
 
+const defaultCacheMaxSize = 256 * 1024 * 1024
+
+const parseCacheMaxSize = (raw: string | undefined): number => {
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 1 ?
+      Math.floor(n)
+    : defaultCacheMaxSize
+}
+
 export class RegistryClient {
   agent: RetryAgent
   cache: Cache
   identity: string
   staleWhileRevalidateFactor: number
   #session = randomUUID()
+  #decoded = new WeakMap<Uint8Array, CacheEntry>()
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -236,6 +246,7 @@ export class RegistryClient {
     const path = resolve(cache, 'registry-client')
     this.cache = new Cache({
       path,
+      maxSize: parseCacheMaxSize(process.env.VLT_CACHE_MAX_SIZE),
       onDiskWrite(_path, key, data) {
         if (CacheEntry.isGzipEntry(data)) {
           cacheUnzipRegister(path, key)
@@ -389,6 +400,16 @@ export class RegistryClient {
     return result
   }
 
+  #decodeCached(buffer: Uint8Array): CacheEntry {
+    const hit = this.#decoded.get(buffer)
+    if (hit) return hit
+    const entry = CacheEntry.decode(buffer)
+    if (entry.statusCode && entry.isJSON) {
+      this.#decoded.set(buffer, entry)
+    }
+    return entry
+  }
+
   async #checkLogin(
     url: URL | string,
     options: RegistryClientRequestOptions = {},
@@ -442,7 +463,9 @@ export class RegistryClient {
         await this.cache.fetch(key, { context: { integrity } })
       : undefined
 
-    const entry = buffer ? CacheEntry.decode(buffer) : undefined
+    const decoded = buffer ? this.#decodeCached(buffer) : undefined
+    // statusCode 0 == undecodable; treat as a miss so we refetch
+    const entry = decoded?.statusCode ? decoded : undefined
     if (entry?.valid) {
       logRequest(url, 'cache', { method })
       return entry
