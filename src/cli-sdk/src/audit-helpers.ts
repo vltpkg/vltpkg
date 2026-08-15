@@ -319,6 +319,19 @@ export const aggregateBySeverity = (
       }
     }
 
+    // Check vulnerability alerts (LeveledInsights) - CVE, gptSecurity, etc.
+    if (insights.vuln) {
+      if (isLeveledInsights(insights.vuln)) {
+        const s = getLeveledSeverity(insights.vuln)
+        if (s) {
+          alerts.push(`vulnerability: ${s}`)
+          newSeverity = maxSeverity(newSeverity, s)
+        }
+      } else {
+        warn(`ignoring malformed vuln insights for ${node.id}`)
+      }
+    }
+
     if (alerts.length === 0) continue
 
     // Direct dependency: the node itself is an importer (e.g. a

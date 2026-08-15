@@ -458,4 +458,72 @@ t.test('audit', async t => {
       }
     },
   )
+
+  t.test(
+    'vuln insights (CVE-only findings) are properly aggregated',
+    async t => {
+      // Test that packages with ONLY vuln findings (no malware/severity/squat)
+      // are properly aggregated. This was the bug: :vulnerable/:vuln were in
+      // the query, but aggregateBySeverity never read insights.vuln, so these
+      // packages were silently dropped.
+      const CommandWithVulnOnly = await mockAuditWithNodes(t, {
+        nodes: [
+          {
+            id: 'pkg:vulnerable-pkg@1.0.0',
+            name: 'vulnerable-pkg',
+            version: '1.0.0',
+            insights: {
+              // CVE-only finding with no malware/severity/squat
+              vuln: {
+                low: false,
+                medium: false,
+                high: true, // high severity CVE
+                critical: false,
+              },
+              scanned: true,
+            },
+          },
+          {
+            id: 'pkg:crit-cve@2.0.0',
+            name: 'crit-cve',
+            version: '2.0.0',
+            insights: {
+              // Critical CVE with no other findings
+              vuln: {
+                low: false,
+                medium: false,
+                high: false,
+                critical: true,
+              },
+              scanned: true,
+            },
+          },
+        ],
+      })
+
+      const result = await runCommand(
+        { values: { view: 'json' }, options: {} },
+        CommandWithVulnOnly,
+      )
+      const parsed = JSON.parse(result as string)
+
+      t.ok(
+        parsed.summary.high.find(
+          (p: { name: string }) => p.name === 'vulnerable-pkg',
+        ),
+        'CVE high severity package should be reported in high bucket',
+      )
+      t.ok(
+        parsed.summary.critical.find(
+          (p: { name: string }) => p.name === 'crit-cve',
+        ),
+        'CVE critical severity package should be reported in critical bucket',
+      )
+      t.equal(
+        parsed.total,
+        2,
+        'total should count both CVE-only findings',
+      )
+    },
+  )
 })
