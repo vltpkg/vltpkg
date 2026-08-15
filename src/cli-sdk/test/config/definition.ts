@@ -82,6 +82,14 @@ t.test('expect-results validation', async t => {
   t.equal(values['expect-results'], '>=5000')
 })
 
+t.test('audit-level validation', async t => {
+  t.throws(() => {
+    definition.parse(['--audit-level', 'foobar'])
+  })
+  const { values } = definition.parse(['--audit-level', 'moderate'])
+  t.equal(values['audit-level'], 'moderate')
+})
+
 t.test('default view depends on stdout TTY status', t => {
   t.test('tty true', async t => {
     delete process.env.VLT_VIEW
