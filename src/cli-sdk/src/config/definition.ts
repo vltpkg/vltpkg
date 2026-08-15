@@ -20,6 +20,7 @@ export const defaultEditor = () =>
 
 const canonicalCommands = {
   access: 'access',
+  audit: 'audit',
   bugs: 'bugs',
   build: 'build',
   cache: 'cache',
@@ -473,6 +474,18 @@ export const definition = j
       hint: 'query',
       description:
         'Set to select packages using a DSS Query selector.',
+    },
+  })
+
+  .opt({
+    'audit-level': {
+      hint: 'level',
+      default: 'low',
+      validate: (v: unknown) =>
+        typeof v === 'string' &&
+        ['low', 'moderate', 'high', 'critical'].includes(v),
+      description: `Minimum severity level to report when running
+                    \`vlt audit\`. Defaults to \`low\`.`,
     },
   })
 

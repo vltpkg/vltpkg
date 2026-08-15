@@ -7,6 +7,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
+import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { Test } from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -1096,6 +1097,130 @@ t.test('query', async t => {
 
         t.equal(logged.length, 0, 'should not log empty message')
       },
+    )
+  })
+
+  await t.test('security summary footer', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        'has-scripts': '^1.0.0',
+        'also-flagged': '^1.0.0',
+      },
+    }
+    const graph = new Graph.Graph({
+      projectRoot: t.testdirName,
+      ...specOptions,
+      mainManifest,
+    })
+    const hasScripts = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('has-scripts', '^1.0.0', specOptions),
+      {
+        name: 'has-scripts',
+        version: '1.0.0',
+        scripts: { install: 'node build.js' },
+      },
+    )!
+    const alsoFlagged = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('also-flagged', '^1.0.0', specOptions),
+      {
+        name: 'also-flagged',
+        version: '1.0.0',
+      },
+    )!
+
+    // has-scripts and also-flagged are both reported with a critical
+    // malware alert, so a query matching both shows a plural count
+    const flaggedIds = new Set([hasScripts.id, alsoFlagged.id])
+    const malwareSecurityArchive = {
+      ok: true,
+      get: (id: DepID) =>
+        flaggedIds.has(id) ?
+          { score: {}, alerts: [{ type: 'malware' }] }
+        : undefined,
+    }
+
+    const Command = await mockQuery(t, {
+      graph,
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return malwareSecurityArchive
+          },
+        },
+      },
+    })
+
+    sharedOptions.packageJson.read = () => mainManifest
+    const options = {
+      ...sharedOptions,
+      projectRoot: t.testdirName,
+    }
+
+    const scriptsOnly = await runCommand(
+      {
+        positionals: [':scripts'],
+        values: { view: 'human' },
+        options,
+      },
+      Command,
+    )
+    t.notMatch(
+      scriptsOnly,
+      /security issue/,
+      'a :scripts-only query does not trigger the security footer',
+    )
+
+    const malwareSingle = await runCommand(
+      {
+        positionals: ['[name="has-scripts"]:malware'],
+        values: { view: 'human' },
+        options,
+      },
+      Command,
+    )
+    t.match(
+      malwareSingle,
+      /1 package with security issues found/,
+      'a genuine security selector triggers the footer, singular wording for one issue',
+    )
+    t.match(malwareSingle, /critical \(1\)/)
+    // has-scripts is placed directly on the main importer, so it's a
+    // genuine direct dependency.
+    t.match(malwareSingle, /1 direct dependency, 0 transitive/)
+
+    const malwareMultiple = await runCommand(
+      {
+        positionals: [':malware'],
+        values: { view: 'human' },
+        options,
+      },
+      Command,
+    )
+    t.match(
+      malwareMultiple,
+      /2 packages with security issues found/,
+      'plural wording for more than one issue',
+    )
+    t.match(malwareMultiple, /critical \(2\)/)
+
+    const combined = await runCommand(
+      {
+        positionals: [':scripts, :malware'],
+        values: { view: 'human' },
+        options,
+      },
+      Command,
+    )
+    t.match(
+      combined,
+      /security issue/,
+      'a security selector combined with :scripts still triggers the footer',
     )
   })
 })
