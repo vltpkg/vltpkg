@@ -904,4 +904,23 @@ t.test('formatAuditSummary', async t => {
       )
     },
   )
+
+  t.test('aggregates nodes with vuln insights only', async t => {
+    const nodes = [
+      {
+        id: 'pkg:cve-pkg@1.0.0',
+        insights: {
+          vuln: {
+            critical: true,
+            high: false,
+            medium: false,
+            low: false,
+          },
+        },
+      },
+    ]
+    const result = aggregateBySeverity(nodes)
+    t.equal(result.total, 1, 'counts vuln-only package')
+    t.equal(result.summary.critical.length, 1, 'reports in critical bucket')
+  })
 })
