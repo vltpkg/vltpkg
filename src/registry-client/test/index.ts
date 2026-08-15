@@ -870,6 +870,44 @@ t.test('undecodable cache entry is a miss', async t => {
   await rc.cache.promise()
 })
 
+t.test('corrupt shape-valid json entry heals the cache', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  const key = `${registryURL}/abbrev`
+  // build a fresh, valid-by-max-age cached entry, then corrupt the
+  // body so it still looks like json (starts {, ends }) but does not
+  // parse. It carries the server's etag: if the refetch were sent
+  // with conditional headers, the server would 304 and re-bless the
+  // corrupt body.
+  const good = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/json',
+      etag,
+      date: new Date().toUTCString(),
+    }),
+  )
+  good.addBody(Buffer.from(JSON.stringify({ hello: 'world' })))
+  const corrupt = Buffer.from(good.encode())
+  const colon = corrupt.indexOf(0x3a, corrupt.readUInt32BE(0))
+  corrupt[colon] = 0x3b // {"hello";"world"}
+  rc.cache.set(key, corrupt)
+  await rc.cache.promise()
+
+  const result = await rc.request(key)
+  t.equal(result.statusCode, 200)
+  t.strictSame(result.json(), { hello: 'world' })
+  await rc.cache.promise()
+
+  const healed = await rc.cache.fetch(key)
+  t.ok(healed, 'cache still has the key')
+  t.strictSame(
+    CacheEntry.decode(healed!).json(),
+    { hello: 'world' },
+    'poisoned entry was overwritten by the fresh response',
+  )
+})
+
 t.test('decoded json entries are memoized', async t => {
   dropConnection = false
   const rc = t.context.rc as RegistryClient

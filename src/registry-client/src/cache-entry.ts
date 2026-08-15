@@ -254,18 +254,19 @@ export class CacheEntry {
     return this.#cacheControl
   }
 
-  #staleWhileRevalidate?: boolean
+  #staleUntil?: number
   get staleWhileRevalidate(): boolean {
-    if (this.#staleWhileRevalidate !== undefined)
-      return this.#staleWhileRevalidate
+    // memoize the deadline, not the answer, so an entry held for a
+    // long time (decoded-entry memo, long-lived process) still expires
+    if (this.#staleUntil !== undefined)
+      return Date.now() < this.#staleUntil
     if (this.valid || !this.date) return true
     const swv =
       this.cacheControl['stale-while-revalidate'] ??
       this.maxAge * this.#staleWhileRevalidateFactor
 
-    this.#staleWhileRevalidate =
-      this.date.getTime() + swv * 1000 > Date.now()
-    return this.#staleWhileRevalidate
+    this.#staleUntil = this.date.getTime() + swv * 1000
+    return Date.now() < this.#staleUntil
   }
 
   #contentType?: string
@@ -280,8 +281,14 @@ export class CacheEntry {
    * valid to use.
    */
   #valid?: boolean
+  #validUntil?: number
   get valid(): boolean {
     if (this.#valid !== undefined) return this.#valid
+    // time-based validity memoizes the deadline, not the answer, so
+    // an entry held for a long time (decoded-entry memo, long-lived
+    // process) still expires and gets revalidated
+    if (this.#validUntil !== undefined)
+      return Date.now() < this.#validUntil
 
     // immutable = never changes
     if (this.cacheControl.immutable) return (this.#valid = true)
@@ -296,9 +303,8 @@ export class CacheEntry {
     // default to 5m if maxage is not set, as some registries
     // do not set a cache control header at all.
     if (!this.date) return (this.#valid = false)
-    this.#valid =
-      this.date.getTime() + this.maxAge * 1000 > Date.now()
-    return this.#valid
+    this.#validUntil = this.date.getTime() + this.maxAge * 1000
+    return Date.now() < this.#validUntil
   }
 
   /**
@@ -649,9 +655,18 @@ const isJsonWs = (c: number) =>
   c === 0x20 || c === 0x09 || c === 0x0a || c === 0x0d
 
 const looksLikeJson = (buf: Uint8Array): boolean => {
+  // skip a UTF-8 BOM; TextDecoder strips it when the body is parsed
+  const bom =
+    buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf ? 3 : 0
+  // an empty body is parsed as '{}' by json()
+  if (buf.byteLength === bom) return true
   let first: number | undefined
-  let start = 0
-  for (const c of buf) {
+  let start = bom
+  for (let i = bom; i < buf.byteLength; i++) {
+    const c = buf[i]
+    /* c8 ignore start */
+    if (c === undefined) break
+    /* c8 ignore stop */
     if (!isJsonWs(c)) {
       first = c
       break

@@ -531,7 +531,9 @@ t.test('json shape-check vs parse', t => {
   }
   const parseOk = (body: Uint8Array) => {
     try {
-      JSON.parse(new TextDecoder().decode(body))
+      // mirror json(): TextDecoder strips a BOM, empty parses as {}
+      const text = new TextDecoder().decode(body)
+      JSON.parse(text || '{}')
       return true
     } catch {
       return false
@@ -550,6 +552,9 @@ t.test('json shape-check vs parse', t => {
     ['leading slash', Buffer.from('/{"a":1}')],
     ['whitespace only', Buffer.from('   \n')],
     ['whitespace array', Buffer.from('  [1]  ')],
+    ['bom object', Buffer.from('\uFEFF{"a":1}')],
+    ['bom only', Buffer.from('\uFEFF')],
+    ['bom truncated', Buffer.from('\uFEFF{"a":')],
   ]
 
   for (const [name, body] of corpus) {
@@ -659,4 +664,64 @@ t.test('decode/encode round-trip parity', t => {
 
   roundTrip('existing gzip json fixture', ce, true)
   t.end()
+})
+
+t.test('decode accepts BOM and empty json bodies', t => {
+  const bom = CacheEntry.decode(
+    toRawEntry(
+      200,
+      { 'content-type': 'application/json' },
+      Buffer.from('\uFEFF{"a":1}'),
+    ),
+  )
+  t.equal(bom.statusCode, 200, 'BOM json is not a miss')
+  t.strictSame(bom.json(), { a: 1 }, 'TextDecoder strips the BOM')
+
+  const empty = CacheEntry.decode(
+    toRawEntry(
+      200,
+      { 'content-type': 'application/json' },
+      Buffer.from(''),
+    ),
+  )
+  t.equal(empty.statusCode, 200, 'empty json body is not a miss')
+  t.strictSame(empty.json(), {}, 'json() parses empty as {}')
+  t.end()
+})
+
+t.test('validity deadlines are re-evaluated over time', async t => {
+  const fresh = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/json',
+      date: new Date().toUTCString(),
+      'cache-control': 'max-age=2',
+    }),
+  )
+  fresh.addBody(Buffer.from('{"a":1}'))
+  t.equal(fresh.valid, true)
+  t.equal(fresh.valid, true, 'deadline memoized, still valid')
+
+  const stale = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/json',
+      date: new Date(Date.now() - 10_000).toUTCString(),
+      'cache-control': 'max-age=1, stale-while-revalidate=12',
+    }),
+  )
+  stale.addBody(Buffer.from('{"a":1}'))
+  t.equal(stale.valid, false)
+  t.equal(stale.staleWhileRevalidate, true)
+  t.equal(stale.staleWhileRevalidate, true, 'deadline memoized')
+
+  // entries held in memory (e.g. by the decoded-entry memo in a
+  // long-lived process) must still expire once their deadline passes
+  await new Promise(res => setTimeout(res, 2600))
+  t.equal(fresh.valid, false, 'expires after max-age passes')
+  t.equal(
+    stale.staleWhileRevalidate,
+    false,
+    'swr window closes after its deadline passes',
+  )
 })

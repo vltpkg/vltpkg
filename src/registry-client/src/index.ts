@@ -400,11 +400,21 @@ export class RegistryClient {
     return result
   }
 
-  #decodeCached(buffer: Uint8Array): CacheEntry {
+  #decodeCached(buffer: Uint8Array): CacheEntry | undefined {
     const hit = this.#decoded.get(buffer)
     if (hit) return hit
     const entry = CacheEntry.decode(buffer)
-    if (entry.statusCode && entry.isJSON) {
+    // statusCode 0 == undecodable, and a cached JSON body that fails
+    // to parse is corrupt. Treat both as a total miss: the caller
+    // refetches without conditional headers, so a fresh response
+    // overwrites the bad entry rather than a 304 re-blessing it.
+    if (!entry.statusCode) return undefined
+    if (entry.isJSON) {
+      try {
+        entry.json()
+      } catch {
+        return undefined
+      }
       this.#decoded.set(buffer, entry)
     }
     return entry
@@ -463,9 +473,7 @@ export class RegistryClient {
         await this.cache.fetch(key, { context: { integrity } })
       : undefined
 
-    const decoded = buffer ? this.#decodeCached(buffer) : undefined
-    // statusCode 0 == undecodable; treat as a miss so we refetch
-    const entry = decoded?.statusCode ? decoded : undefined
+    const entry = buffer ? this.#decodeCached(buffer) : undefined
     if (entry?.valid) {
       logRequest(url, 'cache', { method })
       return entry
