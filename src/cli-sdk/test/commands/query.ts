@@ -1142,7 +1142,14 @@ t.test('query', async t => {
       get: (id: DepID) =>
         flaggedIds.has(id) ?
           {
-            score: { overall: 0, license: 0, maintenance: 0, quality: 0, supplyChain: 0, vulnerability: 0 },
+            score: {
+              overall: 0,
+              license: 0,
+              maintenance: 0,
+              quality: 0,
+              supplyChain: 0,
+              vulnerability: 0,
+            },
             alerts: [
               {
                 key: 'malware-1',

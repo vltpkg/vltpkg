@@ -14,9 +14,7 @@ const styleText = (
  * and test automation that isn't a security concern.
  */
 export const isSecuritySelector = (query: string): boolean =>
-  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(
-    query,
-  )
+  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(query)
 
 /**
  * Detect if a DSS query string uses a security selector that signals
