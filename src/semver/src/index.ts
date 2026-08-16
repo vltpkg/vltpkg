@@ -25,6 +25,10 @@ export const parse = (version: Version | string) => {
  * to share across callers. Cleared wholesale once it hits the cap rather
  * than tracking LRU order, since real workloads only see a few hundred to
  * a few thousand distinct range strings per install.
+ *
+ * Sharing instances also means textually identical ranges are identical
+ * objects, which is what makes the identity-keyed `intersectsCache` below
+ * effective.
  */
 const rangeCache = new Map<string, Range | undefined>()
 const MAX_RANGE_CACHE = 4096
@@ -39,7 +43,10 @@ export const parseRange = (
     range = range.raw
   }
   const key = `${+includePrerelease}\0${range}`
-  if (rangeCache.has(key)) return rangeCache.get(key)
+  // single map lookup on the common hit path; the extra has() check only
+  // runs for ranges cached as invalid (undefined) and for misses
+  const cached = rangeCache.get(key)
+  if (cached !== undefined || rangeCache.has(key)) return cached
   let parsed: Range | undefined
   try {
     parsed = new Range(range, includePrerelease)
@@ -448,12 +455,15 @@ export const stable = <T extends Version | string = Version | string>(
   })
 
 /**
- * Bounded cache for {@link intersects}, keyed on the post-parse
- * `(raw, includePrerelease)` pair of both ranges so string and `Range`
- * object inputs share entries. Same clear-on-cap policy as `rangeCache`.
+ * Identity-keyed cache for {@link intersects}. Keying on the `Range`
+ * instances themselves (rather than a string of their raw sources) keeps
+ * the hit path free of string building, and needs no size cap or clear
+ * policy: entries are dropped by GC together with their ranges. It relies
+ * on `rangeCache` deduping instances, so string inputs and `spec.range`
+ * objects for the same source share entries; callers constructing a fresh
+ * `Range` per call simply recompute, as they did before memoization.
  */
-const intersectsCache = new Map<string, boolean>()
-const MAX_INTERSECTS_CACHE = 4096
+const intersectsCache = new WeakMap<Range, WeakMap<Range, boolean>>()
 
 /**
  * Return true if the range r1 intersects any of the ranges r2
@@ -475,18 +485,19 @@ export const intersects = (
   // If either range is 'any', they intersect
   if (range1.isAny || range2.isAny) return true
 
-  const key = `${range1.raw}\0${+range1.includePrerelease}\0${range2.raw}\0${+range2.includePrerelease}`
-  const cached = intersectsCache.get(key)
+  let inner = intersectsCache.get(range1)
+  const cached = inner?.get(range2)
   if (cached !== undefined) return cached
 
   // Check if any set from range1 intersects with any set from range2
   const result = range1.set.some(set1 =>
     range2.set.some(set2 => intersectComparators(set1, set2)),
   )
-  if (intersectsCache.size >= MAX_INTERSECTS_CACHE) {
-    intersectsCache.clear()
+  if (!inner) {
+    inner = new WeakMap()
+    intersectsCache.set(range1, inner)
   }
-  intersectsCache.set(key, result)
+  inner.set(range2, result)
   return result
 }
 

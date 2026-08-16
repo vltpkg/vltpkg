@@ -852,7 +852,8 @@ t.test('intersects', t => {
 
   // Test the memoization cache
   t.test('caching', t => {
-    // string and Range object inputs share the same cache entry
+    // string and Range object inputs share the same cache entry, since
+    // parseRange() dedupes instances and the cache is keyed on identity
     const range1 = parseRange('^2.2.2-intersects-cache-test')
     const range2 = parseRange('^2.2.3-intersects-cache-test')
     t.ok(range1, 'parsed range1')
@@ -867,6 +868,17 @@ t.test('intersects', t => {
         intersects(range1, range2),
         fromStrings,
         'Range-object call hits the same cache entry as the string call',
+      )
+      // same range1 against a new range2 reuses range1's inner map
+      t.equal(
+        intersects(range1, '^3.0.0-intersects-cache-test'),
+        false,
+        'fresh second range against a cached first range computes correctly',
+      )
+      t.equal(
+        intersects(range1, '^3.0.0-intersects-cache-test'),
+        false,
+        'and is itself cached on a repeat call',
       )
     }
 
@@ -896,14 +908,16 @@ t.test('intersects', t => {
       'no-flag result is unaffected by the cached includePrerelease entry',
     )
 
-    // force the bounded cache past its cap so the clear-on-cap branch runs
+    // the identity-keyed cache has no size cap (entries are GC'd with
+    // their ranges), but exercise a large batch of distinct pairs to
+    // confirm results stay correct as the cache grows
     for (let i = 0; i < 4200; i++) {
       intersects(`>=1.0.${i}`, `<2.0.${i}`)
     }
     t.equal(
       intersects('^1.2.3', '^1.2.4'),
       true,
-      'still computes correctly for a fresh pair after the cache has been cleared',
+      'still computes correctly for a fresh pair after many insertions',
     )
 
     t.end()
