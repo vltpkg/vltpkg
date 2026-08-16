@@ -304,3 +304,21 @@ t.test('integrity', async t => {
     )
   })
 })
+
+t.test(
+  'maxSize excludes large entries from memory but not disk',
+  async t => {
+    const c = new Cache({
+      path: t.testdir(),
+      maxSize: 10,
+    })
+    const big = Buffer.alloc(100, 1)
+    c.set('big', big)
+    await c.promise()
+    t.equal(c.get('big'), undefined, 'not retained in memory')
+    t.equal(c.size, 0)
+    t.same(await c.fetch('big'), big)
+    t.equal(c.get('big'), undefined)
+    t.same(await readFile(c.path('big')), big)
+  },
+)
