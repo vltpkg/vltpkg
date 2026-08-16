@@ -64,6 +64,54 @@ t.test('parseRange, validRange', t => {
   t.end()
 })
 
+t.test('parseRange caching', t => {
+  const raw = '^7.6.5-unique-parse-range-cache-test'
+
+  const first = parseRange(raw)
+  const second = parseRange(raw)
+  t.equal(
+    first,
+    second,
+    'repeated calls with the same raw+includePrerelease return the cached Range instance',
+  )
+
+  const withPrerelease = parseRange(raw, true)
+  t.not(
+    withPrerelease,
+    first,
+    'includePrerelease flips the cache key to a distinct entry',
+  )
+  t.strictSame(
+    withPrerelease,
+    new Range(raw, true),
+    'cached entry with includePrerelease still parses correctly',
+  )
+
+  const invalid = '>=not-a-valid-range<<'
+  t.equal(
+    parseRange(invalid),
+    undefined,
+    'invalid raw string parses to undefined',
+  )
+  t.equal(
+    parseRange(invalid),
+    undefined,
+    'invalid result is itself cached and still returns undefined',
+  )
+
+  // force the bounded cache past its cap so the clear-on-cap branch runs
+  for (let i = 0; i < 4200; i++) {
+    parseRange(`>=1.0.${i} <2.0.${i}`)
+  }
+  t.strictSame(
+    parseRange(raw),
+    new Range(raw),
+    'still parses correctly for a fresh key after the cache has been cleared',
+  )
+
+  t.end()
+})
+
 t.test('satisfies', t => {
   for (const [range, version] of includes) {
     const v = Version.parse(version)
@@ -797,6 +845,79 @@ t.test('intersects', t => {
       intersects('>=1.0.0-alpha <1.0.0-alpha', '1.0.0-alpha', true),
       false,
       'Impossible prerelease range',
+    )
+
+    t.end()
+  })
+
+  // Test the memoization cache
+  t.test('caching', t => {
+    // string and Range object inputs share the same cache entry, since
+    // parseRange() dedupes instances and the cache is keyed on identity
+    const range1 = parseRange('^2.2.2-intersects-cache-test')
+    const range2 = parseRange('^2.2.3-intersects-cache-test')
+    t.ok(range1, 'parsed range1')
+    t.ok(range2, 'parsed range2')
+
+    const fromStrings = intersects(
+      '^2.2.2-intersects-cache-test',
+      '^2.2.3-intersects-cache-test',
+    )
+    if (range1 && range2) {
+      t.equal(
+        intersects(range1, range2),
+        fromStrings,
+        'Range-object call hits the same cache entry as the string call',
+      )
+      // same range1 against a new range2 reuses range1's inner map
+      t.equal(
+        intersects(range1, '^3.0.0-intersects-cache-test'),
+        false,
+        'fresh second range against a cached first range computes correctly',
+      )
+      t.equal(
+        intersects(range1, '^3.0.0-intersects-cache-test'),
+        false,
+        'and is itself cached on a repeat call',
+      )
+    }
+
+    // includePrerelease is part of the cache key, so it must not be
+    // conflated with a call for the same ranges without the flag: `^1`'s
+    // lower bound drops from `>=1.0.0` to `>=1.0.0-0` when the flag is
+    // set, which changes whether it intersects an exact prerelease
+    t.equal(
+      intersects('^1', '=1.0.0-beta'),
+      false,
+      'without includePrerelease, ^1 does not intersect =1.0.0-beta',
+    )
+    t.equal(
+      intersects('^1', '=1.0.0-beta', true),
+      true,
+      'with includePrerelease, ^1 does intersect =1.0.0-beta (cached separately)',
+    )
+    // repeat in reverse call order to prove neither entry evicted the other
+    t.equal(
+      intersects('^1', '=1.0.0-beta', true),
+      true,
+      'includePrerelease result is stable on a second call',
+    )
+    t.equal(
+      intersects('^1', '=1.0.0-beta'),
+      false,
+      'no-flag result is unaffected by the cached includePrerelease entry',
+    )
+
+    // the identity-keyed cache has no size cap (entries are GC'd with
+    // their ranges), but exercise a large batch of distinct pairs to
+    // confirm results stay correct as the cache grows
+    for (let i = 0; i < 4200; i++) {
+      intersects(`>=1.0.${i}`, `<2.0.${i}`)
+    }
+    t.equal(
+      intersects('^1.2.3', '^1.2.4'),
+      true,
+      'still computes correctly for a fresh pair after many insertions',
     )
 
     t.end()

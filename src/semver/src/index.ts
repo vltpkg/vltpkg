@@ -18,6 +18,21 @@ export const parse = (version: Version | string) => {
   }
 }
 
+/**
+ * Bounded cache for {@link parseRange}, keyed on `(includePrerelease, raw)`.
+ * `Range` is effectively immutable after construction, so parsed results
+ * (including `undefined` for invalid input, tracked via `has()`) are safe
+ * to share across callers. Cleared wholesale once it hits the cap rather
+ * than tracking LRU order, since real workloads only see a few hundred to
+ * a few thousand distinct range strings per install.
+ *
+ * Sharing instances also means textually identical ranges are identical
+ * objects, which is what makes the identity-keyed `intersectsCache` below
+ * effective.
+ */
+const rangeCache = new Map<string, Range | undefined>()
+const MAX_RANGE_CACHE = 4096
+
 /** Return the parsed version range, or `undefined` if invalid */
 export const parseRange = (
   range: Range | string,
@@ -27,11 +42,20 @@ export const parseRange = (
     if (range.includePrerelease === includePrerelease) return range
     range = range.raw
   }
+  const key = `${+includePrerelease}\0${range}`
+  // single map lookup on the common hit path; the extra has() check only
+  // runs for ranges cached as invalid (undefined) and for misses
+  const cached = rangeCache.get(key)
+  if (cached !== undefined || rangeCache.has(key)) return cached
+  let parsed: Range | undefined
   try {
-    return new Range(range, includePrerelease)
+    parsed = new Range(range, includePrerelease)
   } catch {
-    return undefined
+    parsed = undefined
   }
+  if (rangeCache.size >= MAX_RANGE_CACHE) rangeCache.clear()
+  rangeCache.set(key, parsed)
+  return parsed
 }
 
 /**
@@ -431,6 +455,17 @@ export const stable = <T extends Version | string = Version | string>(
   })
 
 /**
+ * Identity-keyed cache for {@link intersects}. Keying on the `Range`
+ * instances themselves (rather than a string of their raw sources) keeps
+ * the hit path free of string building, and needs no size cap or clear
+ * policy: entries are dropped by GC together with their ranges. It relies
+ * on `rangeCache` deduping instances, so string inputs and `spec.range`
+ * objects for the same source share entries; callers constructing a fresh
+ * `Range` per call simply recompute, as they did before memoization.
+ */
+const intersectsCache = new WeakMap<Range, WeakMap<Range, boolean>>()
+
+/**
  * Return true if the range r1 intersects any of the ranges r2
  * r1 and r2 are either Range objects or range strings.
  * Returns true if any version would satisfy both ranges.
@@ -450,10 +485,20 @@ export const intersects = (
   // If either range is 'any', they intersect
   if (range1.isAny || range2.isAny) return true
 
+  let inner = intersectsCache.get(range1)
+  const cached = inner?.get(range2)
+  if (cached !== undefined) return cached
+
   // Check if any set from range1 intersects with any set from range2
-  return range1.set.some(set1 =>
+  const result = range1.set.some(set1 =>
     range2.set.some(set2 => intersectComparators(set1, set2)),
   )
+  if (!inner) {
+    inner = new WeakMap()
+    intersectsCache.set(range1, inner)
+  }
+  inner.set(range2, result)
+  return result
 }
 
 /**

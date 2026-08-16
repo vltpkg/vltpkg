@@ -10,6 +10,7 @@ import {
   endPeerPlacement,
   forkPeerContext,
   getOrderedPeerContextEntries,
+  peerSpecKey,
   postPlacementPeerCheck,
   retrievePeerContextHash,
   startPeerPlacement,
@@ -39,6 +40,9 @@ const configData = {
     npm: 'https://registry.npmjs.org/',
   },
 } satisfies SpecOptions
+
+/** Build a single-entry `specs` map for a `PeerContextEntry` test fixture. */
+const oneSpec = (spec: Spec) => new Map([[peerSpecKey(spec), spec]])
 
 t.test('checkPeerEdgesCompatible', async t => {
   t.test('returns compatible when node has no peer deps', async t => {
@@ -161,7 +165,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       const peerContext: PeerContext = new Map()
       peerContext.set('react', {
         active: true,
-        specs: new Set([Spec.parse('react', '^19.0.0', configData)]),
+        specs: oneSpec(Spec.parse('react', '^19.0.0', configData)),
         target: react19,
         type: 'prod',
         contextDependents: new Set(),
@@ -228,7 +232,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       const peerContext: PeerContext = new Map()
       peerContext.set('react', {
         active: true,
-        specs: new Set([peerSpec]),
+        specs: oneSpec(peerSpec),
         target: react183,
         type: 'prod',
         contextDependents: new Set(),
@@ -582,7 +586,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       const peerContext: PeerContext = new Map()
       peerContext.set('react', {
         active: true,
-        specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+        specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
         target: react18,
         type: 'prod',
         contextDependents: new Set(),
@@ -645,7 +649,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       const peerContext: PeerContext = new Map()
       peerContext.set('react', {
         active: true,
-        specs: new Set([Spec.parse('react', '^17.0.0', configData)]),
+        specs: oneSpec(Spec.parse('react', '^17.0.0', configData)),
         target: react17,
         type: 'prod',
         contextDependents: new Set(),
@@ -717,7 +721,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       const peerContext: PeerContext = new Map()
       peerContext.set('react', {
         active: true,
-        specs: new Set([Spec.parse('react', '^18.0.0', configData)]),
+        specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
         target: react18,
         type: 'prod',
         contextDependents: new Set(),
@@ -1839,6 +1843,123 @@ t.test('endPeerPlacement', async t => {
     t.equal(edge?.to?.id, peerTarget.id, 'should link to peer target')
   })
 
+  t.test(
+    'resolving from context adds a new spec key when the resolved spec is textually distinct',
+    async t => {
+      // PRIORITY 3 (global peer context set) resolves the peer via
+      // `entry.target`, then records `spec.final` in `entry.specs`. When
+      // the resolved spec is textually different from every spec already
+      // tracked on the entry, it must be added as a *new* key rather than
+      // silently deduped away.
+      const peerContext: PeerContext = new Map()
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      // place peer-pkg under an unrelated node (not mainImporter) so that
+      // mainImporter has no edge of its own to it - otherwise PRIORITY 1
+      // (fromNode.edgesOut) would resolve the peer before context even
+      // gets a chance to
+      const otherParent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('other-parent', '^1.0.0', configData),
+        { name: 'other-parent', version: '1.0.0' },
+      )!
+      const existingPeerSpec = Spec.parse(
+        'peer-pkg',
+        '>=1.0.0',
+        configData,
+      )
+      const peerTarget = graph.placePackage(
+        otherParent,
+        'prod',
+        existingPeerSpec,
+        { name: 'peer-pkg', version: '1.2.0' },
+      )!
+
+      // context already tracks one spec for peer-pkg, resolved to a
+      // target that also satisfies a stricter, textually distinct spec
+      peerContext.set('peer-pkg', {
+        active: true,
+        specs: oneSpec(existingPeerSpec),
+        target: peerTarget,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+
+      // node's own peer dep is satisfied by the same target, but its
+      // bareSpec is distinct from what's already tracked on the entry
+      const distinctPeerSpec = Spec.parse(
+        'peer-pkg',
+        '^1.0.0',
+        configData,
+      )
+      const nextDeps: any[] = []
+      const nextPeerDeps = new Map([
+        [
+          'peer-pkg',
+          { spec: distinctPeerSpec, type: 'peer' as const },
+        ],
+      ])
+      // no sibling/closure providers for peer-pkg, so resolution can
+      // only come from PRIORITY 3 (the peer context entry itself)
+      const queuedEntries: PeerContextEntryInput[] = [
+        { spec: nodeSpec, target: node, type: 'prod' },
+      ]
+
+      const end = endPeerPlacement(
+        peerContext,
+        nextDeps,
+        nextPeerDeps,
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        queuedEntries,
+      )
+      end.resolvePeerDeps()
+
+      t.equal(
+        nextDeps.length,
+        0,
+        'peer should be resolved, not in nextDeps',
+      )
+      const edge = node.edgesOut.get('peer-pkg')
+      t.equal(
+        edge?.to?.id,
+        peerTarget.id,
+        'should link to the context target',
+      )
+
+      const entry = peerContext.get('peer-pkg')
+      t.equal(
+        entry?.specs.size,
+        2,
+        'the new, textually distinct spec is added alongside the existing one',
+      )
+      t.ok(
+        entry?.specs.has(peerSpecKey(distinctPeerSpec.final)),
+        'entry tracks the newly resolved spec under its own key',
+      )
+    },
+  )
+
   t.test('handles unresolved peerOptional', async t => {
     const peerContext: PeerContext = new Map()
     const mainManifest = {
@@ -2175,7 +2296,7 @@ t.test('endPeerPlacement', async t => {
       const peerContext: PeerContext = new Map()
       peerContext.set('zod', {
         active: true,
-        specs: new Set([Spec.parse('zod', '>=4.0.0', configData)]),
+        specs: oneSpec(Spec.parse('zod', '>=4.0.0', configData)),
         target: otherWorkspaceVersion, // This is what would happen from docs workspace
         type: 'prod',
         contextDependents: new Set(),
