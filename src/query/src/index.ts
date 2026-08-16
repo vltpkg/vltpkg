@@ -296,15 +296,23 @@ export class Query {
       }
 
       // if a security archive entry is found then we can populate the insights
+      // Build severity and category-based insights from the new alert structure
+      const malwareAlerts = securityArchiveEntry.alerts.filter(
+        a => a.category === 'malware',
+      )
+      const severityAlerts = securityArchiveEntry.alerts.filter(
+        a => a.category === 'severity',
+      )
+      const squatAlerts = securityArchiveEntry.alerts.filter(
+        a => a.category === 'squat',
+      )
+      const vulnAlerts = securityArchiveEntry.alerts.filter(
+        a => a.category === 'vulnerability',
+      )
+
       node.insights = {
         scanned: true,
         score: securityArchiveEntry.score,
-        abandoned: securityArchiveEntry.alerts.some(
-          i => i.type === 'missingAuthor',
-        ),
-        confused: securityArchiveEntry.alerts.some(
-          i => i.type === 'manifestConfusion',
-        ),
         cve: securityArchiveEntry.alerts
           .map(i => i.props?.cveId)
           .filter(i => i !== undefined),
@@ -315,113 +323,33 @@ export class Query {
               .flatMap(i => i.props?.cwes?.map(j => j.id)),
           ),
         ) as `CWE-${string}`[],
-        debug: securityArchiveEntry.alerts.some(
-          i => i.type === 'debugAccess',
-        ),
-        deprecated: securityArchiveEntry.alerts.some(
-          i => i.type === 'deprecated',
-        ),
-        dynamic: securityArchiveEntry.alerts.some(
-          i => i.type === 'dynamicRequire',
-        ),
-        entropic: securityArchiveEntry.alerts.some(
-          i => i.type === 'highEntropyStrings',
-        ),
-        env: securityArchiveEntry.alerts.some(
-          i => i.type === 'envVars',
-        ),
-        eval: securityArchiveEntry.alerts.some(
-          i => i.type === 'usesEval',
-        ),
-        fs: securityArchiveEntry.alerts.some(
-          i => i.type === 'filesystemAccess',
-        ),
-        license: {
-          unlicensed: securityArchiveEntry.alerts.some(
-            i => i.type === 'explicitlyUnlicensedItem',
-          ),
-          misc: securityArchiveEntry.alerts.some(
-            i => i.type === 'miscLicenseIssues',
-          ),
-          restricted: securityArchiveEntry.alerts.some(
-            i => i.type === 'nonpermissiveLicense',
-          ),
-          ambiguous: securityArchiveEntry.alerts.some(
-            i => i.type === 'ambiguousClassifier',
-          ),
-          copyleft: securityArchiveEntry.alerts.some(
-            i => i.type === 'copyleftLicense',
-          ),
-          unknown: securityArchiveEntry.alerts.some(
-            i => i.type === 'unidentifiedLicense',
-          ),
-          none: securityArchiveEntry.alerts.some(
-            i => i.type === 'noLicenseFound',
-          ),
-          exception: securityArchiveEntry.alerts.some(
-            i => i.type === 'licenseException',
-          ),
-        },
-        malware: securityArchiveEntry.alerts.some(
-          i => i.type === 'malware' || i.type === 'gptMalware',
-        ),
-        minified: securityArchiveEntry.alerts.some(
-          i => i.type === 'minifiedFile',
-        ),
-        native: securityArchiveEntry.alerts.some(
-          i => i.type === 'hasNativeCode',
-        ),
-        network: securityArchiveEntry.alerts.some(
-          i => i.type === 'networkAccess',
-        ),
-        obfuscated: securityArchiveEntry.alerts.some(
-          i => i.type === 'obfuscatedFile',
-        ),
-        scripts: securityArchiveEntry.alerts.some(
-          i => i.type === 'installScripts',
-        ),
-        severity: {
-          low: securityArchiveEntry.alerts.some(
-            i => i.type === 'mildCVE',
-          ),
-          medium: securityArchiveEntry.alerts.some(
-            i => i.type === 'potentialVulnerability',
-          ),
-          high: securityArchiveEntry.alerts.some(
-            i => i.type === 'cve',
-          ),
-          critical: securityArchiveEntry.alerts.some(
-            i => i.type === 'criticalCVE',
-          ),
-        },
-        shell: securityArchiveEntry.alerts.some(
-          i => i.type === 'shellAccess',
-        ),
-        shrinkwrap: securityArchiveEntry.alerts.some(
-          i => i.type === 'shrinkwrap',
-        ),
-        squat: {
-          medium: securityArchiveEntry.alerts.some(
-            i => i.type === 'gptDidYouMean',
-          ),
-          critical: securityArchiveEntry.alerts.some(
-            i => i.type === 'didYouMean',
-          ),
-        },
-        suspicious: securityArchiveEntry.alerts.some(
-          i => i.type === 'suspiciousStarActivity',
-        ),
-        tracker: securityArchiveEntry.alerts.some(
-          i => i.type === 'telemetry',
-        ),
+        malware:
+          malwareAlerts.length > 0 ?
+            {
+              low: malwareAlerts.some(a => a.severity === 'low'),
+              medium: malwareAlerts.some(a => a.severity === 'medium'),
+              high: malwareAlerts.some(a => a.severity === 'high'),
+              critical: malwareAlerts.some(a => a.severity === 'critical'),
+            }
+          : undefined,
+        severity:
+          severityAlerts.length > 0 ?
+            {
+              low: severityAlerts.some(a => a.severity === 'low'),
+              medium: severityAlerts.some(a => a.severity === 'medium'),
+              high: severityAlerts.some(a => a.severity === 'high'),
+              critical: severityAlerts.some(a => a.severity === 'critical'),
+            }
+          : undefined,
+        squat:
+          squatAlerts.length > 0 ?
+            {
+              medium: squatAlerts.some(a => a.severity === 'medium'),
+              critical: squatAlerts.some(a => a.severity === 'critical'),
+            }
+          : undefined,
         trivial: securityArchiveEntry.alerts.some(
           i => i.type === 'trivialPackage',
-        ),
-        undesirable: securityArchiveEntry.alerts.some(
-          i => i.type === 'troll',
-        ),
-        unknown: securityArchiveEntry.alerts.some(
-          i => i.type === 'newAuthor',
         ),
         unmaintained: securityArchiveEntry.alerts.some(
           i => i.type === 'unmaintained',
@@ -429,25 +357,15 @@ export class Query {
         unpopular: securityArchiveEntry.alerts.some(
           i => i.type === 'unpopularPackage',
         ),
-        unstable: securityArchiveEntry.alerts.some(
-          i => i.type === 'unstableOwnership',
-        ),
-        vuln: {
-          low: securityArchiveEntry.alerts.some(
-            i => i.type === 'mildCVE' || i.type === 'gptAnomaly',
-          ),
-          medium: securityArchiveEntry.alerts.some(
-            i =>
-              i.type === 'potentialVulnerability' ||
-              i.type === 'gptSecurity',
-          ),
-          high: securityArchiveEntry.alerts.some(
-            i => i.type === 'cve',
-          ),
-          critical: securityArchiveEntry.alerts.some(
-            i => i.type === 'criticalCVE',
-          ),
-        },
+        vuln:
+          vulnAlerts.length > 0 ?
+            {
+              low: vulnAlerts.some(a => a.severity === 'low'),
+              medium: vulnAlerts.some(a => a.severity === 'medium'),
+              high: vulnAlerts.some(a => a.severity === 'high'),
+              critical: vulnAlerts.some(a => a.severity === 'critical'),
+            }
+          : undefined,
       }
 
       setMethodToJSON(node)
