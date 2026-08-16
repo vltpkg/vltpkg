@@ -201,6 +201,12 @@ const runCommandWithFindings = async ({
   runCommand({ options, positionals, values }, CommandWithFindings)
 
 t.test('audit', async t => {
+  t.teardown(() => {
+    // Reset process exit code that may have been set by audit command
+    // when security findings were detected
+    process.exitCode = 0
+  })
+
   t.ok(Command.usage, 'should have usage')
   t.ok(Command.command, 'should have command')
   t.ok(Command.views, 'should have views')
@@ -296,7 +302,16 @@ t.test('audit', async t => {
       })
 
       // The warning should be logged for malformed malware insights
-      t.match(stderrLogs(), /ignoring malformed malware insights/)
+      const logs = stderrLogs()
+      t.ok(
+        logs.some((logArgs: string[]) =>
+          logArgs.some((arg: string) =>
+            typeof arg === 'string' &&
+            arg.includes('ignoring malformed malware insights'),
+          ),
+        ),
+        'should log warning about malformed malware insights',
+      )
     },
   )
 
