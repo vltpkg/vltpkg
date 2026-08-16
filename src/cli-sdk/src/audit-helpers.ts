@@ -9,20 +9,21 @@ const styleText = (
 
 /**
  * Detect if a DSS query string uses security selectors.
+ * Excludes generic `:scripts` selector since it matches all lifecycle scripts
+ * (install, preinstall, postinstall, prepare, etc.), including legitimate build
+ * and test automation that isn't a security concern.
  */
 export const isSecuritySelector = (query: string): boolean =>
-  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat|:scripts/.test(
+  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(
     query,
   )
 
 /**
  * Detect if a DSS query string uses a security selector that signals
  * genuine audit intent (malware, vulnerability, severity, squat, cve,
- * cwe). Unlike `isSecuritySelector`, this deliberately excludes a
- * standalone `:scripts` selector -- listing packages with lifecycle
- * scripts is a legitimate query on its own and shouldn't by itself be
- * treated as a security audit (e.g. for deciding whether to append a
- * security-summary footer to query output).
+ * cwe). Currently identical to `isSecuritySelector`, but documented
+ * separately to preserve the semantic distinction between "any security
+ * selector" and "genuine audit intent" for future enhancements.
  */
 export const isSecurityAuditSelector = (query: string): boolean =>
   /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(query)
