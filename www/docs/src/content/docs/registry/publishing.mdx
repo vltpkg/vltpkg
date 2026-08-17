@@ -23,8 +23,8 @@ bun.
 
 ## Configure your project
 
-Map your account scope to your registry so installs and publishes for
-that scope go to vlt:
+Map your account scope to your registry so installs for that scope go
+to vlt:
 
 <Code
   code="$ vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/"
@@ -35,6 +35,12 @@ that scope go to vlt:
 This stores the mapping in your project's `vlt.json`. See
 [Working with Named Registries](/cli/registries) for the full range of
 registry configuration options.
+
+Note that `vlt publish` does not pick its target registry from
+`scoped-registries`. Point it at your registry explicitly with
+`vlt publish --registry=https://registry.vlt.io/acme/main/`, a
+configured alias (`vlt registry main publish`), or a
+`publishConfig.registry` field in `package.json`.
 
 If you're using npm, the equivalent `.npmrc` entry is:
 
