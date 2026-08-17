@@ -46,6 +46,65 @@ const kindsMap = new Map<SeverityKinds, SeverityAlertTypes>([
   ['3', 'mildCVE'],
 ])
 
+/**
+ * The CVE-bearing alert types, i.e. the feed's Vulnerability category.
+ *
+ * The feed grades CVEs in the type name as well as in the `severity`
+ * field, and it sends more grades than the four `kindsMap` names --
+ * `mediumCVE` and `highCVE` among them. Matching on type alone therefore
+ * missed those alerts entirely.
+ */
+const cveAlertTypes = new Set([
+  'cve',
+  'mildCVE',
+  'mediumCVE',
+  'highCVE',
+  'criticalCVE',
+  'potentialVulnerability',
+])
+
+/**
+ * The level a type name implies, for alerts that arrive without a
+ * usable `severity` field. Keeps the pre-existing type-only behaviour
+ * intact while the severity field extends it to the grades no type name
+ * covers.
+ */
+const typeImpliedLevel = new Map<string, number>([
+  ['criticalCVE', 0],
+  ['highCVE', 1],
+  ['cve', 1],
+  ['mediumCVE', 2],
+  ['potentialVulnerability', 2],
+  ['mildCVE', 3],
+])
+
+/**
+ * The comparable level of a vulnerability alert.
+ *
+ * Prefers the alert's own `severity` field over its type name, so any
+ * grade the feed sends lands somewhere -- `middle` being the wire
+ * spelling of `medium` -- and falls back to the type when no severity is
+ * given. Returns undefined for alerts outside the Vulnerability
+ * category, which `:severity` does not select on.
+ */
+const alertSeverityLevel = (alert: {
+  type: string
+  severity?: string
+  category?: string
+}): number | undefined => {
+  if (
+    !cveAlertTypes.has(alert.type) &&
+    alert.category !== 'vulnerability'
+  ) {
+    return undefined
+  }
+  const severity =
+    alert.severity === 'middle' ? 'medium' : alert.severity
+  const fromSeverity =
+    severity ? kindLevelMap.get(severity as SeverityKinds) : undefined
+  return fromSeverity ?? typeImpliedLevel.get(alert.type)
+}
+
 // Map numerical values to their respective kinds for comparison operations
 const kindLevelMap = new Map<SeverityKinds, number>([
   ['critical', 0],
@@ -171,22 +230,10 @@ export const severity = async (state: ParserState) => {
 
         // Check each alert to find any that match our comparison criteria
         for (const alert of report.alerts) {
-          // Get the numerical value of the alert type
-          const alertType = alert.type
-
-          // retrieve a key to the current alert level to be compared against
-          const currentAlertLevelKey = [...kindsMap.entries()].find(
-            ([_, alertValue]) => alertValue === alertType,
-          )?.[0]
+          const currentAlertLevel = alertSeverityLevel(alert)
 
           // perform the comparison based on the user-provided kindLevel
-          if (currentAlertLevelKey) {
-            const currentAlertLevel = kindLevelMap.get(
-              currentAlertLevelKey,
-            )
-            /* c8 ignore next - impossible but ts doesn't know */
-            if (currentAlertLevel == null) continue
-
+          if (currentAlertLevel != null) {
             switch (comparator) {
               case '>':
                 if (currentAlertLevel > kindLevel) {
@@ -212,10 +259,11 @@ export const severity = async (state: ParserState) => {
           }
         }
       } else {
-        // Original exact match behavior
-        const alertName = kindsMap.get(kind)
+        // Exact match on the requested level, again from each alert's
+        // own severity rather than a single type name per level.
+        const kindLevel = kindLevelMap.get(kind)
         exclude = !report.alerts.some(
-          alert => alert.type === alertName,
+          alert => alertSeverityLevel(alert) === kindLevel,
         )
       }
     }

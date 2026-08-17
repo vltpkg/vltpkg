@@ -12,9 +12,11 @@ import {
   asSecurityArchiveLike,
 } from '@vltpkg/security-archive'
 import type {
+  LeveledInsights,
   ParsedSelectorToken,
   ParserState,
   QueryResponse,
+  QueryResponseNode,
 } from '../src/types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 
@@ -287,6 +289,152 @@ t.test('insights', async t => {
       )
     }
   }
+})
+
+t.test('insights leveled by alert severity', async t => {
+  const graph = getSimpleGraph()
+  const score = {
+    overall: 0.5,
+    security: 0.5,
+    maintenance: 0.5,
+    popularity: 0.5,
+  }
+  const report = (name: string, alerts: unknown[]) =>
+    asPackageReportData({
+      id: `${name}@1.0.0`,
+      author: [],
+      size: 0,
+      type: 'npm',
+      name,
+      version: '1.0.0',
+      license: 'MIT',
+      score,
+      alerts,
+    })
+  const query = new Query({
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
+    securityArchive: asSecurityArchiveLike(
+      new Map([
+        [
+          joinDepIDTuple(['registry', '', 'a@1.0.0']),
+          report('a', [
+            { key: 'a-low', type: 'cve', severity: 'low' },
+          ]),
+        ],
+        [
+          // `middle` is the feed's spelling of `medium`
+          joinDepIDTuple(['registry', '', 'b@1.0.0']),
+          report('b', [
+            {
+              key: 'b-middle',
+              type: 'mediumCVE',
+              severity: 'middle',
+            },
+          ]),
+        ],
+        [
+          joinDepIDTuple(['registry', '', 'c@1.0.0']),
+          report('c', [
+            {
+              key: 'c-medium',
+              type: 'mediumCVE',
+              severity: 'medium',
+            },
+          ]),
+        ],
+        [
+          joinDepIDTuple(['registry', '', 'd@1.0.0']),
+          report('d', [
+            { key: 'd-high', type: 'highCVE', severity: 'high' },
+          ]),
+        ],
+        [
+          joinDepIDTuple(['registry', '', 'e@1.0.0']),
+          report('e', [
+            {
+              key: 'e-critical',
+              type: 'criticalCVE',
+              severity: 'critical',
+            },
+          ]),
+        ],
+        [
+          // no severity at all: falls back to the level implied by the
+          // alert type, which for `criticalCVE` is critical
+          joinDepIDTuple(['registry', '', 'f@1.0.0']),
+          report('f', [
+            { key: 'f-no-severity', type: 'criticalCVE' },
+          ]),
+        ],
+        [
+          // malware with no severity should still land in a bucket
+          joinDepIDTuple(['file', 'y']),
+          report('@x/y', [{ key: 'y-malware', type: 'malware' }]),
+        ],
+      ]),
+    ),
+  })
+
+  const result = await query.search('*', mockSearchOptions)
+  const bucket = (
+    pick: (node: QueryResponseNode) => LeveledInsights | undefined,
+  ) =>
+    Object.fromEntries(
+      result.nodes.map(n => [String(n.name), pick(n)]),
+    )
+  const none = {
+    low: false,
+    medium: false,
+    high: false,
+    critical: false,
+  }
+
+  t.strictSame(
+    bucket(n => n.insights.severity),
+    {
+      'my-project': undefined,
+      a: { ...none, low: true },
+      b: { ...none, medium: true },
+      c: { ...none, medium: true },
+      d: { ...none, high: true },
+      e: { ...none, critical: true },
+      f: { ...none, critical: true },
+      '@x/y': none,
+    },
+    'should bucket cve alerts by their own severity field',
+  )
+
+  t.strictSame(
+    bucket(n => n.insights.vuln),
+    {
+      'my-project': undefined,
+      a: { ...none, low: true },
+      b: { ...none, medium: true },
+      c: { ...none, medium: true },
+      d: { ...none, high: true },
+      e: { ...none, critical: true },
+      f: { ...none, critical: true },
+      '@x/y': none,
+    },
+    'should bucket vuln alerts by their own severity field',
+  )
+
+  t.strictSame(
+    bucket(n => n.insights.malware),
+    {
+      'my-project': undefined,
+      a: none,
+      b: none,
+      c: none,
+      d: none,
+      e: none,
+      f: none,
+      '@x/y': { ...none, critical: true },
+    },
+    'should bucket malware with no severity as critical',
+  )
 })
 
 t.test('bad selector type', async t => {

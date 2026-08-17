@@ -109,7 +109,12 @@ export type Insights = {
   eval?: boolean
   fs?: boolean
   license?: LicenseInsights
-  malware?: boolean
+  /**
+   * Malware findings bucketed by the severity of the underlying
+   * alerts. `:malware` stays a binary selector, but consumers such as
+   * `vlt audit` need the severity to bucket a finding.
+   */
+  malware?: LeveledInsights
   minified?: boolean
   native?: boolean
   network?: boolean

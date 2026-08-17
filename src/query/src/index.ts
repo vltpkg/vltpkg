@@ -14,7 +14,10 @@ import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo } from './pseudo.ts'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
-import type { SecurityArchiveLike } from '@vltpkg/security-archive'
+import type {
+  PackageAlert,
+  SecurityArchiveLike,
+} from '@vltpkg/security-archive'
 import type {
   PostcssNode,
   PostcssNodeWithChildren,
@@ -22,6 +25,7 @@ import type {
 import type {
   DiffFilesProvider,
   HostContextsMap,
+  LeveledInsights,
   ParsedSelectorToken,
   ParserState,
   ParserFn,
@@ -39,6 +43,115 @@ export type SearchOptions = {
 }
 
 const noopFn = async (state: ParserState) => state
+
+const malwareAlertTypes = new Set(['malware', 'gptMalware'])
+
+/**
+ * The level to assume for an alert type when the alert's own severity
+ * is missing or unrecognized.
+ *
+ * Several of these type names encode a grade -- `mildCVE`, `mediumCVE`,
+ * `criticalCVE` -- so the name is a better fallback than a fixed
+ * default, and it keeps behaviour identical to the type-only mapping
+ * this replaced. Malware is severe whatever the feed says, so it falls
+ * back to critical rather than disappearing from every bucket.
+ */
+const typeImpliedLevel: Record<string, keyof LeveledInsights> = {
+  mildCVE: 'low',
+  gptAnomaly: 'low',
+  potentialVulnerability: 'medium',
+  mediumCVE: 'medium',
+  gptSecurity: 'medium',
+  cve: 'high',
+  highCVE: 'high',
+  criticalCVE: 'critical',
+  malware: 'critical',
+  gptMalware: 'critical',
+}
+
+/**
+ * Bucket the alerts `include` selects by their own `severity` field.
+ *
+ * Socket assigns every alert one of four severities, so the severity
+ * field -- not the alert's type name -- is the axis to bucket on.
+ * Keying off type names meant a type nobody had enumerated (`mediumCVE`
+ * and `highCVE`, both of which the feed really sends) set no level at
+ * all, making the finding invisible to `:severity()`/`:vuln()`.
+ *
+ * `middle` is the feed's spelling of `medium`. Anything still
+ * unrecognized falls back to {@link typeImpliedLevel}, so a finding is
+ * never silently dropped.
+ */
+const leveledBySeverity = (
+  alerts: PackageAlert[],
+  include: (alert: PackageAlert) => boolean,
+): LeveledInsights => {
+  const levels: LeveledInsights = {
+    low: false,
+    medium: false,
+    high: false,
+    critical: false,
+  }
+  for (const alert of alerts) {
+    if (!include(alert)) continue
+    // Widened to string deliberately. The endpoint sends `middle`, but
+    // accepting `medium` as well means a future spelling change cannot
+    // silently route a finding into the type-name fallback below.
+    const severity: string | undefined = alert.severity
+    switch (severity) {
+      case 'low':
+        levels.low = true
+        break
+      case 'middle':
+      case 'medium':
+        levels.medium = true
+        break
+      case 'high':
+        levels.high = true
+        break
+      case 'critical':
+        levels.critical = true
+        break
+      default:
+        // the 'low' fallback is defensive only: every alert type the
+        // callers' filters admit is a key of typeImpliedLevel
+        /* c8 ignore next - impossible */
+        levels[typeImpliedLevel[alert.type] ?? 'low'] = true
+        break
+    }
+  }
+  return levels
+}
+
+/** CVE-bearing alert types, i.e. Socket's Vulnerability category. */
+const cveAlertTypes = new Set([
+  'cve',
+  'mildCVE',
+  'mediumCVE',
+  'highCVE',
+  'criticalCVE',
+  'potentialVulnerability',
+])
+
+/**
+ * `:vuln` additionally covers the AI-flagged findings, which the feed
+ * files under supply-chain risk rather than vulnerability.
+ */
+const vulnAlertTypes = new Set([
+  ...cveAlertTypes,
+  'gptSecurity',
+  'gptAnomaly',
+])
+
+/**
+ * Bucket a package's malware alerts by severity. An alert whose
+ * severity the feed spells in some way we don't recognize falls back to
+ * critical via {@link typeImpliedLevel}, rather than leaving a node
+ * `:malware` matched with all-false insights and so absent from
+ * `vlt audit` entirely.
+ */
+const leveledMalware = (alerts: PackageAlert[]): LeveledInsights =>
+  leveledBySeverity(alerts, i => malwareAlertTypes.has(i.type))
 
 const selectors = {
   attribute,
@@ -362,9 +475,7 @@ export class Query {
             i => i.type === 'licenseException',
           ),
         },
-        malware: securityArchiveEntry.alerts.some(
-          i => i.type === 'malware' || i.type === 'gptMalware',
-        ),
+        malware: leveledMalware(securityArchiveEntry.alerts),
         minified: securityArchiveEntry.alerts.some(
           i => i.type === 'minifiedFile',
         ),
@@ -380,20 +491,9 @@ export class Query {
         scripts: securityArchiveEntry.alerts.some(
           i => i.type === 'installScripts',
         ),
-        severity: {
-          low: securityArchiveEntry.alerts.some(
-            i => i.type === 'mildCVE',
-          ),
-          medium: securityArchiveEntry.alerts.some(
-            i => i.type === 'potentialVulnerability',
-          ),
-          high: securityArchiveEntry.alerts.some(
-            i => i.type === 'cve',
-          ),
-          critical: securityArchiveEntry.alerts.some(
-            i => i.type === 'criticalCVE',
-          ),
-        },
+        severity: leveledBySeverity(securityArchiveEntry.alerts, i =>
+          cveAlertTypes.has(i.type),
+        ),
         shell: securityArchiveEntry.alerts.some(
           i => i.type === 'shellAccess',
         ),
@@ -432,22 +532,9 @@ export class Query {
         unstable: securityArchiveEntry.alerts.some(
           i => i.type === 'unstableOwnership',
         ),
-        vuln: {
-          low: securityArchiveEntry.alerts.some(
-            i => i.type === 'mildCVE' || i.type === 'gptAnomaly',
-          ),
-          medium: securityArchiveEntry.alerts.some(
-            i =>
-              i.type === 'potentialVulnerability' ||
-              i.type === 'gptSecurity',
-          ),
-          high: securityArchiveEntry.alerts.some(
-            i => i.type === 'cve',
-          ),
-          critical: securityArchiveEntry.alerts.some(
-            i => i.type === 'criticalCVE',
-          ),
-        },
+        vuln: leveledBySeverity(securityArchiveEntry.alerts, i =>
+          vulnAlertTypes.has(i.type),
+        ),
       }
 
       setMethodToJSON(node)
