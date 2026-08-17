@@ -47,7 +47,7 @@ version, then fetches that version's manifest and tarball.
 Registries may return a **minified packument** (npm's abbreviated
 "corgi" format) — containing only install-critical fields — to reduce
 payload size. vlt can parse both full and minified packuments, but
-always *requests* the full document (`application/json`). Abbreviated
+always _requests_ the full document (`application/json`). Abbreviated
 responses omit `license` and other metadata that is persisted onto
 graph manifests and queried later; the registry-client cache also
 cannot yet distinguish representations of the same URL.
