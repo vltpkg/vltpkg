@@ -52,8 +52,8 @@ t.test('getView', async t => {
   const confHuman = {
     values: { view: 'human' },
   } as LoadedConfig
-  t.equal(getView(confJson, { json, human }), json)
-  const id = getView(confHuman) as ViewFn
+  t.equal(await getView(confJson, { json, human }), json)
+  const id = (await getView(confHuman)) as ViewFn
   const xx = id(x, options, confHuman)
   t.equal(xx, x, 'identity function returned')
 
@@ -61,7 +61,7 @@ t.test('getView', async t => {
     values: { view: 'unknown' as any },
   } as LoadedConfig
   process.env.VLT_VIEW = 'unknown'
-  const unknown = getView(confUnknown, { json, human })
+  const unknown = await getView(confUnknown, { json, human })
   t.equal(
     unknown,
     json,
@@ -69,7 +69,36 @@ t.test('getView', async t => {
   )
   t.equal(process.env.VLT_VIEW, 'json', 'set view config to default')
   const viewFn = (() => {}) as ViewFn<true>
-  t.equal(getView(confHuman, viewFn), viewFn)
+  t.equal(await getView(confHuman, viewFn), viewFn)
+  t.equal(
+    await getView(
+      confHuman,
+      view.lazyView(async () => viewFn),
+    ),
+    viewFn,
+  )
+
+  let loaded = false
+  const lazyHuman = view.lazyView(async () => {
+    loaded = true
+    return human
+  })
+  t.equal(await getView(confHuman, { json, human: lazyHuman }), human)
+  t.ok(loaded, 'lazy view loader ran for human view')
+
+  loaded = false
+  const confSilent = {
+    values: { view: 'silent' },
+  } as LoadedConfig
+  const silent = await getView(confSilent, {
+    json,
+    human: lazyHuman,
+  })
+  t.equal(
+    (silent as ViewFn)(undefined, options, confSilent),
+    undefined,
+  )
+  t.notOk(loaded, 'lazy view loader skipped for silent view')
   t.end()
 })
 
@@ -347,5 +376,28 @@ t.test('outputCommand', async t => {
     t.ok(startCalled, 'start method was called')
     t.ok(doneCalled, 'done method was called')
     t.notOk(errCalled, 'error method was not called')
+  })
+
+  t.test('lazy view class success', async t => {
+    let startCalled = false
+
+    class MyView extends view.ViewClass<true> {
+      start() {
+        startCalled = true
+      }
+    }
+
+    const cliCommand: Command<true> = {
+      async command() {
+        return true
+      },
+      usage: () => ({ usage: () => 'usage' }) as Jack,
+      views: {
+        human: view.lazyView(async () => MyView),
+      },
+    }
+
+    await outputCommand(cliCommand, confHuman)
+    t.ok(startCalled, 'lazy view class was loaded and started')
   })
 })

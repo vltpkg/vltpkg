@@ -3,7 +3,7 @@ import type { Graph } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
-import { InstallReporter } from './install/reporter.ts'
+import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
 export type UninstallResult = {
@@ -41,7 +41,10 @@ export const usage: CommandUsage = () =>
 
 export const views = {
   json: i => i.graph.toJSON(),
-  human: InstallReporter,
+  human: lazyView(
+    async () =>
+      (await import('./install/reporter.ts')).InstallReporter,
+  ),
 } as const satisfies Views<UninstallResult>
 
 export const command: CommandFn<UninstallResult> = async conf => {

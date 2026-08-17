@@ -416,6 +416,12 @@ t.test(
           nodes: new Map(),
           importers: [],
         }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
       },
     })
 
@@ -520,6 +526,12 @@ t.test(
           nodes: new Map(),
           importers: [],
         }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
       },
       '@vltpkg/workspaces': {
         Monorepo: {
@@ -594,6 +606,12 @@ t.test(
         loadHidden: () => ({
           nodes: new Map(),
           importers: [],
+        }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
         }),
       },
       '@vltpkg/workspaces': {
@@ -698,6 +716,12 @@ t.test('install with frozenLockfile and spec changes', async t => {
       loadHidden: () => ({
         nodes: new Map(),
         importers: [],
+      }),
+      loadData: () => ({
+        lockfileVersion: 1,
+        options: {},
+        nodes: {},
+        edges: {},
       }),
     },
     '@vltpkg/workspaces': {
@@ -822,6 +846,12 @@ t.test(
           nodes: new Map(),
           importers: [],
         }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
       },
       '@vltpkg/workspaces': {
         Monorepo: {
@@ -908,6 +938,12 @@ t.test(
           nodes: new Map(),
           importers: [],
         }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
       },
       '@vltpkg/workspaces': {
         Monorepo: {
@@ -988,6 +1024,12 @@ t.test(
         loadHidden: () => ({
           nodes: new Map(),
           importers: [],
+        }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
         }),
       },
     })
@@ -1124,6 +1166,12 @@ t.test(
         loadHidden: () => ({
           nodes: new Map(),
           importers: [],
+        }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
         }),
       },
       '@vltpkg/workspaces': {
@@ -1884,6 +1932,12 @@ t.test('install with frozenLockfile and changed options', async t => {
       loadHidden: () => ({
         nodes: new Map(),
         importers: [],
+      }),
+      loadData: () => ({
+        lockfileVersion: 1,
+        options: {},
+        nodes: {},
+        edges: {},
       }),
     },
   })

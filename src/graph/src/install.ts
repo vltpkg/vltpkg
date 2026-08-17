@@ -17,7 +17,8 @@ import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { DepID } from '@vltpkg/dep-id'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { load as loadVirtual } from './lockfile/load.ts'
+import { load as loadVirtual, loadData } from './lockfile/load.ts'
+import type { SpecCache } from './lockfile/types.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
 import { lockfile } from './index.ts'
 import type { Graph } from './index.ts'
@@ -78,6 +79,10 @@ export const install = async (
     scurry: options.scurry,
   })
 
+  const specCache: SpecCache = new Map()
+  const lockfileData =
+    options.frozenLockfile ? loadData(options.projectRoot) : undefined
+
   if (options.frozenLockfile) {
     // validates no add/remove operations are requested
     if (add?.modifiedDependencies) {
@@ -97,6 +102,8 @@ export const install = async (
       ...options,
       mainManifest,
       monorepo: fullMonorepo,
+      specCache,
+      lockfileData,
     })
 
     const emptyAdd = Object.assign(
@@ -216,6 +223,7 @@ export const install = async (
       loadManifests: true,
       modifiers: undefined, // modifiers should not be used here
       monorepo: fullMonorepo,
+      specCache,
     })
     // if the actual graph has no dependencies, it's simpler to ignore it
     // this allows us to check for its availability later on for properly
@@ -233,6 +241,8 @@ export const install = async (
       remove,
       remover,
       monorepo: fullMonorepo,
+      specCache,
+      lockfileData,
     })
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile

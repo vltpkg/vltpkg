@@ -65,7 +65,7 @@ t.test('add', async t => {
               'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
           }
         },
-        registryClient: {
+        getRegistryClient: async () => ({
           request: async (
             url: string,
             options: RegistryClientRequestOptions,
@@ -81,7 +81,7 @@ t.test('add', async t => {
               staleWhileRevalidate: false,
             })
           },
-        },
+        }),
       },
     },
   } as unknown as LoadedConfig
@@ -126,7 +126,7 @@ t.test('delete-all', async t => {
     positionals: ['delete-all'],
     options: {
       packageInfo: {
-        registryClient: new MockRegistryClient(),
+        getRegistryClient: async () => new MockRegistryClient(),
       },
     },
   } as unknown as LoadedConfig)

@@ -94,8 +94,8 @@ const CACHE = {
       }
     }
   },
-  resetMemory: () => {
-    p.registryClient.cache.clear()
+  resetMemory: async () => {
+    ;(await p.getRegistryClient()).cache.clear()
     // npm has no in-memory cache by default
   },
   seedMemory: async ({ packages, vlt, npm }: PackageInfoOptions) => {
@@ -143,12 +143,12 @@ const test = async (
 
   switch (id) {
     case 'network':
-      CACHE.resetMemory()
+      await CACHE.resetMemory()
       CACHE.resetFs()
       break
     case 'fs':
       await CACHE.seedFs({ packages, vlt, npm })
-      CACHE.resetMemory()
+      await CACHE.resetMemory()
       break
     case 'memory': {
       const seeded = await CACHE.seedMemory({ packages, vlt, npm })

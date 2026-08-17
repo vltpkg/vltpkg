@@ -12,8 +12,8 @@ import {
   hasConfiguredRegistry,
   missingRegistryError,
 } from './require-registry.ts'
-import type { View, ViewOptions, Views } from './view.ts'
-import { isViewClass } from './view.ts'
+import type { LazyView, View, ViewOptions, Views } from './view.ts'
+import { isLazyView, isViewClass, loadLazyView } from './view.ts'
 import {
   generateDefaultHelp,
   generateFullHelp,
@@ -68,18 +68,24 @@ export let styleTextStderr: StyleTextFn = (_, s) => s
 
 const identity = <T>(x: T): T => x
 
-export const getView = <T>(
+const selectView = <T>(
+  viewName: string,
+  views?: Views<T>,
+): View<T> | LazyView<T> | undefined => {
+  if (viewName === 'inspect') return identity
+  if (viewName === 'silent') return () => undefined
+  if (isLazyView<T>(views) || typeof views === 'function') {
+    return views
+  }
+  if (views) return views[viewName]
+  return identity
+}
+
+export const getView = async <T>(
   conf: LoadedConfig,
   views?: Views<T>,
-): View<T> => {
-  const viewName = conf.values.view
-
-  const viewFn =
-    viewName === 'inspect' ? identity
-    : viewName === 'silent' ? () => undefined
-    : typeof views === 'function' ? views
-    : views && typeof views === 'object' ? views[viewName]
-    : identity
+): Promise<View<T>> => {
+  const viewFn = selectView(conf.values.view, views)
 
   // if the user specified a view that doesn't exist, then set it back to the
   // default, and try again. This will fall back to identity if it's also
@@ -97,7 +103,11 @@ export const getView = <T>(
     return getView(conf, views)
   }
 
-  return viewFn ?? identity
+  const resolved = viewFn ?? identity
+  if (isLazyView<T>(resolved)) {
+    return loadLazyView(resolved)
+  }
+  return resolved
 }
 
 export type OnDone<T> = (result: T) => Promise<unknown>
@@ -106,16 +116,16 @@ export type OnDone<T> = (result: T) => Promise<unknown>
  * If the view is a View class, then instantiate and start it.
  * If it's a view function, then just define the onDone method.
  */
-const startView = <T>(
+const startView = async <T>(
   conf: LoadedConfig,
   opts: ViewOptions,
   views?: Views<T>,
   { start }: { start: number } = { start: Date.now() },
-): {
+): Promise<{
   onDone: OnDone<T>
   onError?: (err: unknown) => void
-} => {
-  const View = getView<T>(conf, views)
+}> => {
+  const View = await getView<T>(conf, views)
 
   if (isViewClass(View)) {
     const view = new View(opts, conf)
@@ -183,7 +193,7 @@ export const outputCommand = async <T>(
     styleTextStderr,
   )
 
-  const { onDone, onError } = startView(
+  const { onDone, onError } = await startView(
     conf,
     // assume views will always output to stdout so use color support from there
     { colors: stdoutColor },

@@ -2,7 +2,7 @@ import { update } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { InstallReporter } from './install/reporter.ts'
+import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
 
@@ -33,7 +33,10 @@ export const views = {
     : null),
     graph: i.graph.toJSON(),
   }),
-  human: InstallReporter,
+  human: lazyView(
+    async () =>
+      (await import('./install/reporter.ts')).InstallReporter,
+  ),
 } as const satisfies Views<InstallResult>
 
 export const command: CommandFn<InstallResult> = async conf => {

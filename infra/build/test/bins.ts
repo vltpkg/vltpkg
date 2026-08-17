@@ -16,6 +16,14 @@ t.test('basic', async t => {
   t.notOk(isBin('vltt'))
 })
 
+t.test('enables compile cache', async t => {
+  const enableCompileCache = t.captureFn(() => {})
+  await mockBins(t, {
+    'node:module': { default: { enableCompileCache } },
+  })
+  t.strictSame(enableCompileCache.args(), [[]])
+})
+
 t.test('changes argv', async t => {
   t.intercept(process, 'argv', { value: ['a', 'b', 'c', 'd'] })
   const runFn = () => true

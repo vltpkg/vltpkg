@@ -408,6 +408,16 @@ t.test('create git repo', { bail: true }, async () => {
   await git('tag', '-am', 'head version', '69.42.0')
 })
 
+t.test('lazy registry and tar accessors reuse instances', async t => {
+  const pi = new PackageInfoClient({ cache: t.testdirName })
+  const rc1 = await pi.getRegistryClient()
+  const rc2 = await pi.getRegistryClient()
+  t.equal(rc1, rc2)
+  const tar1 = await pi.getTarPool()
+  const tar2 = await pi.getTarPool()
+  t.equal(tar1, tar2)
+})
+
 t.test('packument', async t => {
   t.strictSame(await packument('abbrev', options), pakuAbbrev)
 
@@ -943,7 +953,7 @@ t.test('registry tarball integrity verification', async t => {
       )
       // flush pending cache writes so file handles are released
       // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
-      await pi.registryClient.cache.promise()
+      await (await pi.getRegistryClient()).cache.promise()
     },
   )
 
@@ -964,7 +974,7 @@ t.test('registry tarball integrity verification', async t => {
       })
       // flush pending cache writes so file handles are released
       // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
-      await tb.registryClient.cache.promise()
+      await (await tb.getRegistryClient()).cache.promise()
     },
   )
 
@@ -990,7 +1000,7 @@ t.test('registry tarball integrity verification', async t => {
         { cause: { code: 'EINTEGRITY' } },
         'should throw EINTEGRITY via sha512 check',
       )
-      await pi.registryClient.cache.promise()
+      await (await pi.getRegistryClient()).cache.promise()
     },
   )
 
@@ -1005,7 +1015,7 @@ t.test('registry tarball integrity verification', async t => {
       await t.rejects(tb.tarball('corrupted-no-header@1.0.0'), {
         cause: { code: 'EINTEGRITY' },
       })
-      await tb.registryClient.cache.promise()
+      await (await tb.getRegistryClient()).cache.promise()
     },
   )
 
@@ -1105,7 +1115,7 @@ t.test('registry tarball integrity verification', async t => {
         { cause: { code: 'EINTEGRITY' } },
         'should verify tarball integrity even with integrity+resolved provided',
       )
-      await pi.registryClient.cache.promise()
+      await (await pi.getRegistryClient()).cache.promise()
     },
   )
 
@@ -1122,9 +1132,9 @@ t.test('registry tarball integrity verification', async t => {
         cache: cacheDir,
       })
       await pi.extract('abbrev@2', dir + '/first')
-      await pi.registryClient.cache.promise()
+      await (await pi.getRegistryClient()).cache.promise()
 
-      const cache = pi.registryClient.cache
+      const cache = (await pi.getRegistryClient()).cache
       const buf = await cache.fetch(tarballUrl)
       t.ok(buf, 'tarball is in cache')
       if (!buf) return
@@ -1161,8 +1171,8 @@ t.test('registry tarball integrity verification', async t => {
         'tarball() also issues no tarball requests on warm cache',
       )
       t.ok(tb.length > 0, 'returned cached tarball bytes')
-      await pi2.registryClient.cache.promise()
-      await pi3.registryClient.cache.promise()
+      await (await pi2.getRegistryClient()).cache.promise()
+      await (await pi3.getRegistryClient()).cache.promise()
     },
   )
 
@@ -1193,7 +1203,7 @@ t.test('registry tarball integrity verification', async t => {
         2,
         'should have fetched twice (first corrupted, then fresh)',
       )
-      await pi.registryClient.cache.promise()
+      await (await pi.getRegistryClient()).cache.promise()
     },
   )
 })
@@ -2006,7 +2016,7 @@ t.test(
       'range manifest came from the coalesced packument',
     )
     t.equal(exact.license, 'ISC', 'manifest retains license metadata')
-    await pi.registryClient.cache.promise()
+    await (await pi.getRegistryClient()).cache.promise()
   },
 )
 
@@ -2027,7 +2037,7 @@ t.test('late parse failure refetches packument', async t => {
     Buffer.from('application/json'),
   ]
   let calls = 0
-  const rc = pi.registryClient
+  const rc = await pi.getRegistryClient()
   rc.request = async (_url, reqOptions) => {
     calls++
     if (reqOptions?.useCache === false) {
@@ -2055,7 +2065,7 @@ t.test('packument parse failure retries once', async t => {
     Buffer.from('application/json'),
   ]
   let calls = 0
-  const rc = pi.registryClient
+  const rc = await pi.getRegistryClient()
   rc.request = async () => {
     calls++
     const bad = new CacheEntry(200, jsonHeaders)

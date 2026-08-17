@@ -1,5 +1,8 @@
+import module from 'node:module'
 import { resolve } from 'node:path'
 import type { Commands } from '@vltpkg/cli-sdk/definition'
+
+module.enableCompileCache()
 
 export const BINS_DIR = resolve(import.meta.dirname, 'bins')
 
