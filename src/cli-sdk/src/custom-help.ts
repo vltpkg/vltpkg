@@ -88,7 +88,7 @@ const commandHelp = {
     desc: 'Manage package access and team permissions',
   },
   audit: {
-    args: '',
+    args: '[--audit-level=<level>]',
     desc: 'Check installed dependencies for security issues',
   },
   bugs: {

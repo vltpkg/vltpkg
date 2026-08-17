@@ -3,7 +3,7 @@ import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import { stderr } from '../output.ts'
-import { isWarnEnabled } from '../verbose-log.ts'
+import { isVerbose } from '../verbose-log.ts'
 import {
   buildAuditQuery,
   aggregateBySeverity,
@@ -19,14 +19,14 @@ export const needsRegistry = true
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'audit',
-    usage: [''],
+    usage: ['[spec]', '[--audit-level=level]'],
     description: `Check installed dependencies for security issues.
 
       Provides a summary of security findings including malware,
       vulnerable packages, and typosquats. Use --audit-level to filter
       by minimum severity.`,
     examples: {
-      ['']: {
+      ['audit']: {
         description: 'Scan all dependencies for security issues',
       },
       [`--audit-level=high`]: {
@@ -38,7 +38,7 @@ export const usage: CommandUsage = () =>
     },
     options: {
       'audit-level': {
-        value: '[low | moderate | high | critical]',
+        value: '[low | medium | high | critical]',
         description:
           'Minimum severity level to report. Defaults to low.',
       },
@@ -57,7 +57,7 @@ export const command: CommandFn<AuditResult> = async conf => {
   )
 
   if (!mainManifest) {
-    if (isWarnEnabled(conf.values.loglevel)) {
+    if (isVerbose(conf.values.loglevel)) {
       stderr('No package.json found in project root')
     }
     return emptyAuditResult()
@@ -76,14 +76,17 @@ export const command: CommandFn<AuditResult> = async conf => {
   })
 
   const auditLevelRaw = conf.get('audit-level')
+  // Normalize 'moderate' to 'medium' for backward compatibility
+  const normalized =
+    auditLevelRaw === 'moderate' ? 'medium' : auditLevelRaw
   const auditLevel: SeverityLevel =
     (
-      auditLevelRaw === 'critical' ||
-      auditLevelRaw === 'high' ||
-      auditLevelRaw === 'moderate' ||
-      auditLevelRaw === 'low'
+      normalized === 'critical' ||
+      normalized === 'high' ||
+      normalized === 'medium' ||
+      normalized === 'low'
     ) ?
-      auditLevelRaw
+      normalized
     : 'low'
 
   const queryString = buildAuditQuery(auditLevel)
@@ -104,9 +107,14 @@ export const command: CommandFn<AuditResult> = async conf => {
     signal: new AbortController().signal,
   })
 
-  const result = aggregateBySeverity(nodes, importers, message => {
-    if (isWarnEnabled(conf.values.loglevel)) stderr(message)
-  })
+  const result = aggregateBySeverity(
+    nodes,
+    importers,
+    message => {
+      if (isVerbose(conf.values.loglevel)) stderr(message)
+    },
+    securityArchive,
+  )
   const filtered = filterAuditResult(result, auditLevel)
 
   // Exit with error code when findings are present, matching npm/pnpm behavior
