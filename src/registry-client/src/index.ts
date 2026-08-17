@@ -7,6 +7,7 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
+import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
@@ -204,7 +205,11 @@ export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 // pipelining:1 is intentional — pipelining:10 had no measured CPU benefit
 // and HOL-blocks packuments behind large tarballs; some CDNs drop pipelined
 // requests.
-// connections:64 bounds cold-start TLS; still above reify's in-flight cap.
+// connections scales with reify's in-flight cap ((cores-1)*8, see
+// src/graph/src/reify/index.ts) so tarball fetches don't queue behind
+// the pool on many-core machines. The floor of 64 bounds cold-start TLS
+// on small machines; the ceiling of 128 avoids connection storms and
+// CDN throttling beyond what reify can consume.
 // HTTP/2 (allowH2) is untested and unjustified while transport CPU is ~1/4
 // of body handling.
 const agentOptions: Agent.Options = {
@@ -219,7 +224,10 @@ const agentOptions: Agent.Options = {
     keepAliveInitialDelay: 30_000,
     sessionTimeout: 600,
   },
-  connections: 64,
+  connections: Math.min(
+    128,
+    Math.max(64, (availableParallelism() - 1) * 8),
+  ),
   pipelining: 1,
 }
 
@@ -508,10 +516,8 @@ export class RegistryClient {
 
     redirections.add(String(url))
 
-    Object.assign(options, {
-      path: u.pathname.replace(/\/+$/, '') + u.search,
-    })
-
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated for callers; this is the one place that sets it
+    options.path = u.pathname.replace(/\/+$/, '') + u.search
     options.origin = u.origin
     options.headers = addHeader(
       addHeader(
