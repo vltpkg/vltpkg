@@ -107,6 +107,9 @@ export class PackageInfoClient {
   #trustedIntegrities = new Map<string, Integrity>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
+  // In-flight coalescing key is `${registry}${name}` — no representation
+  // component. Safe only because every caller requests the same full
+  // packument (see #fetchPackument).
   #packumentPromises = new Map<string, Promise<Packument>>()
 
   get registryClient() {
@@ -864,6 +867,7 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         if (!registry) throw noRegistryError(spec)
+        // Coalescing key has no representation component (see #fetchPackument).
         const packumentKey = `${registry}${name}`
         const inflight = this.#packumentPromises.get(packumentKey)
         if (inflight) return inflight
@@ -888,6 +892,31 @@ export class PackageInfoClient {
     pakuURL: URL,
     useCache?: false,
   ): Promise<Packument> {
+    // Always request the full packument (`application/json`), never the
+    // abbreviated "corgi" form:
+    //   accept: application/vnd.npm.install-v1+json; q=1.0,
+    //           application/json; q=0.8, */*
+    //
+    // Corgi is smaller (~−41% packument bytes, est. 1–3s on clean installs)
+    // but is disabled for two load-bearing reasons:
+    //
+    // 1. Metadata loss reaches the lockfile. The version entry returned
+    //    here is `node.manifest` and is persisted to vlt-lock.json / the
+    //    hidden lockfile. Corgi drops `license` (also `time`, `readme`,
+    //    `maintainers`, `_rev`, `scripts`), so graph queries like
+    //    `[license=MPL-2.0]` cannot match a field that was never stored.
+    //    Shipped in 1.0.0-rc.33 via #1692 (8ba2b10c); 24 false-positive
+    //    edges in the dependency-check job on #1704
+    //    (`@resvg/resvg-wasm@2.6.2` MPL-2.0 in package.json, blank in the
+    //    stored graph); isolated in #1705; reverted in #1707.
+    //
+    // 2. The RegistryClient disk cache key is method + URL only — no
+    //    accept, no Vary — so a full-packument request can be served a
+    //    cached abbreviated body (and vice versa).
+    //
+    // To revisit: put the requested representation on both the disk-cache
+    // key and the in-flight coalescing key, and have the SWR child
+    // (cache-revalidate / revalidate) re-request the same representation.
     const response = await this.registryClient.request(pakuURL, {
       headers: { accept: 'application/json' },
       ...(useCache === false ? { useCache } : {}),

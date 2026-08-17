@@ -1983,6 +1983,8 @@ t.test(
       1,
       'made one registry request',
     )
+    // Regression guard: #1692 briefly requested corgi and dropped license
+    // from stored manifests. See PackageInfoClient.#fetchPackument.
     t.equal(
       coalescedPackumentAccept,
       'application/json',
