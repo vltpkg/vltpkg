@@ -112,8 +112,9 @@ tags.
 
 By default, accounts require a one-time password (OTP) for publishes
 and other package writes made with a personal token. When the registry
-asks for it, your client opens a browser or prompts for the code from
-your authenticator app.
+asks for it, your client opens a browser where you confirm the write
+with the second factor enrolled on your vlt.io account. You'll need
+one enrolled before your first publish.
 
 Service tokens are not subject to the OTP prompt, which is what makes
 unattended publishes from CI possible. Account owners can adjust the
