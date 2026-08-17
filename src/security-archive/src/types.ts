@@ -179,11 +179,7 @@ export type AlertSeverity = 'low' | 'middle' | 'high' | 'critical'
  * flow through rather than fail to typecheck.
  */
 export type AlertAction =
-  | 'error'
-  | 'warn'
-  | 'monitor'
-  | 'ignore'
-  | (string & {})
+  'error' | 'warn' | 'monitor' | 'ignore' | (string & {})
 
 /**
  * How an alert can be fixed, when it can be. Present only when a fix
