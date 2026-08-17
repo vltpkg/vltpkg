@@ -86,8 +86,15 @@ t.test('audit-level validation', async t => {
   t.throws(() => {
     definition.parse(['--audit-level', 'foobar'])
   })
-  const { values } = definition.parse(['--audit-level', 'moderate'])
-  t.equal(values['audit-level'], 'moderate')
+  const { values } = definition.parse(['--audit-level', 'medium'])
+  t.equal(values['audit-level'], 'medium')
+  // Test backward compatibility: 'moderate' should be accepted as valid
+  // It will be normalized to 'medium' by the audit command itself
+  const { values: compatValues } = definition.parse([
+    '--audit-level',
+    'moderate',
+  ])
+  t.equal(compatValues['audit-level'], 'moderate')
 })
 
 t.test('default view depends on stdout TTY status', t => {

@@ -15,7 +15,7 @@ USAGE
 COMMANDS
 
                  access       <command> [<a... Manage package access and team permissions
-                 audit                         Check installed dependencies for security issues
+                 audit        [--audit-leve... Check installed dependencies for security issues
 
                  bugs         [<spec>]         Open the bug tracker for a package
   b,             build        <selector>       Build packages with lifecycle scripts

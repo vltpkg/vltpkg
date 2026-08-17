@@ -46,12 +46,58 @@ export const asSecurityArchiveLike = (
 }
 
 /**
+ * Known alert types from Socket.dev and vlt
+ */
+export type AlertType =
+  | 'malware'
+  | 'severity'
+  | 'squatting'
+  | 'vulnerability'
+  | 'cve'
+  | 'unmaintained'
+  | 'trivialPackage'
+  | 'unpopularPackage'
+  | 'gptSecurity'
+  | 'gptAnomaly'
+
+/**
+ * Known alert categories
+ */
+export type AlertCategory =
+  | 'malware'
+  | 'severity'
+  | 'squat'
+  | 'vulnerability'
+  | 'maintenance'
+  | 'quality'
+  | 'supplyChainRisk'
+  | 'info'
+
+/**
+ * Alert types that contain vulnerability/CVE information
+ */
+export type VulnerabilityAlertType =
+  'cve' | 'vulnerability' | 'gptSecurity' | 'gptAnomaly'
+
+/**
  * Package alert extra information.
+ * Includes CVE-specific fields that are only populated for vulnerability alerts.
  */
 export type PackageAlertProps = {
   lastPublish: string
   cveId?: `CVE-${string}`
   cwes?: { id: `CWE-${string}` }[]
+  // CVE-specific fields from Socket.dev (only for vulnerability alerts)
+  title?: string
+  description?: string
+  cvss?: {
+    score: number
+    vectorString: string
+  }
+  vulnerableVersionRange?: string
+  // Other alert-specific fields
+  linesOfCode?: number
+  [key: string]: unknown
 }
 
 /**
@@ -59,10 +105,25 @@ export type PackageAlertProps = {
  */
 export type PackageAlert = {
   key: string
-  type: string
+  type: AlertType
   severity: 'low' | 'medium' | 'high' | 'critical'
-  category: string
+  category: AlertCategory
   props?: PackageAlertProps
+}
+
+/**
+ * Type guard to check if an alert is a vulnerability/CVE alert
+ */
+export const isVulnerabilityAlert = (
+  alert: PackageAlert,
+): boolean => {
+  const vulnTypes: VulnerabilityAlertType[] = [
+    'cve',
+    'vulnerability',
+    'gptSecurity',
+    'gptAnomaly',
+  ]
+  return vulnTypes.includes(alert.type as VulnerabilityAlertType)
 }
 
 /**
