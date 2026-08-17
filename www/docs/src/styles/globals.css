@@ -213,10 +213,6 @@ html {
   opacity: 1;
 }
 
-.sl-markdown-content .icon-link::before {
-  content: '🔗';
-  font-size: 0.9em;
-}
 
 .sl-markdown-content h3 {
   font-size: 1rem;
