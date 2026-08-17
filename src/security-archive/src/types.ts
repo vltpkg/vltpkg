@@ -116,7 +116,7 @@ export type PackageAlert = {
  */
 export const isVulnerabilityAlert = (
   alert: PackageAlert,
-): boolean => {
+): alert is PackageAlert & { type: VulnerabilityAlertType } => {
   const vulnTypes: VulnerabilityAlertType[] = [
     'cve',
     'vulnerability',
