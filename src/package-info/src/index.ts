@@ -111,6 +111,15 @@ export class PackageInfoClient {
   // component. Safe only because every caller requests the same full
   // packument (see #fetchPackument).
   #packumentPromises = new Map<string, Promise<Packument>>()
+  // unique temp file names for atomic manifest cache writes
+  #manifestWriteRandom = randomBytes(6).toString('hex')
+  #manifestWriteCount = 0
+  // cache paths already written this run. manifest() is called many
+  // times for the same cache key per install and content for a given
+  // path is deterministic within a run, so only the first write is
+  // needed. entries are removed when the on-disk file is invalidated
+  // so the refreshed manifest can be written again.
+  #manifestWritePaths = new Set<string>()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -477,6 +486,36 @@ export class PackageInfoClient {
     return pathResolve(this.#cachePath, 'package-info', key)
   }
 
+  /**
+   * Write a manifest cache file atomically (write to a temp file in
+   * the same directory, then rename over the destination) so that
+   * concurrent readers never observe a partially written manifest.
+   * Freshness is tracked via the resulting file's mtime.
+   */
+  async #writeManifestCache(cachePath: string, json: string) {
+    const tmp = `${cachePath}.${this.#manifestWriteRandom}.${this.#manifestWriteCount++}`
+    try {
+      try {
+        await writeFile(tmp, json, 'utf8')
+      } catch (err) {
+        // in case the cache directory doesn't exist
+        // just create it and retry
+        if (!(
+          err instanceof Error &&
+          'code' in err &&
+          err.code === 'ENOENT'
+        )) {
+          throw err
+        }
+        await mkdir(dirname(cachePath), { recursive: true })
+        await writeFile(tmp, json, 'utf8')
+      }
+      await rename(tmp, cachePath)
+    } catch {
+      // failing to write the manifest cache is not an install failure
+    }
+  }
+
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -678,19 +717,25 @@ export class PackageInfoClient {
         const cachePath = this._manifestCachePath(spec, options)
         if (cachePath) {
           try {
-            // Cache file exists, read and return it
-            const cached = await readFile(cachePath, 'utf8')
+            // Cache file exists, read and return it. Freshness is
+            // tracked via the file's mtime, so the file content is
+            // exactly the manifest and can be returned as parsed.
+            const [st, cached] = await Promise.all([
+              stat(cachePath),
+              readFile(cachePath, 'utf8'),
+            ])
             const json = JSON.parse(cached) as Manifest & {
               __VLT_MANIFEST_CACHE_TIMESTAMP?: number
             }
-            // retrieve timestamp to check if cache is still valid
-            const timestamp = json.__VLT_MANIFEST_CACHE_TIMESTAMP
-            delete json.__VLT_MANIFEST_CACHE_TIMESTAMP
-            // removes the cache file if older than its maximum age
+            // removes the cache file if older than its maximum age.
+            // entries written by older clients embed a timestamp in
+            // the manifest itself; treat those as expired so they get
+            // rewritten in the mtime-tracked format.
             if (
-              timestamp != null &&
-              timestamp < this.#manifestCacheMinAge
+              st.mtimeMs < this.#manifestCacheMinAge ||
+              json.__VLT_MANIFEST_CACHE_TIMESTAMP !== undefined
             ) {
+              this.#manifestWritePaths.delete(cachePath)
               void unlink(cachePath).catch(() => {})
               throw new Error('manifest cache expired')
             }
@@ -707,30 +752,14 @@ export class PackageInfoClient {
         )
         if (!mani) throw this.#resolveError(spec, options)
 
-        // Cache the manifest data
-        if (cachePath) {
-          const json = JSON.stringify({
-            ...mani,
-            // append a timestamp to the manifest so that we can quickly
-            // check if the cache is still valid when loading it
-            __VLT_MANIFEST_CACHE_TIMESTAMP: Date.now(),
-          })
-          void writeFile(cachePath, json, 'utf8').catch(
-            (err: unknown) => {
-              // in case the cache directory doesn't exist
-              // just create it and retry
-              if (
-                err instanceof Error &&
-                'code' in err &&
-                err.code === 'ENOENT'
-              ) {
-                void mkdir(dirname(cachePath), {
-                  recursive: true,
-                }).then(() => {
-                  void writeFile(cachePath, json, 'utf8')
-                })
-              }
-            },
+        // Cache the manifest data. Skip paths already written this
+        // run — first writer wins, avoiding duplicate serialization
+        // and racing writers for the same path.
+        if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
+          this.#manifestWritePaths.add(cachePath)
+          void this.#writeManifestCache(
+            cachePath,
+            JSON.stringify(mani),
           )
         }
 

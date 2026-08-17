@@ -10,9 +10,9 @@ import {
   readlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { readdir, rmdir, writeFile } from 'node:fs/promises'
+import { readdir, rmdir, utimes, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
-import { resolve as pathResolve } from 'node:path'
+import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
 import { x as tarX } from 'tar'
@@ -1545,6 +1545,9 @@ t.test('cache manifests', async t => {
         'cached manifest matches',
       )
       t.strictSame(mani1, mani2, 'both calls return same manifest')
+      // cache writes are not awaited in the implementation so here
+      // we need to wait a bit to make sure the file was written
+      await new Promise(resolve => setTimeout(resolve, 100))
       const filesAfter = await readdir(
         pathResolve(xdgDir, 'package-info'),
       ).catch(() => [])
@@ -1572,6 +1575,7 @@ t.test('cache manifests', async t => {
 
     // Verify cache directory doesn't have too many files
     // (we can't easily verify it's not cached without inspecting internals)
+    await new Promise(resolve => setTimeout(resolve, 100))
     const files = await readdir(
       pathResolve(xdgDir, 'package-info'),
     ).catch(() => [])
@@ -1684,6 +1688,9 @@ t.test('cache manifests', async t => {
       t.strictSame(mani1, mani1Again, 'first cache hit matches')
       t.strictSame(mani2, mani2Again, 'second cache hit matches')
 
+      // cache writes are not awaited in the implementation so here
+      // we need to wait a bit to make sure the files were written
+      await new Promise(resolve => setTimeout(resolve, 100))
       const filesAfter = await readdir(
         pathResolve(xdgDir, 'package-info'),
       ).catch(() => [])
@@ -1741,6 +1748,9 @@ t.test('cache manifests', async t => {
     t.strictSame(mani1, mani1Again, 'linux/x64 cache hit')
     t.strictSame(mani2, mani2Again, 'darwin/arm64 cache hit')
 
+    // cache writes are not awaited in the implementation so here
+    // we need to wait a bit to make sure the files were written
+    await new Promise(resolve => setTimeout(resolve, 100))
     const filesAfter = await readdir(
       pathResolve(xdgDir, 'package-info'),
     ).catch(() => [])
@@ -1865,14 +1875,12 @@ t.test('cache manifests', async t => {
         opts as PackageInfoClientRequestOptions,
       )!,
     )
-    const cacheContent = readFileSync(cachePath, 'utf8')
-    const cacheJson = JSON.parse(cacheContent)
-    cacheJson.__VLT_MANIFEST_CACHE_TIMESTAMP =
-      Date.now() - 1000 * 60 * 60 * 24
-    writeFileSync(cachePath, JSON.stringify(cacheJson), 'utf8')
+    // age the file mtime past the max cache age
+    const old = new Date(Date.now() - 1000 * 60 * 60 * 24)
+    await utimes(cachePath, old, old)
 
     // the real check here is code coverage that we only get
-    // if we run L502-L504 that removes the expired cache file
+    // if we run the branch that removes the expired cache file
     const maniAgain = await pi.manifest('abbrev@2.0.0')
     t.strictSame(maniAgain, pakuAbbrev.versions['2.0.0'])
 
@@ -1883,6 +1891,119 @@ t.test('cache manifests', async t => {
       pathResolve(xdgDir, 'package-info'),
     ).catch(() => [])
     t.equal(filesAfterAgain.length, 1, 'cache directory was created')
+  })
+
+  await t.test('legacy cache entry format', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    }).catch(() => {})
+
+    const pi = new PackageInfoClient(opts)
+    const spec = Spec.parseArgs('abbrev@2.0.0', opts)
+    await pi.manifest(spec)
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const cachePath = pathResolve(
+      xdgDir,
+      'package-info',
+      pi._manifestCachePath(
+        spec,
+        opts as PackageInfoClientRequestOptions,
+      )!,
+    )
+
+    // rewrite in the legacy format: timestamp embedded in the
+    // manifest, fresh mtime. should still be treated as expired.
+    const legacy = JSON.parse(
+      readFileSync(cachePath, 'utf8'),
+    ) as Record<string, unknown>
+    legacy.__VLT_MANIFEST_CACHE_TIMESTAMP = Date.now()
+    writeFileSync(cachePath, JSON.stringify(legacy), 'utf8')
+
+    const mani = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(
+      mani,
+      pakuAbbrev.versions['2.0.0'],
+      'legacy entry is not returned as-is',
+    )
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    t.equal(
+      readFileSync(cachePath, 'utf8'),
+      JSON.stringify(pakuAbbrev.versions['2.0.0']),
+      'legacy entry rewritten in the pure manifest format',
+    )
+  })
+
+  await t.test('cache file contains only the manifest', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    }).catch(() => {})
+
+    const pi = new PackageInfoClient(opts)
+    const spec = Spec.parseArgs('abbrev@2.0.0', opts)
+    await pi.manifest(spec)
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const cacheDir = pathResolve(xdgDir, 'package-info')
+    const cachePath = pathResolve(
+      cacheDir,
+      pi._manifestCachePath(
+        spec,
+        opts as PackageInfoClientRequestOptions,
+      )!,
+    )
+    t.equal(
+      readFileSync(cachePath, 'utf8'),
+      JSON.stringify(pakuAbbrev.versions['2.0.0']),
+      'file content is exactly the manifest',
+    )
+    t.strictSame(
+      await readdir(cacheDir),
+      [basename(cachePath)],
+      'no temp files left behind',
+    )
+  })
+
+  await t.test('concurrent misses dedup cache writes', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    }).catch(() => {})
+
+    const pi = new PackageInfoClient(opts)
+    const spec = Spec.parseArgs('abbrev@2.0.0', opts)
+    // both calls miss the cache and reach the write, but only the
+    // first one writes — the second is skipped by the per-run dedup
+    const [mani1, mani2] = await Promise.all([
+      pi.manifest(spec),
+      pi.manifest('abbrev@2.0.0'),
+    ])
+    t.strictSame(mani1, mani2, 'both calls return same manifest')
+    // cache writes are not awaited in the implementation so here
+    // we need to wait a bit to make sure the file was written
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const cacheDir = pathResolve(xdgDir, 'package-info')
+    const cachePath = pathResolve(
+      cacheDir,
+      pi._manifestCachePath(
+        spec,
+        opts as PackageInfoClientRequestOptions,
+      )!,
+    )
+    t.equal(
+      readFileSync(cachePath, 'utf8'),
+      JSON.stringify(pakuAbbrev.versions['2.0.0']),
+      'cache file was written once with the manifest',
+    )
+    t.strictSame(
+      await readdir(cacheDir),
+      [basename(cachePath)],
+      'single cache file, no temp files left behind',
+    )
   })
 })
 
