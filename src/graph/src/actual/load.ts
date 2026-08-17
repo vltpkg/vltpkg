@@ -21,6 +21,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { NormalizedManifest } from '@vltpkg/types'
+import type { LockfileData, SpecCache } from '../lockfile/types.ts'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { Path, PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
@@ -90,6 +91,15 @@ export type LoadOptions = SpecOptions & {
    * operations. Skips package extraction, filesystem operations, and hidden lockfile saves.
    */
   lockfileOnly?: boolean
+  /**
+   * Shared intern cache for parsed lockfile specs.
+   */
+  specCache?: SpecCache
+  /**
+   * Already-parsed main lockfile data. When set, ideal build skips
+   * re-reading `vlt-lock.json`.
+   */
+  lockfileData?: LockfileData
 }
 
 export type ReadEntry = {

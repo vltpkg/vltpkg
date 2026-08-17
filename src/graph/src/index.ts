@@ -20,13 +20,17 @@ import { load as actualLoad } from './actual/load.ts'
 import type { LoadOptions as ActualLoadOptions } from './actual/load.ts'
 export const actual = { load: actualLoad }
 
-import { load as lockfileLoad } from './lockfile/load.ts'
+import {
+  load as lockfileLoad,
+  loadData as lockfileLoadData,
+} from './lockfile/load.ts'
 import type { LoadOptions as LockfileLoadOptions } from './lockfile/load.ts'
 import { loadEdges } from './lockfile/load-edges.ts'
 import { loadNodes } from './lockfile/load-nodes.ts'
 import { save } from './lockfile/save.ts'
 export const lockfile = {
   load: lockfileLoad,
+  loadData: lockfileLoadData,
   loadEdges,
   loadNodes,
   save,

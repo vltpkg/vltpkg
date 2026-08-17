@@ -1,11 +1,11 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
-import { InstallReporter } from './install/reporter.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Diff, Graph } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
 /**
@@ -156,7 +156,10 @@ export const views = {
       : null),
     }
   },
-  human: InstallReporter,
+  human: lazyView(
+    async () =>
+      (await import('./install/reporter.ts')).InstallReporter,
+  ),
 } as const satisfies Views<InstallResult>
 
 export const command: CommandFn<InstallResult> = async conf => {

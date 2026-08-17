@@ -1,4 +1,5 @@
 import t from 'tap'
+import type { Test } from 'tap'
 
 t.test('registering the beforeExit event', async t => {
   const beHooks: (() => void)[] = []
@@ -55,4 +56,68 @@ t.test('registering the beforeExit event', async t => {
   t.type(beHooks[0], 'function')
   beHooks[0]?.()
   t.equal(unrefCalled, true)
+})
+
+const mockRevalidate = async (
+  t: Test,
+  mocks: Record<string, any>,
+) => {
+  const beHooks: (() => void)[] = []
+  t.capture(process, 'on', (_ev: string, fn: () => void) => {
+    beHooks.push(fn)
+  })
+  const state = { opts: {} as Record<string, any> }
+  const { register } = await t.mockImport<
+    typeof import('../src/cache-revalidate.ts')
+  >('../src/cache-revalidate.ts', {
+    ...mocks,
+    child_process: {
+      spawn: (
+        _cmd: string,
+        _args: string[],
+        opts: Record<string, any>,
+      ) => {
+        state.opts = opts
+        return {
+          stdin: { write: () => {}, end: () => {} },
+          unref: () => {},
+        }
+      },
+    },
+  })
+  return {
+    register,
+    beforeExit: () => beHooks[0]?.(),
+    state,
+  }
+}
+
+t.test('shares the compile cache dir with the worker', async t => {
+  const { register, beforeExit, state } = await mockRevalidate(t, {
+    'node:module': {
+      default: { getCompileCacheDir: () => '/compile/cache' },
+    },
+  })
+
+  register(t.testdirName, 'GET', 'https://example.com/')
+  beforeExit()
+
+  t.equal(state.opts.env.NODE_COMPILE_CACHE, '/compile/cache')
+})
+
+t.test('does not clobber an explicit NODE_COMPILE_CACHE', async t => {
+  t.intercept(process, 'env', {
+    value: { ...process.env, NODE_COMPILE_CACHE: '/explicit' },
+  })
+
+  const { register, beforeExit, state } = await mockRevalidate(t, {
+    'node:module': {
+      default: { getCompileCacheDir: () => '/compile/cache' },
+    },
+  })
+
+  register(t.testdirName, 'GET', 'https://example.com/')
+  beforeExit()
+
+  t.equal(state.opts.env.NODE_COMPILE_CACHE, '/explicit')
 })

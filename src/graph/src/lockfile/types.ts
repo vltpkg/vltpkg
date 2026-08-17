@@ -34,6 +34,13 @@ export type LockfileData = {
 }
 
 /**
+ * Per-install intern cache for parsed lockfile specs. Shared across
+ * hidden + main lockfile loads so identical (name, bareSpec) pairs
+ * reuse one Spec instance.
+ */
+export type SpecCache = Map<string, Spec>
+
+/**
  * Current lockfile format version.
  * Only lockfiles with matching version are considered valid.
  * Bump when making breaking format changes.

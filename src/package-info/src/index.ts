@@ -5,13 +5,13 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import type {
+  RegistryClient,
   RegistryClientOptions,
   RegistryClientRequestOptions,
 } from '@vltpkg/registry-client'
-import { RegistryClient } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
-import { Pool } from '@vltpkg/tar'
+import type { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
@@ -112,16 +112,28 @@ export class PackageInfoClient {
   // packument (see #fetchPackument).
   #packumentPromises = new Map<string, Promise<Packument>>()
 
-  get registryClient() {
-    if (!this.#registryClient) {
-      this.#registryClient = new RegistryClient(this.options)
-    }
-    return this.#registryClient
+  #registryClientPromise?: Promise<RegistryClient>
+  #tarPoolPromise?: Promise<Pool>
+
+  async getRegistryClient() {
+    if (this.#registryClient) return this.#registryClient
+    this.#registryClientPromise ??=
+      import('@vltpkg/registry-client').then(({ RegistryClient }) => {
+        this.#registryClient = new RegistryClient(this.options)
+        return this.#registryClient
+      })
+    return this.#registryClientPromise
   }
 
-  get tarPool() {
-    if (!this.#tarPool) this.#tarPool = new Pool()
-    return this.#tarPool
+  async getTarPool() {
+    if (this.#tarPool) return this.#tarPool
+    this.#tarPoolPromise ??= import('@vltpkg/tar').then(
+      ({ Pool }) => {
+        this.#tarPool = new Pool()
+        return this.#tarPool
+      },
+    )
+    return this.#tarPoolPromise
   }
 
   constructor(options: PackageInfoClientOptions = {}) {
@@ -213,14 +225,13 @@ export class PackageInfoClient {
           const trustIntegrity =
             this.#trustedIntegrities.get(r.resolved) === r.integrity
 
-          const response = await this.registryClient.request(
-            r.resolved,
-            {
-              integrity: r.integrity,
-              trustIntegrity,
-              ...(useCache === false ? { useCache } : {}),
-            },
-          )
+          const response = await (
+            await this.getRegistryClient()
+          ).request(r.resolved, {
+            integrity: r.integrity,
+            trustIntegrity,
+            ...(useCache === false ? { useCache } : {}),
+          })
 
           if (response.statusCode !== 200) {
             throw this.#resolveError(
@@ -297,7 +308,7 @@ export class PackageInfoClient {
         }
 
         try {
-          await this.tarPool.unpack(buf, target)
+          await (await this.getTarPool()).unpack(buf, target)
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -310,7 +321,9 @@ export class PackageInfoClient {
       }
 
       case 'remote': {
-        const response = await this.registryClient.request(r.resolved)
+        const response = await (
+          await this.getRegistryClient()
+        ).request(r.resolved)
         if (response.statusCode !== 200) {
           throw this.#resolveError(
             spec,
@@ -341,7 +354,7 @@ export class PackageInfoClient {
         r.integrity = computed as Integrity
 
         try {
-          await this.tarPool.unpack(buf, target)
+          await (await this.getTarPool()).unpack(buf, target)
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -363,10 +376,9 @@ export class PackageInfoClient {
         const st = await stat(path)
         if (st.isFile()) {
           try {
-            await this.tarPool.unpack(
-              await this.tarball(spec, options),
-              target,
-            )
+            await (
+              await this.getTarPool()
+            ).unpack(await this.tarball(spec, options), target)
           } catch (er) {
             throw this.#resolveError(
               spec,
@@ -500,15 +512,14 @@ export class PackageInfoClient {
           const trustIntegrity =
             this.#trustedIntegrities.get(tarball) === integrity
 
-          const response = await this.registryClient.request(
-            tarball,
-            {
-              ...options,
-              integrity,
-              trustIntegrity,
-              ...(useCache === false ? { useCache } : {}),
-            },
-          )
+          const response = await (
+            await this.getRegistryClient()
+          ).request(tarball, {
+            ...options,
+            integrity,
+            trustIntegrity,
+            ...(useCache === false ? { useCache } : {}),
+          })
           if (response.statusCode !== 200) {
             throw this.#resolveError(
               spec,
@@ -612,7 +623,9 @@ export class PackageInfoClient {
         if (!remoteURL) {
           throw this.#resolveError(spec, options)
         }
-        const response = await this.registryClient.request(remoteURL)
+        const response = await (
+          await this.getRegistryClient()
+        ).request(remoteURL)
         if (response.statusCode !== 200) {
           throw this.#resolveError(
             spec,
@@ -757,8 +770,9 @@ export class PackageInfoClient {
         }
         const s = spec
         return await this.#tmpdir(async dir => {
-          const response =
-            await this.registryClient.request(remoteURL)
+          const response = await (
+            await this.getRegistryClient()
+          ).request(remoteURL)
           if (response.statusCode !== 200) {
             throw this.#resolveError(
               s,
@@ -775,7 +789,7 @@ export class PackageInfoClient {
             .toString()
 
           try {
-            await this.tarPool.unpack(buf, dir)
+            await (await this.getTarPool()).unpack(buf, dir)
           } catch (er) {
             throw this.#resolveError(
               s,
@@ -804,7 +818,9 @@ export class PackageInfoClient {
         const s = spec
         return await this.#tmpdir(async dir => {
           try {
-            await this.tarPool.unpack(await readFile(path), dir)
+            await (
+              await this.getTarPool()
+            ).unpack(await readFile(path), dir)
           } catch (er) {
             throw this.#resolveError(
               s,
@@ -917,7 +933,9 @@ export class PackageInfoClient {
     // To revisit: put the requested representation on both the disk-cache
     // key and the in-flight coalescing key, and have the SWR child
     // (cache-revalidate / revalidate) re-request the same representation.
-    const response = await this.registryClient.request(pakuURL, {
+    const response = await (
+      await this.getRegistryClient()
+    ).request(pakuURL, {
       headers: { accept: 'application/json' },
       ...(useCache === false ? { useCache } : {}),
     })

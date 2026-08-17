@@ -1,6 +1,7 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { CIResult } from '../../src/commands/ci.ts'
+import { loadLazyView } from '../../src/view.ts'
 
 const options = {}
 let log = ''
@@ -38,7 +39,7 @@ t.test('command execution', async t => {
   )
 })
 
-t.test('views', t => {
+t.test('views', async t => {
   // Test json view
   t.strictSame(
     Command.views.json({
@@ -50,9 +51,9 @@ t.test('views', t => {
     'json view returns graph.toJSON()',
   )
 
-  // Test human view is InstallReporter
+  const human = await loadLazyView(Command.views.human)
   t.equal(
-    Command.views.human.name,
+    human.name,
     'InstallReporter',
     'human view uses InstallReporter',
   )

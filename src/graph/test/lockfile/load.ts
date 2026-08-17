@@ -8,6 +8,7 @@ import type { LockfileNode } from '../../src/index.ts'
 import { Graph } from '../../src/graph.ts'
 import {
   load,
+  loadData,
   loadHidden,
   loadObject,
 } from '../../src/lockfile/load.ts'
@@ -1636,4 +1637,99 @@ t.test('optionsChanged detection', async t => {
       'options changed due to registries change',
     )
   })
+})
+
+t.test('specCache interns specs across loads', async t => {
+  const specCache = new Map()
+  const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const lockfileData: LockfileData = {
+    lockfileVersion: 1,
+    options: configData,
+    nodes: {
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      [fooId]: [0, 'foo'],
+    } as Record<DepID, LockfileNode>,
+    edges: {
+      [edgeKey(['file', '.'], 'foo')]: `prod ^1.0.0 ${fooId}`,
+    } as LockfileEdges,
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const opts = { ...configData, projectRoot, mainManifest, specCache }
+  const a = loadObject(opts, lockfileData)
+  const b = loadObject(opts, lockfileData)
+  const specA = [...a.edges][0]?.spec
+  const specB = [...b.edges][0]?.spec
+  t.equal(specA, specB, 'shared cache reuses Spec instances')
+  t.equal(specCache.size, 1)
+
+  const otherData: LockfileData = {
+    ...lockfileData,
+    options: { registry: 'https://other.example.com/' },
+  }
+  const c = loadObject(opts, otherData)
+  t.not([...c.edges][0]?.spec, specA, 'different options prefix')
+  t.equal(specCache.size, 2)
+
+  const { GraphModifier } = await import('../../src/modifiers.ts')
+  const modifiers = new GraphModifier(configData)
+  const skipped = new Map()
+  const d = loadObject(
+    {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      specCache: skipped,
+      modifiers,
+    },
+    lockfileData,
+  )
+  const e = loadObject(
+    {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      specCache: skipped,
+      modifiers,
+    },
+    lockfileData,
+  )
+  t.not([...d.edges][0]?.spec, [...e.edges][0]?.spec)
+  t.equal(skipped.size, 0, 'modifiers disable interning')
+
+  const parsed = loadData(projectRoot)
+  t.equal(parsed.lockfileVersion, 1)
+  const fromData = load({
+    ...configData,
+    projectRoot,
+    mainManifest,
+    lockfileData: parsed,
+  })
+  t.equal(fromData.edges.size, a.edges.size)
+})
+
+t.test('specCache skips (unknown) names', async t => {
+  const specCache = new Map()
+  const projectRoot = t.testdir()
+  const graph = new Graph({
+    mainManifest,
+    projectRoot,
+  })
+  const fromId = joinDepIDTuple(['file', '.'])
+  const toId = joinDepIDTuple(['file', 'x'])
+  graph.addNode(toId, { name: 'x', version: '1.0.0' })
+  loadEdges(
+    graph,
+    {
+      [`${fromId} (unknown)`]: `prod file:./x ${toId}`,
+    } as LockfileEdges,
+    configData,
+    { specCache, prefix: 'p' },
+  )
+  t.equal(specCache.size, 0)
 })

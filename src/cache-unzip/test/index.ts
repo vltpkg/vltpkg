@@ -1,7 +1,10 @@
 import t from 'tap'
 import type { Test } from 'tap'
 
-const mockUnzip = async (t: Test) => {
+const mockUnzip = async (
+  t: Test,
+  mocks: Record<string, any> = {},
+) => {
   let beforeExitHook: (() => void) | null = null
 
   const state = {
@@ -21,6 +24,7 @@ const mockUnzip = async (t: Test) => {
   const { register } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
+    ...mocks,
     child_process: {
       spawn: (
         cmd: string,
@@ -73,6 +77,36 @@ t.test('registering the beforeExit event', async t => {
   t.equal(state.unrefCalled, true)
 
   t.strictSame(state.written, ['key 1\0', 'key 2\0'])
+})
+
+t.test('shares the compile cache dir with the worker', async t => {
+  const { register, beforeExit, state } = await mockUnzip(t, {
+    'node:module': {
+      default: { getCompileCacheDir: () => '/compile/cache' },
+    },
+  })
+
+  register(t.testdirName, 'key 1')
+  beforeExit()
+
+  t.equal(state.opts.env.NODE_COMPILE_CACHE, '/compile/cache')
+})
+
+t.test('does not clobber an explicit NODE_COMPILE_CACHE', async t => {
+  t.intercept(process, 'env', {
+    value: { ...process.env, NODE_COMPILE_CACHE: '/explicit' },
+  })
+
+  const { register, beforeExit, state } = await mockUnzip(t, {
+    'node:module': {
+      default: { getCompileCacheDir: () => '/compile/cache' },
+    },
+  })
+
+  register(t.testdirName, 'key 1')
+  beforeExit()
+
+  t.equal(state.opts.env.NODE_COMPILE_CACHE, '/explicit')
 })
 
 t.test('deno', async t => {

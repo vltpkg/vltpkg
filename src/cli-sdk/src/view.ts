@@ -47,4 +47,22 @@ export const isViewClass = <T = unknown>(
   'prototype' in view &&
   view.prototype instanceof ViewClass
 
-export type Views<T = unknown> = View<T> | Record<string, View<T>>
+const kLazyView: unique symbol = Symbol.for('vlt.lazyView')
+
+export type LazyView<T = unknown> = {
+  readonly [kLazyView]: () => Promise<View<T>>
+}
+
+export const lazyView = <T>(
+  load: () => Promise<View<T>>,
+): LazyView<T> => ({ [kLazyView]: load })
+
+export const isLazyView = <T = unknown>(
+  v: unknown,
+): v is LazyView<T> => !!v && typeof v === 'object' && kLazyView in v
+
+export const loadLazyView = <T>(v: LazyView<T>): Promise<View<T>> =>
+  v[kLazyView]()
+
+export type Views<T = unknown> =
+  View<T> | LazyView<T> | Record<string, View<T> | LazyView<T>>

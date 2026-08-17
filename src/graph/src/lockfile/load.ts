@@ -19,7 +19,7 @@ import { LOCKFILE_VERSION } from './types.ts'
 import type { PathScurry } from 'path-scurry'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { LockfileData } from './types.ts'
+import type { LockfileData, SpecCache } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
 
 export type LoadOptions = SpecOptions & {
@@ -55,6 +55,14 @@ export type LoadOptions = SpecOptions & {
    * Whether to throw an error if a manifest is missing when loading nodes.
    */
   throwOnMissingManifest?: boolean
+  /**
+   * Shared intern cache for parsed lockfile specs.
+   */
+  specCache?: SpecCache
+  /**
+   * Already-parsed lockfile data. When set, skips the filesystem read.
+   */
+  lockfileData?: LockfileData
 }
 
 const loadLockfile = (projectRoot: string, lockfilePath: string) =>
@@ -64,11 +72,17 @@ const loadLockfile = (projectRoot: string, lockfilePath: string) =>
     }),
   ) as LockfileData
 
+export const loadData = (
+  projectRoot: string,
+  lockfilePath = 'vlt-lock.json',
+) => loadLockfile(projectRoot, lockfilePath)
+
 export const load = (options: LoadOptions): Graph => {
   const { projectRoot } = options
   return loadObject(
     options,
-    loadLockfile(projectRoot, 'vlt-lock.json'),
+    options.lockfileData ??
+      loadLockfile(projectRoot, 'vlt-lock.json'),
   )
 }
 
@@ -289,7 +303,15 @@ export const loadObject = (
     options.actual,
     options.throwOnMissingManifest,
   )
-  loadEdges(graph, lockfileData.edges, mergedOptions)
+  // Skip interning when modifiers are active — they mutate Spec.overridden
+  const specCache =
+    options.modifiers || !options.specCache ?
+      undefined
+    : {
+        specCache: options.specCache,
+        prefix: JSON.stringify(lockfileOptions),
+      }
+  loadEdges(graph, lockfileData.edges, mergedOptions, specCache)
 
   // hydrate missing node-level registry data
   for (const node of graph.nodes.values()) {

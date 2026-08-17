@@ -201,7 +201,7 @@ const fetchAll = async (
   conf: LoadedConfig,
   test: (entry: CacheEntry, key: string, val: Buffer) => boolean,
 ) => {
-  const rc = conf.options.packageInfo.registryClient
+  const rc = await conf.options.packageInfo.getRegistryClient()
   const { cache } = rc
   const map: CacheMap = {}
   for await (const [key, val] of cache) {
@@ -218,7 +218,7 @@ const fetchKeys = async (
   test: (entry: CacheEntry, key: string, buf: Buffer) => boolean,
   view?: CacheView,
 ) => {
-  const rc = conf.options.packageInfo.registryClient
+  const rc = await conf.options.packageInfo.getRegistryClient()
   const { cache } = rc
   const map: CacheMap = {}
   const results: [string, Buffer | undefined][] = await Promise.all(
@@ -245,7 +245,7 @@ const deleteEntries = async (
   test: (entry: CacheEntry) => boolean,
   view?: CacheView,
 ) => {
-  const rc = conf.options.packageInfo.registryClient
+  const rc = await conf.options.packageInfo.getRegistryClient()
   const { cache } = rc
 
   let count = 0
@@ -329,7 +329,7 @@ const deleteAll = async (
   _: string[],
   view?: CacheView,
 ) => {
-  const { cache } = conf.options.packageInfo.registryClient
+  const { cache } = await conf.options.packageInfo.getRegistryClient()
   await rm(cache.path(), { recursive: true, force: true })
   await mkdir(cache.path(), { recursive: true })
   view?.stdout('Deleted all cache entries.')
@@ -355,7 +355,9 @@ const add = async (
       })
       .then(async r => {
         const { resolved, integrity } = r
-        await packageInfo.registryClient.request(resolved, {
+        await (
+          await packageInfo.getRegistryClient()
+        ).request(resolved, {
           ...conf.options,
           integrity,
           staleWhileRevalidate: false,

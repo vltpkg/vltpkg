@@ -1,5 +1,11 @@
 import t from 'tap'
-import { ViewClass, isViewClass } from '../src/view.ts'
+import {
+  ViewClass,
+  isLazyView,
+  isViewClass,
+  lazyView,
+  loadLazyView,
+} from '../src/view.ts'
 import type { ViewOptions } from '../src/view.ts'
 import type { LoadedConfig } from '../src/config/index.ts'
 
@@ -21,3 +27,10 @@ t.equal(vc.error({}), undefined)
 
 class MyView extends ViewClass {}
 t.equal(isViewClass(MyView), true)
+
+const loader = async () => MyView
+const lazy = lazyView(loader)
+t.equal(isLazyView(lazy), true)
+t.equal(isLazyView({}), false)
+t.equal(isLazyView(MyView), false)
+t.equal(await loadLazyView(lazy), MyView)

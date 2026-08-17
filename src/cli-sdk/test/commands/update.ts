@@ -1,6 +1,7 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { InstallResult } from '../../src/commands/install.ts'
+import { isLazyView, loadLazyView } from '../../src/view.ts'
 
 const options = {}
 let log = ''
@@ -79,10 +80,10 @@ t.test('views.json returns graph toJSON', t => {
   t.end()
 })
 
-t.test('views.human uses InstallReporter', t => {
-  // Just check that the human view is the InstallReporter function
-  t.type(Command.views.human, 'function')
-  t.end()
+t.test('views.human uses InstallReporter', async t => {
+  t.ok(isLazyView(Command.views.human))
+  const human = await loadLazyView(Command.views.human)
+  t.equal(human.name, 'InstallReporter')
 })
 
 // Test JSON view with buildQueue

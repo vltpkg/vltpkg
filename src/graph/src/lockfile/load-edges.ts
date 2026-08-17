@@ -14,7 +14,13 @@ import type {
   LockfileData,
   LockfileEdgeKey,
   LockfileEdgeValue,
+  SpecCache,
 } from './types.ts'
+
+export type LoadEdgesCache = {
+  specCache: SpecCache
+  prefix: string
+}
 
 export type ProcessingEdge = {
   fromNode: NodeLike
@@ -52,10 +58,29 @@ const retrieveNodeFromGraph = (
   return foundNode
 }
 
+const parseEdgeSpec = (
+  specName: string,
+  bareSpec: string,
+  options: SpecOptions,
+  cache?: LoadEdgesCache,
+): Spec => {
+  // graph.addEdge mutates name/spec on '(unknown)' instances
+  if (!cache || specName === '(unknown)') {
+    return Spec.parse(specName, bareSpec, options)
+  }
+  const key = `${cache.prefix}\0${specName}\0${bareSpec}`
+  const cached = cache.specCache.get(key)
+  if (cached) return cached
+  const spec = Spec.parse(specName, bareSpec, options)
+  cache.specCache.set(key, spec)
+  return spec
+}
+
 export const loadEdges = (
   graph: GraphLike,
   edges: LockfileData['edges'],
   options: SpecOptions,
+  cache?: LoadEdgesCache,
 ) => {
   const entries = Object.entries(edges) as [
     LockfileEdgeKey,
@@ -138,10 +163,11 @@ export const loadEdges = (
     // loaded), so overriding here would always inject `undefined`
     // and silently revert to the default npm registry.
     // See vltpkg/vltpkg#1580.
-    const spec = Spec.parse(
+    const spec = parseEdgeSpec(
       specName,
       valRest.substring(0, vrSplit),
       options,
+      cache,
     )
 
     if (useOptimizations) {

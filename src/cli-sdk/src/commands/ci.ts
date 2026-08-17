@@ -1,7 +1,7 @@
 import { install } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
-import { InstallReporter } from './install/reporter.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
 
@@ -35,7 +35,10 @@ export const usage: CommandUsage = () =>
 
 export const views = {
   json: i => i.graph.toJSON(),
-  human: InstallReporter,
+  human: lazyView(
+    async () =>
+      (await import('./install/reporter.ts')).InstallReporter,
+  ),
 } as const satisfies Views<CIResult>
 
 export const command: CommandFn<CIResult> = async conf => {
