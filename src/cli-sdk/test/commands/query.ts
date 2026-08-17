@@ -2,6 +2,7 @@ import { join, resolve } from 'node:path'
 import t from 'tap'
 import { PathScurry } from 'path-scurry'
 import * as Graph from '@vltpkg/graph'
+import * as SecurityArchiveModule from '@vltpkg/security-archive'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
@@ -110,6 +111,7 @@ const mockQuery = async (
         asDependency: () => {},
       }),
       '@vltpkg/security-archive': {
+        ...SecurityArchiveModule,
         SecurityArchive: {
           async start() {
             return {
@@ -849,6 +851,7 @@ t.test('query', async t => {
             asDependency: () => {},
           }),
           '@vltpkg/security-archive': {
+            ...SecurityArchiveModule,
             SecurityArchive: {
               async start() {
                 return {
@@ -954,6 +957,7 @@ t.test('query', async t => {
           asDependency: () => {},
         }),
         '@vltpkg/security-archive': {
+          ...SecurityArchiveModule,
           SecurityArchive: {
             async start() {
               return {
@@ -1148,6 +1152,7 @@ t.test('query', async t => {
     const Command = await mockQuery(t, {
       graph,
       '@vltpkg/security-archive': {
+        ...SecurityArchiveModule,
         SecurityArchive: {
           async start() {
             return malwareSecurityArchive

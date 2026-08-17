@@ -95,7 +95,7 @@ Object {
     "type": "string",
   },
   "audit-level": Object {
-    "description": "Minimum severity level to report when running \`vlt audit\`. Defaults to \`low\`.",
+    "description": "Minimum severity level to report when running \`vlt audit\`. Defaults to \`low\`. Accepts \`moderate\` as an alias for \`medium\`.",
     "hint": "level",
     "type": "string",
     "validate": Function validate(v),

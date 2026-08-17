@@ -481,17 +481,21 @@ export const definition = j
     'audit-level': {
       hint: 'level',
       default: 'low',
+      // `moderate` is accepted as an npm-compatible alias for
+      // `medium`. jackspeak only supports `validate`, not a normalize
+      // hook, so the value reaches the command as typed -- the alias
+      // is mapped in commands/audit.ts, not here.
       validate: (v: unknown) => {
+        /* c8 ignore next - jackspeak type-checks the value first */
         if (typeof v !== 'string') return false
         const normalized = v === 'moderate' ? 'medium' : v
         return ['low', 'medium', 'high', 'critical'].includes(
           normalized,
         )
       },
-      normalize: (v: unknown) =>
-        typeof v === 'string' && v === 'moderate' ? 'medium' : v,
       description: `Minimum severity level to report when running
-                    \`vlt audit\`. Defaults to \`low\`.`,
+                    \`vlt audit\`. Defaults to \`low\`. Accepts
+                    \`moderate\` as an alias for \`medium\`.`,
     },
   })
 

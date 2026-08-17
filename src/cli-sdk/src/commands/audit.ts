@@ -10,6 +10,7 @@ import {
   emptyAuditResult,
   filterAuditResult,
   formatAuditSummary,
+  scanCoverage,
 } from '../audit-helpers.ts'
 import type { SeverityLevel, AuditResult } from '../audit-helpers.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -19,7 +20,7 @@ export const needsRegistry = true
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'audit',
-    usage: ['[spec]', '[--audit-level=level]'],
+    usage: ['[--audit-level=level]', '[--view=human | json | count]'],
     description: `Check installed dependencies for security issues.
 
       Provides a summary of security findings including malware,
@@ -35,12 +36,18 @@ export const usage: CommandUsage = () =>
       [`--view=json`]: {
         description: 'Output results as JSON',
       },
+      [`--view=count`]: {
+        description: 'Print only the number of packages with issues',
+      },
     },
     options: {
       'audit-level': {
         value: '[low | medium | high | critical]',
-        description:
-          'Minimum severity level to report. Defaults to low.',
+        description: `Minimum severity level to report. Defaults to
+                      low. Accepts \`moderate\` as an npm-compatible
+                      alias for \`medium\`. Findings the feed reports
+                      as actively exploited are shown whatever the
+                      level.`,
       },
       view: {
         value: '[human | json | count]',
@@ -75,9 +82,14 @@ export const command: CommandFn<AuditResult> = async conf => {
     nodes: [...graph.nodes.values()],
   })
 
+  // npm spells this level "moderate"; we call it "medium". jackspeak
+  // has no normalize hook -- only validate -- so the alias has to be
+  // resolved here, at the point of use. Skipping it silently fell
+  // through to the 'low' default, which reported every low-severity
+  // finding under --audit-level=moderate.
   const auditLevelRaw = conf.get('audit-level')
-  const auditLevel: SeverityLevel =
-    (auditLevelRaw === 'critical' || auditLevelRaw === 'high' || auditLevelRaw === 'medium' || auditLevelRaw === 'low') ? auditLevelRaw : 'low'
+  const normalized =
+    auditLevelRaw === 'moderate' ? 'medium' : auditLevelRaw
   const auditLevel: SeverityLevel =
     (
       normalized === 'critical' ||
@@ -114,6 +126,14 @@ export const command: CommandFn<AuditResult> = async conf => {
     },
     securityArchive,
   )
+
+  // Coverage is measured over the whole graph, not the query results --
+  // every result matched a security selector and so had feed data, which
+  // would report near-total coverage regardless of the truth.
+  const coverage = scanCoverage(graph.nodes.values())
+  result.scannedCount = coverage.scanned
+  result.unscannedCount = coverage.unscanned
+
   const filtered = filterAuditResult(result, auditLevel)
 
   // Exit with error code when findings are present, matching npm/pnpm behavior

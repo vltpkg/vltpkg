@@ -95,6 +95,12 @@ t.test('audit-level validation', async t => {
     'moderate',
   ])
   t.equal(compatValues['audit-level'], 'moderate')
+  // a non-string can only arrive via a config file, and jackspeak
+  // rejects it on type before our own validate ever sees it
+  t.throws(
+    () => definition.validate({ 'audit-level': 3 }),
+    'rejects a non-string audit-level',
+  )
 })
 
 t.test('default view depends on stdout TTY status', t => {
