@@ -179,7 +179,11 @@ export type AlertSeverity = 'low' | 'middle' | 'high' | 'critical'
  * flow through rather than fail to typecheck.
  */
 export type AlertAction =
-  'error' | 'warn' | 'monitor' | 'ignore' | (string & {})
+  | 'error'
+  | 'warn'
+  | 'monitor'
+  | 'ignore'
+  | (string & {})
 
 /**
  * How an alert can be fixed, when it can be. Present only when a fix
@@ -238,15 +242,80 @@ export type PackageAlert = {
 }
 
 /**
- * Type guard to check if an alert is a vulnerability/CVE alert
+ * The CVE-bearing alert types, i.e. the feed's Vulnerability category.
+ *
+ * The feed grades CVEs in the type name as well as in the `severity`
+ * field, and it sends more grades than the four `kindsMap` names --
+ * `mediumCVE` and `highCVE` among them. Matching on type alone therefore
+ * missed those alerts entirely.
  */
-const vulnerabilityAlertTypes = new Set<string>([
+export const cveAlertTypes = new Set<string>([
   'cve',
   'mildCVE',
   'mediumCVE',
   'highCVE',
   'criticalCVE',
   'potentialVulnerability',
+])
+
+/**
+ * Alert types that mean malware, matching the set the `:malware`
+ * selector uses.
+ */
+export const malwareAlertTypes = new Set<string>([
+  'malware',
+  'gptMalware',
+])
+
+/**
+ * Alert types where the finding is "this isn't the package you meant",
+ * and `alternatePackage` names the one that was.
+ */
+export const impersonationAlertTypes = new Set<string>([
+  'didYouMean',
+  'gptDidYouMean',
+  'squatting',
+  'troll',
+])
+
+/**
+ * The four-level severity scale used throughout the codebase.
+ * Matches the `SeverityLevel` type in `@vltpkg/cli-sdk`.
+ */
+export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low'
+
+/**
+ * The severity level an alert type name implies, for alerts that arrive
+ * without a usable `severity` field. Keeps the pre-existing type-only
+ * behaviour intact while the severity field extends it to the grades no
+ * type name covers.
+ *
+ * Several of these type names encode a grade -- `mildCVE`, `mediumCVE`,
+ * `criticalCVE` -- so the name is a better fallback than a fixed
+ * default. Malware is severe whatever the feed says, so it falls back to
+ * critical rather than disappearing from every bucket.
+ */
+export const typeImpliedLevel: Record<string, SeverityLevel> = {
+  mildCVE: 'low',
+  gptAnomaly: 'low',
+  potentialVulnerability: 'medium',
+  mediumCVE: 'medium',
+  gptSecurity: 'medium',
+  cve: 'high',
+  highCVE: 'high',
+  criticalCVE: 'critical',
+  malware: 'critical',
+  gptMalware: 'critical',
+}
+
+/**
+ * Type guard to check if an alert is a vulnerability/CVE alert.
+ *
+ * This covers the full set of vulnerability-category alert types,
+ * including AI-flagged findings (`gptSecurity`, `gptAnomaly`).
+ */
+const vulnerabilityAlertTypes = new Set<string>([
+  ...cveAlertTypes,
   'vulnerability',
   'gptSecurity',
   'gptAnomaly',

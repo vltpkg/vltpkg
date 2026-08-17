@@ -7,6 +7,10 @@ import {
   isTagNode,
 } from '@vltpkg/dss-parser'
 import {
+  cveAlertTypes,
+  typeImpliedLevel,
+} from '@vltpkg/security-archive'
+import {
   assertSecurityArchive,
   removeDanglingEdges,
   removeNode,
@@ -47,36 +51,26 @@ const kindsMap = new Map<SeverityKinds, SeverityAlertTypes>([
 ])
 
 /**
- * The CVE-bearing alert types, i.e. the feed's Vulnerability category.
- *
- * The feed grades CVEs in the type name as well as in the `severity`
- * field, and it sends more grades than the four `kindsMap` names --
- * `mediumCVE` and `highCVE` among them. Matching on type alone therefore
- * missed those alerts entirely.
+ * Numeric severity derived from {@link typeImpliedLevel}, for the
+ * comparison-based `:severity()` selector. Maps the canonical
+ * string-level to the numeric scale this module uses (lower = more
+ * severe). Only CVE-bearing types are included -- the `:severity()`
+ * selector operates on the Vulnerability category.
  */
-const cveAlertTypes = new Set([
-  'cve',
-  'mildCVE',
-  'mediumCVE',
-  'highCVE',
-  'criticalCVE',
-  'potentialVulnerability',
-])
-
-/**
- * The level a type name implies, for alerts that arrive without a
- * usable `severity` field. Keeps the pre-existing type-only behaviour
- * intact while the severity field extends it to the grades no type name
- * covers.
- */
-const typeImpliedLevel = new Map<string, number>([
-  ['criticalCVE', 0],
-  ['highCVE', 1],
-  ['cve', 1],
-  ['mediumCVE', 2],
-  ['potentialVulnerability', 2],
-  ['mildCVE', 3],
-])
+const severityLevelToNumber: Record<string, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+}
+const typeImpliedNumericLevel = new Map<string, number>(
+  Object.entries(typeImpliedLevel)
+    .filter(([type]) => cveAlertTypes.has(type))
+    .map(
+      ([type, level]) =>
+        [type, severityLevelToNumber[level] ?? 3] as const,
+    ),
+)
 
 /**
  * The comparable level of a vulnerability alert.
@@ -102,7 +96,7 @@ const alertSeverityLevel = (alert: {
     alert.severity === 'middle' ? 'medium' : alert.severity
   const fromSeverity =
     severity ? kindLevelMap.get(severity as SeverityKinds) : undefined
-  return fromSeverity ?? typeImpliedLevel.get(alert.type)
+  return fromSeverity ?? typeImpliedNumericLevel.get(alert.type)
 }
 
 // Map numerical values to their respective kinds for comparison operations

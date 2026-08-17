@@ -14,6 +14,11 @@ import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo } from './pseudo.ts'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
+import {
+  cveAlertTypes,
+  malwareAlertTypes,
+  typeImpliedLevel,
+} from '@vltpkg/security-archive'
 import type {
   PackageAlert,
   SecurityArchiveLike,
@@ -43,31 +48,6 @@ export type SearchOptions = {
 }
 
 const noopFn = async (state: ParserState) => state
-
-const malwareAlertTypes = new Set(['malware', 'gptMalware'])
-
-/**
- * The level to assume for an alert type when the alert's own severity
- * is missing or unrecognized.
- *
- * Several of these type names encode a grade -- `mildCVE`, `mediumCVE`,
- * `criticalCVE` -- so the name is a better fallback than a fixed
- * default, and it keeps behaviour identical to the type-only mapping
- * this replaced. Malware is severe whatever the feed says, so it falls
- * back to critical rather than disappearing from every bucket.
- */
-const typeImpliedLevel: Record<string, keyof LeveledInsights> = {
-  mildCVE: 'low',
-  gptAnomaly: 'low',
-  potentialVulnerability: 'medium',
-  mediumCVE: 'medium',
-  gptSecurity: 'medium',
-  cve: 'high',
-  highCVE: 'high',
-  criticalCVE: 'critical',
-  malware: 'critical',
-  gptMalware: 'critical',
-}
 
 /**
  * Bucket the alerts `include` selects by their own `severity` field.
@@ -122,16 +102,6 @@ const leveledBySeverity = (
   }
   return levels
 }
-
-/** CVE-bearing alert types, i.e. Socket's Vulnerability category. */
-const cveAlertTypes = new Set([
-  'cve',
-  'mildCVE',
-  'mediumCVE',
-  'highCVE',
-  'criticalCVE',
-  'potentialVulnerability',
-])
 
 /**
  * `:vuln` additionally covers the AI-flagged findings, which the feed

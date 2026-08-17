@@ -14,11 +14,15 @@ import type {
   LeveledInsights,
   SquatInsights,
 } from '@vltpkg/query'
+import {
+  impersonationAlertTypes,
+  isVulnerabilityAlert,
+  malwareAlertTypes,
+} from '@vltpkg/security-archive'
 import type {
   AlertSeverity,
   PackageAlert,
 } from '@vltpkg/security-archive'
-import { isVulnerabilityAlert } from '@vltpkg/security-archive'
 
 const styleText = (
   format: Parameters<typeof utilStyleText>[0],
@@ -192,12 +196,6 @@ const maxSeverity = (
   a: SeverityLevel,
   b: SeverityLevel,
 ): SeverityLevel => (severityRank[a] <= severityRank[b] ? a : b)
-
-/**
- * Alert types that mean malware, matching the set the `:malware`
- * selector uses in `src/query/src/pseudo/malware.ts`.
- */
-const malwareAlertTypes = new Set<string>(['malware', 'gptMalware'])
 
 /**
  * Readable labels for the upstream alert types. The feed's own names
@@ -1156,17 +1154,6 @@ const fixLine = (
   )
   return lines
 }
-
-/**
- * Alert types where the finding is "this isn't the package you meant",
- * and `alternatePackage` names the one that was.
- */
-const impersonationAlertTypes = new Set<string>([
-  'didYouMean',
-  'gptDidYouMean',
-  'squatting',
-  'troll',
-])
 
 /**
  * A header line per flagged package, most severe first, then one
