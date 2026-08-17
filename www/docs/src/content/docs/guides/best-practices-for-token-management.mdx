@@ -1,5 +1,5 @@
 ---
-title: Best practices for token management
+title: Best practices for token management for CI/CD
 sidebar:
   label: Best practices for token management
   order: 2
@@ -8,282 +8,335 @@ sidebar:
 import {
   Aside,
   Code,
+  Tabs,
+  TabItem,
+  Steps,
 } from '@astrojs/starlight/components'
 
 Service tokens are credentials that grant access to the vlt registry
 from automated systems like CI/CD pipelines. Unlike personal tokens
 tied to a user, service tokens belong to your account and are designed
-for secure, unattended authentication. This guide explains the
-security principles and best practices that should guide your token
-management strategy.
+for secure, unattended authentication. This guide covers how to
+create, use, and manage service tokens securely.
 
-## Understanding token types
+## Token types
 
-vlt supports two kinds of tokens, each with different security
-implications:
+vlt supports two kinds of tokens:
 
-**Personal tokens** are tied to your user account and carry your full
-account privileges. Because they represent you as an individual, they
-are subject to two-factor authentication (OTP) prompts—a friction
-point that discourages accidental misuse and imposterism. Personal
-tokens are appropriate for local development and manual operations
-where human judgment is involved.
+- **Personal tokens** are tied to your user account. They carry your
+  full account privileges and are subject to two-factor authentication
+  (OTP) prompts. Use personal tokens for local development and manual
+  operations.
+- **Service tokens** belong to your account, not a person. They are
+  designed for CI/CD automation and are not subject to OTP
+  requirements. Only account owners and admins can create service
+  tokens.
 
-**Service tokens** belong to your account rather than a person. They
-are designed specifically for CI/CD automation and are not subject to
-OTP requirements, making them suitable for unattended, repetitive
-operations.
+All tokens start with the `vlt_1_` prefix and are stored as hashes —
+the full value is displayed only once at creation.
 
-**Service tokens should be treated as high-value credentials** as they
-represent your automated systems, not your personal judgment. If
-compromised, a service token grants access to your entire registry
-without any human-in-the-loop safeguards.
+## Creating a service token
 
-All tokens start with the `vlt_1_` prefix and are stored as hashes on
-the server—the full value is displayed only once at creation, by
-design.
+Service tokens are created and managed in your vlt.io account
+dashboard.
 
-## Why token creation requires constraints
+<Steps>
 
-When you create a service token, you configure three critical
-properties: its **permissions**, its **scope**, and its **lifetime**.
-Each of these decisions directly impacts how much damage a compromised
-token could cause.
+1. Go to [vlt.io](https://www.vlt.io/) and sign in to your account.
 
-### Least privilege: limiting what a token can do
+2. Navigate to **Account Settings** → **Tokens**.
 
-Service tokens carry a set of permissions such as `package:read`,
-`package:write`, or `member:read`. A request succeeds only if **both**
-the token and the requesting user's account role grant the permission.
-This is important: **a token can never grant more access than its
-creator already has**.
+3. Click **Create Token**.
 
-The principle of least privilege says you should grant only the
-permissions a token actually needs. A token that only installs
-packages needs just `package:read`; a token that publishes packages
-needs both `package:read` and `package:write`. A token that manages
-team membership should be rare and carefully controlled.
+4. Configure the token:
+   - **Name**: Give it a descriptive name (e.g.,
+     `github-actions-publish`).
+   - **Description** (optional): Add context about its intended use.
+   - **Privileges**: Select the minimum permissions needed:
+     - `package:read` — for installing packages
+     - `package:write` — for publishing packages
+     - `member:read` — for reading account members
+   - **Expiration**: Set an expiration date (recommended: 90 days for
+     high-privilege tokens, 1 year for read-only).
 
-Why this matters: if a token is compromised, the attacker gains only
-the permissions that token carries. A read-only token stays read-only.
-A token scoped to one project can't access others. This containment
-principle dramatically reduces the blast radius of a security incident
-[1][2].
+5. Click **Generate**.
 
-### Account role interaction
+6. **Copy the token immediately** — it's shown only once. Store it
+   securely before closing the dialog.
 
-Token permissions don't exist in isolation. When you create a token,
-your own account role constrains what permissions you can grant. An
-admin can create a full-privilege token; a member can only create
-tokens limited to their own permissions. This means **you cannot
-accidentally grant a token more power than you personally have**—the
-system enforces this constraint at creation time.
+</Steps>
 
-This design reflects a fundamental security principle: delegation
-should never amplify privilege.
+<Aside type="caution">
+  The token value is never shown again after creation. If you lose it,
+  you must revoke this token and create a new one.
+</Aside>
 
-## Understanding token expiration
+## Storing tokens securely
 
-Every service token should have an expiration date. But how far in the
-future?
+### In GitHub Actions
 
-The answer depends on how much privilege the token carries and how
-often you can rotate it:
+Store your service token as a GitHub Actions secret:
 
-**High-privilege tokens** (publishing, account management) should
-expire in **30-90 days**. These tokens can change what's published to
-your registry. The shorter window forces frequent rotation, reducing
-the exposure window if a token is compromised [3].
+<Steps>
 
-**Read-only tokens** (installing packages) can safely expire in **365
-days** (1 year). Since these tokens cannot modify anything, the lower
-rotation burden is justified by the lower privilege [1][2]. Many
-organizations don't rotate read-only credentials as frequently because
-the risk is lower.
+1. Go to your repository on GitHub.
 
-**Why expiration is critical**: without expiration, a compromised
-token remains valid indefinitely. A developer who left the company
-years ago, whose token was leaked, whose laptop was stolen—any of
-these could still grant access. Expiration dates force periodic
-rotation, ensuring that stale or compromised tokens eventually stop
-working without manual revocation [3].
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**.
 
-The practical trade-off: shorter expiration windows increase security
-but require more operational effort. Organizations should set
-expiration periods that balance their risk tolerance with their
-ability to rotate tokens regularly.
+3. Click **New repository secret**.
 
-## Storage: where tokens live
+4. Name it `VLT_PUBLISH_TOKEN` (or a name matching your use case).
 
-Service tokens must be stored securely because they represent
-unattended access. There are two viable strategies: **static tokens**
-stored in secrets management systems, or **dynamic tokens** generated
-on-demand via OIDC.
+5. Paste the token value you copied from vlt.io.
 
-### Static tokens: secrets management as the control point
+6. Click **Add secret**.
 
-When you store a token in GitHub Actions secrets, GitLab CI variables,
-or a similar system, you're relying on the platform's secret storage
-to prevent leakage. This is reasonable—these platforms are designed
-specifically to protect secrets.
+</Steps>
 
-The risk model: if the secrets system is compromised, so is your
-token. If an attacker gains access to your CI/CD platform (through a
-supply chain compromise, insider threat, or platform vulnerability),
-they can extract stored tokens.
+<Aside type="tip">
+  For organization-wide tokens, store them as organization secrets
+  instead of repository secrets. This reduces the number of separate
+  token copies you need to manage.
+</Aside>
 
-To mitigate this, apply the principle of least privilege at the
-storage level:
+### In other CI/CD systems
 
-- **Create separate tokens for separate systems.** Don't reuse the
-  same token across your GitHub Actions, GitLab pipelines, and local
-  development. If one is compromised, the others remain valid.
-- **Use organization-level secrets instead of repository-level when
-  possible.** This reduces the number of copies of the same token in
-  existence.
-- **Never commit tokens to version control,** even in `.gitignore`d
-  files. Version control history is forever; even "deleted" files can
-  be recovered.
+Store tokens using your CI/CD platform's native secret management:
 
-### Dynamic tokens: OIDC as a better alternative
+- **GitLab CI**: CI/CD Variables (Settings → CI/CD → Variables)
+- **CircleCI**: Context Secrets (Organization → Contexts)
+- **Jenkins**: Credentials Store
+- **Other systems**: Use environment-specific secret storage, never
+  commit tokens to version control
 
-Some registries support OpenID Connect (OIDC), which allows your CI/CD
-platform to exchange a short-lived ID token for a registry credential
-without ever storing a permanent secret [4]. With OIDC:
+## Using tokens in CI/CD
 
-- Your CI/CD platform generates an ID token that proves "this is a
-  GitHub Actions run in this repository"
-- Your CI/CD job exchanges that ID token with the registry for a
-  short-lived credential
-- That credential is used for one operation (e.g., `vlt publish`),
-  then expires
-- **No persistent token is stored anywhere**
+### GitHub Actions with OIDC (Recommended)
 
-This is dramatically more secure than static tokens. The tradeoff:
-OIDC requires registry support and careful configuration to ensure
-tokens are only issued to authorized CI/CD runs. But when available,
-OIDC eliminates entire categories of token-leakage risks.
+If your registry supports OpenID Connect, GitHub Actions can
+authenticate without storing a token:
 
-## Rotation: ensuring tokens don't persist longer than needed
+<Code
+  code={`name: Publish
+on: [push]
 
-Even with expiration dates, tokens should be rotated before they
-expire—rotated not because they're compromised, but because you don't
-know if they are. The assumption is: tokens older than a certain age
-_might_ have been leaked or compromised.
+jobs: publish: runs-on: ubuntu-latest permissions: contents: read
+id-token: write # Required for OIDC steps: - uses:
+actions/checkout@v4 - uses: vltpkg/setup-vlt@v1 - run: vlt publish`}
+title="github-actions.yml" lang="yaml" />
 
-**Rotation schedule:**
+**Advantages:**
 
-- **High-privilege tokens**: quarterly (every 90 days) at minimum
-- **Read-only tokens**: annually (every year)
+- No static tokens to manage or rotate
+- Each publish generates a short-lived credential
+- Credentials are never stored in secrets
+- Automatic credential exchange between GitHub and the registry
 
-Why quarterly for high-privilege? [3] recommends that high-risk
-credentials be rotated frequently because the potential for damage is
-greatest. An old publishing token is a risk: it could be in stolen
-credentials databases, on compromised developer laptops, or in old
-Slack messages.
+<Aside type="note">
+  OIDC requires `id-token: write` permission in your job. See
+  [Authentication → OIDC](/cli/auth#oidc-openid-connect) for full
+  details.
+</Aside>
 
-During rotation, the old token and new token can coexist briefly—long
-enough for all systems to pick up the new value. Once you're confident
-the new token is in use everywhere, revoke the old one.
+### GitHub Actions with service token
 
-## Monitoring and revocation: token lifecycle visibility
+For registries that don't support OIDC, use a stored service token:
 
-Tokens are most dangerous when you don't know they exist or when
-they're in use. Good token management means maintaining visibility
-over the entire lifecycle:
+<Code
+  code={`name: Publish
+on: [push]
 
-**Creation**: When a token is created, document its purpose, who
-created it, and when it expires. This isn't just audit; it's
-operational knowledge.
+jobs: publish: runs-on: ubuntu-latest steps: - uses:
+actions/checkout@v4 - uses: vltpkg/setup-vlt@v1 - run: vlt publish
+env: VLT_TOKEN: \${{ secrets.VLT_PUBLISH_TOKEN }}`}
+title="github-actions.yml" lang="yaml" />
 
-**Usage**: Monitor which tokens are actually being used and when they
-were last used. Unused tokens are candidates for revocation—if a token
-hasn't been used in months, why is it still valid?
+### npm with vlt registry
 
-**Expiration**: Track when tokens expire. Ideally, this is automatic
-(the registry rejects expired tokens on every request). But knowing
-which tokens are about to expire lets you rotate before they fail your
-CI/CD pipeline.
+If you prefer npm, configure your `.npmrc` to reference the
+environment variable:
 
-**Revocation**: When a token is suspected of being compromised—or when
-it's simply no longer needed—revoke it immediately. Revoked tokens are
-rejected on every request, eliminating the risk without waiting for
-expiration.
+<Code
+  code={`@your-account:registry=https://registry.vlt.io/your-account/main/
+//registry.vlt.io/your-account/main/:_authToken=\${NPM_TOKEN}`}
+  title=".npmrc"
+  lang="ini"
+/>
 
-The mental model: tokens have a lifespan. From creation to first use
-to last use to expiration to eventual revocation, every stage offers
-an opportunity for visibility and control.
+Then in your GitHub Actions workflow:
 
-## The risks of ignoring these practices
+<Code
+  code={`- run: npm publish
+  env:
+    NPM_TOKEN: \${{ secrets.VLT_PUBLISH_TOKEN }}`}
+  title="github-actions.yml"
+  lang="yaml"
+/>
 
-What happens when you don't follow these practices?
+## Security best practices
 
-**No expiration** means a compromised token grants access forever. A
-developer's leaked credentials from five years ago could still publish
-packages.
+### 1. Use the principle of least privilege
 
-**Over-privileged tokens** mean a compromised publishing token could
-be used to steal read access to private packages, modify package
-metadata, or worse.
+Create tokens with only the permissions they need:
 
-**No rotation** means you're blindly trusting that old tokens haven't
-been compromised. Over time, the probability that a token has leaked
-approaches certainty.
+- **Publishing only**: `package:write` (which includes `package:read`)
+- **Installing only**: `package:read`
+- **Member management**: `member:read` (if needed)
 
-**Centralized storage** (one token used everywhere) means a compromise
-in any system (GitHub, GitLab, Jenkins, your laptop) leaks the same
-credential to all of them.
+Never grant broader permissions than necessary.
 
-**No visibility** means you might not even know when you've been
-compromised. A leaked token could be in use for weeks before anyone
-notices.
+### 2. Set expiration dates
 
-Each of these practices exists because it directly mitigates a real
-attack vector. The best practices aren't arbitrary—they're the
-accumulated wisdom of how tokens get stolen and how to make that theft
-as difficult and short-lived as possible.
+Always set an expiration date when creating a token. Industry-leading
+platforms have standardized on the following approach:
+
+| Token Type             | Recommended Expiration | Rationale                                                 |
+| ---------------------- | ---------------------- | --------------------------------------------------------- |
+| Publishing/Deploy      | 90 days                | High-privilege; frequent rotation reduces exposure window |
+| Installation/Read-only | 365 days (1 year)      | Aligns with industry-standard defaults [1][2]             |
+| Administrative         | 30-60 days             | Highest privilege; most frequent rotation needed          |
+
+Shorter expiration windows reduce the impact if a token is
+compromised. Industry standards recommend shorter lifetimes for
+high-value operations [3], though this must be balanced against
+operational usability.
+
+### 3. Rotate tokens regularly
+
+Implement a token rotation schedule:
+
+- Quarterly rotation for CI/CD tokens
+- Annual rotation for lower-privilege tokens
+- Immediate rotation if a token is suspected of being compromised
+
+### 4. Use dedicated tokens per system
+
+Create separate service tokens for different purposes:
+
+- One for publishing (GitHub Actions)
+- One for dependency installation (CI/CD)
+- One for local development (if needed)
+
+This limits the blast radius if a token is compromised.
+
+### 5. Monitor token usage
+
+The vlt.io dashboard tracks each token's `last_used` timestamp.
+Regularly review:
+
+- Tokens that haven't been used recently (consider revoking them)
+- Unexpected usage patterns or locations
+- Expired tokens that haven't been cleaned up
+
+### 6. Avoid storing tokens in files or commiting to version control
+
+Never commit tokens to version control. Common mistakes:
+
+❌ **Don't do this:**
+
+```json
+{
+  "token": "vlt_1_abc123..."
+}
+```
+
+❌ **Or this:**
+
+```bash
+export VLT_TOKEN="vlt_1_abc123..."
+```
+
+✅ **Do this instead:**
+
+```bash
+VLT_TOKEN=${{ secrets.VLT_PUBLISH_TOKEN }} vlt publish
+```
+
+### 7. Revoke compromised tokens immediately
+
+If a token is exposed:
+
+1. Go to vlt.io → Account Settings → Tokens
+2. Find the token and click **Revoke**
+3. Create a new token with the same name
+4. Update any references in CI/CD systems
+5. Review recent activity logs for any unauthorized access
+
+## Audit and compliance
+
+vlt logs all token lifecycle events for compliance:
+
+- Token creation (creator, timestamp, permissions)
+- Token usage (last_used tracking)
+- Token revocation (timestamp, reason if provided)
+
+To review your token activity:
+
+1. Navigate to **Account Settings** → **Tokens**
+2. Select a token to view its metadata and last usage
+3. Check your account's activity logs for security-relevant events
+
+<Aside type="tip">
+  If you're on an Enterprise plan, detailed audit logs are available
+  in the **Activity** section for full compliance and security
+  investigation.
+</Aside>
+
+## Troubleshooting
+
+### Token doesn't work in CI/CD
+
+1. Verify the token hasn't expired
+2. Confirm the token has `package:write` permission
+3. Check that the token is correctly referenced in your workflow (no
+   typos in secret name)
+4. Ensure the registry URL matches your account's registry endpoint
+
+### "Forbidden" or "Unauthorized" errors
+
+- The token may lack the required permission (`package:write` for
+  publishing)
+- The creator's account role may restrict the token's capabilities
+- The token may have expired
+
+### Token accidentally deleted
+
+Create a new token with the same name and privileges, then update your
+CI/CD configuration.
 
 ## Summary
 
-✅ **Foundational principles:**
+- Create dedicated service tokens for each automated system
+- Use OIDC when available (no stored tokens needed)
+- Store tokens only in secret management systems, never in code
+- Set expiration dates and rotate regularly
+- Grant only the minimum necessary permissions
+- Monitor usage and revoke compromised tokens immediately
+- Keep audit logs for compliance and security investigations
 
-- Service tokens represent automated, unattended access—treat them as
-  high-value credentials
-- Least privilege: grant only the permissions a token needs
-- Expiration forces rotation and limits the damage window of a
-  compromise
-- Storage strategy (static vs. dynamic via OIDC) affects your entire
-  risk model
-- Visibility into token creation, usage, and expiration is essential
-  for security
-- Rotation is not about preventing leaks; it's about accepting that
-  leaks happen and limiting their window
-
-For hands-on guidance on creating and storing tokens, see
-[Creating a personal access token (GitHub)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
-or the equivalent documentation from your CI/CD platform. For
-technical details on vlt token permissions and configuration, see the
-reference documentation in [Authentication](/cli/auth) and
-[Publishing in CI](/cli/commands/publish#publishing-in-ci).
+For more details on authentication, see [Authentication](/cli/auth)
+and [Publishing in CI](/cli/commands/publish#publishing-in-ci).
 
 ## References
 
-[1] GitHub, "Creating a personal access token," GitHub Documentation.
-[Online]. Available:
-<https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>.
-[Accessed: Aug. 14, 2026].
+The recommendations in this guide are based on best practices from
+industry-leading sources:
 
-[2] GitLab, "Personal access tokens," GitLab Documentation. [Online].
-Available:
-<https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html>.
-[Accessed: Aug. 14, 2026].
+[1] GitHub, "Creating a personal access token," GitHub
+Documentation, 2026. [Online]. Available:
+<https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token>
 
-[3] OWASP, "Session Management Cheat Sheet," OWASP Cheat Sheet Series.
+[2] GitLab, "Personal access tokens," GitLab Documentation, 2026.
 [Online]. Available:
-<https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html>.
-[Accessed: Aug. 14, 2026].
+<https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html>
 
-[4] GitHub, "Encrypted secrets," GitHub Actions Documentation.
+[3] OWASP, "Session Management Cheat Sheet," OWASP Cheat Sheet
+Series, 2024. [Online]. Available:
+<https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html>
+
+[4] GitHub, "Encrypted secrets," GitHub Actions Documentation, 2026.
 [Online]. Available:
-<https://docs.uithub.com/en/actions/security-giides/encrypted-secrets>.
-[Accessed: Aug. 14, 2026].
+<https://docs.github.com/en/actions/security-guides/encrypted-secrets>
+
+[5] npm, "About access tokens," npm Documentation, 2026. [Online].
+Available: <https://docs.npmjs.com/about-access-tokens>
