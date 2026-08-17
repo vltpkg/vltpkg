@@ -177,10 +177,15 @@ slug.
 
     <Code
       code={`{
-
-"config": { "scoped-registries": { "@YOUR-ACCOUNT":
-"<https://registry.vlt.io/YOUR-ACCOUNT/main/>" } } }`}
-title="vlt.json" lang="json" />
+  "config": {
+    "scoped-registries": {
+      "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+    }
+  }
+}`}
+      title="vlt.json"
+      lang="json"
+    />
 
     <Aside type="tip">
       When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
