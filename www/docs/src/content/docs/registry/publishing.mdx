@@ -12,10 +12,10 @@ import {
   TabItem,
 } from '@astrojs/starlight/components'
 
-Your account's `main` registry hosts your private packages. Every
-package published to it must be scoped to your account slug — for
-example, an account with the slug `acme` publishes packages named
-`@acme/utils`, `@acme/app`, and so on.
+Your account's `main` registry hosts your private packages. On a
+private account, every package published to it must be scoped to your
+account slug — for example, an account with the slug `acme` publishes
+packages named `@acme/utils`, `@acme/app`, and so on.
 
 The registry speaks the npm registry protocol, so you can publish with
 whichever package manager you already use — vlt, npm, pnpm, yarn, or
@@ -79,10 +79,10 @@ like `--tag` and `--publish-directory`.
 
 The registry validates every publish:
 
-- The package name must be scoped to your account: `@acme/utils`
-  publishes, but an unscoped name like `utils`, or a name under
-  someone else's scope like `@other-team/utils`, is rejected with a
-  `403 Forbidden` error.
+- On a private account, the package name must be scoped to your
+  account: `@acme/utils` publishes, but an unscoped name like `utils`,
+  or a name under someone else's scope like `@other-team/utils`, is
+  rejected with a `403 Forbidden` error.
 - The name and version in the request, the manifest, and the tarball's
   `package.json` must all agree, which protects consumers against
   manifest confusion.
