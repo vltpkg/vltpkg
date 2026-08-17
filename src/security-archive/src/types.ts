@@ -49,35 +49,96 @@ export const asSecurityArchiveLike = (
  * Known alert types from Socket.dev and vlt
  */
 export type AlertType =
-  | 'malware'
-  | 'severity'
-  | 'squatting'
-  | 'vulnerability'
+  // vulnerabilities -- the feed grades CVEs by name as well as by the
+  // alert's `severity` field
   | 'cve'
-  | 'unmaintained'
-  | 'trivialPackage'
-  | 'unpopularPackage'
+  | 'mildCVE'
+  | 'mediumCVE'
+  | 'highCVE'
+  | 'criticalCVE'
+  | 'potentialVulnerability'
+  | 'severity'
+  | 'vulnerability'
   | 'gptSecurity'
   | 'gptAnomaly'
+  // malware and impersonation
+  | 'malware'
+  | 'gptMalware'
+  | 'didYouMean'
+  | 'gptDidYouMean'
+  | 'squatting'
+  | 'troll'
+  // maintenance and provenance
+  | 'deprecated'
+  | 'manifestConfusion'
+  | 'missingAuthor'
+  | 'newAuthor'
+  | 'shrinkwrap'
+  | 'suspiciousStarActivity'
+  | 'trivialPackage'
+  | 'unmaintained'
+  | 'unpopularPackage'
+  | 'unstableOwnership'
+  // licensing
+  | 'ambiguousClassifier'
+  | 'copyleftLicense'
+  | 'explicitlyUnlicensedItem'
+  | 'licenseException'
+  | 'miscLicenseIssues'
+  | 'noLicenseFound'
+  | 'nonpermissiveLicense'
+  | 'unidentifiedLicense'
+  // install-time and runtime behaviour
+  | 'debugAccess'
+  | 'dynamicRequire'
+  | 'envVars'
+  | 'filesystemAccess'
+  | 'hasNativeCode'
+  | 'highEntropyStrings'
+  | 'installScripts'
+  | 'minifiedFile'
+  | 'networkAccess'
+  | 'obfuscatedFile'
+  | 'shellAccess'
+  | 'telemetry'
+  | 'urlStrings'
+  | 'usesEval'
+  // the upstream feed adds alert types faster than this union can
+  // track them; keeping the fallback means an unrecognized type still
+  // flows through to output instead of failing to typecheck
+  | (string & {})
 
 /**
  * Known alert categories
  */
+/**
+ * The feed's six categories. Note what is absent: `malware`,
+ * `severity` and `squat` are alert *types*, not categories -- malware
+ * and typosquatting are filed under `supplyChainRisk`, and CVEs under
+ * `vulnerability`. Classifying on category alone therefore cannot
+ * distinguish malware from any other supply-chain finding.
+ */
 export type AlertCategory =
-  | 'malware'
-  | 'severity'
-  | 'squat'
-  | 'vulnerability'
-  | 'maintenance'
-  | 'quality'
   | 'supplyChainRisk'
-  | 'info'
+  | 'quality'
+  | 'maintenance'
+  | 'vulnerability'
+  | 'license'
+  | 'other'
 
 /**
  * Alert types that contain vulnerability/CVE information
  */
 export type VulnerabilityAlertType =
-  'cve' | 'vulnerability' | 'gptSecurity' | 'gptAnomaly'
+  | 'cve'
+  | 'mildCVE'
+  | 'mediumCVE'
+  | 'highCVE'
+  | 'criticalCVE'
+  | 'potentialVulnerability'
+  | 'vulnerability'
+  | 'gptSecurity'
+  | 'gptAnomaly'
 
 /**
  * Package alert extra information.
@@ -101,30 +162,100 @@ export type PackageAlertProps = {
 }
 
 /**
- * A known alert for a given package.
+ * An alert's severity as it arrives on the wire, exactly the four values
+ * the endpoint documents. Note `middle` and the absence of `medium`:
+ * `middle` is the feed's spelling, so a consumer with its own
+ * `medium`-named scale has to map it rather than compare directly.
  */
+export type AlertSeverity = 'low' | 'middle' | 'high' | 'critical'
+
+/**
+ * The feed's own policy verdict for an alert. `ignore` covers the large
+ * majority of alerts on ordinary packages, so consumers should respect
+ * it rather than reporting everything.
+ *
+ * The endpoint types this as a plain string and only gives these four by
+ * example, so the union stays open -- an unrecognized verdict should
+ * flow through rather than fail to typecheck.
+ */
+export type AlertAction =
+  'error' | 'warn' | 'monitor' | 'ignore' | (string & {})
+
+/**
+ * How an alert can be fixed, when it can be. Present only when a fix
+ * exists, which makes its presence an authoritative answer to "is this
+ * fixable" -- no registry resolution required.
+ *
+ * `description` is upstream prose that names Socket's own CLI, so it is
+ * not suitable for rendering verbatim in another tool's output.
+ */
+export type AlertFix = {
+  /** e.g. `upgrade`, `remove`, `cve` */
+  type: string
+  description: string
+  patch?: AlertPatch[]
+}
+
+/** A `SocketPatch`, referenced from an alert or its fix. */
+export type AlertPatch = {
+  uuid: string
+  tier: 'free' | 'paid'
+  deprecated?: boolean
+}
+
+/** Which policy rule produced an alert's `action`. */
+export type AlertActionSource = {
+  type?: string
+  candidates?: {
+    type?: string
+    action?: AlertAction
+    actionPolicyIndex?: number
+    repoLabelId?: string
+  }[]
+}
+
 export type PackageAlert = {
   key: string
   type: AlertType
-  severity: 'low' | 'medium' | 'high' | 'critical'
-  category: AlertCategory
+  /** Optional upstream, so consumers must handle its absence. */
+  severity?: AlertSeverity
+  /** Optional upstream, so consumers must handle its absence. */
+  category?: AlertCategory
   props?: PackageAlertProps
+  action?: AlertAction
+  actionSource?: AlertActionSource
+  actionPolicyIndex?: number
+  fix?: AlertFix
+  patch?: AlertPatch
+  /** Reachability analysis, when the endpoint returns it. */
+  reachability?: { head?: unknown; base?: unknown }
+  /** Generic alert sub-type. */
+  subType?: string
+  /** Where in the package the alert was detected. */
+  file?: string
+  start?: number
+  end?: number
 }
 
 /**
  * Type guard to check if an alert is a vulnerability/CVE alert
  */
+const vulnerabilityAlertTypes = new Set<string>([
+  'cve',
+  'mildCVE',
+  'mediumCVE',
+  'highCVE',
+  'criticalCVE',
+  'potentialVulnerability',
+  'vulnerability',
+  'gptSecurity',
+  'gptAnomaly',
+])
+
 export const isVulnerabilityAlert = (
   alert: PackageAlert,
-): alert is PackageAlert & { type: VulnerabilityAlertType } => {
-  const vulnTypes: VulnerabilityAlertType[] = [
-    'cve',
-    'vulnerability',
-    'gptSecurity',
-    'gptAnomaly',
-  ]
-  return vulnTypes.includes(alert.type as VulnerabilityAlertType)
-}
+): alert is PackageAlert & { type: VulnerabilityAlertType } =>
+  vulnerabilityAlertTypes.has(alert.type)
 
 /**
  * The scores for a given package
