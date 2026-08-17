@@ -195,6 +195,18 @@ const nua =
 
 export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
+// Agent-level knobs only. Do not spread these onto per-request options —
+// connections/pipelining/keepAlive/connect are ignored at dispatch time,
+// and bodyTimeout/headersTimeout would clobber caller overrides.
+//
+// Keep undici (not globalThis.fetch): fetch measured +56% user CPU and
+// +90–140MB RSS on the same 753-body install workload.
+// pipelining:1 is intentional — pipelining:10 had no measured CPU benefit
+// and HOL-blocks packuments behind large tarballs; some CDNs drop pipelined
+// requests.
+// connections:64 bounds cold-start TLS; still above reify's in-flight cap.
+// HTTP/2 (allowH2) is untested and unjustified while transport CPU is ~1/4
+// of body handling.
 const agentOptions: Agent.Options = {
   bodyTimeout: 600_000,
   headersTimeout: 600_000,
@@ -207,8 +219,8 @@ const agentOptions: Agent.Options = {
     keepAliveInitialDelay: 30_000,
     sessionTimeout: 600,
   },
-  connections: 128,
-  pipelining: 10,
+  connections: 64,
+  pipelining: 1,
 }
 
 const xdg = new XDG('vlt')
@@ -466,7 +478,9 @@ export class RegistryClient {
 
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
-    // first, try to get from the cache before making any request.
+    // Method + URL only. Headers (including accept) are not part of the
+    // key and there is no Vary handling — callers must not vary the
+    // response representation for the same URL.
     const key = `${method !== 'GET' ? method + ' ' : ''}${u}`
     const buffer =
       useCache ?
@@ -496,7 +510,6 @@ export class RegistryClient {
 
     Object.assign(options, {
       path: u.pathname.replace(/\/+$/, '') + u.search,
-      ...agentOptions,
     })
 
     options.origin = u.origin

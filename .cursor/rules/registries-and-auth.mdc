@@ -105,3 +105,26 @@ Tokens stored in XDG data dir: `vlt/auth/${identity}/keychain.json`
 
 - `src/registry-client/` — HTTP client for registry API
 - `src/keychain/` — secure token storage (`@vltpkg/keychain`)
+
+## Packument Accept header (do not enable corgi)
+
+`PackageInfoClient.#fetchPackument` always sends
+`accept: application/json` (full packument). Do **not** switch to npm
+abbreviated/"corgi" packuments
+(`application/vnd.npm.install-v1+json`) as a perf shortcut.
+
+Corgi omits `license` (also `time`, `readme`, `maintainers`, `_rev`,
+`scripts`). The version entry becomes `node.manifest` and is persisted
+to the lockfile, so graph queries like `[license=MPL-2.0]` miss. This
+shipped in 1.0.0-rc.33 (#1692), caused false-positive license CI on
+#1704, and was reverted in #1707.
+
+The registry-client disk cache key is method + URL only (no `accept`,
+no `Vary`). Full and abbreviated responses for the same URL would
+collide. `:dist` / `:outdated` may use corgi via raw `fetch` because
+they never touch that cache and only read `dist-tags` / `versions`
+keys.
+
+To revisit: representation must be part of the disk-cache key **and**
+the in-flight coalescing key, and the SWR revalidate child must replay
+the same Accept.

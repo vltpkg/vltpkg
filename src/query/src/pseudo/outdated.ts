@@ -86,6 +86,8 @@ export const retrieveRemoteVersions = async (
   const url = new URL(spec.registry)
   url.pathname = `/${node.name}`
 
+  // Corgi is safe here: raw fetch (never the RegistryClient disk cache),
+  // and only versions keys are read.
   const response = await fetch(String(url), {
     headers: {
       Accept: 'application/vnd.npm.install-v1+json',

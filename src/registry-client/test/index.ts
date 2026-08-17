@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import t from 'tap'
+import type { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
 import type {
   RegistryClient,
@@ -974,4 +975,48 @@ t.test('VLT_CACHE_MAX_SIZE', async t => {
     t.equal(floored.cache.get('k'), undefined)
     await floored.cache.promise()
   })
+})
+
+t.test('per-request options omit agent knobs', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  const seen: Dispatcher.RequestOptions[] = []
+  const orig = rc.agent.request.bind(rc.agent)
+  rc.agent.request = async (opts: Dispatcher.RequestOptions) => {
+    seen.push(opts)
+    return orig(opts)
+  }
+
+  await rc.request(`${registryURL}/abbrev`)
+  const first = seen[0]
+  if (!first) {
+    t.fail('dispatched a request')
+    return
+  }
+  t.hasStrict(
+    first,
+    {
+      connections: undefined,
+      pipelining: undefined,
+      keepAliveMaxTimeout: undefined,
+      keepAliveTimeout: undefined,
+      keepAliveTimeoutThreshold: undefined,
+      connect: undefined,
+    },
+    'agent-level knobs are not copied onto the request',
+  )
+
+  seen.length = 0
+  await rc.request(`${registryURL}/abbrev`, {
+    useCache: false,
+    headersTimeout: 12_345,
+    bodyTimeout: 54_321,
+  })
+  const second = seen[0]
+  if (!second) {
+    t.fail('dispatched a second request')
+    return
+  }
+  t.equal(second.headersTimeout, 12_345)
+  t.equal(second.bodyTimeout, 54_321)
 })
