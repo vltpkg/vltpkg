@@ -114,6 +114,12 @@ export class PackageInfoClient {
   // unique temp file names for atomic manifest cache writes
   #manifestWriteRandom = randomBytes(6).toString('hex')
   #manifestWriteCount = 0
+  // cache paths already written this run. manifest() is called many
+  // times for the same cache key per install and content for a given
+  // path is deterministic within a run, so only the first write is
+  // needed. entries are removed when the on-disk file is invalidated
+  // so the refreshed manifest can be written again.
+  #manifestWritePaths = new Set<string>()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -729,6 +735,7 @@ export class PackageInfoClient {
               st.mtimeMs < this.#manifestCacheMinAge ||
               json.__VLT_MANIFEST_CACHE_TIMESTAMP !== undefined
             ) {
+              this.#manifestWritePaths.delete(cachePath)
               void unlink(cachePath).catch(() => {})
               throw new Error('manifest cache expired')
             }
@@ -745,8 +752,11 @@ export class PackageInfoClient {
         )
         if (!mani) throw this.#resolveError(spec, options)
 
-        // Cache the manifest data
-        if (cachePath) {
+        // Cache the manifest data. Skip paths already written this
+        // run — first writer wins, avoiding duplicate serialization
+        // and racing writers for the same path.
+        if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
+          this.#manifestWritePaths.add(cachePath)
           void this.#writeManifestCache(
             cachePath,
             JSON.stringify(mani),

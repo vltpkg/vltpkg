@@ -1966,6 +1966,45 @@ t.test('cache manifests', async t => {
       'no temp files left behind',
     )
   })
+
+  await t.test('concurrent misses dedup cache writes', async t => {
+    // clean up current cache directory
+    await rmdir(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+    }).catch(() => {})
+
+    const pi = new PackageInfoClient(opts)
+    const spec = Spec.parseArgs('abbrev@2.0.0', opts)
+    // both calls miss the cache and reach the write, but only the
+    // first one writes — the second is skipped by the per-run dedup
+    const [mani1, mani2] = await Promise.all([
+      pi.manifest(spec),
+      pi.manifest('abbrev@2.0.0'),
+    ])
+    t.strictSame(mani1, mani2, 'both calls return same manifest')
+    // cache writes are not awaited in the implementation so here
+    // we need to wait a bit to make sure the file was written
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const cacheDir = pathResolve(xdgDir, 'package-info')
+    const cachePath = pathResolve(
+      cacheDir,
+      pi._manifestCachePath(
+        spec,
+        opts as PackageInfoClientRequestOptions,
+      )!,
+    )
+    t.equal(
+      readFileSync(cachePath, 'utf8'),
+      JSON.stringify(pakuAbbrev.versions['2.0.0']),
+      'cache file was written once with the manifest',
+    )
+    t.strictSame(
+      await readdir(cacheDir),
+      [basename(cachePath)],
+      'single cache file, no temp files left behind',
+    )
+  })
 })
 
 t.test('path git selector', async t => {
