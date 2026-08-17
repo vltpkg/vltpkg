@@ -97,16 +97,38 @@ export type QueryResponseNode = Omit<
 }
 
 export type Insights = {
+  abandoned?: boolean
+  confused?: boolean
   cve?: `CVE-${string}`[]
   cwe?: `CWE-${string}`[]
-  malware?: LeveledInsights
+  debug?: boolean
+  deprecated?: boolean
+  dynamic?: boolean
+  entropic?: boolean
+  env?: boolean
+  eval?: boolean
+  fs?: boolean
+  license?: LicenseInsights
+  malware?: boolean
+  minified?: boolean
+  native?: boolean
+  network?: boolean
+  obfuscated?: boolean
   scanned: boolean
   score?: PackageScore
+  scripts?: boolean
   severity?: SeverityInsights
+  shell?: boolean
+  shrinkwrap?: boolean
   squat?: SquatInsights
+  suspicious?: boolean
+  tracker?: boolean
   trivial?: boolean
+  undesirable?: boolean
+  unknown?: boolean
   unmaintained?: boolean
   unpopular?: boolean
+  unstable?: boolean
   vuln?: VulnInsights
 }
 

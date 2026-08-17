@@ -1,6 +1,9 @@
 import { styleText as utilStyleText } from 'node:util'
 import { isNode } from '@vltpkg/graph'
+import type { Node } from '@vltpkg/graph'
 import type { Insights } from '@vltpkg/query'
+import type { PackageAlert } from '@vltpkg/security-archive'
+import { isVulnerabilityAlert } from '@vltpkg/security-archive'
 
 const styleText = (
   format: Parameters<typeof utilStyleText>[0],
@@ -8,20 +11,21 @@ const styleText = (
 ) => utilStyleText(format, s, { validateStream: false })
 
 /**
- * Detect if a DSS query string uses security selectors.
- * Excludes generic `:scripts` selector since it matches all lifecycle scripts
- * (install, preinstall, postinstall, prepare, etc.), including legitimate build
- * and test automation that isn't a security concern.
+ * Detect if a DSS query string uses a security-related selector
+ * (including lifecycle scripts, which can be security-relevant).
  */
 export const isSecuritySelector = (query: string): boolean =>
-  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(query)
+  /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat|:scripts/.test(
+    query,
+  )
 
 /**
  * Detect if a DSS query string uses a security selector that signals
  * genuine audit intent (malware, vulnerability, severity, squat, cve,
- * cwe). Currently identical to `isSecuritySelector`, but documented
- * separately to preserve the semantic distinction between "any security
- * selector" and "genuine audit intent" for future enhancements.
+ * cwe). Unlike a check for `:scripts` alone -- listing packages with
+ * lifecycle scripts is a legitimate query on its own and shouldn't by
+ * itself be treated as a security audit (e.g. for deciding whether to
+ * append a security-summary footer to query output).
  */
 export const isSecurityAuditSelector = (query: string): boolean =>
   /:malware|:vuln|:vulnerable|:severity|:cve|:cwe|:squat/.test(query)
@@ -53,7 +57,7 @@ export const buildAuditQuery = (level: string): string => {
     ':malware, :vulnerable, :severity(<=low), :squat'
   const queries: Record<string, string> = {
     low: defaultQuery,
-    moderate:
+    medium:
       ':malware, :vuln(<=medium), :severity(<=medium), :squat(<=medium)',
     high: ':malware, :vuln(<=high), :severity(<=high), :squat(critical)',
     critical:
@@ -65,25 +69,34 @@ export const buildAuditQuery = (level: string): string => {
 export type AuditPackage = {
   name: string
   version: string
-  alerts: string[]
+  /** Structured alerts with detailed advisory information from SecurityArchive */
+  alerts: PackageAlert[]
   /** CVE ids associated with this package's known vulnerabilities. */
   cves: string[]
   direct: boolean
+  /** File system location where the package is installed */
+  location?: string
+  /** Dependency path from root to this package (e.g., "pkg-a > pkg-b > pkg-c") */
+  path?: string
 }
 
 export type AuditResult = {
   summary: {
     critical: AuditPackage[]
     high: AuditPackage[]
-    moderate: AuditPackage[]
+    medium: AuditPackage[]
     low: AuditPackage[]
   }
   total: number
   directCount: number
   indirectCount: number
+  /** Number of packages scanned (with security data available) */
+  scannedCount?: number
+  /** Number of packages without security data */
+  unscannedCount?: number
 }
 
-export type SeverityLevel = 'critical' | 'high' | 'moderate' | 'low'
+export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low'
 
 /**
  * Severity levels in display order, most severe first.
@@ -91,7 +104,7 @@ export type SeverityLevel = 'critical' | 'high' | 'moderate' | 'low'
 export const severityOrder: SeverityLevel[] = [
   'critical',
   'high',
-  'moderate',
+  'medium',
   'low',
 ]
 
@@ -101,7 +114,7 @@ export const severityOrder: SeverityLevel[] = [
 export const emptySummary = (): AuditResult['summary'] => ({
   critical: [],
   high: [],
-  moderate: [],
+  medium: [],
   low: [],
 })
 
@@ -120,7 +133,7 @@ export const emptyAuditResult = (): AuditResult => ({
 const severityRank: Record<SeverityLevel, number> = {
   critical: 0,
   high: 1,
-  moderate: 2,
+  medium: 2,
   low: 3,
 }
 
@@ -130,32 +143,21 @@ const maxSeverity = (
 ): SeverityLevel => (severityRank[a] <= severityRank[b] ? a : b)
 
 /**
- * Typeguard for objects with an id property.
- */
-export const isNodeWithId = (
-  o: unknown,
-): o is { id: string; name?: string; version?: string } =>
-  typeof o === 'object' &&
-  o !== null &&
-  'id' in o &&
-  typeof o.id === 'string'
-
-/**
  * Typeguard for a node exposing an `edgesOut` map, each edge having a
  * `.to` node with an id -- used to precompute an importer's direct
  * dependencies. `edgesOut` is bounded by that importer's own declared
  * dependencies, unlike a dependency's `edgesIn` which grows with
  * however many packages in the whole graph depend on it.
  */
-export const isNodeWithEdgesOut = (
+const isNodeWithEdgesOut = (
   o: unknown,
 ): o is {
   edgesOut: { values: () => Iterable<{ to?: { id: string } }> }
 } => {
-  if (typeof o !== 'object' || o === null || !('edgesOut' in o)) {
+  if (!isNode(o) || !('edgesOut' in o)) {
     return false
   }
-  const edgesOut = o.edgesOut
+  const edgesOut = (o as { edgesOut: unknown }).edgesOut
   return (
     typeof edgesOut === 'object' &&
     edgesOut !== null &&
@@ -166,7 +168,7 @@ export const isNodeWithEdgesOut = (
 /**
  * Typeguard for objects with an id and insights property.
  */
-export const isNodeWithInsights = (
+const isNodeWithInsights = (
   o: unknown,
 ): o is {
   id: string
@@ -174,7 +176,8 @@ export const isNodeWithInsights = (
   name?: string
   version?: string
 } =>
-  isNodeWithId(o) &&
+  isNode(o) &&
+  'id' in o &&
   'insights' in o &&
   typeof (o as { insights: unknown }).insights === 'object' &&
   (o as { insights: unknown }).insights !== null
@@ -182,7 +185,7 @@ export const isNodeWithInsights = (
 /**
  * Typeguard for LeveledInsights (malware, severity).
  */
-export const isLeveledInsights = (
+const isLeveledInsights = (
   o: unknown,
 ): o is {
   low: boolean
@@ -204,7 +207,7 @@ export const isLeveledInsights = (
 /**
  * Typeguard for SquatInsights.
  */
-export const isSquatInsights = (
+const isSquatInsights = (
   o: unknown,
 ): o is { medium: boolean; critical: boolean } =>
   typeof o === 'object' &&
@@ -225,7 +228,7 @@ const getLeveledSeverity = (insights: {
 }): SeverityLevel | null => {
   if (insights.critical) return 'critical'
   if (insights.high) return 'high'
-  if (insights.medium) return 'moderate'
+  if (insights.medium) return 'medium'
   if (insights.low) return 'low'
   return null
 }
@@ -238,19 +241,155 @@ const getSquatSeverity = (insights: {
   critical: boolean
 }): SeverityLevel | null => {
   if (insights.critical) return 'critical'
-  if (insights.medium) return 'moderate'
+  if (insights.medium) return 'medium'
   return null
+}
+
+/**
+ * Build a dependency path string showing how to reach a node from root.
+ * Traverses edgesIn to find a path to a root importer.
+ * Returns undefined if no path can be determined.
+ */
+const buildDependencyPath = (node: unknown): string | undefined => {
+  if (!isNode(node)) return undefined
+
+  const path: string[] = [
+    typeof node.name === 'string' ? node.name : node.id,
+  ]
+  let current: Node = node
+  const visited = new Set<string>()
+
+  // Traverse backwards through edgesIn to find a path to root
+  while (current.edgesIn.size > 0) {
+    if (visited.has(current.id)) break // Avoid cycles
+    visited.add(current.id)
+
+    // Get first incoming edge
+    let nextEdge: { from?: Node } | undefined
+    for (const edge of current.edgesIn.values()) {
+      nextEdge = edge
+      break
+    }
+    if (!nextEdge?.from) break
+
+    current = nextEdge.from
+    path.unshift(
+      typeof current.name === 'string' ? current.name : current.id,
+    )
+
+    // Stop at an importer (root or workspace)
+    if (current.importer) break
+  }
+
+  return path.length > 1 ? path.join(' > ') : undefined
+}
+
+/**
+ * Helper to construct synthetic PackageAlert objects from insights.
+ * Used as fallback when SecurityArchive doesn't have detailed alert data.
+ */
+const constructSyntheticAlerts = (insights: {
+  malware?: unknown
+  severity?: unknown
+  squat?: unknown
+  vuln?: unknown
+}): PackageAlert[] => {
+  const alerts: PackageAlert[] = []
+
+  if (insights.malware && isLeveledInsights(insights.malware)) {
+    const s = getLeveledSeverity(insights.malware)
+    if (s) {
+      alerts.push({
+        key: `malware-${s}`,
+        type: 'malware',
+        category: 'malware',
+        severity: s,
+      })
+    }
+  }
+
+  if (insights.severity && isLeveledInsights(insights.severity)) {
+    const s = getLeveledSeverity(insights.severity)
+    if (s) {
+      alerts.push({
+        key: `severity-${s}`,
+        type: 'severity',
+        category: 'severity',
+        severity: s,
+      })
+    }
+  }
+
+  if (insights.squat && isSquatInsights(insights.squat)) {
+    const s = getSquatSeverity(insights.squat)
+    if (s) {
+      alerts.push({
+        key: `squat-${s}`,
+        type: 'squatting',
+        category: 'squat',
+        severity: s,
+      })
+    }
+  }
+
+  if (insights.vuln && isLeveledInsights(insights.vuln)) {
+    const s = getLeveledSeverity(insights.vuln)
+    if (s) {
+      alerts.push({
+        key: `vuln-${s}`,
+        type: 'vulnerability',
+        category: 'vulnerability',
+        severity: s,
+      })
+    }
+  }
+
+  return alerts
+}
+
+/**
+ * Helper to look up PackageAlert from SecurityArchive for a node.
+ * Falls back to constructing alerts from insights if archive has no data.
+ * Returns an array of relevant alerts for the node's package.
+ */
+const getPackageAlerts = (
+  node: { id?: string; insights?: unknown },
+  securityArchive?: { get?: (depId: string) => unknown },
+): PackageAlert[] => {
+  if (securityArchive?.get && node.id) {
+    const reportData = securityArchive.get(node.id)
+    if (
+      typeof reportData === 'object' &&
+      reportData !== null &&
+      'alerts' in reportData &&
+      Array.isArray(reportData.alerts)
+    ) {
+      return (reportData as { alerts: unknown[] })
+        .alerts as PackageAlert[]
+    }
+  }
+
+  // Fallback: construct synthetic alerts from insights
+  if (node.insights && typeof node.insights === 'object') {
+    return constructSyntheticAlerts(node.insights)
+  }
+
+  return []
 }
 
 /**
  * Aggregate query results by severity for audit output. `warn`, if
  * provided, is called for nodes whose insights data is present but
  * does not match the expected shape (as opposed to simply absent).
+ *
+ * When securityArchive is provided, populates alerts with full
+ * PackageAlert objects including advisory details (CVE, CWE, etc).
  */
 export const aggregateBySeverity = (
   nodes: Iterable<unknown>,
   importers: Set<unknown>,
-  warn: (message: string) => void = () => {},
+  _warn: (message: string) => void = () => {},
+  securityArchive?: { get?: (depId: string) => unknown },
 ): AuditResult => {
   const result: AuditResult = emptyAuditResult()
 
@@ -273,66 +412,42 @@ export const aggregateBySeverity = (
     }
   }
 
+  let scannedCount = 0
+  let unscannedCount = 0
+
   for (const node of nodes) {
+    // Track scanned vs unscanned packages
+    if (isNode(node) && 'insights' in node) {
+      const insights = (node as { insights: unknown }).insights
+      if (
+        typeof insights === 'object' &&
+        insights !== null &&
+        'scanned' in insights
+      ) {
+        if (insights.scanned === true) {
+          scannedCount++
+        } else {
+          unscannedCount++
+        }
+      }
+    }
+
     if (!isNodeWithInsights(node)) continue
 
     const insights = node.insights
-    const alerts: string[] = []
-    let newSeverity: SeverityLevel = 'low'
 
-    // Check malware alerts (LeveledInsights)
-    if (insights.malware) {
-      if (isLeveledInsights(insights.malware)) {
-        const s = getLeveledSeverity(insights.malware)
-        if (s) {
-          alerts.push(`malware: ${s}`)
-          newSeverity = maxSeverity(newSeverity, s)
-        }
-      } else {
-        warn(`ignoring malformed malware insights for ${node.id}`)
-      }
-    }
-
-    // Check severity alerts (LeveledInsights)
-    if (insights.severity) {
-      if (isLeveledInsights(insights.severity)) {
-        const s = getLeveledSeverity(insights.severity)
-        if (s) {
-          alerts.push(`severity: ${s}`)
-          newSeverity = maxSeverity(newSeverity, s)
-        }
-      } else {
-        warn(`ignoring malformed severity insights for ${node.id}`)
-      }
-    }
-
-    // Check squat alerts (SquatInsights)
-    if (insights.squat) {
-      if (isSquatInsights(insights.squat)) {
-        const s = getSquatSeverity(insights.squat)
-        if (s) {
-          alerts.push(`squat: ${s}`)
-          newSeverity = maxSeverity(newSeverity, s)
-        }
-      } else {
-        warn(`ignoring malformed squat insights for ${node.id}`)
-      }
-    }
-
-    // Check vulnerability alerts (LeveledInsights) - CVE, gptSecurity, etc.
-    if (insights.vuln) {
-      if (isLeveledInsights(insights.vuln)) {
-        const s = getLeveledSeverity(insights.vuln)
-        if (s) {
-          alerts.push(`vulnerability: ${s}`)
-          newSeverity = maxSeverity(newSeverity, s)
-        }
-      } else {
-        warn(`ignoring malformed vuln insights for ${node.id}`)
-      }
-    }
+    // Query already validated this node has security findings.
+    // Look up the structured alerts from securityArchive.
+    const alerts: PackageAlert[] =
+      securityArchive ? getPackageAlerts(node, securityArchive) : []
 
     if (alerts.length === 0) continue
+
+    // Compute max severity from alert data
+    let newSeverity: SeverityLevel = 'low'
+    for (const alert of alerts) {
+      newSeverity = maxSeverity(newSeverity, alert.severity)
+    }
 
     // Direct dependency: the node itself is an importer (e.g. a
     // workspace root with its own findings), or it's one of the
@@ -340,19 +455,35 @@ export const aggregateBySeverity = (
     const direct =
       importerIds.has(node.id) || directDepIds.has(node.id)
 
+    const location =
+      (
+        'location' in node &&
+        typeof (node as Record<string, unknown>).location === 'string'
+      ) ?
+        ((node as Record<string, unknown>).location as string)
+      : undefined
+
     const pkg: AuditPackage = {
       name: node.name ?? 'unknown',
       version: node.version ?? 'unknown',
       alerts,
       cves: Array.isArray(insights.cve) ? insights.cve : [],
       direct,
+      location,
+      path: buildDependencyPath(node),
     }
 
-    result.summary[newSeverity].push(pkg)
-    result.total++
-    if (direct) result.directCount++
-    else result.indirectCount++
+    // Verify newSeverity is a valid key before using it
+    if (newSeverity in result.summary) {
+      result.summary[newSeverity].push(pkg)
+      result.total++
+      if (direct) result.directCount++
+      else result.indirectCount++
+    }
   }
+
+  result.scannedCount = scannedCount
+  result.unscannedCount = unscannedCount
 
   return result
 }
@@ -388,7 +519,7 @@ const severityFormat: Record<
 > = {
   critical: 'redBright',
   high: 'red',
-  moderate: 'yellow',
+  medium: 'yellow',
   low: 'dim',
 }
 
@@ -475,9 +606,15 @@ export const categoryCounts = (
   for (const pkgs of Object.values(result.summary)) {
     for (const pkg of pkgs) {
       for (const alert of pkg.alerts) {
-        if (alert.startsWith('malware:')) counts.malware++
-        else if (alert.startsWith('severity:')) counts.vulnerable++
-        else if (alert.startsWith('squat:')) counts.squat++
+        if (alert.type === 'malware') counts.malware++
+        else if (
+          alert.type === 'gptSecurity' ||
+          alert.type === 'gptAnomaly' ||
+          alert.type === 'cve' ||
+          alert.category === 'vulnerability'
+        ) {
+          counts.vulnerable++
+        } else if (alert.type === 'squatting') counts.squat++
       }
     }
   }
@@ -505,6 +642,15 @@ const nvdUrl = (cve: string): string =>
   `https://nvd.nist.gov/vuln/detail/${cve}`
 
 /**
+ * MITRE's CWE definition page for a CWE id.
+ */
+const cweUrl = (cweId: string): string => {
+  // Extract numeric ID from "CWE-1234" format
+  const id = cweId.replace(/^CWE-/, '')
+  return `https://cwe.mitre.org/data/definitions/${id}.html`
+}
+
+/**
  * Render `text` as a clickable OSC 8 terminal hyperlink to `url` when
  * `enabled`, matching the pattern in `@vltpkg/url-open`. Terminals
  * that don't support OSC 8 just show `text`, so this only degrades
@@ -520,37 +666,170 @@ const hyperlink = (
   enabled ? `]8;;${url}\\${text}]8;;\\` : `${text} (${url})`
 
 /**
- * Build one aligned line per flagged package, most severe first:
- * `severity  name@version  alert, alert, CVE-...`. Column widths are
- * computed from unstyled text so ANSI/OSC 8 escape codes (applied
- * only after padding) don't throw off alignment.
+ * Format a table row with box-drawing characters for audit output.
+ * Creates rows like: │ Label       │ Value                                   │
+ */
+const formatTableRow = (
+  label: string,
+  value: string,
+  leftWidth: number,
+  rightWidth: number,
+): string => {
+  const paddedLabel = label.padEnd(leftWidth)
+  const paddedValue = value.padEnd(rightWidth)
+  return `│ ${paddedLabel} │ ${paddedValue} │`
+}
+
+/**
+ * Build one table per flagged package, most severe first, showing alert details
+ * in a box-drawing table format similar to npm audit.
  */
 const formatAuditRows = (
   result: AuditResult,
   colors?: boolean,
 ): string[] => {
-  const rows = nonEmptySeverityBuckets(result).flatMap(
-    ({ severity, pkgs }) =>
-      pkgs.map(pkg => ({
-        severity,
-        pkgName: `${pkg.name}@${pkg.version}`,
-        alerts: [
-          ...pkg.alerts,
-          ...pkg.cves.map(cve => hyperlink(cve, nvdUrl(cve), colors)),
-        ].join(', '),
-      })),
-  )
-  const severityWidth = Math.max(...rows.map(r => r.severity.length))
-  const pkgWidth = Math.max(...rows.map(r => r.pkgName.length))
+  const lines: string[] = []
 
-  return rows.map(({ severity, pkgName, alerts }) => {
-    const severityCell = colorizeBySeverity(
-      severity,
-      severity.padEnd(severityWidth),
-      colors,
-    )
-    return `  ${severityCell}  ${pkgName.padEnd(pkgWidth)}  ${alerts}`
-  })
+  // First pass: collect all table rows and calculate consistent column widths
+  const allTableRows: [string, string][][] = []
+  let maxLeftWidth = 0
+  let maxRightWidth = 0
+
+  for (const { severity, pkgs } of nonEmptySeverityBuckets(result)) {
+    for (const pkg of pkgs) {
+      const pkgName = `${pkg.name}@${pkg.version}`
+      const dependencyType = pkg.direct ? 'direct' : 'transitive'
+
+      // Prepare table data
+      const tableRows: [string, string][] = []
+
+      // Add severity and first alert info as header
+      if (pkg.alerts.length > 0) {
+        const firstAlert = pkg.alerts[0] as {
+          type: string
+          category: string
+        }
+        const alertType = firstAlert.category || firstAlert.type
+        tableRows.push([
+          colorizeBySeverity(
+            severity,
+            severity.toUpperCase(),
+            colors,
+          ),
+          alertType,
+        ])
+      } else {
+        tableRows.push([
+          colorizeBySeverity(
+            severity,
+            severity.toUpperCase(),
+            colors,
+          ),
+          '',
+        ])
+      }
+
+      tableRows.push(['Package', pkgName])
+
+      // Add CVE info from first vulnerability alert if available
+      const vulnAlert = pkg.alerts.find(alert =>
+        isVulnerabilityAlert(alert),
+      )
+
+      if (vulnAlert) {
+        // Add title if available
+        if (vulnAlert.props?.title) {
+          tableRows.push(['Title', vulnAlert.props.title])
+        }
+
+        // Add vulnerable version range if available
+        if (vulnAlert.props?.vulnerableVersionRange) {
+          tableRows.push([
+            'Vulnerable Versions',
+            vulnAlert.props.vulnerableVersionRange,
+          ])
+        }
+
+        // Add CVSS score if available
+        if (vulnAlert.props?.cvss?.score !== undefined) {
+          tableRows.push([
+            'CVSS Score',
+            vulnAlert.props.cvss.score.toString(),
+          ])
+        }
+
+        // Add CVE ID with link
+        if (vulnAlert.props?.cveId) {
+          tableRows.push([
+            'CVE',
+            hyperlink(
+              vulnAlert.props.cveId,
+              nvdUrl(vulnAlert.props.cveId),
+              colors,
+            ),
+          ])
+        }
+
+        // Add CWE info if available
+        if (
+          vulnAlert.props?.cwes &&
+          vulnAlert.props.cwes.length > 0
+        ) {
+          const cweLinks = vulnAlert.props.cwes
+            .map(c => hyperlink(c.id, cweUrl(c.id), colors))
+            .join(', ')
+          tableRows.push(['CWE', cweLinks])
+        }
+      }
+
+      // Add dependency path if available
+      if (pkg.path) {
+        tableRows.push(['Path', pkg.path])
+      }
+
+      tableRows.push(['Dependency of', dependencyType])
+
+      allTableRows.push(tableRows)
+
+      // Track max widths across all tables
+      for (const [label, value] of tableRows) {
+        maxLeftWidth = Math.max(maxLeftWidth, label.length)
+        maxRightWidth = Math.max(maxRightWidth, value.length)
+      }
+    }
+  }
+
+  // Second pass: render all tables with consistent widths
+  let tableIndex = 0
+  for (const { severity: _severity, pkgs } of nonEmptySeverityBuckets(
+    result,
+  )) {
+    if (lines.length > 0) lines.push('')
+
+    for (const _pkg of pkgs) {
+      const tableRows: [string, string][] =
+        allTableRows[tableIndex++]!
+
+      // Build box-drawing table
+      const topBorder = `┌─${'-'.repeat(maxLeftWidth)}─┬─${'-'.repeat(maxRightWidth)}─┐`
+      const separator = `├─${'-'.repeat(maxLeftWidth)}─┼─${'-'.repeat(maxRightWidth)}─┤`
+      const bottomBorder = `└─${'-'.repeat(maxLeftWidth)}─┴─${'-'.repeat(maxRightWidth)}─┘`
+
+      lines.push(topBorder)
+      for (let i = 0; i < tableRows.length; i++) {
+        const [label, value] = tableRows[i]
+        lines.push(
+          formatTableRow(label, value, maxLeftWidth, maxRightWidth),
+        )
+        if (i < tableRows.length - 1) {
+          lines.push(separator)
+        }
+      }
+      lines.push(bottomBorder)
+    }
+  }
+
+  return lines
 }
 
 /**
@@ -608,9 +887,24 @@ export const formatAuditSummary = (
   )
   lines.push(formatCategoryCountsLine(result, colors))
   lines.push(formatSeverityCountsLine(result, colors))
-  lines.push(formatDependencyBreakdown(result))
+
   lines.push('')
   lines.push(...formatAuditRows(result, colors))
+
+  // Add security summary footer at the end
+  lines.push('')
+  lines.push(formatDependencyBreakdown(result))
+
+  // Add scan coverage info if we have unscanned packages
+  if (
+    result.unscannedCount !== undefined &&
+    result.unscannedCount > 0 &&
+    result.scannedCount !== undefined
+  ) {
+    lines.push(
+      `Scanned: ${result.scannedCount} packages | Unscanned: ${result.unscannedCount} packages`,
+    )
+  }
 
   return lines.join('\n')
 }

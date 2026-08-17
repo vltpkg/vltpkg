@@ -473,9 +473,15 @@ export const definition = j
     'audit-level': {
       hint: 'level',
       default: 'low',
-      validate: (v: unknown) =>
-        typeof v === 'string' &&
-        ['low', 'moderate', 'high', 'critical'].includes(v),
+      validate: (v: unknown) => {
+        if (typeof v !== 'string') return false
+        const normalized = v === 'moderate' ? 'medium' : v
+        return ['low', 'medium', 'high', 'critical'].includes(
+          normalized,
+        )
+      },
+      normalize: (v: unknown) =>
+        typeof v === 'string' && v === 'moderate' ? 'medium' : v,
       description: `Minimum severity level to report when running
                     \`vlt audit\`. Defaults to \`low\`.`,
     },
