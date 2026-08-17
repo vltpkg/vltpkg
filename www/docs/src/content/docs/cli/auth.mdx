@@ -78,6 +78,10 @@ CI environment, requests an OIDC ID token from the provider, and
 exchanges it with the registry for a short-lived publish token.
 Everything happens behind the scenes.
 
+Note that this requires a registry that supports OIDC trusted
+publishing. The vlt.io registry currently does not — use a
+[service token](/registry/publishing#publishing-from-ci) there.
+
 ### Supported Providers
 
 - **GitHub Actions** — native support, no extra config
