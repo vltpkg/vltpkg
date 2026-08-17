@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import module from 'node:module'
 import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.ts'
 
 const isDeno =
@@ -18,10 +19,15 @@ export const register = (path: string, key: string): void => {
 }
 
 const handleBeforeExit = () => {
+  // The compile cache is enabled in-process by the CLI entry, which does
+  // not propagate to child processes, so the worker has to be pointed at
+  // it through the environment to skip re-compiling its bundle.
+  const compileCacheDir = module.getCompileCacheDir()
   for (const [path, r] of registered) {
     /* c8 ignore next */
     if (!r.size) return
     const env = { ...process.env }
+    if (compileCacheDir) env.NODE_COMPILE_CACHE ??= compileCacheDir
     const args = []
     // Deno on Windows does not support detached processes
     // https://github.com/denoland/deno/issues/25867
