@@ -76,9 +76,8 @@ export const command: CommandFn<AuditResult> = async conf => {
   })
 
   const auditLevelRaw = conf.get('audit-level')
-  // Normalize 'moderate' to 'medium' for backward compatibility
-  const normalized =
-    auditLevelRaw === 'moderate' ? 'medium' : auditLevelRaw
+  const auditLevel: SeverityLevel =
+    (auditLevelRaw === 'critical' || auditLevelRaw === 'high' || auditLevelRaw === 'medium' || auditLevelRaw === 'low') ? auditLevelRaw : 'low'
   const auditLevel: SeverityLevel =
     (
       normalized === 'critical' ||
