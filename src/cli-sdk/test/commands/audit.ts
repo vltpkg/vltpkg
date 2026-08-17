@@ -1,5 +1,6 @@
 import t from 'tap'
 import * as Graph from '@vltpkg/graph'
+import * as SecurityArchiveModule from '@vltpkg/security-archive'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
 import { Spec } from '@vltpkg/spec'
@@ -8,12 +9,28 @@ import { unload } from '@vltpkg/vlt-json'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { Test } from 'tap'
 
+// The audit command sets process.exitCode = 1 whenever it reports
+// findings, which is the behaviour under test -- but left set it also
+// makes tap's own process exit non-zero and marks this suite failed
+// even when every assertion passed.
+t.teardown(() => {
+  process.exitCode = 0
+})
+
 const specOptions = {
   registry: 'https://registry.npmjs.org/',
   registries: {
     npm: 'https://registry.npmjs.org/',
   },
 }
+
+/**
+ * `Node` does not declare an `insights` property -- the DSS query
+ * engine attaches it to nodes at runtime -- so tests that stand in for
+ * a query result have to cast before assigning it.
+ */
+const withInsights = (node: Graph.Node) =>
+  node as unknown as Graph.Node & { insights: unknown }
 
 const graph = new Graph.Graph({
   projectRoot: t.testdirName,
@@ -41,6 +58,7 @@ const mockAudit = async (
         },
       }),
       '@vltpkg/security-archive': {
+        ...SecurityArchiveModule,
         SecurityArchive: {
           async start() {
             return {
@@ -49,7 +67,6 @@ const mockAudit = async (
             }
           },
         },
-        isVulnerabilityAlert: () => false,
       },
       ...mocks,
     },
@@ -66,7 +83,7 @@ const mockAuditWithFindings = async (
     Spec.parse('foo@^1.0.0', specOptions),
     { name: 'foo', version: '1.0.0' },
   )!
-  ;(malformedNode as unknown as { insights: unknown }).insights = {
+  withInsights(malformedNode).insights = {
     // Malformed malware insights - missing low, medium, high, critical
     malware: { notaleveledinsight: true },
     scanned: true,
@@ -81,6 +98,7 @@ const mockAuditWithFindings = async (
         },
       }),
       '@vltpkg/security-archive': {
+        ...SecurityArchiveModule,
         SecurityArchive: {
           async start() {
             return {
@@ -89,7 +107,6 @@ const mockAuditWithFindings = async (
             }
           },
         },
-        isVulnerabilityAlert: () => false,
       },
       '@vltpkg/query': {
         Query: class MockQuery {
@@ -138,6 +155,7 @@ const mockAuditWithNodes = async (
         },
       }),
       '@vltpkg/security-archive': {
+        ...SecurityArchiveModule,
         SecurityArchive: {
           async start() {
             return {
@@ -146,7 +164,6 @@ const mockAuditWithNodes = async (
             }
           },
         },
-        isVulnerabilityAlert: () => false,
       },
       '@vltpkg/query': {
         Query: class MockQuery {
@@ -398,19 +415,18 @@ t.test('audit', async t => {
         monorepo,
       }
       workspaceOptions.packageJson.read = () => mainManifest
-      workspaceOptions.packageJson.maybeRead = () =>
-        (mainManifest(
-          // Add insights to the real Graph node
-          evilNode as unknown as { insights: unknown },
-        ).insights = {
-          malware: {
-            low: false,
-            medium: false,
-            high: false,
-            critical: true,
-          },
-          scanned: true,
-        })
+      workspaceOptions.packageJson.maybeRead = () => mainManifest
+
+      // Add insights to the real Graph node
+      withInsights(evilNode).insights = {
+        malware: {
+          low: false,
+          medium: false,
+          high: false,
+          critical: true,
+        },
+        scanned: true,
+      }
 
       const CommandWithWorkspaceFinding = await mockAuditWithNodes(
         t,
@@ -455,14 +471,13 @@ t.test('audit', async t => {
       })
 
       // Create real Graph nodes using placePackage
-      const gptSecurityNode = (testGraph.placePackage(
+      const gptSecurityNode = testGraph.placePackage(
         testGraph.mainImporter,
         'prod',
         Spec.parse('gpt-security@^1.0.0', specOptions),
         { name: 'gpt-security', version: '1.0.0' },
-      )!(
-        gptSecurityNode as unknown as { insights: unknown },
-      ).insights = {
+      )!
+      withInsights(gptSecurityNode).insights = {
         vuln: {
           low: false,
           medium: false,
@@ -470,16 +485,15 @@ t.test('audit', async t => {
           critical: false,
         },
         scanned: true,
-      })
+      }
 
-      const gptAnomalyNode = (testGraph.placePackage(
+      const gptAnomalyNode = testGraph.placePackage(
         testGraph.mainImporter,
         'prod',
         Spec.parse('gpt-anomaly@^1.0.0', specOptions),
         { name: 'gpt-anomaly', version: '1.0.0' },
-      )!(
-        gptAnomalyNode as unknown as { insights: unknown },
-      ).insights = {
+      )!
+      withInsights(gptAnomalyNode).insights = {
         vuln: {
           low: false,
           medium: true,
@@ -487,14 +501,15 @@ t.test('audit', async t => {
           critical: false,
         },
         scanned: true,
-      })
+      }
 
-      const cvePkgNode = (testGraph.placePackage(
+      const cvePkgNode = testGraph.placePackage(
         testGraph.mainImporter,
         'prod',
         Spec.parse('cve-pkg@^1.0.0', specOptions),
         { name: 'cve-pkg', version: '1.0.0' },
-      )!(cvePkgNode as any).insights = {
+      )!
+      withInsights(cvePkgNode).insights = {
         vuln: {
           low: true,
           medium: false,
@@ -503,14 +518,15 @@ t.test('audit', async t => {
         },
         scanned: true,
         cve: ['CVE-2026-1234'],
-      })
+      }
 
-      const mixedNode = (testGraph.placePackage(
+      const mixedNode = testGraph.placePackage(
         testGraph.mainImporter,
         'prod',
         Spec.parse('mixed@^1.0.0', specOptions),
         { name: 'mixed', version: '1.0.0' },
-      )!(mixedNode as any).insights = {
+      )!
+      withInsights(mixedNode).insights = {
         malware: {
           low: false,
           medium: false,
@@ -524,14 +540,15 @@ t.test('audit', async t => {
           critical: true,
         },
         scanned: true,
-      })
+      }
 
-      const unscannedNode = (testGraph.placePackage(
+      const unscannedNode = testGraph.placePackage(
         testGraph.mainImporter,
         'prod',
         Spec.parse('unscanned@^1.0.0', specOptions),
         { name: 'unscanned', version: '1.0.0' },
-      )!(unscannedNode as any).insights = { scanned: false })
+      )!
+      withInsights(unscannedNode).insights = { scanned: false }
 
       const nodes = [
         gptSecurityNode,
@@ -550,12 +567,12 @@ t.test('audit', async t => {
           },
         }),
         '@vltpkg/security-archive': {
+          ...SecurityArchiveModule,
           SecurityArchive: {
             async start() {
               return { ok: true, get: () => undefined }
             },
           },
-          isVulnerabilityAlert: () => false,
         },
         '@vltpkg/query': {
           Query: class MockQuery {
@@ -682,12 +699,13 @@ t.test('audit', async t => {
         mainManifest,
       })
 
-      const cveNode = (vulnGraph.placePackage(
+      const cveNode = vulnGraph.placePackage(
         vulnGraph.mainImporter,
         'prod',
         Spec.parse('cve-package@^1.0.0', specOptions),
         { name: 'cve-package', version: '1.0.0' },
-      )!(cveNode as any).insights = {
+      )!
+      withInsights(cveNode).insights = {
         vuln: {
           low: false,
           medium: false,
@@ -696,7 +714,7 @@ t.test('audit', async t => {
         },
         cve: ['CVE-2023-1234'],
         scanned: true,
-      })
+      }
       const cveNodeWithInsights = cveNode
 
       const CommandWithVulnFindings = await mockAuditWithNodes(t, {
@@ -755,12 +773,13 @@ t.test('audit', async t => {
         mainManifest,
       })
 
-      const badNode = (multiGraph.placePackage(
+      const badNode = multiGraph.placePackage(
         multiGraph.mainImporter,
         'prod',
         Spec.parse('bad-package@^1.0.0', specOptions),
         { name: 'bad-package', version: '1.0.0' },
-      )!(badNode as any).insights = {
+      )!
+      withInsights(badNode).insights = {
         malware: {
           low: false,
           medium: false,
@@ -774,7 +793,7 @@ t.test('audit', async t => {
           critical: false,
         },
         scanned: true,
-      })
+      }
       const badNodeWithInsights = badNode
 
       const CommandWithMultiInsights = await mockAuditWithNodes(t, {
@@ -807,11 +826,14 @@ t.test('audit', async t => {
         'malware',
         'should include malware alert',
       )
+      // severity insights surface as a vulnerability alert -- they and
+      // insights.vuln describe the same CVE data, so they collapse into
+      // one rather than reporting a single finding twice
       t.ok(
         pkg.alerts.some(
-          (a: { category: string }) => a.category === 'severity',
+          (a: { category: string }) => a.category === 'vulnerability',
         ),
-        'should include severity alert',
+        'should include the vulnerability alert',
       )
     },
   )
@@ -849,9 +871,9 @@ t.test('audit', async t => {
         { name: 'malformed-squat', version: '1.0.0' },
       )!
 
-      const _stderrLogs = (t
-        .capture(console, 'error')
-        .args(severityNode as any).insights = {
+      const stderrLogs = t.capture(console, 'error').args
+
+      withInsights(severityNode).insights = {
         severity: { invalid: true },
         malware: {
           low: false,
@@ -860,10 +882,8 @@ t.test('audit', async t => {
           critical: false,
         },
         scanned: true,
-      })
-      const severityNodeWithInsights = (severityNode(
-        vulnNode as any,
-      ).insights = {
+      }
+      withInsights(vulnNode).insights = {
         vuln: { notleveledinsight: true },
         malware: {
           low: false,
@@ -872,10 +892,8 @@ t.test('audit', async t => {
           critical: false,
         },
         scanned: true,
-      })
-      const vulnNodeWithInsights = (vulnNode(
-        squatNode as any,
-      ).insights = {
+      }
+      withInsights(squatNode).insights = {
         squat: { invalid: 'structure' },
         malware: {
           low: false,
@@ -884,18 +902,13 @@ t.test('audit', async t => {
           critical: false,
         },
         scanned: true,
-      })
-      const squatNodeWithInsights = squatNode
+      }
 
       const CommandWithMalformedInsights = await mockAuditWithNodes(
         t,
         {
           graph: malformedGraph,
-          nodes: [
-            severityNodeWithInsights,
-            vulnNodeWithInsights,
-            squatNodeWithInsights,
-          ],
+          nodes: [severityNode, vulnNode, squatNode],
         },
       )
 
@@ -923,24 +936,24 @@ t.test('audit', async t => {
         'packages with malformed insights but valid alerts should still be included',
       )
 
-      // TODO: Check warnings were logged for malformed insights
-      // These assertions are for a feature that hasn't been implemented yet
-      // const warnings = stderrLogs()
-      // t.match(
-      //   warnings.join(' '),
-      //   /ignoring malformed severity insights/,
-      //   'should warn about malformed severity',
-      // )
-      // t.match(
-      //   warnings.join(' '),
-      //   /ignoring malformed vuln insights/,
-      //   'should warn about malformed vuln',
-      // )
-      // t.match(
-      //   warnings.join(' '),
-      //   /ignoring malformed squat insights/,
-      //   'should warn about malformed squat',
-      // )
+      const warnings = stderrLogs()
+        .map(args => args.join(' '))
+        .join('\n')
+      t.match(
+        warnings,
+        /ignoring malformed severity insights/,
+        'should warn about malformed severity',
+      )
+      t.match(
+        warnings,
+        /ignoring malformed vuln insights/,
+        'should warn about malformed vuln',
+      )
+      t.match(
+        warnings,
+        /ignoring malformed squat insights/,
+        'should warn about malformed squat',
+      )
     },
   )
 
@@ -965,7 +978,7 @@ t.test('audit', async t => {
         { name: 'found-issue', version: '1.0.0' },
       )!
 
-      issueNode.insights = {
+      withInsights(issueNode).insights = {
         malware: {
           low: false,
           medium: false,
@@ -1023,6 +1036,12 @@ t.test('audit', async t => {
         Spec.parse('test-pkg@^1.0.0', specOptions),
         { name: 'test-pkg', version: '1.0.0' },
       )!
+      const lowNode = testGraph.placePackage(
+        testGraph.mainImporter,
+        'prod',
+        Spec.parse('low-pkg@^1.0.0', specOptions),
+        { name: 'low-pkg', version: '1.0.0' },
+      )!
 
       const options = {
         scurry: new PathScurry(dir),
@@ -1032,7 +1051,7 @@ t.test('audit', async t => {
       options.packageJson.read = () => mainManifest
       options.packageJson.maybeRead = () => mainManifest
 
-      testNode.insights = {
+      withInsights(testNode).insights = {
         malware: {
           low: false,
           medium: true,
@@ -1041,11 +1060,22 @@ t.test('audit', async t => {
         },
         scanned: true,
       }
-      const testNodeWithInsights = testNode
+      // a low finding alongside the medium one: `moderate` must filter
+      // this out. Without it the assertion below passes whether the
+      // alias resolves to `medium` or silently falls back to `low`.
+      withInsights(lowNode).insights = {
+        severity: {
+          low: true,
+          medium: false,
+          high: false,
+          critical: false,
+        },
+        scanned: true,
+      }
 
       const CommandWithAliasTest = await mockAuditWithNodes(t, {
         graph: testGraph,
-        nodes: [testNodeWithInsights],
+        nodes: [testNode, lowNode],
       })
 
       // Test with 'moderate' audit level (should work as alias for 'medium')
@@ -1061,6 +1091,16 @@ t.test('audit', async t => {
         parsed.total,
         1,
         'moderate audit level should work as alias for medium',
+      )
+      t.equal(
+        parsed.summary.medium.length,
+        1,
+        'the medium finding is reported',
+      )
+      t.equal(
+        parsed.summary.low.length,
+        0,
+        'moderate must not report low findings the way audit-level=low does',
       )
     },
   )
@@ -1106,7 +1146,7 @@ t.test('audit', async t => {
       }
       transitiveOptions.packageJson.read = () => mainManifest
 
-      directDep.insights = {
+      withInsights(directDep).insights = {
         malware: {
           low: true,
           medium: false,
@@ -1116,7 +1156,7 @@ t.test('audit', async t => {
         scanned: true,
       }
       const directDepWithInsights = directDep
-      transitiveDep.insights = {
+      withInsights(transitiveDep).insights = {
         malware: {
           low: true,
           medium: false,

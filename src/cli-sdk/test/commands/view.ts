@@ -1,7 +1,10 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { Manifest, Packument } from '@vltpkg/types'
-import type { PackageReportData } from '@vltpkg/security-archive'
+import type {
+  PackageAlert,
+  PackageReportData,
+} from '@vltpkg/security-archive'
 
 const mockPackument: Packument = {
   name: 'test-pkg',
@@ -50,7 +53,7 @@ const mockSecurity: PackageReportData = {
       key: 'outdatedDependency',
       type: 'supplyChainRisk',
       severity: 'low',
-      category: 'supply-chain',
+      category: 'supplyChainRisk',
     },
   ],
   score: {
@@ -519,28 +522,28 @@ t.test('human formatting edge cases', async t => {
           {
             key: 'crit',
             type: 'vulnerability',
-            severity: 'critical' as const,
-            category: 'security',
+            severity: 'critical',
+            category: 'vulnerability',
           },
           {
             key: 'high',
             type: 'vulnerability',
-            severity: 'high' as const,
-            category: 'security',
+            severity: 'high',
+            category: 'vulnerability',
           },
           {
             key: 'med',
             type: 'risk',
-            severity: 'medium' as const,
+            severity: 'middle',
             category: 'quality',
           },
           {
             key: 'low',
             type: 'info',
-            severity: 'low' as const,
-            category: 'info',
+            severity: 'low',
+            category: 'other',
           },
-        ],
+        ] satisfies PackageAlert[],
       },
     }
     const output = Command.views.human(result, {}, {} as LoadedConfig)

