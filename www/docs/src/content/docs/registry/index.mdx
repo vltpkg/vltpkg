@@ -11,6 +11,7 @@ import {
   Tabs,
   TabItem,
 } from '@astrojs/starlight/components'
+import Image from '../../../components/image/image.astro'
 
 ## Sign Up
 
@@ -24,10 +25,10 @@ To publish packages to the vlt registry, you first have to
    You can sign up with Github, Google (Gmail) or with an email and
    password.
 
-   <img
+   <Image
      src="/images/signin.png"
      alt="Sign up form on vlt's sign up view with first name and last name fields, and login buttons connecting to Google and Github"
-     style={{ maxWidth: '420px', width: '100%', height: 'auto' }}
+     variant="square"
    />
 
 2. **Verify your email**
@@ -36,18 +37,18 @@ To publish packages to the vlt registry, you first have to
    one-time passcode (OTP). Paste it into the verification view to
    confirm your account.
 
-   <img
+   <Image
      src="/images/otp-email.png"
      alt="Screenshot of vlt signup one-time passcode email"
-     className="sm:max-w-[420px]"
+     variant="square"
    />
 
 3. Set up your account
 
-   <img
+   <Image
      src="/images/account-setup.png"
      alt="Screenshot of vlt account setup view with display name and slug fields, and a grid of plans for user selection"
-     className="sm:max-w-[420px]"
+     variant="landscape"
    />
 
    <Badge text="Caution" variant="caution" /> The slug appears in your
@@ -55,9 +56,10 @@ To publish packages to the vlt registry, you first have to
 
 4. You've signed up! You'll be logged into the Dashboard.
 
-   <img
+   <Image
      src="/images/dashboard.png"
      alt="Screenshot of vlt Dashboard view displaying left side side navigation where using can browse through registries and account settings"
+     variant="landscape"
    />
 
 </Steps>
@@ -71,10 +73,10 @@ To publish packages to the vlt registry, you first have to
    Log in with your email address, or continue with Github or Google.
    You can also use a passkey if you've set one up.
 
-   <img
+   <Image
      src="/images/login.png"
      alt="Login view on vlt.io with Email address input, continue button, and Github and Google login buttons. Below are links to Use passkey and a call to action to sign up if the user does not have an account"
-     className="sm:max-w-[420px]"
+     variant="square"
    />
 
 </Steps>

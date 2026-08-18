@@ -1,0 +1,42 @@
+---
+export interface Props {
+  src: string
+  alt: string
+  href?: string
+  variant?: 'landscape' | 'portrait' | 'square'
+  caption?: string
+}
+
+const { src, alt, href, variant = 'landscape', caption } = Astro.props
+
+const variantClasses = {
+  portrait: 'max-w-[420px]',
+  landscape: 'max-w-full',
+  square: 'max-w-[420px] md:max-w-[640px]',
+}[variant]
+---
+
+<figure class={`flex flex-col gap-2 ${variantClasses}`}>
+  {
+    href ?
+      <a href={href}>
+        <img
+          src={src}
+          alt={alt}
+          class="h-auto w-full rounded-sm border border-border"
+        />
+      </a>
+    : <img
+        src={src}
+        alt={alt}
+        class="h-auto w-full rounded-sm border border-border"
+      />
+  }
+  {
+    caption && (
+      <figcaption class="text-sm text-muted-foreground">
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

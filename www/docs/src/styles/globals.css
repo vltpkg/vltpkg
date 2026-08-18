@@ -223,9 +223,6 @@ html {
   @apply overflow-x-auto whitespace-nowrap bg-background px-1 font-medium text-foreground;
 }
 
-.sl-markdown-content img {
-  @apply h-auto max-w-full;
-}
 /* ***************************************************** */
 /*                    EXPRESSIVE CODE                    */
 /* ***************************************************** */
