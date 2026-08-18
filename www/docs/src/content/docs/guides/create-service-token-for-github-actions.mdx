@@ -8,9 +8,9 @@ sidebar:
 import { Aside, Steps } from '@astrojs/starlight/components'
 
 Service tokens allow your CI/CD workflows to publish packages without
-requiring two-factor authentication or storing personal credentials. This
-guide covers creating, storing, and rotating service tokens for GitHub
-Actions.
+requiring two-factor authentication or storing personal credentials.
+This guide covers creating, storing, and rotating service tokens for
+GitHub Actions.
 
 ## Prerequisites
 
@@ -43,8 +43,8 @@ Actions.
 </Steps>
 
 <Aside type="caution">
-  The token is displayed only once. If you close this dialog without copying it,
-  you must revoke the token and create a new one.
+  The token is displayed only once. If you close this dialog without
+  copying it, you must revoke the token and create a new one.
 </Aside>
 
 ## Store the token in GitHub
@@ -68,8 +68,8 @@ Actions.
 Your token is now stored as a GitHub secret and encrypted by GitHub.
 
 <Aside type="tip">
-  For a complete end-to-end setup guide, see
-  [Publish with GitHub Actions](/guides/publish-with-github-actions).
+  For a complete end-to-end setup guide, see [Publish with GitHub
+  Actions](/guides/publish-with-github-actions).
 </Aside>
 
 ## Rotating the token
@@ -124,7 +124,8 @@ Revoked tokens are immediately invalid and cannot be used.
 2. Create a new token
 3. Update the GitHub secret with the new value
 
-Any exposed tokens should be considered compromised and revoked promptly.
+Any exposed tokens should be considered compromised and revoked
+promptly.
 
 ## Next steps
 
