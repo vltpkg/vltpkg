@@ -183,10 +183,14 @@ slug.
 
     <Code
       code={`{
-
-"config": { "scoped-registries": { "@YOUR-ACCOUNT":
-"https://registry.vlt.io/YOUR-ACCOUNT/main/" } } }`} title="vlt.json"
-lang="json" />
+      "config":
+        { "scoped-registries":
+          { "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/" }
+          }
+        }
+      `}
+      title="vlt.json"
+      lang="json" />
 
     <Aside type="tip">
       When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
@@ -419,6 +423,11 @@ Now you're ready to publish:
     </Aside>
   </TabItem>
 </Tabs>
+
+You should see `+ @YOUR-ACCOUNT/my-package@1.0.0` returned in your
+terminal.
+
+![Publish completed](/images/publish-completed.png)
 
 The registry validates your package and displays a confirmation with
 the published version and scope. Your package is now live!
