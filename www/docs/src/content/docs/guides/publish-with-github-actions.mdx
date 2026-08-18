@@ -48,13 +48,19 @@ two-factor authentication.
 Create a new file at `.github/workflows/publish.yml` in your
 repository:
 
-<Code
-  code={`name: Publish Package
+```yaml title=".github/workflows/publish.yml"
+name: Publish Package
 
-on: push: tags: - 'v\*'
+on:
+  push:
+    tags:
+      - 'v*'
 
-jobs: publish: runs-on: ubuntu-latest steps: - uses:
-actions/checkout@v4
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - uses: vltpkg/setup-vlt@v1
         with:
@@ -69,9 +75,9 @@ actions/checkout@v4
       - name: Publish
         run: vlt publish
         env:
-          VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main: \${{ secrets.VLT_TOKEN }}
-
-`} title=".github/workflows/publish.yml" lang="yaml" />
+          VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main:
+            ${{ secrets.VLT_TOKEN }}
+```
 
 Replace `YOUR_ACCOUNT` with your vlt account slug.
 
