@@ -83,6 +83,14 @@ by default (with the same windows/umask caveats as files, so maybe
 that's `0o775` or some such.) All ctime/mtime/atime/birthtime values
 will just be left as the current time.
 
+Gzip-compressed tarballs are inflated with a size bound before any tar
+structure checks run. The cap is the smaller of 2 GiB and 1000 times
+the compressed size (the same 1000:1 ratio node-tar and npm use).
+Exceeding it fails with `tarball exceeds maximum unpacked size` rather
+than allocating the decompressed buffer. Raise the ceiling with
+`VLT_TAR_MAX_UNPACKED_BYTES` if a legitimate package is larger than 2
+GiB unpacked.
+
 It does not do any of the binary linking or other stuff that a package
 manager will need to do. It _just_ does the unpack, as ruthlessly fast
 as possible, and that's all.

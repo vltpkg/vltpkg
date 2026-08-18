@@ -16,13 +16,47 @@ import { Pax } from 'tar/pax'
 import { unzip as unzipCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
 
-const unzip = async (input: Buffer) =>
-  new Promise<Buffer>(
-    (res, rej) =>
-      /* c8 ignore start */
-      unzipCB(input, (er, result) => (er ? rej(er) : res(result))),
-    /* c8 ignore stop */
+// Matches node-tar's MAX_DECOMPRESSION_RATIO, which npm uses via pacote.
+const MAX_DECOMPRESSION_RATIO = 1000
+
+// node-tar streams, so its ratio alone bounds peak memory. We inflate into
+// a single Buffer, so without a ceiling a large tarball still commits
+// ratio * compressed bytes.
+const defaultMaxUnpackedBytes = 2 * 1024 * 1024 * 1024
+
+const parseMaxUnpackedBytes = (raw: string | undefined): number => {
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 1 ?
+      Math.floor(n)
+    : defaultMaxUnpackedBytes
+}
+const maxUnpackedBytes = parseMaxUnpackedBytes(
+  process.env.VLT_TAR_MAX_UNPACKED_BYTES,
+)
+
+const unzip = async (input: Buffer) => {
+  const max = Math.min(
+    maxUnpackedBytes,
+    input.length * MAX_DECOMPRESSION_RATIO,
   )
+  return new Promise<Buffer>((res, rej) =>
+    unzipCB(input, { maxOutputLength: max }, (er, result) => {
+      if (!er) return res(result)
+      return rej(
+        (
+          (er as NodeJS.ErrnoException).code ===
+            'ERR_BUFFER_TOO_LARGE'
+        ) ?
+          error('tarball exceeds maximum unpacked size', {
+            found: input.length,
+            max,
+            cause: er,
+          })
+        : er,
+      )
+    }),
+  )
+}
 
 const exists = async (path: string): Promise<boolean> => {
   try {
