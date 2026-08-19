@@ -9,6 +9,8 @@ import { sitemapAlias } from './src/plugins/sitemap.ts'
 import { readFileSync } from 'node:fs'
 import starlightLinksValidator from 'starlight-links-validator'
 import starlightLlmsTxt from 'starlight-llms-txt'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -22,6 +24,17 @@ const MIXPANEL_TOKEN = '7853b372fb0f20e238be6d11e53f60fe'
 export default defineConfig({
   site: 'https://docs.vlt.io',
   trailingSlash: 'never',
+  markdown: {
+    rehypePlugins: [
+      rehypeSlug,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: 'wrap',
+        },
+      ],
+    ],
+  },
   integrations: [
     starlight({
       editLink: {
