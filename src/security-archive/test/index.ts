@@ -2,9 +2,13 @@ import { resolve } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import t from 'tap'
 import { joinDepIDTuple, baseDepID } from '@vltpkg/dep-id'
-import { SecurityArchive } from '../src/index.ts'
+import type { DepID } from '@vltpkg/dep-id'
+import type { SpecOptions } from '@vltpkg/spec'
+import type { NodeLike } from '@vltpkg/types'
+import { SecurityArchive, usesNpmRegistry } from '../src/index.ts'
 import {
   getSimpleReportGraph,
+  mirrorSpecOptions,
   newGraph,
   newNode,
 } from './fixtures/graph.ts'
@@ -104,6 +108,157 @@ t.test('map-like', async t => {
   t.strictSame(archive.get(id), { name: 'bar' })
   archive.delete(id)
   t.strictSame(archive.get(id), undefined)
+})
+
+const nodeWith = (id: DepID, options: SpecOptions = {}): NodeLike =>
+  ({
+    id,
+    options,
+  }) as NodeLike
+
+t.test('usesNpmRegistry', async t => {
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['git', 'github:user/repo', 'main'])),
+    ),
+    false,
+    'git DepID is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(nodeWith(joinDepIDTuple(['file', '.']))),
+    false,
+    'file DepID is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['workspace', 'packages/a'])),
+    ),
+    false,
+    'workspace DepID is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']), {
+        registries: { npm: 'https://registry.npmjs.org/' },
+      }),
+    ),
+    true,
+    'npm alias pointing at registry.npmjs.org is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'unknown', 'foo@1.0.0']), {
+        registries: { npm: 'https://registry.npmjs.org/' },
+      }),
+    ),
+    false,
+    'unknown alias is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']), {
+        registries: {
+          npm: 'https://registry.vlt.io/acct/npm/',
+        },
+      }),
+    ),
+    true,
+    'npm alias matching a configured mirror is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']), {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+          custom: 'http://example.com',
+        },
+      }),
+    ),
+    false,
+    'alias pointing at an unrelated URL is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple([
+          'registry',
+          'https://registry.npmjs.org/',
+          'foo@1.0.0',
+        ]),
+      ),
+    ),
+    true,
+    'URL-form DepID for registry.npmjs.org is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple([
+          'registry',
+          'https://registry.vlt.io/acct/npm/',
+          'foo@1.0.0',
+        ]),
+        {
+          registries: {
+            npm: 'https://registry.vlt.io/acct/npm/',
+          },
+        },
+      ),
+    ),
+    true,
+    'URL-form DepID matching registries.npm is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']), {
+        registries: { npm: 'https://registry.vlt.io/acct/npm' },
+      }),
+    ),
+    true,
+    'registries.npm without a trailing slash still matches',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple([
+          'registry',
+          'https://registry.npmjs.org',
+          'foo@1.0.0',
+        ]),
+      ),
+    ),
+    true,
+    'URL-form DepID for registry.npmjs.org without trailing slash is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple([
+          'registry',
+          'https://registry.vlt.io/acct/npm/',
+          'foo@1.0.0',
+        ]),
+      ),
+    ),
+    false,
+    'URL-form mirror DepID with no registries.npm is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']), {
+        registries: { npm: '' },
+      }),
+    ),
+    false,
+    'empty registries.npm URL is ineligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']), {}),
+    ),
+    false,
+    'alias-form DepID with no registries config is ineligible',
+  )
 })
 
 t.test('SecurityArchive.refresh', async t => {
@@ -426,6 +581,57 @@ ${JSON.stringify(englishDaysReport)}
       'should calculate average score correctly with 2 decimal places',
     )
   })
+})
+
+t.test('SecurityArchive.refresh with npm mirror', async t => {
+  const dir = t.testdir()
+  const path = resolve(dir, 'mirror.db')
+  const graph = getSimpleReportGraph(mirrorSpecOptions)
+  const nodes = [...graph.nodes.values()]
+
+  let fetchBody: unknown
+  t.intercept(global, 'fetch', {
+    value: async (_url: string, init?: { body?: string }) => {
+      fetchBody = JSON.parse(init?.body ?? '{}')
+      return {
+        ok: true,
+        status: 200,
+        text: async () => `${JSON.stringify(fooReport)}
+${JSON.stringify(englishDaysReport)}
+`,
+      } as unknown as Response
+    },
+  })
+
+  const archive = await SecurityArchive.start({ nodes, path })
+
+  t.ok(archive.ok, 'archive is complete for npm-mirror packages')
+  t.strictSame(
+    fetchBody,
+    {
+      components: [
+        { purl: 'pkg:npm/@ruyadorno/foo@1.0.0' },
+        { purl: 'pkg:npm/english-days@1.0.0' },
+      ],
+    },
+    'should queue only npm-alias packages from the mirror',
+  )
+  t.ok(
+    archive.has(
+      joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
+    ),
+    'should store the mirrored npm package',
+  )
+  t.notOk(
+    archive.has(
+      joinDepIDTuple(['registry', 'custom', 'registry@1.0.1']),
+    ),
+    'should skip the custom-registry package',
+  )
+  t.matchSnapshot(
+    archive.toJSON(),
+    'should persist security data for packages from registries.npm',
+  )
 })
 
 t.test('DepID normalization', async t => {

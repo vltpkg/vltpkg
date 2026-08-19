@@ -7,6 +7,7 @@ import pRetry, { AbortError } from 'p-retry'
 import { loadPackageJson } from 'package-json-from-dist'
 import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import { defaultRegistryName } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-expired.ts'
@@ -25,7 +26,7 @@ const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
   'sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api'
 
-export const targetSecurityRegisty = 'https://registry.npmjs.org/'
+export const npmRegistryURL = 'https://registry.npmjs.org/'
 
 export type JSONItemResponse = {
   namespace?: `@{string}`
@@ -70,22 +71,28 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
   retries?: number
 }
 
+const normalizeRegistryURL = (url: string): string =>
+  url.endsWith('/') ? url : `${url}/`
+
+const nodeRegistryURL = (node: NodeLike): string | undefined => {
+  const [type, reg] = splitDepID(node.id)
+  if (type !== 'registry') return
+  const url =
+    /^https?:\/\//.test(reg) ? reg : node.options.registries?.[reg]
+  return url ? normalizeRegistryURL(url) : undefined
+}
+
 /**
- * Only the public npm registry has information available in the
- * socket.dev API. This function checks if a given depID is pointing
- * to the public npm registry and returns `true` if it does.
+ * Socket.dev only has reports for the public npm ecosystem. Eligible
+ * when the node's origin is `https://registry.npmjs.org/` or the URL
+ * configured as `registries.npm`.
  */
-const usesTargetRegistry = (node: NodeLike): boolean => {
-  const depID = node.id
-  const specOptions = node.options
-  const [nodeType, nodeRegistry] = splitDepID(depID)
-
-  if (nodeType !== 'registry') {
-    return false
-  }
-
-  const reg = specOptions.registries?.[nodeRegistry]
-  return reg === targetSecurityRegisty
+export const usesNpmRegistry = (node: NodeLike): boolean => {
+  const origin = nodeRegistryURL(node)
+  if (!origin) return false
+  if (origin === npmRegistryURL) return true
+  const npmAlias = node.options.registries?.[defaultRegistryName]
+  return !!npmAlias && normalizeRegistryURL(npmAlias) === origin
 }
 
 // Loads the version number to be used in the User-Agent header
@@ -312,11 +319,10 @@ export class SecurityArchive
     const queue = new Set<Record<'purl', string>>()
     for (const node of this.#nodesByID.values()) {
       const normalizedId = baseDepID(node.id)
-      // only queue up valid public registry
-      // references that are missing from the archive
+      // only queue npm-ecosystem registry refs missing from the archive
       // also skips any pkg marked as expired
       if (
-        usesTargetRegistry(node) &&
+        usesNpmRegistry(node) &&
         !this.has(normalizedId) &&
         !this.#expired.has(normalizedId)
       ) {
@@ -440,12 +446,12 @@ export class SecurityArchive
   }
 
   /**
-   * Validates that all public-registry packages in the nodes
+   * Validates that all npm-ecosystem packages in the nodes
    * have a valid report data in the current in-memory cache.
    */
   #validateReportData() {
     for (const node of this.#nodesByID.values()) {
-      if (usesTargetRegistry(node)) {
+      if (usesNpmRegistry(node)) {
         if (!this.has(baseDepID(node.id))) {
           this.ok = false
           return
