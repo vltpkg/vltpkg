@@ -657,20 +657,14 @@ export const aggregateBySeverity = (
  */
 export const scanCoverage = (
   nodes: Iterable<unknown>,
+  securityArchive?: SecurityArchiveLookup,
 ): { scanned: number; unscanned: number } => {
   let scanned = 0
   let unscanned = 0
   for (const node of nodes) {
-    if (!isNode(node) || !('insights' in node)) continue
-    const insights = (node as { insights: unknown }).insights
-    if (
-      typeof insights !== 'object' ||
-      insights === null ||
-      !('scanned' in insights)
-    ) {
-      continue
-    }
-    if (insights.scanned) scanned++
+    if (!isNode(node)) continue
+    const data = securityArchive?.get?.(node.id)
+    if (data) scanned++
     else unscanned++
   }
   return { scanned, unscanned }

@@ -1341,4 +1341,65 @@ t.test('audit', async t => {
       )
     },
   )
+
+  t.test(
+    'reports scan coverage from the security archive in JSON output',
+    async t => {
+      // The test graph has foo, bar, and the main importer.
+      // Mock the archive to return data for foo only.
+      const CommandWithCoverage = await t.mockImport<
+        typeof import('../../src/commands/audit.ts')
+      >('../../src/commands/audit.ts', {
+        '@vltpkg/graph': t.createMock(Graph, {
+          actual: {
+            load: () => graph,
+          },
+        }),
+        '@vltpkg/security-archive': {
+          ...SecurityArchiveModule,
+          SecurityArchive: {
+            async start() {
+              return {
+                ok: true,
+                get: (id: string) =>
+                  id.includes('foo') ? { name: 'foo' } : undefined,
+              }
+            },
+          },
+        },
+        '@vltpkg/query': {
+          Query: class MockQuery {
+            async search() {
+              return { nodes: [] }
+            }
+          },
+        },
+      })
+
+      const opts = {
+        scurry: new PathScurry(t.testdirName),
+        packageJson: new PackageJson(),
+        projectRoot: t.testdirName,
+      }
+      opts.packageJson.read = () => graph.mainImporter.manifest!
+
+      const result = await runCommand(
+        { values: { view: 'json' }, options: opts },
+        CommandWithCoverage,
+      )
+      const parsed = JSON.parse(result as string)
+
+      // foo is scanned (archive has data), bar is unscanned.
+      // The importer node has no registry data so it's unscanned too,
+      // but it still counts as a node in the graph.
+      t.ok(
+        parsed.scannedCount >= 1,
+        'scannedCount should reflect archive lookups',
+      )
+      t.ok(
+        parsed.unscannedCount >= 1,
+        'unscannedCount should reflect nodes without archive data',
+      )
+    },
+  )
 })
