@@ -17,12 +17,12 @@ $ vlt audit [--view=human | json | count]
   lang="bash"
 />
 
-Check installed dependencies for security issues.
+Checks installed dependencies for security issues and provides a
+summary of security findings including malware, vulnerable packages,
+and typosquats.
 
-Provides a summary of security findings including malware, vulnerable
-packages, and typosquats. Use `--audit-level` to filter by minimum
-severity. Exits `1` when any finding is reported and `0` when none is,
-so it can gate CI directly.
+Use `--audit-level` to filter by minimum severity. Exits `1` when any
+finding is reported and `0` when none is, so it can gate CI directly.
 
 ## Examples
 
@@ -77,10 +77,38 @@ Findings the security feed marks as ignorable — capability signals
 such as environment variable access on ordinary packages — are not
 reported, keeping the output to what is actionable.
 
-CISA Known Exploited Vulnerabilities are reported whatever
-`--audit-level` is set to, so a severity gate cannot silently discard
+CISA Known Exploited Vulnerabilities are reported regardless of the
+`--audit-level` set, so a severity gate cannot silently discard
 something being exploited in the wild.
 
-Summary lines count **packages**, not alerts: a package with several
-vulnerabilities counts once. The exception is the scan coverage line,
-which counts installed versions.
+### How counts work
+
+The summary counts **packages**, not individual alerts. A package with
+three vulnerabilities and a typosquat alert is one entry in the total,
+filed under the worst severity across all its alerts. The category
+line (`N malware, M vulnerable, K squat`) also counts packages: a
+package with alerts in multiple categories contributes once to each
+category, so the category counts don't necessarily sum to the total.
+
+The severity line (`N critical, M high, ...`) counts packages per
+severity bucket after `--audit-level` filtering. A package appears in
+exactly one severity bucket — the worst one across its alerts.
+
+`directCount` and `indirectCount` classify packages as direct or
+transitive based on whether they appear in an importer's `edgesOut`
+(the importers include workspace roots, not just the main project).
+These counts are recomputed after `--audit-level` filtering so they
+always match the findings actually shown.
+
+### Scan coverage
+
+The coverage line (`N of M installed versions scanned`) counts every
+node in the dependency graph, not just the findings. Only packages
+from the public npm registry are sent to the security feed —
+non-registry dependencies (git, file, and workspace packages) are
+never queried, so they count as unscanned. A version counts as
+"scanned" when the feed returned a report for it (even if the report
+has no alerts). When some versions are unscanned the line notes that
+findings may be incomplete: "0 packages with security issues" only
+covers the versions that were scanned, not the ones the feed never
+saw.

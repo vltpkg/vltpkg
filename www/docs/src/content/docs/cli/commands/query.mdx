@@ -104,8 +104,7 @@ with error code if expectation is not met.
 - `--expect-results=">0"` - Expect at least one result
 - `--expect-results="<5"` - Expect fewer than 5 results
 - `--expect-results=">=10"` - Expect 10 or more results
-
-<Code
+  <Code
   code={`# Security check that fails if malware is found
 $ vlt query ':malware' --expect-results=0
 
@@ -113,3 +112,20 @@ $ vlt query ':malware' --expect-results=0
 
 $ vlt query ':workspace' --expect-results=">0"`} title="Terminal"
 lang="bash" />
+
+## Security summary footer
+
+When the query uses a security selector (`:malware`, `:squat`,
+`:severity`, `:vuln`, `:cve`), the human view appends a summary
+footer. The footer reports the total number of **packages** with
+findings, a severity breakdown, and a direct vs transitive split.
+
+Each package is counted once, filed under its worst severity. A
+package with both a malware alert and a vulnerability alert is one
+entry, not two. The direct/transitive classification is based on
+whether the package appears in an importer's declared dependencies —
+workspace roots count as importers, so a workspace's own dependency is
+direct.
+
+The footer only appears in `human` view. Use `--view=json` for the
+full result with per-package alert details.
