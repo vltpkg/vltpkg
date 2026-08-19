@@ -1199,4 +1199,146 @@ t.test('audit', async t => {
       t.equal(parsed.indirectCount, 1, 'indirectCount should be 1')
     },
   )
+
+  t.test(
+    'warns and exits non-zero when security archive is not ok',
+    async t => {
+      process.exitCode = 0
+      const stderrLogs = t.capture(console, 'error').args
+
+      const CommandNotOk = await t.mockImport<
+        typeof import('../../src/commands/audit.ts')
+      >('../../src/commands/audit.ts', {
+        '@vltpkg/graph': t.createMock(Graph, {
+          actual: {
+            load: () => graph,
+          },
+        }),
+        '@vltpkg/security-archive': {
+          ...SecurityArchiveModule,
+          SecurityArchive: {
+            async start() {
+              return {
+                ok: false,
+                get: () => undefined,
+              }
+            },
+          },
+        },
+        '@vltpkg/query': {
+          Query: class MockQuery {
+            async search() {
+              return { nodes: [] }
+            }
+          },
+        },
+      })
+
+      const opts = {
+        scurry: new PathScurry(t.testdirName),
+        packageJson: new PackageJson(),
+        projectRoot: t.testdirName,
+      }
+      opts.packageJson.read = () => graph.mainImporter.manifest!
+
+      await runCommand(
+        { values: { view: 'json' }, options: opts },
+        CommandNotOk,
+      )
+
+      t.ok(
+        stderrLogs().some((log: unknown[]) =>
+          log.some(
+            (msg: unknown) =>
+              typeof msg === 'string' &&
+              msg.includes(
+                'security archive could not be fully populated',
+              ),
+          ),
+        ),
+        'should warn about incomplete security archive',
+      )
+      t.equal(
+        process.exitCode,
+        1,
+        'should exit non-zero when archive is not ok',
+      )
+    },
+  )
+
+  t.test(
+    'does NOT warn when archive is not ok but graph has no deps',
+    async t => {
+      process.exitCode = 0
+      const stderrLogs = t.capture(console, 'error').args
+
+      // A graph with only an importer — no dependencies at all
+      const emptyGraph = new Graph.Graph({
+        ...specOptions,
+        projectRoot: t.testdirName,
+        mainManifest: {
+          name: 'empty-project',
+          version: '1.0.0',
+        },
+      })
+
+      const CommandEmpty = await t.mockImport<
+        typeof import('../../src/commands/audit.ts')
+      >('../../src/commands/audit.ts', {
+        '@vltpkg/graph': t.createMock(Graph, {
+          actual: {
+            load: () => emptyGraph,
+          },
+        }),
+        '@vltpkg/security-archive': {
+          ...SecurityArchiveModule,
+          SecurityArchive: {
+            async start() {
+              return {
+                ok: false,
+                get: () => undefined,
+              }
+            },
+          },
+        },
+        '@vltpkg/query': {
+          Query: class MockQuery {
+            async search() {
+              return { nodes: [] }
+            }
+          },
+        },
+      })
+
+      const opts = {
+        scurry: new PathScurry(t.testdirName),
+        packageJson: new PackageJson(),
+        projectRoot: t.testdirName,
+      }
+      opts.packageJson.read = () => emptyGraph.mainImporter.manifest!
+
+      await runCommand(
+        { values: { view: 'json' }, options: opts },
+        CommandEmpty,
+      )
+
+      t.notOk(
+        stderrLogs().some((log: unknown[]) =>
+          log.some(
+            (msg: unknown) =>
+              typeof msg === 'string' &&
+              msg.includes(
+                'security archive could not be fully populated',
+              ),
+          ),
+        ),
+        'should NOT warn when graph has no deps',
+      )
+      t.equal(
+        process.exitCode,
+        0,
+        'should NOT exit non-zero for empty project',
+      )
+    },
+  )
 })
