@@ -106,7 +106,25 @@ Alternatively, configure a project manually:
 
 <Steps>
 
-1. **Set up the vlt.io npm mirror**
+1. **Set up your private `@acme` scope**
+
+   Your private scope lives in a separate registry. To set it up in
+   `vlt.json`, run:
+
+   ```bash
+   vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/
+   ```
+
+   Then obtain an authentication token for your private scope:
+
+   ```bash
+   vlt login --registry=https://registry.vlt.io/acme/main/
+   ```
+
+   Now you can publish and install packages from your private `@acme`
+   scope.
+
+2. **Set up the vlt.io npm mirror**
 
    Change your default registry to your vlt.io mirror. This updates
    your `vlt.json` file to use the mirror for all packages in the
@@ -127,24 +145,6 @@ Alternatively, configure a project manually:
    ```bash
    vlt install
    ```
-
-2. **Set up your private `@acme` scope**
-
-   Your private scope lives in a separate registry. To set it up in
-   `vlt.json`, run:
-
-   ```bash
-   vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/
-   ```
-
-   Then obtain an authentication token for your private scope:
-
-   ```bash
-   vlt login --registry=https://registry.vlt.io/acme/main/
-   ```
-
-   Now you can publish and install packages from your private `@acme`
-   scope.
 
 </Steps>
 
