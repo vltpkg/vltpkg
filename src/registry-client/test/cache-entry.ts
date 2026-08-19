@@ -725,3 +725,43 @@ t.test('validity deadlines are re-evaluated over time', async t => {
     'swr window closes after its deadline passes',
   )
 })
+
+t.test('gunzip bomb rejected', t => {
+  const c = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-encoding': 'gzip' }),
+  )
+  c.addBody(gzipSync(Buffer.alloc(2 * 1024 * 1024)))
+  t.throws(() => c.unzip(), {
+    message: 'cache entry exceeds maximum unpacked size',
+  })
+  t.end()
+})
+
+t.test('non-bomb gunzip errors pass through', t => {
+  const c = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-encoding': 'gzip' }),
+  )
+  c.addBody(Buffer.from([0x1f, 0x8b, 0xff, 0xff, 0xff, 0xff]))
+  t.throws(() => c.unzip(), {
+    message: 'unknown compression method',
+  })
+  t.end()
+})
+
+t.test('VLT_TAR_MAX_UNPACKED_BYTES caps unzip', async t => {
+  process.env.VLT_TAR_MAX_UNPACKED_BYTES = '4'
+  t.teardown(() => delete process.env.VLT_TAR_MAX_UNPACKED_BYTES)
+  const { CacheEntry } = await t.mockImport<
+    typeof import('../src/cache-entry.ts')
+  >('../src/cache-entry.ts')
+  const c = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-encoding': 'gzip' }),
+  )
+  c.addBody(gzipSync(Buffer.from('hello, world')))
+  t.throws(() => c.unzip(), {
+    message: 'cache entry exceeds maximum unpacked size',
+  })
+})
