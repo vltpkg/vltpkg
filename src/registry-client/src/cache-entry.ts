@@ -35,6 +35,20 @@ import {
 
 export type JSONObj = Record<string, JSONField>
 
+// same bound as @vltpkg/tar unpack: reject decompression bombs
+// rather than committing unbounded memory to gunzipSync.
+const MAX_DECOMPRESSION_RATIO = 1000
+const defaultMaxUnpackedBytes = 2 * 1024 * 1024 * 1024
+const parseMaxUnpackedBytes = (raw: string | undefined): number => {
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 1 ?
+      Math.floor(n)
+    : defaultMaxUnpackedBytes
+}
+const maxUnpackedBytes = parseMaxUnpackedBytes(
+  process.env.VLT_TAR_MAX_UNPACKED_BYTES,
+)
+
 const readSize = (buf: Uint8Array, offset: number) => {
   const a = buf[offset]
   const b = buf[offset + 1]
@@ -494,7 +508,25 @@ export class CacheEntry {
       if (this._body.length === 0)
         throw error('Invalid buffer, cant unzip')
       /* c8 ignore stop */
-      const b = gunzipSync(this._body)
+      const max = Math.min(
+        maxUnpackedBytes,
+        this._body.length * MAX_DECOMPRESSION_RATIO,
+      )
+      let b: Buffer
+      try {
+        b = gunzipSync(this._body, { maxOutputLength: max })
+      } catch (er) {
+        throw (
+            (er as NodeJS.ErrnoException).code ===
+              'ERR_BUFFER_TOO_LARGE'
+          ) ?
+            error('cache entry exceeds maximum unpacked size', {
+              found: this._body.length,
+              max,
+              cause: er,
+            })
+          : er
+      }
       this.setHeader('content-encoding', 'identity')
       const u8 = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
       this.#body = u8

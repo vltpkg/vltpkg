@@ -7,6 +7,20 @@ import type EventEmitter from 'node:events'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
+// same bound as @vltpkg/tar unpack: don't inflate decompression
+// bombs, just leave them gzipped in the cache.
+const MAX_DECOMPRESSION_RATIO = 1000
+const defaultMaxUnpackedBytes = 2 * 1024 * 1024 * 1024
+const parseMaxUnpackedBytes = (raw: string | undefined): number => {
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 1 ?
+      Math.floor(n)
+    : defaultMaxUnpackedBytes
+}
+const maxUnpackedBytes = parseMaxUnpackedBytes(
+  process.env.VLT_TAR_MAX_UNPACKED_BYTES,
+)
+
 const isMain = (path?: string) =>
   path === __CODE_SPLIT_SCRIPT_NAME ||
   path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
@@ -73,7 +87,23 @@ const main = async (
       const headSizeOriginal = readSize(buffer, 0)
       const body = buffer.subarray(headSizeOriginal)
       if (body[0] === 0x1f && body[1] === 0x8b) {
-        const unz = gunzipSync(body)
+        let unz: Buffer
+        try {
+          unz = gunzipSync(body, {
+            maxOutputLength: Math.min(
+              maxUnpackedBytes,
+              body.length * MAX_DECOMPRESSION_RATIO,
+            ),
+          })
+        } catch (er) {
+          if (
+            (er as NodeJS.ErrnoException).code !==
+            'ERR_BUFFER_TOO_LARGE'
+          ) {
+            throw er
+          }
+          return null
+        }
         const headersBuffer = buffer.subarray(7, headSizeOriginal)
         const headers: Buffer[] = []
         let i = 0

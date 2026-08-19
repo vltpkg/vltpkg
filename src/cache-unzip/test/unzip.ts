@@ -301,3 +301,92 @@ t.test('unzip an entry with integrity', async t => {
   )
   t.equal(cacheStat.nlink, 2, 'nlink is 2')
 })
+
+t.test(
+  'bomb left gzipped, other entries still processed',
+  async t => {
+    const cache = new Cache({ path: t.testdir() })
+    const head10 = Buffer.alloc(10)
+    head10.writeUint32BE(10, 0)
+    const bomb = Buffer.concat([
+      head10,
+      gzipSync(Buffer.alloc(2 * 1024 * 1024)),
+    ])
+    const ok = Buffer.concat([
+      head10,
+      gzipSync(Buffer.from('yes gzipped')),
+    ])
+    cache.set('bomb', bomb)
+    cache.set('ok', ok)
+    await cache.promise()
+
+    const res = spawnSync(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME, t.testdirName],
+      {
+        input: 'bomb\0ok\0',
+        stdio: ['pipe', 'inherit', 'inherit'],
+        env: ENV,
+      },
+    )
+    t.equal(res.status, 0)
+
+    const g = new Cache({ path: t.testdirName })
+    t.strictSame(await g.fetch('bomb'), bomb, 'bomb untouched')
+    const okAfter = await g.fetch('ok')
+    t.ok(okAfter, 'ok entry present')
+    t.strictSame(
+      okAfter?.subarray(-'yes gzipped'.length),
+      Buffer.from('yes gzipped'),
+      'ok entry rewritten un-gzipped',
+    )
+  },
+)
+
+t.test('VLT_TAR_MAX_UNPACKED_BYTES caps rewrite', async t => {
+  const cache = new Cache({ path: t.testdir() })
+  const head10 = Buffer.alloc(10)
+  head10.writeUint32BE(10, 0)
+  const gz = Buffer.concat([
+    head10,
+    gzipSync(Buffer.from('yes gzipped')),
+  ])
+  cache.set('gz', gz)
+  await cache.promise()
+
+  const res = spawnSync(
+    process.execPath,
+    [__CODE_SPLIT_SCRIPT_NAME, t.testdirName],
+    {
+      input: 'gz\0',
+      stdio: ['pipe', 'inherit', 'inherit'],
+      env: { ...ENV, VLT_TAR_MAX_UNPACKED_BYTES: '4' },
+    },
+  )
+  t.equal(res.status, 1, 'nothing rewritten')
+  const g = new Cache({ path: t.testdirName })
+  t.strictSame(await g.fetch('gz'), gz, 'entry left gzipped')
+})
+
+t.test('corrupt gzip still throws', async t => {
+  const cache = new Cache({ path: t.testdir() })
+  const head10 = Buffer.alloc(10)
+  head10.writeUint32BE(10, 0)
+  const bad = Buffer.concat([
+    head10,
+    Buffer.from([0x1f, 0x8b, 0xff, 0xff, 0xff, 0xff]),
+  ])
+  cache.set('bad', bad)
+  await cache.promise()
+
+  const res = spawnSync(
+    process.execPath,
+    [__CODE_SPLIT_SCRIPT_NAME, t.testdirName],
+    {
+      input: 'bad\0',
+      stdio: ['pipe', 'inherit', 'ignore'],
+      env: ENV,
+    },
+  )
+  t.equal(res.status, 1)
+})
