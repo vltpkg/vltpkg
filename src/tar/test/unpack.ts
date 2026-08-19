@@ -505,6 +505,59 @@ t.test('invalid VLT_TAR_WRITE_LANES falls back', async t => {
   }
 })
 
+t.test('gzip decompression ratio cap', async t => {
+  const bomb = gzipSync(Buffer.alloc(2 * 1024 * 1024))
+  await t.rejects(() => unpack(bomb, t.testdir()), {
+    message: 'tarball exceeds maximum unpacked size',
+  })
+})
+
+t.test('gzip absolute unpacked size ceiling', async t => {
+  const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
+  process.env.VLT_TAR_MAX_UNPACKED_BYTES = '4096'
+  t.teardown(() => {
+    if (prev === undefined) {
+      delete process.env.VLT_TAR_MAX_UNPACKED_BYTES
+    } else {
+      process.env.VLT_TAR_MAX_UNPACKED_BYTES = prev
+    }
+  })
+  const { unpack } = await t.mockImport<
+    typeof import('../src/unpack.ts')
+  >('../src/unpack.ts')
+  await t.rejects(() => unpack(gzipped, t.testdir()), {
+    message: 'tarball exceeds maximum unpacked size',
+  })
+})
+
+t.test('invalid VLT_TAR_MAX_UNPACKED_BYTES falls back', async t => {
+  const gzippedFiles = gzipSync(makeFilesTar({ z: 'z' }))
+  for (const raw of ['nope', '0', '-1']) {
+    const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
+    process.env.VLT_TAR_MAX_UNPACKED_BYTES = raw
+    t.teardown(() => {
+      if (prev === undefined) {
+        delete process.env.VLT_TAR_MAX_UNPACKED_BYTES
+      } else {
+        process.env.VLT_TAR_MAX_UNPACKED_BYTES = prev
+      }
+    })
+    const { unpack } = await t.mockImport<
+      typeof import('../src/unpack.ts')
+    >('../src/unpack.ts')
+    const dir = t.testdirName
+    await unpack(gzippedFiles, dir)
+    t.equal(readFileSync(dir + '/z', 'utf8'), 'z', raw)
+  }
+})
+
+t.test('non-bomb zlib errors pass through', async t => {
+  const garbage = Buffer.from([0x1f, 0x8b, 0xff, 0xff, 0xff, 0xff])
+  await t.rejects(() => unpack(garbage, t.testdir()), {
+    message: 'unknown compression method',
+  })
+})
+
 t.test('checkFs differential vs relative() impl', t => {
   const checkFsOld = (
     h: { path?: string },
