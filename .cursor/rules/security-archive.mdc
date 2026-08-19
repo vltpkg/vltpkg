@@ -12,7 +12,11 @@ Fetches, caches, and serves Socket.dev security data for the query system.
 - `src/security-archive/src/index.ts` — `SecurityArchive` class (extends `LRUCache<DepID, PackageReportData>`)
 - Uses Socket API v0 (`https://api.socket.dev/v0/purl?alerts=true`) with public API token
 - Stores in SQLite DB (XDG data dir) with TTL-based expiration
-- Only supports `https://registry.npmjs.org/` packages (via `targetSecurityRegistry`)
+- Eligible packages: origin is `https://registry.npmjs.org/` or the URL
+  configured as `registries.npm` (via `usesNpmRegistry`). Other registries
+  are skipped. `vlt login --registry=<mirror>` writes only the scalar
+  `registry` option, so a non-npmjs.org mirror configured that way is not
+  scanned — use `vlt setup` or `vlt config set registries=npm=<url>`.
 
 ## Data Flow
 

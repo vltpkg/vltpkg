@@ -17,6 +17,13 @@ export const specOptions = getOptions({
   },
 })
 
+export const mirrorSpecOptions = getOptions({
+  registries: {
+    npm: 'https://registry.vlt.io/acct/npm/',
+    custom: 'http://example.com',
+  },
+})
+
 const projectRoot = '.'
 export const newGraph = (rootName: string): GraphLike => {
   const graph = {} as GraphLike
@@ -42,7 +49,7 @@ export const newGraph = (rootName: string): GraphLike => {
   return graph
 }
 export const newNode =
-  (graph: GraphLike) =>
+  (graph: GraphLike, options = specOptions) =>
   (name: string, version = '1.0.0', registry?: string): NodeLike => {
     const node: NodeLike = {
       projectRoot,
@@ -68,7 +75,7 @@ export const newNode =
       optional: false,
       confused: false,
       workspaces: undefined,
-      options: specOptions,
+      options,
       setResolved() {},
       maybeSetConfusedManifest() {},
       setConfusedManifest() {},
@@ -114,9 +121,11 @@ const newEdge = (
   from.graph.edges.add(edge)
 }
 
-export const getSimpleReportGraph = (): GraphLike => {
+export const getSimpleReportGraph = (
+  options = specOptions,
+): GraphLike => {
   const graph = newGraph('my-project')
-  const addNode = newNode(graph)
+  const addNode = newNode(graph, options)
   const foo = addNode('@ruyadorno/foo')
   const englishDays = addNode('english-days')
   const customRegistry = addNode('registry', '1.0.1', 'custom')
@@ -125,19 +134,19 @@ export const getSimpleReportGraph = (): GraphLike => {
   graph.nodes.set(customRegistry.id, customRegistry)
   newEdge(
     graph.mainImporter,
-    Spec.parse('@ruyadorno/foo', '^1.0.0', specOptions),
+    Spec.parse('@ruyadorno/foo', '^1.0.0', options),
     'prod',
     foo,
   )
   newEdge(
     graph.mainImporter,
-    Spec.parse('english-days', '^1.0.0', specOptions),
+    Spec.parse('english-days', '^1.0.0', options),
     'dev',
     englishDays,
   )
   newEdge(
     graph.mainImporter,
-    Spec.parse('registry', 'custom:registry@^1.0.0', specOptions),
+    Spec.parse('registry', 'custom:registry@^1.0.0', options),
     'dev',
     customRegistry,
   )

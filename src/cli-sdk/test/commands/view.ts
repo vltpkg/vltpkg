@@ -1,6 +1,8 @@
 import t from 'tap'
+import { getId } from '@vltpkg/dep-id'
+import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { Manifest, Packument } from '@vltpkg/types'
+import type { Manifest, Packument, NodeLike } from '@vltpkg/types'
 import type { PackageReportData } from '@vltpkg/security-archive'
 
 const mockPackument: Packument = {
@@ -66,6 +68,7 @@ const mockSecurity: PackageReportData = {
 let mockPackumentResult: Packument | undefined
 let mockManifestResult: Manifest | undefined
 let securityStartCalled = false
+let lastSecurityNodes: unknown[] = []
 let mockSecurityResult: PackageReportData | undefined
 let mockSecurityShouldThrow = false
 
@@ -90,8 +93,9 @@ const Command = await t.mockImport<
   },
   '@vltpkg/security-archive': {
     SecurityArchive: {
-      start: async (_opts: { nodes: unknown[] }) => {
+      start: async (opts: { nodes: unknown[] }) => {
         securityStartCalled = true
+        lastSecurityNodes = opts.nodes
         if (mockSecurityShouldThrow) {
           throw new Error('Security service unavailable')
         }
@@ -107,6 +111,7 @@ t.beforeEach(() => {
   mockPackumentResult = undefined
   mockManifestResult = undefined
   securityStartCalled = false
+  lastSecurityNodes = []
   mockSecurityResult = undefined
   mockSecurityShouldThrow = false
 })
@@ -295,6 +300,36 @@ t.test('command', async t => {
     t.equal(result.fieldPath, undefined)
     t.ok(securityStartCalled, 'security archive was started')
   })
+
+  t.test(
+    'passes spec-derived id and registries options to archive',
+    async t => {
+      mockPackumentResult = mockPackument
+      mockManifestResult = mockManifest
+      mockSecurityResult = mockSecurity
+
+      const registries = {
+        npm: 'https://registry.vlt.io/acct/npm/',
+      }
+      const config = makeConfig(['test-pkg'])
+      config.options.registries = registries
+      await Command.command(config)
+
+      t.equal(lastSecurityNodes.length, 1)
+      const node = lastSecurityNodes[0] as NodeLike
+      const spec = Spec.parseArgs('test-pkg', config.options)
+      t.equal(
+        node.id,
+        getId(spec, { name: 'test-pkg', version: '2.0.0' }),
+        'should derive the DepID from the parsed spec',
+      )
+      t.strictSame(
+        node.options.registries,
+        registries,
+        'should pass config registries through to the fake node',
+      )
+    },
+  )
 
   t.test('field access - returns field value', async t => {
     mockPackumentResult = mockPackument
