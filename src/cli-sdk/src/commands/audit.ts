@@ -136,7 +136,7 @@ export const command: CommandFn<AuditResult> = async conf => {
 
   const filtered = filterAuditResult(result, auditLevel)
 
-  // Exit with error code when findings are present, matching npm/pnpm behavior
+  // Exit with error code when findings are present
   if (filtered.total > 0) {
     process.exitCode = 1
   }
