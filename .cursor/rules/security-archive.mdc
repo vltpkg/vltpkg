@@ -1,67 +1,94 @@
 ---
-description: Socket.dev security data integration and security selectors
-globs: src/security-archive/src/*,src/security-archive/test/*,src/query/src/pseudo/*
+description: Security archive types, alert schema invariants, and consumer constraints
+globs: src/security-archive/**,src/cli-sdk/src/audit-helpers.ts,src/cli-sdk/src/commands/audit.ts,src/query/src/pseudo/severity.ts,src/query/src/index.ts
 alwaysApply: false
 ---
-# Security Archive (`@vltpkg/security-archive`)
+# `@vltpkg/security-archive`
 
-Fetches, caches, and serves Socket.dev security data for the query system.
+The types here are the foundation for giving vlt users a transparent
+view of vulnerabilities, malware, typosquats, and supply-chain risks,
+with actionable remediation. A type change that drops a field, closes
+a union, or makes an optional value required can silently hide
+findings from every consumer. Every invariant below exists to keep
+that transparency intact — don't relax one without tracing every
+consumer (`vlt audit`, `vlt query` security footer, `:severity()`).
 
-## Architecture
+Command-level behaviour is in `@audit.mdc`.
 
-- `src/security-archive/src/index.ts` — `SecurityArchive` class (extends `LRUCache<DepID, PackageReportData>`)
+## Type invariants (`src/security-archive/src/types.ts`)
+
+- **`AlertType` is an open union.** The `(string & {})` fallback is
+  load-bearing — the feed adds types faster than this union tracks
+  them. Closing it would make an unrecognized alert fail to typecheck,
+  hiding a novel risk from every consumer. Never close it.
+- **`AlertCategory` is exactly six values**: `supplyChainRisk`,
+  `quality`, `maintenance`, `vulnerability`, `license`, `other`.
+  `malware`, `severity`, `squat` are alert *types*, not categories.
+  **Never classify on `category` alone** — malware and typosquats are
+  both `supplyChainRisk` alongside every capability finding. Match on
+  `alert.type`, or malware counts as zero while detail rows say
+  "malware: critical".
+- **`AlertSeverity` excludes `medium`.** Wire spelling is `middle`.
+  Never add `medium` — the exclusion forces consumers to map it
+  rather than compare directly, which is the only way a `medium`
+  finding stays visible instead of falling through to `low`.
+- **`PackageAlert.severity` and `.category` are optional.** When
+  severity is absent or unrecognized, don't default to `low`: treat
+  malware as `critical`, else `low`, emit `warn()`. Defaulting to `low`
+  is silent data loss — a malware alert spelled `moderate` would be
+  filed `low`, dropped by `--audit-level=high`, and the user sees exit
+  `0` (see `@audit.mdc`).
+- **`AlertAction` — always respect `ignore`.** Filter at the single
+  point alerts enter (`getPackageAlerts`), not at display. Otherwise
+  bucketing, counts, and rendered rows disagree about which risks
+  exist. A package whose every alert is ignored drops out entirely.
+- **`AlertFix` presence is authoritative** — `fix` present ⇒ fixable,
+  absent ⇒ not fixable. No registry resolution needed. `fix.description`
+  is Socket's own CLI prose — never render it; remediation must come
+  from vlt's own data, not redirect to another tool.
+- **`isVulnerabilityAlert`** narrows to `VulnerabilityAlertType`. Use
+  it before reading CVE-specific `props` (`cveId`, `cwes`, `title`,
+  `cvss`, `vulnerableVersionRange`) — reading those on a non-vuln
+  alert would fabricate advisory detail that isn't there.
+
+## Synthetic alerts
+
+`vlt query`'s footer aggregates **without** a security archive, so the
+synthetic-alert fallback in `getPackageAlerts` is load-bearing, not
+dead code. Synthetic alerts must emit `middle` via `toWireSeverity` —
+never `medium` (a value the endpoint can't produce). Without this
+fallback, `vlt query` with security selectors would show zero findings
+even when insights flag malware or CVEs.
+
+## Schema fidelity
+
+Check <https://docs.socket.dev/reference/batchpackagefetch> before
+adding or changing a field. `props.epss` and `reachability` are
+declared but unused — keep them so the wire shape stays accurate;
+don't render them as if they were scored.
+
+## Breaking-change discipline
+
+Published (not private) — exported type changes are breaking. Silent
+breaks are the danger: `boolean` → `LeveledInsights` still compiles
+`if (insights.malware)` but always sees truthy. Bump version, update
+consumers (`@vltpkg/query`, `@vltpkg/cli-sdk`, `:severity()`), call
+out breaks in the PR body.
+
+## Runtime (`src/security-archive/src/index.ts`)
+
+- `SecurityArchive` extends `LRUCache<DepID, PackageReportData>`
 - Uses Socket API v0 (`https://api.socket.dev/v0/purl?alerts=true`) with public API token
 - Stores in SQLite DB (XDG data dir) with TTL-based expiration
-- Eligible packages: origin is `https://registry.npmjs.org/` or the URL
-  configured as `registries.npm` (via `usesNpmRegistry`). Other registries
-  are skipped. `vlt login --registry=<mirror>` writes only the scalar
-  `registry` option, so a non-npmjs.org mirror configured that way is not
-  scanned — use `vlt setup` or `vlt config set registries=npm=<url>`.
-
-## Data Flow
-
-1. Query uses a security pseudo-selector (`:malware`, `:cve`, etc.)
-2. `SecurityArchive` is instantiated and passed to query engine via `ParserState.securityArchive`
-3. Archive fetches reports for queried DepIDs from Socket API (batched POST)
-4. Results cached in LRU + SQLite for future queries
-5. Pseudo-selector implementation checks `PackageReportData` for matches
-
-## PackageReportData
-
-```typescript
-type PackageReportData = {
-  score?: { overall, license, maintenance, quality, supplyChain, vulnerability }
-  alerts?: Array<{ type: string, severity: string, ... }>
-  license?: { text: string }
-  published?: string  // ISO date
-  deprecated?: boolean
-}
-```
-
-## Security Pseudo-Selectors (in `src/query/src/pseudo/`)
-
-**Malware/threats**: `:malware`, `:malware(critical|high|medium|low)`, `:obfuscated`, `:eval`, `:shell`, `:scripts`
-
-**Vulnerabilities**: `:cve` (any CVE), `:cve(CVE-ID)`, `:cwe` (any CWE), `:cwe(CWE-ID)`, `:severity(level)`, `:deprecated`
-
-**Behavioral**: `:fs`, `:network`, `:env`, `:native`, `:dynamic`, `:debug`, `:entropic`, `:minified`
-
-**Trust**: `:abandoned`, `:confused`, `:unmaintained`, `:unstable`, `:unknown`, `:unpopular`, `:trivial`, `:squat(type)`
-
-**Scoring**: `:score(rate, kind?)`, `:license(type)`, `:published(date)`
-
-**Meta**: `:scanned` (has security data)
-
-## CLI Usage
-
-```bash
-vlt query ':malware'                    # medium+ severity
-vlt query ':malware' --expect-results=0 # CI gate
-vlt query ':cve(CVE-2023-1234)'
-vlt query ':score("<0.5")'
-vlt build --target=':scripts:not(:malware)'  # default build target
-```
-
-## Docs
-
-User-facing: `www/docs/src/content/docs/cli/security.mdx`, `cli/selectors.mdx` (Security section)
+- Only public npm registry nodes are queued for the Socket API
+  (`splitDepID` → `registry`, resolves to `https://registry.npmjs.org/`
+  or the URL configured as `registries.npm` via `usesNpmRegistry`).
+  Other registries are skipped. `vlt login --registry=<mirror>` writes
+  only the scalar `registry` option, so a non-npmjs.org mirror
+  configured that way is not scanned — use `vlt setup` or
+  `vlt config set registries=npm=<url>`.
+- Stale-while-revalidate via **detached child process**
+  (`update-expired.ts`) — don't make it sync; `vlt ls`/`vlt query`
+  must not block on revalidation
+- `browser.ts` is a plain `Map` from JSON dump — shares `types.ts`
+  with the Node build; don't diverge them
