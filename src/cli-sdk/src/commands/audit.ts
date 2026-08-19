@@ -145,7 +145,7 @@ export const command: CommandFn<AuditResult> = async conf => {
   // Coverage is measured over the whole graph, not the query results --
   // every result matched a security selector and so had feed data, which
   // would report near-total coverage regardless of the truth.
-  const coverage = scanCoverage(graph.nodes.values())
+  const coverage = scanCoverage(graph.nodes.values(), securityArchive)
   result.scannedCount = coverage.scanned
   result.unscannedCount = coverage.unscanned
 

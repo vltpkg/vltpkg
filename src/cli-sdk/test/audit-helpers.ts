@@ -2005,51 +2005,53 @@ t.test('formatAuditSummary', async t => {
 })
 
 t.test('scanCoverage', async t => {
-  t.test('counts scanned and unscanned nodes', async t => {
-    t.strictSame(
-      scanCoverage(
-        [
-          { id: 'a', insights: { scanned: true } },
-          { id: 'b', insights: { scanned: true } },
-          { id: 'c', insights: { scanned: false } },
-        ].map(asNode),
-      ),
-      { scanned: 2, unscanned: 1 },
-    )
+  // A stand-in for SecurityArchive: maps DepID -> report data.
+  // Truthy value means "scanned", undefined means "not scanned".
+  const makeArchive = (ids: string[]) => ({
+    get: (id: string) =>
+      ids.includes(id) ? { name: 'scanned' } : undefined,
   })
 
-  t.test('ignores nodes that say nothing about scanning', async t => {
+  t.test(
+    'counts scanned and unscanned nodes from archive',
+    async t => {
+      t.strictSame(
+        scanCoverage(
+          [{ id: 'a' }, { id: 'b' }, { id: 'c' }].map(asNode),
+          makeArchive(['a', 'b']),
+        ),
+        { scanned: 2, unscanned: 1 },
+      )
+    },
+  )
+
+  t.test('without archive, all nodes are unscanned', async t => {
     t.strictSame(
-      scanCoverage(
-        [
-          // no insights at all
-          { id: 'a' },
-          // insights present, but no `scanned` key
-          { id: 'b', insights: {} },
-          // insights explicitly null
-          { id: 'c', insights: null },
-          { id: 'd', insights: { scanned: true } },
-        ].map(asNode),
-      ),
-      { scanned: 1, unscanned: 0 },
-      'only nodes carrying a `scanned` flag are counted either way',
+      scanCoverage([{ id: 'a' }, { id: 'b' }].map(asNode)),
+      { scanned: 0, unscanned: 2 },
     )
   })
 
   t.test('skips anything that is not a graph node', async t => {
     t.strictSame(
-      scanCoverage([
-        undefined,
-        null,
-        'nope',
-        { id: 'unbranded', insights: { scanned: true } },
-      ]),
+      scanCoverage(
+        [
+          undefined,
+          null,
+          'nope',
+          { id: 'unbranded', insights: { scanned: true } },
+        ],
+        makeArchive(['unbranded']),
+      ),
       { scanned: 0, unscanned: 0 },
     )
   })
 
   t.test('handles an empty graph', async t => {
-    t.strictSame(scanCoverage([]), { scanned: 0, unscanned: 0 })
+    t.strictSame(scanCoverage([], makeArchive([])), {
+      scanned: 0,
+      unscanned: 0,
+    })
   })
 })
 
