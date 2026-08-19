@@ -82,6 +82,21 @@ export const command: CommandFn<AuditResult> = async conf => {
     nodes: [...graph.nodes.values()],
   })
 
+  // An archive that found no registry-eligible nodes (e.g. config
+  // mismatch, empty archive) reports ok=false. Without this check the
+  // audit reports "clean" even though nothing was scanned. The
+  // graph.nodes.size > graph.importers.size guard avoids warning on
+  // genuinely empty projects (no deps).
+  if (
+    !securityArchive.ok &&
+    graph.nodes.size > graph.importers.size
+  ) {
+    stderr(
+      'Warning: security archive could not be fully populated; results may be incomplete.',
+    )
+    process.exitCode = 1
+  }
+
   // npm spells this level "moderate"; we call it "medium". jackspeak
   // has no normalize hook -- only validate -- so the alias has to be
   // resolved here, at the point of use. Skipping it silently fell

@@ -450,15 +450,17 @@ export class SecurityArchive
    * have a valid report data in the current in-memory cache.
    */
   #validateReportData() {
+    let seenEligible = false
     for (const node of this.#nodesByID.values()) {
       if (usesNpmRegistry(node)) {
+        seenEligible = true
         if (!this.has(baseDepID(node.id))) {
           this.ok = false
           return
         }
       }
     }
-    this.ok = true
+    this.ok = seenEligible
   }
 
   /**
