@@ -1,0 +1,115 @@
+---
+description: vlt audit command behaviour, security footer, and non-obvious invariants
+globs: src/cli-sdk/src/commands/audit.ts,src/cli-sdk/src/audit-helpers.ts,src/cli-sdk/src/safe-text.ts,src/cli-sdk/src/config/definition.ts,src/cli-sdk/test/commands/audit.ts,src/cli-sdk/test/audit-helpers.ts,src/cli-sdk/test/audit-behaviour.ts,src/cli-sdk/src/commands/query.ts,src/query/src/index.ts,src/graph/src/dependency-paths.ts,src/graph/test/dependency-paths.ts,src/query/src/pseudo/severity.ts,src/query/test/pseudo/cwe.ts
+alwaysApply: false
+---
+# `vlt audit`
+
+Give vlt users a transparent view of vulnerabilities, malware,
+typosquats, and supply-chain risks in their dependency graph, with
+actionable remediation or an honest "no fix yet". Every rule below
+exists to serve that intent — don't "optimize" a rule away if doing
+so would hide a finding, overstate coverage, or suppress a remediation
+step.
+
+Type-schema invariants (AlertSeverity, AlertCategory, AlertType,
+AlertFix, etc.) are in `@security-archive.mdc`.
+
+## Pipeline
+
+`commands/audit.ts` → `buildAuditQuery(level)` → `Query.search()` →
+`aggregateBySeverity()` → `filterAuditResult()` → views.
+`vlt query`'s security footer calls `aggregateBySeverity` **without**
+a security archive — the synthetic-alert fallback is load-bearing.
+
+## Non-obvious rules
+
+- **`moderate`→`medium` normalization happens in `commands/audit.ts`,
+  not `definition.ts`.** jackspeak has `validate` but no `normalize`;
+  the value arrives as typed. Left unresolved it fell through to `low`.
+- **`:malware` must appear unqualified at every audit level.** It's a
+  binary selector (no parameters). Writing `:malware(high)` drops
+  malware-only findings from the query entirely, not just from a bucket.
+- **`:scripts` is deliberately excluded** from `buildAuditQuery`.
+  `aggregateBySeverity` has no `insights.scripts` bucket — matches
+  were fetched and silently discarded.
+- **CISA KEV findings and malware are exempt from `--audit-level`
+  filtering.** Their severity is kept as-is (never rewritten), but they
+  survive below the threshold. An "improvement" that drops everything
+  below `minSeverity` lets a CI gate on `--audit-level=critical` discard
+  something being exploited right now.
+- **Unrecognized severity must not default to `low`.** Malware→
+  `critical`, else→`low`, plus `warn()`. Defaulting to `low` is silent
+  data loss: a malware alert spelled `moderate` would be filed `low`,
+  dropped by `--audit-level=high`, and exit `0`.
+- **`filterAuditResult` recomputes `directCount`/`indirectCount`** from
+  the filtered set, not the pre-filter totals. The footer must match
+  the issues actually shown.
+- **Direct = the node is itself an importer, or appears in some
+  importer's `edgesOut`.** `graph.importers` includes workspace roots
+  — a workspace's own dep is direct, not transitive.
+- **Scan coverage is measured over the whole graph, not the results.**
+  Every result matched a security selector and had feed data by
+  definition, so counting results claims near-total coverage whatever
+  the truth. Survives filtering. Always printed — "no issues" means
+  little if half the tree was never scanned.
+- **Summary prints after findings.** The counts are the conclusion
+  read once detail has scrolled past.
+- **Path counts, not lists.** 1 route → inline `via a > b > c`; >1 →
+  `reached by N paths`; truncated → `N+`, never bare `N`. Listing
+  forty routes buries the finding; one route understates it.
+- **`fix.description` is never rendered.** It reads "run `npx socket
+  fix`" — another package manager's CLI. Remediation must come from
+  vlt's own graph data, not redirect users to a different tool.
+- **Feed-supplied URLs are labelled with their host**, not an advisory
+  id. Only self-constructed URLs (NVD, GHSA, MITRE CWE) are labelled
+  with the id — otherwise a link can misrepresent where it goes, and
+  transparency means the user can see the destination before clicking.
+- **`stripVTControlCharacters` is not sufficient** for terminal safety.
+  It leaves bare `ESC`, `BEL`, `\r`, `\n` — enough to terminate an OSC 8
+  hyperlink early (clipboard writes via OSC 52, forged summary lines
+  that could hide a finding behind a reassuring "0 issues").
+  Use `safeText`/`safeUrl` from `src/safe-text.ts`.
+- **`safeUrl` restricts to `http`/`https` only.** OSC 8 hands the
+  target to the OS opener; `javascript:`/`file://` behind a harmless
+  label is a click that does something unseen.
+- **Links are gated on colors, not terminal detection.** With colors
+  off, the URL is printed beside the id — a hidden hyperlink is useless
+  in piped output, and remediation links must reach CI logs too.
+- **Only direct deps get a copy-pasteable install command**, pinned to
+  the exact patched version. Transitive deps get `reachable:`/`blocked:`
+  computed from dependents' declared ranges (`@vltpkg/semver`) — no
+  registry round-trip, so remediation guidance is grounded in the local
+  graph, not a guess. A suggested version must parse as semver before
+  reaching a command line; the package name must match npm's grammar.
+- **For impersonation alerts** the remedy is `alternatePackage`, not a
+  version — "did you mean X?" — because the risk is the package itself,
+  not its version.
+- **`:severity()` grades from the alert's `severity` field, not type
+  name.** The kind→type map paired one type per level, so
+  `mediumCVE`/`highCVE` matched nothing. `typeImpliedLevel` is the
+  fallback for alerts without a usable severity.
+- **`vlt view` must handle `'middle'`** (the feed's spelling), not just
+  `'medium'`.
+
+## Breaking changes in this PR
+
+- **`@vltpkg/query`** — `Insights.malware`: `boolean` →
+  `LeveledInsights`. *Silent* break: `if (insights.malware)` still
+  compiles but always sees a truthy object.
+- **`:severity()`** returns a superset (previously missed
+  `mediumCVE`/`highCVE`).
+
+## Known limitations (transparency constraints)
+
+- No RCE category — it arrives inside CVE titles/CWEs or as capability
+  signals. Audit reports capability, infers nothing. Don't fabricate an
+  impact assessment the data doesn't support.
+- Discovery is narrower than reporting: only malware/vuln/squat
+  selectors match; other alerts show only on an already-matched
+  package. `:license` must stay out (matches nearly the whole graph,
+  only for the ignore filter to discard it). Widening discovery means
+  adding bounded binary selectors and extending category counters.
+- `props.epss` and `reachability` are declared but unused — don't
+  remove them (wire-shape fidelity), and don't render them as if they
+  were scored.
