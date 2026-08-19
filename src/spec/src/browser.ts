@@ -131,6 +131,26 @@ const startsWithSpecIdentifier = (
   ].some(key => spec.startsWith(`${key}:`))
 
 /**
+ * The `registries` entries usable as a spec prefix, plus the default alias
+ * (`npm` unless overridden) mapped to the flat `registry` config when it has
+ * no explicit `registries` entry.
+ *
+ * `npm:` aliases are standard ecosystem syntax and appear in published
+ * packages' deps, so they have to resolve under either config shape. An
+ * explicit `registries` entry always wins.
+ */
+const registryPrefixes = (
+  options: SpecOptionsFilled,
+): [string, string][] => {
+  const alias = options['default-registry-alias']
+  const entries = Object.entries(options.registries)
+  if (options.registry && !options.registries[alias]) {
+    entries.push([alias, options.registry])
+  }
+  return entries
+}
+
+/**
  * Returns the location in which the first `@` value is found in a given
  * string, also takes into account that a string starting with @ is
  * using a scoped-name.
@@ -359,7 +379,7 @@ export class Spec implements SpecLike<Spec> {
         startsWithSpecIdentifier(spec, this.options) &&
         spec.includes(':') &&
         [
-          ...Object.keys(this.options.registries),
+          ...registryPrefixes(this.options).map(([name]) => name),
           ...Object.keys(defaultRegistries),
         ].some(key => spec.startsWith(`${key}:`))
       ) {
@@ -512,8 +532,8 @@ export class Spec implements SpecLike<Spec> {
     }
 
     // Check registries before git hosts to avoid conflicts
-    const regs = Object.entries(this.options.registries)
     if (this.bareSpec.startsWith('registry:')) {
+      const regs = Object.entries(this.options.registries)
       const reg = this.bareSpec.substring('registry:'.length)
       const h = reg.indexOf('#')
       if (h === -1) {
@@ -535,7 +555,7 @@ export class Spec implements SpecLike<Spec> {
       return
     }
 
-    for (const [host, url] of regs) {
+    for (const [host, url] of registryPrefixes(this.options)) {
       const h = `${host}:`
       if (this.bareSpec.startsWith(h)) {
         this.type = 'registry'

@@ -248,6 +248,44 @@ t.test('hydrate with no configured registry', t => {
   t.end()
 })
 
+t.test('npm: alias derived from the flat registry config', t => {
+  resetCaches()
+  const options = getOptions({ registry: defaultRegistry })
+  const alias = Spec.parse('sw', 'npm:x@1.x', options)
+  t.equal(alias.namedRegistry, 'npm', 'alias is recognized')
+  t.equal(alias.final.registry, defaultRegistry)
+  // the derived alias is not a stable short name, so its id matches what a
+  // bare spec on the same registry gets, and the node dedupes
+  t.equal(
+    getId(alias, { name: 'x', version: '1.2.3' }),
+    joinDepIDTuple(['registry', defaultRegistry, 'x@1.2.3']),
+  )
+  t.equal(
+    getId(Spec.parse('x', '1.x', options), {
+      name: 'x',
+      version: '1.2.3',
+    }),
+    joinDepIDTuple(['registry', defaultRegistry, 'x@1.2.3']),
+  )
+  // an explicit registries entry does yield the short name
+  resetCaches()
+  t.equal(
+    getId(
+      Spec.parse(
+        'sw',
+        'npm:x@1.x',
+        getOptions({
+          registry: defaultRegistry,
+          registries: { npm: defaultRegistry },
+        }),
+      ),
+      { name: 'x', version: '1.2.3' },
+    ),
+    joinDepIDTuple(['registry', 'npm', 'x@1.2.3']),
+  )
+  t.end()
+})
+
 t.test('hydrateTuple with no configured registry', t => {
   resetCaches()
   const options = getOptions({})

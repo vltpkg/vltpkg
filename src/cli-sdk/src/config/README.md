@@ -67,9 +67,11 @@ without an explicit registry protocol resolve through the registry
 alias named by `--default-registry-alias` (`npm` by default). The
 `npm` alias itself has **no** built-in URL -- run `vlt setup` (which
 points it at your vlt.io account registry) or configure
-`registries.npm` yourself. Only the `gh:` and `jsr:` aliases (and the
-`@jsr` scope mapping) keep built-in URLs; all aliases are
-user-overridable.
+`registries.npm` yourself. Failing both, it falls back to
+`--registry`, so `npm:` alias specs (e.g. `foo@npm:bar@1`, common in
+published manifests) resolve under either config shape. Only the `gh:`
+and `jsr:` aliases (and the `@jsr` scope mapping) keep built-in URLs;
+all aliases are user-overridable.
 
 ## Configuration Definitions and Patterns
 

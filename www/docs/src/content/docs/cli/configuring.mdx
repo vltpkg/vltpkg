@@ -81,7 +81,8 @@ resolve through, when neither a `scoped-registries` entry nor the
 `--registry` > `registries[<default-registry-alias>]`.
 
 Defaults to `npm`. The `npm` alias itself has **no built-in URL** — it
-must be configured (for example via
+comes from `registries.npm` or, failing that, `--registry`. Configure
+one (for example via
 [`vlt setup`](/cli/registries#getting-started-with-vlt-setup)),
 otherwise bare specs cannot resolve. See
 [Registries](/cli/registries).
@@ -100,10 +101,10 @@ Prefixes can be used as a package alias. For example:
   lang="bash"
 />
 
-The `npm:` prefix is **not** pre-registered to any URL — configure it
-(for example with `vlt setup`) before bare specs or `npm:` aliases can
-resolve. The built-in `gh:` and `jsr:` prefixes are pre-registered but
-remain overridable here.
+The `npm:` prefix is **not** pre-registered to any URL — it falls back
+to `--registry` when it has no entry here, and is otherwise configured
+(for example with `vlt setup`). The built-in `gh:` and `jsr:` prefixes
+are pre-registered but remain overridable here.
 
 Can be set multiple times
 

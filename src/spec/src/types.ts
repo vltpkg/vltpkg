@@ -18,6 +18,9 @@ export type SpecOptionsFilled = {
    * For bare specs, this takes precedence over the
    * `default-registry-alias` lookup but not over a matching
    * `scoped-registries` entry.
+   *
+   * It also backs the `default-registry-alias` prefix (`npm:` by default)
+   * when `registries` has no entry for that name.
    */
   registry?: string
   /**
@@ -27,8 +30,9 @@ export type SpecOptionsFilled = {
    * entry applies.
    *
    * Defaults to `'npm'`. The `npm` alias itself has **no** built-in URL --
-   * it must be configured (e.g. via `vlt setup`), otherwise bare specs
-   * resolve with `spec.registry === undefined`.
+   * it comes from `registries.npm` or, failing that, `registry`. With
+   * neither configured, bare specs and `npm:` aliases resolve with
+   * `spec.registry === undefined`.
    */
   'default-registry-alias': string
   /** shorthand prefix names for known registries */

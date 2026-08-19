@@ -504,21 +504,38 @@ t.test('no default registry', t => {
 })
 
 t.test(
-  'setting default registry does not configure the npm: alias',
+  'setting default registry configures the npm: alias',
   async t => {
-    // with only --registry set, `npm:` is not a configured alias, so it
-    // is not recognized as a named-registry spec (no subspec/namedRegistry).
+    // with only --registry set, `npm:` falls back to it, so published
+    // packages' `npm:` alias deps still resolve.
     const s = Spec.parse('a@npm:a@1', { registry: 'https://a.com/' })
     t.matchStrict(s, {
       type: 'registry',
       spec: 'a@npm:a@1',
       name: 'a',
       bareSpec: 'npm:a@1',
-      namedRegistry: undefined,
-      subspec: undefined,
+      namedRegistry: 'npm',
+      registry: 'https://a.com/',
+      subspec: {
+        type: 'registry',
+        spec: 'a@1',
+        name: 'a',
+        bareSpec: '1',
+        namedRegistry: 'npm',
+        registry: 'https://a.com/',
+      },
     })
 
-    // configuring the alias explicitly makes it resolve.
+    // the alias follows --default-registry-alias
+    t.matchStrict(
+      Spec.parse('a@acme:a@1', {
+        registry: 'https://a.com/',
+        'default-registry-alias': 'acme',
+      }),
+      { namedRegistry: 'acme', registry: 'https://a.com/' },
+    )
+
+    // an explicit registries entry wins over the fallback.
     const configured = Spec.parse('a@npm:a@1', {
       registry: 'https://a.com/',
       registries: { npm: 'https://registry.npmjs.org/' },

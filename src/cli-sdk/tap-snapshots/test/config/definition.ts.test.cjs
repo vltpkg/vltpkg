@@ -146,7 +146,7 @@ Object {
     "description": String(
       The name of the registry alias (a key in \`--registries\`) that bare specifiers (e.g. \`express@latest\`) and transitive dependencies without an explicit registry protocol resolve through, when neither \`--registry\` nor a matching \`--scoped-registries\` entry applies.
       
-      Defaults to \`npm\`. Note that the \`npm\` alias has **no** built-in URL -- it must be configured (for example via \`vlt setup\`, which points it at your vlt.io registry), otherwise bare specifiers will have no registry to resolve against.
+      Defaults to \`npm\`. Note that the \`npm\` alias has **no** built-in URL -- it comes from \`--registries npm=<url>\` or, failing that, \`--registry\`. Configure one (for example via \`vlt setup\`, which points it at your vlt.io registry), otherwise bare specifiers will have no registry to resolve against.
     ),
     "hint": "name",
     "type": "string",
@@ -425,7 +425,7 @@ Object {
       ​vlt --registries loc=http://reg.local install foo@loc:foo@1.x
       \`\`\`
       
-      There is **no** built-in \`npm\` registry URL; the \`npm\` alias must be configured (e.g. via \`vlt setup\`) before it can be used. The \`gh\` and \`jsr\` aliases have built-in defaults that can be overridden here.
+      There is **no** built-in \`npm\` registry URL; the \`npm\` alias falls back to \`--registry\` when it has no entry here. The \`gh\` and \`jsr\` aliases have built-in defaults that can be overridden here.
     ),
     "hint": "name=url",
     "multiple": true,
@@ -438,6 +438,8 @@ Object {
       For example, \`express@latest\` will be resolved by looking up the metadata from this registry.
       
       There is **no default**. When unset, bare specifiers fall back to the registry alias named by \`--default-registry-alias\` (\`npm\` by default). If that alias is also unconfigured, commands that need a registry fail with a config error. Run \`vlt setup\` (or \`vlt login\`) to configure one.
+      
+      Conversely, this also backs the \`--default-registry-alias\` prefix (so \`foo@npm:bar@1\` works) when \`--registries\` has no entry for that name.
       
       See https://docs.vlt.sh/cli
     ),

@@ -501,6 +501,19 @@ const matchRegistryURL = (
 }
 
 /**
+ * The alias a Spec was written with, but only when it is an explicit
+ * `registries` entry.
+ *
+ * A `namedRegistry` without one was derived from the flat `registry` config,
+ * so it is not a stable short name -- falling through to the URL keeps these
+ * IDs equal to the ones bare specs on that same registry get.
+ */
+const explicitShortRegistryName = (s: Spec): string | undefined =>
+  s.namedRegistry && s.options.registries[s.namedRegistry] ?
+    s.namedRegistry
+  : undefined
+
+/**
  * Convert a Spec's registry URL to a known short registry name, if possible.
  */
 const convertToKnownShortRegistryName = (
@@ -553,7 +566,7 @@ export const getTuple = (
         : f.bareSpec
       res = [
         f.type,
-        f.namedRegistry ||
+        explicitShortRegistryName(f) ||
           convertToKnownShortRegistryName(f, f.scopeRegistry) ||
           f.scopeRegistry ||
           f.registry ||

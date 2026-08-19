@@ -82,8 +82,9 @@ repository for any of your organization's internal code.
 
 Note that the built-in registry aliases (`gh:`, `jsr:`) and the `@jsr`
 scope mapping still have built-in URLs. The `npm:` alias, however, is
-**no longer built-in** — it has no baked-in URL and must be configured
-(see [The `npm:` alias](#npm) below). All built-in aliases are
+**no longer built-in** — it has no baked-in URL, and resolves through
+`registries.npm` or, failing that, the `registry` scalar (see
+[The `npm:` alias](#npm) below). All built-in aliases are
 user/service-overridable.
 
 ## Bare specs and `--default-registry-alias`
@@ -106,9 +107,9 @@ registry) through a different alias:
 vlt config set default-registry-alias=main
 ```
 
-Because the `npm` alias has no built-in URL, a fresh, unconfigured
-project cannot resolve bare specs until you configure one — the guided
-way to do that is `vlt setup`.
+Because the `npm` alias has no built-in URL, a fresh project with
+neither `registry` nor `registries.npm` set cannot resolve bare specs
+— the guided way to configure one is `vlt setup`.
 
 ## Getting started with `vlt setup`
 
@@ -270,9 +271,14 @@ caching proxy:
 vlt config set registries=npm=https://registry.npmjs.org/
 ```
 
-Until `npm` is configured, bare specs like `foo@1.2.3` and
-`foo@npm:bar@1.2.3` have no registry to resolve against and will fail
-with the missing-registry error.
+If `registries.npm` is unset, the `npm:` alias falls back to the
+`registry` scalar, so alias specs like `foo@npm:bar@1.2.3` — which
+published packages use in their own dependencies — still resolve when
+only `--registry` is configured.
+
+With neither set, bare specs like `foo@1.2.3` and `foo@npm:bar@1.2.3`
+have no registry to resolve against and will fail with the
+missing-registry error.
 
 #### `jsr:`
 
