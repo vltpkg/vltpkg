@@ -12,6 +12,7 @@ import {
   asStoreConfigObject,
   verifyImporterNodeModules,
 } from '../../src/actual/load.ts'
+import { loadHidden } from '../../src/lockfile/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { actualGraph } from '../fixtures/actual.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
@@ -1359,6 +1360,89 @@ t.test('hidden lockfile', async t => {
       t.notOk(edgeA?.to, 'edge to a should be unresolved (missing)')
     },
   )
+
+  await t.test(
+    'should keep hidden lockfile when dep-less workspace has no node_modules',
+    async t => {
+      const bDepID = joinDepIDTuple(['registry', '', 'b@1.0.0'])
+      const wsDepID = joinDepIDTuple(['workspace', 'packages/my-ws'])
+      const rootDepID = joinDepIDTuple(['file', '.'])
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-monorepo',
+          version: '1.0.0',
+          dependencies: {
+            'my-ws': 'workspace:*',
+          },
+        }),
+        'vlt.json': JSON.stringify({
+          workspaces: { packages: ['./packages/*'] },
+        }),
+        packages: {
+          'my-ws': {
+            'package.json': JSON.stringify({
+              name: 'my-ws',
+              version: '1.0.0',
+            }),
+            // no node_modules — dep-less workspace never gets one
+          },
+        },
+        node_modules: {
+          '.vlt-lock.json': JSON.stringify({
+            lockfileVersion: 1,
+            options: configData,
+            nodes: {
+              [bDepID]: [
+                2,
+                'b',
+                'sha512-abc',
+                null,
+                null,
+                {
+                  name: 'b',
+                  version: '1.0.0',
+                },
+              ],
+            },
+            edges: {
+              [`${rootDepID} b`]: `dev ^1.0.0 ${bDepID}`,
+              [`${rootDepID} my-ws`]: `prod workspace:* ${wsDepID}`,
+            },
+          }),
+          'my-ws': t.fixture('symlink', '../packages/my-ws'),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      })
+
+      // Phantom node exists only in the hidden lockfile; FS traversal
+      // would never find it. Surviving here means the fast path was used.
+      const nodeB = graph.nodes.get(bDepID)
+      t.ok(nodeB, 'should load lockfile-only node via fast path')
+      t.equal(nodeB?.integrity, 'sha512-abc', 'integrity preserved')
+      t.ok(nodeB?.dev, 'dev flag preserved')
+      t.equal(
+        nodeB?.manifest?.version,
+        '1.0.0',
+        'lockfile manifest preserved',
+      )
+      t.equal(
+        graph.mainImporter.edgesOut.get('b')?.to,
+        nodeB,
+        'root edge to lockfile-only node preserved',
+      )
+    },
+  )
 })
 
 t.test('various DepID types with peerSetHash', async t => {
@@ -1617,9 +1701,8 @@ t.test('verifyImporterNodeModules', async t => {
   )
 
   await t.test(
-    'should throw when importer node_modules is missing',
+    'should skip dep-less importer missing node_modules',
     async t => {
-      const wsDepID = joinDepIDTuple(['workspace', 'packages/my-ws'])
       const projectRoot = t.testdir({
         'package.json': JSON.stringify({
           name: 'my-monorepo',
@@ -1637,7 +1720,7 @@ t.test('verifyImporterNodeModules', async t => {
               name: 'my-ws',
               version: '1.0.0',
             }),
-            // no node_modules — workspace node_modules deleted
+            // no node_modules — workspace has no deps
           },
         },
         node_modules: {},
@@ -1656,10 +1739,100 @@ t.test('verifyImporterNodeModules', async t => {
         ...configData,
       })
 
-      // Verify the workspace importer is in the graph
-      t.ok(graph.nodes.get(wsDepID), 'workspace node should exist')
+      t.doesNotThrow(
+        () => verifyImporterNodeModules(graph, projectRoot),
+        'should skip dep-less workspace without node_modules',
+      )
+    },
+  )
 
-      // Should throw because workspace has no node_modules
+  await t.test(
+    'should throw when importer with resolved edges is missing node_modules',
+    async t => {
+      const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+      const wsDepID = joinDepIDTuple(['workspace', 'packages/my-ws'])
+      const rootDepID = joinDepIDTuple(['file', '.'])
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-monorepo',
+          version: '1.0.0',
+          dependencies: {
+            'my-ws': 'workspace:*',
+          },
+        }),
+        'vlt.json': JSON.stringify({
+          workspaces: { packages: ['./packages/*'] },
+        }),
+        packages: {
+          'my-ws': {
+            'package.json': JSON.stringify({
+              name: 'my-ws',
+              version: '1.0.0',
+              dependencies: {
+                a: '^1.0.0',
+              },
+            }),
+            // no node_modules — workspace node_modules deleted
+          },
+        },
+        node_modules: {
+          '.vlt-lock.json': JSON.stringify({
+            lockfileVersion: 1,
+            options: configData,
+            nodes: {
+              [aDepID]: [
+                0,
+                'a',
+                null,
+                null,
+                null,
+                {
+                  name: 'a',
+                  version: '1.0.0',
+                },
+              ],
+            },
+            edges: {
+              [`${wsDepID} a`]: `prod ^1.0.0 ${aDepID}`,
+              [`${rootDepID} my-ws`]: `prod workspace:* ${wsDepID}`,
+            },
+          }),
+          '.vlt': {
+            [aDepID]: {
+              node_modules: {
+                a: {
+                  'package.json': JSON.stringify({
+                    name: 'a',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+          'my-ws': t.fixture('symlink', '../packages/my-ws'),
+        },
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const packageJson = new PackageJson()
+      const graph = loadHidden({
+        scurry: new PathScurry(projectRoot),
+        packageJson,
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        mainManifest: packageJson.read(projectRoot),
+        ...configData,
+      })
+
+      t.ok(graph.nodes.get(wsDepID), 'workspace node should exist')
+      t.ok(
+        graph.nodes.get(wsDepID)?.edgesOut.get('a')?.to,
+        'workspace should have a resolved edge',
+      )
+
       t.throws(
         () => verifyImporterNodeModules(graph, projectRoot),
         /Missing node_modules for importer/,
