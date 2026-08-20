@@ -133,18 +133,21 @@ export const reify = async (
   const noModifiedDependencies =
     !options.add?.modifiedDependencies &&
     !options.remove?.modifiedDependencies
+  // Skip optional-only diffs only after a prior reify wrote lockfiles.
+  // Otherwise a first install of an optional-only tree would never extract.
+  const hasLockfiles =
+    !!scurry.lstatSync('vlt-lock.json') &&
+    !!scurry.lstatSync('node_modules/.vlt-lock.json')
   const skipOptionalOnly = noModifiedDependencies && diff.optionalOnly
-  const skippable = skipOptionalOnly && !options.update
+  const skippable =
+    skipOptionalOnly && !options.update && hasLockfiles
   const res: ReifyResult = { diff }
   if (!diff.hasChanges() || skippable) {
     // Even when there are no changes to reify, ensure lockfiles
     // exist on disk. This handles the case where a project has no
     // dependencies (or only workspace importers) but still needs
     // lockfiles written on the first install.
-    if (
-      !scurry.lstatSync('vlt-lock.json') ||
-      !scurry.lstatSync('node_modules/.vlt-lock.json')
-    ) {
+    if (!hasLockfiles) {
       saveHidden(options)
       const lfData = lockfileData(options)
       saveData(lfData, scurry.resolve('vlt-lock.json'), false)
