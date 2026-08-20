@@ -12,6 +12,10 @@ import {
   TabItem,
   Steps,
 } from '@astrojs/starlight/components'
+import {
+  RegistryAuthSnippet,
+  ScopeRegistrySnippet,
+} from '../../../components/snippets'
 
 You may have a component or function library to share at work, or you
 simply want to keep a tool you wrote offline. Here's how to do that
@@ -124,7 +128,7 @@ Edit `package.json` and make these changes:
 
    Replace `YOUR-ACCOUNT` with your vlt account slug (find it on your
    [account settings page](https://registry.vlt.io/account)). You can
-   use any name for `my-package`.
+   use any package name for `my-package`.
 
 2. **Update the version** to `1.0.0` to mark this as your first
    release
@@ -160,7 +164,13 @@ Here's the complete updated `package.json`:
   </TabItem>
   <TabItem label="npm" />
   <TabItem label="pnpm" />
-  <TabItem label="yarn" />
+  <TabItem label="yarn">
+    <Aside type="tip">
+      You can also manage versions from the CLI with `yarn version
+      major|minor|patch` instead of manually editing `package.json`.
+      This is especially useful for future releases.
+    </Aside>
+  </TabItem>
   <TabItem label="bun" />
   <TabItem label="deno" />
 </Tabs>
@@ -173,81 +183,39 @@ slug.
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
-    <Code
-      code="vlt config set scoped-registries=@YOUR-ACCOUNT=https://registry.vlt.io/YOUR-ACCOUNT/main/"
-      title="Terminal"
-      lang="bash"
+    <ScopeRegistrySnippet
+      packageManager="vlt"
+      account="YOUR-ACCOUNT"
     />
-
-    This updates `vlt.json` with the registry mapping. Your `vlt.json` will now contain:
-
-    <Code
-      code={`{
-      "config":
-        { "scoped-registries":
-          { "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/" }
-          }
-        }
-      `}
-      title="vlt.json"
-      lang="json" />
-
-    <Aside type="tip">
-      When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
-      created to lock dependency versions. Both `vlt.json` and `vlt-lock.json` should
-      be committed to version control.
-    </Aside>
-
   </TabItem>
   <TabItem label="npm">
-    <Code
-      code="npm config set @YOUR-ACCOUNT:registry https://registry.vlt.io/YOUR-ACCOUNT/main/ --location=project"
-      title="Terminal"
-      lang="bash"
+    <ScopeRegistrySnippet
+      packageManager="npm"
+      account="YOUR-ACCOUNT"
     />
-
-    This updates `.npmrc` with the scoped registry.
-
   </TabItem>
   <TabItem label="pnpm">
-    <Code
-      code="pnpm config set @YOUR-ACCOUNT:registry https://registry.vlt.io/YOUR-ACCOUNT/main/ --location=project"
-      title="Terminal"
-      lang="bash"
+    <ScopeRegistrySnippet
+      packageManager="pnpm"
+      account="YOUR-ACCOUNT"
     />
-
-    This updates `.npmrc` with the scoped registry.
-
   </TabItem>
   <TabItem label="yarn">
-    <Code
-      code={`yarn config set npmScopes.YOUR-ACCOUNT.npmRegistryServer "https://registry.vlt.io/YOUR-ACCOUNT/main/"
-yarn config set npmScopes.YOUR-ACCOUNT.npmPublishRegistry "https://registry.vlt.io/YOUR-ACCOUNT/main/"`}
-      title="Terminal"
-      lang="bash"
+    <ScopeRegistrySnippet
+      packageManager="yarn"
+      account="YOUR-ACCOUNT"
     />
-
-    This updates `.yarnrc.yml` with the scoped registry.
-
   </TabItem>
   <TabItem label="bun">
-    <Code
-      code={`# Edit or create bunfig.toml and add:
-[install.scopes.YOUR-ACCOUNT]
-url = "https://registry.vlt.io/YOUR-ACCOUNT/main/"
-token = "$VLT_TOKEN"`}
-      title="bunfig.toml"
-      lang="toml"
+    <ScopeRegistrySnippet
+      packageManager="bun"
+      account="YOUR-ACCOUNT"
     />
   </TabItem>
   <TabItem label="deno">
-    <Code
-      code={`cat >> .npmrc <<'EOF'
-@YOUR-ACCOUNT:registry=https://registry.vlt.io/YOUR-ACCOUNT/main/
-//registry.vlt.io/YOUR-ACCOUNT/main/:_authToken=\${VLT_TOKEN}
-EOF`}
-      title="Terminal"
-      lang="bash"
+    <ScopeRegistrySnippet
+      packageManager="deno"
+      account="YOUR-ACCOUNT"
     />
   </TabItem>
 </Tabs>
@@ -266,59 +234,40 @@ registry:
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
-    <Code code="vlt login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/" title="Terminal" lang="bash" />
-
-    This opens your browser to log in. Once authenticated, your credentials are
-    stored locally for future publishes.
-
+    <RegistryAuthSnippet
+      packageManager="vlt"
+      account="YOUR-ACCOUNT"
+    />
   </TabItem>
   <TabItem label="npm">
-    <Code
-      code="npm login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/ --scope=@YOUR-ACCOUNT"
-      title="Terminal"
-      lang="bash"
+    <RegistryAuthSnippet
+      packageManager="npm"
+      account="YOUR-ACCOUNT"
     />
-
-    This prompts you to enter your vlt credentials.
-
   </TabItem>
   <TabItem label="pnpm">
-    <Code
-      code="pnpm login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/ --scope=@YOUR-ACCOUNT"
-      title="Terminal"
-      lang="bash"
+    <RegistryAuthSnippet
+      packageManager="pnpm"
+      account="YOUR-ACCOUNT"
     />
-
-    This will prompt you to enter your vlt credentials.
-
   </TabItem>
   <TabItem label="yarn">
-    <Code
-      code="yarn npm login --scope YOUR-ACCOUNT --always-auth --web-login"
-      title="Terminal"
-      lang="bash"
+    <RegistryAuthSnippet
+      packageManager="yarn"
+      account="YOUR-ACCOUNT"
     />
-
-    This opens your browser to log in.
-
   </TabItem>
   <TabItem label="bun">
-    Create a personal token on your [account tokens page](https://registry.vlt.io/tokens)
-    and set it as an environment variable:
-
-    <Code code="export VLT_TOKEN=<your-token>" title="Terminal" lang="bash" />
-
-    (Or add it to `.env` in your project.)
-
+    <RegistryAuthSnippet
+      packageManager="bun"
+      account="YOUR-ACCOUNT"
+    />
   </TabItem>
   <TabItem label="deno">
-    Create a personal token on your [account tokens page](https://registry.vlt.io/tokens)
-    and add it to a `.env` file (make sure it's in `.gitignore`):
-
-    <Code code="echo 'VLT_TOKEN=<your-token>' >> .env" title="Terminal" lang="bash" />
-
-    Pass `--env-file` when installing dependencies later.
-
+    <RegistryAuthSnippet
+      packageManager="deno"
+      account="YOUR-ACCOUNT"
+    />
   </TabItem>
 </Tabs>
 
@@ -341,6 +290,11 @@ Before building, install the dev dependencies (TypeScript):
 
     Note: If you haven't set up a default registry, you can use `npm install` instead and vlt will use npm's registry for dependencies.
 
+  <Aside type="tip">
+    When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
+    created to lock dependency versions. Both `vlt.json` and `vlt-lock.json` should
+    be committed to version control.
+  </Aside>
   </TabItem>
   <TabItem label="npm">
     <Code code="npm install" title="Terminal" lang="bash" />
@@ -363,7 +317,7 @@ The starter includes TypeScript, so build it before publishing:
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
-    <Code code="vlt run build" title="Terminal" lang="bash" />
+    <Code code="vlr build" title="Terminal" lang="bash" />
   </TabItem>
   <TabItem label="npm">
     <Code code="npm run build" title="Terminal" lang="bash" />
@@ -388,6 +342,9 @@ The starter includes TypeScript, so build it before publishing:
 
 This compiles the TypeScript to JavaScript in the `dist/` directory,
 which is what users will actually install.
+
+You'll also notice that it's in the `.gitignore` as it doesn't need to
+be commited locally for rebuilds.
 
 ## Step 7: Publish
 
@@ -435,10 +392,12 @@ the published version and scope. Your package is now live!
 ## What happens next
 
 Your package is published to your private registry. Other members of
-your account can install it with:
+your account can install it after
+[configuring their registry setup](#step-3-configure-your-registry) to
+point at the vlt.io mirror:
 
 <Code
-  code="vlt add @YOUR-ACCOUNT/hello-vlt"
+  code="vlt add @YOUR-ACCOUNT/my-package"
   title="Terminal"
   lang="bash"
 />
@@ -456,7 +415,8 @@ the scope matches your account slug.
 
 ### Authentication required
 
-Run `vlt login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/`
+Run
+`${pkg-manager} login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/`
 to authenticate, or set a `VLT_TOKEN` environment variable with a
 personal token from your account settings.
 
@@ -492,9 +452,9 @@ have two options:
 
 ### Config Error: Missing registry configuration
 
-If you're using vlt and see this error when running `vlt install`, it
-means vlt needs a default registry configured for downloading
-dependencies. You have two options:
+If you're using the vlt CLI and see this error when running
+`vlt install`, it means vlt needs a default registry configured for
+downloading dependencies. You have two options:
 
 1. **Use npm instead** (simpler for dependency installation):
 
