@@ -1,5 +1,5 @@
 ---
-title: Publish packages with GitHub Actions
+title: Automate package publishing with GitHub Actions
 sidebar:
   label: Publish with GitHub Actions
   order: 1
@@ -32,12 +32,13 @@ tag or release to GitHub.
 Service tokens allow CI/CD systems to publish without requiring
 two-factor authentication.
 
-1. Go to your
-   [vlt account tokens page](https://registry.vlt.io/tokens)
+1. Log in and go to your vlt account tokens page at
+   `https://www.vlt.io/tokens/YOUR_ACCOUNT_SLUG`
 2. Click "Create token"
 3. Give it a descriptive name (e.g., `github-actions-publish`)
 4. Select the **`package:write`** privilege to allow publishing
-5. Copy the token (you won't be able to see it again)
+5. Copy the token (you won't be able to see it again, so save it in a
+   password manager)
 
 ## Step 2: Add the token to GitHub secrets
 
