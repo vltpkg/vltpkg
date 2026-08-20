@@ -322,3 +322,27 @@ t.test(
     t.same(await readFile(c.path('big')), big)
   },
 )
+
+t.test(
+  'eviction of an in-flight fetch does not fake a cache miss',
+  async t => {
+    const dir = t.testdir()
+    const writer = new Cache({ path: dir })
+    writer.set('k', Buffer.from('hello, world'))
+    await writer.promise()
+
+    const c = new Cache({ path: dir, maxSize: 100 })
+    const p = c.fetch('k')
+    c.set('a', Buffer.alloc(40))
+    c.set('b', Buffer.alloc(40))
+    c.set('d', Buffer.alloc(40))
+
+    t.same(
+      await p,
+      Buffer.from('hello, world'),
+      'resolves real bytes',
+    )
+    t.equal(c.get('k'), undefined, 'evicted entry not re-inserted')
+    await c.promise()
+  },
+)
