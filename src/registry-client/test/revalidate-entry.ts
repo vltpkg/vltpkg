@@ -300,6 +300,41 @@ t.test('non-2xx/304 leaves the entry untouched', async t => {
   t.strictSame(await readFile(file), before)
 })
 
+t.test('3xx delegates to RegistryClient.request', async t => {
+  const hits: string[] = []
+  const { url } = await listen(t, (req, res) => {
+    hits.push(String(req.url))
+    if (req.url === '/pkg') {
+      res.statusCode = 302
+      res.setHeader('location', `${url}/dest`)
+      res.end()
+      return
+    }
+    res.statusCode = 200
+    res.setHeader('content-type', 'application/json')
+    res.setHeader('date', new Date().toUTCString())
+    res.end('{"redirected":true}')
+  })
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const target = `${url}/pkg`
+  await seed(
+    rc,
+    'GET',
+    target,
+    jsonEntry({
+      date: new Date('2020-01-01').toUTCString(),
+      etag: '"old"',
+    }),
+  )
+  await revalidateEntry(rc, 'GET', target)
+  await rc.cache.promise()
+  t.ok(hits.includes('/pkg'), 'conditional GET hit original URL')
+  t.ok(hits.includes('/dest'), 'full client followed the redirect')
+  const buf = await rc.cache.fetch(cacheKey('GET', `${url}/dest`))
+  t.ok(buf, 'final redirect target was cached')
+  t.strictSame(CacheEntry.decode(buf!).json(), { redirected: true })
+})
+
 t.test('412 patches like 304', async t => {
   const newDate = new Date('2025-06-01T00:00:00.000Z').toUTCString()
   const { url } = await listen(t, (_req, res) => {

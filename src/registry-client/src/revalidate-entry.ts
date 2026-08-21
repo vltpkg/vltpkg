@@ -133,6 +133,24 @@ export const revalidateEntry = async (
         return
       }
 
+      // Lean path uses bare undici (no redirect following). Hand
+      // 3xx back to RegistryClient so per-origin auth, cycle limits,
+      // and the final cache write stay in the tested request() path.
+      const status = response.statusCode
+      if (
+        status === 301 ||
+        status === 302 ||
+        status === 303 ||
+        status === 307 ||
+        status === 308
+      ) {
+        response.body.resume()
+        await fh.close()
+        fh = undefined
+        await rc.request(u, { method, staleWhileRevalidate: false })
+        return
+      }
+
       response.body.resume()
     } finally {
       await fh?.close()
