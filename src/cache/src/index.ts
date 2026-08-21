@@ -112,7 +112,9 @@ export class Cache extends LRUCache<
         return this.#diskRead(k, v, opts.context?.integrity)
       },
       allowStaleOnFetchRejection: true,
-      allowStaleOnFetchAbort: true,
+      // Eviction aborts in-flight fetch() placeholders. Resolving those
+      // as undefined is treated as a cache miss and re-downloads tarballs.
+      ignoreFetchAbort: true,
       allowStale: true,
       noDeleteOnStaleGet: true,
     })
