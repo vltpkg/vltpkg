@@ -55,7 +55,7 @@ export class Diff {
   }
 
   /**
-   * True if the diff only contains optional nodes (computed during construction)
+   * True if every added node/edge is confined to an optional subtree
    */
   optionalOnly = true
 
@@ -97,7 +97,9 @@ export class Diff {
       if (fromEdge?.to) this.edges.delete.add(fromEdge)
       if (edge.to) {
         this.edges.add.add(edge)
-        if (!edge.optional) {
+        // edge.optional is the edge type only; a non-optional edge whose
+        // source is optional is still confined to an optional subtree
+        if (!edge.optional && !edge.from.optional) {
           this.optionalOnly = false
         }
       }

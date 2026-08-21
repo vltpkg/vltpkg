@@ -482,6 +482,85 @@ t.test('failure of optional node just deletes it', async t => {
   for (const path of expectGone) {
     t.throws(() => lstatSync(resolve(projectRoot, path)))
   }
+
+  // Second install: lockfile still has the failed optional subtree,
+  // hidden lockfile / actual graph do not. Prod edges inside that
+  // subtree must not defeat optionalOnly, or reify never converges.
+  const lockfile = resolve(projectRoot, 'vlt-lock.json')
+  const hiddenLockfile = resolve(
+    projectRoot,
+    'node_modules/.vlt-lock.json',
+  )
+  t.ok(
+    existsSync(lockfile),
+    'lockfile written after optional failure',
+  )
+  t.ok(
+    existsSync(hiddenLockfile),
+    'hidden lockfile written after optional failure',
+  )
+  const lockfileMtime = statSync(lockfile).mtimeMs
+  const hiddenMtime = statSync(hiddenLockfile).mtimeMs
+
+  const actual2 = actual.load({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+  const graph2 = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    remover: new RollbackRemove(),
+  })
+  const glob2 = graph2.mainImporter.edgesOut.get('glob')?.to
+  t.ok(glob2, 'ideal rebuilt glob from lockfile')
+  t.ok(
+    glob2?.edgesOut.get('path-scurry')?.type === 'prod',
+    'glob has a prod edge to path-scurry',
+  )
+
+  let extractCalled = false
+  const res = await reify({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: createMockPackageInfo({
+      async extract(): Promise<Resolution> {
+        extractCalled = true
+        throw new Error('extract should not be called')
+      },
+    }),
+    graph: graph2,
+    actual: actual2,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+
+  t.ok(res.diff.hasChanges(), 'diff still has optional subtree adds')
+  t.equal(
+    res.diff.optionalOnly,
+    true,
+    'prod edges inside optional subtree keep optionalOnly',
+  )
+  t.equal(extractCalled, false, 'skippable reify must not extract')
+  t.equal(
+    statSync(lockfile).mtimeMs,
+    lockfileMtime,
+    'vlt-lock.json mtime unchanged',
+  )
+  t.equal(
+    statSync(hiddenLockfile).mtimeMs,
+    hiddenMtime,
+    'hidden lockfile mtime unchanged',
+  )
 })
 
 t.test('early termination when no changes are needed', async t => {
