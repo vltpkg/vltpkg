@@ -28,6 +28,7 @@ const options = [
   data-sync-key={syncKey}
   class="relative inline-block">
   <button
+    id="package-manager-selecter"
     type="button"
     role="combobox"
     aria-haspopup="listbox"
@@ -292,3 +293,12 @@ const options = [
     PackageManagerSelect,
   )
 </script>
+
+<style is:global>
+  /* Hide the now-redundant tab strip once JS has wired up the
+     bridge to this select, keeping it visible as a fallback when
+     JS fails to load. */
+  starlight-tabs.pm-select-driven > .tablist-wrapper {
+    display: none;
+  }
+</style>

@@ -18,6 +18,8 @@ import {
 } from '../../../components/snippets'
 import PackageManagerSelect from '../../../components/package-manager-select/package-manager-select.astro'
 
+<PackageManagerSelect />
+
 You may have a component or function library to share at work, or you
 simply want to keep a tool you wrote offline. Here's how to do that
 using the vlt registry.
@@ -51,8 +53,6 @@ repository, or apply these steps to your own package.
 ## Step 1: Clone the starter
 
 Choose your package manager and download the corresponding example:
-
-<PackageManagerSelect />
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
@@ -399,12 +399,15 @@ your account can install it after
 [configuring their registry setup](#step-3-configure-your-registry) to
 point at the vlt.io mirror:
 
-<Code
-  code="vlt add @YOUR-ACCOUNT/my-package"
-  title="Terminal"
-  lang="bash"
-/>
-
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code
+      code="vlt add @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+</Tabs>
 To make your package publicly visible, you can change its visibility
 in your [account settings](https://registry.vlt.io/account).
 
@@ -413,15 +416,51 @@ in your [account settings](https://registry.vlt.io/account).
 ### 403 Forbidden error
 
 The package name must be scoped to your account (e.g.,
-`@YOUR-ACCOUNT/hello-vlt`). Check your `package.json` and make sure
+`@YOUR-ACCOUNT/my-package`). Check your `package.json` and make sure
 the scope matches your account slug.
 
 ### Authentication required
 
-Run
-`${pkg-manager} login --registry=https://registry.vlt.io/YOUR-ACCOUNT/main/`
-to authenticate, or set a `VLT_TOKEN` environment variable with a
-personal token from your account settings.
+If commands fail with an authentication error, run:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <RegistryAuthSnippet
+      packageManager="vlt"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <RegistryAuthSnippet
+      packageManager="npm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <RegistryAuthSnippet
+      packageManager="pnpm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <RegistryAuthSnippet
+      packageManager="yarn"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <RegistryAuthSnippet
+      packageManager="bun"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <RegistryAuthSnippet
+      packageManager="deno"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+</Tabs>
 
 ### Version conflict
 
@@ -457,29 +496,17 @@ have two options:
 
 If you're using the vlt CLI and see this error when running
 `vlt install`, it means vlt needs a default registry configured for
-downloading dependencies. You have two options:
+downloading dependencies.
 
-1. **Use npm instead** (simpler for dependency installation):
+**Configure a default registry** (if you want vlt to manage all
+packages):
 
-   ```bash
-   npm install
-   ```
+```bash
+vlt config set registry=https://registry.vlt.io/YOUR-ACCOUNT/npm/
+```
 
-   npm will download dependencies from the public npm registry, while
-   `vlt publish` will still use your scoped registry configuration.
-
-2. **Configure a default registry** (if you want vlt to manage all
-   packages):
-
-   ```bash
-   vlt config set registry=https://registry.vlt.io/YOUR-ACCOUNT/npm/
-   ```
-
-   Then run `vlt install` to download dependencies through your vlt
-   mirror.
-
-For most users, option 1 is simpler — you only need the scoped
-registry configured for publishing your own packages.
+Then run `vlt install` to download dependencies through your vlt
+mirror.
 
 ## Next steps
 
