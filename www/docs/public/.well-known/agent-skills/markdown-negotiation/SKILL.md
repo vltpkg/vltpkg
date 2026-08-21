@@ -35,6 +35,25 @@ Cache-Control: public, max-age=3600
 - Excludes: API routes (`/api/*`), static assets, and other
   non-documentation pages
 
+## API Endpoint
+
+Markdown can also be requested directly, without content negotiation,
+via the API route:
+
+```http
+GET /api/markdown/:slug
+```
+
+- `:slug` is the doc path relative to `src/content/docs` (e.g.
+  `get-started/why-vlt` for `/docs/get-started/why-vlt`)
+- Returns `200` with `Content-Type: text/markdown; charset=utf-8` on
+  success
+- Returns `400` if the slug is missing
+- Returns `500` (with `Content-Type: text/markdown`) if conversion
+  fails
+- This is the endpoint the content-negotiation redirect and the
+  copy-to-markdown button both call under the hood
+
 ## Response Format
 
 - **Content-Type**: `text/markdown; charset=utf-8`
