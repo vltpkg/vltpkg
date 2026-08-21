@@ -1,0 +1,294 @@
+---
+export interface Props {
+  defaultValue?: string
+  placeholder?: string
+  className?: string
+  syncKey?: string
+}
+
+const {
+  defaultValue = 'vlt',
+  placeholder = 'Select a package manager',
+  className = '',
+  syncKey = 'pkg-manager',
+} = Astro.props
+
+const options = [
+  { label: 'vlt', value: 'vlt' },
+  { label: 'npm', value: 'npm' },
+  { label: 'pnpm', value: 'pnpm' },
+  { label: 'yarn', value: 'yarn' },
+  { label: 'bun', value: 'bun' },
+  { label: 'deno', value: 'deno' },
+]
+---
+
+<package-manager-select
+  data-default-value={defaultValue}
+  data-sync-key={syncKey}
+  class="relative inline-block">
+  <button
+    type="button"
+    role="combobox"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    data-state="closed"
+    class={`flex h-10 w-full min-w-[10rem] items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors hover:border-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:ring-2 data-[state=open]:ring-ring data-[state=open]:ring-offset-2 ${className}`}>
+    <span data-select-label class="truncate text-muted-foreground"
+      >{placeholder}</span
+    >
+    <svg
+      data-select-chevron
+      class="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-150"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg
+    >
+  </button>
+  <ul
+    data-select-list
+    role="listbox"
+    hidden
+    class="absolute z-50 mt-1.5 max-h-60 w-full min-w-[10rem] overflow-auto rounded-md border border-input bg-popover p-1 text-popover-foreground shadow-md">
+    {
+      options.map((option, index) => (
+        <li
+          id={`pm-select-option-${index}`}
+          data-value={option.value}
+          role="option"
+          aria-selected="false"
+          class="flex cursor-default select-none items-center justify-between gap-2 rounded-sm px-2 py-1.5 text-sm outline-none">
+          <span>{option.label}</span>
+          <svg
+            data-select-check
+            style="display: none"
+            class="h-4 w-4 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </li>
+      ))
+    }
+  </ul>
+</package-manager-select>
+
+<script>
+  class PackageManagerSelect extends HTMLElement {
+    connectedCallback() {
+      const trigger = this.querySelector('button')
+      const list = this.querySelector<HTMLUListElement>(
+        '[data-select-list]',
+      )
+      const label = this.querySelector('[data-select-label]')
+      const chevron = this.querySelector('[data-select-chevron]')
+      const options = [
+        ...this.querySelectorAll<HTMLLIElement>('li[role="option"]'),
+      ]
+      if (!trigger || !list || !label || !chevron) return
+
+      const placeholder = label.textContent ?? ''
+      let open = false
+      let value: string | undefined
+      let highlighted = 0
+
+      const syncKey = this.dataset.syncKey ?? 'pkg-manager'
+      const storageKey = `starlight-synced-tabs__${syncKey}`
+
+      const syncTabs = (pmValue: string | undefined) => {
+        if (!pmValue) return
+        const tabGroups = document.querySelectorAll<HTMLElement>(
+          `starlight-tabs[data-sync-key="${syncKey}"]`,
+        )
+        if (tabGroups.length === 0) return
+
+        const clickMatching = () => {
+          let clicked = false
+          tabGroups.forEach(group => {
+            group.classList.add('pm-select-driven')
+            if (clicked) return
+            const tab = [
+              ...group.querySelectorAll<HTMLAnchorElement>(
+                '[role="tab"]',
+              ),
+            ].find(t => t.textContent?.trim() === pmValue)
+            if (tab && tab.getAttribute('aria-selected') !== 'true') {
+              tab.click()
+            }
+            clicked = true
+          })
+        }
+
+        // starlight-tabs's click listener is attached in its
+        // constructor, which may not have run yet if this script's
+        // module executes before Tabs.astro's (module scripts run in
+        // document order) — wait for the upgrade so the click isn't
+        // dropped silently.
+        if (customElements.get('starlight-tabs')) {
+          clickMatching()
+        } else {
+          customElements
+            .whenDefined('starlight-tabs')
+            .then(clickMatching)
+        }
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const pmParam = params.get('pm')
+      const storedValue =
+        typeof localStorage === 'undefined' ? null : (
+          localStorage.getItem(storageKey)
+        )
+      const defaultValue = this.dataset.defaultValue
+      const initialValue = pmParam ?? storedValue ?? defaultValue
+      value =
+        options.some(o => o.dataset.value === initialValue) ?
+          (initialValue ?? undefined)
+        : defaultValue
+
+      syncTabs(value)
+
+      const render = () => {
+        trigger.setAttribute('data-state', open ? 'open' : 'closed')
+        trigger.setAttribute('aria-expanded', String(open))
+        list.hidden = !open
+        chevron.classList.toggle('rotate-180', open)
+
+        const selected = options.find(o => o.dataset.value === value)
+        label.textContent =
+          selected?.querySelector('span')?.textContent ?? placeholder
+        label.classList.toggle('text-muted-foreground', !selected)
+
+        options.forEach((option, index) => {
+          const isSelected = option.dataset.value === value
+          const isHighlighted = open && index === highlighted
+          option.setAttribute('aria-selected', String(isSelected))
+          option.classList.toggle('bg-accent', isHighlighted)
+          option.classList.toggle(
+            'text-accent-foreground',
+            isHighlighted,
+          )
+          const check = option.querySelector<HTMLElement>(
+            '[data-select-check]',
+          )
+          if (check) {
+            check.style.display = isSelected ? '' : 'none'
+          }
+        })
+
+        if (open) {
+          trigger.setAttribute(
+            'aria-activedescendant',
+            `pm-select-option-${highlighted}`,
+          )
+        } else {
+          trigger.removeAttribute('aria-activedescendant')
+        }
+      }
+
+      const setOpen = (next: boolean) => {
+        open = next
+        if (open) {
+          const index = options.findIndex(
+            o => o.dataset.value === value,
+          )
+          highlighted = index === -1 ? 0 : index
+        }
+        render()
+        if (open) {
+          options[highlighted]?.scrollIntoView({ block: 'nearest' })
+        }
+      }
+
+      const commit = (index: number) => {
+        const option = options[index]
+        if (!option?.dataset.value) return
+        value = option.dataset.value
+        setOpen(false)
+
+        const url = new URL(window.location.href)
+        url.searchParams.set('pm', value)
+        window.history.replaceState(window.history.state, '', url)
+
+        syncTabs(value)
+      }
+
+      const setHighlighted = (index: number) => {
+        highlighted = Math.max(0, Math.min(index, options.length - 1))
+        render()
+        options[highlighted]?.scrollIntoView({ block: 'nearest' })
+      }
+
+      trigger.addEventListener('click', () => setOpen(!open))
+
+      trigger.addEventListener('keydown', e => {
+        if (!open) {
+          if (
+            ['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)
+          ) {
+            e.preventDefault()
+            setOpen(true)
+          }
+          return
+        }
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault()
+            setHighlighted(highlighted + 1)
+            break
+          case 'ArrowUp':
+            e.preventDefault()
+            setHighlighted(highlighted - 1)
+            break
+          case 'Home':
+            e.preventDefault()
+            setHighlighted(0)
+            break
+          case 'End':
+            e.preventDefault()
+            setHighlighted(options.length - 1)
+            break
+          case 'Enter':
+          case ' ':
+            e.preventDefault()
+            commit(highlighted)
+            break
+          case 'Escape':
+            e.preventDefault()
+            setOpen(false)
+            break
+          case 'Tab':
+            setOpen(false)
+            break
+        }
+      })
+
+      options.forEach((option, index) => {
+        option.addEventListener('click', () => commit(index))
+        option.addEventListener('mouseenter', () =>
+          setHighlighted(index),
+        )
+      })
+
+      document.addEventListener('pointerdown', e => {
+        if (open && !this.contains(e.target as Node)) setOpen(false)
+      })
+
+      render()
+    }
+  }
+
+  customElements.define(
+    'package-manager-select',
+    PackageManagerSelect,
+  )
+</script>

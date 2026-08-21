@@ -16,6 +16,7 @@ import {
   RegistryAuthSnippet,
   ScopeRegistrySnippet,
 } from '../../../components/snippets'
+import PackageManagerSelect from '../../../components/package-manager-select/package-manager-select.astro'
 
 You may have a component or function library to share at work, or you
 simply want to keep a tool you wrote offline. Here's how to do that
@@ -50,6 +51,8 @@ repository, or apply these steps to your own package.
 ## Step 1: Clone the starter
 
 Choose your package manager and download the corresponding example:
+
+<PackageManagerSelect />
 
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
