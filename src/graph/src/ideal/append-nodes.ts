@@ -590,7 +590,15 @@ const processPlacementTasks = async (
     )
 
     // setup next level to process all child dependencies in the manifest
-    const nextDeps: Dependency[] = []
+    // Use a Map keyed by name so that later dependency types override
+    // earlier ones. This matches npm semantics where entries in
+    // `optionalDependencies` override entries of the same name in
+    // `dependencies`. Without this, a package listed in both
+    // (e.g. esbuild@0.18.20, typescript@7.0.2) would first be placed
+    // as a regular (non-optional) dep, and the later optional entry
+    // could not recover the `optional` flag due to the `&&=` operator
+    // in `placePackage`.
+    const nextDepsMap = new Map<string, Dependency>()
 
     // traverse actual dependency declarations in the manifest
     // creating dependency entries for them
@@ -618,11 +626,13 @@ const processPlacementTasks = async (
           if (depTypeName === 'peerDependencies') {
             nextPeerDeps.set(name, dep)
           } else {
-            nextDeps.push(dep)
+            nextDepsMap.set(name, dep)
           }
         }
       }
     }
+
+    const nextDeps = [...nextDepsMap.values()]
 
     // Inject transient dependencies for non-importer nodes (nested folders)
     // These are deps that were added from a nested folder context using
