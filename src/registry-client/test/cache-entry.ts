@@ -765,3 +765,47 @@ t.test('VLT_TAR_MAX_UNPACKED_BYTES caps unzip', async t => {
     message: 'cache entry exceeds maximum unpacked size',
   })
 })
+
+t.test('decodeHead / encodeHead', t => {
+  t.equal(
+    CacheEntry.decodeHead(Buffer.alloc(0)).statusCode,
+    0,
+    'empty buffer',
+  )
+  t.equal(
+    CacheEntry.decodeHead(Buffer.from([100, 100, 100, 100, 1]))
+      .statusCode,
+    0,
+    'head shorter than declared size',
+  )
+
+  const tar = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/octet-stream',
+      etag: '"abc"',
+      date: new Date('2020-01-20').toUTCString(),
+    }),
+  )
+  tar.addBody(Buffer.from('tarball-bytes'))
+  const enc = tar.encode()
+  const headLen = enc.readUInt32BE(0)
+  const head = CacheEntry.decodeHead(enc)
+  t.equal(head.statusCode, 200)
+  t.equal(head.headSize, headLen)
+  t.equal(head.fromCache, true)
+  t.equal(head.buffer().byteLength, 0, 'body not loaded')
+  t.equal(head.getHeaderString('etag'), '"abc"')
+  t.strictSame(head.encodeHead(), enc.subarray(0, headLen))
+  t.strictSame(
+    Buffer.concat([tar.encodeHead(), tar.buffer()]),
+    enc,
+    'encode() is encodeHead + body',
+  )
+
+  const constructed = new CacheEntry(200, toRawHeaders({ a: 'b' }))
+  t.equal(constructed.headSize, undefined, 'not set until encoded')
+  constructed.encodeHead()
+  t.type(constructed.headSize, 'number')
+  t.end()
+})
