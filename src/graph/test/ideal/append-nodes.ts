@@ -3414,3 +3414,212 @@ t.test('broken optional dep is not silently dropped', async t => {
     { cause: { code: 'EINVALIDNAME' } },
   )
 })
+
+t.test(
+  'optionalDependencies overrides dependencies for same name',
+  async t => {
+    // Reproduces the bug where packages like esbuild@0.18.20 and
+    // typescript@7.0.2 list platform-specific deps in BOTH `dependencies`
+    // AND `optionalDependencies`. Per npm semantics, optionalDependencies
+    // should override dependencies for the same name. Without the fix,
+    // the node is first created as non-optional (from `dependencies`),
+    // and the later `optionalDependencies` entry cannot recover the
+    // `optional` flag due to the `&&=` operator in `placePackage`.
+    const parentManifest: Manifest = {
+      name: 'parent-pkg',
+      version: '1.0.0',
+      // Same package listed in both dependencies and optionalDependencies
+      // (this is the pattern used by esbuild@0.18.20, typescript@7.0.2)
+      dependencies: {
+        'platform-dep': '1.0.0',
+      },
+      optionalDependencies: {
+        'platform-dep': '1.0.0',
+      },
+    }
+    const platformDepManifest: Manifest = {
+      name: 'platform-dep',
+      version: '1.0.0',
+      // Platform fields that do NOT match the current platform
+      os: ['aix'],
+      cpu: ['ppc64'],
+    }
+    const mainManifest = asNormalizedManifest({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        'parent-pkg': '^1.0.0',
+      },
+    })
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const depParent = asDependency({
+      spec: Spec.parse('parent-pkg@^1.0.0'),
+      type: 'prod',
+    })
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        switch (spec.name) {
+          case 'parent-pkg':
+            return parentManifest
+          case 'platform-dep':
+            return platformDepManifest
+          default:
+            return null
+        }
+      },
+    } as PackageInfoClient
+
+    const scurry = new PathScurry(t.testdirName)
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [depParent],
+      scurry,
+      configData,
+      new Set<DepID>(),
+    )
+
+    // Find the platform-dep node
+    const platformDepId = joinDepIDTuple([
+      'registry',
+      '',
+      'platform-dep@1.0.0',
+    ])
+    const platformDepNode = graph.nodes.get(platformDepId)
+    t.ok(platformDepNode, 'platform-dep node exists in graph')
+
+    // The critical assertion: the node must be optional
+    // Without the fix, it would be non-optional because `dependencies`
+    // was processed first, creating the node with optional=false
+    t.ok(
+      platformDepNode?.isOptional(),
+      'platform-dep node is optional (optionalDependencies wins over dependencies)',
+    )
+
+    // The edge from parent-pkg to platform-dep should be optional
+    const parentId = joinDepIDTuple([
+      'registry',
+      '',
+      'parent-pkg@1.0.0',
+    ])
+    const parentNode = graph.nodes.get(parentId)
+    t.ok(parentNode, 'parent-pkg node exists')
+
+    // Check that there's only ONE edge from parent to platform-dep (deduped)
+    const edges = [...(parentNode?.edgesOut.values() ?? [])].filter(
+      e => e.spec?.name === 'platform-dep',
+    )
+    t.equal(
+      edges.length,
+      1,
+      'only one edge from parent to platform-dep (deduped)',
+    )
+    t.equal(
+      edges[0]?.type,
+      'optional',
+      'the edge type is optional',
+    )
+  },
+)
+
+t.test(
+  'optionalDependencies override works in deep transitive chains',
+  async t => {
+    // Reproduces the scenario where the parent with overlapping deps
+    // is reached via a deep transitive chain (like esbuild@0.18.20
+    // via drizzle-kit → @esbuild-kit/esm-loader → @esbuild-kit/core-utils)
+    const deepParentManifest: Manifest = {
+      name: 'deep-parent',
+      version: '1.0.0',
+      dependencies: {
+        'deep-platform-dep': '1.0.0',
+      },
+      optionalDependencies: {
+        'deep-platform-dep': '1.0.0',
+      },
+    }
+    const deepPlatformDepManifest: Manifest = {
+      name: 'deep-platform-dep',
+      version: '1.0.0',
+      os: ['win32'],
+      cpu: ['ia32'],
+    }
+    const middleManifest: Manifest = {
+      name: 'middle-pkg',
+      version: '1.0.0',
+      dependencies: {
+        'deep-parent': '^1.0.0',
+      },
+    }
+    const topManifest: Manifest = {
+      name: 'top-pkg',
+      version: '1.0.0',
+      dependencies: {
+        'middle-pkg': '^1.0.0',
+      },
+    }
+    const mainManifest = asNormalizedManifest({
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: {
+        'top-pkg': '^1.0.0',
+      },
+    })
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const depTop = asDependency({
+      spec: Spec.parse('top-pkg@^1.0.0'),
+      type: 'dev',
+    })
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        switch (spec.name) {
+          case 'top-pkg':
+            return topManifest
+          case 'middle-pkg':
+            return middleManifest
+          case 'deep-parent':
+            return deepParentManifest
+          case 'deep-platform-dep':
+            return deepPlatformDepManifest
+          default:
+            return null
+        }
+      },
+    } as PackageInfoClient
+
+    const scurry = new PathScurry(t.testdirName)
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [depTop],
+      scurry,
+      configData,
+      new Set<DepID>(),
+    )
+
+    // The deep-platform-dep node must be optional even through the
+    // multi-level transitive chain
+    const depId = joinDepIDTuple([
+      'registry',
+      '',
+      'deep-platform-dep@1.0.0',
+    ])
+    const node = graph.nodes.get(depId)
+    t.ok(node, 'deep-platform-dep node exists')
+    t.ok(
+      node?.isOptional(),
+      'deep-platform-dep is optional in deep transitive chain',
+    )
+    t.ok(node?.dev, 'deep-platform-dep is also marked as dev')
+  },
+)
