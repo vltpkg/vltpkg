@@ -145,6 +145,7 @@ export class CacheEntry {
   #trustIntegrity
   #staleWhileRevalidateFactor
   #fromCache = false
+  #headSize?: number
 
   constructor(
     statusCode: number,
@@ -341,6 +342,14 @@ export class CacheEntry {
   /** True when this entry was decoded from the on-disk cache. */
   get fromCache(): boolean {
     return this.#fromCache
+  }
+
+  /**
+   * Byte length of the encoded head (4-byte length prefix + status +
+   * headers). Set when decoded from cache or after `encodeHead()`.
+   */
+  get headSize(): number | undefined {
+    return this.#headSize
   }
 
   get statusCode() {
@@ -559,29 +568,25 @@ export class CacheEntry {
     return obj
   }
 
-  /**
-   * Pass the contents of a @vltpkg/cache.Cache object as a buffer,
-   * and this static method will decode it into a CacheEntry representing
-   * the cached response.
-   */
-  static decode(buffer: Uint8Array): CacheEntry {
-    if (buffer.length < 4) {
-      return emptyCacheEntry
-    }
+  static #parseHead(buffer: Uint8Array):
+    | {
+        statusCode: number
+        headers: Uint8Array[]
+        integrity?: Integrity
+        headSize: number
+      }
+    | undefined {
+    if (buffer.length < 4) return undefined
     const headSize = readSize(buffer, 0)
-    if (buffer.length < headSize) {
-      return emptyCacheEntry
-    }
+    if (buffer.length < headSize) return undefined
     const statusCode = Number(getDecodedValue(buffer.subarray(4, 7)))
     const headersBuffer = buffer.subarray(7, headSize)
-    // walk through the headers array, building up the rawHeaders
     const headers: Uint8Array[] = []
     let i = 0
     let integrity: Integrity | undefined = undefined
     while (i < headersBuffer.length - 4) {
       const size = readSize(headersBuffer, i)
       const val = headersBuffer.subarray(i + 4, i + size)
-      // if the last one was the key integrity, then this one is the value
       if (headers.length % 2 === 1) {
         const k = getDecodedValue(
           headers[headers.length - 1],
@@ -592,23 +597,53 @@ export class CacheEntry {
       headers.push(val)
       i += size
     }
-    const body = buffer.subarray(headSize)
+    return { statusCode, headers, integrity, headSize }
+  }
+
+  /**
+   * Decode only the status/headers from an encoded cache buffer.
+   * The body is not read; `headSize` records how many bytes the head
+   * occupies so a later `encodeHead()` can be patched in place.
+   */
+  static decodeHead(buffer: Uint8Array): CacheEntry {
+    const parsed = CacheEntry.#parseHead(buffer)
+    if (!parsed) return emptyCacheEntry
+    const c = new CacheEntry(parsed.statusCode, parsed.headers, {
+      body: new Uint8Array(0),
+      integrity: parsed.integrity,
+      trustIntegrity: true,
+    })
+    c.#fromCache = true
+    c.#headSize = parsed.headSize
+    return c
+  }
+
+  /**
+   * Pass the contents of a @vltpkg/cache.Cache object as a buffer,
+   * and this static method will decode it into a CacheEntry representing
+   * the cached response.
+   */
+  static decode(buffer: Uint8Array): CacheEntry {
+    const parsed = CacheEntry.#parseHead(buffer)
+    if (!parsed) return emptyCacheEntry
+    const body = buffer.subarray(parsed.headSize)
 
     const c = new CacheEntry(
-      statusCode,
+      parsed.statusCode,
       setRawHeader(
-        headers,
+        parsed.headers,
         'content-length',
         String(body.byteLength),
       ),
       {
         body,
-        integrity,
+        integrity: parsed.integrity,
         trustIntegrity: true,
         contentLength: body.byteLength,
       },
     )
     c.#fromCache = true
+    c.#headSize = parsed.headSize
 
     try {
       if (c.isJSON) {
@@ -629,56 +664,52 @@ export class CacheEntry {
   }
 
   /**
+   * Encode status + headers (no body) as they appear at the start of
+   * an on-disk cache file.
+   */
+  encodeHead(): Buffer {
+    const statusStr = String(this.#statusCode)
+    const statusBytes = getEncondedValue(statusStr)
+
+    let headLength = 4 + statusBytes.byteLength
+    for (const h of this.#headers) headLength += 4 + h.byteLength
+
+    const out = Buffer.from(
+      new ArrayBuffer(headLength),
+      0,
+      headLength,
+    )
+    let off = 0
+    out[off++] = (headLength >> 24) & 0xff
+    out[off++] = (headLength >> 16) & 0xff
+    out[off++] = (headLength >> 8) & 0xff
+    out[off++] = headLength & 0xff
+    out.set(statusBytes, off)
+    off += statusBytes.byteLength
+    for (const h of this.#headers) {
+      const l = 4 + h.byteLength
+      out[off++] = (l >> 24) & 0xff
+      out[off++] = (l >> 16) & 0xff
+      out[off++] = (l >> 8) & 0xff
+      out[off++] = l & 0xff
+      out.set(h, off)
+      off += h.byteLength
+    }
+    this.#headSize = headLength
+    return out
+  }
+
+  /**
    * Encode the entry as a single Buffer for writing to the cache
    */
   encode(): Buffer {
     if (this.isJSON) this.json()
-    const statusStr = String(this.#statusCode)
-    const statusBytes = getEncondedValue(statusStr)
-
-    // compute headLength = 4 (length field itself) + statusBytes + Σ(4 + headerLen) for each header item
-    let headLength = 4 + statusBytes.byteLength
-    for (const h of this.#headers) headLength += 4 + h.byteLength
-
-    // allocate and fill head length prefix (big-endian)
-    const headLenBytes = new Uint8Array(4)
-    headLenBytes[0] = (headLength >> 24) & 0xff
-    headLenBytes[1] = (headLength >> 16) & 0xff
-    headLenBytes[2] = (headLength >> 8) & 0xff
-    headLenBytes[3] = headLength & 0xff
-
-    // header chunks: [len, bytes] for each header item
-    const headerChunks: Uint8Array[] = []
-    for (const h of this.#headers) {
-      const l = headLenBytes.byteLength + h.byteLength
-      const lb = new Uint8Array(4)
-      lb[0] = (l >> 24) & 0xff
-      lb[1] = (l >> 16) & 0xff
-      lb[2] = (l >> 8) & 0xff
-      lb[3] = l & 0xff
-      headerChunks.push(lb, h)
-    }
-
-    // total size
-    const total =
-      headLenBytes.byteLength +
-      statusBytes.byteLength +
-      headerChunks.reduce((n, b) => n + b.byteLength, 0) +
-      this._body.byteLength
-
-    // returns the concatenate buffer with all the pieces
-    const outBuffer = new ArrayBuffer(total)
-    const out = Buffer.from(outBuffer, 0, total)
-    let off = 0
-    out.set(headLenBytes, off)
-    off += headLenBytes.byteLength
-    out.set(statusBytes, off)
-    off += statusBytes.byteLength
-    for (const chunk of headerChunks) {
-      out.set(chunk, off)
-      off += chunk.byteLength
-    }
-    out.set(this._body, off)
+    const head = this.encodeHead()
+    const body = this._body
+    const total = head.byteLength + body.byteLength
+    const out = Buffer.from(new ArrayBuffer(total), 0, total)
+    out.set(head, 0)
+    out.set(body, head.byteLength)
     return out
   }
 }

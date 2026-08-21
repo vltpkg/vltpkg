@@ -42,7 +42,7 @@ import type { TokenResponse } from './token-response.ts'
 import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
-import { getEncondedValue } from './string-encoding.ts'
+import { collectHeaders, readBody } from './response.ts'
 import { oidc } from './oidc.ts'
 import type { OidcOptions } from './oidc.ts'
 export {
@@ -70,6 +70,9 @@ export {
 export type CacheableMethod = 'GET' | 'HEAD'
 export const isCacheableMethod = (m: unknown): m is CacheableMethod =>
   m === 'GET' || m === 'HEAD'
+
+export const cacheKey = (method: string, url: URL | string): string =>
+  `${method !== 'GET' ? method + ' ' : ''}${url}`
 
 export type RegistryClientOptions = {
   /**
@@ -489,7 +492,7 @@ export class RegistryClient {
     // Method + URL only. Headers (including accept) are not part of the
     // key and there is no Vary handling — callers must not vary the
     // response representation for the same URL.
-    const key = `${method !== 'GET' ? method + ' ' : ''}${u}`
+    const key = cacheKey(method, u)
     const buffer =
       useCache ?
         await this.cache.fetch(key, { context: { integrity } })
@@ -629,19 +632,7 @@ export class RegistryClient {
       }
     }
 
-    const h: Uint8Array[] = []
-    for (const [key, value] of Object.entries(response.headers)) {
-      /* c8 ignore start - theoretical */
-      if (Array.isArray(value)) {
-        h.push(
-          getEncondedValue(key),
-          getEncondedValue(value.join(', ')),
-        )
-        /* c8 ignore stop */
-      } else if (typeof value === 'string') {
-        h.push(getEncondedValue(key), getEncondedValue(value))
-      }
-    }
+    const h = collectHeaders(response)
 
     const { integrity, trustIntegrity } = options
 
@@ -686,12 +677,6 @@ export class RegistryClient {
       return result
     }
 
-    response.body.on('data', (chunk: Uint8Array) =>
-      result.addBody(chunk),
-    )
-    return await new Promise<CacheEntry>((res, rej) => {
-      response.body.on('error', rej)
-      response.body.on('end', () => res(result))
-    })
+    return await readBody(response, result)
   }
 }
