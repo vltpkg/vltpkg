@@ -121,7 +121,7 @@ export default defineConfig({
             {
               label: 'Guides',
               description:
-                'Step-by-step tutorials for common vlt tasks like publishing packages.',
+                'Guides, step-by-step tutorials with code samples for professional software developers.',
               paths: ['guides/**'],
             },
             {
@@ -154,6 +154,11 @@ export default defineConfig({
         }),
       ],
       sidebar: [
+        {
+          label: 'Guides',
+          collapsed: false,
+          autogenerate: { directory: 'guides' },
+        },
         {
           label: 'Get Started',
           collapsed: false,
