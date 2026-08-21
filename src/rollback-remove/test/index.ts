@@ -1,6 +1,7 @@
 import assert from 'node:assert'
 import type { SpawnOptions } from 'node:child_process'
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
+import * as fsPromisesOrig from 'node:fs/promises'
 import t from 'tap'
 import type { Test } from 'tap'
 
@@ -226,3 +227,44 @@ t.test('deno + windows', async t => {
     reffed: true,
   })
 })
+
+t.test(
+  'rm() does not register a path when rename fails with an unexpected error',
+  async t => {
+    let shouldFail = false
+    const { RollbackRemove } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      'node:fs/promises': {
+        ...fsPromisesOrig,
+        rename: async (src: string, dest: string) => {
+          if (shouldFail) {
+            const err = new Error(
+              'EBUSY: resource busy or locked',
+            ) as NodeJS.ErrnoException
+            err.code = 'EBUSY'
+            throw err
+          }
+          return fsPromisesOrig.rename(src, dest)
+        },
+      },
+    })
+
+    t.chdir(
+      t.testdir({
+        a: { b: 'important data' },
+      }),
+    )
+
+    const remover = new RollbackRemove()
+    shouldFail = true
+    await t.rejects(remover.rm('a/b'), { code: 'EBUSY' })
+
+    // The failed rename must leave both the file and rollback state untouched.
+    t.strictSame(readdirSync('a'), ['b'])
+
+    await remover.rollback()
+    t.strictSame(readdirSync('a'), ['b'])
+    t.strictSame(readFileSync('a/b', 'utf8'), 'important data')
+  },
+)
