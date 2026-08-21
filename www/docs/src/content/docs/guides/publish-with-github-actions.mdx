@@ -241,12 +241,16 @@ jobs:
   <TabItem label="yarn">
 
 ```yaml title=".github/workflows/publish.yml"
-name: Publish Package
+name: Publish to vlt
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   publish:
@@ -256,18 +260,24 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          registry-url: https://registry.vlt.io
+          node-version: 22
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
       - name: Build
         run: yarn build
 
+      - name: Configure VLT authentication
+        run:
+          yarn config set npmScopes.YOUR-ACCOUNT.npmAuthToken ${{
+          secrets.VLT_TOKEN }}
+
       - name: Publish
-        run: yarn npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.VLT_TOKEN }}
+        run: yarn npm publish --access public
 ```
 
   </TabItem>
