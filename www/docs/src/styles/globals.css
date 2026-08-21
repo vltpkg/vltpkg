@@ -13,6 +13,13 @@
 /* ***************************************************** */
 /*                  STARLIGHT COMPONENTS                 */
 /* ***************************************************** */
+/** Tabs driven by PackageManagerSelect: hide the now-redundant
+ * tab strip once JS has wired up the bridge, keeping it visible
+ * as a fallback when JS fails to load. */
+starlight-tabs.pm-select-driven > .tablist-wrapper {
+  display: none;
+}
+
 /** Search Button */
 button[aria-label='Search'] {
   height: 44px;
