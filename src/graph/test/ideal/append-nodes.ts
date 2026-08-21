@@ -3512,18 +3512,14 @@ t.test(
 
     // Check that there's only ONE edge from parent to platform-dep (deduped)
     const edges = [...(parentNode?.edgesOut.values() ?? [])].filter(
-      e => e.spec?.name === 'platform-dep',
+      e => e.spec.name === 'platform-dep',
     )
     t.equal(
       edges.length,
       1,
       'only one edge from parent to platform-dep (deduped)',
     )
-    t.equal(
-      edges[0]?.type,
-      'optional',
-      'the edge type is optional',
-    )
+    t.equal(edges[0]?.type, 'optional', 'the edge type is optional')
   },
 )
 
