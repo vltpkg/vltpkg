@@ -86,6 +86,9 @@ cd my-package`}
     />
   </TabItem>
   <TabItem label="yarn">
+    These instructions are for yarn 2+ (“Berry”), the version you get
+    from yarn set version berry or a packageManager field in
+    `package.json`.
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -117,7 +120,7 @@ cd my-package`}
   </TabItem>
 </Tabs>
 
-(Replace `my-package` with your desired directory name.)
+Feel free to replace `my-package` with any directory name you want.
 
 This downloads only the files for your package manager. Each starter
 is a minimal TypeScript package that exports a simple function, with
@@ -402,7 +405,42 @@ point at the vlt.io mirror:
 <Tabs syncKey="pkg-manager">
   <TabItem label="vlt">
     <Code
-      code="vlt add @YOUR-ACCOUNT/my-package"
+      code="vlt install @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <Code
+      code="npm install @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code
+      code="pnpm add @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      code="yarn add @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <Code
+      code="bun add @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <Code
+      code="deno add npm:@YOUR-ACCOUNT/my-package"
       title="Terminal"
       lang="bash"
     />
