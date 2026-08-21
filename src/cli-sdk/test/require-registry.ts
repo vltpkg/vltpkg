@@ -44,6 +44,14 @@ t.test('missingRegistryError / ambiguousRegistryError', async t => {
     cause: { code: 'ECONFIG' },
   })
   t.match(String(mod.missingNpmRegistryError()), /registries\.npm/)
+  t.match(mod.missingNpmRegistryError('custom'), {
+    message: /Missing custom registry configuration/,
+    cause: { code: 'ECONFIG' },
+  })
+  t.match(
+    String(mod.missingNpmRegistryError('custom')),
+    /registries\.custom/,
+  )
   t.match(
     mod.ambiguousRegistryError([
       { alias: 'npm', url: 'https://n/' },
@@ -286,5 +294,23 @@ t.test('hasNpmRegistry', async t => {
   t.ok(
     mod.hasNpmRegistry(mkConf({ registries: { npm: 'https://n/' } })),
     'npm alias -> true',
+  )
+  t.ok(
+    mod.hasNpmRegistry(
+      mkConf({
+        registries: { main: 'https://m/' },
+        'default-registry-alias': 'main',
+      }),
+    ),
+    'default-registry-alias at a configured alias -> true',
+  )
+  t.notOk(
+    mod.hasNpmRegistry(
+      mkConf({
+        registries: { npm: 'https://n/' },
+        'default-registry-alias': 'main',
+      }),
+    ),
+    'default-registry-alias at a missing alias -> false',
   )
 })

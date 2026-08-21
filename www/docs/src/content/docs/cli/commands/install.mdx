@@ -59,8 +59,9 @@ Installing by name (a **bare spec**) requires a registry to be
 configured — the `npm` alias has no built-in URL. Run
 [`vlt setup`](/cli/registries#getting-started-with-vlt-setup) once to
 configure your account's registries. `vlt install` (and `vlt update`,
-`vlt uninstall`, `vlt ci`) require `registries.npm` specifically, and
-fail with a config error when it is missing.
+`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) require `registries.npm`
+specifically — or, if you changed `default-registry-alias`, the alias
+it names — and fail with a config error when it is missing.
 
 <Code
   code={`# Latest version

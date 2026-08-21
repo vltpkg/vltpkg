@@ -216,7 +216,9 @@ export const outputCommand = async <T>(
       throw missingRegistryError()
     }
     if (needsNpmRegistry && !hasNpmRegistry(conf)) {
-      throw missingNpmRegistryError()
+      throw missingNpmRegistryError(
+        conf.options['default-registry-alias'],
+      )
     }
 
     const output = await onDone(await command(conf))

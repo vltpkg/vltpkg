@@ -31,10 +31,12 @@ The guided path is [`vlt setup`](#getting-started-with-vlt-setup),
 which configures your account's registry aliases so that
 `vlt install <pkg>` and `vlx` work out of the box.
 
-Install-related commands (`vlt install`, `vlt update`,
-`vlt uninstall`, `vlt ci`) additionally require the `registries.npm`
-alias — a scalar `--registry` / `VLT_REGISTRY` is not enough. When
-that alias is missing they fail with:
+Commands that install packages (`vlt install`, `vlt update`,
+`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) additionally require the
+`registries.npm` alias — or, when `default-registry-alias` is set to
+something else, the alias it names. A scalar `--registry` /
+`VLT_REGISTRY` is not enough. When that alias is missing they fail
+with:
 
 ```
 Config Error: Missing npm registry configuration.

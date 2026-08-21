@@ -21,16 +21,19 @@ export const missingRegistryError = (): Error =>
   )
 
 /**
- * Install-related commands need the `npm` alias specifically (not
- * merely some other configured registry) so bare specs and the
- * security archive have an npm origin.
+ * Install-related commands need the alias that bare specs resolve
+ * through (not merely some other configured registry) so packages and
+ * transitive deps get stable, alias-keyed DepIDs. That alias is
+ * `registries.npm` unless `default-registry-alias` points elsewhere.
  */
-export const missingNpmRegistryError = (): Error =>
+export const missingNpmRegistryError = (
+  alias: string = defaultRegistryName,
+): Error =>
   error(
     [
-      'Missing npm registry configuration.',
+      `Missing ${alias} registry configuration.`,
       '',
-      `Install commands require the \`registries.${defaultRegistryName}\` alias.`,
+      `Install commands require the \`registries.${alias}\` alias.`,
       'Run `vlt setup` to get configured.',
       '',
       'See https://docs.vlt.sh/cli for other ways to set a registry.',
@@ -111,13 +114,15 @@ export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
   !!conf.options.registry || gatherCandidates(conf).length > 0
 
 /**
- * Whether `registries.npm` is configured. A scalar `--registry` or
- * some other alias is not enough: install-related commands need the
- * npm alias itself. Kept next to {@link hasConfiguredRegistry} so
- * both pre-command gates share the same config surface.
+ * Whether the alias bare specs resolve through is configured:
+ * `registries.npm` by default, or whatever `default-registry-alias`
+ * points at. A scalar `--registry` or some unrelated alias is not
+ * enough: install-related commands need the default alias itself.
+ * Kept next to {@link hasConfiguredRegistry} so both pre-command
+ * gates share the same config surface.
  */
 export const hasNpmRegistry = (conf: LoadedConfig): boolean =>
-  !!conf.options.registries[defaultRegistryName]
+  !!conf.options.registries[conf.options['default-registry-alias']]
 
 /**
  * Synchronous, non-interactive registry resolution used by

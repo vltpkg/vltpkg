@@ -24,9 +24,11 @@ export type Command<T> = {
    */
   needsRegistry?: boolean
   /**
-   * Set to `true` by install-related commands (`install`, `update`,
-   * `uninstall`, `ci`). `outputCommand()` fails early with an
-   * `ECONFIG` error when `registries.npm` is not configured.
+   * Set to `true` by commands that install packages (`install`,
+   * `update`, `uninstall`, `ci`, `exec`/`vlx`). `outputCommand()`
+   * fails early with an `ECONFIG` error when the alias bare specs
+   * resolve through (`registries.npm`, or the alias named by
+   * `default-registry-alias`) is not configured.
    */
   needsNpmRegistry?: boolean
 }
