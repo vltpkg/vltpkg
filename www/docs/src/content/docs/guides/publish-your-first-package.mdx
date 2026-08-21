@@ -1,0 +1,516 @@
+---
+title: Publish your first package
+sidebar:
+  label: Publish your first package
+  order: 0
+---
+
+import {
+  Aside,
+  Code,
+  Tabs,
+  TabItem,
+  Steps,
+} from '@astrojs/starlight/components'
+import {
+  RegistryAuthSnippet,
+  ScopeRegistrySnippet,
+} from '../../../components/snippets'
+import PackageManagerSelect from '../../../components/package-manager-select/package-manager-select.astro'
+
+<PackageManagerSelect />
+
+You may have a component or function library to share at work, or you
+simply want to keep a tool you wrote offline. Here's how to do that
+using the vlt registry.
+
+In this tutorial, we'll walk through publishing a simple TypeScript
+package step by step using one of our
+[starter examples](https://github.com/vltpkg/package-examples) for
+your package manager.
+
+## Before you begin
+
+You'll need:
+
+- A vlt account. If you don't have one yet,
+  [sign up here](https://www.vlt.io/sign-up).
+- Node.js 18 or later
+- Your preferred package manager installed (vlt, npm, pnpm, yarn, bun,
+  or deno)
+
+You can follow along this tutorial using one of our starter examples
+from the
+[package-examples](https://github.com/vltpkg/package-examples)
+repository, or apply these steps to your own package.
+
+<Aside type="note">
+  vlt currently only supports publishing scoped packages (e.g.
+  `@your-account/my-package`). Unscoped package names are not yet
+  supported.
+</Aside>
+
+## Step 1: Clone the starter
+
+Choose your package manager and download the corresponding example:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code
+      code={`mkdir my-package && \\
+curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
+tar -xz -C my-package --strip-components=3 package-examples-main/packages/vlt && \\
+cd my-package`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <Code
+      code={`mkdir my-package && \\
+curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
+tar -xz -C my-package --strip-components=3 package-examples-main/packages/npm && \\
+cd my-package`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code
+      code={`mkdir my-package && \\
+curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
+tar -xz -C my-package --strip-components=3 package-examples-main/packages/pnpm && \\
+cd my-package`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code
+      code={`mkdir my-package && \\
+curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
+tar -xz -C my-package --strip-components=3 package-examples-main/packages/yarn && \\
+cd my-package`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <Code
+      code={`mkdir my-package && \\
+curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
+tar -xz -C my-package --strip-components=3 package-examples-main/packages/bun && \\
+cd my-package`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <Code
+      code={`mkdir my-package && \\
+curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
+tar -xz -C my-package --strip-components=3 package-examples-main/packages/deno && \\
+cd my-package`}
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+</Tabs>
+
+(Replace `my-package` with your desired directory name.)
+
+This downloads only the files for your package manager. Each starter
+is a minimal TypeScript package that exports a simple function, with
+the correct configuration for your package manager included.
+
+## Step 2: Update the package name and author
+
+Edit `package.json` and make these changes:
+
+1. **Change the name** to `@YOUR-ACCOUNT/my-package`
+
+   Replace `YOUR-ACCOUNT` with your vlt account slug (find it on your
+   [account settings page](https://registry.vlt.io/account)). You can
+   use any package name for `my-package`.
+
+2. **Update the version** to `1.0.0` to mark this as your first
+   release
+
+3. **Update the author** with your information
+
+Here's the complete updated `package.json`:
+
+<Code
+  code={`{
+  "name": "@YOUR-ACCOUNT/my-package",
+  "version": "1.0.0",
+  "description": "My awesome package",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": {
+    "name": "Your Name",
+    "email": "your-email@example.com"
+  },
+  ...
+}`}
+  title="package.json"
+  lang="json"
+/>
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Aside type="tip">
+      You can also manage versions from the CLI with `vlt version
+      major|minor|patch` instead of manually editing `package.json`.
+      This is especially useful for future releases.
+    </Aside>
+  </TabItem>
+  <TabItem label="npm" />
+  <TabItem label="pnpm" />
+  <TabItem label="yarn">
+    <Aside type="tip">
+      You can also manage versions from the CLI with `yarn version
+      major|minor|patch` instead of manually editing `package.json`.
+      This is especially useful for future releases.
+    </Aside>
+  </TabItem>
+  <TabItem label="bun" />
+  <TabItem label="deno" />
+</Tabs>
+
+## Step 3: Configure your registry
+
+Map your account scope to the vlt registry so your package manager
+knows where to publish. Replace `YOUR-ACCOUNT` with your vlt account
+slug.
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <ScopeRegistrySnippet
+      packageManager="vlt"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <ScopeRegistrySnippet
+      packageManager="npm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <ScopeRegistrySnippet
+      packageManager="pnpm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <ScopeRegistrySnippet
+      packageManager="yarn"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <ScopeRegistrySnippet
+      packageManager="bun"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <ScopeRegistrySnippet
+      packageManager="deno"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+</Tabs>
+
+## Step 4: Authenticate
+
+<Aside type="caution">
+  Publishing with a personal token requires an authenticator app. If
+  you haven't set one up, go to [Settings →
+  Authentication](https://www.vlt.io/user/settings/authentication) and
+  add one before continuing.
+</Aside>
+
+Before you can publish, you need to authenticate with the vlt
+registry:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <RegistryAuthSnippet
+      packageManager="vlt"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <RegistryAuthSnippet
+      packageManager="npm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <RegistryAuthSnippet
+      packageManager="pnpm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <RegistryAuthSnippet
+      packageManager="yarn"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <RegistryAuthSnippet
+      packageManager="bun"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <RegistryAuthSnippet
+      packageManager="deno"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+</Tabs>
+
+![Approval prompt after login](/images/approve.png)
+
+After clicking **Approve**, you'll see a confirmation screen:
+
+![Approved confirmation](/images/approved.png)
+
+Once approved, return to your terminal — your credentials are now
+stored locally for future publishes.
+
+## Step 5: Install dependencies
+
+Before building, install the dev dependencies (TypeScript):
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="vlt install" title="Terminal" lang="bash" />
+
+    Note: If you haven't set up a default registry, you can use `npm install` instead and vlt will use npm's registry for dependencies.
+
+  <Aside type="tip">
+    When you run `vlt install` or other vlt commands, a `vlt-lock.json` file is
+    created to lock dependency versions. Both `vlt.json` and `vlt-lock.json` should
+    be committed to version control.
+  </Aside>
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="npm install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="pnpm install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="yarn install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="bun install" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno" />
+</Tabs>
+
+## Step 6: Build your package
+
+The starter includes TypeScript, so build it before publishing:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="vlr build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="npm run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="pnpm run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="yarn build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="bun run build" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno">
+    <Aside type="note">
+      The starter uses TypeScript, but Deno loads TypeScript natively,
+      so you may not need a separate build step depending on your
+      setup.
+    </Aside>
+  </TabItem>
+</Tabs>
+
+This compiles the TypeScript to JavaScript in the `dist/` directory,
+which is what users will actually install.
+
+You'll also notice that it's in the `.gitignore` as it doesn't need to
+be commited locally for rebuilds.
+
+## Step 7: Publish
+
+When you publish with a personal token, the vlt registry requires a
+one-time password (OTP) by default. The client will open a browser or
+prompt you for a code from your authenticator app. For unattended
+publishes from CI, use a service token instead — see
+[Publishing from CI](/registry/publishing#publishing-from-ci).
+
+Now you're ready to publish:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code code="vlt publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="npm">
+    <Code code="npm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="pnpm">
+    <Code code="pnpm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="yarn">
+    <Code code="yarn npm publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="bun">
+    <Code code="bun publish" title="Terminal" lang="bash" />
+  </TabItem>
+  <TabItem label="deno">
+    <Aside type="caution">
+      Deno does not support publishing to npm registries directly.
+      You'll need to use a different tool (like `npm publish` or `pnpm
+      publish`) to publish your package.
+    </Aside>
+  </TabItem>
+</Tabs>
+
+You should see `+ @YOUR-ACCOUNT/my-package@1.0.0` returned in your
+terminal.
+
+![Publish completed](/images/publish-completed.png)
+
+The registry validates your package and displays a confirmation with
+the published version and scope. Your package is now live!
+
+## What happens next
+
+Your package is published to your private registry. Other members of
+your account can install it after
+[configuring their registry setup](#step-3-configure-your-registry) to
+point at the vlt.io mirror:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <Code
+      code="vlt add @YOUR-ACCOUNT/my-package"
+      title="Terminal"
+      lang="bash"
+    />
+  </TabItem>
+</Tabs>
+To make your package publicly visible, you can change its visibility
+in your [account settings](https://registry.vlt.io/account).
+
+## Troubleshooting
+
+### 403 Forbidden error
+
+The package name must be scoped to your account (e.g.,
+`@YOUR-ACCOUNT/my-package`). Check your `package.json` and make sure
+the scope matches your account slug.
+
+### Authentication required
+
+If commands fail with an authentication error, run:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+    <RegistryAuthSnippet
+      packageManager="vlt"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="npm">
+    <RegistryAuthSnippet
+      packageManager="npm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="pnpm">
+    <RegistryAuthSnippet
+      packageManager="pnpm"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="yarn">
+    <RegistryAuthSnippet
+      packageManager="yarn"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="bun">
+    <RegistryAuthSnippet
+      packageManager="bun"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+  <TabItem label="deno">
+    <RegistryAuthSnippet
+      packageManager="deno"
+      account="YOUR-ACCOUNT"
+    />
+  </TabItem>
+</Tabs>
+
+### Version conflict
+
+Each version can only be published once. If you get a conflict error,
+bump the version in `package.json` and try again.
+
+### mkdir: . No such file or directory
+
+This error occurs when the `my-package` directory already exists. You
+have two options:
+
+1. **Use a different directory name**:
+
+   Replace `my-package` with a unique name in the command. For
+   example:
+
+   ```bash
+   mkdir my-awesome-package && \
+   curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \
+   tar -xz -C my-awesome-package --strip-components=3 package-examples-main/packages/npm && \
+   cd my-awesome-package
+   ```
+
+2. **Remove the existing directory**:
+
+   ```bash
+   rm -rf my-package
+   ```
+
+   Then run the original download command again.
+
+### Config Error: Missing registry configuration
+
+If you're using the vlt CLI and see this error when running
+`vlt install`, it means vlt needs a default registry configured for
+downloading dependencies.
+
+**Configure a default registry** (if you want vlt to manage all
+packages):
+
+```bash
+vlt config set registry=https://registry.vlt.io/YOUR-ACCOUNT/npm/
+```
+
+Then run `vlt install` to download dependencies through your vlt
+mirror.
+
+## Next steps
+
+- Learn about [working with registries](/cli/registries)
+- Explore [dist-tags](/registry/publishing#dist-tags) for pre-releases
+- Set up [CI/CD publishing](/registry/publishing#publishing-from-ci)
+- Read the full [publishing documentation](/registry/publishing)
