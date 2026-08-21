@@ -1,5 +1,5 @@
 import t from 'tap'
-import { defaultRegistries } from '@vltpkg/spec'
+import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 let requestLog: {
@@ -39,6 +39,7 @@ const Command = await t.mockImport<
   },
   '@vltpkg/spec': {
     defaultRegistries,
+    defaultRegistryName,
     Spec: {
       parseArgs(spec: string) {
         const at = spec.lastIndexOf('@')
