@@ -60,6 +60,11 @@ nothing is configured (neither `--registry` nor the
 so usage is readable with nothing set up. Inside a command, use the
 `requireRegistry(conf)` helper rather than a non-null assertion.
 
+Install-related commands (`install`, `update`, `uninstall`, `ci`) also
+export `needsNpmRegistry = true`. That gate lives next to
+`needsRegistry` in `outputCommand()` and throws when `registries.npm`
+is unset -- a scalar `--registry` or some other alias is not enough.
+
 ### The `npm` alias is no longer built in
 
 Bare specifiers (`foo`, `foo@latest`) and transitive dependencies

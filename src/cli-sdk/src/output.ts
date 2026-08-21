@@ -10,6 +10,8 @@ import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
 import {
   hasConfiguredRegistry,
+  hasNpmRegistry,
+  missingNpmRegistryError,
   missingRegistryError,
 } from './require-registry.ts'
 import type { LazyView, View, ViewOptions, Views } from './view.ts'
@@ -160,7 +162,8 @@ export const outputCommand = async <T>(
     start: Date.now(),
   },
 ) => {
-  const { usage, views, command, needsRegistry } = cliCommand
+  const { usage, views, command, needsRegistry, needsNpmRegistry } =
+    cliCommand
 
   const stdoutColor =
     conf.values.color ?? supportsColor(process.stdout)
@@ -211,6 +214,9 @@ export const outputCommand = async <T>(
     // nothing is configured.
     if (needsRegistry && !hasConfiguredRegistry(conf)) {
       throw missingRegistryError()
+    }
+    if (needsNpmRegistry && !hasNpmRegistry(conf)) {
+      throw missingNpmRegistryError()
     }
 
     const output = await onDone(await command(conf))

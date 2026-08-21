@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { defaultRegistries } from '@vltpkg/spec'
+import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import { selectRegistry } from './select-registry.ts'
 import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
@@ -14,6 +14,24 @@ export const missingRegistryError = (): Error =>
       'Missing registry configuration.',
       '',
       'vlt has no default registry. Run `vlt setup` to get configured.',
+      '',
+      'See https://docs.vlt.sh/cli for other ways to set a registry.',
+    ].join('\n'),
+    { code: 'ECONFIG' },
+  )
+
+/**
+ * Install-related commands need the `npm` alias specifically (not
+ * merely some other configured registry) so bare specs and the
+ * security archive have an npm origin.
+ */
+export const missingNpmRegistryError = (): Error =>
+  error(
+    [
+      'Missing npm registry configuration.',
+      '',
+      `Install commands require the \`registries.${defaultRegistryName}\` alias.`,
+      'Run `vlt setup` to get configured.',
       '',
       'See https://docs.vlt.sh/cli for other ways to set a registry.',
     ].join('\n'),
@@ -91,6 +109,15 @@ const gatherCandidates = (
  */
 export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
   !!conf.options.registry || gatherCandidates(conf).length > 0
+
+/**
+ * Whether `registries.npm` is configured. A scalar `--registry` or
+ * some other alias is not enough: install-related commands need the
+ * npm alias itself. Kept next to {@link hasConfiguredRegistry} so
+ * both pre-command gates share the same config surface.
+ */
+export const hasNpmRegistry = (conf: LoadedConfig): boolean =>
+  !!conf.options.registries[defaultRegistryName]
 
 /**
  * Synchronous, non-interactive registry resolution used by

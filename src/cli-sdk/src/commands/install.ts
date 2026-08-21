@@ -27,6 +27,7 @@ export type InstallResult = {
 }
 
 export const needsRegistry = true
+export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({

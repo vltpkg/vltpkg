@@ -249,8 +249,9 @@ t.test('invalid workspace-group', async t => {
   t.matchSnapshot(logs.join('\n'))
 })
 
-// the `needsRegistry` gate itself lives in outputCommand, which is
-// mocked out here. these cover the config plumbing that feeds it.
+// the `needsRegistry` / `needsNpmRegistry` gates live in
+// outputCommand, which is mocked out here. these cover the config
+// plumbing that feeds them.
 t.test('registry config resolution', async t => {
   t.test('undefined when nothing is configured', async t => {
     const cwd = t.testdir({

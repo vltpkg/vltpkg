@@ -340,6 +340,80 @@ t.test('outputCommand', async t => {
     })
   })
 
+  t.test('needsNpmRegistry', async t => {
+    const npmRegistryCommand: Command<true> = {
+      async command() {
+        return true
+      },
+      usage: () => ({ usage: () => 'usage' }) as Jack,
+      views: { json: x => x },
+      needsNpmRegistry: true,
+    }
+
+    t.test('ECONFIG when registries.npm is missing', async t => {
+      errsPrinted.length = 0
+      const { exitCode = 0 } = process
+      const exits = t.capture(process, 'exit').args
+      t.teardown(() => {
+        if (t.passing()) process.exitCode = exitCode
+      })
+      // a scalar --registry is enough for needsRegistry, but not
+      // for the install-related npm alias gate
+      await outputCommand(npmRegistryCommand, {
+        values: { view: 'json' },
+        options: {
+          registry: 'https://registry.npmjs.org/',
+          registries: {},
+        },
+      } as unknown as LoadedConfig)
+      t.strictSame(exits(), [[1]])
+      t.equal(process.exitCode, 1)
+      t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
+      t.match(String(errsPrinted[0]), /registries\.npm/)
+    })
+
+    t.test(
+      'ECONFIG when only a non-npm alias is configured',
+      async t => {
+        errsPrinted.length = 0
+        const { exitCode = 0 } = process
+        const exits = t.capture(process, 'exit').args
+        t.teardown(() => {
+          if (t.passing()) process.exitCode = exitCode
+        })
+        await outputCommand(npmRegistryCommand, {
+          values: { view: 'json' },
+          options: {
+            registries: { main: 'https://example.com/' },
+          },
+        } as unknown as LoadedConfig)
+        t.strictSame(exits(), [[1]])
+        t.equal(process.exitCode, 1)
+        t.match(String(errsPrinted[0]), /Missing npm registry/)
+      },
+    )
+
+    t.test('--help is answered before the check', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(npmRegistryCommand, {
+        values: { help: true },
+        options: {},
+      } as LoadedConfig)
+      t.strictSame(logs(), [['usage']], 'usage printed, no error')
+    })
+
+    t.test('runs when registries.npm is configured', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(npmRegistryCommand, {
+        values: { view: 'json' },
+        options: {
+          registries: { npm: 'https://registry.npmjs.org/' },
+        },
+      } as unknown as LoadedConfig)
+      t.strictSame(logs(), [['true']])
+    })
+  })
+
   t.test('view class success', async t => {
     let startCalled = false
     let doneCalled = false

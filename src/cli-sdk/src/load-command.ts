@@ -23,6 +23,12 @@ export type Command<T> = {
    * early with an `ECONFIG` error when one of these runs unconfigured.
    */
   needsRegistry?: boolean
+  /**
+   * Set to `true` by install-related commands (`install`, `update`,
+   * `uninstall`, `ci`). `outputCommand()` fails early with an
+   * `ECONFIG` error when `registries.npm` is not configured.
+   */
+  needsNpmRegistry?: boolean
 }
 
 export const loadCommand = async <T>(

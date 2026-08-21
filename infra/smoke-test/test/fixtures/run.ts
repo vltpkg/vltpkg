@@ -177,6 +177,8 @@ const spawnCommand = async (
         // there is no default registry, so registry-hitting commands
         // need one configured. individual tests can override this.
         VLT_REGISTRY: 'https://registry.npmjs.org/',
+        // install-related commands also require the npm alias
+        VLT_REGISTRIES: 'npm=https://registry.npmjs.org/',
         ...variant.env,
         ...env,
         // We stop walking to find config at $HOME so set that to the root
