@@ -12,12 +12,15 @@ Refer to [Astro/Starlight](https://docs.vlt.sh) for code blocks, components and 
 
 ```
 www/docs/src/content/docs/
-├── get-started/concepts/   # Core concepts (dependencies, manifests, registries)
-├── migration/              # Migration guides from npm/pnpm/yarn
+├── get-started/            # Intro, use cases, npm interop
+│   └── concepts/           # Core concepts (dependencies, manifests, registries)
 ├── cli/                    # CLI reference (options, guides)
 │   ├── commands/           # Per-command docs
+│   ├── migration/          # Migration guides from npm/pnpm/yarn
 │   └── selectors/          # DSS selector reference (pseudo-classes, combinators, etc.)
+├── registry/               # vlt registry docs (publishing, tokens, dashboard)
 ├── packages/               # Package API docs (auto-generated)
+├── feedback/               # Feedback page
 └── index.mdx               # Site homepage
 ```
 
