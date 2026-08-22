@@ -2,19 +2,25 @@ import React from 'react'
 import { ChevronRight } from 'lucide-react'
 import type { Props } from '@astrojs/starlight/props'
 import type { Crumb } from '@/lib/breadcrumbs.ts'
+import { CopyMarkdownButton } from '@/components/copy-markdown-button/copy-markdown-button.tsx'
 
 /**
  * Page heading for docs pages: an optional breadcrumb trail followed
- * by the page title.
+ * by the page title and copy-to-markdown button.
  *
  * Purely presentational — all breadcrumb policy (when to show the
  * trail, labels, which crumbs link) lives in `getBreadcrumbs`; an
  * empty `crumbs` array renders the title alone.
  */
-export const PageTitle = ({
+export interface PageTitleWithCopyButtonProps {
+  entry: Props['entry']
+  crumbs: Crumb[]
+}
+
+export const PageTitleWithCopyButton = ({
   entry,
   crumbs,
-}: Props & { crumbs: Crumb[] }) => {
+}: PageTitleWithCopyButtonProps) => {
   const { title } = entry.data as { title: string }
 
   return (
@@ -44,9 +50,14 @@ export const PageTitle = ({
           ))}
         </div>
       )}
-      <h1 id="_top" className="mb-4 mt-8 text-3xl font-bold">
-        {title}
-      </h1>
+      <div className="my-auto flex flex-col gap-4 pb-4 pt-8 sm:flex-row sm:items-start sm:justify-between lg:items-baseline">
+        <h1 id="_top" className="text-3xl font-bold">
+          {title}
+        </h1>
+        <div>
+          <CopyMarkdownButton slug={entry.id} label="Copy Markdown" />
+        </div>
+      </div>
     </div>
   )
 }
