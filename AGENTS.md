@@ -21,9 +21,10 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 - **CLI:** `src/cli-sdk` (framework — see
   `.cursor/rules/cli-sdk-workspace.mdc`), `src/init`, `src/vlx`,
   `src/run`
-- **Utilities:** `src/keychain`, `src/security-archive`, `src/semver`,
-  `src/git`, `src/git-scp-url`, `src/error-cause`, `src/output`,
-  `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`,
+- **Utilities:** `src/keychain`, `src/security-archive` (see
+  `.cursor/rules/security-archive.mdc`), `src/semver`, `src/git`,
+  `src/git-scp-url`, `src/error-cause`, `src/output`, `src/xdg`,
+  `src/url-open`, `src/promise-spawn`, `src/cmd-shim`,
   `src/rollback-remove`, `src/dot-prop`, `src/fast-split`,
   `src/pick-manifest`, `src/vlt-json`, `src/which`
 - **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-js`,

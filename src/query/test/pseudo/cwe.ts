@@ -56,7 +56,7 @@ t.test('selects packages with a CWE alert', async t => {
                   key: '12314320948130',
                   type: 'cve',
                   severity: 'high',
-                  category: 'security',
+                  category: 'vulnerability',
                   props: {
                     lastPublish: '2023-01-01',
                     cveId: 'CVE-2023-1234' as const,
@@ -227,7 +227,7 @@ t.test(':cwe() with empty parens matches any CWE', async t => {
                   key: '12314320948130',
                   type: 'cve',
                   severity: 'high',
-                  category: 'security',
+                  category: 'vulnerability',
                   props: {
                     lastPublish: '2023-01-01',
                     cveId: 'CVE-2023-1234' as const,

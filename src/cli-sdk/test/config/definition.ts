@@ -82,6 +82,27 @@ t.test('expect-results validation', async t => {
   t.equal(values['expect-results'], '>=5000')
 })
 
+t.test('audit-level validation', async t => {
+  t.throws(() => {
+    definition.parse(['--audit-level', 'foobar'])
+  })
+  const { values } = definition.parse(['--audit-level', 'medium'])
+  t.equal(values['audit-level'], 'medium')
+  // Test backward compatibility: 'moderate' should be accepted as valid
+  // It will be normalized to 'medium' by the audit command itself
+  const { values: compatValues } = definition.parse([
+    '--audit-level',
+    'moderate',
+  ])
+  t.equal(compatValues['audit-level'], 'moderate')
+  // a non-string can only arrive via a config file, and jackspeak
+  // rejects it on type before our own validate ever sees it
+  t.throws(
+    () => definition.validate({ 'audit-level': 3 }),
+    'rejects a non-string audit-level',
+  )
+})
+
 t.test('default view depends on stdout TTY status', t => {
   t.test('tty true', async t => {
     delete process.env.VLT_VIEW
