@@ -81,6 +81,26 @@ aliases and bare specs resolve.
 `getOptions` merges user config **over** built-in defaults, so every
 built-in alias (`gh`, `jsr`) is user/service-overridable.
 
+## Undefined protocols
+
+A `<scheme>:` prefix that is neither built-in nor configured throws
+`Protocol custom: is not defined`.
+
+**Built-in:** `catalog:`, `workspace:`, `registry:`, `file:`, `http:`,
+`https:`, `git:`, `git+ssh:`, `git+http:`, `git+https:`, `git+file:`.
+The `default-registry-alias` (default `npm`) is always treated as known.
+
+**Configured:** keys of `registries`, `git-hosts`, and `jsr-registries`
+(plus built-in defaults `gh`, `github`, `gitlab`, `bitbucket`, `gist`,
+`jsr`).
+
+Windows drive letters (`C:/x`) and hostnames (`notgithub.com:user/repo`)
+are not schemes and keep their existing parse behavior. Dist-tags like
+`latest` / `next-9` are unchanged.
+
+pnpm/yarn protocols (`link:`, `portal:`, `patch:`) and unconfigured
+aliases (`custom:`, `vlt:`) throw.
+
 ## Defaults
 
 ```typescript
