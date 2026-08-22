@@ -1,6 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" \"$VERCEL_GIT_COMMIT_SHA\" -- www/docs/ || exit 1",
+  "headers": [
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "</.well-known/agent-skills/markdown-negotiation/SKILL.md>; rel=\"agent-skill\""
+        }
+      ]
+    }
+  ],
   "redirects": [
     {
       "source": "/migration/from-pnpm",
