@@ -55,7 +55,9 @@ export const CopyMarkdownButton: React.FC<
       // Fetch markdown from API
       const url = `/api/markdown/${slug.replace(/\/$/, '')}`
 
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        headers: { Accept: 'text/markdown' },
+      })
 
       if (!response.ok) {
         const errorMsg = await getErrorMessage(response)
