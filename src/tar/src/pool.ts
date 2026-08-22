@@ -44,6 +44,8 @@ export class Pool {
     const ur = this.pending.get(id)
     /* c8 ignore next */
     if (!ur) return
+    // request is done, stop holding its tarball buffer in memory
+    this.pending.delete(id)
     if (isResponseOK(m)) {
       ur.resolve()
       /* c8 ignore start - nearly impossible in normal circumstances */
