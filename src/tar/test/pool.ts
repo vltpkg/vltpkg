@@ -88,6 +88,7 @@ t.test('unpack all the things!', async t => {
       true,
     )
   }
+  t.equal(p.pending.size, 0, 'pending must be empty after unpack')
 })
 
 t.test('unpack all the things, but flattened', async t => {
@@ -108,6 +109,7 @@ t.test('unpack all the things, but flattened', async t => {
       true,
     )
   }
+  t.equal(p.pending.size, 0, 'pending must be empty after unpack')
   t.end()
 })
 

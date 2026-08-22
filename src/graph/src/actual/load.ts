@@ -459,17 +459,31 @@ const parseDir = (
 }
 
 /**
- * Verify that all importer node_modules directories exist on disk.
+ * Verify that importer node_modules directories exist on disk.
  * The hidden lockfile may report deps as installed even when a
  * workspace's node_modules has been manually deleted. Throws if
- * any importer node_modules directory is missing, causing the
- * caller to fall through to filesystem-based graph loading.
+ * an importer with at least one resolved edgeOut is missing
+ * node_modules, causing the caller to fall through to
+ * filesystem-based graph loading.
+ *
+ * Importers with no resolved edgesOut (dep-less / types-only
+ * workspaces) never get a node_modules from reify, so they are
+ * skipped — requiring one would discard the hidden lockfile on
+ * every install.
  */
 export const verifyImporterNodeModules = (
   graph: Graph,
   projectRoot: string,
 ): void => {
   for (const importer of graph.importers) {
+    let linked = false
+    for (const { to } of importer.edgesOut.values()) {
+      if (to) {
+        linked = true
+        break
+      }
+    }
+    if (!linked) continue
     const nm = resolve(projectRoot, importer.location, 'node_modules')
     if (!existsSync(nm)) {
       throw new Error(

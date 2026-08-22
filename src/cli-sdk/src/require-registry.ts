@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { defaultRegistries } from '@vltpkg/spec'
+import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import { selectRegistry } from './select-registry.ts'
 import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
@@ -14,6 +14,27 @@ export const missingRegistryError = (): Error =>
       'Missing registry configuration.',
       '',
       'vlt has no default registry. Run `vlt setup` to get configured.',
+      '',
+      'See https://docs.vlt.sh/cli for other ways to set a registry.',
+    ].join('\n'),
+    { code: 'ECONFIG' },
+  )
+
+/**
+ * Install-related commands need the alias that bare specs resolve
+ * through (not merely some other configured registry) so packages and
+ * transitive deps get stable, alias-keyed DepIDs. That alias is
+ * `registries.npm` unless `default-registry-alias` points elsewhere.
+ */
+export const missingNpmRegistryError = (
+  alias: string = defaultRegistryName,
+): Error =>
+  error(
+    [
+      `Missing ${alias} registry configuration.`,
+      '',
+      `Install commands require the \`registries.${alias}\` alias.`,
+      'Run `vlt setup` to get configured.',
       '',
       'See https://docs.vlt.sh/cli for other ways to set a registry.',
     ].join('\n'),
@@ -91,6 +112,17 @@ const gatherCandidates = (
  */
 export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
   !!conf.options.registry || gatherCandidates(conf).length > 0
+
+/**
+ * Whether the alias bare specs resolve through is configured:
+ * `registries.npm` by default, or whatever `default-registry-alias`
+ * points at. A scalar `--registry` or some unrelated alias is not
+ * enough: install-related commands need the default alias itself.
+ * Kept next to {@link hasConfiguredRegistry} so both pre-command
+ * gates share the same config surface.
+ */
+export const hasNpmRegistry = (conf: LoadedConfig): boolean =>
+  !!conf.options.registries[conf.options['default-registry-alias']]
 
 /**
  * Synchronous, non-interactive registry resolution used by

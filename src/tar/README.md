@@ -61,8 +61,9 @@ Queue of requests awaiting an available worker.
 
 #### `pool.pending`
 
-Unpack requests that have been assigned to a worker, but not yet
-completed.
+All unpack requests that have not yet completed, both those currently
+assigned to a worker and those still waiting in the queue. Entries are
+removed once the request resolves or rejects.
 
 #### `pool.unpack(tarData: Buffer, target: string) => Promise<void>`
 

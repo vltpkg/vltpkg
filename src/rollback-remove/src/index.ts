@@ -14,8 +14,10 @@ export class RollbackRemove {
   async rm(path: string) {
     if (this.#paths.has(path)) return
     const target = `${dirname(path)}/.VLT.DELETE.${this.#key}.${basename(path)}`
-    this.#paths.set(path, target)
-    await rename(path, target).catch((e: unknown) => {
+    // rollback() trusts this map, so only record entries after rename succeeds.
+    try {
+      await rename(path, target)
+    } catch (e: unknown) {
       if (
         e instanceof Error &&
         'code' in e &&
@@ -23,12 +25,11 @@ export class RollbackRemove {
         (e.code === 'ENOENT' || e.code === 'EPERM')
         /* c8 ignore stop */
       ) {
-        this.#paths.delete(path)
         return
       }
-      /* c8 ignore next */
       throw e
-    })
+    }
+    this.#paths.set(path, target)
   }
 
   confirm() {

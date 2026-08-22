@@ -105,13 +105,16 @@ const addBinHashbangs: esbuild.Plugin = {
 
 const codeSplitPlugin = (): {
   paths: () => { source: string; out: string }[]
-  plugin: esbuild.Plugin
+  plugin: (skipSource?: string) => esbuild.Plugin
 } => {
   const codeSplitIdentifier =
     'export const __CODE_SPLIT_SCRIPT_NAME ='
   const found = new Set<{ source: string; out: string }>()
 
-  const fn = async (o: esbuild.OnLoadArgs) => {
+  const fn = async (o: esbuild.OnLoadArgs, skipSource?: string) => {
+    if (skipSource && o.path === skipSource) {
+      return
+    }
     const source = await readFile(o.path, 'utf8')
     if (source.includes(codeSplitIdentifier)) {
       const out = withoutExtension(
@@ -139,10 +142,11 @@ const codeSplitPlugin = (): {
 
   // All files that will be code split into external scripts
   // export __CODE_SPLIT_SCRIPT_NAME which we change to a path
-  // to that external script instead
+  // to that external script instead. skipSource keeps an entry
+  // from stubbing itself when it is the bundle's own entry.
   return {
     paths: () => [...found],
-    plugin: {
+    plugin: (skipSource?: string) => ({
       name: 'code-split-plugin',
       setup({ onLoad }) {
         onLoad(
@@ -155,10 +159,10 @@ const codeSplitPlugin = (): {
             ),
             namespace: 'file',
           },
-          fn,
+          o => fn(o, skipSource),
         )
       },
-    },
+    }),
   }
 }
 
@@ -172,7 +176,7 @@ type CreateBundleOptions = {
 
 type BundleOptions = {
   entryPoints: Exclude<esbuild.BuildOptions['entryPoints'], undefined>
-  plugins?: esbuild.BuildOptions['plugins']
+  plugins: esbuild.Plugin[]
 }
 
 const bundleEntryPoints = async (
@@ -185,7 +189,7 @@ const bundleEntryPoints = async (
     `${importName} as ${u(importName)}`
   const { errors, warnings } = await esbuild.build({
     entryPoints: o.entryPoints,
-    plugins: [nodeImports, resvgWasmExternal, ...(o.plugins ?? [])],
+    plugins: [nodeImports, resvgWasmExternal, ...o.plugins],
     sourcemap: o.sourcemap,
     minify: o.minify,
     outdir: o.outdir,
@@ -291,21 +295,31 @@ export const bundle = async ({
       out: basenameWithoutExtension(file),
     })),
     plugins: [
-      codeSplit.plugin,
+      codeSplit.plugin(),
       hashbang ? addBinHashbangs : null,
     ].filter(v => v !== null),
   })
 
   // bundle manually code split files determined from the
-  // transform souce plugin. these are scripts that are exec'd
-  // at runtime by the CLI
-  const codeSplitPaths = codeSplit.paths()
-  assert(codeSplitPaths.length, 'no code split paths found')
-  for (const { source, out } of codeSplit.paths()) {
-    await esbuildBundle({
-      entryPoints: [{ in: source, out }],
-    })
+  // transform source plugin. these are scripts that are exec'd
+  // at runtime by the CLI. drain as a queue because bundling a
+  // code-split entry with the plugin can discover more entries
+  // (e.g. revalidate importing unzip).
+  const done = new Set<string>()
+  for (;;) {
+    const pending = codeSplit
+      .paths()
+      .filter(({ source }) => !done.has(source))
+    if (!pending.length) break
+    for (const { source, out } of pending) {
+      done.add(source)
+      await esbuildBundle({
+        entryPoints: [{ in: source, out }],
+        plugins: [codeSplit.plugin(source)],
+      })
+    }
   }
+  assert(done.size, 'no code split paths found')
 
   // copy package jsons that get read at runtime
   cpSync(

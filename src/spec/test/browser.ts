@@ -1062,6 +1062,86 @@ t.test('catalogs', async t => {
   )
 })
 
+t.test('undefined protocols', t => {
+  const protocolError = (proto: string, spec: string) => ({
+    message: `Protocol ${proto}: is not defined`,
+    cause: { spec, found: `${proto}:` },
+  })
+
+  t.throws(
+    () => Spec.parse('x', 'custom:1.x'),
+    protocolError('custom', 'x@custom:1.x'),
+  )
+  t.throws(
+    () => Spec.parseArgs('custom:foo'),
+    protocolError('custom', '(unknown)@custom:foo'),
+  )
+  t.throws(
+    () => Spec.parse('x@vlt:1.x'),
+    protocolError('vlt', 'x@vlt:1.x'),
+  )
+  t.throws(
+    () => Spec.parse('vlt:foo@1'),
+    protocolError('vlt', 'vlt:foo@1'),
+  )
+  t.throws(
+    () => Spec.parse('x', 'link:../x'),
+    protocolError('link', 'x@link:../x'),
+  )
+  t.throws(
+    () => Spec.parse('x', 'portal:../x'),
+    protocolError('portal', 'x@portal:../x'),
+  )
+  t.throws(
+    () => Spec.parse('x', 'patch:foo@1'),
+    protocolError('patch', 'x@patch:foo@1'),
+  )
+
+  t.equal(Spec.parse('x', 'C:/x/y').type, 'file')
+  t.equal(Spec.parse('x', 'C:\\x\\y').distTag, 'C:\\x\\y')
+  t.equal(Spec.parse('x', 'notgithub.com:user/foo').type, 'git')
+  t.equal(Spec.parse('x', 'user/foo#semver:^1').type, 'git')
+  t.equal(Spec.parse('x@not-git@hostname.com:some/repo').type, 'git')
+  t.equal(Spec.parse('x', 'next-9').distTag, 'next-9')
+  t.equal(Spec.parse('x', 'latest').distTag, 'latest')
+  t.equal(Spec.parse('x', 'git@github.com:u/r').type, 'git')
+  t.equal(Spec.parse('npm:foo@1').type, 'registry')
+
+  t.equal(
+    Spec.parse('x', 'custom:foo@1', {
+      registries: { custom: 'https://example.com/' },
+    }).namedRegistry,
+    'custom',
+  )
+  t.equal(
+    Spec.parse('x', 'myhost:a/b', {
+      'git-hosts': {
+        myhost: 'git+ssh://git@myhost.com:$1/$2.git',
+      },
+    }).namedGitHost,
+    'myhost',
+  )
+  t.equal(
+    Spec.parse('x', 'deno:@a/b@1', {
+      'jsr-registries': { deno: 'https://jsr.example.com/' },
+    }).namedJsrRegistry,
+    'deno',
+  )
+
+  t.match(
+    Spec.parse('gh:@octocat/hello-world@1.0.0', defaultOptions),
+    { namedRegistry: 'gh' },
+  )
+  t.throws(() => Spec.parse('github:user/foo'), {
+    message: 'Invalid package name: not usable as a path segment',
+  })
+  t.throws(() => Spec.parse('https://server.com/foo.tgz'), {
+    message: 'Invalid package name: not usable as a path segment',
+  })
+
+  t.end()
+})
+
 t.test('isSpec', async t => {
   // Valid Spec instance
   const validSpec = Spec.parse('foo@1.2.3')

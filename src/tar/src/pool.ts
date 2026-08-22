@@ -17,8 +17,8 @@ export * from './worker.ts'
  */
 export class Pool {
   /**
-   * Number of workers to emplly. Defaults to 1 less than the number of
-   * CPUs, or 1.
+   * Number of workers to employ. Defaults to 8 times one less than
+   * the number of available CPUs, with a minimum of 8.
    */
   /* c8 ignore next */
   jobs: number = 8 * (Math.max(os.availableParallelism(), 2) - 1)
@@ -31,8 +31,10 @@ export class Pool {
    */
   queue: UnpackRequest[] = []
   /**
-   * Requests that have been assigned to a worker, but have not yet
-   * been confirmed completed.
+   * All requests that have not yet been confirmed completed, both
+   * those currently assigned to a worker and those still waiting in
+   * the queue. Entries are removed once the request resolves or
+   * rejects, releasing the reference to its tarball buffer.
    */
   pending = new Map<number, UnpackRequest>()
 
@@ -44,6 +46,8 @@ export class Pool {
     const ur = this.pending.get(id)
     /* c8 ignore next */
     if (!ur) return
+    // request is done, stop holding its tarball buffer in memory
+    this.pending.delete(id)
     if (isResponseOK(m)) {
       ur.resolve()
       /* c8 ignore start - nearly impossible in normal circumstances */

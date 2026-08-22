@@ -13,9 +13,9 @@ import { Code } from '@astrojs/starlight/components'
   code={`# Install vlt globally
 $ npm install -g vlt
 
-# Configure a registry -- vlt has no default
+# Configure the npm registry alias -- vlt has no default
 
-$ vlt config set registry=https://registry.npmjs.org/
+$ vlt config set registries=npm=https://registry.npmjs.org/
 
 # In your existing project, run:
 
@@ -42,19 +42,24 @@ If you have a vlt.io account, the guided path is
 [`vlt setup`](/cli/registries#getting-started-with-vlt-setup), which
 configures your account's registry aliases for you.
 
-To instead keep npm's behavior, point the registry at the public npm
-registry:
+To instead keep npm's behavior, point the `npm` alias at the public
+npm registry:
 
 <Code
-  code={`$ vlt config set registry=https://registry.npmjs.org/`}
+  code={`$ vlt config set registries=npm=https://registry.npmjs.org/`}
   title="Terminal"
   lang="bash"
 />
 
-Or set it in `vlt.json`, pass `--registry=<url>` per command, or
-export `VLT_REGISTRY`. `vlt login --registry=<url>` also writes the
-registry into your project's `vlt.json` on success. See
-[Registries](/cli/registries).
+Commands that install packages (`vlt install`, `vlt update`,
+`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) require that alias
+specifically (or the one named by `default-registry-alias`, if you
+changed it). A scalar `--registry` / `VLT_REGISTRY` is enough for
+other registry-hitting commands (for example `vlt ping`), but not for
+install.
+
+Or set it in `vlt.json`, pass `--registries npm=<url>` per command, or
+export `VLT_REGISTRIES`. See [Registries](/cli/registries).
 
 ---
 

@@ -965,6 +965,157 @@ t.test('optionalOnly method', async t => {
       t.end()
     },
   )
+
+  // Test 6: prod edge inside an optional subtree should still be optionalOnly
+  t.test(
+    'returns true when a prod edge is inside an optional subtree',
+    t => {
+      const graph1 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 1,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          } as Record<DepID, LockfileNode>,
+          edges: {},
+        },
+      )
+
+      const graph2 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 1,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+            [joinDepIDTuple(['registry', '', 'opt-pkg@1.0.0'])]: [
+              1,
+              'opt-pkg',
+              'sha512-optpkg==',
+            ],
+            [joinDepIDTuple(['registry', '', 'opt-child@1.0.0'])]: [
+              1,
+              'opt-child',
+              'sha512-optchild==',
+            ],
+          } as Record<DepID, LockfileNode>,
+          edges: {
+            [edgeKey(['file', '.'], 'opt-pkg')]:
+              'optional ^1.0.0 ' +
+              joinDepIDTuple(['registry', '', 'opt-pkg@1.0.0']),
+            [edgeKey(['registry', '', 'opt-pkg@1.0.0'], 'opt-child')]:
+              'prod ^1.0.0 ' +
+              joinDepIDTuple(['registry', '', 'opt-child@1.0.0']),
+          } as LockfileEdges,
+        },
+      )
+
+      const diff = new Diff(graph1, graph2)
+      t.equal(
+        diff.optionalOnly,
+        true,
+        'prod edge from an optional node should not defeat optionalOnly',
+      )
+      t.equal(diff.edges.add.size, 2, 'should have both edges to add')
+      t.end()
+    },
+  )
+
+  // Test 7: prod edge from a non-optional node should not be optionalOnly
+  t.test(
+    'returns false when a prod edge comes from a non-optional node',
+    t => {
+      const graph1 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 1,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+          } as Record<DepID, LockfileNode>,
+          edges: {},
+        },
+      )
+
+      const graph2 = loadObject(
+        {
+          projectRoot,
+          mainManifest: {
+            name: 'test',
+            version: '1.0.0',
+          },
+        },
+        {
+          lockfileVersion: 1,
+          options: {
+            registries: {
+              npm: 'https://registry.npmjs.org/',
+            },
+          },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+            [joinDepIDTuple(['registry', '', 'req-pkg@1.0.0'])]: [
+              0,
+              'req-pkg',
+              'sha512-reqpkg==',
+            ],
+            [joinDepIDTuple(['registry', '', 'req-child@1.0.0'])]: [
+              0,
+              'req-child',
+              'sha512-reqchild==',
+            ],
+          } as Record<DepID, LockfileNode>,
+          edges: {
+            [edgeKey(['file', '.'], 'req-pkg')]:
+              'prod ^1.0.0 ' +
+              joinDepIDTuple(['registry', '', 'req-pkg@1.0.0']),
+            [edgeKey(['registry', '', 'req-pkg@1.0.0'], 'req-child')]:
+              'prod ^1.0.0 ' +
+              joinDepIDTuple(['registry', '', 'req-child@1.0.0']),
+          } as LockfileEdges,
+        },
+      )
+
+      const diff = new Diff(graph1, graph2)
+      t.equal(
+        diff.optionalOnly,
+        false,
+        'prod edge from a non-optional node should defeat optionalOnly',
+      )
+      t.end()
+    },
+  )
 })
 
 t.test('toJSON method', async t => {

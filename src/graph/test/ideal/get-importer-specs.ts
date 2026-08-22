@@ -115,7 +115,9 @@ t.test('empty graph and something to add', async t => {
       new Map(
         Object.entries({
           bar: asDependency({
-            spec: Spec.parse('bar@custom:bar@^1.1.1'),
+            spec: Spec.parse('bar@custom:bar@^1.1.1', {
+              registries: { custom: 'http://example.com' },
+            }),
             type: 'dev',
           }),
           foo: asDependency({
