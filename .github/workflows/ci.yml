@@ -40,8 +40,10 @@ jobs:
     steps:
       - name: Release PR
         id: release-pr
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.head_ref }}" == "release" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" && "$HEAD_REF" == "release" ]]; then
             echo "value=true" >> "$GITHUB_OUTPUT"
           else
             echo "value=false" >> "$GITHUB_OUTPUT"
