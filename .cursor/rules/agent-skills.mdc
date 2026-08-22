@@ -1,0 +1,97 @@
+---
+description: Agent skills (src/*/skills/) and how they get published
+globs: src/*/skills/**,www/docs/scripts/sync-agent-skills.mts,www/docs/public/.well-known/agent-skills/**
+alwaysApply: false
+---
+# Agent Skills
+
+A "skill" is a `SKILL.md`-driven bundle that teaches an agent (Claude Code,
+Cursor, etc.) how to use part of this codebase — e.g. `src/query/skills/dss-query/`
+teaches DSS query composition. Skills live in `src/<workspace>/skills/<name>/`,
+next to the code they document, not under `www/docs/`.
+
+## Publishing is automatic — don't hand-copy files
+
+Every skill under `src/*/skills/*/SKILL.md` is published to
+`www/docs/public/.well-known/agent-skills/<name>/` by
+`www/docs/scripts/sync-agent-skills.mts`, which runs automatically via
+`predev`/`prebuild` in `www/docs/package.json`. Never manually copy a skill
+into `www/docs/public/`; edit the source under `src/*/skills/` and the next
+`vlr dev`/`vlr build` republishes it. Run it directly with
+`vlr --workspace ./www/docs sync-skills` to check output without a full build.
+
+## Only linked files get published
+
+The publisher does **not** copy a skill's whole directory. Starting from
+`SKILL.md`, it follows relative markdown links (`[label](path)`) and recurses
+into any linked `.md` file; `http(s)://` links and pure `#anchor` links are
+skipped, and a link that resolves outside the skill's own directory is a hard
+error. **Anything not reachable by a relative link from `SKILL.md` is silently
+excluded** — this is how `evals/` (grading fixtures) in `dss-query` stays out
+of the published output despite living in the same directory. If you add a
+new reference file to a skill and want it published, link it from `SKILL.md`
+(or from a file already linked from it); if you want it to stay internal,
+just don't link it.
+
+## Generated output vs. hand-authored
+
+`www/docs/public/.well-known/agent-skills/<name>/` directories produced by
+the sync script are tagged with a `.generated` sentinel file and are fully
+rebuilt (stale ones removed) on every run. `www/docs/.gitignore` ignores
+everything under `.well-known/agent-skills/` **except** hand-authored
+directories explicitly allowlisted there (e.g. `markdown-negotiation`) —
+those have no `.generated` sentinel and the sync script never touches them.
+When adding another hand-authored (non-`src/*/skills`) entry, allowlist it
+in `www/docs/.gitignore` the same way; don't just untrack it.
+
+## Adding a new skill
+
+1. Create `src/<workspace>/skills/<name>/SKILL.md` (see `src/query/skills/dss-query/SKILL.md`
+   for the frontmatter shape: `name`, `description`, `allowed-tools` — a
+   **space-separated string**, e.g. `Read Grep`, not a YAML array — per the
+   [agentskills.io](https://agentskills.io) spec).
+2. Link any supporting reference docs from it with relative markdown links.
+3. Run `vlr --workspace ./www/docs sync-skills` and confirm the expected files
+   (and only those) land under `.well-known/agent-skills/<name>/`.
+4. No `www/docs/` content changes are needed beyond that — the skill becomes
+   fetchable at `/.well-known/agent-skills/<name>/SKILL.md` on the next build.
+
+## Discovery manifest (`index.json`)
+
+Alongside the loose per-skill files, the sync script also generates
+`.well-known/agent-skills/index.json` per the
+[agent-skills-discovery RFC](https://github.com/cloudflare/agent-skills-discovery-rfc):
+a `$schema` + a `skills[]` array, one entry per skill, each with a
+SHA-256 `digest` clients can verify.
+
+- A skill made of just `SKILL.md` is listed as `type: "skill-md"`, `url`
+  pointing directly at `<name>/SKILL.md` — the RFC's shape for a standalone
+  single-file skill.
+- A skill with supporting files (e.g. `dss-query` + `REFERENCE.md`) is
+  bundled into `<name>.tar.gz` at the output root and listed as
+  `type: "archive"` — the RFC's only other defined artifact shape.
+- Hand-authored skill directories (see above) are included too, discovered
+  read-only — the sync script builds their manifest entry but never writes
+  into their directory.
+- `*.tar.gz` files and `index.json` at the output root are always fully
+  regenerated on every run (stale archives from a skill that lost a file, or
+  entries for a removed skill, don't linger) — same "never hand-edit
+  generated output" rule as the per-skill directories above.
+
+## Testing the publisher
+
+`www/docs/test/sync-agent-skills.ts` (`tap`, via `t.testdir` fixtures) covers
+discovery, link-following/recursion, path-traversal rejection, stale-dir
+cleanup, frontmatter parsing, and `index.json` generation (skill-md vs.
+archive entries, digest correctness, hand-authored inclusion, regeneration).
+`www/docs`'s `tap` config sets `allow-empty-coverage: true` because its only
+exercised source lives in `scripts/`, which the root `tap-config.yaml`
+excludes from coverage repo-wide — that's expected, not a broken setup.
+
+## Unrelated: `vlt skills` CLI command
+
+PR #1542 (`feat/skills-command`) adds a `vlt skills` command in `src/cli-sdk`/
+`src/graph` that symlinks skill files out of **installed npm dependencies**
+into a consumer project. That's a different mechanism operating on a
+different file surface (installed packages, broader `SKILL.md`/`skills.md`/
+`*.skill.md` naming) — it doesn't read or write anything this rule covers.
