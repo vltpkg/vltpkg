@@ -53,11 +53,14 @@
     "prettier": "catalog:",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-slug": "^6.0.0",
+    "tap": "catalog:",
+    "tar": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "unified": "^11.0.5",
     "unified-prettier": "^2.0.1",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-visit": "^5.0.0",
+    "yaml": "^2.8.3"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
@@ -73,14 +76,21 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "lint:mdx": "node --experimental-strip-types --no-warnings ./scripts/lint-mdx.mts",
+    "predev": "node --experimental-strip-types --no-warnings ./scripts/sync-agent-skills.mts",
+    "prebuild": "node --experimental-strip-types --no-warnings ./scripts/sync-agent-skills.mts",
     "prepare": "astro sync",
     "snap": "true",
     "start": "astro dev",
-    "test": "true",
+    "sync-skills": "node --experimental-strip-types --no-warnings ./scripts/sync-agent-skills.mts",
+    "test": "tap",
     "posttest": "astro check",
     "typecheck": "astro check",
     "typedoc:check": "NODE_OPTIONS='--experimental-strip-types --no-warnings' typedoc --validation.notExported --validation.invalidLink --treatValidationWarningsAsErrors",
     "preview": "astro preview"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml",
+    "allow-empty-coverage": true
   },
   "prettier": "../../.prettierrc.js",
   "type": "module",

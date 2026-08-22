@@ -1,3 +1,5 @@
 # Generated content
 /src/content/docs/packages/
 /tsconfig.typedoc-workspaces.json
+/public/.well-known/agent-skills/*
+!/public/.well-known/agent-skills/markdown-negotiation
