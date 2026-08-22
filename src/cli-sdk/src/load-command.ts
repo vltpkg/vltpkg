@@ -23,6 +23,14 @@ export type Command<T> = {
    * early with an `ECONFIG` error when one of these runs unconfigured.
    */
   needsRegistry?: boolean
+  /**
+   * Set to `true` by commands that install packages (`install`,
+   * `update`, `uninstall`, `ci`, `exec`/`vlx`). `outputCommand()`
+   * fails early with an `ECONFIG` error when the alias bare specs
+   * resolve through (`registries.npm`, or the alias named by
+   * `default-registry-alias`) is not configured.
+   */
+  needsNpmRegistry?: boolean
 }
 
 export const loadCommand = async <T>(

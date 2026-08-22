@@ -1,5 +1,5 @@
 import t from 'tap'
-import { defaultRegistries } from '@vltpkg/spec'
+import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { Packument } from '@vltpkg/types'
 
@@ -242,6 +242,7 @@ t.test('error: unknown package name', async t => {
     },
     '@vltpkg/spec': {
       defaultRegistries,
+      defaultRegistryName,
       Spec: {
         parseArgs: () => ({
           name: '(unknown)',

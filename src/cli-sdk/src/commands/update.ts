@@ -7,6 +7,7 @@ import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
 
 export const needsRegistry = true
+export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>
   commandUsage({
