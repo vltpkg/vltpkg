@@ -93,6 +93,45 @@ export const getOptions = (
     : defaultGitHostArchives,
 })
 
+// RFC3986 scheme chars minus `.`, min 2 chars. Excludes windows drive
+// letters (`C:/x`) and hostnames (`notgithub.com:user/repo`).
+const protocolRE = /^([a-zA-Z][a-zA-Z0-9+-]+):/
+
+const builtinProtocols = new Set([
+  'catalog',
+  'workspace',
+  'registry',
+  'file',
+  'http',
+  'https',
+  'git',
+  'git+ssh',
+  'git+http',
+  'git+https',
+  'git+file',
+])
+
+/**
+ * Return the scheme if `str` starts with a protocol that is neither
+ * built-in nor configured, otherwise `undefined`.
+ */
+const unknownProtocol = (
+  str: string,
+  options: SpecOptionsFilled,
+): string | undefined => {
+  const p = protocolRE.exec(str)?.[1]
+  return (
+      p === undefined ||
+        builtinProtocols.has(p) ||
+        p === options['default-registry-alias'] ||
+        options.registries[p] !== undefined ||
+        options['git-hosts'][p] !== undefined ||
+        options['jsr-registries'][p] !== undefined
+    ) ?
+      undefined
+    : p
+}
+
 /**
  * Various nameless scenarios that are handled in the
  * standard spec parsing and should return an unknown name.
@@ -128,7 +167,8 @@ const startsWithSpecIdentifier = (
     ...Object.keys(options['git-hosts']),
     ...Object.keys(options.registries),
     ...Object.keys(options['jsr-registries']),
-  ].some(key => spec.startsWith(`${key}:`))
+  ].some(key => spec.startsWith(`${key}:`)) ||
+  unknownProtocol(spec, options) !== undefined
 
 /**
  * Returns the location in which the first `@` value is found in a given
@@ -352,6 +392,7 @@ export class Spec implements SpecLike<Spec> {
       assertPathSafeName(this.name, this.spec)
     } else {
       this.spec = spec
+      this.#assertKnownProtocol(spec)
       // Check if this spec starts with a known registry identifier
       // but exclude git specs like 'git@github:a/b'
       if (
@@ -602,6 +643,8 @@ export class Spec implements SpecLike<Spec> {
       return
     }
 
+    this.#assertKnownProtocol(this.bareSpec)
+
     // legacy! once upon a time, `user/project` was a shorthand for pulling
     // packages from github, instead of the more verbose and explicit
     // `github:user/project`.
@@ -790,6 +833,23 @@ export class Spec implements SpecLike<Spec> {
     }
     this.spec = this.name + '@' + this.bareSpec
     return this.subspec
+  }
+
+  #assertKnownProtocol(str: string) {
+    const proto = unknownProtocol(str, this.options)
+    if (proto === undefined) return
+    throw this.#error(`Protocol ${proto}: is not defined`, {
+      found: `${proto}:`,
+      validOptions: [
+        ...new Set([
+          ...builtinProtocols,
+          this.options['default-registry-alias'],
+          ...Object.keys(this.options.registries),
+          ...Object.keys(this.options['git-hosts']),
+          ...Object.keys(this.options['jsr-registries']),
+        ]),
+      ].map(p => `${p}:`),
+    })
   }
 
   #error(message: string, extra: ErrorCauseOptions = {}) {
