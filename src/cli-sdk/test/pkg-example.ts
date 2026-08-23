@@ -23,8 +23,7 @@ t.test(
   'copies packages/vlt contents into an empty target directory',
   async t => {
     const originalFetch = globalThis.fetch
-    globalThis.fetch = (async () =>
-      new Response(fakeRepoTar()))
+    globalThis.fetch = async () => new Response(fakeRepoTar())
     t.teardown(() => {
       globalThis.fetch = originalFetch
     })

@@ -28,16 +28,13 @@ export const createPkgExample = async (
   const res = await fetch(TARBALL_URL)
   const tarData = Buffer.from(await res.arrayBuffer())
 
-  const scratchParent = await mkdtemp(
-    join(tmpdir(), 'vlt-pkg-example-'),
-  )
-  const scratch = join(scratchParent, 'extract')
+  const scratch = await mkdtemp(join(tmpdir(), 'vlt-pkg-example-'))
   try {
     await unpack(tarData, scratch)
     await cp(join(scratch, 'packages', 'vlt'), targetDir, {
       recursive: true,
     })
   } finally {
-    await rm(scratchParent, { recursive: true, force: true })
+    await rm(scratch, { recursive: true, force: true })
   }
 }

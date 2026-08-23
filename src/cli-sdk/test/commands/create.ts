@@ -6,6 +6,10 @@ import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { ExecResult } from '../../src/exec-command.ts'
 
+const NPM_REGISTRY_OPTIONS = {
+  registries: { npm: 'https://registry.npmjs.org' },
+}
+
 t.test('prettyPath', async t => {
   const { prettyPath } = await t.mockImport<
     typeof import('../../src/commands/create.ts')
@@ -111,7 +115,7 @@ t.test('command', async t => {
     let calledResolve = false
     const mockOptions = {
       'script-shell': 'this will be deleted',
-      registries: { npm: 'https://registry.npmjs.org' },
+      ...NPM_REGISTRY_OPTIONS,
     }
     const result = {
       status: 0,
@@ -159,9 +163,7 @@ t.test('command', async t => {
 
   t.test('scoped package transformation', async t => {
     let calledResolve = false
-    const mockOptions = {
-      registries: { npm: 'https://registry.npmjs.org' },
-    }
+    const mockOptions = { ...NPM_REGISTRY_OPTIONS }
     const result = {
       status: 0,
       signal: null,
@@ -217,9 +219,7 @@ t.test('command', async t => {
 
   t.test('scoped package without name', async t => {
     let calledResolve = false
-    const mockOptions = {
-      registries: { npm: 'https://registry.npmjs.org' },
-    }
+    const mockOptions = { ...NPM_REGISTRY_OPTIONS }
     const result = {
       status: 0,
       signal: null,
@@ -258,9 +258,7 @@ t.test('command', async t => {
   })
 
   t.test('with allow-scripts option', async t => {
-    const mockOptions = {
-      registries: { npm: 'https://registry.npmjs.org' },
-    }
+    const mockOptions = { ...NPM_REGISTRY_OPTIONS }
     const result = {
       status: 0,
       signal: null,
@@ -300,9 +298,7 @@ t.test('command', async t => {
 
   t.test('--yes flag auto-accepts prompts', async t => {
     let promptUsed: PromptFn | undefined
-    const mockOptions = {
-      registries: { npm: 'https://registry.npmjs.org' },
-    }
+    const mockOptions = { ...NPM_REGISTRY_OPTIONS }
     const result = {
       status: 0,
       signal: null,
@@ -404,9 +400,7 @@ t.test('command', async t => {
   })
 
   t.test('when vlx.resolve returns undefined', async t => {
-    const mockOptions = {
-      registries: { npm: 'https://registry.npmjs.org' },
-    }
+    const mockOptions = { ...NPM_REGISTRY_OPTIONS }
     const { command } = await t.mockImport<
       typeof import('../../src/commands/create.ts')
     >('../../src/commands/create.ts', {
