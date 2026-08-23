@@ -623,7 +623,10 @@ export class CacheEntry {
    * and this static method will decode it into a CacheEntry representing
    * the cached response.
    */
-  static decode(buffer: Uint8Array): CacheEntry {
+  static decode(
+    buffer: Uint8Array,
+    options: CacheEntryOptions = {},
+  ): CacheEntry {
     const parsed = CacheEntry.#parseHead(buffer)
     if (!parsed) return emptyCacheEntry
     const body = buffer.subarray(parsed.headSize)
@@ -640,6 +643,7 @@ export class CacheEntry {
         integrity: parsed.integrity,
         trustIntegrity: true,
         contentLength: body.byteLength,
+        ...options,
       },
     )
     c.#fromCache = true

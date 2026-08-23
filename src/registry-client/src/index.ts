@@ -426,7 +426,10 @@ export class RegistryClient {
   #decodeCached(buffer: Uint8Array): CacheEntry | undefined {
     const hit = this.#decoded.get(buffer)
     if (hit) return hit
-    const entry = CacheEntry.decode(buffer)
+    const entry = CacheEntry.decode(buffer, {
+      'stale-while-revalidate-factor':
+        this.staleWhileRevalidateFactor,
+    })
     // statusCode 0 == undecodable, and a cached JSON body that fails
     // to parse is corrupt. Treat both as a total miss: the caller
     // refetches without conditional headers, so a fresh response

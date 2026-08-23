@@ -470,6 +470,36 @@ t.test('decode adopts body without copying', t => {
   t.end()
 })
 
+t.test(
+  'decode preserves stale-while-revalidate factor when provided',
+  t => {
+    const src = new CacheEntry(
+      200,
+      toRawHeaders({
+        date: new Date(Date.now() - 10 * 60 * 1000).toUTCString(),
+        'cache-control': 'max-age=300',
+        'content-type': 'application/json',
+      }),
+    )
+    src.addBody(Buffer.from('{"ok":true}'))
+    const enc = src.encode()
+
+    t.equal(
+      CacheEntry.decode(enc).staleWhileRevalidate,
+      true,
+      'default decode still uses the class default factor',
+    )
+    t.equal(
+      CacheEntry.decode(enc, {
+        'stale-while-revalidate-factor': 1,
+      }).staleWhileRevalidate,
+      false,
+      'callers can preserve their configured factor when decoding',
+    )
+    t.end()
+  },
+)
+
 t.test('decode does not eagerly parse json', t => {
   const orig = JSON.parse
   let calls = 0
