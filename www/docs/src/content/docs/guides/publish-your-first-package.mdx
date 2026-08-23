@@ -54,7 +54,7 @@ repository, or apply these steps to your own package.
 Choose your package manager and download the corresponding example:
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt" icon="code">
+  <TabItem label="vlt">
     <Code
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
@@ -84,7 +84,7 @@ cd my-package`}
       lang="bash"
     />
   </TabItem>
-  <TabItem label="yarn" icon="code">
+  <TabItem label="yarn">
     These instructions are for yarn 2+ (“Berry”), the version you get
     from yarn set version berry or a packageManager field in
     `package.json`.
@@ -140,7 +140,7 @@ Here's the complete updated `package.json`:
 />
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt" icon="code">
+  <TabItem label="vlt">
     <Aside type="tip">
       You can also manage versions from the CLI with `vlt version
       major|minor|patch` instead of manually editing `package.json`.
@@ -244,7 +244,7 @@ stored locally for future publishes.
 Before building, install the dev dependencies (TypeScript):
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt" icon="code">
+  <TabItem label="vlt">
     <Code code="vlt install" title="Terminal" lang="bash" />
 
     Note: If you haven't set up a default registry, you can use `npm install` instead and vlt will use npm's registry for dependencies.
@@ -261,7 +261,7 @@ Before building, install the dev dependencies (TypeScript):
   <TabItem label="pnpm" icon="pnpm">
     <Code code="pnpm install" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="yarn" icon="code">
+  <TabItem label="yarn">
     <Code code="yarn install" title="Terminal" lang="bash" />
   </TabItem>
 </Tabs>
@@ -280,7 +280,7 @@ The starter includes TypeScript, so build it before publishing:
   <TabItem label="pnpm" icon="pnpm">
     <Code code="pnpm run build" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="yarn" icon="code">
+  <TabItem label="yarn">
     <Code code="yarn build" title="Terminal" lang="bash" />
   </TabItem>
 </Tabs>
@@ -302,7 +302,7 @@ publishes from CI, use a service token instead — see
 Now you're ready to publish:
 
 <Tabs syncKey="pkg-manager">
-  <TabItem label="vlt" icon="code">
+  <TabItem label="vlt">
     <Code code="vlt publish" title="Terminal" lang="bash" />
   </TabItem>
   <TabItem label="npm" icon="npm">
@@ -311,7 +311,7 @@ Now you're ready to publish:
   <TabItem label="pnpm" icon="pnpm">
     <Code code="pnpm publish" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="yarn" icon="code">
+  <TabItem label="yarn">
     <Code code="yarn npm publish" title="Terminal" lang="bash" />
   </TabItem>
 </Tabs>

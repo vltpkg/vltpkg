@@ -13,6 +13,9 @@ import {
   TabItem,
   LinkButton,
 } from '@astrojs/starlight/components'
+import PackageManagerSelect from '../../../components/package-manager-select/package-manager-select.astro'
+
+<PackageManagerSelect />
 
 Automate publishing your vlt packages whenever you push a new version
 tag or release to GitHub.
@@ -316,7 +319,7 @@ jobs:
 
 Replace `YOUR_ACCOUNT` with your vlt account slug.
 
-## Trigger package publishing
+## Step 5: Trigger package publishing
 
 Once the workflow is configured, publishing is automatic:
 
