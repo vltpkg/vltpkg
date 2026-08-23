@@ -1,10 +1,9 @@
-import { unpack } from '@vltpkg/tar/unpack'
-import { cp, mkdtemp, readdir, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { spawn } from '@vltpkg/git'
+import { PackageInfoClient } from '@vltpkg/package-info'
+import { readdir } from 'node:fs/promises'
 
-const TARBALL_URL =
-  'https://codeload.github.com/vltpkg/package-examples/tar.gz/main'
+const PKG_EXAMPLE_SPEC =
+  'pkg-example@git+https://github.com/vltpkg/package-examples.git#main::path:packages/vlt'
 
 /**
  * Scaffold the `packages/vlt` example from `vltpkg/package-examples`
@@ -25,16 +24,12 @@ export const createPkgExample = async (
     )
   }
 
-  const res = await fetch(TARBALL_URL)
-  const tarData = Buffer.from(await res.arrayBuffer())
+  await spawn(['--version']).catch((err: unknown) => {
+    throw new Error(
+      'git is required to scaffold this example. Install git and make sure it is available in your PATH.',
+      { cause: err },
+    )
+  })
 
-  const scratch = await mkdtemp(join(tmpdir(), 'vlt-pkg-example-'))
-  try {
-    await unpack(tarData, scratch)
-    await cp(join(scratch, 'packages', 'vlt'), targetDir, {
-      recursive: true,
-    })
-  } finally {
-    await rm(scratch, { recursive: true, force: true })
-  }
+  await new PackageInfoClient().extract(PKG_EXAMPLE_SPEC, targetDir)
 }

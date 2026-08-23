@@ -28,7 +28,6 @@
     "@vltpkg/run": "workspace:*",
     "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/spec": "workspace:*",
-    "@vltpkg/tar": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/url-open": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",

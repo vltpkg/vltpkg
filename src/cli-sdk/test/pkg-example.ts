@@ -1,31 +1,31 @@
-import { readFile, readdir } from 'node:fs/promises'
+import { readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { makeTar } from '../../tar/test/fixtures/make-tar.ts'
-import { createPkgExample } from '../src/pkg-example.ts'
-
-const PREFIX = 'vltpkg-package-examples-abc1234'
-
-const fakeRepoTar = () => {
-  const pkgJson = JSON.stringify({ name: '@YOUR-ACCOUNT/my-package' })
-  return makeTar([
-    {
-      path: `${PREFIX}/packages/vlt/package.json`,
-      size: pkgJson.length,
-    },
-    pkgJson,
-    { path: `${PREFIX}/packages/npm/package.json`, size: 2 },
-    '{}',
-  ])
-}
 
 t.test(
-  'copies packages/vlt contents into an empty target directory',
+  'extracts packages/vlt from package-examples into an empty target directory',
   async t => {
-    const originalFetch = globalThis.fetch
-    globalThis.fetch = async () => new Response(fakeRepoTar())
-    t.teardown(() => {
-      globalThis.fetch = originalFetch
+    let versionChecked = false
+    let extractedSpec: unknown
+    let extractedTarget: unknown
+    const { createPkgExample } = await t.mockImport<
+      typeof import('../src/pkg-example.ts')
+    >('../src/pkg-example.ts', {
+      '@vltpkg/git': {
+        spawn: async (args: string[]) => {
+          t.strictSame(args, ['--version'])
+          versionChecked = true
+          return {}
+        },
+      },
+      '@vltpkg/package-info': {
+        PackageInfoClient: class {
+          async extract(spec: unknown, target: unknown) {
+            extractedSpec = spec
+            extractedTarget = target
+          }
+        },
+      },
     })
 
     const dir = t.testdir()
@@ -33,24 +33,64 @@ t.test(
 
     await createPkgExample(target)
 
-    t.strictSame(
-      JSON.parse(
-        await readFile(resolve(target, 'package.json'), 'utf8'),
-      ),
-      { name: '@YOUR-ACCOUNT/my-package' },
-      'vlt example package.json was copied into the target dir',
+    t.equal(versionChecked, true, 'checked for a working git binary')
+    t.equal(
+      extractedSpec,
+      'pkg-example@git+https://github.com/vltpkg/package-examples.git#main::path:packages/vlt',
+      'resolved the packages/vlt subpath from package-examples',
     )
-    t.strictSame(
-      await readdir(target),
-      ['package.json'],
-      'only the packages/vlt subset was copied, not other example packages',
-    )
+    t.equal(extractedTarget, target)
   },
 )
+
+t.test('throws a clear error when git is not available', async t => {
+  const { createPkgExample } = await t.mockImport<
+    typeof import('../src/pkg-example.ts')
+  >('../src/pkg-example.ts', {
+    '@vltpkg/git': {
+      spawn: async () => {
+        throw new Error('spawn git ENOENT')
+      },
+    },
+    '@vltpkg/package-info': {
+      PackageInfoClient: class {
+        async extract() {
+          throw new Error('should not be called')
+        }
+      },
+    },
+  })
+
+  const dir = t.testdir()
+  const target = resolve(dir, 'my-package')
+
+  await t.rejects(
+    createPkgExample(target),
+    /git is required to scaffold this example/,
+    'rejects with a tutorial-specific error instead of the raw spawn failure',
+  )
+})
 
 t.test(
   'refuses to overwrite a non-empty target directory',
   async t => {
+    const { createPkgExample } = await t.mockImport<
+      typeof import('../src/pkg-example.ts')
+    >('../src/pkg-example.ts', {
+      '@vltpkg/git': {
+        spawn: async () => {
+          throw new Error('should not be called')
+        },
+      },
+      '@vltpkg/package-info': {
+        PackageInfoClient: class {
+          async extract() {
+            throw new Error('should not be called')
+          }
+        },
+      },
+    })
+
     const dir = t.testdir({
       'my-package': {
         'existing-file.txt': 'do not touch me',
@@ -61,7 +101,7 @@ t.test(
     await t.rejects(
       createPkgExample(target),
       /already exists and is not empty/,
-      'rejects before ever fetching or touching the filesystem',
+      'rejects before ever checking git or touching the filesystem',
     )
     t.strictSame(
       await readdir(target),
