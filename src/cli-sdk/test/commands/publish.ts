@@ -163,6 +163,14 @@ t.test('command', async t => {
         },
       )
 
+      // when running in CI, oidc() logs its token-exchange attempt to
+      // stderr, which would pollute the captured output asserted below
+      const savedEnv = { ...process.env }
+      delete process.env.GITHUB_ACTIONS
+      delete process.env.GITLAB_CI
+      delete process.env.CIRCLECI
+      t.teardown(() => Object.assign(process.env, savedEnv))
+
       const errs = t.capture(console, 'error').args
 
       const config = makeTestConfig({
