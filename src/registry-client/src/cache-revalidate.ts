@@ -30,7 +30,7 @@ const handleBeforeExit = () => {
   const compileCacheDir = module.getCompileCacheDir()
   for (const [path, r] of registered) {
     /* c8 ignore next */
-    if (!r.size) return
+    if (!r.size) continue
     const env = { ...process.env }
     if (compileCacheDir) env.NODE_COMPILE_CACHE ??= compileCacheDir
     const args = []
