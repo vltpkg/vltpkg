@@ -1,6 +1,7 @@
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import type { PromptFn, VlxOptions } from '@vltpkg/vlx'
+import { resolve } from 'node:path'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { ExecResult } from '../../src/exec-command.ts'
@@ -61,10 +62,57 @@ t.test('usage', async t => {
   t.matchSnapshot(USAGE, 'usage')
 })
 
+t.test('views', async t => {
+  const { views } = await t.mockImport<
+    typeof import('../../src/commands/create.ts')
+  >('../../src/commands/create.ts')
+  unload()
+
+  t.test('pkg-example result', async t => {
+    const logs = t.capture(console, 'log').args
+    const result = { targetDir: '/some/path/my-package' }
+    t.equal(views.human(result), undefined)
+    t.strictSame(logs(), [
+      ['Created package in /some/path/my-package'],
+    ])
+    t.strictSame(views.json(result), result)
+  })
+
+  t.test('exec result delegates to exec-command views', async t => {
+    const result = {
+      status: 0,
+      signal: null,
+      stdout: '',
+      stderr: '',
+    } as unknown as ExecResult
+    t.equal(views.human(result), undefined)
+    t.equal(views.json(result), undefined)
+  })
+})
+
 t.test('command', async t => {
+  t.test(
+    'throws missing-registry error when no registry configured',
+    async t => {
+      const { command } = await t.mockImport<
+        typeof import('../../src/commands/create.ts')
+      >('../../src/commands/create.ts')
+      unload()
+      const conf = {
+        positionals: ['react-app', 'my-app'],
+        options: { registries: {} },
+        get: (_key: string) => undefined,
+      } as unknown as LoadedConfig
+      await t.rejects(command(conf), /Missing registry configuration/)
+    },
+  )
+
   t.test('basic package transformation', async t => {
     let calledResolve = false
-    const mockOptions = { 'script-shell': 'this will be deleted' }
+    const mockOptions = {
+      'script-shell': 'this will be deleted',
+      registries: { npm: 'https://registry.npmjs.org' },
+    }
     const result = {
       status: 0,
       signal: null,
@@ -111,7 +159,9 @@ t.test('command', async t => {
 
   t.test('scoped package transformation', async t => {
     let calledResolve = false
-    const mockOptions = {}
+    const mockOptions = {
+      registries: { npm: 'https://registry.npmjs.org' },
+    }
     const result = {
       status: 0,
       signal: null,
@@ -167,7 +217,9 @@ t.test('command', async t => {
 
   t.test('scoped package without name', async t => {
     let calledResolve = false
-    const mockOptions = {}
+    const mockOptions = {
+      registries: { npm: 'https://registry.npmjs.org' },
+    }
     const result = {
       status: 0,
       signal: null,
@@ -206,7 +258,9 @@ t.test('command', async t => {
   })
 
   t.test('with allow-scripts option', async t => {
-    const mockOptions = {}
+    const mockOptions = {
+      registries: { npm: 'https://registry.npmjs.org' },
+    }
     const result = {
       status: 0,
       signal: null,
@@ -246,7 +300,9 @@ t.test('command', async t => {
 
   t.test('--yes flag auto-accepts prompts', async t => {
     let promptUsed: PromptFn | undefined
-    const mockOptions = {}
+    const mockOptions = {
+      registries: { npm: 'https://registry.npmjs.org' },
+    }
     const result = {
       status: 0,
       signal: null,
@@ -290,8 +346,67 @@ t.test('command', async t => {
     t.equal(answer, 'y', '--yes auto-accepts prompts')
   })
 
+  t.test('pkg-example', async t => {
+    let calledWith: string | undefined
+    const { command } = await t.mockImport<
+      typeof import('../../src/commands/create.ts')
+    >('../../src/commands/create.ts', {
+      '../../src/pkg-example.ts': {
+        createPkgExample: async (targetDir: string) => {
+          calledWith = targetDir
+        },
+      },
+      '@vltpkg/vlx': {
+        resolve: async () => {
+          throw new Error('vlx.resolve should not be called')
+        },
+      },
+      '../../src/exec-command.ts': {
+        views: {},
+        ExecCommand: class {
+          async run(): Promise<never> {
+            throw new Error('ExecCommand should not be used')
+          }
+        },
+      },
+    })
+    unload()
+    const conf = {
+      positionals: ['pkg-example', 'my-package'],
+      options: {},
+      get: (_key: string) => undefined,
+    } as unknown as LoadedConfig
+    const result = await command(conf)
+    t.equal(calledWith, resolve('my-package'))
+    t.strictSame(result, { targetDir: resolve('my-package') })
+  })
+
+  t.test('pkg-example defaults target dir to cwd', async t => {
+    let calledWith: string | undefined
+    const { command } = await t.mockImport<
+      typeof import('../../src/commands/create.ts')
+    >('../../src/commands/create.ts', {
+      '../../src/pkg-example.ts': {
+        createPkgExample: async (targetDir: string) => {
+          calledWith = targetDir
+        },
+      },
+    })
+    unload()
+    const conf = {
+      positionals: ['pkg-example'],
+      options: {},
+      get: (_key: string) => undefined,
+    } as unknown as LoadedConfig
+    const result = await command(conf)
+    t.equal(calledWith, resolve('.'))
+    t.strictSame(result, { targetDir: resolve('.') })
+  })
+
   t.test('when vlx.resolve returns undefined', async t => {
-    const mockOptions = {}
+    const mockOptions = {
+      registries: { npm: 'https://registry.npmjs.org' },
+    }
     const { command } = await t.mockImport<
       typeof import('../../src/commands/create.ts')
     >('../../src/commands/create.ts', {

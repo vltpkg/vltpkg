@@ -32,6 +32,11 @@ installs it performs is done in vlt's XDG data directory.
 
   Examples
 
+    Scaffold a minimal publishable package for the "publish your first package"
+    tutorial
+
+    ​vlt create pkg-example my-package
+
     Create a new React app using create-react-app
 
     ​vlt create react-app my-app
