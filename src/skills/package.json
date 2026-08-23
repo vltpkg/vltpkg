@@ -9,6 +9,7 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
     "tar": "catalog:",
     "yaml": "^2.8.3"
   },

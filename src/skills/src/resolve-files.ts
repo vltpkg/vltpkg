@@ -6,6 +6,7 @@ import {
   relative,
   resolve,
 } from 'node:path'
+import { error } from '@vltpkg/error-cause'
 import type { Skill } from './types.ts'
 
 /** Matches `[label](target)`, capturing the raw target (and any title). */
@@ -28,7 +29,10 @@ export const resolveSkillFiles = (skill: Skill): string[] => {
 
     const abs = join(skill.dir, rel)
     if (!existsSync(abs)) {
-      throw new Error(`${skill.name}: linked file not found: ${rel}`)
+      throw error(`${skill.name}: linked file not found: ${rel}`, {
+        name: skill.name,
+        path: rel,
+      })
     }
     const content = readFileSync(abs, 'utf8')
 
@@ -57,8 +61,9 @@ export const resolveSkillFiles = (skill: Skill): string[] => {
         relFromSkillRoot.startsWith('..') ||
         isAbsolute(relFromSkillRoot)
       ) {
-        throw new Error(
+        throw error(
           `${skill.name}: link in ${rel} escapes the skill directory: ${target}`,
+          { name: skill.name, path: target },
         )
       }
       queue.push(relFromSkillRoot)

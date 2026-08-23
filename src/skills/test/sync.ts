@@ -3,11 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import t from 'tap'
 import { syncAgentSkills } from '../src/sync.ts'
-
-const FRONTMATTER = (
-  name: string,
-  description = `${name} description`,
-) => `---\nname: ${name}\ndescription: ${description}\n---\n`
+import { FRONTMATTER } from './fixtures/frontmatter.ts'
 
 t.test(
   'writes only the linked file set, with a .generated sentinel',

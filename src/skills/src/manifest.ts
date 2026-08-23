@@ -20,14 +20,14 @@ export type ManifestEntry = {
  * Build this skill's discovery-manifest entry. A skill made of just
  * `SKILL.md` is listed as `type: "skill-md"`, referenced directly; a
  * skill with supporting files is bundled as `type: "archive"`, the
- * only two artifact shapes the discovery RFC defines.
+ * only two artifact shapes the discovery RFC defines. Pure: the
+ * archive bytes (when produced) are returned for the caller to write.
  */
 export const buildManifestEntry = async (
   skill: Skill,
   files: string[],
-  outputRoot: string,
   siteUrl: string,
-): Promise<ManifestEntry> => {
+): Promise<{ entry: ManifestEntry; archive?: Buffer }> => {
   const skillMdContent = readFileSync(
     join(skill.dir, 'SKILL.md'),
     'utf8',
@@ -37,27 +37,20 @@ export const buildManifestEntry = async (
     skill.name,
   )
 
-  if (files.length === 1) {
-    return {
-      name: skill.name,
-      type: 'skill-md',
-      description,
-      url: `${siteUrl}/.well-known/agent-skills/${skill.name}/SKILL.md`,
-      digest: computeDigest(Buffer.from(skillMdContent, 'utf8')),
-    }
-  }
+  const archive =
+    files.length === 1 ? undefined : await buildArchive(skill, files)
+  const bytes = archive ?? Buffer.from(skillMdContent, 'utf8')
+  const base = `${siteUrl}/.well-known/agent-skills/${skill.name}`
 
-  const archiveBytes = await buildArchive(skill, files)
-  writeFileSync(
-    join(outputRoot, `${skill.name}.tar.gz`),
-    archiveBytes,
-  )
   return {
-    name: skill.name,
-    type: 'archive',
-    description,
-    url: `${siteUrl}/.well-known/agent-skills/${skill.name}.tar.gz`,
-    digest: computeDigest(archiveBytes),
+    entry: {
+      name: skill.name,
+      type: archive ? 'archive' : 'skill-md',
+      description,
+      url: archive ? `${base}.tar.gz` : `${base}/SKILL.md`,
+      digest: computeDigest(bytes),
+    },
+    archive,
   }
 }
 

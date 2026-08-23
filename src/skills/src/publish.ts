@@ -25,6 +25,14 @@ export const writeSkill = (
   writeFileSync(join(destDir, '.generated'), '')
 }
 
+export const writeArchive = (
+  skill: Skill,
+  bytes: Buffer,
+  outputRoot: string,
+) => {
+  writeFileSync(join(outputRoot, `${skill.name}.tar.gz`), bytes)
+}
+
 /** Remove previously-generated skill directories that no longer exist. */
 export const cleanStale = (
   outputRoot: string,

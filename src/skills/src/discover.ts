@@ -1,6 +1,11 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { error } from '@vltpkg/error-cause'
 import type { Skill } from './types.ts'
+
+const isSkillDir = (dir: string): boolean =>
+  !!statSync(dir, { throwIfNoEntry: false })?.isDirectory() &&
+  existsSync(join(dir, 'SKILL.md'))
 
 export const discoverSkills = (srcRoot: string): Skill[] => {
   const skills: Skill[] = []
@@ -13,14 +18,12 @@ export const discoverSkills = (srcRoot: string): Skill[] => {
       continue
     for (const name of readdirSync(skillsDir)) {
       const dir = join(skillsDir, name)
-      if (
-        statSync(dir).isDirectory() &&
-        existsSync(join(dir, 'SKILL.md'))
-      ) {
+      if (isSkillDir(dir)) {
         const existing = skills.find(s => s.name === name)
         if (existing) {
-          throw new Error(
+          throw error(
             `duplicate skill name "${name}": ${existing.dir} and ${dir}`,
+            { path: dir, from: existing.dir },
           )
         }
         skills.push({ name, dir })
@@ -31,9 +34,10 @@ export const discoverSkills = (srcRoot: string): Skill[] => {
 }
 
 /**
- * Find hand-authored skill directories already sitting in `outputRoot`
- * (no `.generated` sentinel, so the sync script never writes into
- * them) so they can be included in the discovery manifest too.
+ * Find skill directories already sitting in `outputRoot` whose name
+ * isn't one of the just-discovered `generatedNames` — i.e. hand-authored
+ * skills, since the sync script only ever writes directories under a
+ * generated skill's own name.
  */
 export const discoverHandAuthoredSkills = (
   outputRoot: string,
@@ -44,10 +48,7 @@ export const discoverHandAuthoredSkills = (
   for (const name of readdirSync(outputRoot)) {
     if (generatedNames.has(name)) continue
     const dir = join(outputRoot, name)
-    if (
-      statSync(dir, { throwIfNoEntry: false })?.isDirectory() &&
-      existsSync(join(dir, 'SKILL.md'))
-    ) {
+    if (isSkillDir(dir)) {
       skills.push({ name, dir })
     }
   }

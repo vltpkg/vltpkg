@@ -4,6 +4,7 @@ import t from 'tap'
 import {
   cleanManifestArtifacts,
   cleanStale,
+  writeArchive,
   writeSkill,
 } from '../src/publish.ts'
 
@@ -81,6 +82,24 @@ t.test('writeSkill', async t => {
       outputRoot,
     )
     t.notOk(existsSync(join(outputRoot, 'demo', 'stale.md')))
+  })
+})
+
+t.test('writeArchive', async t => {
+  t.test('writes the given bytes to <name>.tar.gz', async t => {
+    const dir = t.testdir({ out: {} })
+    const outputRoot = join(dir, 'out')
+
+    writeArchive(
+      { name: 'demo', dir: outputRoot },
+      Buffer.from('archive bytes'),
+      outputRoot,
+    )
+
+    t.equal(
+      readFileSync(join(outputRoot, 'demo.tar.gz'), 'utf8'),
+      'archive bytes',
+    )
   })
 })
 

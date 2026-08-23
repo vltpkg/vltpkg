@@ -8,6 +8,7 @@ import type { ManifestEntry } from './manifest.ts'
 import {
   cleanManifestArtifacts,
   cleanStale,
+  writeArchive,
   writeSkill,
 } from './publish.ts'
 import { resolveSkillFiles } from './resolve-files.ts'
@@ -47,19 +48,25 @@ export const syncAgentSkills = async (
   const handAuthored = discoverHandAuthoredSkills(outputRoot, names)
   const allSkills = [...skills, ...handAuthored]
 
-  const entries: ManifestEntry[] = []
+  const built = await Promise.all(
+    allSkills.map(async skill => {
+      const files =
+        resolvedFiles.get(skill.name) ?? resolveSkillFiles(skill)
+      return {
+        skill,
+        ...(await buildManifestEntry(skill, files, siteUrl)),
+      }
+    }),
+  )
+
   let archiveCount = 0
-  for (const skill of allSkills) {
-    const files =
-      resolvedFiles.get(skill.name) ?? resolveSkillFiles(skill)
-    const entry = await buildManifestEntry(
-      skill,
-      files,
-      outputRoot,
-      siteUrl,
-    )
-    if (entry.type === 'archive') archiveCount++
+  const entries: ManifestEntry[] = []
+  for (const { skill, entry, archive } of built) {
     entries.push(entry)
+    if (archive) {
+      writeArchive(skill, archive, outputRoot)
+      archiveCount++
+    }
   }
   writeIndex(outputRoot, entries)
 
