@@ -409,6 +409,76 @@ t.test('command', async t => {
     )
   })
 
+  t.test('accepts a 202 response to the version PUT', async t => {
+    mockResponses.set('https://registry.npmjs.org/my-package', {
+      statusCode: 200,
+      json: {
+        _id: 'my-package',
+        _rev: '1-abc123',
+        name: 'my-package',
+        'dist-tags': { latest: '2.0.0' },
+        versions: {
+          '1.0.0': { name: 'my-package', version: '1.0.0' },
+          '2.0.0': { name: 'my-package', version: '2.0.0' },
+        },
+      },
+    })
+
+    mockResponses.set(
+      'https://registry.npmjs.org/my-package/-rev/1-abc123',
+      {
+        statusCode: 202,
+        json: { success: true },
+      },
+    )
+
+    const config = makeTestConfig({
+      options: {
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['my-package@1.0.0'],
+    })
+
+    const result = await command(config)
+    t.equal(result.name, 'my-package')
+    t.equal(result.version, '1.0.0')
+  })
+
+  t.test('accepts a 202 response to the package DELETE', async t => {
+    mockResponses.set('https://registry.npmjs.org/my-package', {
+      statusCode: 200,
+      json: {
+        _id: 'my-package',
+        _rev: '4-jkl012',
+        name: 'my-package',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': { name: 'my-package', version: '1.0.0' },
+        },
+      },
+    })
+
+    mockResponses.set(
+      'https://registry.npmjs.org/my-package/-rev/4-jkl012',
+      {
+        statusCode: 202,
+        json: { success: true },
+      },
+    )
+
+    const config = makeTestConfig({
+      options: {
+        registry: 'https://registry.npmjs.org',
+        force: true,
+      },
+      positionals: ['my-package'],
+    })
+
+    const result = await command(config)
+    t.equal(result.name, 'my-package')
+    t.equal(result.version, undefined)
+  })
+
   t.test('supports scoped packages', async t => {
     mockResponses.set(
       'https://registry.npmjs.org/@scope%2Fmy-package',

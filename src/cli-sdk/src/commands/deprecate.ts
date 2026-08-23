@@ -160,7 +160,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     })
   }
 
-  if (response.statusCode !== 200 && response.statusCode !== 201) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw error('failed to update deprecation status', {
       url: packageUrl,
       response,

@@ -191,7 +191,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     }
 
-    if (response.statusCode !== 200 && response.statusCode !== 201) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw error('Failed to unpublish package version', {
         url: putUrl,
         response,
@@ -247,7 +247,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     }
 
-    if (response.statusCode !== 200 && response.statusCode !== 201) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw error('Failed to unpublish package', {
         url: deleteUrl,
         response,

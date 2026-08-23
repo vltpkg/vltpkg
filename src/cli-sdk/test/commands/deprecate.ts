@@ -332,6 +332,14 @@ t.test('201 response is accepted', async t => {
   t.equal(result.name, 'my-package')
 })
 
+t.test('202 response is accepted', async t => {
+  mockResponse = { statusCode: 202 }
+  const result = await Command.command(
+    makeConfig(['my-package', 'deprecated']),
+  )
+  t.equal(result.name, 'my-package')
+})
+
 t.test('views', async t => {
   const deprecateResult = {
     name: 'my-package',

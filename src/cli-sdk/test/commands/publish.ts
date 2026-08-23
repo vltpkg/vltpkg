@@ -10,6 +10,7 @@ interface MockResponse {
   statusCode?: number
   text?: string
   json?: Record<string, unknown>
+  headers?: Record<string, string>
 }
 
 interface MockCacheEntry {
@@ -17,6 +18,7 @@ interface MockCacheEntry {
   text: () => string
   json: () => Record<string, unknown>
   getHeader: (name: string) => Buffer | string | undefined
+  getHeaderString: (name: string) => string | undefined
 }
 
 interface TestConfig {
@@ -62,6 +64,8 @@ t.beforeEach(() => {
         text: () => mockResponse.text ?? '',
         json: () => mockResponse.json ?? {},
         getHeader: () => undefined,
+        getHeaderString: (name: string) =>
+          mockResponse.headers?.[name],
       } as MockCacheEntry
     }
 
@@ -70,6 +74,7 @@ t.beforeEach(() => {
       text: () => '{"ok":true}',
       json: () => ({ ok: true }),
       getHeader: () => undefined,
+      getHeaderString: () => undefined,
     } as MockCacheEntry
   } as typeof originalRequest
 })
@@ -131,6 +136,56 @@ t.test('command', async t => {
       'integrity should be sha512',
     )
   })
+
+  t.test(
+    'treats 202 Accepted as success and surfaces npm-notice',
+    async t => {
+      const dir = t.testdir({
+        'package.json': JSON.stringify({
+          name: '@test/package',
+          version: '1.2.3',
+          main: 'index.js',
+        }),
+        'index.js': '// test file',
+        'vlt.json': '{}',
+      })
+
+      t.chdir(dir)
+
+      const notice =
+        'Your package is being processed and may take a few minutes to become available.'
+      mockResponses.set(
+        'https://registry.npmjs.org/@test%2Fpackage',
+        {
+          statusCode: 202,
+          text: JSON.stringify({ success: true }),
+          headers: { 'npm-notice': notice },
+        },
+      )
+
+      const errs = t.capture(console, 'error').args
+
+      const config = makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          registry: 'https://registry.npmjs.org',
+          tag: 'latest',
+        },
+        positionals: ['publish'],
+      })
+
+      const result = (await command(config)) as CommandResultSingle
+
+      t.equal(result.name, '@test/package')
+      t.equal(result.version, '1.2.3')
+      t.strictSame(
+        errs(),
+        [[`⚠️ ${notice}`]],
+        'should print the npm-notice header to stderr',
+      )
+    },
+  )
 
   t.test('throws error if package has no name', async t => {
     const dir = t.testdir({
@@ -574,6 +629,7 @@ t.test('command', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       }
     }) as unknown as typeof tempRequest
     t.teardown(() => {
@@ -737,6 +793,7 @@ t.test('command', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       }
     }) as unknown as typeof tempRequest
     t.teardown(() => {
@@ -890,6 +947,7 @@ t.test('publish command with scope', async t => {
               text: () => '{"ok":true}',
               json: () => ({ ok: true }),
               getHeader: () => undefined,
+              getHeaderString: () => undefined,
             } as MockCacheEntry
           }
         },
@@ -977,6 +1035,7 @@ t.test('publish command with scope', async t => {
               text: () => '{"ok":true}',
               json: () => ({ ok: true }),
               getHeader: () => undefined,
+              getHeaderString: () => undefined,
             } as MockCacheEntry
           }
         },
@@ -1021,6 +1080,7 @@ t.test('publish command with workspace paths', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       } as MockCacheEntry
     }) as unknown as typeof tempRequest
 
@@ -1125,6 +1185,7 @@ t.test('publish command workspace filtering modes', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       } as MockCacheEntry
     }) as unknown as typeof tempRequest
   })
@@ -1277,6 +1338,7 @@ t.test('publish command with workspace-group', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       } as MockCacheEntry
     }) as unknown as typeof tempRequest
 
@@ -1365,6 +1427,7 @@ t.test('publish command with recursive', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       } as MockCacheEntry
     }) as unknown as typeof tempRequest
 
@@ -1447,6 +1510,7 @@ t.test('publish command with recursive', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       } as MockCacheEntry
     }) as unknown as typeof tempRequest
 
@@ -1493,6 +1557,7 @@ t.test('publish command with recursive', async t => {
         text: () => '{"ok":true}',
         json: () => ({ ok: true }),
         getHeader: () => undefined,
+        getHeaderString: () => undefined,
       } as MockCacheEntry
     }) as unknown as typeof tempRequest
 
@@ -1543,6 +1608,7 @@ t.test('publish command fallback to projectRoot', async t => {
           text: () => '{"ok":true}',
           json: () => ({ ok: true }),
           getHeader: () => undefined,
+          getHeaderString: () => undefined,
         } as MockCacheEntry
       }) as unknown as typeof tempRequest
 
