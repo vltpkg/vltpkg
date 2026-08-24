@@ -93,7 +93,7 @@ const entryKey = (p: string) => (foldKeys ? p.toLowerCase() : p)
 // once; a per-tarball pool would multiply in-flight writeFile fds.
 const parseWriteLanes = (raw: string | undefined): number => {
   const n = Number(raw)
-  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 8;
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 8
 }
 const writeLaneLimit = parseWriteLanes(
   process.env.VLT_TAR_WRITE_LANES,
