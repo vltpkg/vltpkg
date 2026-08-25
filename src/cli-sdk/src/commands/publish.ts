@@ -22,6 +22,7 @@ import { createHostContextsMap } from '../query-host-contexts.ts'
 import { minimatch } from 'minimatch'
 import { resolveRegistry } from '../require-registry.ts'
 import { registryErrorMessage } from '../registry-error-message.ts'
+import { stderr } from '../output.ts'
 
 export const needsRegistry = true
 
@@ -353,7 +354,10 @@ const commandSingle = async (
       })
     }
 
-    if (response.statusCode !== 200 && response.statusCode !== 201) {
+    // Any 2xx response is a successful publish. The npm registry may
+    // respond with a 202 Accepted when processing is deferred (e.g. for
+    // publish-time malware scanning).
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       let advice = ''
       if (response.statusCode === 409) {
         advice = `\n⚠️ ${name}@${version} already exists in the registry. Bump the version and try again.`
@@ -369,6 +373,12 @@ const commandSingle = async (
         },
       )
     }
+
+    // On deferred publishes the registry explains the delay in an
+    // npm-notice header, e.g. "Your package is being processed and may
+    // take a few minutes to become available."
+    const notice = response.getHeaderString('npm-notice')
+    if (notice) stderr(`⚠️ ${notice}`)
   }
 
   await run({
