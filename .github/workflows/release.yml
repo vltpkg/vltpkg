@@ -54,6 +54,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup vlt
         uses: vltpkg/setup-vlt@v1
@@ -146,7 +148,7 @@ jobs:
       # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: Pack
         run: |
-          commit="$(git rev-parse HEAD~1)"
+          commit="993cccbcc18730cd9c67b6a6f4135b74ee5bc86d"
           # Use the source version of the CLI since pack changes may not be published yet
           VLT="$(pwd)/scripts/bins/vlt"
           # Find workspaces with changes since the previous commit and pack them
@@ -176,7 +178,7 @@ jobs:
         id: packages
         run: |
           delimiter="$(openssl rand -hex 8)"
-          commit="$(git rev-parse HEAD~1)"
+          commit="993cccbcc18730cd9c67b6a6f4135b74ee5bc86d"
 
           format() {
             local name="$1"
@@ -286,7 +288,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Setup vlt
         uses: vltpkg/setup-vlt@v1
@@ -304,7 +306,7 @@ jobs:
       # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: List Packages to Publish
         run: |
-          commit="$(git rev-parse HEAD~1)"
+          commit="993cccbcc18730cd9c67b6a6f4135b74ee5bc86d"
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
             if [[ -f "$dir/package.json" ]]; then
               is_private=$(jq -r '.private // false' "$dir/package.json")
@@ -334,7 +336,7 @@ jobs:
       # once vlt supports git-change-based workspace filtering (see: https://github.com/vltpkg/vltpkg/issues/1515)
       - name: Publish
         run: |
-          commit="$(git rev-parse HEAD~1)"
+          commit="993cccbcc18730cd9c67b6a6f4135b74ee5bc86d"
           # Use the source version of the CLI since pack/publish changes may not be published yet
           VLT="$(pwd)/scripts/bins/vlt"
           dry_run_flag=""
@@ -342,6 +344,12 @@ jobs:
             dry_run_flag="--dry-run"
           fi
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
+            case "$dir" in
+              infra/cli | infra/cli-js | src/cache | src/cache-unzip | src/cli-sdk | src/cmd-shim | src/config | src/dep-id | src/dot-prop)
+                echo "Skipping already-published package in $dir"
+                continue
+                ;;
+            esac
             if [[ -f "$dir/package.json" ]]; then
               is_private=$(jq -r '.private // false' "$dir/package.json")
               if [[ "$is_private" == "true" ]]; then
@@ -349,34 +357,13 @@ jobs:
                 continue
               fi
               echo "Publishing $dir..."
-              (cd "$dir" && $VLT publish --access=public $dry_run_flag)
+              if ! (cd "$dir" && $VLT publish --access=public $dry_run_flag); then
+                echo "::warning::Failed to publish package in $dir"
+              fi
             fi
           done
         env:
           NPM_CONFIG_PROVENANCE: false
-
-      - name: Create Git Tag
-        if: needs.pre-check.outputs.dry-run != 'true'
-        run: |
-          git config --global user.email "vltops@users.noreply.github.com"
-          git config --global user.name "vltops"
-          git fetch origin tag "${{ steps.versions.outputs.version }}" || true
-          if git rev-parse "${{ steps.versions.outputs.version }}" >/dev/null 2>&1; then
-            echo "Tag ${{ steps.versions.outputs.version }} already exists"
-            exit 0
-          fi
-          git tag -a "${{ steps.versions.outputs.version }}" -m "Release ${{ steps.versions.outputs.version }}"
-          git push origin "${{ steps.versions.outputs.version }}"
-
-      - name: Create GitHub Release
-        if: needs.pre-check.outputs.dry-run != 'true'
-        run: |
-          gh release create "${{ steps.versions.outputs.version }}" \
-            --verify-tag \
-            --generate-notes \
-            --notes-start-tag="${{ steps.versions.outputs.previous-version }}"
-        env:
-          GH_TOKEN: ${{ github.token }}
 
   publish-vlt-registry:
     name: Publish to vlt Registry
@@ -389,7 +376,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Setup vlt
         uses: vltpkg/setup-vlt@v1
@@ -405,7 +392,7 @@ jobs:
 
       - name: Publish
         run: |
-          commit="$(git rev-parse HEAD~1)"
+          commit="993cccbcc18730cd9c67b6a6f4135b74ee5bc86d"
           VLT="$(pwd)/scripts/bins/vlt"
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
             if [[ -f "$dir/package.json" ]]; then
