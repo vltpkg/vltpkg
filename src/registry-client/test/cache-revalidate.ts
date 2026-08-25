@@ -13,6 +13,9 @@ t.test('registering the beforeExit event', async t => {
   const { register } = await t.mockImport<
     typeof import('../src/cache-revalidate.ts')
   >('../src/cache-revalidate.ts', {
+    'node:module': {
+      default: { getCompileCacheDir: () => undefined },
+    },
     child_process: {
       spawn: (
         cmd: string,
@@ -121,3 +124,62 @@ t.test('does not clobber an explicit NODE_COMPILE_CACHE', async t => {
 
   t.equal(state.opts.env.NODE_COMPILE_CACHE, '/explicit')
 })
+
+t.test(
+  'beforeExit skips empty path entries and keeps processing',
+  async t => {
+    const originalMap = globalThis.Map
+    const maps: Map<unknown, unknown>[] = []
+    class TrackingMap<K, V> extends originalMap<K, V> {
+      constructor(entries?: readonly (readonly [K, V])[] | null) {
+        super(entries)
+        maps.push(this)
+      }
+    }
+    t.teardown(() => {
+      globalThis.Map = originalMap
+    })
+    globalThis.Map = TrackingMap as MapConstructor
+
+    const beHooks: (() => void)[] = []
+    t.capture(process, 'on', (_ev: string, fn: () => void) => {
+      beHooks.push(fn)
+    })
+
+    const spawnCalls: string[][] = []
+    const { register } = await t.mockImport<
+      typeof import('../src/cache-revalidate.ts')
+    >('../src/cache-revalidate.ts', {
+      'node:module': {
+        default: { getCompileCacheDir: () => undefined },
+      },
+      child_process: {
+        spawn: (_cmd: string, args: string[]) => {
+          spawnCalls.push(args)
+          return {
+            stdin: { write: () => {}, end: () => {} },
+            unref: () => {},
+          }
+        },
+      },
+    })
+
+    register('/tmp/a', 'GET', 'https://example.com/a')
+    register('/tmp/b', 'GET', 'https://example.com/b')
+
+    const registered = maps.find(
+      m =>
+        m instanceof TrackingMap &&
+        m.has('/tmp/a') &&
+        m.has('/tmp/b'),
+    ) as Map<string, Set<string>> | undefined
+    t.ok(registered, 'captured the registered path map')
+    registered?.set('/tmp/a', new Set())
+
+    beHooks[0]?.()
+
+    t.equal(spawnCalls.length, 1)
+    t.match(spawnCalls[0]?.[0], /revalidate\.ts$/)
+    t.equal(spawnCalls[0]?.[1], '/tmp/b')
+  },
+)
