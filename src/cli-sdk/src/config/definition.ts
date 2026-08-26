@@ -27,6 +27,7 @@ const canonicalCommands = {
   config: 'config',
   create: 'create',
   deprecate: 'deprecate',
+  diff: 'diff',
   'dist-tag': 'dist-tag',
   docs: 'docs',
   exec: 'exec',
@@ -466,9 +467,27 @@ export const definition = j
       description:
         'Set to select packages using a DSS Query selector.',
     },
+    base: {
+      hint: 'commitish',
+      description: `The "before" side of \`vlt diff lockfile\`. A git ref,
+                    or a path ending in \`.json\`. Overrides the first
+                    positional argument.`,
+    },
+    head: {
+      hint: 'commitish',
+      description: `The "after" side of \`vlt diff lockfile\`. A git ref, or
+                    a path ending in \`.json\`. Defaults to the working
+                    tree. Overrides the second positional argument.`,
+    },
   })
 
   .flag({
+    'exit-code': {
+      description: `Exit with a status of 1 when \`vlt diff\` finds any
+                    changes, and 0 when it finds none. Without this, the
+                    exit status is always 0.`,
+    },
+
     'if-present': {
       description: `When running scripts across multiple packages,
                     only include packages that have the script.

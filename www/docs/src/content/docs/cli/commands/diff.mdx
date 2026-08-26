@@ -1,0 +1,111 @@
+---
+title: vlt diff
+sidebar:
+  label: diff
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt diff lockfile
+$ vlt diff lockfile <ref> [<ref>]
+$ vlt diff lockfile --base=<commitish> --head=<commitish>
+"
+  title="Terminal"
+  lang="bash"
+/>
+
+Show what changed between two states of a project.
+
+## `vlt diff lockfile`
+
+A raw `git diff` of `vlt-lock.json` is unreadable. The lockfile is a flat
+map of dependency IDs, so a single transitive version bump — or a change
+of registry — rewrites thousands of lines without saying anything about
+what the dependency graph actually did.
+
+`vlt diff lockfile` reads the lockfile from both sides, reconstructs the
+dependency graph from each, and reports the changes as graph
+operations: packages added and removed, versions upgraded and downgraded,
+dependency edges retargeted.
+
+### Choosing the two sides
+
+With no arguments, the working tree is compared against `HEAD`:
+
+<Code code="$ vlt diff lockfile" title="Terminal" lang="bash" />
+
+With one argument, the working tree is compared against that ref:
+
+<Code code="$ vlt diff lockfile main" title="Terminal" lang="bash" />
+
+With two, they are compared to each other. `a..b` means the same as
+`a b`:
+
+<Code
+  code="$ vlt diff lockfile main feat/my-branch
+$ vlt diff lockfile main..feat/my-branch
+"
+  title="Terminal"
+  lang="bash"
+/>
+
+`--base` and `--head` do the same job as the positional arguments, and
+take precedence over them. Passing both a positional and its flag with
+different values is an error rather than a silent override.
+
+Either side may be a path to a lockfile on disk instead of a git ref.
+Anything ending in `.json` is read as a path:
+
+<Code
+  code="$ vlt diff lockfile --base=./old/vlt-lock.json"
+  title="Terminal"
+  lang="bash"
+/>
+
+A ref that has no lockfile at all compares as an empty one, so the commit
+that introduced the lockfile diffs cleanly rather than failing.
+
+### Reading the output
+
+Changes are grouped into **regions**, by which workspaces pull the
+changed package in. A change only one workspace can reach is filed under
+that workspace; a change every workspace pulls in through its shared
+toolchain is filed once as shared, rather than repeated for each.
+
+Changes that only move a package's identity — the same package and
+version from a different registry, or under a different peer set — are
+counted separately and collapsed by default, so they never bury the
+changes that moved a version.
+
+### JSON
+
+<Code
+  code="$ vlt diff lockfile origin/main --view=json"
+  title="Terminal"
+  lang="bash"
+/>
+
+The JSON view is the stable contract, carrying a `schemaVersion`, the
+summary, every mutation, and the regions. Editors, CI annotations, and
+other viewers should build against it rather than parsing lockfiles
+themselves.
+
+### Exit status
+
+The exit status is always `0` unless `--exit-code` is given, in which
+case it is `1` when anything changed:
+
+<Code
+  code="$ vlt diff lockfile origin/main --exit-code"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Reserved
+
+Bare `vlt diff`, and the npm-compatible `--diff=<spec>` grammar for
+diffing package *contents*, are reserved and not yet implemented. In this
+release they print usage naming `vlt diff lockfile`.

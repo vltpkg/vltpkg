@@ -16,6 +16,7 @@
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
     "@vltpkg/graph": "workspace:*",
+    "@vltpkg/graph-diff": "workspace:*",
     "@vltpkg/graph-run": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",

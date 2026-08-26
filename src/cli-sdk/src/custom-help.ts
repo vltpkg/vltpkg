@@ -100,6 +100,10 @@ const commandHelp = {
     args: '[add|ls|info|clean|delete|delete-before|delete-all]',
     desc: 'Manage the package cache',
   },
+  diff: {
+    args: 'lockfile [<ref>] [<ref>]',
+    desc: 'Show what changed between two states of a project',
+  },
   ci: {
     args: '',
     desc: 'Clean install (frozen lockfile)',

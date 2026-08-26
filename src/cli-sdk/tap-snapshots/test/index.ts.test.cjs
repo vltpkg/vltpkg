@@ -39,6 +39,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --allow-scripts=<query>
     --arch=<arch>
     --bail
+    --base=<commitish>
     --before=<date>
     --cache=<path>
     --call=<cmd>
@@ -48,6 +49,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --default-registry-alias=<name>
     --dry-run
     --editor=<program>
+    --exit-code
     --expect-lockfile
     --expect-results=<value>
     --fallback-command=<command>
@@ -60,6 +62,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --git-host-archives=<name=template>
     --git-hosts=<name=template>
     --git-shallow
+    --head=<commitish>
     --help
     --identity=<name>
     --if-present
@@ -109,6 +112,7 @@ Unknown config option: asdf
     allow-scripts
     arch
     bail
+    base
     before
     cache
     call
@@ -118,6 +122,7 @@ Unknown config option: asdf
     default-registry-alias
     dry-run
     editor
+    exit-code
     expect-lockfile
     expect-results
     fallback-command
@@ -130,6 +135,7 @@ Unknown config option: asdf
     git-host-archives
     git-hosts
     git-shallow
+    head
     help
     identity
     if-present

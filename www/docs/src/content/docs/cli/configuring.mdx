@@ -224,6 +224,23 @@ storing the file at `vlt/auth/keychain.json`.
 
 May only contain lowercase alphanumeric characters.
 
+### `--base=<commitish>`
+
+The "before" side of `vlt diff lockfile`. A git ref, or a path ending in
+`.json` to read a lockfile from disk. Takes precedence over the first
+positional argument, which cannot disagree with it.
+
+### `--head=<commitish>`
+
+The "after" side of `vlt diff lockfile`. A git ref, or a path ending in
+`.json`. Defaults to the working tree. Takes precedence over the second
+positional argument, which cannot disagree with it.
+
+### `--exit-code`
+
+Exit with a status of `1` when `vlt diff` finds any changes, and `0` when
+it finds none. Without this, the exit status is always `0`.
+
 ### `-w<ws> --workspace=<ws>`
 
 Set to limit the spaces being worked on when working on workspaces.
