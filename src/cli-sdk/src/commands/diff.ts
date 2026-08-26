@@ -1,9 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import {
-  diffLockfiles,
-  hasChanges,
-  humanDiffOutput,
-} from '@vltpkg/graph-diff'
+import { diffLockfiles, hasChanges } from '@vltpkg/graph-diff'
 import { readSource } from '@vltpkg/graph-diff/sources'
 import type { GraphDiff } from '@vltpkg/graph-diff'
 import type { Source } from '@vltpkg/graph-diff/sources'
@@ -12,6 +8,7 @@ import type { CommandUsageDefinition } from '../config/usage.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { validateCommitish } from '../query-diff-files.ts'
+import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
 export type DiffResult = {
@@ -74,8 +71,11 @@ export const usage: CommandUsage = () => commandUsage(usageDef)
 
 export const views = {
   json: (r: DiffResult) => r.diff,
-  human: (r: DiffResult, { colors }: { colors?: boolean }) =>
-    humanDiffOutput(r.diff, { colors }),
+  // lazy so ink and react stay off the load path unless the human view
+  // is actually the one selected
+  human: lazyView(
+    async () => (await import('./diff/viewer.ts')).DiffViewer,
+  ),
 } as const satisfies Views<DiffResult>
 
 /**

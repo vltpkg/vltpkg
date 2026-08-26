@@ -482,6 +482,20 @@ export const definition = j
   })
 
   .flag({
+    tui: {
+      description: `Open the navigable diff viewer when \`vlt diff\` is run
+                    in a terminal. On by default; \`--no-tui\` prints static
+                    text instead. Non-interactive output, including CI, is
+                    always static.`,
+    },
+
+    'identity-only': {
+      description: `Include identity-only changes in \`vlt diff lockfile\`
+                    output: packages whose id moved without the package
+                    itself changing, such as a different registry or peer
+                    set. Collapsed to a count by default.`,
+    },
+
     'exit-code': {
       description: `Exit with a status of 1 when \`vlt diff\` finds any
                     changes, and 0 when it finds none. Without this, the

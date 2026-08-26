@@ -332,6 +332,10 @@ Object {
     "type": "string",
     "validate": Function validate(v),
   },
+  "identity-only": Object {
+    "description": "Include identity-only changes in \`vlt diff lockfile\` output: packages whose id moved without the package itself changing, such as a different registry or peer set. Collapsed to a count by default.",
+    "type": "boolean",
+  },
   "if-present": Object {
     "description": String(
       When running scripts across multiple packages, only include packages that have the script.
@@ -554,6 +558,10 @@ Object {
     ),
     "type": "boolean",
   },
+  "tui": Object {
+    "description": "Open the navigable diff viewer when \`vlt diff\` is run in a terminal. On by default; \`--no-tui\` prints static text instead. Non-interactive output, including CI, is always static.",
+    "type": "boolean",
+  },
   "verbose": Object {
     "description": "Shorthand for \`--loglevel=verbose\`. Streams each registry request to stderr with its cache/fetch outcome and status code, useful for debugging request behavior.",
     "type": "boolean",
@@ -652,6 +660,7 @@ Array [
   "--head=<commitish>",
   "--help",
   "--identity=<name>",
+  "--identity-only",
   "--if-present",
   "--jsr-registries=<name=url>",
   "--libc=<libc>",
@@ -680,6 +689,7 @@ Array [
   "--tag=<tag>",
   "--target=<query>",
   "--telemetry",
+  "--tui",
   "--verbose",
   "--version",
   "--view=<output>",
@@ -722,6 +732,7 @@ Array [
   "head",
   "help",
   "identity",
+  "identity-only",
   "if-present",
   "jsr-registries",
   "libc",
@@ -750,6 +761,7 @@ Array [
   "tag",
   "target",
   "telemetry",
+  "tui",
   "verbose",
   "version",
   "view",

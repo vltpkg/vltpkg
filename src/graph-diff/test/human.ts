@@ -88,7 +88,7 @@ t.test('every mutation kind renders', async t => {
 t.test('identity-only noise collapses by default', async t => {
   const diff = kitchenSink()
   const collapsed = humanDiffOutput(diff)
-  t.match(collapsed, /identity-only \(pass --identity to show\)/)
+  t.match(collapsed, /identity-only \(pass --identity-only to show\)/)
   t.notMatch(collapsed, /peer variant/, 'regroupings hidden')
   t.ok(
     collapsed.length <

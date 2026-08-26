@@ -104,7 +104,7 @@ export const humanDiffOutput = (
   if (summary.identityOnly && !identity) {
     out.push(
       dim(
-        `  ${summary.identityOnly} identity-only (pass --identity to show)`,
+        `  ${summary.identityOnly} identity-only (pass --identity-only to show)`,
       ),
     )
   }

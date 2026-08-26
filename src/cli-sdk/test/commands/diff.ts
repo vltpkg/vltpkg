@@ -2,6 +2,11 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import {
+  isLazyView,
+  isViewClass,
+  loadLazyView,
+} from '../../src/view.ts'
 import type { Source } from '@vltpkg/graph-diff/sources'
 
 const FOO = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
@@ -187,15 +192,19 @@ t.test('views', async t => {
     'the two sides really were diffed',
   )
 
-  const human = views.human(result, {})
-  t.match(human, /LOCKFILE DIFF/)
-  t.match(human, /foo/)
-  t.notMatch(human, /\[/, 'no color unless asked')
-  t.match(
-    views.human(result, { colors: true }),
-    /\[/,
-    'colors when asked',
+  t.ok(isLazyView(views.human), 'human view is lazy')
+})
+
+t.test('the human view loads the interactive viewer', async t => {
+  // imported unmocked, so the ViewClass the viewer extends is the same
+  // one this test compares against
+  const { views } = await import('../../src/commands/diff.ts')
+  t.ok(
+    isLazyView(views.human),
+    'ink and react stay off the load path until it is selected',
   )
+  const DiffViewer = await loadLazyView(views.human)
+  t.ok(isViewClass(DiffViewer), 'and it resolves to a view class')
 })
 
 t.test('--exit-code', async t => {

@@ -65,6 +65,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --head=<commitish>
     --help
     --identity=<name>
+    --identity-only
     --if-present
     --jsr-registries=<name=url>
     --libc=<libc>
@@ -93,6 +94,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --tag=<tag>
     --target=<query>
     --telemetry
+    --tui
     --verbose
     --version
     --view=<output>
@@ -138,6 +140,7 @@ Unknown config option: asdf
     head
     help
     identity
+    identity-only
     if-present
     jsr-registries
     libc
@@ -166,6 +169,7 @@ Unknown config option: asdf
     tag
     target
     telemetry
+    tui
     verbose
     version
     view

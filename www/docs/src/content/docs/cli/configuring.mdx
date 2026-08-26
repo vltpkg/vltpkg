@@ -236,6 +236,18 @@ The "after" side of `vlt diff lockfile`. A git ref, or a path ending in
 `.json`. Defaults to the working tree. Takes precedence over the second
 positional argument, which cannot disagree with it.
 
+### `--tui`
+
+Open the navigable diff viewer when `vlt diff` is run in a terminal. On by
+default; `--no-tui` prints static text instead. Non-interactive output,
+including CI, is always static regardless of this setting.
+
+### `--identity-only`
+
+Include identity-only changes in `vlt diff lockfile` output: packages
+whose ID moved without the package itself changing, such as a different
+registry or peer set. Collapsed to a count by default.
+
 ### `--exit-code`
 
 Exit with a status of `1` when `vlt diff` finds any changes, and `0` when

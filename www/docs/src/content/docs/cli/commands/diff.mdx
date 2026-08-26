@@ -68,6 +68,26 @@ Anything ending in `.json` is read as a path:
 A ref that has no lockfile at all compares as an empty one, so the commit
 that introduced the lockfile diffs cleanly rather than failing.
 
+### The viewer
+
+In a terminal, the human view opens a navigable viewer: a summary of the
+changed areas, the changes within one area, and the detail of a single
+change.
+
+<Code
+  code="↑↓ / jk   move
+⏎  / →    open
+←  / esc  back
+i         show or hide identity-only changes
+q         quit
+"
+  title="Keys"
+  lang="text"
+/>
+
+In CI, when output is redirected, or with `--no-tui`, the same diff is
+printed as static text instead.
+
 ### Reading the output
 
 Changes are grouped into **regions**, by which workspaces pull the
@@ -78,7 +98,8 @@ toolchain is filed once as shared, rather than repeated for each.
 Changes that only move a package's identity — the same package and
 version from a different registry, or under a different peer set — are
 counted separately and collapsed by default, so they never bury the
-changes that moved a version.
+changes that moved a version. Pass `--identity-only` to include them in
+static output, or press `i` in the viewer.
 
 ### JSON
 
