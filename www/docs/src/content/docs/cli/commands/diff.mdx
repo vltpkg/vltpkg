@@ -195,7 +195,9 @@ attached to. Paste it into a comment, or pipe it there from CI.
 
 Looks up advisories for the packages this diff *introduces* — what
 arrived or moved, not the whole tree — and reports them above everything
-else, in every view.
+else, in every view: a `SECURITY` section at the top of the viewer and
+the static output, a table in the markdown report, `alerts` in the JSON,
+a `!` beside the package in a tree, and the detail on its own screen.
 
 It is off by default because it is the only part of this command that
 reaches the network; everything else reads two files.

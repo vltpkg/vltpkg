@@ -1,6 +1,8 @@
 import { Box, Text, useApp, useInput, useStdout } from 'ink'
 import { createElement as $, useEffect, useState } from 'react'
 import {
+  alertRows,
+  alertsFor,
   highlights,
   initialState,
   layout,
@@ -40,6 +42,18 @@ const useRows = () => {
 }
 
 const version = (n: NodeInfo) => n.version ?? n.type
+
+/** The head-side node a mutation is about, for looking up alerts. */
+const nodeIdOf = (m: Mutation | undefined) =>
+  !m ? undefined
+  : m.kind === 'node-added' || m.kind === 'node-removed' ? m.node.id
+  : (
+    m.kind === 'package-resolved' ||
+    m.kind === 'node-changed' ||
+    m.kind === 'node-identity-changed'
+  ) ?
+    m.to.id
+  : undefined
 
 /** The version tail of a DepID, for the edges that only carry ids. */
 const atVersion = (id: string) => {
@@ -276,6 +290,7 @@ const LEGEND: [string, string, string][] = [
   ['=', 'gray', 'identity only: same package, different id'],
   ['·', 'gray', 'unchanged, shown for context'],
   ['+41', 'gray', 'also reached by 41 more workspaces'],
+  ['!', 'red', 'a security alert -- see --security'],
   ['direct', 'gray', 'a workspace depends on this itself'],
   [
     'hidden',
@@ -433,7 +448,38 @@ const SummaryScreen = ({
       ]
     : []
 
+  const alerts = alertRows(diff)
   const head = [
+    ...(alerts.length ?
+      [
+        $(Heading, {
+          key: 'sec',
+          label: 'SECURITY',
+          count: alerts.length,
+          color: 'red',
+        }),
+        ...alerts.slice(0, 5).map((r, i) =>
+          $(
+            Box,
+            // the index, not id+type: the fetcher dedupes by kind today,
+            // but a renderer should not be the thing that breaks if it stops
+            { key: `alert${i}`, height: 1, width: '100%' },
+            $(Cell, { text: '    !', width: 7, color: 'red' }),
+            $(Cell, { text: r.name, width: nameWidth }),
+            $(Cell, {
+              text: r.type,
+              width: detailWidth,
+              color: 'red',
+            }),
+            $(Cell, {
+              text: r.cve ? `${r.severity}  ${r.cve}` : r.severity,
+              dim: true,
+            }),
+          ),
+        ),
+        $(Box, { key: 'secgap', height: 1 }),
+      ]
+    : []),
     ...section('MAJOR VERSIONS', major, 'yellow'),
     ...section('DOWNGRADED', downgraded, 'magenta'),
     ...section('REMOVED', removed, 'red'),
@@ -628,6 +674,7 @@ const TreeScreen = ({
       { height: body, width: '100%', flexDirection: 'column' },
       ...win.slice.map((row: TreeLine, i: number) => {
         const d = row.mutation && describe(row.mutation)
+        const flagged = alertsFor(diff, nodeIdOf(row.mutation))
         return $(Row, {
           key: row.key,
           selected: win.start + i === state.depIndex,
@@ -638,7 +685,9 @@ const TreeScreen = ({
           prefix: row.prefix,
           indent: 2,
           note:
-            row.mutation?.alsoReachedBy ?
+            // an alert outranks reach: it is the reason to stop here
+            flagged.length ? `! ${flagged.length}`
+            : row.mutation?.alsoReachedBy ?
               `+${row.mutation.alsoReachedBy}`
             : row.mutation?.directness === 'direct' ? 'direct'
             : undefined,
@@ -822,6 +871,10 @@ const DepScreen = ({
     m ?
       [
         ...detailFields(m),
+        ...alertsFor(diff, nodeIdOf(m)).map((x): [string, string] => [
+          'ALERT',
+          `${x.severity}  ${x.type}${x.cve ? `  ${x.cve}` : ''}`,
+        ]),
         ...optional(
           'PATH',
           m.path?.length ?

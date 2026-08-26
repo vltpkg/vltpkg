@@ -1,5 +1,10 @@
 import { depName } from '@vltpkg/graph-diff'
-import type { GraphDiff, Mutation, Region } from '@vltpkg/graph-diff'
+import type {
+  Alert,
+  GraphDiff,
+  Mutation,
+  Region,
+} from '@vltpkg/graph-diff'
 
 /**
  * Four levels, narrowing each time: the whole diff, one workspace, one
@@ -282,6 +287,49 @@ export const highlights = (diff: GraphDiff): Highlights => {
   }
   return { major, downgraded, removed }
 }
+
+export type AlertRow = {
+  id: string
+  name: string
+  type: string
+  severity: Alert['severity']
+  cve?: string
+}
+
+const WORST: Alert['severity'][] = [
+  'critical',
+  'high',
+  'medium',
+  'low',
+]
+
+/**
+ * Alerts flattened into rows, worst first.
+ *
+ * Sorted rather than left in map order because the top row is the one
+ * that gets read, and a critical buried under nine low ones may as well
+ * not be reported.
+ */
+export const alertRows = (diff: GraphDiff): AlertRow[] =>
+  Object.entries(diff.alerts ?? {})
+    .flatMap(([id, list]) =>
+      list.map(a => ({
+        id,
+        name: depName(id as never),
+        type: a.type,
+        severity: a.severity,
+        ...(a.cve ? { cve: a.cve } : {}),
+      })),
+    )
+    .sort(
+      (a, z) =>
+        WORST.indexOf(a.severity) - WORST.indexOf(z.severity) ||
+        a.name.localeCompare(z.name),
+    )
+
+/** The alerts against one package, if any. */
+export const alertsFor = (diff: GraphDiff, id: string | undefined) =>
+  (id && diff.alerts?.[id as never]) || []
 
 /**
  * One direct dependency and everything that came into the graph under

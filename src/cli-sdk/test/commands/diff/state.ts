@@ -1,5 +1,7 @@
 import t from 'tap'
 import {
+  alertRows,
+  alertsFor,
   highlights,
   initialState,
   layout,
@@ -827,3 +829,52 @@ t.test(
     )
   },
 )
+
+t.test('alerts flatten worst-first and resolve to names', async t => {
+  const d = {
+    ...diff,
+    alerts: {
+      '~npm~beta@1.1.0': [
+        { type: 'copyleftLicense', severity: 'low' },
+        { type: 'shellAccess', severity: 'medium' },
+      ],
+      '~npm~alpha@1.0.1': [
+        { type: 'malware', severity: 'critical', cve: 'CVE-1' },
+      ],
+    },
+  } as unknown as GraphDiff
+
+  t.strictSame(
+    alertRows(d).map(r => `${r.severity} ${r.name} ${r.type}`),
+    [
+      'critical alpha malware',
+      'medium beta shellAccess',
+      'low beta copyleftLicense',
+    ],
+    'a critical buried under three lows may as well not be reported',
+  )
+  t.equal(alertRows(d)[0]?.cve, 'CVE-1')
+  t.strictSame(alertRows(diff), [], 'none without --security')
+
+  t.equal(alertsFor(d, '~npm~beta@1.1.0').length, 2)
+  t.strictSame(alertsFor(d, '~npm~nothing@1.0.0'), [])
+  t.strictSame(alertsFor(d, undefined), [], 'a row with no node')
+  t.strictSame(
+    alertsFor(diff, '~npm~beta@1.1.0'),
+    [],
+    'no alerts at all',
+  )
+
+  // same grade, so the tie breaks on name
+  const tied = {
+    ...diff,
+    alerts: {
+      '~npm~zeta@1.0.0': [{ type: 'malware', severity: 'critical' }],
+      '~npm~alpha@1.0.0': [{ type: 'malware', severity: 'critical' }],
+    },
+  } as unknown as GraphDiff
+  t.strictSame(
+    alertRows(tied).map(r => r.name),
+    ['alpha', 'zeta'],
+  )
+})
