@@ -59,6 +59,7 @@ t.test('mutationNodes covers every kind', async t => {
         from: node,
         to: node,
         direction: 'upgrade',
+        severity: 'minor',
       },
       2,
     ],

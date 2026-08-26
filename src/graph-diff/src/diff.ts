@@ -47,16 +47,31 @@ const byVersion = (a: NodeInfo, b: NodeInfo) => {
   return pa.compare(pb)
 }
 
-const direction = (from: NodeInfo, to: NodeInfo) => {
+/**
+ * How far the version moved, and which way. Both come out of the same
+ * pair of parses, since callers always want them together.
+ *
+ * `@vltpkg/semver` has no releaseType/diff equivalent, so severity is a
+ * comparison of the `Version` fields.
+ */
+const movement = (from: NodeInfo, to: NodeInfo) => {
   const pf = from.version && parse(from.version)
   const pt = to.version && parse(to.version)
-  if (!pf || !pt) return 'sidegrade' as const
+  if (!pf || !pt) {
+    return { direction: 'sidegrade', severity: 'unknown' } as const
+  }
   const cmp = pt.compare(pf)
-  return (
+  const direction =
     cmp > 0 ? ('upgrade' as const)
     : cmp < 0 ? ('downgrade' as const)
     : ('sidegrade' as const)
-  )
+  const severity =
+    pf.major !== pt.major ? ('major' as const)
+    : pf.minor !== pt.minor ? ('minor' as const)
+    : pf.patch !== pt.patch ? ('patch' as const)
+      // same x.y.z, so whatever moved is prerelease or build metadata
+    : ('prerelease' as const)
+  return { direction, severity }
 }
 
 /** Which component of the id moved, when the package itself did not. */
@@ -226,7 +241,7 @@ export const diffLockfiles = (
           name,
           from: a,
           to: z,
-          direction: direction(a, z),
+          ...movement(a, z),
         })
       } else if (a) add({ kind: 'node-removed', node: a })
       else if (z) add({ kind: 'node-added', node: z })

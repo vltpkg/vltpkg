@@ -239,3 +239,24 @@ t.test('a change reaching past its region says so', async t => {
     'the region name alone would have under-reported this',
   )
 })
+
+t.test('a major bump and a downgrade are marked apart', async t => {
+  const at = (v: string) =>
+    lockfile([{ id: pkg('foo', v), name: 'foo' }], [])
+  const render = (a: string, b: string) =>
+    humanDiffOutput(diffLockfiles(at(a), at(b)))
+
+  t.match(
+    render('1.0.0', '2.0.0'),
+    /\^\^ foo.*major/,
+    'major upgrade',
+  )
+  t.match(
+    render('2.0.0', '1.0.0'),
+    /\^\^ foo.*major/,
+    'major downgrade',
+  )
+  t.match(render('1.0.0', '1.0.1'), /\^ foo/, 'patch upgrade')
+  t.match(render('1.0.1', '1.0.0'), /v foo/, 'patch downgrade')
+  t.notMatch(render('1.0.0', '1.0.1'), /major/)
+})

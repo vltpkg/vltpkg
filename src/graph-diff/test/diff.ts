@@ -735,3 +735,29 @@ t.test(
     )
   },
 )
+
+t.test('severity says how far the version moved', async t => {
+  const at = (v: string) =>
+    lockfile([{ id: pkg('foo', v), name: 'foo' }], [])
+  const move = (a: string, b: string) =>
+    only(diffLockfiles(at(a), at(b)), 'package-resolved')[0]
+
+  t.equal(move('1.0.0', '2.0.0')?.severity, 'major')
+  t.equal(move('1.0.0', '1.1.0')?.severity, 'minor')
+  t.equal(move('1.0.0', '1.0.1')?.severity, 'patch')
+  t.equal(
+    move('1.0.0', '1.0.0-beta.1')?.severity,
+    'prerelease',
+    'same x.y.z, so only the prerelease moved',
+  )
+  t.equal(
+    move('1.0.0', 'x')?.severity,
+    'unknown',
+    'an unparseable version is never guessed at',
+  )
+
+  // severity and direction are orthogonal: a downgrade can be major
+  const down = move('2.0.0', '1.0.0')
+  t.equal(down?.severity, 'major')
+  t.equal(down?.direction, 'downgrade')
+})

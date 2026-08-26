@@ -117,6 +117,11 @@ export type MutationDetail =
       from: NodeInfo
       to: NodeInfo
       direction: 'upgrade' | 'downgrade' | 'sidegrade'
+      /**
+       * How far the version moved. `unknown` when either side has no
+       * parseable version, which is every non-registry id.
+       */
+      severity: 'major' | 'minor' | 'patch' | 'prerelease' | 'unknown'
     }
   | { kind: 'edge-added'; edge: EdgeInfo }
   | { kind: 'edge-removed'; edge: EdgeInfo }

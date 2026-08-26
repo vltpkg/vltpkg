@@ -13,8 +13,8 @@ LOCKFILE DIFF
   options changed: registry
 
 .
-  ^ up  1.0.0 -> 2.0.0  transitive
-  v down  2.0.0 -> 1.0.0  transitive
+  ^^ up  1.0.0 -> 2.0.0  major  transitive
+  ^^ down  2.0.0 -> 1.0.0  major  transitive
   - gone 1.0.0  transitive
   + fresh 1.0.0  transitive
   - ~npm~app@1.0.0 dropped *

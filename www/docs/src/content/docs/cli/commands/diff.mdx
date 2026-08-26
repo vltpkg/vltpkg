@@ -70,14 +70,26 @@ that introduced the lockfile diffs cleanly rather than failing.
 
 ### The viewer
 
-In a terminal, the human view opens a navigable viewer: a summary of the
-changed areas, the changes within one area, and the detail of a single
-change.
+In a terminal, the human view takes over the window and opens a
+navigable viewer. It leads with triage rather than with a list, because
+a real lockfile diff is overwhelmingly routine — on one commit in this
+repo, 263 changes of which 4 were major bumps and 23 were direct
+dependencies.
+
+- **Needs a look** — major version bumps, downgrades, and packages that
+  are genuinely gone.
+- **Yours** — the direct dependencies an importer asked for.
+- **Routine** — everything else, as counts.
+
+Press `⏎` to browse by area: workspaces on the left, that workspace's
+changes on the right.
 
 <Code
-  code="↑↓ / jk   move
-⏎  / →    open
-←  / esc  back
+  code="↑↓ / jk   move within the focused pane
+←→        switch pane (areas ↔ changes)
+⏎         descend: summary → browse → detail
+esc       back a level
+d         direct dependencies only
 i         show or hide identity-only changes
 q         quit
 "
@@ -85,8 +97,9 @@ q         quit
   lang="text"
 />
 
-In CI, when output is redirected, or with `--no-tui`, the same diff is
-printed as static text instead.
+The viewer runs in the terminal's alternate screen, so quitting restores
+your scrollback exactly as it was. In CI, when output is redirected, or
+with `--no-tui`, the same diff is printed as static text instead.
 
 ### Reading the output
 
@@ -106,6 +119,24 @@ version from a different registry, or under a different peer set — are
 counted separately and collapsed by default, so they never bury the
 changes that moved a version. Pass `--identity-only` to include them in
 static output, or press `i` in the viewer.
+
+### Severity
+
+A version bump carries how far it moved, so a major bump is never
+mistaken for a patch:
+
+<Code
+  code="^^ yargs   17.7.3 -> 18.1.0   major
+^  prettier  3.9.5 -> 3.9.6
+v  some-pkg  2.0.0 -> 1.9.0"
+  title="Terminal"
+  lang="text"
+/>
+
+In JSON this is `severity` on each `package-resolved` mutation:
+`major`, `minor`, `patch`, `prerelease`, or `unknown` when either side
+has no parseable version. It is independent of `direction` — a downgrade
+can be major.
 
 ### JSON
 

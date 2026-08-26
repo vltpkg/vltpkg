@@ -56,11 +56,18 @@ const line = (
       ]
     case 'package-resolved':
       return [
-        m.direction === 'upgrade' ? '^'
+        // a major bump and a downgrade are the two a reader must not
+        // miss, so they get their own marker and colour
+        m.severity === 'major' ? '^^'
+        : m.direction === 'upgrade' ? '^'
         : m.direction === 'downgrade' ? 'v'
         : '>',
-        `${m.name}  ${m.from.version ?? '?'} -> ${m.to.version ?? '?'}`,
-        m.direction === 'downgrade' ? 31 : 36,
+        `${m.name}  ${m.from.version ?? '?'} -> ${m.to.version ?? '?'}${
+          m.severity === 'major' ? '  major' : ''
+        }`,
+        m.direction === 'downgrade' ? 31
+        : m.severity === 'major' ? 33
+        : 36,
       ]
     case 'edge-added':
       return ['+', `${m.edge.from} ${edgeRef(m.edge)}`, 32]
