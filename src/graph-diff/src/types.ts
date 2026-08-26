@@ -183,6 +183,22 @@ export type Summary = {
 }
 
 /**
+ * What is known against a package, from whatever advisory source the
+ * caller wired up.
+ *
+ * Deliberately structural rather than an import: this package is pure
+ * and offline, so it describes the shape without taking on a dependency
+ * that fetches.
+ */
+export type Alert = {
+  /** `malware`, `installScripts`, `networkAccess`, `shellAccess`, … */
+  type: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  category?: string
+  cve?: string
+}
+
+/**
  * The serializable result. Plain objects and arrays throughout so
  * `JSON.stringify` is the whole serializer.
  */
@@ -191,6 +207,14 @@ export type GraphDiff = {
   summary: Summary
   mutations: Mutation[]
   regions: Region[]
+  /**
+   * Alerts against packages the diff touches, keyed by id.
+   *
+   * `diffLockfiles` never sets this -- looking it up means a network
+   * call, and this package does not make them. A caller that has an
+   * advisory source attaches it, and every renderer picks it up.
+   */
+  alerts?: Record<DepID, Alert[]>
 }
 
 /** Projection of one lockfile, the input to the diff. Maps, not JSON. */

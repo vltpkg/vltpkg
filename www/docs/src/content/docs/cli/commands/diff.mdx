@@ -171,6 +171,45 @@ In JSON this is `severity` on each `package-resolved` mutation:
 has no parseable version. It is independent of `direction` — a downgrade
 can be major.
 
+### Markdown, for a pull request
+
+A lockfile review happens in a PR, not in a terminal:
+
+<Code
+  code="$ vlt diff lockfile origin/main --view=markdown"
+  title="Terminal"
+  lang="bash"
+/>
+
+The report leads with what could break and folds the rest away behind
+`<details>`, so a 263-change diff does not bury the conversation it is
+attached to. Paste it into a comment, or pipe it there from CI.
+
+### Security
+
+<Code
+  code="$ vlt diff lockfile origin/main --security"
+  title="Terminal"
+  lang="bash"
+/>
+
+Looks up advisories for the packages this diff *introduces* — what
+arrived or moved, not the whole tree — and reports them above everything
+else, in every view.
+
+It is off by default because it is the only part of this command that
+reaches the network; everything else reads two files.
+
+What it reports is deliberately narrow. The advisory source is thorough
+rather than selective: on one real commit it returns 398 alerts across
+41 packages, almost all of them `envVars` and `networkAccess` on
+packages that have always had them. Listing that would rebuild the noise
+this command exists to remove, so `--security` keeps the kinds that
+change a decision — code that runs at install, code that shells out, a
+licence that constrains, a known vulnerability — plus anything graded
+high or critical whatever its kind. The same commit then yields six
+rows.
+
 ### JSON
 
 <Code
@@ -180,7 +219,8 @@ can be major.
 />
 
 The JSON view is the stable contract, carrying a `schemaVersion`, the
-summary, every mutation, and the regions. Editors, CI annotations, and
+summary, every mutation, the regions, and `alerts` when `--security` was
+asked for. Editors, CI annotations, and
 other viewers should build against it rather than parsing lockfiles
 themselves.
 

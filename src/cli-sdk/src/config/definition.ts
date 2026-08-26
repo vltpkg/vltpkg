@@ -489,6 +489,13 @@ export const definition = j
                     always static.`,
     },
 
+    security: {
+      description: `Look up security advisories for the packages
+                    \`vlt diff lockfile\` introduces, and report them
+                    alongside the graph changes. Off by default: it is the
+                    only part of the command that reaches the network.`,
+    },
+
     'identity-only': {
       description: `Include identity-only changes in \`vlt diff lockfile\`
                     output: packages whose id moved without the package
@@ -641,6 +648,8 @@ export const definition = j
                     - human: Maximally ergonomic output reporting for human
                       consumption.
                     - json: Parseable JSON output for machines.
+                    - markdown: A comment-shaped report, for pasting into
+                      a pull request. (Only supported by some commands.)
                     - inspect: Output results with \`util.inspect\`.
                     - mermaid: Output mermaid diagramming syntax. (Only
                       relevant for certain commands.)
@@ -659,6 +668,7 @@ export const definition = j
       validOptions: [
         'human',
         'json',
+        'markdown',
         'mermaid',
         'svg',
         'png',

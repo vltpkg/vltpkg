@@ -11,6 +11,7 @@ import type { Source } from '@vltpkg/graph-diff/sources'
 
 const FOO = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
 const ROOT = joinDepIDTuple(['file', '.'])
+const BAR = joinDepIDTuple(['registry', '', 'foo@2.0.0'])
 
 const LOCKFILE = {
   lockfileVersion: 1,
@@ -26,17 +27,40 @@ const EMPTY = {
   edges: {},
 }
 
+type FoundAlert = {
+  type: string
+  severity: string
+  props?: { cveId?: string }
+}
+
 /** Load the command with the two sides of the diff canned. */
 const mockCommand = (
   t: Test,
   read: (source: Source) => unknown = () => EMPTY,
+  alerts?: Record<string, FoundAlert[]>,
 ) =>
   t.mockImport<typeof import('../../src/commands/diff.ts')>(
     '../../src/commands/diff.ts',
     {
       '@vltpkg/graph-diff/sources': {
         readSource: async (source: Source) => read(source),
+        describeSource: (source: Source) =>
+          source.kind === 'git' ? source.ref
+          : source.kind === 'file' ? source.path
+          : 'working tree',
       },
+      ...(alerts ?
+        {
+          '@vltpkg/security-archive': {
+            SecurityArchive: {
+              start: async () => ({
+                get: (id: string) =>
+                  alerts[id] ? { alerts: alerts[id] } : undefined,
+              }),
+            },
+          },
+        }
+      : {}),
     },
   )
 
@@ -193,6 +217,13 @@ t.test('views', async t => {
   )
 
   t.ok(isLazyView(views.human), 'human view is lazy')
+
+  // markdown is the view a code review can actually carry
+  const md = views.markdown(result)
+  t.match(md, /^## Lockfile diff/)
+  t.match(md, /`HEAD` → `working tree`/, 'names both sides')
+  t.match(md, /\*\*\+1\*\* packages/, 'as a delta')
+  t.match(md, /<details>/)
 })
 
 t.test('the human view loads the interactive viewer', async t => {
@@ -227,4 +258,144 @@ t.test('--exit-code', async t => {
     t.equal(process.exitCode, expected, name)
     process.exitCode = undefined
   }
+})
+
+t.test(
+  '--security is opt-in and reports only what is actionable',
+  async t => {
+    const found = {
+      [FOO]: [
+        // kept: code that runs, and one graded above the threshold
+        { type: 'installScripts', severity: 'middle' },
+        {
+          type: 'malware',
+          severity: 'critical',
+          props: { cveId: 'CVE-1' },
+        },
+        { type: 'shellAccess', severity: 'low' },
+        // dropped: true of half the registry, and repeated per call site
+        { type: 'envVars', severity: 'low' },
+        { type: 'networkAccess', severity: 'low' },
+        { type: 'networkAccess', severity: 'low' },
+        { type: 'installScripts', severity: 'middle' },
+        // kept on grade alone, whatever its kind
+        { type: 'somethingNew', severity: 'high' },
+      ],
+    }
+    const read = (s: Source) =>
+      s.kind === 'worktree' ? LOCKFILE : EMPTY
+
+    const off = await mockCommand(t, read, found)
+    const quiet = await off.command(conf(['lockfile']))
+    t.equal(
+      quiet.diff.alerts,
+      undefined,
+      'nothing is fetched without the flag: it is the only network call',
+    )
+
+    const on = await mockCommand(t, read, found)
+    const loud = await on.command(
+      conf(['lockfile'], { security: true }),
+    )
+    t.strictSame(
+      loud.diff.alerts?.[FOO],
+      [
+        { type: 'installScripts', severity: 'medium' },
+        { type: 'malware', severity: 'critical', cve: 'CVE-1' },
+        { type: 'shellAccess', severity: 'low' },
+        { type: 'somethingNew', severity: 'high' },
+      ],
+      'filtered, deduped by kind, and `middle` graded as `medium`',
+    )
+    t.match(on.views.markdown(loud), /### ⚠️ Security/)
+  },
+)
+
+t.test('only what entered or moved is asked about', async t => {
+  // an edge change touches no new package, so there is nothing to look
+  // up for it -- asking about all 1374 would be a slower question
+  const asked: string[] = []
+  const withEdge = {
+    ...LOCKFILE,
+    edges: {
+      ...LOCKFILE.edges,
+      [`${ROOT} other`]: `prod ^2 ${FOO}`,
+    },
+  }
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/diff.ts')
+  >('../../src/commands/diff.ts', {
+    '@vltpkg/graph-diff/sources': {
+      readSource: async (s: Source) =>
+        s.kind === 'worktree' ? withEdge : LOCKFILE,
+      describeSource: () => 'working tree',
+    },
+    '@vltpkg/security-archive': {
+      SecurityArchive: {
+        start: async ({ nodes }: { nodes: { id: string }[] }) => {
+          asked.push(...nodes.map(n => n.id))
+          return { get: () => undefined }
+        },
+      },
+    },
+  })
+  await command(conf(['lockfile'], { security: true }))
+  t.strictSame(asked, [], 'an added edge introduces no package')
+})
+
+t.test('a bump is asked about, and a CVE always counts', async t => {
+  const bumped = {
+    ...LOCKFILE,
+    nodes: { [BAR]: [0, 'foo'] },
+    edges: { [`${ROOT} foo`]: `prod ^1 ${BAR}` },
+  }
+  const found = {
+    [BAR]: [
+      // envVars alone is noise; envVars with a CVE is not
+      { type: 'envVars', severity: 'low', props: { cveId: 'CVE-9' } },
+    ],
+  }
+  const { command } = await mockCommand(
+    t,
+    s => (s.kind === 'worktree' ? bumped : LOCKFILE),
+    found,
+  )
+  const result = await command(conf(['lockfile'], { security: true }))
+  t.strictSame(
+    result.diff.alerts?.[BAR],
+    [{ type: 'envVars', severity: 'low', cve: 'CVE-9' }],
+    'a resolution feeds the lookup, and a reference outweighs the kind',
+  )
+})
+
+t.test('no alerts, nothing to say', async t => {
+  const read = (s: Source) =>
+    s.kind === 'worktree' ? LOCKFILE : EMPTY
+  const { command, views } = await mockCommand(t, read, {})
+  const result = await command(conf(['lockfile'], { security: true }))
+  t.equal(result.diff.alerts, undefined, 'no empty section')
+  t.notMatch(views.markdown(result), /Security/)
+})
+
+t.test('a diff with nothing versioned asks nothing', async t => {
+  let asked = false
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/diff.ts')
+  >('../../src/commands/diff.ts', {
+    '@vltpkg/graph-diff/sources': {
+      readSource: async () => EMPTY,
+      describeSource: () => 'working tree',
+    },
+    '@vltpkg/security-archive': {
+      SecurityArchive: {
+        start: async () => {
+          asked = true
+          return { get: () => undefined }
+        },
+      },
+    },
+  })
+  const result = await command(conf(['lockfile'], { security: true }))
+  t.equal(result.diff.alerts, undefined)
+  t.equal(asked, false, 'an empty diff has nothing to ask about')
 })

@@ -1,4 +1,6 @@
+import { depName } from './projection.ts'
 import { MISSING } from './types.ts'
+import type { DepID } from '@vltpkg/dep-id'
 import type {
   EdgeInfo,
   GraphDiff,
@@ -124,6 +126,23 @@ export const humanDiffOutput = (
   for (const m of diff.mutations) {
     if (m.kind === 'options-changed') {
       out.push(`  options changed: ${m.fields.join(', ')}`)
+    }
+  }
+
+  // alerts lead: a package that was merely added is routine, and a
+  // package that was added and runs install scripts is the whole reason
+  // anyone reads a lockfile diff
+  const alerts = Object.entries(diff.alerts ?? {})
+  if (alerts.length) {
+    out.push('', paint(colors, 31, 'SECURITY'))
+    for (const [id, list] of alerts) {
+      for (const a of list) {
+        out.push(
+          `  ${paint(colors, 31, '!')} ${a.severity.padEnd(8)} ${a.type.padEnd(22)}` +
+            // the name, not the raw id
+            `${depName(id as DepID)}${a.cve ? `  ${a.cve}` : ''}`,
+        )
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import t from 'tap'
 import { diffLockfiles } from '../src/diff.ts'
 import { humanDiffOutput } from '../src/human.ts'
+import type { GraphDiff } from '../src/types.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import {
   EMPTY,
@@ -260,3 +261,31 @@ t.test('a major bump and a downgrade are marked apart', async t => {
   t.match(render('1.0.1', '1.0.0'), /v foo/, 'patch downgrade')
   t.notMatch(render('1.0.0', '1.0.1'), /major/)
 })
+
+t.test(
+  'alerts lead, because they are why anyone reads this',
+  async t => {
+    const foo = pkg('foo', '1.0.0')
+    const diff = diffLockfiles(
+      EMPTY,
+      lockfile([{ id: foo, name: 'foo' }], []),
+    )
+    diff.alerts = {
+      [foo]: [
+        { type: 'installScripts', severity: 'high' },
+        { type: 'malware', severity: 'critical', cve: 'CVE-2024-1' },
+      ],
+    } as GraphDiff['alerts']
+    const out = humanDiffOutput(diff)
+    t.match(out, /SECURITY/)
+    t.match(out, /high\s+installScripts\s+foo/)
+    t.match(out, /CVE-2024-1/)
+    // the name, never the raw id
+    t.notMatch(out, /~npm~foo/)
+    t.notMatch(
+      humanDiffOutput(diffLockfiles(EMPTY, EMPTY)),
+      /SECURITY/,
+      'no section when there is nothing to say',
+    )
+  },
+)
