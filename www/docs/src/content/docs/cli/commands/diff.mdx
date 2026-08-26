@@ -86,6 +86,11 @@ package       one change in full"
   lang="text"
 />
 
+A tree lives in one workspace but its packages are usually shared, so
+each one reports how far it reaches. Press `w` on a tree to list the
+workspaces it actually lands on, and `n` / `p` to step between trees
+without going back up.
+
 The summary leads with the changes that are not a routine version bump,
 each under a heading that names exactly what it holds — a section that
 is empty is one you never have to read:
@@ -133,8 +138,10 @@ Press `?` for a legend of every symbol.
   code="↑↓ / jk   move
 ⏎  / →    narrow to what is under the cursor
 ←  / esc  back a level
+n / p     step to the next or previous tree
+w         which workspaces this tree reaches
 d         direct dependencies only
-i         show or hide identity-only changes
+i         show the hidden changes (see below)
 ?         legend
 q         quit
 "

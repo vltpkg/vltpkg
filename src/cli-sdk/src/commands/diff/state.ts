@@ -5,7 +5,13 @@ import type { GraphDiff, Mutation, Region } from '@vltpkg/graph-diff'
  * Four levels, narrowing each time: the whole diff, one workspace, one
  * dependency tree inside it, one package inside that.
  */
-export type Screen = 'summary' | 'workspace' | 'tree' | 'dep'
+export type Screen =
+  | 'summary'
+  | 'workspace'
+  | 'tree'
+  | 'dep'
+  /** which workspaces the focused tree lands on */
+  | 'reach'
 
 export type State = {
   screen: Screen
@@ -31,6 +37,9 @@ export type Event =
   | 'ToggleIdentity'
   | 'ToggleDirect'
   | 'ToggleLegend'
+  | 'NextTree'
+  | 'PreviousTree'
+  | 'ShowReach'
 
 export const initialState: State = {
   screen: 'summary',
@@ -136,6 +145,40 @@ export const visibleRegions = (
   filters: Filters,
 ): Region[] =>
   diff.regions.filter(r => visibleMutations(diff, r, filters).length)
+
+// which region a change was filed under, built once per diff
+const regionIndexes = new WeakMap<GraphDiff, Map<string, Region>>()
+const regionOf = (diff: GraphDiff, id: string) => {
+  let byId = regionIndexes.get(diff)
+  if (!byId) {
+    byId = new Map()
+    for (const r of diff.regions) {
+      for (const m of r.mutationIds) byId.set(m, r)
+    }
+    regionIndexes.set(diff, byId)
+  }
+  return byId.get(id)
+}
+
+/**
+ * Every workspace that reaches any of these changes.
+ *
+ * A tree lives in one workspace but its packages are usually shared, so
+ * "this bump also lands on 40 other workspaces" is the thing a reviewer
+ * needs before deciding how carefully to read it.
+ */
+export const workspacesFor = (
+  diff: GraphDiff,
+  changes: Mutation[],
+): string[] => {
+  const names = new Set<string>()
+  for (const m of changes) {
+    for (const id of regionOf(diff, m.id)?.importers ?? []) {
+      names.add(depName(id))
+    }
+  }
+  return [...names].sort()
+}
 
 /** One real workspace, and everything that reaches it. */
 export type Workspace = {
@@ -254,9 +297,7 @@ export type Tree = {
   changes: Mutation[]
 }
 
-export const treesOf = (
-  changes: Mutation[],
-): Tree[] => {
+export const treesOf = (changes: Mutation[]): Tree[] => {
   const trees = new Map<string, Tree>()
   const get = (name: string) => {
     let tree = trees.get(name)
@@ -379,6 +420,8 @@ const rowCount = (diff: GraphDiff, state: State) => {
   return (
     state.screen === 'summary' ? workspaces.length
     : state.screen === 'workspace' ? trees.length
+      // the reach list is read, not walked
+    : state.screen === 'reach' ? 0
     : lines.length
   )
 }
@@ -425,6 +468,32 @@ export const reduce = (
     case 'ToggleLegend':
       return { ...state, legend: !state.legend }
 
+    case 'ShowReach':
+      // only meaningful once a tree is in focus
+      return state.screen === 'tree' || state.screen === 'dep' ?
+          { ...state, screen: 'reach' }
+        : state
+
+    case 'NextTree':
+    case 'PreviousTree': {
+      // step sideways without going back up a level
+      if (
+        state.screen === 'summary' ||
+        state.screen === 'workspace'
+      ) {
+        return state
+      }
+      const { trees } = view(diff, state)
+      return {
+        ...state,
+        treeIndex: clamp(
+          state.treeIndex + (event === 'NextTree' ? 1 : -1),
+          trees.length,
+        ),
+        depIndex: 0,
+      }
+    }
+
     case 'Select': {
       if (!rowCount(diff, state)) return state
       if (state.screen === 'summary') {
@@ -447,7 +516,7 @@ export const reduce = (
       return {
         ...state,
         screen:
-          state.screen === 'dep' ? 'tree'
+          state.screen === 'dep' || state.screen === 'reach' ? 'tree'
           : state.screen === 'tree' ? 'workspace'
           : 'summary',
       }

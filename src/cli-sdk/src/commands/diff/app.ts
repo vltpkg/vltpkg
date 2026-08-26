@@ -8,13 +8,9 @@ import {
   treeSize,
   view,
   windowed,
+  workspacesFor,
 } from './state.ts'
-import type {
-  State,
-  Tree,
-  TreeLine,
-  Workspace,
-} from './state.ts'
+import type { State, Tree, TreeLine, Workspace } from './state.ts'
 import { depName } from '@vltpkg/graph-diff'
 import type {
   GraphDiff,
@@ -268,7 +264,6 @@ const Title = ({
     trailing ? $(Text, { color: 'gray' }, `${trailing}  `) : null,
   )
 
-
 /** What every symbol on the other screens means. */
 const LEGEND: [string, string, string][] = [
   ['▲', 'yellow', 'major version bump'],
@@ -281,7 +276,13 @@ const LEGEND: [string, string, string][] = [
   ['=', 'gray', 'identity only: same package, different id'],
   ['·', 'gray', 'unchanged, shown for context'],
   ['+41', 'gray', 'also reached by 41 more workspaces'],
-  ['direct', 'gray', 'an importer depends on this itself'],
+  ['direct', 'gray', 'a workspace depends on this itself'],
+  [
+    'hidden',
+    'gray',
+    'same package and version, only its id moved (peer set or',
+  ],
+  ['', 'gray', 'registry) -- press i to show them'],
 ]
 
 const LegendScreen = ({ rows }: { rows: number }) =>
@@ -330,18 +331,31 @@ const Cell = ({
   bold?: boolean
 }) =>
   width === undefined ?
-    $(Text, { color, dimColor: dim, bold, wrap: 'truncate-end' }, text)
+    $(
+      Text,
+      { color, dimColor: dim, bold, wrap: 'truncate-end' },
+      text,
+    )
   : $(
       Box,
       { width, flexShrink: 0 },
-      $(Text, { color, dimColor: dim, bold, wrap: 'truncate-end' }, text),
+      $(
+        Text,
+        { color, dimColor: dim, bold, wrap: 'truncate-end' },
+        text,
+      ),
     )
 
 /** `+50 packages` rather than `1324 → 1374 packages`. */
 const Delta = ({ n, label }: { n: number; label: string }) =>
   $(
     Text,
-    { color: n > 0 ? 'green' : n < 0 ? 'red' : 'gray' },
+    {
+      color:
+        n > 0 ? 'green'
+        : n < 0 ? 'red'
+        : 'gray',
+    },
     `${n > 0 ? '+' : ''}${n} ${label}`,
   )
 
@@ -363,30 +377,43 @@ const SummaryScreen = ({
   const { major, downgraded, removed } = highlights(diff)
   const { workspaces } = view(diff, state)
   const { summary } = diff
-  const budget = Math.max(1, rows - 3)
+  const budget = Math.max(1, rows - 4)
 
   // one column width across all three sections, so the eye tracks a
   // single set of columns down the whole screen rather than three
   const listed = [...major, ...downgraded, ...removed]
   const nameWidth = Math.min(
     34,
-    Math.max(12, ...listed.map(m => (describe(m).name ?? '').length + 2)),
+    Math.max(
+      12,
+      ...listed.map(m => (describe(m).name ?? '').length + 2),
+      ...workspaces.map(w => w.label.length + 2),
+    ),
   )
   const detailWidth = Math.min(
     26,
-    Math.max(10, ...listed.map(m => (describe(m).detail ?? '').length + 2)),
+    Math.max(
+      10,
+      ...listed.map(m => (describe(m).detail ?? '').length + 2),
+    ),
   )
 
   const row = (m: Mutation) => {
     const d = describe(m)
-    const region = diff.regions.find(r => r.mutationIds.includes(m.id))
+    const region = diff.regions.find(r =>
+      r.mutationIds.includes(m.id),
+    )
     const reach = region?.importers.length ?? 0
     return $(
       Box,
       { key: m.id, height: 1, width: '100%' },
       $(Cell, { text: `    ${d.mark}`, width: 7, color: d.color }),
       $(Cell, { text: d.name ?? d.text, width: nameWidth }),
-      $(Cell, { text: d.detail ?? '', width: detailWidth, color: d.color }),
+      $(Cell, {
+        text: d.detail ?? '',
+        width: detailWidth,
+        color: d.color,
+      }),
       $(Cell, {
         text:
           reach === 1 ? depName(region?.importers[0] as never)
@@ -414,22 +441,22 @@ const SummaryScreen = ({
 
   const room = Math.max(1, budget - head.length - 1)
   const win = windowed(workspaces, state.workspaceIndex, room)
-  const wsWidth = Math.min(
-    40,
-    Math.max(14, ...workspaces.map(w => w.label.length + 2)),
-  )
 
   return $(
     Box,
     { flexDirection: 'column', width: '100%', height: rows },
     $(
       Box,
-      { height: 2, width: '100%', flexDirection: 'column' },
+      { height: 3, width: '100%', flexDirection: 'column' },
       $(
         Box,
         { height: 1, width: '100%', justifyContent: 'space-between' },
         $(Text, { bold: true }, '  LOCKFILE DIFF'),
-        $(Text, { dimColor: true }, `${diff.mutations.length} changes  `),
+        $(
+          Text,
+          { dimColor: true },
+          `${diff.mutations.length} changes  `,
+        ),
       ),
       $(
         Box,
@@ -444,12 +471,16 @@ const SummaryScreen = ({
           n: summary.edges.head - summary.edges.base,
           label: 'edges',
         }),
+        // "identity-only" meant nothing to anyone who had not read the
+        // model; what the reader needs to know is that they are hidden
+        // and which key shows them
         $(
           Text,
           { dimColor: true },
-          `    ${summary.identityOnly} identity-only`,
+          `    ${summary.identityOnly} hidden`,
         ),
       ),
+      $(Box, { height: 1 }),
     ),
     $(
       Box,
@@ -467,17 +498,17 @@ const SummaryScreen = ({
               { backgroundColor: 'blue' }
             : {}),
           },
-          $(Cell, { text: `    ${w.label}`, width: wsWidth + 4 }),
-          $(Cell, {
-            text: `${w.changes.length}`,
-            width: 8,
-            dim: true,
-          }),
+          // the same four columns the highlight rows use, so the counts
+          // land under the workspace names above them
+          $(Cell, { text: '', width: 7 }),
+          $(Cell, { text: w.label, width: nameWidth }),
+          $(Cell, { text: '', width: detailWidth }),
+          $(Cell, { text: `${w.changes.length}`, dim: true }),
         ),
       ),
     ),
     $(Footer, {
-      keys: `⏎ open   d direct (${state.directOnly ? 'on' : 'off'})   i identity (${state.identity ? 'on' : 'off'})   ? legend   q quit`,
+      keys: `⏎ open   d direct (${state.directOnly ? 'on' : 'off'})   i hidden (${state.identity ? 'on' : 'off'})   ? legend   q quit`,
     }),
   )
 }
@@ -499,7 +530,11 @@ const WorkspaceScreen = ({
     36,
     Math.max(
       14,
-      ...trees.map(t => (t.root ? describe(t.root).name ?? t.name : t.name).length + 2),
+      ...trees.map(
+        t =>
+          (t.root ? (describe(t.root).name ?? t.name) : t.name)
+            .length + 2,
+      ),
     ),
   )
 
@@ -544,7 +579,16 @@ const WorkspaceScreen = ({
             width: 22,
             color: d?.color ?? 'gray',
           }),
-          $(Cell, { text: `${treeSize(t)}`, dim: true }),
+          $(Cell, { text: `${treeSize(t)}`, width: 8, dim: true }),
+          // a tree lives in one workspace but its packages are usually
+          // shared; this is what says how far the blast radius goes
+          $(Cell, {
+            text: (() => {
+              const n = workspacesFor(diff, t.changes).length
+              return n > 1 ? `${n} workspaces` : ''
+            })(),
+            dim: true,
+          }),
         )
       }),
     ),
@@ -603,9 +647,74 @@ const TreeScreen = ({
     ),
     $(Footer, {
       keys:
-        '↑↓ move   ⏎ details   ← back   ? legend   q quit' +
+        '↑↓ move   ⏎ details   n/p tree   w workspaces   ← back   q quit' +
         (win.more ? `      ${win.more} below` : ''),
     }),
+  )
+}
+
+/** Which workspaces the focused tree actually lands on. */
+const ReachScreen = ({
+  diff,
+  state,
+  rows,
+}: {
+  diff: GraphDiff
+  state: State
+  rows: number
+}) => {
+  const { tree } = view(diff, state)
+  const names = tree ? workspacesFor(diff, tree.changes) : []
+  const { body } = layout(rows)
+  // two columns, so a long list of workspaces stays on one screen
+  const half = Math.ceil(names.length / 2)
+  const left = names.slice(0, half)
+  const right = names.slice(half)
+
+  return $(
+    Box,
+    { flexDirection: 'column', width: '100%', height: rows },
+    $(Title, {
+      // a count, not a cursor position: nothing here is walked
+      label: `WORKSPACES REACHED BY ${tree?.name ?? ''}`,
+      trailing: `${names.length} of them`,
+    }),
+    $(
+      Box,
+      { height: body, width: '100%', flexDirection: 'row' },
+      $(
+        Box,
+        { width: '50%', flexDirection: 'column' },
+        ...left
+          .slice(0, body)
+          .map(n =>
+            $(
+              Box,
+              { key: n, height: 1, width: '100%' },
+              $(Text, { wrap: 'truncate-end' }, `    ${n}`),
+            ),
+          ),
+      ),
+      $(
+        Box,
+        {
+          flexGrow: 1,
+          flexBasis: 0,
+          minWidth: 0,
+          flexDirection: 'column',
+        },
+        ...right
+          .slice(0, body)
+          .map(n =>
+            $(
+              Box,
+              { key: n, height: 1, width: '100%' },
+              $(Text, { wrap: 'truncate-end' }, `  ${n}`),
+            ),
+          ),
+      ),
+    ),
+    $(Footer, { keys: '← back   q quit' }),
   )
 }
 
@@ -752,7 +861,9 @@ const DepScreen = ({
           $(Field, { key: `${label}${i}`, label, value }),
         ),
     ),
-    $(Footer, { keys: '↑↓ next   ← back   q quit' }),
+    $(Footer, {
+      keys: '↑↓ next   n/p tree   w workspaces   ← back   q quit',
+    }),
   )
 }
 
@@ -777,6 +888,9 @@ export const App = ({
       : input === 'i' ? 'ToggleIdentity'
       : input === 'd' ? 'ToggleDirect'
       : input === '?' ? 'ToggleLegend'
+      : input === 'n' ? 'NextTree'
+      : input === 'p' ? 'PreviousTree'
+      : input === 'w' ? 'ShowReach'
       : undefined
     if (event) setState(s => reduce(s, event, diff))
   })
@@ -793,6 +907,7 @@ export const App = ({
     : state.screen === 'workspace' ?
       $(WorkspaceScreen, { diff, state, rows })
     : state.screen === 'tree' ? $(TreeScreen, { diff, state, rows })
+    : state.screen === 'reach' ? $(ReachScreen, { diff, state, rows })
     : $(DepScreen, { diff, state, rows })
   )
 }
