@@ -90,7 +90,6 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --scope=<query>
     --scoped-registries=<@scope=url>
     --script-shell=<program>
-    --security
     --stale-while-revalidate-factor=<n>
     --tag=<tag>
     --target=<query>
@@ -166,7 +165,6 @@ Unknown config option: asdf
     scope
     scoped-registries
     script-shell
-    security
     stale-while-revalidate-factor
     tag
     target

@@ -260,56 +260,43 @@ t.test('--exit-code', async t => {
   }
 })
 
-t.test(
-  '--security is opt-in and reports only what is actionable',
-  async t => {
-    const found = {
-      [FOO]: [
-        // kept: code that runs, and one graded above the threshold
-        { type: 'installScripts', severity: 'middle' },
-        {
-          type: 'malware',
-          severity: 'critical',
-          props: { cveId: 'CVE-1' },
-        },
-        { type: 'shellAccess', severity: 'low' },
-        // dropped: true of half the registry, and repeated per call site
-        { type: 'envVars', severity: 'low' },
-        { type: 'networkAccess', severity: 'low' },
-        { type: 'networkAccess', severity: 'low' },
-        { type: 'installScripts', severity: 'middle' },
-        // kept on grade alone, whatever its kind
-        { type: 'somethingNew', severity: 'high' },
-      ],
-    }
-    const read = (s: Source) =>
-      s.kind === 'worktree' ? LOCKFILE : EMPTY
+t.test('alerts are looked up as a matter of course', async t => {
+  const found = {
+    [FOO]: [
+      // kept: code that runs, and one graded above the threshold
+      { type: 'installScripts', severity: 'middle' },
+      {
+        type: 'malware',
+        severity: 'critical',
+        props: { cveId: 'CVE-1' },
+      },
+      { type: 'shellAccess', severity: 'low' },
+      // dropped: true of half the registry, and repeated per call site
+      { type: 'envVars', severity: 'low' },
+      { type: 'networkAccess', severity: 'low' },
+      { type: 'networkAccess', severity: 'low' },
+      { type: 'installScripts', severity: 'middle' },
+      // kept on grade alone, whatever its kind
+      { type: 'somethingNew', severity: 'high' },
+    ],
+  }
+  const read = (s: Source) =>
+    s.kind === 'worktree' ? LOCKFILE : EMPTY
 
-    const off = await mockCommand(t, read, found)
-    const quiet = await off.command(conf(['lockfile']))
-    t.equal(
-      quiet.diff.alerts,
-      undefined,
-      'nothing is fetched without the flag: it is the only network call',
-    )
-
-    const on = await mockCommand(t, read, found)
-    const loud = await on.command(
-      conf(['lockfile'], { security: true }),
-    )
-    t.strictSame(
-      loud.diff.alerts?.[FOO],
-      [
-        { type: 'installScripts', severity: 'medium' },
-        { type: 'malware', severity: 'critical', cve: 'CVE-1' },
-        { type: 'shellAccess', severity: 'low' },
-        { type: 'somethingNew', severity: 'high' },
-      ],
-      'filtered, deduped by kind, and `middle` graded as `medium`',
-    )
-    t.match(on.views.markdown(loud), /### ⚠️ Security/)
-  },
-)
+  const on = await mockCommand(t, read, found)
+  const loud = await on.command(conf(['lockfile']))
+  t.strictSame(
+    loud.diff.alerts?.[FOO],
+    [
+      { type: 'installScripts', severity: 'medium' },
+      { type: 'malware', severity: 'critical', cve: 'CVE-1' },
+      { type: 'shellAccess', severity: 'low' },
+      { type: 'somethingNew', severity: 'high' },
+    ],
+    'filtered, deduped by kind, and `middle` graded as `medium`',
+  )
+  t.match(on.views.markdown(loud), /### ⚠️ Security/)
+})
 
 t.test('only what entered or moved is asked about', async t => {
   // an edge change touches no new package, so there is nothing to look
@@ -339,7 +326,7 @@ t.test('only what entered or moved is asked about', async t => {
       },
     },
   })
-  await command(conf(['lockfile'], { security: true }))
+  await command(conf(['lockfile']))
   t.strictSame(asked, [], 'an added edge introduces no package')
 })
 
@@ -360,7 +347,7 @@ t.test('a bump is asked about, and a CVE always counts', async t => {
     s => (s.kind === 'worktree' ? bumped : LOCKFILE),
     found,
   )
-  const result = await command(conf(['lockfile'], { security: true }))
+  const result = await command(conf(['lockfile']))
   t.strictSame(
     result.diff.alerts?.[BAR],
     [{ type: 'envVars', severity: 'low', cve: 'CVE-9' }],
@@ -372,7 +359,7 @@ t.test('no alerts, nothing to say', async t => {
   const read = (s: Source) =>
     s.kind === 'worktree' ? LOCKFILE : EMPTY
   const { command, views } = await mockCommand(t, read, {})
-  const result = await command(conf(['lockfile'], { security: true }))
+  const result = await command(conf(['lockfile']))
   t.equal(result.diff.alerts, undefined, 'no empty section')
   t.notMatch(views.markdown(result), /Security/)
 })
@@ -395,7 +382,63 @@ t.test('a diff with nothing versioned asks nothing', async t => {
       },
     },
   })
-  const result = await command(conf(['lockfile'], { security: true }))
+  const result = await command(conf(['lockfile']))
   t.equal(result.diff.alerts, undefined)
   t.equal(asked, false, 'an empty diff has nothing to ask about')
+})
+
+t.test(
+  'a diff of two local files never fails on the network',
+  async t => {
+    const read = (s: Source) =>
+      s.kind === 'worktree' ? LOCKFILE : EMPTY
+
+    // offline, rate limited, host down: the graph changes still stand
+    const broken = await t.mockImport<
+      typeof import('../../src/commands/diff.ts')
+    >('../../src/commands/diff.ts', {
+      '@vltpkg/graph-diff/sources': {
+        readSource: async (s: Source) => read(s),
+        describeSource: () => 'working tree',
+      },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => {
+            throw new Error('ENOTFOUND api.socket.dev')
+          },
+        },
+      },
+    })
+    const result = await broken.command(conf(['lockfile']))
+    t.equal(result.diff.alerts, undefined, 'no alerts')
+    t.equal(
+      result.diff.summary.counts['node-added'],
+      1,
+      'and the diff itself is untouched',
+    )
+  },
+)
+
+t.test('a hung lookup does not hang the diff', async t => {
+  const read = (s: Source) =>
+    s.kind === 'worktree' ? LOCKFILE : EMPTY
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/diff.ts')
+  >('../../src/commands/diff.ts', {
+    '@vltpkg/graph-diff/sources': {
+      readSource: async (s: Source) => read(s),
+      describeSource: () => 'working tree',
+    },
+    '@vltpkg/security-archive': {
+      // never settles, the way a black-holed connection behaves
+      SecurityArchive: { start: () => new Promise(() => {}) },
+    },
+  })
+  const started = Date.now()
+  const result = await command(conf(['lockfile']))
+  t.equal(result.diff.alerts, undefined)
+  t.ok(
+    Date.now() - started < 30_000,
+    'the timeout wins rather than waiting on a socket forever',
+  )
 })

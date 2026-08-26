@@ -525,10 +525,6 @@ Object {
     "hint": "program",
     "type": "string",
   },
-  "security": Object {
-    "description": "Look up security advisories for the packages \`vlt diff lockfile\` introduces, and report them alongside the graph changes. Off by default: it is the only part of the command that reaches the network.",
-    "type": "boolean",
-  },
   "stale-while-revalidate-factor": Object {
     "description": String(
       If the server does not serve a \`stale-while-revalidate\` value in the \`cache-control\` header, then this multiplier is applied to the \`max-age\` or \`s-maxage\` values.
@@ -691,7 +687,6 @@ Array [
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
-  "--security",
   "--stale-while-revalidate-factor=<n>",
   "--tag=<tag>",
   "--target=<query>",
@@ -764,7 +759,6 @@ Array [
   "scope",
   "scoped-registries",
   "script-shell",
-  "security",
   "stale-while-revalidate-factor",
   "tag",
   "target",

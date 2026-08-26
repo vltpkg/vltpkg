@@ -489,13 +489,6 @@ export const definition = j
                     always static.`,
     },
 
-    security: {
-      description: `Look up security advisories for the packages
-                    \`vlt diff lockfile\` introduces, and report them
-                    alongside the graph changes. Off by default: it is the
-                    only part of the command that reaches the network.`,
-    },
-
     'identity-only': {
       description: `Include identity-only changes in \`vlt diff lockfile\`
                     output: packages whose id moved without the package

@@ -177,12 +177,11 @@ export const command: CommandFn<DiffResult> = async conf => {
 
   const diff = diffLockfiles(baseData, headData)
 
-  // opt-in, because it is the only part of this command that touches the
-  // network; everything else reads two files
-  if (conf.get('security')) {
-    const alerts = await lookUpAlerts(diff, headData.options)
-    if (Object.keys(alerts).length) diff.alerts = alerts
-  }
+  // an advisory is an observation about the diff, not a separate mode:
+  // a package that arrived and runs install scripts is the same kind of
+  // fact as a package that arrived and bumped a major
+  const alerts = await lookUpAlerts(diff, headData.options)
+  if (Object.keys(alerts).length) diff.alerts = alerts
 
   if (conf.get('exit-code') && hasChanges(diff)) {
     process.exitCode = 1
@@ -190,12 +189,21 @@ export const command: CommandFn<DiffResult> = async conf => {
   return { base, head, diff }
 }
 
+/** How long the lookup gets before the diff goes on without it. */
+const ALERT_TIMEOUT = 5_000
+
 /**
  * Advisories against the packages this diff *introduces*.
  *
  * Only the head side, and only what arrived or moved: a package that was
  * already there and did not change is not news, however alarming, and
  * asking about all 1374 of them would be a much slower question.
+ *
+ * Never fatal, and never slow. This is the one part of the command that
+ * leaves the machine, and a diff of two local files must not fail or
+ * hang because an advisory host is down -- so it retries once rather
+ * than backing off three times, races a timeout, and on any failure
+ * returns nothing and lets the graph changes render.
  */
 const lookUpAlerts = async (
   diff: GraphDiff,
@@ -216,14 +224,37 @@ const lookUpAlerts = async (
   }
   if (!nodes.size) return {}
 
-  const { SecurityArchive } = await import('@vltpkg/security-archive')
-  const archive = await SecurityArchive.start({
-    nodes: [...nodes.values()].map(n => ({ ...n, options })) as never,
-  })
   const out: Record<string, Alert[]> = {}
-  for (const id of nodes.keys()) {
-    const alerts = actionable(archive.get(id as never)?.alerts ?? [])
-    if (alerts.length) out[id] = alerts
+  // cleared as soon as the race settles rather than unref'd: this is the
+  // only thing awaited here, so an unref'd timer would never fire and
+  // the diff would exit with nothing instead of going on without alerts
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    const { SecurityArchive } =
+      await import('@vltpkg/security-archive')
+    const archive = await Promise.race([
+      SecurityArchive.start({
+        retries: 1,
+        nodes: [...nodes.values()].map(n => ({
+          ...n,
+          options,
+        })) as never,
+      }),
+      new Promise<undefined>(r => {
+        timer = setTimeout(() => r(undefined), ALERT_TIMEOUT)
+      }),
+    ])
+    if (!archive) return out
+    for (const id of nodes.keys()) {
+      const alerts = actionable(
+        archive.get(id as never)?.alerts ?? [],
+      )
+      if (alerts.length) out[id] = alerts
+    }
+  } catch {
+    // offline, rate limited, host down: the graph diff still stands
+  } finally {
+    clearTimeout(timer)
   }
   return out
 }
