@@ -36,8 +36,7 @@ You'll need:
 - A vlt account. If you don't have one yet,
   [sign up here](https://www.vlt.io/sign-up).
 - Node.js 18 or later
-- Your preferred package manager installed (vlt, npm, pnpm, yarn, bun,
-  or deno)
+- Your preferred package manager installed (vlt, npm, pnpm, or yarn)
 
 You can follow along this tutorial using one of our starter examples
 from the
@@ -46,8 +45,8 @@ repository, or apply these steps to your own package.
 
 <Aside type="note">
   vlt currently only supports publishing scoped packages (e.g.
-  `@your-account/my-package`). Unscoped package names are not yet
-  supported.
+  `@your-account/my-package`, not `your-account-my-package`). Unscoped
+  package names are not yet supported.
 </Aside>
 
 ## Step 1: Clone the starter
@@ -93,26 +92,6 @@ cd my-package`}
       code={`mkdir my-package && \\
 curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
 tar -xz -C my-package --strip-components=3 package-examples-main/packages/yarn && \\
-cd my-package`}
-      title="Terminal"
-      lang="bash"
-    />
-  </TabItem>
-  <TabItem label="bun">
-    <Code
-      code={`mkdir my-package && \\
-curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
-tar -xz -C my-package --strip-components=3 package-examples-main/packages/bun && \\
-cd my-package`}
-      title="Terminal"
-      lang="bash"
-    />
-  </TabItem>
-  <TabItem label="deno">
-    <Code
-      code={`mkdir my-package && \\
-curl -sL https://codeload.github.com/vltpkg/package-examples/tar.gz/main | \\
-tar -xz -C my-package --strip-components=3 package-examples-main/packages/deno && \\
 cd my-package`}
       title="Terminal"
       lang="bash"
@@ -177,8 +156,6 @@ Here's the complete updated `package.json`:
       This is especially useful for future releases.
     </Aside>
   </TabItem>
-  <TabItem label="bun" />
-  <TabItem label="deno" />
 </Tabs>
 
 ## Step 3: Configure your registry
@@ -209,18 +186,6 @@ slug.
   <TabItem label="yarn">
     <ScopeRegistrySnippet
       packageManager="yarn"
-      account="YOUR-ACCOUNT"
-    />
-  </TabItem>
-  <TabItem label="bun">
-    <ScopeRegistrySnippet
-      packageManager="bun"
-      account="YOUR-ACCOUNT"
-    />
-  </TabItem>
-  <TabItem label="deno">
-    <ScopeRegistrySnippet
-      packageManager="deno"
       account="YOUR-ACCOUNT"
     />
   </TabItem>
@@ -263,18 +228,6 @@ registry:
       account="YOUR-ACCOUNT"
     />
   </TabItem>
-  <TabItem label="bun">
-    <RegistryAuthSnippet
-      packageManager="bun"
-      account="YOUR-ACCOUNT"
-    />
-  </TabItem>
-  <TabItem label="deno">
-    <RegistryAuthSnippet
-      packageManager="deno"
-      account="YOUR-ACCOUNT"
-    />
-  </TabItem>
 </Tabs>
 
 ![Approval prompt after login](/images/approve.png)
@@ -311,10 +264,6 @@ Before building, install the dev dependencies (TypeScript):
   <TabItem label="yarn">
     <Code code="yarn install" title="Terminal" lang="bash" />
   </TabItem>
-  <TabItem label="bun">
-    <Code code="bun install" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="deno" />
 </Tabs>
 
 ## Step 6: Build your package
@@ -333,16 +282,6 @@ The starter includes TypeScript, so build it before publishing:
   </TabItem>
   <TabItem label="yarn">
     <Code code="yarn build" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="bun">
-    <Code code="bun run build" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="deno">
-    <Aside type="note">
-      The starter uses TypeScript, but Deno loads TypeScript natively,
-      so you may not need a separate build step depending on your
-      setup.
-    </Aside>
   </TabItem>
 </Tabs>
 
@@ -374,16 +313,6 @@ Now you're ready to publish:
   </TabItem>
   <TabItem label="yarn">
     <Code code="yarn npm publish" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="bun">
-    <Code code="bun publish" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="deno">
-    <Aside type="caution">
-      Deno does not support publishing to npm registries directly.
-      You'll need to use a different tool (like `npm publish` or `pnpm
-      publish`) to publish your package.
-    </Aside>
   </TabItem>
 </Tabs>
 
@@ -431,20 +360,6 @@ point at the vlt.io mirror:
       lang="bash"
     />
   </TabItem>
-  <TabItem label="bun">
-    <Code
-      code="bun add @YOUR-ACCOUNT/my-package"
-      title="Terminal"
-      lang="bash"
-    />
-  </TabItem>
-  <TabItem label="deno">
-    <Code
-      code="deno add npm:@YOUR-ACCOUNT/my-package"
-      title="Terminal"
-      lang="bash"
-    />
-  </TabItem>
 </Tabs>
 To make your package publicly visible, you can change its visibility
 in your [account settings](https://registry.vlt.io/account).
@@ -483,18 +398,6 @@ If commands fail with an authentication error, run:
   <TabItem label="yarn">
     <RegistryAuthSnippet
       packageManager="yarn"
-      account="YOUR-ACCOUNT"
-    />
-  </TabItem>
-  <TabItem label="bun">
-    <RegistryAuthSnippet
-      packageManager="bun"
-      account="YOUR-ACCOUNT"
-    />
-  </TabItem>
-  <TabItem label="deno">
-    <RegistryAuthSnippet
-      packageManager="deno"
       account="YOUR-ACCOUNT"
     />
   </TabItem>
