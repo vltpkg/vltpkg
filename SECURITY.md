@@ -12,6 +12,6 @@ issue.
 
 Include the affected version, impact, and steps to reproduce.
 
-We aim to acknowledge reports within 3 business days. Confirmed issues
-are fixed on a supported release and published as a GitHub Security
-Advisory, crediting the reporter unless asked otherwise.
+Confirmed issues are fixed on a supported release. Where warranted we
+publish a GitHub Security Advisory, crediting the reporter unless
+asked otherwise.
