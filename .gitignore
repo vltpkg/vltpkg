@@ -87,3 +87,7 @@ knip.d.ts.map
 **/.opencode/**
 opencode.jsonc
 **/.serena/**
+
+# perry port artifacts (.build-perry/ covered by .build-*/ above)
+.perry/
+.perry-cache/

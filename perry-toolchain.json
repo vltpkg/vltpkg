@@ -1,0 +1,29 @@
+{
+  "$comment": "Pinned Perry toolchain (D2). Upgrades are deliberate PRs: bump version/tag/commit + all sha256, re-run scripts/perry/gate-g0.sh, log the bump in perry-notes.md.",
+  "version": "0.5.1220",
+  "tag": "v0.5.1220",
+  "commit": "06137858dc8c6f80975238377138f2f948d6ef88",
+  "releaseUrl": "https://github.com/PerryTS/perry/releases/tag/v0.5.1220",
+  "assets": {
+    "linux-x64": {
+      "file": "perry-linux-x86_64.tar.gz",
+      "sha256": "e16a2125a8ec64e7d1f963e2c2531756672921c913cf924b84b3a55d4bd8408f"
+    },
+    "linux-arm64": {
+      "file": "perry-linux-aarch64.tar.gz",
+      "sha256": "35162d5b078ccfa6f473016d5aca024fe26391a464fefa57e395d1734c5504e0"
+    },
+    "darwin-arm64": {
+      "file": "perry-macos-aarch64.tar.gz",
+      "sha256": "f5d203ab4ed845812cc471213172a3154c76ade2200faf9759d0769678451d86"
+    },
+    "darwin-x64": {
+      "file": "perry-macos-x86_64.tar.gz",
+      "sha256": "52db5bdaf97b3c6e3d8ffa4c9dd1977c401eeaa9fbd0d7432955583d416bfb06"
+    },
+    "win32-x64": {
+      "file": "perry-windows-x86_64.zip",
+      "sha256": "f3f817c806ae296d7e7a2e58dcc9e335711e1715360df9df68ce12e43e011117"
+    }
+  }
+}
