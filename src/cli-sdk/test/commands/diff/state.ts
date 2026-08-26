@@ -1,12 +1,14 @@
 import t from 'tap'
 import {
-  flatten,
+  highlights,
   initialState,
   layout,
   nameOf,
   reduce,
-  selected,
-  triage,
+  treeLines,
+  treeSize,
+  treesOf,
+  view,
   visibleMutations,
   visibleRegions,
   windowed,
@@ -14,7 +16,6 @@ import {
 import type {
   Event,
   State,
-  TreeRow,
 } from '../../../src/commands/diff/state.ts'
 import type { GraphDiff, Mutation } from '@vltpkg/graph-diff'
 
@@ -58,7 +59,7 @@ const diff = {
   mutations: [
     // alpha came in through beta, which is the direct dependency
     resolved('real-a', 'alpha', '1.0.0', '1.0.1', {
-      via: { id: '~npm~beta@1.1.0', name: 'beta' },
+      path: [{ id: '~npm~beta@1.1.0', name: 'beta' }],
     }),
     resolved('real-b', 'beta', '1.0.0', '1.1.0', {
       directness: 'direct',
@@ -101,17 +102,13 @@ t.test(
   async t => {
     // header + body + footer must come to rows, or the frame scrolls
     for (const rows of [10, 24, 60]) {
-      const { body, list } = layout(rows)
-      t.equal(1 + body + 1, rows, `${rows} rows`)
-      t.equal(
-        list,
-        body - 2,
-        'each pane spends two rows on its border',
-      )
+      t.equal(1 + layout(rows).body + 1, rows, `${rows} rows`)
     }
-    // a terminal too short for the chrome still yields a usable budget
-    t.equal(layout(1).body, 1)
-    t.equal(layout(1).list, 1)
+    t.equal(
+      layout(1).body,
+      1,
+      'a terminal too short still gives a row',
+    )
   },
 )
 
@@ -135,130 +132,6 @@ t.test('windowed keeps the cursor in view', async t => {
   t.strictSame(windowed([1, 2], 0, 8).slice, [1, 2], 'size > length')
   t.equal(windowed([1, 2], 0, 8).more, 0)
   t.equal(windowed([], 0, 4).start, 0, 'empty list')
-})
-
-t.test('triage leads with risk, then ownership', async t => {
-  const { risky, yours, routine } = triage(diff)
-  t.strictSame(
-    risky.map(m => m.id),
-    [],
-    'a patch and a minor are not risky',
-  )
-  t.strictSame(
-    yours.map(m => m.id),
-    ['real-b'],
-    'only the direct, non-identity change is yours',
-  )
-  t.strictSame(routine, [
-    ['identity', 2],
-    ['patch', 1],
-  ])
-
-  // a payload change is labelled by what it is, not by its kind
-  const meta = {
-    ...diff,
-    mutations: [
-      mut({
-        id: 'meta',
-        kind: 'node-changed',
-        from: node('thing', '1.0.0'),
-        to: node('thing', '1.0.0'),
-        fields: ['dev'],
-      }),
-      mut({ id: 'edge', kind: 'edge-added', edge: {} as never }),
-    ],
-  } as GraphDiff
-  t.strictSame(triage(meta).routine, [
-    ['metadata', 1],
-    ['edge-added', 1],
-  ])
-})
-
-t.test('a major bump and a downgrade are risky', async t => {
-  const d = {
-    ...diff,
-    mutations: [
-      resolved('big', 'alpha', '1.0.0', '2.0.0', {
-        severity: 'major',
-      }),
-      resolved('back', 'beta', '2.0.0', '1.9.0', {
-        direction: 'downgrade',
-        severity: 'minor',
-      }),
-    ],
-  } as GraphDiff
-  t.strictSame(
-    triage(d).risky.map(m => m.id),
-    ['big', 'back'],
-    'severity and direction are independent signals',
-  )
-})
-
-t.test('a dropped variant is not a removal', async t => {
-  // pass 4's N:M pairing emits leftovers as node-removed, so a peer
-  // variant going away looks identical to a package going away
-  const d = {
-    ...diff,
-    mutations: [
-      mut({
-        id: 'variant',
-        kind: 'node-removed',
-        node: node('radix', '1.1.3'),
-      }),
-      resolved('still-here', 'radix', '1.1.3', '1.1.5'),
-      mut({
-        id: 'real',
-        kind: 'node-removed',
-        node: node('require-directory', '2.1.1'),
-      }),
-    ],
-  } as GraphDiff
-  t.strictSame(
-    triage(d).risky.map(m => m.id),
-    ['real'],
-    'only the name that survives nowhere counts as dropped',
-  )
-})
-
-t.test('every surviving-name source is consulted', async t => {
-  // a name kept alive by a regroup or an identity change is equally
-  // not a removal
-  for (const alive of [
-    mut({
-      id: 'alive',
-      kind: 'peer-variants-regrouped',
-      name: 'thing',
-      from: [],
-      to: [],
-    }),
-    mut({
-      id: 'alive',
-      kind: 'node-identity-changed',
-      from: node('thing', '1.0.0'),
-      to: node('thing', '1.0.0'),
-      reason: 'peer-set',
-    }),
-    mut({
-      id: 'alive',
-      kind: 'node-changed',
-      from: node('thing', '1.0.0'),
-      to: node('thing', '1.0.0'),
-      fields: ['dev'],
-    }),
-  ]) {
-    const d = {
-      ...diff,
-      mutations: [
-        alive,
-        mut({
-          id: 'drop',
-          kind: 'node-removed',
-          node: node('thing', '0.9.0'),
-        }),
-      ],
-    } as GraphDiff
-    t.strictSame(triage(d).risky, [], alive.kind)
-  }
 })
 
 t.test(
@@ -293,72 +166,126 @@ t.test(
   },
 )
 
-t.test(
-  'flatten hangs transitives under their direct dep',
-  async t => {
-    const rows = flatten(diff, OFF)
-    t.strictSame(
-      rows.map((r: TreeRow) =>
-        r.kind === 'change' ?
-          `${'  '.repeat(r.depth)}${nameOf(r.mutation)}`
-        : `${r.kind}:${r.label}`,
-      ),
-      ['area:www/docs', 'beta', '  alpha'],
-      'the direct change is the root, the transitive nests under it',
-    )
-  },
-)
-
-t.test(
-  'a puller with no change of its own gets a heading',
-  async t => {
-    const d = {
-      ...diff,
-      mutations: [
-        resolved('kid', 'child', '1.0.0', '1.0.1', {
-          via: { id: '~npm~puller@1.0.0', name: 'puller' },
-        }),
-      ],
-      regions: [{ ...diff.regions[0], mutationIds: ['kid'] }],
-    } as unknown as GraphDiff
-    const rows = flatten(d, OFF)
-    t.strictSame(
-      rows.map((r: TreeRow) =>
-        r.kind === 'change' ?
-          `change:${nameOf(r.mutation)}`
-        : `${r.kind}:${r.label}`,
-      ),
-      ['area:www/docs', 'group:puller', 'change:child'],
-      'or its children would read as roots',
-    )
-  },
-)
-
-t.test('several changes share one direct dep', async t => {
-  // the common shape in a real diff: one bump drags in a handful
-  const via = { id: '~npm~beta@1.1.0', name: 'beta' }
+t.test('highlights name exactly what they hold', async t => {
   const d = {
     ...diff,
     mutations: [
-      resolved('root', 'beta', '1.0.0', '1.1.0', {
-        directness: 'direct',
+      resolved('big', 'alpha', '1.0.0', '2.0.0', {
+        severity: 'major',
       }),
-      resolved('kid-a', 'alpha', '1.0.0', '1.0.1', { via }),
-      resolved('kid-b', 'gamma', '1.0.0', '1.0.1', { via }),
+      resolved('back', 'beta', '2.0.0', '1.9.0', {
+        direction: 'downgrade',
+        severity: 'minor',
+      }),
+      mut({
+        id: 'gone',
+        kind: 'node-removed',
+        node: node('require-directory', '2.1.1'),
+      }),
+      resolved('dull', 'gamma', '1.0.0', '1.0.1'),
     ],
-    regions: [
-      { ...diff.regions[0], mutationIds: ['root', 'kid-a', 'kid-b'] },
-    ],
-  } as unknown as GraphDiff
+  } as GraphDiff
+  const h = highlights(d)
   t.strictSame(
-    flatten(d, OFF).map((r: TreeRow) =>
-      r.kind === 'change' ?
-        `${'  '.repeat(r.depth)}${nameOf(r.mutation)}`
-      : `${r.kind}:${r.label}`,
-    ),
-    ['area:www/docs', 'beta', '  alpha', '  gamma'],
-    'both nest under the one that pulled them in',
+    h.major.map(m => m.id),
+    ['big'],
   )
+  t.strictSame(
+    h.downgraded.map(m => m.id),
+    ['back'],
+  )
+  t.strictSame(
+    h.removed.map(m => m.id),
+    ['gone'],
+  )
+  t.strictSame(
+    highlights(diff),
+    { major: [], downgraded: [], removed: [] },
+    'a routine diff highlights nothing, so the reader skips all three',
+  )
+})
+
+t.test('a major downgrade counts once, as a downgrade', async t => {
+  const d = {
+    ...diff,
+    mutations: [
+      resolved('back', 'alpha', '2.0.0', '1.0.0', {
+        direction: 'downgrade',
+        severity: 'major',
+      }),
+    ],
+  } as GraphDiff
+  const h = highlights(d)
+  t.strictSame(
+    h.downgraded.map(m => m.id),
+    ['back'],
+  )
+  t.strictSame(h.major, [], 'or it would appear in two sections')
+})
+
+t.test('a dropped variant is not a removal', async t => {
+  // pass 4's N:M pairing emits leftovers as node-removed, so a peer
+  // variant going away looks identical to a package going away
+  const d = {
+    ...diff,
+    mutations: [
+      mut({
+        id: 'variant',
+        kind: 'node-removed',
+        node: node('radix', '1.1.3'),
+      }),
+      resolved('still-here', 'radix', '1.1.3', '1.1.5'),
+      mut({
+        id: 'real',
+        kind: 'node-removed',
+        node: node('require-directory', '2.1.1'),
+      }),
+    ],
+  } as GraphDiff
+  t.strictSame(
+    highlights(d).removed.map(m => m.id),
+    ['real'],
+    'only the name that survives nowhere counts as dropped',
+  )
+
+  // a name kept alive by a metadata or identity change is equally not
+  // a removal, so every source of a surviving name has to be consulted
+  for (const alive of [
+    mut({
+      id: 'alive',
+      kind: 'node-changed',
+      from: node('kept', '1.0.0'),
+      to: node('kept', '1.0.0'),
+      fields: ['dev'],
+    }),
+    mut({
+      id: 'alive',
+      kind: 'node-identity-changed',
+      from: node('kept', '1.0.0'),
+      to: node('kept', '1.0.0'),
+      reason: 'peer-set',
+    }),
+    mut({
+      id: 'alive',
+      kind: 'peer-variants-regrouped',
+      name: 'kept',
+      from: [],
+      to: [],
+    }),
+  ]) {
+    const kept = {
+      ...diff,
+      mutations: [
+        alive,
+        mut({
+          id: 'drop',
+          kind: 'node-removed',
+          node: node('kept', '0.9.0'),
+        }),
+      ],
+    } as GraphDiff
+    t.strictSame(highlights(kept).removed, [], alive.kind)
+  }
 })
 
 t.test('nameOf finds the package in every kind', async t => {
@@ -395,54 +322,179 @@ t.test('nameOf finds the package in every kind', async t => {
   )
 })
 
-t.test('selected only resolves on a change row', async t => {
-  const rows = flatten(diff, OFF)
-  t.equal(selected(rows, 0), undefined, 'an area heading')
-  t.equal(selected(rows, 1)?.id, 'real-b')
-  t.equal(selected(rows, 99), undefined, 'past the end')
-})
+t.test(
+  'trees group by the direct dependency at the head of the path',
+  async t => {
+    const trees = treesOf(diff, diff.regions[0], OFF)
+    t.strictSame(
+      trees.map(x => x.name),
+      ['beta'],
+    )
+    t.equal(
+      trees[0]?.root?.id,
+      'real-b',
+      'the direct dep changed too',
+    )
+    t.strictSame(
+      trees[0]?.changes.map(m => m.id),
+      ['real-a'],
+    )
+    t.equal(treeSize(trees[0] as never), 2, 'its own change counts')
+    t.strictSame(
+      treesOf(diff, undefined, OFF),
+      [],
+      'no region, no trees',
+    )
+  },
+)
 
-t.test('descending and coming back up', async t => {
-  const browse = run(['Select'])
-  t.equal(browse.screen, 'browse')
-  t.equal(browse.cursor, 0, 'lands on the first row')
-  t.equal(
-    run(['Select'], browse).screen,
-    'browse',
-    'a heading is not something to open',
-  )
+t.test(
+  'a puller that did not change itself still heads a tree',
+  async t => {
+    const d = {
+      ...diff,
+      mutations: [
+        resolved('kid', 'child', '1.0.0', '1.0.1', {
+          path: [{ id: '~npm~puller@1.0.0', name: 'puller' }],
+        }),
+      ],
+      regions: [{ ...diff.regions[0], mutationIds: ['kid'] }],
+    } as unknown as GraphDiff
+    const [tree] = treesOf(d, d.regions[0], OFF)
+    t.equal(tree?.name, 'puller')
+    t.equal(tree?.root, undefined, 'it has no change of its own')
+    t.equal(treeSize(tree as never), 1)
+  },
+)
 
-  const detail = run(['MoveNext', 'Select'], browse)
-  t.equal(detail.screen, 'detail')
-  t.equal(run(['Back'], detail).screen, 'browse')
-  t.equal(run(['Back', 'Back'], detail).screen, 'summary')
+t.test(
+  'treeLines draws the shape with box-drawing prefixes',
+  async t => {
+    const step = (name: string) => ({
+      id: `~npm~${name}@1.0.0`,
+      name,
+    })
+    const tree = {
+      key: 'astro',
+      name: 'astro',
+      root: resolved('root', 'astro', '1.0.0', '2.0.0'),
+      changes: [
+        // two siblings under one intermediate, plus a deeper one, so the
+        // vertical and both corner pieces all appear
+        resolved('a', 'ansi-regex', '1.0.0', '1.0.1', {
+          path: [step('astro'), step('boxen'), step('strip-ansi')],
+        }),
+        resolved('b', 'wrap-ansi', '1.0.0', '1.0.1', {
+          path: [step('astro'), step('boxen')],
+        }),
+        resolved('c', 'zod', '1.0.0', '1.0.1', {
+          path: [step('astro')],
+        }),
+      ],
+    }
+    t.strictSame(
+      treeLines(tree as never).map(l => `${l.prefix}${l.name}`),
+      [
+        'astro',
+        '├─ boxen',
+        '│  ├─ strip-ansi',
+        '│  │  └─ ansi-regex',
+        '│  └─ wrap-ansi',
+        '└─ zod',
+      ],
+    )
+    t.equal(
+      treeLines(tree as never).find(l => l.name === 'boxen')
+        ?.mutation,
+      undefined,
+      'boxen never changed; it is on the route, shown for context',
+    )
+    t.equal(
+      treeLines(tree as never)[0]?.mutation?.id,
+      'root',
+      'the root carries its own change when it has one',
+    )
+
+    // treesOf never builds one this way, but treeLines is exported and a
+    // change with no route still has to land somewhere
+    t.strictSame(
+      treeLines({
+        key: 'x',
+        name: 'x',
+        changes: [resolved('loose', 'loose', '1.0.0', '1.0.1')],
+      }).map(l => `${l.prefix}${l.name}`),
+      ['x', '└─ loose'],
+      'directly under the root',
+    )
+  },
+)
+
+t.test('descending narrows, back widens', async t => {
+  const ws = run(['Select'])
+  t.equal(ws.screen, 'workspace')
+  const tree = run(['Select'], ws)
+  t.equal(tree.screen, 'tree')
+  const dep = run(['MoveNext', 'Select'], tree)
+  t.equal(dep.screen, 'dep')
+
+  t.equal(run(['Back'], dep).screen, 'tree')
+  t.equal(run(['Back', 'Back'], dep).screen, 'workspace')
+  t.equal(run(['Back', 'Back', 'Back'], dep).screen, 'summary')
   t.equal(
-    run(['Back', 'Back', 'Back'], detail).screen,
+    run(['Back', 'Back', 'Back', 'Back'], dep).screen,
     'summary',
     'quitting is an effect, not a state, so back bottoms out here',
   )
-  t.equal(
-    run(['Select'], { ...initialState, screen: 'detail' }).screen,
-    'detail',
-    'the detail screen is the bottom',
-  )
 })
 
-t.test('the cursor walks the whole tree and clamps', async t => {
-  const browse = run(['Select'])
-  t.equal(
-    run(['MovePrevious'], browse).cursor,
-    0,
-    'no wrap backwards',
-  )
-  t.equal(run(['MoveNext'], browse).cursor, 1)
-  t.equal(
-    run(['MoveNext', 'MoveNext', 'MoveNext', 'MoveNext'], browse)
-      .cursor,
-    2,
-    'clamps at the last row',
-  )
-})
+t.test(
+  'an unchanged intermediate is context, not a destination',
+  async t => {
+    const step = (name: string) => ({
+      id: `~npm~${name}@1.0.0`,
+      name,
+    })
+    const d = {
+      ...diff,
+      mutations: [
+        resolved('deep', 'leaf', '1.0.0', '1.0.1', {
+          path: [step('root'), step('middle')],
+        }),
+      ],
+      regions: [{ ...diff.regions[0], mutationIds: ['deep'] }],
+    } as unknown as GraphDiff
+    // rows: root (no change), middle (no change), leaf (changed)
+    const at = (i: number) => ({
+      ...initialState,
+      screen: 'tree' as const,
+      depIndex: i,
+    })
+    t.equal(reduce(at(0), 'Select', d).screen, 'tree', 'the root')
+    t.equal(
+      reduce(at(1), 'Select', d).screen,
+      'tree',
+      'the intermediate',
+    )
+    t.equal(reduce(at(2), 'Select', d).screen, 'dep', 'the change')
+  },
+)
+
+t.test(
+  'moving clamps, and invalidates the cursors below',
+  async t => {
+    t.equal(
+      run(['MovePrevious']).workspaceIndex,
+      0,
+      'no wrap backwards',
+    )
+    const deep = run(['Select', 'Select', 'MoveNext'])
+    t.equal(deep.depIndex, 1)
+    // stepping to another workspace cannot keep a tree cursor from the old
+    t.equal(run(['Back', 'Back', 'MoveNext'], deep).treeIndex, 0)
+    t.equal(run(['Back', 'Back', 'MoveNext'], deep).depIndex, 0)
+    t.equal(run(['Back', 'MoveNext'], deep).depIndex, 0)
+  },
+)
 
 t.test(
   'select does nothing when there is nothing to select',
@@ -450,33 +502,79 @@ t.test(
     t.strictSame(
       reduce(initialState, 'Select', empty),
       initialState,
-      'an empty diff has no region to descend into',
+      'an empty diff has no workspace to open',
     )
-    const browse = { ...initialState, screen: 'browse' as const }
-    t.strictSame(
-      reduce(browse, 'Select', empty),
-      browse,
-      'and no change to open',
+    t.equal(
+      reduce({ ...initialState, screen: 'dep' }, 'Select', diff)
+        .screen,
+      'dep',
+      'the dep screen is the bottom',
     )
   },
 )
 
-t.test('toggling a filter re-clamps the cursor', async t => {
-  // with identity on there are more rows; park the cursor past where
-  // the tree ends once it is off again
-  const deep = run(
-    ['ToggleIdentity', 'Select', 'MoveNext', 'MoveNext', 'MoveNext'],
-    initialState,
+t.test('the legend covers whatever is behind it', async t => {
+  const open = run(['ToggleLegend'])
+  t.equal(open.legend, true)
+  t.equal(
+    run(['Select'], open).screen,
+    'summary',
+    'keys do not reach the screen underneath',
   )
-  t.equal(deep.cursor, 3)
-  t.ok(flatten(diff, ON).length > flatten(diff, OFF).length)
+  t.equal(run(['MoveNext'], open).workspaceIndex, 0)
+  t.equal(run(['ToggleLegend'], open).legend, false, 'toggles shut')
+  t.equal(run(['Back'], open).legend, false, 'and back closes it')
+  t.equal(
+    run(['Back'], open).screen,
+    'summary',
+    'without also stepping up a level',
+  )
+})
 
-  const off = reduce(deep, 'ToggleIdentity', diff)
+t.test('toggling a filter re-clamps every cursor', async t => {
+  // three noise changes hang under the same tree, so turning identity
+  // off shrinks that tree out from under a cursor parked at the bottom
+  const step = { id: '~npm~beta@1.1.0', name: 'beta' }
+  const d = {
+    ...diff,
+    mutations: [
+      ...diff.mutations,
+      ...['n1', 'n2', 'n3'].map(id =>
+        resolved(id, id, '1.0.0', '1.0.1', {
+          identityOnly: true,
+          path: [step],
+        }),
+      ),
+    ],
+    regions: [
+      {
+        ...diff.regions[0],
+        mutationIds: ['real-a', 'real-b', 'n1', 'n2', 'n3'],
+      },
+    ],
+  } as unknown as GraphDiff
+
+  const deep = run(
+    [
+      'ToggleIdentity',
+      'Select',
+      'Select',
+      'MoveNext',
+      'MoveNext',
+      'MoveNext',
+      'MoveNext',
+    ],
+    initialState,
+    d,
+  )
+  t.equal(deep.depIndex, 4, 'parked on the last of five rows')
+
+  const off = reduce(deep, 'ToggleIdentity', d)
   t.equal(off.identity, false)
   t.equal(
-    off.cursor,
-    flatten(diff, OFF).length - 1,
-    'the rows it pointed past are gone, so it clamps back',
+    off.depIndex,
+    view(d, off).lines.length - 1,
+    'clamped to the last row that still exists',
   )
 
   const direct = reduce(initialState, 'ToggleDirect', diff)
@@ -501,14 +599,12 @@ t.test(
       ],
     } as unknown as GraphDiff
 
-    // Select enters browse on the area heading, so step onto the
-    // change before opening it
     const deep = run(
-      ['ToggleIdentity', 'Select', 'MoveNext', 'Select'],
+      ['ToggleIdentity', 'Select', 'Select'],
       initialState,
       onlyNoise,
     )
-    t.equal(deep.screen, 'detail')
+    t.equal(deep.screen, 'tree')
     t.equal(
       reduce(deep, 'ToggleIdentity', onlyNoise).screen,
       'summary',
@@ -517,14 +613,31 @@ t.test(
   },
 )
 
-t.test('clamping an empty tree stays at zero', async t => {
-  t.equal(reduce(initialState, 'MoveNext', empty).cursor, 0)
+t.test('view derives everything the screens need', async t => {
+  const v = view(diff, initialState)
+  t.equal(v.region?.label, 'www/docs')
+  t.equal(v.trees.length, 1)
+  t.equal(v.tree?.name, 'beta')
+  t.strictSame(
+    v.lines.map(l => l.name),
+    ['beta', 'alpha'],
+  )
+  t.strictSame(view(empty, initialState).lines, [], 'an empty diff')
+})
+
+t.test('clamping an empty diff stays at zero', async t => {
+  t.equal(reduce(initialState, 'MoveNext', empty).workspaceIndex, 0)
   t.equal(
     reduce(
-      { ...initialState, screen: 'browse' },
-      'MovePrevious',
+      { ...initialState, screen: 'workspace' },
+      'MoveNext',
       empty,
-    ).cursor,
+    ).treeIndex,
+    0,
+  )
+  t.equal(
+    reduce({ ...initialState, screen: 'tree' }, 'MovePrevious', empty)
+      .depIndex,
     0,
   )
 })

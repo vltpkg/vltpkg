@@ -39,11 +39,15 @@ export type Reach = {
   /** every importer that reaches it, nearest included */
   all: DepID[]
   /**
-   * The last node before an importer on the way up: the direct
-   * dependency this one hangs under. Undefined when the node is itself
-   * a direct dependency, or nothing reaches it.
+   * The chain from the direct dependency down to this node's parent,
+   * not including the node itself or the importer above it. Empty when
+   * the node is itself a direct dependency, or nothing reaches it.
+   *
+   * This is what lets a renderer rebuild the actual shape of the
+   * subtree rather than a flat list: `path[0]` is the direct dependency
+   * the change hangs under, and everything after it is the route down.
    */
-  via?: DepID
+  path: DepID[]
 }
 
 /**
@@ -67,7 +71,10 @@ const importersOf = (
   if (hit) return hit
   const all = new Set<DepID>()
   let nearest: Set<DepID> | undefined
-  let via: DepID | undefined
+  // the node each one was first reached from, so the route back down to
+  // `id` can be reconstructed once an importer is found
+  const cameFrom = new Map<DepID, DepID>()
+  let top: DepID | undefined
   const seen = new Set<DepID>([id])
   let level: DepID[] = [id]
   while (level.length) {
@@ -77,24 +84,29 @@ const importersOf = (
       for (const { from } of g.dependents.get(cur) ?? []) {
         if (seen.has(from)) continue
         seen.add(from)
+        cameFrom.set(from, cur)
         if (g.importers.has(from)) {
           here.add(from)
           all.add(from)
-          // `cur` sits one hop below an importer, so it is the direct
-          // dependency this walk came up through. When `cur` is the
-          // node we started from, that node is itself direct and has
-          // no parent to hang under.
-          if (!via && cur !== id) via = cur
+          // `cur` is one hop below an importer, so it heads the chain.
+          // When it is the node we started from, that node is itself
+          // direct and has no chain above it.
+          if (!top && cur !== id) top = cur
         } else next.push(from)
       }
     }
     if (!nearest && here.size) nearest = here
     level = next
   }
+  // walk `top` back down to `id`, dropping `id` itself
+  const path: DepID[] = []
+  for (let at = top; at && at !== id; at = cameFrom.get(at)) {
+    path.push(at)
+  }
   const out = {
     nearest: [...(nearest ?? [])].sort(),
     all: [...all].sort(),
-    ...(via ? { via } : {}),
+    path,
   }
   memo.set(id, out)
   return out
@@ -135,19 +147,20 @@ export const extractRegions = (
     // a removed node is only reachable on the base side
     const g = head.nodes.has(node) ? head : base
     return g.importers.has(node) ?
-        { nearest: [node], all: [node] }
+        { nearest: [node], all: [node], path: [] }
       : importersOf(node, g, memo)
   }
 
-  const nameOfNode = (id: DepID) =>
-    (head.nodes.get(id) ?? base.nodes.get(id))?.name
+  /* c8 ignore next 3 - every id here came out of one of the graphs */
+  const nameOfNode = (id: DepID): string =>
+    (head.nodes.get(id) ?? base.nodes.get(id))?.name ?? id
 
-  /** the direct dependency a mutation hangs under, if any */
-  const viaOf = (m: Mutation) => {
+  /** the route from the direct dependency down to a mutation */
+  const pathOf = (m: Mutation) => {
     for (const node of mutationNodes(m)) {
-      const id = ownersOf(node).via
-      const name = id && nameOfNode(id)
-      if (id && name) return { id, name }
+      const { path } = ownersOf(node)
+      if (!path.length) continue
+      return path.map(id => ({ id, name: nameOfNode(id) }))
     }
     return undefined
   }
@@ -181,8 +194,8 @@ export const extractRegions = (
       }
     }
     m.alsoReachedBy = also.size
-    const via = viaOf(m)
-    if (via) m.via = via
+    const path = pathOf(m)
+    if (path) m.path = path
     // tracked directly, not derived from `nodes`: an options change is
     // about the lockfile itself and names no node at all
     group.mutationIds.add(m.id)

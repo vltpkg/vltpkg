@@ -70,42 +70,63 @@ that introduced the lockfile diffs cleanly rather than failing.
 
 ### The viewer
 
-In a terminal, the human view takes over the window and opens a
-navigable viewer. It leads with triage rather than with a list, because
-a real lockfile diff is overwhelmingly routine — on one commit in this
-repo, 263 changes of which 4 were major bumps and 23 were direct
-dependencies.
-
-- **Needs a look** — major version bumps, downgrades, and packages that
-  are genuinely gone.
-- **Yours** — the direct dependencies an importer asked for.
-- **Routine** — everything else, as counts.
-
-Press `⏎` to browse the whole diff as a tree. Each change nests under
-the direct dependency that pulled it in, so nothing floats without an
-explanation:
+In a terminal, the human view takes over the window and narrows in four
+steps, so a review is a sequence of small trees rather than one long
+list:
 
 <Code
-  code="www/docs                                    132
-  ↑ @astrojs/check  0.9.9 → 0.9.10       direct
-     ▲ yargs  17.7.3 → 18.1.0             +41
-     - require-directory 2.1.1            +41
-     + yargs-parser 22.0.0                +41
-  + rehype-slug  6.0.0                   direct
-     + hast-util-heading-rank  3.0.0"
-  title="Browse"
+  code="summary       the numbers, what is not routine, and the workspaces
+  ↓
+workspace     the dependency trees that changed inside it
+  ↓
+tree          one direct dependency and everything under it
+  ↓
+package       one change in full"
+  title="Screens"
   lang="text"
 />
 
-A dimmed heading means a direct dependency that pulled changes in
-without changing itself.
+The summary leads with the changes that are not a routine version bump,
+each under a heading that names exactly what it holds — a section that
+is empty is one you never have to read:
+
+<Code
+  code="4 MAJOR VERSIONS
+  ▲ c8       10.1.3 → 12.0.0        shared by 41 workspaces
+  ▲ yargs    17.7.3 → 18.1.0                       www/docs
+
+1 REMOVED
+  - require-directory 2.1.1                        www/docs
+
+15 WORKSPACES
+  www/docs                                              132"
+  title="Summary"
+  lang="text"
+/>
+
+A tree is drawn as one. Packages on the route that did not themselves
+change are dimmed and shown for context, so the shape has no holes:
+
+<Code
+  code="1/28 vite                                        www/docs
+ · vite
+ └─ ↑ rollup  4.62.2 → 4.62.4
+    ├─ + @napi-rs/lzma-linux-x64-gnu 1.5.1
+    ├─ ↑ @rollup/rollup-darwin-arm64  4.62.2 → 4.62.4
+    └─ ↑ @rollup/rollup-linux-x64-gnu  4.62.2 → 4.62.4"
+  title="Tree"
+  lang="text"
+/>
+
+Press `?` for a legend of every symbol.
 
 <Code
   code="↑↓ / jk   move
-⏎  / →    open the change under the cursor
+⏎  / →    narrow to what is under the cursor
 ←  / esc  back a level
 d         direct dependencies only
 i         show or hide identity-only changes
+?         legend
 q         quit
 "
   title="Keys"
@@ -115,25 +136,6 @@ q         quit
 The viewer runs in the terminal's alternate screen, so quitting restores
 your scrollback exactly as it was. In CI, when output is redirected, or
 with `--no-tui`, the same diff is printed as static text instead.
-
-### Reading the output
-
-Changes are grouped into **regions**, by which workspaces pull the
-changed package in. A change only one workspace can reach is filed under
-that workspace; a change every workspace pulls in through its shared
-toolchain is filed once as shared, rather than repeated for each.
-
-A region names the *nearest* importers, which on its own would
-under-report: a package can be a direct dependency of one workspace and
-a deep transitive of many others, and the region would name only the
-first. Any change reached from further away is marked
-`+N more workspaces`, and carries `alsoReachedBy` in the JSON.
-
-Changes that only move a package's identity — the same package and
-version from a different registry, or under a different peer set — are
-counted separately and collapsed by default, so they never bury the
-changes that moved a version. Pass `--identity-only` to include them in
-static output, or press `i` in the viewer.
 
 ### Severity
 

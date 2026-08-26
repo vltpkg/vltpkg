@@ -1,15 +1,25 @@
 import type { GraphDiff, Mutation, Region } from '@vltpkg/graph-diff'
 
-export type Screen = 'summary' | 'browse' | 'detail'
+/**
+ * Four levels, narrowing each time: the whole diff, one workspace, one
+ * dependency tree inside it, one package inside that.
+ */
+export type Screen = 'summary' | 'workspace' | 'tree' | 'dep'
 
 export type State = {
   screen: Screen
-  /** row index into {@link flatten} */
-  cursor: number
+  /** cursor into the workspace list on the summary */
+  workspaceIndex: number
+  /** cursor into that workspace's trees */
+  treeIndex: number
+  /** cursor into that tree's rows */
+  depIndex: number
   /** whether identity-only noise is shown alongside the real changes */
   identity: boolean
   /** hide anything an importer does not depend on directly */
   directOnly: boolean
+  /** the symbol legend, over whichever screen is showing */
+  legend: boolean
 }
 
 export type Event =
@@ -19,19 +29,23 @@ export type Event =
   | 'Back'
   | 'ToggleIdentity'
   | 'ToggleDirect'
+  | 'ToggleLegend'
 
 export const initialState: State = {
   screen: 'summary',
-  cursor: 0,
+  workspaceIndex: 0,
+  treeIndex: 0,
+  depIndex: 0,
   identity: false,
   directOnly: false,
+  legend: false,
 }
 
-const shown = (m: Mutation, state: Filters) =>
-  (state.identity || !m.identityOnly) &&
-  (!state.directOnly || m.directness === 'direct')
-
 export type Filters = Pick<State, 'identity' | 'directOnly'>
+
+const shown = (m: Mutation, filters: Filters) =>
+  (filters.identity || !m.identityOnly) &&
+  (!filters.directOnly || m.directness === 'direct')
 
 /**
  * Row budget for one fullscreen frame, so header + body + footer comes
@@ -39,11 +53,9 @@ export type Filters = Pick<State, 'identity' | 'directOnly'>
  * node's height, so the only way to stay inside the terminal is to
  * render exactly this many rows and no more.
  */
-export const layout = (rows: number) => {
-  const body = Math.max(1, rows - 2)
-  // each pane spends two rows on its border
-  return { body, list: Math.max(1, body - 2) }
-}
+export const layout = (rows: number) => ({
+  body: Math.max(1, rows - 2),
+})
 
 /**
  * A window over a list that keeps the cursor in view. `size` comes from
@@ -64,6 +76,65 @@ export const windowed = <T>(
     more: Math.max(0, items.length - start - size),
   }
 }
+
+/** The package a mutation is about, for grouping and for display. */
+export const nameOf = (m: Mutation): string => {
+  switch (m.kind) {
+    case 'node-added':
+    case 'node-removed':
+      return m.node.name
+    case 'node-changed':
+    case 'node-identity-changed':
+      return m.to.name
+    case 'package-resolved':
+    case 'peer-variants-regrouped':
+      return m.name
+    case 'edge-added':
+    case 'edge-removed':
+      return m.edge.name
+    case 'edge-retargeted':
+    case 'edge-respecified':
+      return m.to.name
+    default:
+      return 'lockfile options'
+  }
+}
+
+// a fullscreen redraw asks for these far more often than a static
+// render does, so the id lookup is built once per diff
+const indexes = new WeakMap<GraphDiff, Map<string, Mutation>>()
+const indexOf = (diff: GraphDiff) => {
+  let byId = indexes.get(diff)
+  if (!byId) {
+    indexes.set(
+      diff,
+      (byId = new Map(diff.mutations.map(m => [m.id, m]))),
+    )
+  }
+  return byId
+}
+
+export const visibleMutations = (
+  diff: GraphDiff,
+  region: Region | undefined,
+  filters: Filters,
+): Mutation[] => {
+  if (!region) return []
+  const byId = indexOf(diff)
+  return region.mutationIds
+    .map(id => byId.get(id))
+    .filter((m): m is Mutation => !!m && shown(m, filters))
+}
+
+/**
+ * Regions holding nothing the user has asked to see are skipped
+ * entirely, so toggling a filter never leaves empty rows.
+ */
+export const visibleRegions = (
+  diff: GraphDiff,
+  filters: Filters,
+): Region[] =>
+  diff.regions.filter(r => visibleMutations(diff, r, filters).length)
 
 /**
  * Names that still exist on the head side of the diff.
@@ -93,200 +164,181 @@ const survivors = (diff: GraphDiff) => {
   return names
 }
 
-export type Triage = {
-  /** major bumps, downgrades, and packages that actually went away */
-  risky: Mutation[]
-  /** what an importer asked for directly */
-  yours: Mutation[]
-  /** everything else, as counts -- never a list */
-  routine: [label: string, count: number][]
+/**
+ * The handful of changes that are not a routine version bump, split by
+ * what they actually are rather than filed under one vague heading. A
+ * section that comes back empty is one the reader never has to read.
+ */
+export type Highlights = {
+  major: Mutation[]
+  downgraded: Mutation[]
+  removed: Mutation[]
 }
 
-/**
- * Split the diff into what a reader has to look at, what they chose,
- * and what merely happened. A real lockfile diff is mostly the third,
- * so listing all three would repeat the problem this replaces.
- */
-export const triage = (diff: GraphDiff): Triage => {
+export const highlights = (diff: GraphDiff): Highlights => {
   const gone = survivors(diff)
-  const isRisky = (m: Mutation) =>
-    (m.kind === 'package-resolved' &&
-      (m.severity === 'major' || m.direction === 'downgrade')) ||
-    (m.kind === 'node-removed' && !gone.has(m.node.name))
-
-  const risky: Mutation[] = []
-  const yours: Mutation[] = []
-  const counts = new Map<string, number>()
+  const major: Mutation[] = []
+  const downgraded: Mutation[] = []
+  const removed: Mutation[] = []
   for (const m of diff.mutations) {
-    if (isRisky(m)) risky.push(m)
-    else if (m.directness === 'direct' && !m.identityOnly)
-      yours.push(m)
-    else {
-      const label =
-        m.identityOnly ? 'identity'
-        : m.kind === 'package-resolved' ? m.severity
-        : m.kind === 'node-changed' ? 'metadata'
-        : m.kind
-      counts.set(label, (counts.get(label) ?? 0) + 1)
+    if (m.kind === 'package-resolved') {
+      if (m.direction === 'downgrade') downgraded.push(m)
+      else if (m.severity === 'major') major.push(m)
+    } else if (m.kind === 'node-removed' && !gone.has(m.node.name)) {
+      removed.push(m)
     }
   }
-  return {
-    risky,
-    yours,
-    routine: [...counts].sort((a, z) => z[1] - a[1]),
-  }
+  return { major, downgraded, removed }
 }
 
 /**
- * Regions holding nothing the user has asked to see are skipped
- * entirely, so toggling identity-only off never leaves empty rows.
+ * One direct dependency and everything that came into the graph under
+ * it. This is the unit a reviewer actually works through: a bump and
+ * its fallout, rather than a list of packages nobody chose.
  */
-export const visibleRegions = (
-  diff: GraphDiff,
-  filters: Filters,
-): Region[] =>
-  diff.regions.filter(r => visibleMutations(diff, r, filters).length)
-
-// a fullscreen two-pane redraw asks for these far more often than the
-// old layout did, so the id lookup is built once per diff
-const indexes = new WeakMap<GraphDiff, Map<string, Mutation>>()
-const indexOf = (diff: GraphDiff) => {
-  let byId = indexes.get(diff)
-  if (!byId) {
-    indexes.set(
-      diff,
-      (byId = new Map(diff.mutations.map(m => [m.id, m]))),
-    )
-  }
-  return byId
+export type Tree = {
+  key: string
+  name: string
+  /** the direct dependency's own change, when it changed too */
+  root?: Mutation
+  /** everything below it, in no particular order */
+  changes: Mutation[]
 }
 
-export const visibleMutations = (
+export const treesOf = (
   diff: GraphDiff,
   region: Region | undefined,
   filters: Filters,
-): Mutation[] => {
-  if (!region) return []
-  const byId = indexOf(diff)
-  return region.mutationIds
-    .map(id => byId.get(id))
-    .filter((m): m is Mutation => !!m && shown(m, filters))
-}
-
-/** The package a mutation is about, for grouping and for display. */
-export const nameOf = (m: Mutation): string => {
-  switch (m.kind) {
-    case 'node-added':
-    case 'node-removed':
-      return m.node.name
-    case 'node-changed':
-    case 'node-identity-changed':
-      return m.to.name
-    case 'package-resolved':
-    case 'peer-variants-regrouped':
-      return m.name
-    case 'edge-added':
-    case 'edge-removed':
-      return m.edge.name
-    case 'edge-retargeted':
-    case 'edge-respecified':
-      return m.to.name
-    default:
-      return 'lockfile options'
+): Tree[] => {
+  const trees = new Map<string, Tree>()
+  const get = (name: string) => {
+    let tree = trees.get(name)
+    if (!tree) {
+      trees.set(name, (tree = { key: name, name, changes: [] }))
+    }
+    return tree
   }
+  for (const m of visibleMutations(diff, region, filters)) {
+    // grouped by name rather than id: the two sides of a bumped direct
+    // dependency have different ids but are the same tree
+    const head = m.path?.[0]
+    if (head) get(head.name).changes.push(m)
+    else get(nameOf(m)).root = m
+  }
+  return [...trees.values()].sort(
+    (a, z) =>
+      treeSize(z) - treeSize(a) || a.name.localeCompare(z.name),
+  )
 }
 
-export type TreeRow =
-  | { kind: 'area'; key: string; label: string; count: number }
-  /** a direct dependency that pulled changes in without changing itself */
-  | { kind: 'group'; key: string; label: string; count: number }
-  | { kind: 'change'; key: string; mutation: Mutation; depth: 0 | 1 }
+/** How many changes a tree holds, its own included. */
+export const treeSize = (t: Tree) =>
+  t.changes.length + (t.root ? 1 : 0)
+
+export type TreeLine = {
+  key: string
+  name: string
+  /** absent on an intermediate that did not itself change */
+  mutation?: Mutation
+  /** the box-drawing run that shows where this sits in the tree */
+  prefix: string
+}
+
+type Node = {
+  name: string
+  mutation?: Mutation
+  children: Map<string, Node>
+}
+
+const child = (parent: Node, name: string) => {
+  let node = parent.children.get(name)
+  if (!node) {
+    parent.children.set(name, (node = { name, children: new Map() }))
+  }
+  return node
+}
 
 /**
- * The whole diff as one navigable tree: area, then the direct
- * dependency, then what it dragged in.
+ * A tree laid out as lines, with the box-drawing prefixes that show its
+ * shape.
  *
- * A lockfile diff is mostly packages nobody chose, and listing them flat
- * leaves them floating with no hint of why they are there. Grouping each
- * under the direct dependency it arrived through -- `via`, recorded by
- * the graph walk that also assigns regions -- is what turns the list
- * back into an explanation.
- *
- * Two levels, not n: the chain below a direct dependency is almost
- * always a single-child line, and rendering it in full would rebuild the
- * noise this replaces.
+ * Rebuilt from each change's `path`, so an intermediate package that did
+ * not itself change still appears -- without it the tree would have
+ * holes wherever the route ran through something unchanged.
  */
-export const flatten = (
-  diff: GraphDiff,
-  filters: Filters,
-): TreeRow[] => {
-  const rows: TreeRow[] = []
-  for (const region of visibleRegions(diff, filters)) {
-    const mutations = visibleMutations(diff, region, filters)
-    rows.push({
-      kind: 'area',
-      key: `area:${region.id}`,
-      label: region.label,
-      count: mutations.length,
-    })
-
-    // grouped by name rather than by id: `via` names whichever side of
-    // the diff the walk went up, and the two sides of a bumped direct
-    // dependency have different ids but the same name
-    const children = new Map<string, Mutation[]>()
-    const roots: Mutation[] = []
-    for (const m of mutations) {
-      if (m.via) {
-        const kids = children.get(m.via.name)
-        if (kids) kids.push(m)
-        else children.set(m.via.name, [m])
-      } else roots.push(m)
-    }
-
-    const child = (m: Mutation): TreeRow => ({
-      kind: 'change',
-      key: m.id,
-      mutation: m,
-      depth: 1,
-    })
-
-    const claimed = new Set<string>()
-    for (const root of roots) {
-      rows.push({
-        kind: 'change',
-        key: root.id,
-        mutation: root,
-        depth: 0,
-      })
-      const kids = children.get(nameOf(root))
-      if (!kids) continue
-      claimed.add(nameOf(root))
-      rows.push(...kids.map(child))
-    }
-    // whatever pulled changes in without changing itself still needs a
-    // heading, or its children would look like roots
-    for (const [name, kids] of children) {
-      if (claimed.has(name)) continue
-      rows.push({
-        kind: 'group',
-        key: `group:${region.id}:${name}`,
-        label: name,
-        count: kids.length,
-      })
-      rows.push(...kids.map(child))
-    }
+export const treeLines = (tree: Tree): TreeLine[] => {
+  const root: Node = {
+    name: tree.name,
+    ...(tree.root ? { mutation: tree.root } : {}),
+    children: new Map(),
   }
-  return rows
+  for (const m of tree.changes) {
+    // path[0] is this tree's own root, so the route below it starts at 1
+    let at = root
+    for (const step of m.path?.slice(1) ?? [])
+      at = child(at, step.name)
+    child(at, nameOf(m)).mutation = m
+  }
+
+  const lines: TreeLine[] = [
+    {
+      key: tree.name,
+      name: tree.name,
+      ...(tree.root ? { mutation: tree.root } : {}),
+      prefix: '',
+    },
+  ]
+  const walk = (node: Node, prefix: string, key: string) => {
+    const kids = [...node.children.values()].sort((a, z) =>
+      a.name.localeCompare(z.name),
+    )
+    kids.forEach((kid, i) => {
+      const last = i === kids.length - 1
+      lines.push({
+        key: `${key}/${kid.name}`,
+        name: kid.name,
+        ...(kid.mutation ? { mutation: kid.mutation } : {}),
+        prefix: `${prefix}${last ? '└─' : '├─'} `,
+      })
+      // the vertical only continues past a child that has siblings below
+      walk(
+        kid,
+        `${prefix}${last ? '   ' : '│  '}`,
+        `${key}/${kid.name}`,
+      )
+    })
+  }
+  walk(root, '', tree.name)
+  return lines
 }
 
 const clamp = (n: number, length: number) =>
   length === 0 ? 0 : Math.min(Math.max(n, 0), length - 1)
 
-/** The change under the cursor, if the cursor is on one. */
-export const selected = (rows: TreeRow[], cursor: number) => {
-  const row = rows[cursor]
-  return row?.kind === 'change' ? row.mutation : undefined
+/** Everything the four screens need, derived once per keypress. */
+export const view = (diff: GraphDiff, state: State) => {
+  const regions = visibleRegions(diff, state)
+  const region = regions[clamp(state.workspaceIndex, regions.length)]
+  const trees = treesOf(diff, region, state)
+  const tree = trees[clamp(state.treeIndex, trees.length)]
+  const lines = tree ? treeLines(tree) : []
+  return { regions, region, trees, tree, lines }
 }
+
+/** The rows the cursor walks on whichever screen is showing. */
+const rowCount = (diff: GraphDiff, state: State) => {
+  const { regions, trees, lines } = view(diff, state)
+  return (
+    state.screen === 'summary' ? regions.length
+    : state.screen === 'workspace' ? trees.length
+    : lines.length
+  )
+}
+
+const cursorKey = (screen: Screen) =>
+  screen === 'summary' ? ('workspaceIndex' as const)
+  : screen === 'workspace' ? ('treeIndex' as const)
+  : ('depIndex' as const)
 
 /**
  * Navigation only. Quitting is an effect, not a state, so it stays in
@@ -297,41 +349,60 @@ export const reduce = (
   event: Event,
   diff: GraphDiff,
 ): State => {
-  const rows = flatten(diff, state)
+  // the legend covers whatever is behind it, so only its own key and the
+  // way out reach the screen underneath
+  if (state.legend && event !== 'ToggleLegend' && event !== 'Back') {
+    return state
+  }
+
+  const move = (delta: number): State => {
+    const key = cursorKey(state.screen)
+    return {
+      ...state,
+      [key]: clamp(state[key] + delta, rowCount(diff, state)),
+      // a different workspace or tree invalidates the cursors below it
+      ...(state.screen === 'summary' ?
+        { treeIndex: 0, depIndex: 0 }
+      : {}),
+      ...(state.screen === 'workspace' ? { depIndex: 0 } : {}),
+    }
+  }
 
   switch (event) {
     case 'MoveNext':
-      return {
-        ...state,
-        cursor: clamp(state.cursor + 1, rows.length),
-      }
+      return move(1)
     case 'MovePrevious':
-      return {
-        ...state,
-        cursor: clamp(state.cursor - 1, rows.length),
-      }
+      return move(-1)
 
-    case 'Select':
+    case 'ToggleLegend':
+      return { ...state, legend: !state.legend }
+
+    case 'Select': {
+      if (!rowCount(diff, state)) return state
       if (state.screen === 'summary') {
-        return rows.length ?
-            { ...state, screen: 'browse', cursor: 0 }
-          : state
+        return { ...state, screen: 'workspace', treeIndex: 0 }
       }
-      if (state.screen === 'browse') {
-        // area and group rows are headings; there is nothing under them
-        return selected(rows, state.cursor) ?
-            { ...state, screen: 'detail' }
+      if (state.screen === 'workspace') {
+        return { ...state, screen: 'tree', depIndex: 0 }
+      }
+      if (state.screen === 'tree') {
+        // an unchanged intermediate is context, not something to open
+        return view(diff, state).lines[state.depIndex]?.mutation ?
+            { ...state, screen: 'dep' }
           : state
       }
       return state
+    }
 
     case 'Back':
-      if (state.screen === 'detail')
-        return { ...state, screen: 'browse' }
-      if (state.screen === 'browse') {
-        return { ...state, screen: 'summary' }
+      if (state.legend) return { ...state, legend: false }
+      return {
+        ...state,
+        screen:
+          state.screen === 'dep' ? 'tree'
+          : state.screen === 'tree' ? 'workspace'
+          : 'summary',
       }
-      return state
 
     case 'ToggleIdentity':
     case 'ToggleDirect': {
@@ -339,14 +410,26 @@ export const reduce = (
         event === 'ToggleIdentity' ?
           { identity: !state.identity, directOnly: state.directOnly }
         : { identity: state.identity, directOnly: !state.directOnly }
-      // the visible set just changed underneath the cursor
-      const next = flatten(diff, filters)
+      const regions = visibleRegions(diff, filters)
+      // the visible set just changed underneath every cursor
+      const workspaceIndex = clamp(
+        state.workspaceIndex,
+        regions.length,
+      )
+      const trees = treesOf(diff, regions[workspaceIndex], filters)
+      const treeIndex = clamp(state.treeIndex, trees.length)
+      const tree = trees[treeIndex]
       return {
         ...state,
         ...filters,
-        cursor: clamp(state.cursor, next.length),
+        workspaceIndex,
+        treeIndex,
+        depIndex: clamp(
+          state.depIndex,
+          tree ? treeLines(tree).length : 0,
+        ),
         // never strand the reader on a screen with nothing on it
-        screen: next.length ? state.screen : 'summary',
+        screen: regions.length ? state.screen : 'summary',
       }
     }
   }

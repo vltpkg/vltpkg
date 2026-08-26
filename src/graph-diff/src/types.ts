@@ -69,15 +69,18 @@ export type MutationBase = {
    */
   identityOnly: boolean
   /**
-   * The direct dependency this change arrived through, when it is not
-   * one itself. A lockfile diff is a flat list of packages that mostly
-   * nobody asked for; this is what lets a renderer group them under the
-   * dependency that dragged them in rather than leaving them floating.
+   * The route from the direct dependency down to this change's parent,
+   * nearest importer first, excluding the change itself.
    *
-   * Absent when the change *is* a direct dependency (it is a root), or
-   * when no importer reaches it at all.
+   * A lockfile diff is a flat list of packages that mostly nobody asked
+   * for. This is what lets a renderer rebuild the subtree each change
+   * actually sits in -- `path[0]` is the direct dependency it hangs
+   * under, and the rest is the route down to it.
+   *
+   * Absent when the change *is* a direct dependency, or when no importer
+   * reaches it at all.
    */
-  via?: { id: DepID; name: string }
+  path?: { id: DepID; name: string }[]
   /**
    * How many importers reach this change from further away than the
    * region it is filed under.
