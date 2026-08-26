@@ -7,10 +7,14 @@ import {
   reduce,
   treeSize,
   view,
-  visibleMutations,
   windowed,
 } from './state.ts'
-import type { State, Tree, TreeLine } from './state.ts'
+import type {
+  State,
+  Tree,
+  TreeLine,
+  Workspace,
+} from './state.ts'
 import { depName } from '@vltpkg/graph-diff'
 import type {
   GraphDiff,
@@ -47,28 +51,47 @@ const atVersion = (id: string) => {
   return at > 0 ? id.slice(at + 1) : id
 }
 
-/** Marker, colour, and one line about a mutation. */
+/**
+ * Marker, colour, and text for a mutation.
+ *
+ * The palette is keyed on meaning, not on kind: green adds, red
+ * destroys, yellow wants attention, magenta is merely odd, cyan is
+ * routine movement, and grey is noise. `name`/`detail` split the text
+ * for the screens that lay it out as columns.
+ */
 const describe = (
   m: Mutation,
-): { mark: string; color: string; text: string } => {
+): {
+  mark: string
+  color: string
+  text: string
+  name?: string
+  detail?: string
+} => {
   switch (m.kind) {
     case 'node-added':
       return {
         mark: '+',
         color: 'green',
         text: `${m.node.name} ${version(m.node)}`,
+        name: m.node.name,
+        detail: version(m.node),
       }
     case 'node-removed':
       return {
         mark: '-',
         color: 'red',
         text: `${m.node.name} ${version(m.node)}`,
+        name: m.node.name,
+        detail: version(m.node),
       }
     case 'node-changed':
       return {
         mark: '~',
-        color: 'yellow',
+        color: 'gray',
         text: `${m.to.name} ${version(m.to)}  ${m.fields.join(', ')}`,
+        name: m.to.name,
+        detail: `${version(m.to)}  ${m.fields.join(', ')}`,
       }
     case 'node-identity-changed':
       return {
@@ -87,14 +110,18 @@ const describe = (
         // a major bump is the one a reader must not scroll past
         mark:
           m.severity === 'major' ? '▲'
-          : m.direction === 'upgrade' ? '↑'
           : m.direction === 'downgrade' ? '↓'
+          : m.direction === 'upgrade' ? '↑'
           : '→',
         color:
-          m.direction === 'downgrade' ? 'red'
+          // magenta, not red: going backwards is odd, but nothing was
+          // destroyed, and red is what removal means everywhere else
+          m.direction === 'downgrade' ? 'magenta'
           : m.severity === 'major' ? 'yellow'
           : 'cyan',
         text: `${m.name}  ${version(m.from)} → ${version(m.to)}`,
+        name: m.name,
+        detail: `${version(m.from)} → ${version(m.to)}`,
       }
     case 'edge-added':
       return {
@@ -111,7 +138,7 @@ const describe = (
     case 'edge-retargeted':
       return {
         mark: '→',
-        color: 'cyan',
+        color: 'blue',
         // several parents can retarget the same dependency, so name the
         // consumer too or the rows read as duplicates of each other
         text:
@@ -172,8 +199,13 @@ const Row = ({
     // away from the text it belongs to
     $(Text, { color: 'gray' }, `${' '.repeat(indent)}${prefix}`),
     $(Text, { color }, `${mark} `),
-    $(Text, { wrap: 'truncate-end', bold, dimColor: dim }, text),
-    note ? $(Text, { color: 'gray' }, `  ${note}`) : null,
+    $(
+      Box,
+      { flexGrow: 1, flexBasis: 0, minWidth: 0 },
+      $(Text, { wrap: 'truncate-end', bold, dimColor: dim }, text),
+    ),
+    // right edge, so the notes make a column of their own down the tree
+    note ? $(Text, { dimColor: true }, `${note}  `) : null,
   )
 
 /** A section heading. The count leads, so it reads as a quantity. */
@@ -236,8 +268,6 @@ const Title = ({
     trailing ? $(Text, { color: 'gray' }, `${trailing}  `) : null,
   )
 
-const where = (diff: GraphDiff, m: Mutation) =>
-  diff.regions.find(r => r.mutationIds.includes(m.id))?.label ?? ''
 
 /** What every symbol on the other screens means. */
 const LEGEND: [string, string, string][] = [
@@ -285,10 +315,41 @@ const LegendScreen = ({ rows }: { rows: number }) =>
     $(Footer, { keys: '? close   q quit' }),
   )
 
+/** A cell in an aligned row. A fixed-width Box, since ink trims text. */
+const Cell = ({
+  text,
+  width,
+  color,
+  dim,
+  bold,
+}: {
+  text: string
+  width?: number
+  color?: string
+  dim?: boolean
+  bold?: boolean
+}) =>
+  width === undefined ?
+    $(Text, { color, dimColor: dim, bold, wrap: 'truncate-end' }, text)
+  : $(
+      Box,
+      { width, flexShrink: 0 },
+      $(Text, { color, dimColor: dim, bold, wrap: 'truncate-end' }, text),
+    )
+
+/** `+50 packages` rather than `1324 → 1374 packages`. */
+const Delta = ({ n, label }: { n: number; label: string }) =>
+  $(
+    Text,
+    { color: n > 0 ? 'green' : n < 0 ? 'red' : 'gray' },
+    `${n > 0 ? '+' : ''}${n} ${label}`,
+  )
+
 /**
- * The whole diff at a glance: the numbers, then the changes that are not
- * a routine bump, then the workspaces to drill into. Each highlight
- * section names exactly what it holds, so there is no heading to decode.
+ * The whole diff at a glance: the deltas, then the changes that are not
+ * a routine bump, then the workspaces to open. Each highlight section
+ * names exactly what it holds, so there is no heading to decode, and an
+ * empty one is dropped rather than shown as a zero.
  */
 const SummaryScreen = ({
   diff,
@@ -300,83 +361,119 @@ const SummaryScreen = ({
   rows: number
 }) => {
   const { major, downgraded, removed } = highlights(diff)
-  const { regions } = view(diff, state)
+  const { workspaces } = view(diff, state)
   const { summary } = diff
-  const c = summary.counts
-  const budget = Math.max(1, rows - 4)
+  const budget = Math.max(1, rows - 3)
 
-  const line = (m: Mutation) => {
+  // one column width across all three sections, so the eye tracks a
+  // single set of columns down the whole screen rather than three
+  const listed = [...major, ...downgraded, ...removed]
+  const nameWidth = Math.min(
+    34,
+    Math.max(12, ...listed.map(m => (describe(m).name ?? '').length + 2)),
+  )
+  const detailWidth = Math.min(
+    26,
+    Math.max(10, ...listed.map(m => (describe(m).detail ?? '').length + 2)),
+  )
+
+  const row = (m: Mutation) => {
     const d = describe(m)
-    return $(Row, {
-      key: m.id,
-      selected: false,
-      mark: d.mark,
-      color: d.color,
-      text: d.text,
-      indent: 2,
-      note: where(diff, m),
-    })
+    const region = diff.regions.find(r => r.mutationIds.includes(m.id))
+    const reach = region?.importers.length ?? 0
+    return $(
+      Box,
+      { key: m.id, height: 1, width: '100%' },
+      $(Cell, { text: `    ${d.mark}`, width: 7, color: d.color }),
+      $(Cell, { text: d.name ?? d.text, width: nameWidth }),
+      $(Cell, { text: d.detail ?? '', width: detailWidth, color: d.color }),
+      $(Cell, {
+        text:
+          reach === 1 ? depName(region?.importers[0] as never)
+          : reach ? `${reach} workspaces`
+          : '',
+        dim: true,
+      }),
+    )
   }
 
   const section = (label: string, ms: Mutation[], color: string) =>
     ms.length ?
       [
         $(Heading, { key: label, label, count: ms.length, color }),
-        ...ms.slice(0, 6).map(line),
+        ...ms.slice(0, 5).map(row),
         $(Box, { key: `${label}gap`, height: 1 }),
       ]
     : []
 
   const head = [
     ...section('MAJOR VERSIONS', major, 'yellow'),
-    ...section('DOWNGRADED', downgraded, 'red'),
+    ...section('DOWNGRADED', downgraded, 'magenta'),
     ...section('REMOVED', removed, 'red'),
-  ]
+  ].slice(0, Math.max(0, budget - 3))
+
+  const room = Math.max(1, budget - head.length - 1)
+  const win = windowed(workspaces, state.workspaceIndex, room)
+  const wsWidth = Math.min(
+    40,
+    Math.max(14, ...workspaces.map(w => w.label.length + 2)),
+  )
 
   return $(
     Box,
     { flexDirection: 'column', width: '100%', height: rows },
     $(
       Box,
-      { height: 3, width: '100%', flexDirection: 'column' },
-      $(Text, { bold: true }, '  LOCKFILE DIFF'),
+      { height: 2, width: '100%', flexDirection: 'column' },
       $(
-        Text,
-        { color: 'gray' },
-        `  ${summary.nodes.base} → ${summary.nodes.head} packages` +
-          `    ${summary.edges.base} → ${summary.edges.head} edges`,
+        Box,
+        { height: 1, width: '100%', justifyContent: 'space-between' },
+        $(Text, { bold: true }, '  LOCKFILE DIFF'),
+        $(Text, { dimColor: true }, `${diff.mutations.length} changes  `),
       ),
       $(
-        Text,
-        { color: 'gray' },
-        `  ${diff.mutations.length} changes` +
-          `   ${c['package-resolved'] ?? 0} resolved` +
-          `   ${c['node-added'] ?? 0} added` +
-          `   ${summary.identityOnly} identity-only`,
+        Box,
+        { height: 1, width: '100%' },
+        $(Text, null, '  '),
+        $(Delta, {
+          n: summary.nodes.head - summary.nodes.base,
+          label: 'packages',
+        }),
+        $(Text, null, '    '),
+        $(Delta, {
+          n: summary.edges.head - summary.edges.base,
+          label: 'edges',
+        }),
+        $(
+          Text,
+          { dimColor: true },
+          `    ${summary.identityOnly} identity-only`,
+        ),
       ),
     ),
     $(
       Box,
       { height: budget, width: '100%', flexDirection: 'column' },
-      ...head.slice(0, Math.max(0, budget - 2)),
-      $(Heading, { label: 'WORKSPACES', count: regions.length }),
-      ...windowed(
-        regions,
-        state.workspaceIndex,
-        Math.max(
-          1,
-          budget - head.slice(0, Math.max(0, budget - 2)).length - 1,
+      ...head,
+      $(Heading, { label: 'WORKSPACES', count: workspaces.length }),
+      ...win.slice.map((w: Workspace, i: number) =>
+        $(
+          Box,
+          {
+            key: w.id,
+            height: 1,
+            width: '100%',
+            ...(win.start + i === state.workspaceIndex ?
+              { backgroundColor: 'blue' }
+            : {}),
+          },
+          $(Cell, { text: `    ${w.label}`, width: wsWidth + 4 }),
+          $(Cell, {
+            text: `${w.changes.length}`,
+            width: 8,
+            dim: true,
+          }),
         ),
-      ).slice.map(r =>
-        $(Row, {
-          key: r.id,
-          selected: regions.indexOf(r) === state.workspaceIndex,
-          mark: ' ',
-          color: 'white',
-          text: r.label,
-          indent: 2,
-          note: `${visibleMutations(diff, r, state).length}`,
-        }),
       ),
     ),
     $(Footer, {
@@ -395,9 +492,16 @@ const WorkspaceScreen = ({
   state: State
   rows: number
 }) => {
-  const { region, trees } = view(diff, state)
+  const { workspace, trees } = view(diff, state)
   const { body } = layout(rows)
   const win = windowed(trees, state.treeIndex, body)
+  const nameWidth = Math.min(
+    36,
+    Math.max(
+      14,
+      ...trees.map(t => (t.root ? describe(t.root).name ?? t.name : t.name).length + 2),
+    ),
+  )
 
   return $(
     Box,
@@ -405,26 +509,43 @@ const WorkspaceScreen = ({
     $(Title, {
       at: Math.min(state.treeIndex + 1, trees.length),
       of: trees.length,
-      label: `TREES CHANGED IN ${region?.label ?? ''}`,
-      trailing: `${visibleMutations(diff, region, state).length} changes`,
+      label: `TREES IN ${workspace?.label ?? ''}`,
+      trailing: `${workspace?.changes.length ?? 0} changes`,
     }),
     $(
       Box,
       { height: body, width: '100%', flexDirection: 'column' },
       ...win.slice.map((t: Tree, i: number) => {
         const d = t.root && describe(t.root)
-        return $(Row, {
-          key: t.key,
-          selected: win.start + i === state.treeIndex,
+        return $(
+          Box,
+          {
+            key: t.key,
+            height: 1,
+            width: '100%',
+            ...(win.start + i === state.treeIndex ?
+              { backgroundColor: 'blue' }
+            : {}),
+          },
           // a tree whose own root never changed is still worth opening:
           // it is what pulled everything under it in
-          mark: d?.mark ?? '·',
-          color: d?.color ?? 'gray',
-          text: d ? d.text : t.name,
-          dim: !d,
-          indent: 2,
-          note: `${treeSize(t)}`,
-        })
+          $(Cell, {
+            text: `    ${d?.mark ?? '·'}`,
+            width: 7,
+            color: d?.color ?? 'gray',
+          }),
+          $(Cell, {
+            text: d?.name ?? t.name,
+            width: nameWidth,
+            dim: !d,
+          }),
+          $(Cell, {
+            text: d?.detail ?? '',
+            width: 22,
+            color: d?.color ?? 'gray',
+          }),
+          $(Cell, { text: `${treeSize(t)}`, dim: true }),
+        )
       }),
     ),
     $(Footer, {
@@ -445,7 +566,7 @@ const TreeScreen = ({
   state: State
   rows: number
 }) => {
-  const { region, tree, lines } = view(diff, state)
+  const { workspace, tree, lines } = view(diff, state)
   const { body } = layout(rows)
   const win = windowed(lines, state.depIndex, body)
 
@@ -456,7 +577,7 @@ const TreeScreen = ({
       at: Math.min(state.depIndex + 1, lines.length),
       of: lines.length,
       label: tree?.name ?? '',
-      trailing: region?.label,
+      trailing: workspace?.label,
     }),
     $(
       Box,
@@ -584,7 +705,7 @@ const DepScreen = ({
   state: State
   rows: number
 }) => {
-  const { region, lines } = view(diff, state)
+  const { workspace, lines } = view(diff, state)
   const m = lines[state.depIndex]?.mutation
   const budget = Math.max(1, rows - 3)
   const d = m && describe(m)
@@ -598,7 +719,7 @@ const DepScreen = ({
             m.path.map(p => p.name).join(' › ')
           : undefined,
         ),
-        ['WHERE', region?.label ?? ''],
+        ['WHERE', workspace?.label ?? ''],
         [
           'REACH',
           m.directness +

@@ -1,3 +1,4 @@
+import { depName } from '@vltpkg/graph-diff'
 import type { GraphDiff, Mutation, Region } from '@vltpkg/graph-diff'
 
 /**
@@ -136,6 +137,54 @@ export const visibleRegions = (
 ): Region[] =>
   diff.regions.filter(r => visibleMutations(diff, r, filters).length)
 
+/** One real workspace, and everything that reaches it. */
+export type Workspace = {
+  id: string
+  label: string
+  changes: Mutation[]
+}
+
+const UNREACHED = 'nothing reaches these'
+
+/**
+ * The workspaces a reader can actually open, not the regions the model
+ * groups by.
+ *
+ * A region is keyed on a *set* of importers, so it can be labelled
+ * "shared by 41 workspaces" -- true, and useless to navigate: nobody
+ * wants to open "shared by 41 workspaces", they want to open theirs.
+ * Fanning each region out to its members lists real workspaces, and a
+ * change that reaches forty of them is counted in all forty, which is
+ * what "does this affect me" means.
+ */
+export const workspacesOf = (
+  diff: GraphDiff,
+  filters: Filters,
+): Workspace[] => {
+  const byId = new Map<string, Workspace>()
+  const get = (id: string, label: string) => {
+    let ws = byId.get(id)
+    if (!ws) byId.set(id, (ws = { id, label, changes: [] }))
+    return ws
+  }
+  for (const region of diff.regions) {
+    const changes = visibleMutations(diff, region, filters)
+    if (!changes.length) continue
+    if (!region.importers.length) {
+      get(UNREACHED, UNREACHED).changes.push(...changes)
+      continue
+    }
+    for (const id of region.importers) {
+      get(id, depName(id)).changes.push(...changes)
+    }
+  }
+  return [...byId.values()].sort(
+    (a, z) =>
+      z.changes.length - a.changes.length ||
+      a.label.localeCompare(z.label),
+  )
+}
+
 /**
  * Names that still exist on the head side of the diff.
  *
@@ -206,9 +255,7 @@ export type Tree = {
 }
 
 export const treesOf = (
-  diff: GraphDiff,
-  region: Region | undefined,
-  filters: Filters,
+  changes: Mutation[],
 ): Tree[] => {
   const trees = new Map<string, Tree>()
   const get = (name: string) => {
@@ -218,7 +265,7 @@ export const treesOf = (
     }
     return tree
   }
-  for (const m of visibleMutations(diff, region, filters)) {
+  for (const m of changes) {
     // grouped by name rather than id: the two sides of a bumped direct
     // dependency have different ids but are the same tree
     const head = m.path?.[0]
@@ -317,19 +364,20 @@ const clamp = (n: number, length: number) =>
 
 /** Everything the four screens need, derived once per keypress. */
 export const view = (diff: GraphDiff, state: State) => {
-  const regions = visibleRegions(diff, state)
-  const region = regions[clamp(state.workspaceIndex, regions.length)]
-  const trees = treesOf(diff, region, state)
+  const workspaces = workspacesOf(diff, state)
+  const workspace =
+    workspaces[clamp(state.workspaceIndex, workspaces.length)]
+  const trees = treesOf(workspace?.changes ?? [])
   const tree = trees[clamp(state.treeIndex, trees.length)]
   const lines = tree ? treeLines(tree) : []
-  return { regions, region, trees, tree, lines }
+  return { workspaces, workspace, trees, tree, lines }
 }
 
 /** The rows the cursor walks on whichever screen is showing. */
 const rowCount = (diff: GraphDiff, state: State) => {
-  const { regions, trees, lines } = view(diff, state)
+  const { workspaces, trees, lines } = view(diff, state)
   return (
-    state.screen === 'summary' ? regions.length
+    state.screen === 'summary' ? workspaces.length
     : state.screen === 'workspace' ? trees.length
     : lines.length
   )
@@ -410,13 +458,13 @@ export const reduce = (
         event === 'ToggleIdentity' ?
           { identity: !state.identity, directOnly: state.directOnly }
         : { identity: state.identity, directOnly: !state.directOnly }
-      const regions = visibleRegions(diff, filters)
+      const workspaces = workspacesOf(diff, filters)
       // the visible set just changed underneath every cursor
       const workspaceIndex = clamp(
         state.workspaceIndex,
-        regions.length,
+        workspaces.length,
       )
-      const trees = treesOf(diff, regions[workspaceIndex], filters)
+      const trees = treesOf(workspaces[workspaceIndex]?.changes ?? [])
       const treeIndex = clamp(state.treeIndex, trees.length)
       const tree = trees[treeIndex]
       return {
@@ -429,7 +477,7 @@ export const reduce = (
           tree ? treeLines(tree).length : 0,
         ),
         // never strand the reader on a screen with nothing on it
-        screen: regions.length ? state.screen : 'summary',
+        screen: workspaces.length ? state.screen : 'summary',
       }
     }
   }

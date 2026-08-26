@@ -91,18 +91,27 @@ each under a heading that names exactly what it holds — a section that
 is empty is one you never have to read:
 
 <Code
-  code="4 MAJOR VERSIONS
-  ▲ c8       10.1.3 → 12.0.0        shared by 41 workspaces
-  ▲ yargs    17.7.3 → 18.1.0                       www/docs
+  code="LOCKFILE DIFF                                    263 changes
++50 packages    +304 edges    65 identity-only
+
+4 MAJOR VERSIONS
+   ▲  c8                 10.1.3 → 12.0.0   41 workspaces
+   ▲  yargs              17.7.3 → 18.1.0   www/docs
 
 1 REMOVED
-  - require-directory 2.1.1                        www/docs
+   -  require-directory  2.1.1             www/docs
 
-15 WORKSPACES
-  www/docs                                              132"
+43 WORKSPACES
+   www/docs              151
+   src/cli-sdk            51"
   title="Summary"
   lang="text"
 />
+
+Counts read as deltas, the way a `git diff` stat does, and the
+workspaces are the real ones — a change that reaches forty of them is
+counted for all forty, because "does this affect me" is the question
+being asked.
 
 A tree is drawn as one. Packages on the route that did not themselves
 change are dimmed and shown for context, so the shape has no holes:

@@ -12,6 +12,7 @@ import {
   visibleMutations,
   visibleRegions,
   windowed,
+  workspacesOf,
 } from '../../../src/commands/diff/state.ts'
 import type {
   Event,
@@ -325,7 +326,7 @@ t.test('nameOf finds the package in every kind', async t => {
 t.test(
   'trees group by the direct dependency at the head of the path',
   async t => {
-    const trees = treesOf(diff, diff.regions[0], OFF)
+    const trees = treesOf(visibleMutations(diff, diff.regions[0], OFF))
     t.strictSame(
       trees.map(x => x.name),
       ['beta'],
@@ -340,11 +341,7 @@ t.test(
       ['real-a'],
     )
     t.equal(treeSize(trees[0] as never), 2, 'its own change counts')
-    t.strictSame(
-      treesOf(diff, undefined, OFF),
-      [],
-      'no region, no trees',
-    )
+    t.strictSame(treesOf([]), [], 'nothing to group')
   },
 )
 
@@ -360,7 +357,7 @@ t.test(
       ],
       regions: [{ ...diff.regions[0], mutationIds: ['kid'] }],
     } as unknown as GraphDiff
-    const [tree] = treesOf(d, d.regions[0], OFF)
+    const [tree] = treesOf(visibleMutations(d, d.regions[0], OFF))
     t.equal(tree?.name, 'puller')
     t.equal(tree?.root, undefined, 'it has no change of its own')
     t.equal(treeSize(tree as never), 1)
@@ -615,7 +612,7 @@ t.test(
 
 t.test('view derives everything the screens need', async t => {
   const v = view(diff, initialState)
-  t.equal(v.region?.label, 'www/docs')
+  t.equal(v.workspace?.label, 'www/docs')
   t.equal(v.trees.length, 1)
   t.equal(v.tree?.name, 'beta')
   t.strictSame(
@@ -640,4 +637,67 @@ t.test('clamping an empty diff stays at zero', async t => {
       .depIndex,
     0,
   )
+})
+
+t.test('workspaces are listed, not the regions they group into', async t => {
+  // a region keyed on three importers is labelled "shared by 3
+  // workspaces", which is true and useless to open; each member should
+  // appear on its own, counting the changes that reach it
+  const d = {
+    summary: {},
+    mutations: [
+      resolved('mine', 'alpha', '1.0.0', '1.0.1'),
+      resolved('ours', 'beta', '1.0.0', '1.0.1'),
+    ],
+    regions: [
+      {
+        id: 'a',
+        label: 'www/docs',
+        importers: ['workspace~www+docs'],
+        nodes: [],
+        mutationIds: ['mine'],
+      },
+      {
+        id: 'b',
+        label: 'shared by 3 workspaces',
+        importers: [
+          'workspace~www+docs',
+          'workspace~src+cli-sdk',
+          'file~_d',
+        ],
+        nodes: [],
+        mutationIds: ['ours'],
+      },
+    ],
+  } as unknown as GraphDiff
+
+  const ws = workspacesOf(d, OFF)
+  t.strictSame(
+    ws.map(w => `${w.label}:${w.changes.length}`),
+    ['www/docs:2', '.:1', 'src/cli-sdk:1'],
+    'the shared change is counted for each member, most first',
+  )
+  t.notOk(
+    ws.some(w => w.label.includes('shared by')),
+    'no synthetic region label is ever offered as a workspace',
+  )
+})
+
+t.test('changes nothing reaches still get somewhere to live', async t => {
+  const d = {
+    summary: {},
+    mutations: [resolved('orphan', 'alpha', '1.0.0', '1.0.1')],
+    regions: [
+      {
+        id: 'unreachable',
+        label: 'unreachable',
+        importers: [],
+        nodes: [],
+        mutationIds: ['orphan'],
+      },
+    ],
+  } as unknown as GraphDiff
+  const [ws] = workspacesOf(d, OFF)
+  t.equal(ws?.changes.length, 1)
+  t.match(ws?.label, /nothing reaches/)
 })
