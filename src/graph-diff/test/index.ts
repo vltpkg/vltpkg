@@ -8,6 +8,7 @@ t.test('the pure entry point exports the whole contract', async t => {
       'GRAPH_DIFF_SCHEMA_VERSION',
       'MISSING',
       'canonicalIdentity',
+      'depName',
       'diffLockfiles',
       'extractRegions',
       'hasChanges',

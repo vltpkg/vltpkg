@@ -81,14 +81,29 @@ dependencies.
 - **Yours** — the direct dependencies an importer asked for.
 - **Routine** — everything else, as counts.
 
-Press `⏎` to browse by area: workspaces on the left, that workspace's
-changes on the right.
+Press `⏎` to browse the whole diff as a tree. Each change nests under
+the direct dependency that pulled it in, so nothing floats without an
+explanation:
 
 <Code
-  code="↑↓ / jk   move within the focused pane
-←→        switch pane (areas ↔ changes)
-⏎         descend: summary → browse → detail
-esc       back a level
+  code="www/docs                                    132
+  ↑ @astrojs/check  0.9.9 → 0.9.10       direct
+     ▲ yargs  17.7.3 → 18.1.0             +41
+     - require-directory 2.1.1            +41
+     + yargs-parser 22.0.0                +41
+  + rehype-slug  6.0.0                   direct
+     + hast-util-heading-rank  3.0.0"
+  title="Browse"
+  lang="text"
+/>
+
+A dimmed heading means a direct dependency that pulled changes in
+without changing itself.
+
+<Code
+  code="↑↓ / jk   move
+⏎  / →    open the change under the cursor
+←  / esc  back a level
 d         direct dependencies only
 i         show or hide identity-only changes
 q         quit

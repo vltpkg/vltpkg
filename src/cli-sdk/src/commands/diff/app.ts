@@ -1,20 +1,20 @@
 import { Box, Text, useApp, useInput, useStdout } from 'ink'
 import { createElement as $, useEffect, useState } from 'react'
 import {
+  flatten,
   initialState,
   layout,
   reduce,
+  selected as selectedChange,
   triage,
-  visibleMutations,
-  visibleRegions,
   windowed,
 } from './state.ts'
-import type { State } from './state.ts'
+import type { State, TreeRow } from './state.ts'
+import { depName } from '@vltpkg/graph-diff'
 import type {
   GraphDiff,
   Mutation,
   NodeInfo,
-  Region,
 } from '@vltpkg/graph-diff'
 
 /**
@@ -39,6 +39,12 @@ const useRows = () => {
 }
 
 const version = (n: NodeInfo) => n.version ?? n.type
+
+/** The version tail of a DepID, for the edges that only carry ids. */
+const atVersion = (id: string) => {
+  const at = id.lastIndexOf('@')
+  return at > 0 ? id.slice(at + 1) : id
+}
 
 /** Marker, colour, and one line about a mutation. */
 const describe = (
@@ -105,7 +111,11 @@ const describe = (
       return {
         mark: '→',
         color: 'cyan',
-        text: `${m.to.name} now resolves elsewhere`,
+        // several parents can retarget the same dependency, so name the
+        // consumer too or the rows read as duplicates of each other
+        text:
+          `${m.to.name}  ${atVersion(m.from.to)} → ${atVersion(m.to.to)}` +
+          `  for ${depName(m.to.from)}`,
       }
     case 'edge-respecified':
       return {
@@ -134,12 +144,18 @@ const Row = ({
   color,
   text,
   note,
+  bold,
+  dim,
+  indent = 0,
 }: {
   selected: boolean
   mark: string
   color: string
   text: string
   note?: string
+  bold?: boolean
+  dim?: boolean
+  indent?: number
 }) =>
   $(
     Box,
@@ -148,8 +164,10 @@ const Row = ({
       width: '100%',
       ...(selected ? { backgroundColor: 'blue' } : {}),
     },
-    $(Text, { color }, ` ${mark} `),
-    $(Text, { wrap: 'truncate-end' }, text),
+    // the marker indents with its row: left at column one it would float
+    // away from the text it belongs to
+    $(Text, { color }, `${' '.repeat(indent)} ${mark} `),
+    $(Text, { wrap: 'truncate-end', bold, dimColor: dim }, text),
     note ? $(Text, { color: 'gray' }, `  ${note}`) : null,
   )
 
@@ -278,7 +296,11 @@ const SummaryScreen = ({
   )
 }
 
-/** Areas on the left, that area's changes on the right. */
+/**
+ * The whole diff as one tree: area, then the direct dependency, then
+ * what it dragged in. One column -- two panes made the changes read as
+ * a separate thing from the area they belong to.
+ */
 const BrowseScreen = ({
   diff,
   state,
@@ -288,92 +310,74 @@ const BrowseScreen = ({
   state: State
   rows: number
 }) => {
-  const { body, list } = layout(rows)
-  const regions = visibleRegions(diff, state)
-  const region = regions[state.regionIndex]
-  const mutations = visibleMutations(diff, region, state)
-  const areas = windowed(regions, state.regionIndex, list)
-  const changes = windowed(mutations, state.mutationIndex, list)
-  const focused = (pane: State['pane']) =>
-    state.pane === pane ? 'cyan' : 'gray'
+  const all = flatten(diff, state)
+  const { body } = layout(rows)
+  const view = windowed(all, state.cursor, body)
 
   return $(
     Box,
     { flexDirection: 'column', width: '100%', height: rows },
     $(
       Box,
-      { height: 1, width: '100%' },
+      { height: 1, width: '100%', justifyContent: 'space-between' },
+      $(Text, { bold: true }, '  CHANGES'),
       $(
         Text,
-        { bold: true, wrap: 'truncate-end' },
-        `  ${region?.label ?? 'no changes'}`,
+        { color: 'gray' },
+        `${state.cursor + 1}/${all.length}  `,
       ),
     ),
     $(
       Box,
-      { height: body, width: '100%', flexDirection: 'row' },
-      $(
-        Box,
-        {
-          flexDirection: 'column',
-          width: '32%',
-          minWidth: 18,
-          flexShrink: 0,
-          borderStyle: 'round',
-          borderColor: focused('areas'),
-          overflow: 'hidden',
-        },
-        ...areas.slice.map((r: Region, i: number) =>
-          $(Row, {
-            key: r.id,
-            selected:
-              state.pane === 'areas' &&
-              areas.start + i === state.regionIndex,
+      { height: body, width: '100%', flexDirection: 'column' },
+      ...view.slice.map((row: TreeRow, i: number) => {
+        const selected = view.start + i === state.cursor
+        if (row.kind === 'area') {
+          return $(Row, {
+            key: row.key,
+            selected,
             mark: ' ',
             color: 'white',
-            text: r.label,
-            note: String(visibleMutations(diff, r, state).length),
-          }),
-        ),
-      ),
-      $(
-        Box,
-        {
-          flexDirection: 'column',
-          // flexBasis 0 stands in for the maxWidth ink does not have:
-          // without it the pane's content width becomes its base size
-          // and it pushes past the terminal
-          flexGrow: 1,
-          flexBasis: 0,
-          minWidth: 0,
-          borderStyle: 'round',
-          borderColor: focused('changes'),
-          overflow: 'hidden',
-        },
-        ...changes.slice.map((m: Mutation, i: number) => {
-          const d = describe(m)
-          return $(Row, {
-            key: m.id,
-            selected:
-              state.pane === 'changes' &&
-              changes.start + i === state.mutationIndex,
-            mark: d.mark,
-            color: d.color,
-            text: d.text,
-            note:
-              m.alsoReachedBy ? `+${m.alsoReachedBy}`
-              : m.directness === 'direct' ? 'direct'
-              : undefined,
+            text: row.label,
+            bold: true,
+            note: `${row.count}`,
           })
-        }),
-      ),
+        }
+        if (row.kind === 'group') {
+          return $(Row, {
+            key: row.key,
+            selected,
+            mark: '·',
+            color: 'gray',
+            // no change of its own, so it is context for its children
+            text: row.label,
+            dim: true,
+            indent: 2,
+            note: `${row.count}`,
+          })
+        }
+        const m = row.mutation
+        const d = describe(m)
+        return $(Row, {
+          key: row.key,
+          selected,
+          mark: d.mark,
+          color: d.color,
+          text: d.text,
+          indent: row.depth ? 5 : 2,
+          note:
+            m.alsoReachedBy ? `+${m.alsoReachedBy}`
+            : m.directness === 'direct' ? 'direct'
+            : undefined,
+        })
+      }),
     ),
     $(Footer, {
       keys:
-        '↑↓ move   ←→ pane   ⏎ detail   esc back   q quit' +
+        '↑↓ move   ⏎ detail   ← back   d direct   i identity   q quit' +
         // the count rides in the footer: as its own row it would make
         // the frame one line taller than the terminal
-        (changes.more ? `        ${changes.more} more below` : ''),
+        (view.more ? `      ${view.more} below` : ''),
     }),
   )
 }
@@ -474,16 +478,18 @@ const DetailScreen = ({
   state: State
   rows: number
 }) => {
-  const regions = visibleRegions(diff, state)
-  const region = regions[state.regionIndex]
-  const mutations = visibleMutations(diff, region, state)
-  const m = mutations[state.mutationIndex]
+  const all = flatten(diff, state)
+  const m = selectedChange(all, state.cursor)
+  const region = diff.regions.find(r =>
+    m ? r.mutationIds.includes(m.id) : false,
+  )
   const budget = Math.max(1, rows - 3)
   const d = m && describe(m)
   const fields: [string, string][] =
     m ?
       [
         ...detailFields(m),
+        ...optional('VIA', m.via && `${m.via.name}  ${m.via.id}`),
         ['WHERE', region?.label ?? ''],
         [
           'REACH',
@@ -517,9 +523,7 @@ const DetailScreen = ({
           $(Field, { key: `${label}${i}`, label, value }),
         ),
     ),
-    $(Footer, {
-      keys: `↑↓ next change (${state.mutationIndex + 1}/${mutations.length})   esc back   q quit`,
-    }),
+    $(Footer, { keys: '↑↓ next   ← back   q quit' }),
   )
 }
 
@@ -539,10 +543,8 @@ export const App = ({
     const event =
       key.downArrow || input === 'j' ? 'MoveNext'
       : key.upArrow || input === 'k' ? 'MovePrevious'
-      : key.rightArrow ? 'NextPane'
-      : key.leftArrow ? 'PreviousPane'
-      : key.return ? 'Select'
-      : key.escape ? 'Back'
+      : key.return || key.rightArrow ? 'Select'
+      : key.leftArrow || key.escape ? 'Back'
       : input === 'i' ? 'ToggleIdentity'
       : input === 'd' ? 'ToggleDirect'
       : undefined

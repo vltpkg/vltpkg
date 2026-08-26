@@ -2,14 +2,10 @@ import type { GraphDiff, Mutation, Region } from '@vltpkg/graph-diff'
 
 export type Screen = 'summary' | 'browse' | 'detail'
 
-/** Which half of the browse screen the cursor is in. */
-export type Pane = 'areas' | 'changes'
-
 export type State = {
   screen: Screen
-  pane: Pane
-  regionIndex: number
-  mutationIndex: number
+  /** row index into {@link flatten} */
+  cursor: number
   /** whether identity-only noise is shown alongside the real changes */
   identity: boolean
   /** hide anything an importer does not depend on directly */
@@ -21,16 +17,12 @@ export type Event =
   | 'MovePrevious'
   | 'Select'
   | 'Back'
-  | 'NextPane'
-  | 'PreviousPane'
   | 'ToggleIdentity'
   | 'ToggleDirect'
 
 export const initialState: State = {
   screen: 'summary',
-  pane: 'areas',
-  regionIndex: 0,
-  mutationIndex: 0,
+  cursor: 0,
   identity: false,
   directOnly: false,
 }
@@ -181,8 +173,120 @@ export const visibleMutations = (
     .filter((m): m is Mutation => !!m && shown(m, filters))
 }
 
+/** The package a mutation is about, for grouping and for display. */
+export const nameOf = (m: Mutation): string => {
+  switch (m.kind) {
+    case 'node-added':
+    case 'node-removed':
+      return m.node.name
+    case 'node-changed':
+    case 'node-identity-changed':
+      return m.to.name
+    case 'package-resolved':
+    case 'peer-variants-regrouped':
+      return m.name
+    case 'edge-added':
+    case 'edge-removed':
+      return m.edge.name
+    case 'edge-retargeted':
+    case 'edge-respecified':
+      return m.to.name
+    default:
+      return 'lockfile options'
+  }
+}
+
+export type TreeRow =
+  | { kind: 'area'; key: string; label: string; count: number }
+  /** a direct dependency that pulled changes in without changing itself */
+  | { kind: 'group'; key: string; label: string; count: number }
+  | { kind: 'change'; key: string; mutation: Mutation; depth: 0 | 1 }
+
+/**
+ * The whole diff as one navigable tree: area, then the direct
+ * dependency, then what it dragged in.
+ *
+ * A lockfile diff is mostly packages nobody chose, and listing them flat
+ * leaves them floating with no hint of why they are there. Grouping each
+ * under the direct dependency it arrived through -- `via`, recorded by
+ * the graph walk that also assigns regions -- is what turns the list
+ * back into an explanation.
+ *
+ * Two levels, not n: the chain below a direct dependency is almost
+ * always a single-child line, and rendering it in full would rebuild the
+ * noise this replaces.
+ */
+export const flatten = (
+  diff: GraphDiff,
+  filters: Filters,
+): TreeRow[] => {
+  const rows: TreeRow[] = []
+  for (const region of visibleRegions(diff, filters)) {
+    const mutations = visibleMutations(diff, region, filters)
+    rows.push({
+      kind: 'area',
+      key: `area:${region.id}`,
+      label: region.label,
+      count: mutations.length,
+    })
+
+    // grouped by name rather than by id: `via` names whichever side of
+    // the diff the walk went up, and the two sides of a bumped direct
+    // dependency have different ids but the same name
+    const children = new Map<string, Mutation[]>()
+    const roots: Mutation[] = []
+    for (const m of mutations) {
+      if (m.via) {
+        const kids = children.get(m.via.name)
+        if (kids) kids.push(m)
+        else children.set(m.via.name, [m])
+      } else roots.push(m)
+    }
+
+    const child = (m: Mutation): TreeRow => ({
+      kind: 'change',
+      key: m.id,
+      mutation: m,
+      depth: 1,
+    })
+
+    const claimed = new Set<string>()
+    for (const root of roots) {
+      rows.push({
+        kind: 'change',
+        key: root.id,
+        mutation: root,
+        depth: 0,
+      })
+      const kids = children.get(nameOf(root))
+      if (!kids) continue
+      claimed.add(nameOf(root))
+      rows.push(...kids.map(child))
+    }
+    // whatever pulled changes in without changing itself still needs a
+    // heading, or its children would look like roots
+    for (const [name, kids] of children) {
+      if (claimed.has(name)) continue
+      rows.push({
+        kind: 'group',
+        key: `group:${region.id}:${name}`,
+        label: name,
+        count: kids.length,
+      })
+      rows.push(...kids.map(child))
+    }
+  }
+  return rows
+}
+
 const clamp = (n: number, length: number) =>
   length === 0 ? 0 : Math.min(Math.max(n, 0), length - 1)
+
+/** The change under the cursor, if the cursor is on one. */
+export const selected = (rows: TreeRow[], cursor: number) => {
+  const row = rows[cursor]
+  return row?.kind === 'change' ? row.mutation : undefined
+}
 
 /**
  * Navigation only. Quitting is an effect, not a state, so it stays in
@@ -193,89 +297,29 @@ export const reduce = (
   event: Event,
   diff: GraphDiff,
 ): State => {
-  const regions = visibleRegions(diff, state)
-  const region = regions[state.regionIndex]
-  const mutations = visibleMutations(diff, region, state)
-
-  /** re-clamp both cursors after a filter changed what is visible */
-  const refilter = (filters: Filters): State => {
-    const next = visibleRegions(diff, filters)
-    const regionIndex = clamp(state.regionIndex, next.length)
-    return {
-      ...state,
-      ...filters,
-      regionIndex,
-      mutationIndex: clamp(
-        state.mutationIndex,
-        visibleMutations(diff, next[regionIndex], filters).length,
-      ),
-      // never strand the reader on a screen with nothing on it
-      screen: next.length ? state.screen : 'summary',
-    }
-  }
-
-  const move = (delta: number): State => {
-    // on the summary the cursor walks the risky/yours list; on browse it
-    // walks whichever pane has focus; on detail it steps between changes
-    if (state.screen === 'browse' && state.pane === 'areas') {
-      const regionIndex = clamp(
-        state.regionIndex + delta,
-        regions.length,
-      )
-      return { ...state, regionIndex, mutationIndex: 0 }
-    }
-    if (state.screen === 'summary') {
-      return {
-        ...state,
-        regionIndex: clamp(state.regionIndex + delta, regions.length),
-        mutationIndex: 0,
-      }
-    }
-    return {
-      ...state,
-      mutationIndex: clamp(
-        state.mutationIndex + delta,
-        mutations.length,
-      ),
-    }
-  }
+  const rows = flatten(diff, state)
 
   switch (event) {
     case 'MoveNext':
-      return move(1)
+      return {
+        ...state,
+        cursor: clamp(state.cursor + 1, rows.length),
+      }
     case 'MovePrevious':
-      return move(-1)
-
-    case 'NextPane':
-      return state.screen === 'browse' ?
-          { ...state, pane: 'changes' }
-        : state
-    case 'PreviousPane':
-      return state.screen === 'browse' ?
-          { ...state, pane: 'areas' }
-        : state
+      return {
+        ...state,
+        cursor: clamp(state.cursor - 1, rows.length),
+      }
 
     case 'Select':
       if (state.screen === 'summary') {
-        // nothing to descend into when the diff is empty
-        return regions.length ?
-            {
-              ...state,
-              screen: 'browse',
-              pane: 'areas',
-              mutationIndex: 0,
-            }
+        return rows.length ?
+            { ...state, screen: 'browse', cursor: 0 }
           : state
       }
       if (state.screen === 'browse') {
-        // from the areas pane, Enter moves into the changes rather than
-        // skipping a level to a change the reader has not chosen yet
-        if (state.pane === 'areas') {
-          return mutations.length ?
-              { ...state, pane: 'changes' }
-            : state
-        }
-        return mutations.length ?
+        // area and group rows are headings; there is nothing under them
+        return selected(rows, state.cursor) ?
             { ...state, screen: 'detail' }
           : state
       }
@@ -285,22 +329,25 @@ export const reduce = (
       if (state.screen === 'detail')
         return { ...state, screen: 'browse' }
       if (state.screen === 'browse') {
-        return state.pane === 'changes' ?
-            { ...state, pane: 'areas' }
-          : { ...state, screen: 'summary' }
+        return { ...state, screen: 'summary' }
       }
       return state
 
     case 'ToggleIdentity':
-      return refilter({
-        identity: !state.identity,
-        directOnly: state.directOnly,
-      })
-
-    case 'ToggleDirect':
-      return refilter({
-        identity: state.identity,
-        directOnly: !state.directOnly,
-      })
+    case 'ToggleDirect': {
+      const filters =
+        event === 'ToggleIdentity' ?
+          { identity: !state.identity, directOnly: state.directOnly }
+        : { identity: state.identity, directOnly: !state.directOnly }
+      // the visible set just changed underneath the cursor
+      const next = flatten(diff, filters)
+      return {
+        ...state,
+        ...filters,
+        cursor: clamp(state.cursor, next.length),
+        // never strand the reader on a screen with nothing on it
+        screen: next.length ? state.screen : 'summary',
+      }
+    }
   }
 }

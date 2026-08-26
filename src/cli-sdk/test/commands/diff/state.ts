@@ -1,8 +1,11 @@
 import t from 'tap'
 import {
+  flatten,
   initialState,
   layout,
+  nameOf,
   reduce,
+  selected,
   triage,
   visibleMutations,
   visibleRegions,
@@ -11,6 +14,7 @@ import {
 import type {
   Event,
   State,
+  TreeRow,
 } from '../../../src/commands/diff/state.ts'
 import type { GraphDiff, Mutation } from '@vltpkg/graph-diff'
 
@@ -52,7 +56,10 @@ const resolved = (
 const diff = {
   summary: {},
   mutations: [
-    resolved('real-a', 'alpha', '1.0.0', '1.0.1'),
+    // alpha came in through beta, which is the direct dependency
+    resolved('real-a', 'alpha', '1.0.0', '1.0.1', {
+      via: { id: '~npm~beta@1.1.0', name: 'beta' },
+    }),
     resolved('real-b', 'beta', '1.0.0', '1.1.0', {
       directness: 'direct',
     }),
@@ -286,85 +293,155 @@ t.test(
   },
 )
 
+t.test(
+  'flatten hangs transitives under their direct dep',
+  async t => {
+    const rows = flatten(diff, OFF)
+    t.strictSame(
+      rows.map((r: TreeRow) =>
+        r.kind === 'change' ?
+          `${'  '.repeat(r.depth)}${nameOf(r.mutation)}`
+        : `${r.kind}:${r.label}`,
+      ),
+      ['area:www/docs', 'beta', '  alpha'],
+      'the direct change is the root, the transitive nests under it',
+    )
+  },
+)
+
+t.test(
+  'a puller with no change of its own gets a heading',
+  async t => {
+    const d = {
+      ...diff,
+      mutations: [
+        resolved('kid', 'child', '1.0.0', '1.0.1', {
+          via: { id: '~npm~puller@1.0.0', name: 'puller' },
+        }),
+      ],
+      regions: [{ ...diff.regions[0], mutationIds: ['kid'] }],
+    } as unknown as GraphDiff
+    const rows = flatten(d, OFF)
+    t.strictSame(
+      rows.map((r: TreeRow) =>
+        r.kind === 'change' ?
+          `change:${nameOf(r.mutation)}`
+        : `${r.kind}:${r.label}`,
+      ),
+      ['area:www/docs', 'group:puller', 'change:child'],
+      'or its children would read as roots',
+    )
+  },
+)
+
+t.test('several changes share one direct dep', async t => {
+  // the common shape in a real diff: one bump drags in a handful
+  const via = { id: '~npm~beta@1.1.0', name: 'beta' }
+  const d = {
+    ...diff,
+    mutations: [
+      resolved('root', 'beta', '1.0.0', '1.1.0', {
+        directness: 'direct',
+      }),
+      resolved('kid-a', 'alpha', '1.0.0', '1.0.1', { via }),
+      resolved('kid-b', 'gamma', '1.0.0', '1.0.1', { via }),
+    ],
+    regions: [
+      { ...diff.regions[0], mutationIds: ['root', 'kid-a', 'kid-b'] },
+    ],
+  } as unknown as GraphDiff
+  t.strictSame(
+    flatten(d, OFF).map((r: TreeRow) =>
+      r.kind === 'change' ?
+        `${'  '.repeat(r.depth)}${nameOf(r.mutation)}`
+      : `${r.kind}:${r.label}`,
+    ),
+    ['area:www/docs', 'beta', '  alpha', '  gamma'],
+    'both nest under the one that pulled them in',
+  )
+})
+
+t.test('nameOf finds the package in every kind', async t => {
+  const n = (m: Partial<Mutation> & { id: string }) => nameOf(mut(m))
+  t.equal(n({ id: 'a', kind: 'node-added' }), 'thing')
+  t.equal(
+    n({
+      id: 'b',
+      kind: 'node-changed',
+      from: node('x', '1.0.0'),
+      to: node('x', '1.0.0'),
+      fields: [],
+    }),
+    'x',
+  )
+  t.equal(n({ id: 'c', kind: 'package-resolved', name: 'y' }), 'y')
+  t.equal(
+    n({ id: 'd', kind: 'edge-added', edge: { name: 'z' } as never }),
+    'z',
+  )
+  t.equal(
+    n({
+      id: 'e',
+      kind: 'edge-retargeted',
+      from: {} as never,
+      to: { name: 'w' } as never,
+    }),
+    'w',
+  )
+  t.equal(
+    n({ id: 'f', kind: 'options-changed', fields: [] }),
+    'lockfile options',
+    'a lockfile-level change names no package',
+  )
+})
+
+t.test('selected only resolves on a change row', async t => {
+  const rows = flatten(diff, OFF)
+  t.equal(selected(rows, 0), undefined, 'an area heading')
+  t.equal(selected(rows, 1)?.id, 'real-b')
+  t.equal(selected(rows, 99), undefined, 'past the end')
+})
+
 t.test('descending and coming back up', async t => {
   const browse = run(['Select'])
   t.equal(browse.screen, 'browse')
-  t.equal(browse.pane, 'areas', 'lands in the areas pane')
-
-  const changes = run(['Select'], browse)
+  t.equal(browse.cursor, 0, 'lands on the first row')
   t.equal(
-    changes.pane,
-    'changes',
-    'enter crosses to the changes pane',
+    run(['Select'], browse).screen,
+    'browse',
+    'a heading is not something to open',
   )
-  t.equal(changes.screen, 'browse', 'without skipping a level')
 
-  const detail = run(['Select'], changes)
+  const detail = run(['MoveNext', 'Select'], browse)
   t.equal(detail.screen, 'detail')
-
   t.equal(run(['Back'], detail).screen, 'browse')
-  t.equal(run(['Back', 'Back'], detail).pane, 'areas')
-  t.equal(run(['Back', 'Back', 'Back'], detail).screen, 'summary')
+  t.equal(run(['Back', 'Back'], detail).screen, 'summary')
   t.equal(
-    run(['Back', 'Back', 'Back', 'Back'], detail).screen,
+    run(['Back', 'Back', 'Back'], detail).screen,
     'summary',
     'quitting is an effect, not a state, so back bottoms out here',
   )
+  t.equal(
+    run(['Select'], { ...initialState, screen: 'detail' }).screen,
+    'detail',
+    'the detail screen is the bottom',
+  )
 })
 
-t.test('arrows move between panes, only on browse', async t => {
+t.test('the cursor walks the whole tree and clamps', async t => {
   const browse = run(['Select'])
-  t.equal(run(['NextPane'], browse).pane, 'changes')
-  t.equal(run(['NextPane', 'PreviousPane'], browse).pane, 'areas')
   t.equal(
-    run(['NextPane'], initialState).pane,
-    'areas',
-    'the summary has one pane, so the key does nothing',
-  )
-  t.equal(
-    run(['Select', 'Select', 'Select', 'NextPane'], initialState)
-      .screen,
-    'detail',
-    'and so does the detail screen',
-  )
-  t.equal(
-    run(['Select', 'Select', 'Select', 'PreviousPane'], initialState)
-      .screen,
-    'detail',
-  )
-})
-
-t.test('moving clamps in whichever pane has focus', async t => {
-  t.equal(run(['MovePrevious']).regionIndex, 0, 'no wrap backwards')
-
-  const areas = run(['Select'])
-  t.equal(
-    run(['MoveNext'], areas).regionIndex,
+    run(['MovePrevious'], browse).cursor,
     0,
-    'only one region is visible, so next goes nowhere',
+    'no wrap backwards',
   )
+  t.equal(run(['MoveNext'], browse).cursor, 1)
   t.equal(
-    run(['MoveNext'], areas).mutationIndex,
-    0,
-    'switching area resets the change cursor',
+    run(['MoveNext', 'MoveNext', 'MoveNext', 'MoveNext'], browse)
+      .cursor,
+    2,
+    'clamps at the last row',
   )
-
-  const changes = run(['Select', 'Select'])
-  t.equal(run(['MoveNext'], changes).mutationIndex, 1)
-  t.equal(
-    run(['MoveNext', 'MoveNext', 'MoveNext'], changes).mutationIndex,
-    1,
-    'clamps at the last change',
-  )
-  t.equal(run(['MovePrevious'], changes).mutationIndex, 0)
-
-  const detail = run(['Select', 'Select', 'Select'])
-  t.equal(
-    run(['MoveNext'], detail).mutationIndex,
-    1,
-    'detail steps between changes rather than doing nothing',
-  )
-  t.equal(run(['MoveNext'], detail).screen, 'detail')
 })
 
 t.test(
@@ -381,37 +458,26 @@ t.test(
       browse,
       'and no change to open',
     )
-    t.equal(
-      reduce({ ...browse, pane: 'changes' as const }, 'Select', empty)
-        .screen,
-      'browse',
-      'nor from the changes pane',
-    )
-    t.equal(
-      reduce({ ...initialState, screen: 'detail' }, 'Select', diff)
-        .screen,
-      'detail',
-      'the detail screen is the bottom',
-    )
   },
 )
 
 t.test('toggling a filter re-clamps the cursor', async t => {
+  // with identity on there are more rows; park the cursor past where
+  // the tree ends once it is off again
   const deep = run(
-    ['ToggleIdentity', 'MoveNext', 'Select', 'Select', 'Select'],
+    ['ToggleIdentity', 'Select', 'MoveNext', 'MoveNext', 'MoveNext'],
     initialState,
   )
-  t.equal(deep.regionIndex, 1)
-  t.equal(deep.screen, 'detail')
+  t.equal(deep.cursor, 3)
+  t.ok(flatten(diff, ON).length > flatten(diff, OFF).length)
 
   const off = reduce(deep, 'ToggleIdentity', diff)
   t.equal(off.identity, false)
   t.equal(
-    off.regionIndex,
-    0,
-    'the region it pointed at is gone, so it clamps back',
+    off.cursor,
+    flatten(diff, OFF).length - 1,
+    'the rows it pointed past are gone, so it clamps back',
   )
-  t.equal(off.mutationIndex, 0)
 
   const direct = reduce(initialState, 'ToggleDirect', diff)
   t.equal(direct.directOnly, true)
@@ -435,8 +501,10 @@ t.test(
       ],
     } as unknown as GraphDiff
 
+    // Select enters browse on the area heading, so step onto the
+    // change before opening it
     const deep = run(
-      ['ToggleIdentity', 'Select', 'Select', 'Select'],
+      ['ToggleIdentity', 'Select', 'MoveNext', 'Select'],
       initialState,
       onlyNoise,
     )
@@ -449,19 +517,14 @@ t.test(
   },
 )
 
-t.test('clamping an empty list stays at zero', async t => {
-  t.equal(reduce(initialState, 'MoveNext', empty).regionIndex, 0)
-  t.equal(
-    reduce({ ...initialState, screen: 'browse' }, 'MoveNext', empty)
-      .mutationIndex,
-    0,
-  )
+t.test('clamping an empty tree stays at zero', async t => {
+  t.equal(reduce(initialState, 'MoveNext', empty).cursor, 0)
   t.equal(
     reduce(
-      { ...initialState, screen: 'detail' },
+      { ...initialState, screen: 'browse' },
       'MovePrevious',
       empty,
-    ).mutationIndex,
+    ).cursor,
     0,
   )
 })

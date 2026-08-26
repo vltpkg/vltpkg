@@ -1,5 +1,9 @@
 import t from 'tap'
-import { canonicalIdentity, project } from '../src/projection.ts'
+import {
+  canonicalIdentity,
+  depName,
+  project,
+} from '../src/projection.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { lockfile, pkg, ROOT, ws } from './fixtures/lockfile.ts'
 
@@ -292,4 +296,10 @@ t.test('canonicalIdentity of a versionless id', async t => {
     canonicalIdentity(pkg('a/b', '1.0.0')),
     'type is part of identity, so a workspace never matches a package',
   )
+})
+
+t.test('depName decodes rather than pattern-matches', async t => {
+  t.equal(depName(pkg('@scope/thing', '1.0.0')), '@scope/thing')
+  t.equal(depName(ws('www/docs')), 'www/docs', 'a + is a slash')
+  t.equal(depName(ROOT), '.', 'and _d is a dot')
 })

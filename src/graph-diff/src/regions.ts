@@ -38,6 +38,12 @@ export type Reach = {
   nearest: DepID[]
   /** every importer that reaches it, nearest included */
   all: DepID[]
+  /**
+   * The last node before an importer on the way up: the direct
+   * dependency this one hangs under. Undefined when the node is itself
+   * a direct dependency, or nothing reaches it.
+   */
+  via?: DepID
 }
 
 /**
@@ -61,6 +67,7 @@ const importersOf = (
   if (hit) return hit
   const all = new Set<DepID>()
   let nearest: Set<DepID> | undefined
+  let via: DepID | undefined
   const seen = new Set<DepID>([id])
   let level: DepID[] = [id]
   while (level.length) {
@@ -73,6 +80,11 @@ const importersOf = (
         if (g.importers.has(from)) {
           here.add(from)
           all.add(from)
+          // `cur` sits one hop below an importer, so it is the direct
+          // dependency this walk came up through. When `cur` is the
+          // node we started from, that node is itself direct and has
+          // no parent to hang under.
+          if (!via && cur !== id) via = cur
         } else next.push(from)
       }
     }
@@ -82,6 +94,7 @@ const importersOf = (
   const out = {
     nearest: [...(nearest ?? [])].sort(),
     all: [...all].sort(),
+    ...(via ? { via } : {}),
   }
   memo.set(id, out)
   return out
@@ -126,6 +139,19 @@ export const extractRegions = (
       : importersOf(node, g, memo)
   }
 
+  const nameOfNode = (id: DepID) =>
+    (head.nodes.get(id) ?? base.nodes.get(id))?.name
+
+  /** the direct dependency a mutation hangs under, if any */
+  const viaOf = (m: Mutation) => {
+    for (const node of mutationNodes(m)) {
+      const id = ownersOf(node).via
+      const name = id && nameOfNode(id)
+      if (id && name) return { id, name }
+    }
+    return undefined
+  }
+
   for (const m of mutations) {
     // one mutation can touch nodes with different owners (an edge
     // retarget, a version bump); the union owns it
@@ -155,6 +181,8 @@ export const extractRegions = (
       }
     }
     m.alsoReachedBy = also.size
+    const via = viaOf(m)
+    if (via) m.via = via
     // tracked directly, not derived from `nodes`: an options change is
     // about the lockfile itself and names no node at all
     group.mutationIds.add(m.id)
