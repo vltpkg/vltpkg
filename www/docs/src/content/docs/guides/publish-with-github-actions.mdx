@@ -97,16 +97,6 @@ registry and scope configured — see the
 details.
 
   </TabItem>
-
-  <TabItem label="bun">
-
-Ensure you've run `bun install` to create a `bun.lock` file and
-committed it to your repo. Commit your `bunfig.toml` with the registry
-and scope configured — see the
-[registry setup guide](/registry#set-up-your-package-manager) for
-details.
-
-  </TabItem>
 </Tabs>
 
 ## Step 4: Create the workflow file
@@ -281,37 +271,6 @@ jobs:
 
       - name: Publish
         run: yarn npm publish --access public
-```
-
-  </TabItem>
-  <TabItem label="bun">
-
-```yaml title=".github/workflows/publish.yml"
-name: Publish Package
-
-on:
-  push:
-    tags:
-      - 'v*'
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build
-        run: bun run build
-
-      - name: Publish
-        run: bun publish
-        env:
-          BUN_AUTH_TOKEN: ${{ secrets.VLT_TOKEN }}
 ```
 
   </TabItem>
@@ -494,20 +453,6 @@ npmScopes:
   title=".yarnrc.yml"
   lang="yaml"
 />
-
-  </TabItem>
-  <TabItem label="bun">
-
-Verify `bunfig.toml` has the default registry and your scope
-configured with the `$VLT_TOKEN` placeholder:
-
-<Code
-  code={`[install]
-registry = { url = "<https://registry.vlt.io/YOUR-ACCOUNT/npm/>", token = "$VLT_TOKEN" }
-
-[install.scopes.YOUR-ACCOUNT] url =
-"<https://registry.vlt.io/YOUR-ACCOUNT/main/>" token = "$VLT_TOKEN"`}
-title="bunfig.toml" lang="toml" />
 
   </TabItem>
 </Tabs>
