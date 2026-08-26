@@ -1,14 +1,19 @@
 import t from 'tap'
 import {
   alertCount,
+  alertGroups,
   alertRows,
   alertsFor,
   highlights,
   initialState,
   layout,
+  locate,
   nameOf,
   nodeIdOf,
   reduce,
+  selectable,
+  summaryCursor,
+  summaryRows,
   treeLines,
   treeSize,
   treesOf,
@@ -22,6 +27,7 @@ import {
 import type {
   Event,
   State,
+  SummaryRow,
 } from '../../../src/commands/diff/state.ts'
 import type { GraphDiff, Mutation } from '@vltpkg/graph-diff'
 
@@ -502,10 +508,11 @@ t.test(
     )
     const deep = run(['Select', 'Select', 'MoveNext'])
     t.equal(deep.depIndex, 1)
-    // stepping to another workspace cannot keep a tree cursor from the old
-    t.equal(run(['Back', 'Back', 'MoveNext'], deep).treeIndex, 0)
-    t.equal(run(['Back', 'Back', 'MoveNext'], deep).depIndex, 0)
-    t.equal(run(['Back', 'MoveNext'], deep).depIndex, 0)
+    // stepping to another tree cannot keep a dep cursor from the old one
+    const moved = run(['Back', 'MoveNext'], deep)
+    t.equal(moved.screen, 'workspace')
+    t.equal(moved.depIndex, 0)
+    t.equal(run(['Back', 'Back'], deep).screen, 'summary')
   },
 )
 
@@ -919,5 +926,261 @@ t.test('alerts count per set of changes, and per change', async t => {
     ),
     undefined,
     'an edge change is about no single package',
+  )
+})
+
+/** The fixture with something in every summary section. */
+const rich = {
+  ...diff,
+  mutations: [
+    ...diff.mutations,
+    resolved('big', 'gamma', '1.0.0', '2.0.0', {
+      severity: 'major',
+    }),
+  ],
+  regions: [
+    {
+      ...(diff.regions[0] as object),
+      mutationIds: ['real-a', 'real-b', 'noise-a', 'big'],
+    },
+    diff.regions[1],
+  ],
+  alerts: {
+    '~npm~beta@1.1.0': [
+      { type: 'shellAccess', severity: 'medium' },
+      { type: 'copyleftLicense', severity: 'low' },
+    ],
+    '~npm~alpha@1.0.1': [{ type: 'shellAccess', severity: 'medium' }],
+  },
+} as unknown as GraphDiff
+
+t.test('a flagged package says which one and how far', async t => {
+  const [first] = alertRows(rich)
+  t.equal(first?.name, 'alpha')
+  t.equal(first?.version, '1.0.1', 'the version, not the raw id')
+  t.strictSame(first?.reach, ['www/docs'])
+  t.strictSame(
+    alertRows({
+      ...rich,
+      alerts: {
+        '~npm~nothing@1.0.0': [{ type: 'x', severity: 'low' }],
+      },
+    } as unknown as GraphDiff)[0]?.reach,
+    [],
+    'nothing in the diff changed it, so nothing reaches it',
+  )
+})
+
+t.test('alerts group by kind, worst first', async t => {
+  const groups = alertGroups(rich)
+  t.strictSame(
+    groups.map(g => `${g.type} ${g.packages.length}`),
+    ['shellAccess 2', 'copyleftLicense 1'],
+    'two packages shell out, said once',
+  )
+  t.equal(groups[0]?.severity, 'medium', 'the worst grade it holds')
+  t.strictSame(alertGroups(diff), [], 'nothing to group')
+})
+
+t.test('the summary reads top down, worst first', async t => {
+  const rows = summaryRows(rich, OFF)
+  t.strictSame(
+    rows
+      .filter(r => r.kind === 'heading')
+      .map(r => `${r.label} ${r.count}`),
+    ['SECURITY 2', 'MAJOR VERSIONS 1', 'WORKSPACES 1'],
+    'the count matches the rows under it, or something looks hidden',
+  )
+  t.notOk(selectable(rows[0]), 'a heading is not a place to stop')
+  t.notOk(
+    selectable(rows.find(r => r.kind === 'gap')),
+    'nor is a spacer',
+  )
+  t.equal(
+    summaryCursor(rows, 0),
+    1,
+    'so the cursor starts on the first real row',
+  )
+  t.equal(
+    summaryCursor(rows, 1),
+    1,
+    'and stays put when it is already',
+  )
+  // the last row is a workspace, so walking backwards off the end lands
+  // on the nearest thing above
+  t.equal(
+    summaryCursor([{ kind: 'gap', key: 'g' }], 0),
+    0,
+    'nothing selectable at all',
+  )
+  t.equal(
+    summaryCursor(
+      [
+        rows[1]!,
+        { kind: 'heading', key: 'h', label: 'X', count: 0 },
+      ],
+      1,
+    ),
+    0,
+    'looks back when there is nothing ahead',
+  )
+})
+
+t.test('walking the summary skips its scaffolding', async t => {
+  const at = (s: State) =>
+    summaryRows(rich, s)[view(rich, s).summaryIndex]
+  let state = initialState
+  const seen: string[] = []
+  for (let i = 0; i < 6; i++) {
+    seen.push(at(state)?.kind ?? 'none')
+    state = reduce(state, 'MoveNext', rich)
+  }
+  t.notOk(
+    seen.includes('heading') || seen.includes('gap'),
+    'never lands on a heading or a spacer',
+  )
+  t.strictSame(
+    seen,
+    [
+      'alert',
+      'alert',
+      'change',
+      'workspace',
+      'workspace',
+      'workspace',
+    ],
+    'straight down the page, section to section',
+  )
+  t.equal(
+    reduce(initialState, 'MovePrevious', rich).summaryIndex,
+    initialState.summaryIndex,
+    'and does not climb into the heading above',
+  )
+})
+
+t.test('every summary row opens something', async t => {
+  // an alert row opens the packages carrying that kind of alert
+  const alert = reduce(initialState, 'Select', rich)
+  t.equal(alert.screen, 'alert')
+  t.equal(view(rich, alert).group?.type, 'shellAccess')
+  t.strictSame(
+    view(rich, alert).group?.packages.map(p => p.name),
+    ['alpha', 'beta'],
+  )
+
+  // and from there, the package's own tree
+  const tree = reduce(alert, 'Select', rich)
+  t.equal(tree.screen, 'tree')
+  t.equal(
+    view(rich, tree).tree?.name,
+    'beta',
+    'alpha hangs off beta',
+  )
+  t.equal(
+    reduce(alert, 'Back', rich).screen,
+    'summary',
+    'and back out again',
+  )
+
+  // a change row goes straight to the tree it sits in
+  const change = run(
+    ['MoveNext', 'MoveNext', 'Select'],
+    initialState,
+    rich,
+  )
+  t.equal(change.screen, 'tree')
+
+  // a workspace row opens its list of trees
+  const ws = run(
+    ['MoveNext', 'MoveNext', 'MoveNext', 'Select'],
+    initialState,
+    rich,
+  )
+  t.equal(ws.screen, 'workspace')
+  t.equal(view(rich, ws).workspace?.label, 'www/docs')
+})
+
+t.test('opening something that is not in the tree', async t => {
+  t.equal(locate(rich, OFF, undefined), undefined, 'nothing to find')
+  t.equal(
+    locate(rich, OFF, '~npm~nowhere@1.0.0'),
+    undefined,
+    'not in any workspace',
+  )
+  // a group whose package is not in a tree leaves the reader where they are
+  const orphan = {
+    ...rich,
+    alerts: {
+      '~npm~nowhere@1.0.0': [{ type: 'x', severity: 'low' }],
+    },
+  } as unknown as GraphDiff
+  const at = reduce(initialState, 'Select', orphan)
+  t.strictSame(reduce(at, 'Select', orphan), at, 'so nothing moves')
+})
+
+t.test('alerts on things a version cannot describe', async t => {
+  const git = '~git~github%3Aa%2Fb~main'
+  const rows = alertRows({
+    ...diff,
+    mutations: [
+      ...diff.mutations,
+      mut({
+        id: 'e',
+        kind: 'edge-added',
+        edge: { name: 'z' } as never,
+      }),
+    ],
+    alerts: { [git]: [{ type: 'malware', severity: 'critical' }] },
+  } as unknown as GraphDiff)
+  t.equal(rows[0]?.version, '', 'a git id carries no version to show')
+  t.strictSame(
+    rows[0]?.reach,
+    [],
+    'and an edge change names no package',
+  )
+})
+
+t.test('groups of the same grade break the tie', async t => {
+  const grouped = (alerts: Record<string, unknown>) =>
+    alertGroups({ ...diff, alerts } as unknown as GraphDiff).map(
+      g => g.type,
+    )
+  t.strictSame(
+    grouped({
+      '~npm~a@1.0.0': [
+        { type: 'lonely', severity: 'low' },
+        { type: 'common', severity: 'low' },
+      ],
+      '~npm~b@1.0.0': [{ type: 'common', severity: 'low' }],
+    }),
+    ['common', 'lonely'],
+    'the one hitting more packages leads',
+  )
+  t.strictSame(
+    grouped({
+      '~npm~a@1.0.0': [
+        { type: 'zeta', severity: 'low' },
+        { type: 'alpha', severity: 'low' },
+      ],
+    }),
+    ['alpha', 'zeta'],
+    'and an outright tie sorts by name',
+  )
+})
+
+t.test('walking a list of flagged packages', async t => {
+  const at = reduce(initialState, 'Select', rich)
+  t.equal(reduce(at, 'MoveNext', rich).alertPackageIndex, 1)
+  t.equal(
+    reduce({ ...initialState, screen: 'alert' }, 'MoveNext', diff)
+      .alertPackageIndex,
+    0,
+    'a screen with nothing on it does not move',
+  )
+  const bare: State = { ...initialState, screen: 'alert' }
+  t.strictSame(
+    reduce(bare, 'Select', diff),
+    bare,
+    'and opens nothing either',
   )
 })

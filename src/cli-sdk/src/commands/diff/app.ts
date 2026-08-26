@@ -3,7 +3,6 @@ import { createElement as $, useEffect, useState } from 'react'
 import {
   alertCount,
   alertsFor,
-  highlights,
   nodeIdOf,
   initialState,
   layout,
@@ -13,7 +12,7 @@ import {
   windowed,
   workspacesFor,
 } from './state.ts'
-import type { State, Tree, TreeLine, Workspace } from './state.ts'
+import type { State, SummaryRow, Tree, TreeLine } from './state.ts'
 import { depName } from '@vltpkg/graph-diff'
 import type {
   GraphDiff,
@@ -389,10 +388,11 @@ const Delta = ({ n, label }: { n: number; label: string }) =>
   )
 
 /**
- * The whole diff at a glance: the deltas, then the changes that are not
- * a routine bump, then the workspaces to open. Each highlight section
- * names exactly what it holds, so there is no heading to decode, and an
- * empty one is dropped rather than shown as a zero.
+ * The whole diff at a glance, and the way into all of it.
+ *
+ * Every row here opens something: an alert to the packages carrying it,
+ * a highlight to that package where it lives, a workspace to its trees.
+ * A summary you can only read is a poster.
  */
 const SummaryScreen = ({
   diff,
@@ -403,82 +403,125 @@ const SummaryScreen = ({
   state: State
   rows: number
 }) => {
-  const { major, downgraded, removed } = highlights(diff)
-  const { workspaces } = view(diff, state)
-  const alerts = Object.values(diff.alerts ?? {}).length
+  const { rows: all, summaryIndex } = view(diff, state)
   const { summary } = diff
-  const budget = Math.max(1, rows - 4)
+  const alerts = Object.values(diff.alerts ?? {}).length
+  const budget = Math.max(1, rows - 3)
+  const win = windowed(all, summaryIndex, budget)
 
-  // one column width across all three sections, so the eye tracks a
-  // single set of columns down the whole screen rather than three
-  const listed = [...major, ...downgraded, ...removed]
+  // one set of columns down the whole screen, whatever the row is
+  const names = all.flatMap(r =>
+    r.kind === 'change' ? [describe(r.mutation).name ?? '']
+    : r.kind === 'workspace' ? [r.workspace.label]
+    : r.kind === 'alert' ? [r.group.type]
+    : [],
+  )
   const nameWidth = Math.min(
     34,
-    Math.max(
-      12,
-      ...listed.map(m => (describe(m).name ?? '').length + 2),
-      ...workspaces.map(w => w.label.length + 2),
-    ),
+    Math.max(14, ...names.map(n => n.length + 2)),
   )
-  const detailWidth = Math.min(
-    26,
-    Math.max(
-      10,
-      ...listed.map(m => (describe(m).detail ?? '').length + 2),
-    ),
-  )
+  const detailWidth = 20
 
-  const row = (m: Mutation) => {
-    const d = describe(m)
-    const region = diff.regions.find(r =>
-      r.mutationIds.includes(m.id),
-    )
-    const reach = region?.importers.length ?? 0
+  const line = (row: SummaryRow, selected: boolean) => {
+    const cells: ReturnType<typeof $>[] = []
+    if (row.kind === 'heading') {
+      return $(Heading, {
+        key: row.key,
+        label: row.label,
+        count: row.count,
+        color: row.color,
+      })
+    }
+    if (row.kind === 'gap') return $(Box, { key: row.key, height: 1 })
+    if (row.kind === 'alert') {
+      cells.push(
+        $(Cell, { key: 'm', text: '    !', width: 7, color: 'red' }),
+        $(Cell, { key: 'n', text: row.group.type, width: nameWidth }),
+        $(Cell, {
+          key: 'd',
+          text: row.group.severity,
+          width: detailWidth,
+          color: 'red',
+        }),
+        $(Cell, {
+          key: 'r',
+          text: `${row.group.packages.length} packages`,
+          dim: true,
+        }),
+        // no count in the flag column: the row is already about them
+        ...Flag({}),
+      )
+    } else if (row.kind === 'change') {
+      const d = describe(row.mutation)
+      const region = diff.regions.find(r =>
+        r.mutationIds.includes(row.mutation.id),
+      )
+      const at = region?.importers.length ?? 0
+      cells.push(
+        $(Cell, {
+          key: 'm',
+          text: `    ${d.mark}`,
+          width: 7,
+          color: d.color,
+        }),
+        $(Cell, {
+          key: 'n',
+          text: d.name ?? d.text,
+          width: nameWidth,
+        }),
+        $(Cell, {
+          key: 'd',
+          text: d.detail ?? '',
+          width: detailWidth,
+          color: d.color,
+        }),
+        $(Cell, {
+          key: 'r',
+          text:
+            at === 1 ? depName(region?.importers[0] as never)
+            : at ? `${at} workspaces`
+            : '',
+          dim: true,
+        }),
+        ...Flag({
+          n: alertsFor(diff, nodeIdOf(row.mutation)).length,
+        }),
+      )
+    } else {
+      cells.push(
+        $(Cell, { key: 'm', text: '', width: 7 }),
+        $(Cell, {
+          key: 'n',
+          text: row.workspace.label,
+          width: nameWidth,
+        }),
+        $(Cell, { key: 'd', text: '', width: detailWidth }),
+        $(Cell, {
+          key: 'r',
+          text: `${row.workspace.changes.length}`,
+          dim: true,
+        }),
+        ...Flag({ n: alertCount(diff, row.workspace.changes) }),
+      )
+    }
     return $(
       Box,
-      { key: m.id, height: 1, width: '100%' },
-      $(Cell, { text: `    ${d.mark}`, width: 7, color: d.color }),
-      $(Cell, { text: d.name ?? d.text, width: nameWidth }),
-      $(Cell, {
-        text: d.detail ?? '',
-        width: detailWidth,
-        color: d.color,
-      }),
-      $(Cell, {
-        text:
-          reach === 1 ? depName(region?.importers[0] as never)
-          : reach ? `${reach} workspaces`
-          : '',
-        dim: true,
-      }),
-      ...Flag({ n: alertsFor(diff, nodeIdOf(m)).length }),
+      {
+        key: row.key,
+        height: 1,
+        width: '100%',
+        ...(selected ? { backgroundColor: 'blue' } : {}),
+      },
+      ...cells,
     )
   }
-
-  const section = (label: string, ms: Mutation[], color: string) =>
-    ms.length ?
-      [
-        $(Heading, { key: label, label, count: ms.length, color }),
-        ...ms.slice(0, 5).map(row),
-        $(Box, { key: `${label}gap`, height: 1 }),
-      ]
-    : []
-
-  const head = [
-    ...section('MAJOR VERSIONS', major, 'yellow'),
-    ...section('DOWNGRADED', downgraded, 'magenta'),
-    ...section('REMOVED', removed, 'red'),
-  ].slice(0, Math.max(0, budget - 3))
-
-  const room = Math.max(1, budget - head.length - 1)
-  const win = windowed(workspaces, state.workspaceIndex, room)
 
   return $(
     Box,
     { flexDirection: 'column', width: '100%', height: rows },
     $(
       Box,
-      { height: 3, width: '100%', flexDirection: 'column' },
+      { height: 2, width: '100%', flexDirection: 'column' },
       $(
         Box,
         { height: 1, width: '100%', justifyContent: 'space-between' },
@@ -503,51 +546,90 @@ const SummaryScreen = ({
           label: 'edges',
         }),
         alerts ?
-          $(Text, { color: 'red' }, `    ${alerts} alerts`)
+          $(Text, { color: 'red' }, `    ${alerts} flagged`)
         : null,
-        // "identity-only" meant nothing to anyone who had not read the
-        // model; what the reader needs to know is that they are hidden
-        // and which key shows them
         $(
           Text,
           { dimColor: true },
           `    ${summary.identityOnly} hidden`,
         ),
       ),
-      $(Box, { height: 1 }),
     ),
     $(
       Box,
       { height: budget, width: '100%', flexDirection: 'column' },
-      ...head,
-      $(Heading, { label: 'WORKSPACES', count: workspaces.length }),
-      ...win.slice.map((w: Workspace, i: number) =>
+      ...win.slice.map((row: SummaryRow, i: number) =>
+        line(row, win.start + i === summaryIndex),
+      ),
+    ),
+    $(Footer, {
+      keys: `↑↓ move   ⏎ open   d direct (${state.directOnly ? 'on' : 'off'})   i hidden (${state.identity ? 'on' : 'off'})   ? legend   q quit`,
+    }),
+  )
+}
+
+/** The packages carrying one kind of alert. */
+const AlertScreen = ({
+  diff,
+  state,
+  rows,
+}: {
+  diff: GraphDiff
+  state: State
+  rows: number
+}) => {
+  const { group } = view(diff, state)
+  const packages = group?.packages ?? []
+  const { body } = layout(rows)
+  const win = windowed(packages, state.alertPackageIndex, body)
+  const nameWidth = Math.min(
+    40,
+    Math.max(16, ...packages.map(p => p.name.length + 2)),
+  )
+
+  return $(
+    Box,
+    { flexDirection: 'column', width: '100%', height: rows },
+    $(Title, {
+      at: Math.min(state.alertPackageIndex + 1, packages.length),
+      of: packages.length,
+      label: `PACKAGES WITH ${group?.type ?? ''}`,
+      trailing: group?.severity,
+    }),
+    $(
+      Box,
+      { height: body, width: '100%', flexDirection: 'column' },
+      ...win.slice.map((p, i) =>
         $(
           Box,
           {
-            key: w.id,
+            key: `${p.id}${p.type}`,
             height: 1,
             width: '100%',
-            ...(win.start + i === state.workspaceIndex ?
+            ...(win.start + i === state.alertPackageIndex ?
               { backgroundColor: 'blue' }
             : {}),
           },
-          // the same four columns the highlight rows use, so the counts
-          // land under the workspace names above them
-          $(Cell, { text: '', width: 7 }),
-          $(Cell, { text: w.label, width: nameWidth }),
-          $(Cell, { text: '', width: detailWidth }),
+          $(Cell, { text: '    !', width: 7, color: 'red' }),
+          $(Cell, { text: p.name, width: nameWidth }),
+          $(Cell, { text: p.version, width: 14, dim: true }),
           $(Cell, {
-            text: `${w.changes.length}`,
-            width: 8,
+            text: p.cve ?? p.severity,
+            width: 16,
+            color: 'red',
+          }),
+          $(Cell, {
+            text:
+              p.reach.length === 1 ? p.reach[0]!
+              : p.reach.length ? `${p.reach.length} workspaces`
+              : '',
             dim: true,
           }),
-          ...Flag({ n: alertCount(diff, w.changes) }),
         ),
       ),
     ),
     $(Footer, {
-      keys: `⏎ open   d direct (${state.directOnly ? 'on' : 'off'})   i hidden (${state.identity ? 'on' : 'off'})   ? legend   q quit`,
+      keys: '↑↓ move   ⏎ find it in its tree   ← back   q quit',
     }),
   )
 }
@@ -950,6 +1032,7 @@ export const App = ({
   return (
     state.screen === 'summary' ?
       $(SummaryScreen, { diff, state, rows })
+    : state.screen === 'alert' ? $(AlertScreen, { diff, state, rows })
     : state.screen === 'workspace' ?
       $(WorkspaceScreen, { diff, state, rows })
     : state.screen === 'tree' ? $(TreeScreen, { diff, state, rows })

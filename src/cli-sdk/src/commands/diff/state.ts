@@ -12,6 +12,8 @@ import type {
  */
 export type Screen =
   | 'summary'
+  /** the packages carrying one kind of alert */
+  | 'alert'
   | 'workspace'
   | 'tree'
   | 'dep'
@@ -20,7 +22,13 @@ export type Screen =
 
 export type State = {
   screen: Screen
-  /** cursor into the workspace list on the summary */
+  /** cursor into the summary's rows, which are of mixed kinds */
+  summaryIndex: number
+  /** which kind of alert is open */
+  alertIndex: number
+  /** cursor into the alert's package list */
+  alertPackageIndex: number
+  /** the workspace being read, not a cursor */
   workspaceIndex: number
   /** cursor into that workspace's trees */
   treeIndex: number
@@ -48,6 +56,9 @@ export type Event =
 
 export const initialState: State = {
   screen: 'summary',
+  summaryIndex: 0,
+  alertIndex: 0,
+  alertPackageIndex: 0,
   workspaceIndex: 0,
   treeIndex: 0,
   depIndex: 0,
@@ -291,9 +302,19 @@ export const highlights = (diff: GraphDiff): Highlights => {
 export type AlertRow = {
   id: string
   name: string
+  /** empty for a git or workspace id, which carries no version */
+  version: string
   type: string
   severity: Alert['severity']
+  /** the workspaces this package is reachable from */
+  reach: string[]
   cve?: string
+}
+
+/** The version tail of a DepID, for the places that only carry ids. */
+const atVersion = (id: string) => {
+  const at = id.lastIndexOf('@')
+  return at > 0 ? id.slice(at + 1) : ''
 }
 
 const WORST: Alert['severity'][] = [
@@ -310,14 +331,26 @@ const WORST: Alert['severity'][] = [
  * that gets read, and a critical buried under nine low ones may as well
  * not be reported.
  */
-export const alertRows = (diff: GraphDiff): AlertRow[] =>
-  Object.entries(diff.alerts ?? {})
+export const alertRows = (diff: GraphDiff): AlertRow[] => {
+  // one pass, because every flagged package asks the same question of
+  // the same mutation list
+  const byNode = new Map<string, Mutation[]>()
+  for (const m of diff.mutations) {
+    const id = nodeIdOf(m)
+    if (!id) continue
+    const found = byNode.get(id)
+    if (found) found.push(m)
+    else byNode.set(id, [m])
+  }
+  return Object.entries(diff.alerts ?? {})
     .flatMap(([id, list]) =>
       list.map(a => ({
         id,
         name: depName(id as never),
+        version: atVersion(id),
         type: a.type,
         severity: a.severity,
+        reach: workspacesFor(diff, byNode.get(id) ?? []),
         ...(a.cve ? { cve: a.cve } : {}),
       })),
     )
@@ -326,6 +359,7 @@ export const alertRows = (diff: GraphDiff): AlertRow[] =>
         WORST.indexOf(a.severity) - WORST.indexOf(z.severity) ||
         a.name.localeCompare(z.name),
     )
+}
 
 /** How many of these changes carry an alert. */
 export const alertCount = (diff: GraphDiff, changes: Mutation[]) => {
@@ -351,6 +385,171 @@ export const nodeIdOf = (m: Mutation | undefined) =>
 /** The alerts against one package, if any. */
 export const alertsFor = (diff: GraphDiff, id: string | undefined) =>
   (id && diff.alerts?.[id as never]) || []
+
+/** One kind of alert, and every package carrying it. */
+export type AlertGroup = {
+  key: string
+  type: string
+  severity: Alert['severity']
+  packages: AlertRow[]
+}
+
+/**
+ * Alerts grouped by kind rather than listed per package.
+ *
+ * "Four packages shell out" is a fact worth acting on once; the same
+ * thing said four times is a list to scroll past. The group carries the
+ * worst grade any of its members has, so a critical is never softened
+ * by the lows it shares a kind with.
+ */
+export const alertGroups = (diff: GraphDiff): AlertGroup[] => {
+  const byType = new Map<string, AlertGroup>()
+  for (const row of alertRows(diff)) {
+    const found = byType.get(row.type)
+    if (found) found.packages.push(row)
+    else {
+      byType.set(row.type, {
+        key: row.type,
+        type: row.type,
+        severity: row.severity,
+        packages: [row],
+      })
+    }
+  }
+  return [...byType.values()].sort(
+    (a, z) =>
+      WORST.indexOf(a.severity) - WORST.indexOf(z.severity) ||
+      z.packages.length - a.packages.length ||
+      a.type.localeCompare(z.type),
+  )
+}
+
+/**
+ * Where a package sits, so a reader can be taken there.
+ *
+ * Everything on the summary names a package; being able to open it is
+ * what makes the summary a way in rather than a poster.
+ */
+export const locate = (
+  diff: GraphDiff,
+  filters: Filters,
+  nodeId: string | undefined,
+) => {
+  if (!nodeId) return undefined
+  const workspaces = workspacesOf(diff, filters)
+  for (const [workspaceIndex, ws] of workspaces.entries()) {
+    const trees = treesOf(ws.changes)
+    for (const [treeIndex, tree] of trees.entries()) {
+      const depIndex = treeLines(tree).findIndex(
+        l => nodeIdOf(l.mutation) === nodeId,
+      )
+      if (depIndex >= 0)
+        return { workspaceIndex, treeIndex, depIndex }
+    }
+  }
+  return undefined
+}
+
+export type SummaryRow =
+  | {
+      kind: 'heading'
+      key: string
+      label: string
+      count: number
+      color?: string
+    }
+  | { kind: 'gap'; key: string }
+  | { kind: 'alert'; key: string; group: AlertGroup }
+  | { kind: 'change'; key: string; mutation: Mutation }
+  | { kind: 'workspace'; key: string; workspace: Workspace }
+
+/** Rows a cursor can stop on. Headings and spacers are neither. */
+export const selectable = (r: SummaryRow | undefined) =>
+  r?.kind === 'alert' ||
+  r?.kind === 'change' ||
+  r?.kind === 'workspace'
+
+/**
+ * The nearest row the cursor can actually rest on.
+ *
+ * The first row is a heading, so an index of zero would otherwise open
+ * nothing on the very first keypress. Looks forward first, since that
+ * is the direction a reader is going.
+ */
+export const summaryCursor = (rows: SummaryRow[], index: number) => {
+  if (selectable(rows[index])) return index
+  for (let i = index; i < rows.length; i++) {
+    if (selectable(rows[i])) return i
+  }
+  for (let i = index; i >= 0; i--) if (selectable(rows[i])) return i
+  return index
+}
+
+/**
+ * The summary as rows: what needs attention, then the way in.
+ *
+ * Built here rather than in the component because the cursor walks it,
+ * and a cursor over something the renderer invented separately is how
+ * the two drift apart.
+ */
+export const summaryRows = (
+  diff: GraphDiff,
+  filters: Filters,
+): SummaryRow[] => {
+  const rows: SummaryRow[] = []
+  const groups = alertGroups(diff)
+  if (groups.length) {
+    rows.push({
+      kind: 'heading',
+      key: 'h:security',
+      label: 'SECURITY',
+      // rows, not alerts: a count that does not match what is on screen
+      // reads as something being hidden
+      count: groups.length,
+      color: 'red',
+    })
+    for (const group of groups) {
+      rows.push({ kind: 'alert', key: `a:${group.type}`, group })
+    }
+    rows.push({ kind: 'gap', key: 'g:security' })
+  }
+
+  const { major, downgraded, removed } = highlights(diff)
+  for (const [label, ms, color] of [
+    ['MAJOR VERSIONS', major, 'yellow'],
+    ['DOWNGRADED', downgraded, 'magenta'],
+    ['REMOVED', removed, 'red'],
+  ] as const) {
+    if (!ms.length) continue
+    rows.push({
+      kind: 'heading',
+      key: `h:${label}`,
+      label,
+      count: ms.length,
+      color,
+    })
+    for (const m of ms) {
+      rows.push({ kind: 'change', key: `c:${m.id}`, mutation: m })
+    }
+    rows.push({ kind: 'gap', key: `g:${label}` })
+  }
+
+  const workspaces = workspacesOf(diff, filters)
+  rows.push({
+    kind: 'heading',
+    key: 'h:ws',
+    label: 'WORKSPACES',
+    count: workspaces.length,
+  })
+  for (const workspace of workspaces) {
+    rows.push({
+      kind: 'workspace',
+      key: `w:${workspace.id}`,
+      workspace,
+    })
+  }
+  return rows
+}
 
 /**
  * One direct dependency and everything that came into the graph under
@@ -480,14 +679,29 @@ export const view = (diff: GraphDiff, state: State) => {
   const trees = treesOf(workspace?.changes ?? [])
   const tree = trees[clamp(state.treeIndex, trees.length)]
   const lines = tree ? treeLines(tree) : []
-  return { workspaces, workspace, trees, tree, lines }
+  const rows = summaryRows(diff, state)
+  const groups = alertGroups(diff)
+  const group = groups[clamp(state.alertIndex, groups.length)]
+  return {
+    rows,
+    // where the summary cursor actually is, never on a heading
+    summaryIndex: summaryCursor(rows, state.summaryIndex),
+    groups,
+    group,
+    workspaces,
+    workspace,
+    trees,
+    tree,
+    lines,
+  }
 }
 
 /** The rows the cursor walks on whichever screen is showing. */
 const rowCount = (diff: GraphDiff, state: State) => {
-  const { workspaces, trees, lines } = view(diff, state)
+  const { rows, trees, lines, group } = view(diff, state)
   return (
-    state.screen === 'summary' ? workspaces.length
+    state.screen === 'summary' ? rows.length
+    : state.screen === 'alert' ? (group?.packages.length ?? 0)
     : state.screen === 'workspace' ? trees.length
       // the reach list is read, not walked
     : state.screen === 'reach' ? 0
@@ -496,7 +710,8 @@ const rowCount = (diff: GraphDiff, state: State) => {
 }
 
 const cursorKey = (screen: Screen) =>
-  screen === 'summary' ? ('workspaceIndex' as const)
+  screen === 'summary' ? ('summaryIndex' as const)
+  : screen === 'alert' ? ('alertPackageIndex' as const)
   : screen === 'workspace' ? ('treeIndex' as const)
   : ('depIndex' as const)
 
@@ -517,13 +732,28 @@ export const reduce = (
 
   const move = (delta: number): State => {
     const key = cursorKey(state.screen)
+    const total = rowCount(diff, state)
+    const from =
+      state.screen === 'summary' ?
+        view(diff, state).summaryIndex
+      : state[key]
+    let next = clamp(from + delta, total)
+    if (state.screen === 'summary') {
+      // headings and spacers are not places to stop, so keep going in
+      // whichever direction the reader was already travelling
+      const { rows } = view(diff, state)
+      while (
+        next > 0 &&
+        next < total - 1 &&
+        !selectable(rows[next])
+      ) {
+        next += delta
+      }
+      if (!selectable(rows[next])) return state
+    }
     return {
       ...state,
-      [key]: clamp(state[key] + delta, rowCount(diff, state)),
-      // a different workspace or tree invalidates the cursors below it
-      ...(state.screen === 'summary' ?
-        { treeIndex: 0, depIndex: 0 }
-      : {}),
+      [key]: next,
       ...(state.screen === 'workspace' ? { depIndex: 0 } : {}),
     }
   }
@@ -566,7 +796,42 @@ export const reduce = (
     case 'Select': {
       if (!rowCount(diff, state)) return state
       if (state.screen === 'summary') {
-        return { ...state, screen: 'workspace', treeIndex: 0 }
+        const { rows, summaryIndex } = view(diff, state)
+        const row = rows[summaryIndex]
+        if (row?.kind === 'workspace') {
+          const workspaces = workspacesOf(diff, state)
+          return {
+            ...state,
+            screen: 'workspace',
+            workspaceIndex: workspaces.indexOf(row.workspace),
+            treeIndex: 0,
+            depIndex: 0,
+          }
+        }
+        if (row?.kind === 'alert') {
+          return {
+            ...state,
+            screen: 'alert',
+            alertIndex: alertGroups(diff).indexOf(row.group),
+            alertPackageIndex: 0,
+          }
+        }
+        // a highlight names a package, so opening it goes to that
+        // package where it lives rather than to a screen about it
+        const at =
+          row?.kind === 'change' ?
+            locate(diff, state, nodeIdOf(row.mutation))
+          : undefined
+        return at ? { ...state, screen: 'tree', ...at } : state
+      }
+      if (state.screen === 'alert') {
+        const { group } = view(diff, state)
+        const at = locate(
+          diff,
+          state,
+          group?.packages[state.alertPackageIndex]?.id,
+        )
+        return at ? { ...state, screen: 'tree', ...at } : state
       }
       if (state.screen === 'workspace') {
         return { ...state, screen: 'tree', depIndex: 0 }
@@ -602,12 +867,17 @@ export const reduce = (
         state.workspaceIndex,
         workspaces.length,
       )
+      const summaryIndex = clamp(
+        state.summaryIndex,
+        summaryRows(diff, filters).length,
+      )
       const trees = treesOf(workspaces[workspaceIndex]?.changes ?? [])
       const treeIndex = clamp(state.treeIndex, trees.length)
       const tree = trees[treeIndex]
       return {
         ...state,
         ...filters,
+        summaryIndex,
         workspaceIndex,
         treeIndex,
         depIndex: clamp(
