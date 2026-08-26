@@ -26,6 +26,7 @@ import type {
   TransientAddMap,
   TransientRemoveMap,
 } from '../../src/ideal/types.ts'
+import type { ExtractResult } from '../../src/reify/extract-node.ts'
 import { mermaidOutput } from '../../src/visualization/mermaid-output.ts'
 
 Object.assign(Spec.prototype, {
@@ -1068,6 +1069,84 @@ t.test('early extraction during appendNodes', async t => {
   )
 
   t.test(
+    'skip extraction for nodes with a provisional peer suffix',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const extractedNodes: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          if (spec.name === 'foo') return fooManifest
+          if (spec.name === 'react') {
+            return { name: 'react', version: '18.0.0' }
+          }
+          return null
+        },
+        async extract(spec: Spec) {
+          extractedNodes.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      const extractPromises: Promise<ExtractResult>[] = []
+      const seenExtracted = new Set<DepID>()
+
+      await appendNodes(
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', fooDep]]),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      const foo = [...idealGraph.nodes.values()].find(
+        n => n.name === 'foo',
+      )
+      t.ok(foo?.peerSetHash, 'foo carries a provisional peer suffix')
+      t.equal(extractedNodes.length, 0, 'peer-suffixed node skipped')
+    },
+  )
+
+  t.test(
     'skip extraction for nodes that exist in actual graph',
     async t => {
       const fooManifest = {
@@ -1842,6 +1921,10 @@ t.test('skip peerOptional dependencies', async t => {
     t.ok(fooNode, 'foo node should exist')
     fooNode.detached = true
 
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, fooNode.id],
+    ])
+
     // Remove the edge from mainImporter to foo so we can re-add it
     const fooEdge = graph.mainImporter.edgesOut.get('foo')
     if (fooEdge) {
@@ -1928,6 +2011,14 @@ t.test('skip peerOptional dependencies', async t => {
       // Simulate lockfile state
       jsrNode.detached = true
       jsrNode.resolved = expectedTarballURL
+      const jsrSpec = Spec.parse(
+        '@jsr/std__semver',
+        'jsr:^1.0.8',
+        jsrConfig,
+      )
+      graph.lockedResolutions = new Map([
+        [`${graph.mainImporter.id}\0${jsrSpec.name}`, jsrNode.id],
+      ])
 
       // Remove the edge so we can re-add it via appendNodes
       const jsrEdge = graph.mainImporter.edgesOut.get(
@@ -3617,5 +3708,257 @@ t.test(
       'deep-platform-dep is optional in deep transitive chain',
     )
     t.ok(node?.dev, 'deep-platform-dep is also marked as dev')
+  },
+)
+
+t.test(
+  'lockedResolutions reuses the lockfile target after resetEdges',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    )!
+    const foo11 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.1.0' },
+    )!
+
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo11.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.notOk(manifestCalled, 'locked target reuse skips manifest()')
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      foo11.id,
+      'rebuild keeps the locked 1.1.0 instead of the first satisfying 1.0.0',
+    )
+    t.equal(
+      foo11.detached,
+      false,
+      'reusing a locked target reattaches the node',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions ignores a snapshot whose name does not match the spec',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const bar = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('bar', '^1.0.0', configData),
+      { name: 'bar', version: '1.0.0' },
+    )!
+
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, bar.id],
+    ])
+    graph.resetEdges()
+
+    const fooManifest = { name: 'foo', version: '1.0.0' }
+    const packageInfo = {
+      async manifest() {
+        return fooManifest
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.name,
+      'foo',
+      'mismatched locked name is not reused',
+    )
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions reuses a dist-tag lock when satisfies() cannot',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.2.3' },
+    )!
+
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch')
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', 'latest', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.notOk(manifestCalled, 'dist-tag lock reuses the snapshot node')
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'lockedResolutions matches a lockfile node by spec.final.name',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const jsrConfig: SpecOptions = {
+      ...configData,
+      'jsr-registries': {
+        jsr: 'https://npm.jsr.io/',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...jsrConfig,
+      mainManifest,
+    })
+    const jsrId = joinDepIDTuple([
+      'registry',
+      'jsr',
+      '@jsr/std__semver@1.0.8',
+    ])
+    const jsrNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+      { name: '@jsr/std__semver', version: '1.0.8' },
+      jsrId,
+    )!
+
+    const alias = Spec.parse(
+      'semver',
+      'jsr:@std/semver@^1.0.8',
+      jsrConfig,
+    )
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${alias.name}`, jsrNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch')
+      },
+    } as unknown as PackageInfoClient
+
+    const semverDep = asDependency({
+      spec: alias,
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [semverDep],
+      new PathScurry(t.testdirName),
+      jsrConfig,
+      new Set<DepID>(),
+      new Map([[alias.name, semverDep]]),
+    )
+
+    t.notOk(manifestCalled, 'JSR alias lock skips manifest()')
+    t.equal(
+      graph.mainImporter.edgesOut.get(alias.name)?.to?.id,
+      jsrNode.id,
+    )
   },
 )

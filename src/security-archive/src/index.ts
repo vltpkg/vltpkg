@@ -5,9 +5,8 @@ import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
 import { loadPackageJson } from 'package-json-from-dist'
-import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
+import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { defaultRegistryName } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-expired.ts'
@@ -19,14 +18,14 @@ import type {
   SecurityArchiveLike,
   SecurityArchiveRefreshOptions,
 } from './types.ts'
+import { usesNpmRegistry } from './browser.ts'
 
 export * from './types.ts'
+export { npmRegistryURL, usesNpmRegistry } from './browser.ts'
 
 const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
   'sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api'
-
-export const npmRegistryURL = 'https://registry.npmjs.org/'
 
 export type JSONItemResponse = {
   namespace?: `@{string}`
@@ -69,30 +68,6 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
    * Number of retries attempts to reach the remote security API.
    */
   retries?: number
-}
-
-const normalizeRegistryURL = (url: string): string =>
-  url.endsWith('/') ? url : `${url}/`
-
-const nodeRegistryURL = (node: NodeLike): string | undefined => {
-  const [type, reg] = splitDepID(node.id)
-  if (type !== 'registry') return
-  const url =
-    /^https?:\/\//.test(reg) ? reg : node.options.registries?.[reg]
-  return url ? normalizeRegistryURL(url) : undefined
-}
-
-/**
- * Socket.dev only has reports for the public npm ecosystem. Eligible
- * when the node's origin is `https://registry.npmjs.org/` or the URL
- * configured as `registries.npm`.
- */
-export const usesNpmRegistry = (node: NodeLike): boolean => {
-  const origin = nodeRegistryURL(node)
-  if (!origin) return false
-  if (origin === npmRegistryURL) return true
-  const npmAlias = node.options.registries?.[defaultRegistryName]
-  return !!npmAlias && normalizeRegistryURL(npmAlias) === origin
 }
 
 // Loads the version number to be used in the User-Agent header
@@ -163,6 +138,33 @@ export class SecurityArchive
     this.#path =
       options.path ?? new XDG('vlt').cache('security-archive.db')
     this.#retries = options.retries ?? 3
+  }
+
+  override get(
+    k: DepID,
+    options?: Parameters<
+      LRUCache<DepID, PackageReportData>['get']
+    >[1],
+  ) {
+    return super.get(baseDepID(k), options)
+  }
+
+  override has(k: DepID) {
+    return super.has(baseDepID(k))
+  }
+
+  override set(
+    k: DepID,
+    v: PackageReportData,
+    setOptions?: Parameters<
+      LRUCache<DepID, PackageReportData>['set']
+    >[2],
+  ) {
+    return super.set(baseDepID(k), v, setOptions)
+  }
+
+  override delete(k: DepID) {
+    return super.delete(baseDepID(k))
   }
 
   /**

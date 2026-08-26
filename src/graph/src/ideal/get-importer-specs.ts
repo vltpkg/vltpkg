@@ -90,10 +90,6 @@ export const getImporterSpecs = (
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
         const edge = importer.edgesOut.get(depName)
-
-        // skip if the edge exists and already uses the same spec
-        if (edge?.to && depSpec === edge.spec.bareSpec) continue
-
         const spec = Spec.parse(depName, depSpec, options)
 
         // if a workspace dep references a workspace that no longer exists
@@ -109,6 +105,11 @@ export const getImporterSpecs = (
             continue
           }
         }
+
+        // skip if the edge exists and already uses the same spec.
+        // dangling (MISSING) targets still need to be queued so the
+        // ideal rebuild runs resetEdges() and places in traversal order.
+        if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
         const dependency = asDependency({
           spec,
@@ -167,8 +168,9 @@ export const getImporterSpecs = (
         for (const [depName, depSpec] of deps) {
           const edge = node.edgesOut.get(depName)
 
-          // skip if the edge exists and already uses the same spec
-          if (edge?.to && depSpec === edge.spec.bareSpec) continue
+          // skip if the edge exists and already uses the same spec.
+          // dangling targets still need to be queued for the ideal rebuild.
+          if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
           // add the dependency to the addDeps map
           const dependency = asDependency({

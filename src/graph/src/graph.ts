@@ -1,4 +1,9 @@
-import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
+import {
+  baseDepID,
+  getId,
+  joinDepIDTuple,
+  splitExtra,
+} from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -165,6 +170,12 @@ export class Graph implements GraphLike {
   optionsChanged = false
 
   /**
+   * Lockfile edge targets captured immediately before `resetEdges()`.
+   * Used by the ideal builder to reuse locked resolutions across a rebuild.
+   */
+  lockedResolutions?: Map<string, DepID>
+
+  /**
    * Tracks the current peer context index.
    */
   currentPeerContextIndex = 0
@@ -299,6 +310,10 @@ export class Graph implements GraphLike {
     from: NodeLike,
     to?: NodeLike,
   ) {
+    if (to) {
+      const toNode = to as Node
+      toNode.detached = false
+    }
     // fix any nameless spec
     if (spec.name === '(unknown)') {
       if (to) {
@@ -348,10 +363,11 @@ export class Graph implements GraphLike {
     const f = spec.final
     const sf = getResolutionCacheKey(f, fromNode.location, extra)
     const cached = this.resolutions.get(sf)
-    if (cached) return cached
+    if (cached && !cached.detached) return cached
     const nbn = this.nodesByName.get(f.name)
     if (!nbn) return undefined
     for (const node of nbn) {
+      if (node.detached) continue
       if (
         satisfies(
           node.id,
@@ -475,10 +491,38 @@ export class Graph implements GraphLike {
     }
 
     // creates a new node and edges to its parent
+    // Peer-fork rebuilds mint a provisional `peer.N` DepID that does not
+    // match the lockfile's content-hash ID, so exact-ID reuse misses.
+    // Copy integrity/resolved from the same package version (same tarball).
+    let samePackage: Node | undefined
+    const base = baseDepID(depId)
+    const nbn = this.nodesByName.get(
+      manifest?.name ?? spec.name ?? '',
+    )
+    if (nbn) {
+      for (const n of nbn) {
+        if (baseDepID(n.id) !== base) continue
+        if (!n.integrity && !n.resolved) continue
+        samePackage = n
+        if (n.integrity) break
+      }
+    }
     const toNode = this.addNode(depId, manifest, spec)
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
+    if (samePackage) {
+      toNode.integrity ??= samePackage.integrity
+      toNode.resolved ??= samePackage.resolved
+      if (
+        samePackage.resolvedFromLockfile &&
+        toNode.integrity &&
+        toNode.resolved
+      ) {
+        toNode.resolvedFromLockfile = true
+      }
+    }
+    toNode.integrity ??= manifest?.dist?.integrity
     // split extra into modifier and peerSetHash
     if (extra) {
       const { modifier, peerSetHash } = splitExtra(extra)

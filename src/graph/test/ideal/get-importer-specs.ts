@@ -1212,3 +1212,52 @@ t.test(
     )
   },
 )
+
+t.test(
+  'dangling importer edge with matching spec is still queued',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        abbrev: '^3.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    graph.addEdge(
+      'prod',
+      Spec.parse('abbrev', '^3.0.0'),
+      graph.mainImporter,
+    )
+
+    const specs = getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry,
+      packageJson,
+    })
+
+    t.equal(
+      specs.add.modifiedDependencies,
+      true,
+      'MISSING target still counts as a modification so the rebuild can place it',
+    )
+    t.ok(
+      specs.add.get(joinDepIDTuple(['file', '.']))?.has('abbrev'),
+      'dangling matching-spec edge is queued as an add',
+    )
+  },
+)

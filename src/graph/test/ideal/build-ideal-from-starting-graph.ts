@@ -311,6 +311,76 @@ t.test('add from manifest file only', async t => {
   t.matchSnapshot(objectLikeOutput(graph))
 })
 
+t.test(
+  'merges manifest-discovered deps into an existing add map',
+  async t => {
+    const lockfileData: LockfileData = {
+      lockfileVersion: 1,
+      options: {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+        },
+      },
+      nodes: {
+        [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      } as Record<DepID, LockfileNode>,
+      edges: {},
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        baz: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileData),
+      'package.json': JSON.stringify(mainManifest),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+
+    const virtual = loadVirtual({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+
+    const graph = await buildIdealFromStartingGraph({
+      ...configData,
+      packageInfo,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      graph: virtual,
+      add: new Map([
+        [
+          joinDepIDTuple(['file', '.']),
+          new Map([
+            [
+              'missing',
+              {
+                type: 'prod',
+                spec: Spec.parse('missing', '^1.0.0'),
+              },
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+
+    t.ok(
+      graph.mainImporter.edgesOut.get('baz')?.to,
+      'manifest-discovered baz is merged into the user add map',
+    )
+    t.ok(
+      graph.mainImporter.edgesOut.get('missing')?.to,
+      'user-added missing is kept',
+    )
+  },
+)
+
 t.test('remove from manifest file only', async t => {
   const lockfileData: LockfileData = {
     lockfileVersion: 1,

@@ -1946,8 +1946,8 @@ t.test('resetEdges method', async t => {
     )
     t.equal(
       foundAfter,
-      alphaNode,
-      'resolution still works after reset',
+      undefined,
+      'detached nodes are not resolution candidates after reset',
     )
   })
 
@@ -2119,13 +2119,17 @@ t.test('resetEdges method', async t => {
       'modifier preserved',
     )
 
-    // Verify resolution still works with modifier
+    // Verify resolution skips the detached node after reset
     const found = graph.findResolution(
       Spec.parse('epsilon@^1.0.0', configData),
       graph.mainImporter,
       ':root > #epsilon',
     )
-    t.equal(found, epsilonNode, 'resolution with modifier works')
+    t.equal(
+      found,
+      undefined,
+      'detached nodes are not resolution candidates after reset',
+    )
   })
 
   t.test('should work with nodes having peerSetHash', async t => {
@@ -2160,13 +2164,17 @@ t.test('resetEdges method', async t => {
       'peerSetHash preserved',
     )
 
-    // Verify resolution still works with peerSetHash
+    // Verify resolution skips the detached node after reset
     const found = graph.findResolution(
       Spec.parse('zeta@^1.0.0', configData),
       graph.mainImporter,
       'peer.peer123',
     )
-    t.equal(found, zetaNode, 'resolution with peerSetHash works')
+    t.equal(
+      found,
+      undefined,
+      'detached nodes are not resolution candidates after reset',
+    )
   })
 
   t.test('should preserve manifest inventory', async t => {
@@ -2199,6 +2207,38 @@ t.test('resetEdges method', async t => {
       'same manifest instance preserved',
     )
   })
+
+  t.test(
+    'findResolution skips detached nodes in favor of live ones',
+    async t => {
+      const v1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.0.0' },
+      )!
+      const v2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.1.0' },
+      )!
+      graph.findResolution(
+        Spec.parse('theta@^1.0.0', configData),
+        graph.mainImporter,
+      )
+      v1.detached = true
+      const found = graph.findResolution(
+        Spec.parse('theta@^1.0.0', configData),
+        graph.mainImporter,
+      )
+      t.equal(
+        found,
+        v2,
+        'should skip a cached detached node and return a live candidate',
+      )
+    },
+  )
 })
 
 t.test('removeNode with keepEdges parameter', async t => {
@@ -2575,6 +2615,75 @@ t.test(
       placed?.integrity,
       existingIntegrity,
       'should NOT clobber existing integrity',
+    )
+  },
+)
+
+t.test(
+  'placePackage copies integrity from same-package lockfile sibling',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+
+    const integrity = 'sha512-LOCKFILE-SIBLING=='
+    const resolved =
+      'https://registry.npmjs.org/oxlint/-/oxlint-1.77.0.tgz'
+    const lockfileId = joinDepIDTuple([
+      'registry',
+      '',
+      'oxlint@1.77.0',
+      'peer.05a16166f9c1f9ef',
+    ])
+    const lockfileNode = graph.addNode(
+      lockfileId,
+      undefined,
+      undefined,
+      'oxlint',
+      '1.77.0',
+    )
+    lockfileNode.integrity = integrity
+    lockfileNode.resolved = resolved
+    lockfileNode.resolvedFromLockfile = true
+    lockfileNode.peerSetHash = 'peer.05a16166f9c1f9ef'
+
+    const placed = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('oxlint', '^1.77.0', configData),
+      normalizeManifest({
+        name: 'oxlint',
+        version: '1.77.0',
+        peerDependencies: { vitest: '*' },
+      }),
+      undefined,
+      'peer.0',
+    )
+
+    t.not(placed, lockfileNode, 'new node for provisional peer extra')
+    t.equal(
+      placed?.integrity,
+      integrity,
+      'integrity copied from lockfile sibling',
+    )
+    t.equal(
+      placed?.resolved,
+      resolved,
+      'resolved copied from lockfile sibling',
+    )
+    t.equal(
+      placed?.resolvedFromLockfile,
+      true,
+      'lockfile verification flag preserved',
     )
   },
 )

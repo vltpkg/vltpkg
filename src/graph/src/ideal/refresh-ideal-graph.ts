@@ -116,6 +116,13 @@ export const refreshIdealGraph = async ({
     remove.modifiedDependencies ||
     graph.optionsChanged
   ) {
+    const locked = new Map<string, DepID>()
+    for (const edge of graph.edges) {
+      if (edge.to) {
+        locked.set(`${edge.from.id}\0${edge.spec.name}`, edge.to.id)
+      }
+    }
+    graph.lockedResolutions = locked
     graph.resetEdges()
   }
 

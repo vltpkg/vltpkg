@@ -546,6 +546,73 @@ t.test('checkPeerEdgesCompatible', async t => {
   )
 
   t.test(
+    'CHECK3: returns compatible when the only alternative candidate is detached',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react19 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        { name: 'react', version: '19.2.0' },
+      )!
+      react19.detached = true
+
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '>=18.0.0' },
+        },
+      )!
+
+      const peerSpec = Spec.parse('react', '>=18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('parent', '^1.0.0', configData),
+        {
+          name: 'parent',
+          version: '1.0.0',
+          dependencies: { react: '^19.0.0' },
+        },
+      )!
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        parent,
+        new Map(),
+        graph,
+      )
+
+      t.same(
+        result,
+        { compatible: true },
+        'detached alternative must not trigger a CHECK 3 fork',
+      )
+    },
+  )
+
+  t.test(
     'returns compatible when peer context target matches existing edge',
     async t => {
       const mainManifest = {
@@ -757,13 +824,19 @@ t.test('retrievePeerContextHash', async t => {
     )
   })
 
-  t.test('returns undefined if no index', async t => {
+  t.test('returns peer.0 if no index', async t => {
     const peerContext: PeerContext = new Map()
     t.equal(
       retrievePeerContextHash(peerContext),
-      undefined,
-      'should return undefined when index not set',
+      'peer.0',
+      'should default missing index to 0',
     )
+  })
+
+  t.test('returns peer.0 for index 0', async t => {
+    const peerContext: PeerContext = new Map()
+    peerContext.index = 0
+    t.equal(retrievePeerContextHash(peerContext), 'peer.0')
   })
 })
 

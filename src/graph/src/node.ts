@@ -382,6 +382,37 @@ export class Node implements NodeLike {
     }
   }
 
+  /**
+   * Update this node's DepID and peer suffix after canonicalization.
+   * Resets name/location memos that were derived from the previous id.
+   */
+  setPeerIdentity(id: DepID, peerSetHash: string) {
+    const prevId = this.id
+    const prevName = this.name
+    const nameWasId = this.#name === prevId
+    const prevDefault = `./node_modules/.vlt/${prevId}/node_modules/${prevName}`
+    const locWasDefault =
+      !this.#location || this.#location === prevDefault
+
+    this.id = id
+    this.peerSetHash = peerSetHash
+    if (nameWasId) this.#name = undefined
+    const nextName = this.name
+    if (prevName !== nextName) {
+      const oldSet = this.graph.nodesByName.get(prevName)
+      oldSet?.delete(this)
+      if (oldSet?.size === 0) {
+        this.graph.nodesByName.delete(prevName)
+      }
+      const nbn = this.graph.nodesByName.get(nextName) ?? new Set()
+      nbn.add(this)
+      this.graph.nodesByName.set(nextName, nbn)
+    }
+    if (locWasDefault) {
+      this.location = `./node_modules/.vlt/${id}/node_modules/${nextName}`
+    }
+  }
+
   setDefaultLocation() {
     const def = `./node_modules/.vlt/${this.id}/node_modules/${this.name}`
 

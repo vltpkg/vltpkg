@@ -358,6 +358,7 @@ export const checkPeerEdgesCompatible = (
       const candidates = graph.nodesByName.get(peerName)
       if (candidates) {
         for (const candidateNode of candidates) {
+          if (candidateNode.detached) continue
           if (
             candidateNode.id !== existingEdge.to.id &&
             satisfiesNodeSpec(candidateNode, parentSpec) &&
@@ -387,10 +388,8 @@ export const checkPeerEdgesCompatible = (
 export const retrievePeerContextHash = (
   peerContext: PeerContext | undefined,
 ): string | undefined => {
-  // skips creating the initial peer context ref
-  if (!peerContext?.index) return undefined
-
-  return `peer.${peerContext.index}`
+  if (!peerContext) return undefined
+  return `peer.${peerContext.index ?? 0}`
 }
 
 /**

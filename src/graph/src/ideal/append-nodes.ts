@@ -5,6 +5,7 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/satisfies'
+import { Version } from '@vltpkg/semver'
 import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
 import type {
   DependencyTypeLong,
@@ -179,11 +180,23 @@ const findCompatibleResolution = (
     satisfiesCache.set(key, result)
     return result
   }
+  const lockedFits = (n: Node) => {
+    if (satisfiesFinal(n)) return true
+    /* c8 ignore next 2 */
+    if (n.name !== spec.name && n.name !== final.name) return false
+    if (!final.range) return true
+    /* c8 ignore next */
+    if (!n.version) return false
+    return final.range.test(Version.parse(n.version))
+  }
 
   // Prefer existing edge target if it satisfies the spec.
   // This ensures lockfile resolutions are preserved when still valid,
   // rather than potentially picking a different satisfying version.
   const existingEdge = fromNode.edgesOut.get(spec.name)
+  const lockKey = `${fromNode.id}\0${spec.name}`
+  const lockedId = graph.lockedResolutions?.get(lockKey)
+  const lockedNode = lockedId ? graph.nodes.get(lockedId) : undefined
   let existingNode: Node | undefined
   if (
     existingEdge?.to &&
@@ -191,6 +204,8 @@ const findCompatibleResolution = (
     satisfiesFinal(existingEdge.to)
   ) {
     existingNode = existingEdge.to
+  } else if (lockedNode && lockedFits(lockedNode)) {
+    existingNode = lockedNode
   } else {
     existingNode = graph.findResolution(spec, fromNode, queryModifier)
   }
@@ -310,7 +325,8 @@ const fetchManifestsForDeps = async (
     }
     /* c8 ignore stop */
 
-    // defines what nodes are eligible to be reused
+    // Locked detached nodes still go through placePackage so
+    // their child edges are rebuilt after resetEdges().
     const validExistingNode =
       existingNode &&
       !existingNode.detached &&
@@ -538,7 +554,9 @@ const processPlacementTasks = async (
       !node.isOptional() &&
       // this fixes an issue with installing `file:pathname` specs
       /* c8 ignore next */ !fileTypeInfo?.isDirectory &&
-      !node.importer
+      !node.importer &&
+      // provisional peer suffixes are rewritten after gc; file ids never change
+      (!node.peerSetHash || !!fileTypeInfo)
 
     // extract the node if it meets the criteria for early extraction
     if (eligibleForExtraction) {
