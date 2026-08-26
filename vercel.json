@@ -27,18 +27,6 @@
       "source": "/migration/from-npm",
       "destination": "/cli/migration/from-npm",
       "permanent": true
-    },
-    {
-      "source": "/:slug((?!api/)(?!.*\\$).*)",
-      "has": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": "(.*)text/markdown(.*)"
-        }
-      ],
-      "destination": "/api/markdown/:slug",
-      "permanent": false
     }
   ]
 }
