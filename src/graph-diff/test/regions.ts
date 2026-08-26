@@ -7,7 +7,12 @@ import type { Mutation } from '../src/types.ts'
 const foo = pkg('foo', '1.0.0')
 const bar = pkg('bar', '1.0.0')
 
-const base = { id: 'm1', directness: 'transitive' } as const
+const base = {
+  id: 'm1',
+  directness: 'transitive',
+  identityOnly: false,
+  alsoReachedBy: 0,
+} as const
 
 t.test('mutationNodes covers every kind', async t => {
   const node = { id: foo, name: 'foo' } as never
@@ -41,8 +46,8 @@ t.test('mutationNodes covers every kind', async t => {
         ...base,
         kind: 'peer-variants-regrouped',
         name: 'foo',
-        from: [node],
-        to: [node, node],
+        from: [foo],
+        to: [bar, foo],
       },
       3,
     ],
@@ -311,3 +316,53 @@ t.test('a node no importer reaches gets its own region', async t => {
   t.equal(region?.label, 'unreachable')
   t.strictSame(region?.nodes[0]?.role, 'mutated')
 })
+
+t.test(
+  'counts importers that reach further than the nearest',
+  async t => {
+    // near -> foo is one hop; far -> bar -> foo is two, so the region keys
+    // on near alone and far only shows up in the count
+    const g = project(
+      lockfile(
+        [
+          { id: foo, name: 'foo' },
+          { id: bar, name: 'bar' },
+        ],
+        [
+          { from: ws('near'), name: 'foo', to: foo },
+          { from: ws('far'), name: 'bar', to: bar },
+          { from: bar, name: 'foo', to: foo },
+        ],
+      ),
+    )
+    const m: Mutation = {
+      ...base,
+      kind: 'node-added',
+      node: g.nodes.get(foo) as never,
+    }
+    const [region] = extractRegions([m], g, g)
+    t.strictSame(
+      region?.importers,
+      [ws('near')],
+      'filed under the nearest',
+    )
+    t.equal(
+      m.alsoReachedBy,
+      1,
+      'far is counted, not silently dropped',
+    )
+
+    const direct: Mutation = {
+      ...base,
+      id: 'm2',
+      kind: 'node-added',
+      node: g.nodes.get(bar) as never,
+    }
+    extractRegions([direct], g, g)
+    t.equal(
+      direct.alsoReachedBy,
+      0,
+      'a change only one importer reaches counts nobody else',
+    )
+  },
+)

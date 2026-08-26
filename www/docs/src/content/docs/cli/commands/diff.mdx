@@ -95,6 +95,12 @@ changed package in. A change only one workspace can reach is filed under
 that workspace; a change every workspace pulls in through its shared
 toolchain is filed once as shared, rather than repeated for each.
 
+A region names the *nearest* importers, which on its own would
+under-report: a package can be a direct dependency of one workspace and
+a deep transitive of many others, and the region would name only the
+first. Any change reached from further away is marked
+`+N more workspaces`, and carries `alsoReachedBy` in the JSON.
+
 Changes that only move a package's identity — the same package and
 version from a different registry, or under a different peer set — are
 counted separately and collapsed by default, so they never bury the

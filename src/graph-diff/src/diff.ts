@@ -91,7 +91,16 @@ export const diffLockfiles = (
   const mutations: Mutation[] = []
   let n = 0
   const add = (m: MutationDetail & { identityOnly?: boolean }) => {
-    mutations.push({ ...m, id: `m${++n}`, directness: 'transitive' })
+    mutations.push({
+      ...m,
+      // written for every mutation, so consumers never have to treat an
+      // absent key as "probably false"
+      identityOnly: m.identityOnly ?? false,
+      // filled in by extractRegions, once reachability is known
+      alsoReachedBy: 0,
+      id: `m${++n}`,
+      directness: 'transitive',
+    })
   }
 
   // 1. options. a registry migration is literally this, and reporting it
@@ -183,8 +192,9 @@ export const diffLockfiles = (
         kind: 'peer-variants-regrouped',
         name: first.name,
         ...(first.version ? { version: first.version } : {}),
-        from,
-        to,
+        ...(first.integrity ? { integrity: first.integrity } : {}),
+        from: from.map(node => node.id),
+        to: to.map(node => node.id),
         identityOnly: true,
       })
     }
@@ -252,7 +262,7 @@ export const diffLockfiles = (
       explained.add(`${m.from.id}\0${m.to.id}`)
     } else if (m.kind === 'peer-variants-regrouped') {
       for (const f of m.from) {
-        for (const t of m.to) explained.add(`${f.id}\0${t.id}`)
+        for (const t of m.to) explained.add(`${f}\0${t}`)
       }
     }
   }

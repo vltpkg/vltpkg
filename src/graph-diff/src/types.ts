@@ -63,8 +63,22 @@ export type NodeField =
 export type MutationBase = {
   id: string
   directness: 'direct' | 'transitive'
-  /** true when nothing about the package itself moved, only its id */
-  identityOnly?: boolean
+  /**
+   * True when nothing about the package itself moved, only its id.
+   * Always present, so an absent key never has to be guessed at.
+   */
+  identityOnly: boolean
+  /**
+   * How many importers reach this change from further away than the
+   * region it is filed under.
+   *
+   * Regions key on the nearest importers, which alone lies by omission:
+   * `yargs` is two hops from www/docs via @astrojs/check and three from
+   * every workspace via c8, so the region reports it as www/docs-only.
+   * A non-zero count here is the signal that more workspaces are
+   * affected than the region name suggests.
+   */
+  alsoReachedBy: number
 }
 
 /** The kind-specific half of a mutation, before ids are assigned. */
@@ -84,11 +98,18 @@ export type MutationDetail =
       reason: 'registry' | 'peer-set' | 'modifier'
     }
   | {
+      /**
+       * One package's peer-set variants were recombined. Every variant
+       * shares a name, version and integrity by construction -- that is
+       * what makes them variants -- so the ids alone are the whole story
+       * and the shared payload is carried once rather than per variant.
+       */
       kind: 'peer-variants-regrouped'
       name: string
       version?: string
-      from: NodeInfo[]
-      to: NodeInfo[]
+      integrity?: Integrity
+      from: DepID[]
+      to: DepID[]
     }
   | {
       kind: 'package-resolved'
@@ -123,6 +144,7 @@ export type NodeRole = 'mutated' | 'context'
 export type Region = {
   id: string
   label: string
+  /** the importers that pull these changes in most directly */
   importers: DepID[]
   nodes: {
     id: DepID

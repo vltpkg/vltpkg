@@ -226,7 +226,10 @@ const RegionScreen = ({
           mark: d.mark,
           color: d.color,
           text: d.text,
-          note: m.directness === 'direct' ? 'direct' : undefined,
+          note:
+            m.alsoReachedBy ? `+${m.alsoReachedBy} more`
+            : m.directness === 'direct' ? 'direct'
+            : undefined,
         })
       }),
       more ?
@@ -284,8 +287,8 @@ const NodeScreen = ({
     if (m.node.integrity) fields.push(['INTEGRITY', m.node.integrity])
   } else if (m.kind === 'peer-variants-regrouped') {
     fields.push(
-      ['FROM', m.from.map(n => n.id).join('\n              ')],
-      ['TO', m.to.map(n => n.id).join('\n              ')],
+      ['FROM', m.from.join('\n              ')],
+      ['TO', m.to.join('\n              ')],
     )
   } else if (m.kind === 'edge-added' || m.kind === 'edge-removed') {
     fields.push(

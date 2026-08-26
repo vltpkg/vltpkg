@@ -216,3 +216,26 @@ t.test('versionless ids in every renderer branch', async t => {
   t.notMatch(out, /undefined/, 'no undefined leaks anywhere')
   t.matchSnapshot(out, 'versionless output')
 })
+
+t.test('a change reaching past its region says so', async t => {
+  const shared = (v: string) => pkg('shared', v)
+  const mid = pkg('mid', '1.0.0')
+  const at = (v: string) => [
+    { id: shared(v), name: 'shared' },
+    { id: mid, name: 'mid' },
+  ]
+  const edges = (v: string) => [
+    { from: ws('near'), name: 'shared', to: shared(v) },
+    { from: ws('far'), name: 'mid', to: mid },
+    { from: mid, name: 'shared', to: shared(v) },
+  ]
+  const diff = diffLockfiles(
+    lockfile(at('1.0.0'), edges('1.0.0')),
+    lockfile(at('2.0.0'), edges('2.0.0')),
+  )
+  t.match(
+    humanDiffOutput(diff),
+    /\+1 more workspaces/,
+    'the region name alone would have under-reported this',
+  )
+})

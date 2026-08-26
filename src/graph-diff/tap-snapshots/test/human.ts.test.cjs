@@ -26,7 +26,7 @@ LOCKFILE DIFF
 unreachable
   ~ touched 1.0.0  changed: integrity  transitive
   = peers 1.0.0  peer-set peer.1 -> peer.9  transitive
-  = shuffled 1.0.0  1 peer variant(s) -> 2  transitive
+  = shuffled 1.0.0 1 peer variant(s) -> 2  transitive
   > side  x -> y  transitive
 
 `
@@ -39,7 +39,7 @@ LOCKFILE DIFF
 
 unreachable
   = tagged  modifier  ->  transitive
-  = peers   1 peer variant(s) -> 2  transitive
+  = peers  1 peer variant(s) -> 2  transitive
   > moved  ? -> ?  transitive
 
 `

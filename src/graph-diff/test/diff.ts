@@ -205,14 +205,31 @@ t.test(
 t.test(
   'N:M peer variants regroup rather than fabricate pairs',
   async t => {
+    // every variant shares an integrity by construction, so it rides on
+    // the mutation once rather than being repeated per variant
+    const sha = 'sha512-shared'
     const one = lockfile(
-      [{ id: pkg('foo', '1.0.0', '~peer.1'), name: 'foo' }],
+      [
+        {
+          id: pkg('foo', '1.0.0', '~peer.1'),
+          name: 'foo',
+          integrity: sha,
+        },
+      ],
       [],
     )
     const two = lockfile(
       [
-        { id: pkg('foo', '1.0.0', '~peer.2'), name: 'foo' },
-        { id: pkg('foo', '1.0.0', '~peer.3'), name: 'foo' },
+        {
+          id: pkg('foo', '1.0.0', '~peer.2'),
+          name: 'foo',
+          integrity: sha,
+        },
+        {
+          id: pkg('foo', '1.0.0', '~peer.3'),
+          name: 'foo',
+          integrity: sha,
+        },
       ],
       [],
     )
@@ -227,6 +244,8 @@ t.test(
       t.equal(m?.to.length, to)
       t.equal(m?.version, '1.0.0')
       t.equal(m?.identityOnly, true)
+      t.equal(typeof m?.from[0], 'string', 'ids, not whole nodes')
+      t.equal(m?.integrity, sha, 'carried once, not per variant')
     }
   },
 )
@@ -666,3 +685,53 @@ t.test('a name bucket of ids that carry no version', async t => {
     'no version means no direction can be claimed',
   )
 })
+
+t.test('every mutation carries the base fields', async t => {
+  const foo = pkg('foo', '1.0.0')
+  const d = diffLockfiles(
+    lockfile([{ id: foo, name: 'foo' }], []),
+    lockfile([{ id: pkg('foo', '2.0.0'), name: 'foo' }], []),
+  )
+  for (const m of d.mutations) {
+    // absent keys would leave consumers guessing whether false or
+    // unknown was meant, and this is the published contract
+    t.type(m.identityOnly, 'boolean', `${m.kind} identityOnly`)
+    t.type(m.alsoReachedBy, 'number', `${m.kind} alsoReachedBy`)
+    t.type(m.directness, 'string', `${m.kind} directness`)
+  }
+})
+
+t.test(
+  'a change reached from further away than its region says',
+  async t => {
+    const shared = pkg('shared', '1.0.0')
+    const mid = pkg('mid', '1.0.0')
+    // near/shared is one hop; far/mid/shared is two, so the region keys on
+    // `near` alone and would otherwise report this as near-only
+    const at = (v: string) => [
+      { id: pkg('shared', v), name: 'shared' },
+      { id: mid, name: 'mid' },
+    ]
+    const edges = (v: string) => [
+      { from: ws('near'), name: 'shared', to: pkg('shared', v) },
+      { from: ws('far'), name: 'mid', to: mid },
+      { from: mid, name: 'shared', to: pkg('shared', v) },
+    ]
+    const d = diffLockfiles(
+      lockfile(at('1.0.0'), edges('1.0.0')),
+      lockfile(at('2.0.0'), edges('2.0.0')),
+    )
+    t.equal(shared !== mid, true)
+    const m = only(d, 'package-resolved')[0]
+    t.strictSame(
+      d.regions[0]?.importers,
+      [ws('near')],
+      'filed under the nearest',
+    )
+    t.equal(
+      m?.alsoReachedBy,
+      1,
+      'but far reaches it too, and says so',
+    )
+  },
+)

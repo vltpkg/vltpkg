@@ -18,7 +18,7 @@ export const mutationNodes = (m: Mutation): DepID[] => {
     case 'package-resolved':
       return [m.from.id, m.to.id]
     case 'peer-variants-regrouped':
-      return [...m.from, ...m.to].map(node => node.id)
+      return [...m.from, ...m.to]
     case 'edge-added':
     case 'edge-removed':
       return edgeNodes(m.edge)
@@ -33,39 +33,56 @@ export const mutationNodes = (m: Mutation): DepID[] => {
 const edgeNodes = (e: EdgeInfo): DepID[] =>
   e.to === MISSING ? [e.from] : [e.from, e.to]
 
+export type Reach = {
+  /** importers at the shallowest depth that reaches `id` at all */
+  nearest: DepID[]
+  /** every importer that reaches it, nearest included */
+  all: DepID[]
+}
+
 /**
- * The importers *closest* to `id`, walking reverse edges breadth-first
- * and stopping at the first depth that reaches any.
+ * Walk reverse edges breadth-first, recording both the importers at the
+ * first depth that reaches `id` and every importer that reaches it.
  *
- * Closest rather than all-reachable is the whole point. In a monorepo
- * nearly every workspace can reach nearly every package, so
- * all-reachable attributes one transitive bump to all 43 workspaces and
- * the regions stop meaning anything. The nearest importer is the one
- * that actually pulled the package in.
+ * Regions key on `nearest`, because in a monorepo nearly every workspace
+ * can reach nearly every package and grouping on all-reachable collapses
+ * the regions into one useless blob. But nearest alone lies by omission:
+ * `yargs` is two hops from www/docs via @astrojs/check and three from
+ * every workspace via c8, so a region keyed on the nearest would report
+ * the bump as www/docs-only. `all` is what lets a region say "and 41
+ * others" instead.
  */
 const importersOf = (
   id: DepID,
   g: DiffGraph,
-  memo: Map<DepID, DepID[]>,
-) => {
+  memo: Map<DepID, Reach>,
+): Reach => {
   const hit = memo.get(id)
   if (hit) return hit
-  const found = new Set<DepID>()
+  const all = new Set<DepID>()
+  let nearest: Set<DepID> | undefined
   const seen = new Set<DepID>([id])
   let level: DepID[] = [id]
-  while (level.length && !found.size) {
+  while (level.length) {
     const next: DepID[] = []
+    const here = new Set<DepID>()
     for (const cur of level) {
       for (const { from } of g.dependents.get(cur) ?? []) {
         if (seen.has(from)) continue
         seen.add(from)
-        if (g.importers.has(from)) found.add(from)
-        else next.push(from)
+        if (g.importers.has(from)) {
+          here.add(from)
+          all.add(from)
+        } else next.push(from)
       }
     }
+    if (!nearest && here.size) nearest = here
     level = next
   }
-  const out = [...found].sort()
+  const out = {
+    nearest: [...(nearest ?? [])].sort(),
+    all: [...all].sort(),
+  }
   memo.set(id, out)
   return out
 }
@@ -90,7 +107,7 @@ export const extractRegions = (
   head: DiffGraph,
   base: DiffGraph,
 ): Region[] => {
-  const memo = new Map<DepID, DepID[]>()
+  const memo = new Map<DepID, Reach>()
   // owner-set key -> { importers, node id -> mutation ids }
   const groups = new Map<
     string,
@@ -101,17 +118,20 @@ export const extractRegions = (
     }
   >()
 
-  const ownersOf = (node: DepID) => {
+  const ownersOf = (node: DepID): Reach => {
     // a removed node is only reachable on the base side
     const g = head.nodes.has(node) ? head : base
-    return g.importers.has(node) ? [node] : importersOf(node, g, memo)
+    return g.importers.has(node) ?
+        { nearest: [node], all: [node] }
+      : importersOf(node, g, memo)
   }
 
   for (const m of mutations) {
     // one mutation can touch nodes with different owners (an edge
     // retarget, a version bump); the union owns it
+    const reach = mutationNodes(m).map(ownersOf)
     const importers = [
-      ...new Set(mutationNodes(m).flatMap(ownersOf)),
+      ...new Set(reach.flatMap(r => r.nearest)),
     ].sort()
     const key = importers.join('\0')
     let group = groups.get(key)
@@ -125,6 +145,16 @@ export const extractRegions = (
         }),
       )
     }
+    // counted per mutation, not per region: unioning across a region's
+    // whole mutation list would just say "something in here is shared",
+    // which is true of every large region and tells the reader nothing
+    const also = new Set<DepID>()
+    for (const r of reach) {
+      for (const id of r.all) {
+        if (!importers.includes(id)) also.add(id)
+      }
+    }
+    m.alsoReachedBy = also.size
     // tracked directly, not derived from `nodes`: an options change is
     // about the lockfile itself and names no node at all
     group.mutationIds.add(m.id)

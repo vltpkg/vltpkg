@@ -48,7 +48,10 @@ const line = (
     case 'peer-variants-regrouped':
       return [
         '=',
-        `${m.name} ${m.version ?? ''}  ${m.from.length} peer variant(s) -> ${m.to.length}`,
+        `${m.name} ${m.version ?? ''}  ${m.from.length} peer variant(s) -> ${m.to.length}`.replace(
+          '  ',
+          ' ',
+        ),
         90,
       ]
     case 'package-resolved':
@@ -131,7 +134,11 @@ export const humanDiffOutput = (
     out.push('', region.label)
     for (const m of shown) {
       const [marker, text, code] = line(m)
-      const tag = m.directness === 'direct' ? '' : dim('  transitive')
+      const tag =
+        (m.directness === 'direct' ? '' : dim('  transitive')) +
+        (m.alsoReachedBy ?
+          dim(`  +${m.alsoReachedBy} more workspaces`)
+        : '')
       out.push(`  ${paint(colors, code, marker)} ${text}${tag}`)
     }
   }
