@@ -327,6 +327,27 @@ export const alertRows = (diff: GraphDiff): AlertRow[] =>
         a.name.localeCompare(z.name),
     )
 
+/** How many of these changes carry an alert. */
+export const alertCount = (diff: GraphDiff, changes: Mutation[]) => {
+  if (!diff.alerts) return 0
+  let n = 0
+  for (const m of changes)
+    if (alertsFor(diff, nodeIdOf(m)).length) n++
+  return n
+}
+
+/** The head-side node a change is about, which is what alerts key on. */
+export const nodeIdOf = (m: Mutation | undefined) =>
+  !m ? undefined
+  : m.kind === 'node-added' || m.kind === 'node-removed' ? m.node.id
+  : (
+    m.kind === 'package-resolved' ||
+    m.kind === 'node-changed' ||
+    m.kind === 'node-identity-changed'
+  ) ?
+    m.to.id
+  : undefined
+
 /** The alerts against one package, if any. */
 export const alertsFor = (diff: GraphDiff, id: string | undefined) =>
   (id && diff.alerts?.[id as never]) || []

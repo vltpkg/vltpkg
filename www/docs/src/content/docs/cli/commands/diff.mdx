@@ -189,10 +189,14 @@ attached to. Paste it into a comment, or pipe it there from CI.
 
 Advisories are part of a diff, not a mode. Every run looks up the
 packages it *introduces* — what arrived or moved, not the whole tree —
-and reports what it finds above everything else: a `SECURITY` section at
-the top of the viewer and the static output, a table in the markdown
-report, `alerts` in the JSON, a `!` beside the package in a tree, and
-the detail on its own screen.
+and reports what it finds.
+
+In the viewer an alert is a column, not a place: `!` at the right-hand
+edge of every row that carries one, with a count when there are several,
+so a scan down that edge finds all of them at any level — workspace,
+tree, or package. The full record is on the package's own screen. Static
+output and the markdown report list them instead, since neither has
+anywhere to drill into.
 
 This is the only part of the command that leaves your machine, so it is
 built never to be fatal and never to be slow. Results are cached for

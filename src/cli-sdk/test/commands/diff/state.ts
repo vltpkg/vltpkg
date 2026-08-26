@@ -1,11 +1,13 @@
 import t from 'tap'
 import {
+  alertCount,
   alertRows,
   alertsFor,
   highlights,
   initialState,
   layout,
   nameOf,
+  nodeIdOf,
   reduce,
   treeLines,
   treeSize,
@@ -876,5 +878,46 @@ t.test('alerts flatten worst-first and resolve to names', async t => {
   t.strictSame(
     alertRows(tied).map(r => r.name),
     ['alpha', 'zeta'],
+  )
+})
+
+t.test('alerts count per set of changes, and per change', async t => {
+  const flagged = {
+    ...diff,
+    alerts: {
+      '~npm~beta@1.1.0': [
+        { type: 'shellAccess', severity: 'medium' },
+      ],
+    },
+  } as unknown as GraphDiff
+  const changes = visibleMutations(flagged, flagged.regions[0], OFF)
+  t.equal(
+    alertCount(flagged, changes),
+    1,
+    'one of the two changes carries one',
+  )
+  t.equal(alertCount(diff, changes), 0, 'none without a lookup')
+  t.equal(alertCount(flagged, []), 0)
+
+  // the head side is what an alert keys on
+  const [alpha, beta] = changes as [Mutation, Mutation]
+  t.equal(nodeIdOf(beta), '~npm~beta@1.1.0')
+  t.equal(nodeIdOf(alpha), '~npm~alpha@1.0.1')
+  t.equal(nodeIdOf(undefined), undefined)
+  t.equal(
+    nodeIdOf(mut({ id: 'x', kind: 'node-added' })),
+    '~npm~thing@1.0.0',
+    'an addition has no other side',
+  )
+  t.equal(
+    nodeIdOf(
+      mut({
+        id: 'y',
+        kind: 'edge-added',
+        edge: { name: 'z' } as never,
+      }),
+    ),
+    undefined,
+    'an edge change is about no single package',
   )
 })

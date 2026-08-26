@@ -1,9 +1,10 @@
 import { Box, Text, useApp, useInput, useStdout } from 'ink'
 import { createElement as $, useEffect, useState } from 'react'
 import {
-  alertRows,
+  alertCount,
   alertsFor,
   highlights,
+  nodeIdOf,
   initialState,
   layout,
   reduce,
@@ -42,18 +43,6 @@ const useRows = () => {
 }
 
 const version = (n: NodeInfo) => n.version ?? n.type
-
-/** The head-side node a mutation is about, for looking up alerts. */
-const nodeIdOf = (m: Mutation | undefined) =>
-  !m ? undefined
-  : m.kind === 'node-added' || m.kind === 'node-removed' ? m.node.id
-  : (
-    m.kind === 'package-resolved' ||
-    m.kind === 'node-changed' ||
-    m.kind === 'node-identity-changed'
-  ) ?
-    m.to.id
-  : undefined
 
 /** The version tail of a DepID, for the edges that only carry ids. */
 const atVersion = (id: string) => {
@@ -186,6 +175,7 @@ const Row = ({
   dim,
   indent = 0,
   prefix = '',
+  alert = '',
 }: {
   selected: boolean
   mark: string
@@ -197,6 +187,8 @@ const Row = ({
   indent?: number
   /** box-drawing run placing this row in a tree */
   prefix?: string
+  /** the rightmost column, and only ever an alert */
+  alert?: string
 }) =>
   $(
     Box,
@@ -216,6 +208,12 @@ const Row = ({
     ),
     // right edge, so the notes make a column of their own down the tree
     note ? $(Text, { dimColor: true }, `${note}  `) : null,
+    // and the alert sits outboard of even that, always the last column
+    $(
+      Box,
+      { width: 5, flexShrink: 0 },
+      $(Text, { color: 'red' }, alert),
+    ),
   )
 
 /** A section heading. The count leads, so it reads as a quantity. */
@@ -290,7 +288,7 @@ const LEGEND: [string, string, string][] = [
   ['=', 'gray', 'identity only: same package, different id'],
   ['·', 'gray', 'unchanged, shown for context'],
   ['+41', 'gray', 'also reached by 41 more workspaces'],
-  ['!', 'red', 'a security alert -- see --security'],
+  ['!', 'red', 'a security alert; a number means how many'],
   ['direct', 'gray', 'a workspace depends on this itself'],
   [
     'hidden',
@@ -361,6 +359,22 @@ const Cell = ({
       ),
     )
 
+/**
+ * The rightmost column of any row, and only ever an alert.
+ *
+ * A spacer pushes it to the true right edge rather than to wherever the
+ * previous column happened to end, so a scan down that edge finds every
+ * flagged package and nothing else competes for the position.
+ */
+const Flag = ({ n }: { n?: number }) => [
+  $(Box, { key: 'gap', flexGrow: 1, flexBasis: 0, minWidth: 0 }),
+  $(
+    Box,
+    { key: 'flag', width: 5, flexShrink: 0 },
+    $(Text, { color: 'red' }, n ? `${n === 1 ? '' : n}!` : ''),
+  ),
+]
+
 /** `+50 packages` rather than `1324 → 1374 packages`. */
 const Delta = ({ n, label }: { n: number; label: string }) =>
   $(
@@ -391,6 +405,7 @@ const SummaryScreen = ({
 }) => {
   const { major, downgraded, removed } = highlights(diff)
   const { workspaces } = view(diff, state)
+  const alerts = Object.values(diff.alerts ?? {}).length
   const { summary } = diff
   const budget = Math.max(1, rows - 4)
 
@@ -436,6 +451,7 @@ const SummaryScreen = ({
           : '',
         dim: true,
       }),
+      ...Flag({ n: alertsFor(diff, nodeIdOf(m)).length }),
     )
   }
 
@@ -448,38 +464,7 @@ const SummaryScreen = ({
       ]
     : []
 
-  const alerts = alertRows(diff)
   const head = [
-    ...(alerts.length ?
-      [
-        $(Heading, {
-          key: 'sec',
-          label: 'SECURITY',
-          count: alerts.length,
-          color: 'red',
-        }),
-        ...alerts.slice(0, 5).map((r, i) =>
-          $(
-            Box,
-            // the index, not id+type: the fetcher dedupes by kind today,
-            // but a renderer should not be the thing that breaks if it stops
-            { key: `alert${i}`, height: 1, width: '100%' },
-            $(Cell, { text: '    !', width: 7, color: 'red' }),
-            $(Cell, { text: r.name, width: nameWidth }),
-            $(Cell, {
-              text: r.type,
-              width: detailWidth,
-              color: 'red',
-            }),
-            $(Cell, {
-              text: r.cve ? `${r.severity}  ${r.cve}` : r.severity,
-              dim: true,
-            }),
-          ),
-        ),
-        $(Box, { key: 'secgap', height: 1 }),
-      ]
-    : []),
     ...section('MAJOR VERSIONS', major, 'yellow'),
     ...section('DOWNGRADED', downgraded, 'magenta'),
     ...section('REMOVED', removed, 'red'),
@@ -517,6 +502,9 @@ const SummaryScreen = ({
           n: summary.edges.head - summary.edges.base,
           label: 'edges',
         }),
+        alerts ?
+          $(Text, { color: 'red' }, `    ${alerts} alerts`)
+        : null,
         // "identity-only" meant nothing to anyone who had not read the
         // model; what the reader needs to know is that they are hidden
         // and which key shows them
@@ -549,7 +537,12 @@ const SummaryScreen = ({
           $(Cell, { text: '', width: 7 }),
           $(Cell, { text: w.label, width: nameWidth }),
           $(Cell, { text: '', width: detailWidth }),
-          $(Cell, { text: `${w.changes.length}`, dim: true }),
+          $(Cell, {
+            text: `${w.changes.length}`,
+            width: 8,
+            dim: true,
+          }),
+          ...Flag({ n: alertCount(diff, w.changes) }),
         ),
       ),
     ),
@@ -635,6 +628,7 @@ const WorkspaceScreen = ({
             })(),
             dim: true,
           }),
+          ...Flag({ n: alertCount(diff, t.changes) }),
         )
       }),
     ),
@@ -684,10 +678,9 @@ const TreeScreen = ({
           dim: !d,
           prefix: row.prefix,
           indent: 2,
+          alert: flagged.length ? '!' : '',
           note:
-            // an alert outranks reach: it is the reason to stop here
-            flagged.length ? `! ${flagged.length}`
-            : row.mutation?.alsoReachedBy ?
+            row.mutation?.alsoReachedBy ?
               `+${row.mutation.alsoReachedBy}`
             : row.mutation?.directness === 'direct' ? 'direct'
             : undefined,
