@@ -1,0 +1,7 @@
+export * from './types.ts'
+export { canonicalIdentity, project } from './projection.ts'
+export { diffLockfiles, hasChanges } from './diff.ts'
+export type { DiffOptions } from './diff.ts'
+export { extractRegions, mutationNodes } from './regions.ts'
+export { humanDiffOutput } from './human.ts'
+export type { HumanOptions } from './human.ts'
