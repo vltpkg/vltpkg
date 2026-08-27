@@ -37,6 +37,9 @@ export default defineConfig({
     ],
   },
   output: 'server',
+  // Requires the Vercel project's Output Directory setting to be unset/auto —
+  // pointing it at a subpath (e.g. .vercel/output or .vercel/output/static)
+  // breaks the Build Output API's function/routing detection.
   adapter: vercel(),
   integrations: [
     starlight({
