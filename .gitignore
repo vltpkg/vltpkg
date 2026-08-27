@@ -9,6 +9,7 @@
 tmp
 
 /.turbo
+/.vercel
 /docs
 /node_modules
 # install-generated skill mounts (vltpkg/vltpkg#1540)

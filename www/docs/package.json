@@ -68,7 +68,7 @@
   },
   "scripts": {
     "astro": "astro",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node --experimental-strip-types --no-warnings ./scripts/relocate-vercel-output.mts",
     "dev": "astro dev",
     "dev:rebuild": "VLT_DOCS_REBUILD=true astro dev",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
