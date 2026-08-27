@@ -92,3 +92,4 @@ opencode.jsonc
 .perry/
 .perry-cache/
 /scripts/perry/spikes/*/node_modules
+/scripts/perry/spikes/*/vendor
