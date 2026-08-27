@@ -48,6 +48,8 @@ export type State = {
   searchIndex: number
   /** sections opened past the first few rows */
   expanded: string[]
+  /** cursor into the workspaces the focused tree reaches */
+  reachIndex: number
 }
 
 export type Event =
@@ -80,6 +82,7 @@ export const initialState: State = {
   query: '',
   searchIndex: 0,
   expanded: [],
+  reachIndex: 0,
 }
 
 export type Filters = Pick<State, 'identity' | 'directOnly'>
@@ -589,22 +592,37 @@ export const searchHits = (
 export const locate = (
   diff: GraphDiff,
   filters: Filters,
-  nodeId: string | undefined,
+  match: ((m: Mutation) => boolean) | undefined,
 ) => {
-  if (!nodeId) return undefined
+  if (!match) return undefined
   const workspaces = workspacesOf(diff, filters)
   for (const [workspaceIndex, ws] of workspaces.entries()) {
     const trees = treesOf(ws.changes)
     for (const [treeIndex, tree] of trees.entries()) {
       const depIndex = treeLines(tree).findIndex(
-        l => nodeIdOf(l.mutation) === nodeId,
+        l => l.mutation && match(l.mutation),
       )
       if (depIndex >= 0)
         return { workspaceIndex, treeIndex, depIndex }
+      // a change the root line already stands for still has a tree
+      if (tree.also.some(match))
+        return { workspaceIndex, treeIndex, depIndex: 0 }
     }
   }
   return undefined
 }
+
+/** Match the one change a row is about, whatever kind it is. */
+export const isMutation = (id: string) => (m: Mutation) => m.id === id
+
+/**
+ * Match whichever change put this package in the graph.
+ *
+ * An edge has no node of its own, so it never answers to this -- which
+ * is right: an alert is against a package, not against a slot.
+ */
+export const isNode = (id: string | undefined) =>
+  id ? (m: Mutation) => nodeIdOf(m) === id : undefined
 
 export type SummaryRow =
   | {
@@ -741,6 +759,12 @@ export type Tree = {
   root?: Mutation
   /** everything below it, in no particular order */
   changes: Mutation[]
+  /**
+   * More changes about the root itself: the package arriving and the
+   * edge that now points at it are two facts about one line, so the
+   * tree draws one of them and keeps the rest findable.
+   */
+  also: Mutation[]
 }
 
 export const treesOf = (changes: Mutation[]): Tree[] => {
@@ -748,7 +772,10 @@ export const treesOf = (changes: Mutation[]): Tree[] => {
   const get = (name: string) => {
     let tree = trees.get(name)
     if (!tree) {
-      trees.set(name, (tree = { key: name, name, changes: [] }))
+      trees.set(
+        name,
+        (tree = { key: name, name, changes: [], also: [] }),
+      )
     }
     return tree
   }
@@ -757,7 +784,11 @@ export const treesOf = (changes: Mutation[]): Tree[] => {
     // dependency have different ids but are the same tree
     const head = m.path?.[0]
     if (head) get(head.name).changes.push(m)
-    else get(nameOf(m)).root = m
+    else {
+      const tree = get(nameOf(m))
+      if (tree.root) tree.also.push(m)
+      else tree.root = m
+    }
   }
   return [...trees.values()].sort(
     (a, z) =>
@@ -811,7 +842,17 @@ export const treeLines = (tree: Tree): TreeLine[] => {
     let at = root
     for (const step of m.path?.slice(1) ?? [])
       at = child(at, step.name)
-    child(at, nameOf(m)).mutation = m
+    const slot = child(at, nameOf(m))
+    // two changes can land on the same name under the same parent --
+    // two importers retargeting the same dependency, say -- and the
+    // second must not silently replace the first
+    if (slot.mutation) {
+      at.children.set(`${nameOf(m)}\u0000${m.id}`, {
+        name: nameOf(m),
+        mutation: m,
+        children: new Map(),
+      })
+    } else slot.mutation = m
   }
 
   const lines: TreeLine[] = [
@@ -823,23 +864,21 @@ export const treeLines = (tree: Tree): TreeLine[] => {
     },
   ]
   const walk = (node: Node, prefix: string, key: string) => {
-    const kids = [...node.children.values()].sort((a, z) =>
+    // by the map key, not the name: two changes can share a name under
+    // one parent, and a line has to stay one line
+    const kids = [...node.children.entries()].sort(([, a], [, z]) =>
       a.name.localeCompare(z.name),
     )
-    kids.forEach((kid, i) => {
+    kids.forEach(([slot, kid], i) => {
       const last = i === kids.length - 1
       lines.push({
-        key: `${key}/${kid.name}`,
+        key: `${key}/${slot}`,
         name: kid.name,
         ...(kid.mutation ? { mutation: kid.mutation } : {}),
         prefix: `${prefix}${last ? '└─' : '├─'} `,
       })
       // the vertical only continues past a child that has siblings below
-      walk(
-        kid,
-        `${prefix}${last ? '   ' : '│  '}`,
-        `${key}/${kid.name}`,
-      )
+      walk(kid, `${prefix}${last ? '   ' : '│  '}`, `${key}/${slot}`)
     })
   }
   walk(root, '', tree.name)
@@ -870,6 +909,8 @@ export const view = (diff: GraphDiff, state: State) => {
       state.screen === 'search' ?
         searchHits(diff, state, state.query)
       : [],
+    /** the workspaces the focused tree lands on */
+    reached: tree ? workspacesFor(diff, tree.changes) : [],
     groups,
     group,
     workspaces,
@@ -882,14 +923,16 @@ export const view = (diff: GraphDiff, state: State) => {
 
 /** The rows the cursor walks on whichever screen is showing. */
 const rowCount = (diff: GraphDiff, state: State) => {
-  const { rows, trees, lines, group, hits } = view(diff, state)
+  const { rows, trees, lines, group, hits, reached } = view(
+    diff,
+    state,
+  )
   return (
     state.screen === 'summary' ? rows.length
     : state.screen === 'search' ? hits.length
     : state.screen === 'alert' ? (group?.packages.length ?? 0)
     : state.screen === 'workspace' ? trees.length
-      // the reach list is read, not walked
-    : state.screen === 'reach' ? 0
+    : state.screen === 'reach' ? reached.length
     : lines.length
   )
 }
@@ -897,6 +940,7 @@ const rowCount = (diff: GraphDiff, state: State) => {
 const cursorKey = (screen: Screen) =>
   screen === 'summary' ? ('summaryIndex' as const)
   : screen === 'search' ? ('searchIndex' as const)
+  : screen === 'reach' ? ('reachIndex' as const)
   : screen === 'alert' ? ('alertPackageIndex' as const)
   : screen === 'workspace' ? ('treeIndex' as const)
   : ('depIndex' as const)
@@ -966,7 +1010,7 @@ export const reduce = (
     case 'ShowReach':
       // only meaningful once a tree is in focus
       return state.screen === 'tree' || state.screen === 'dep' ?
-          { ...state, screen: 'reach' }
+          { ...state, screen: 'reach', reachIndex: 0 }
         : state
 
     case 'NextTree':
@@ -1031,18 +1075,21 @@ export const reduce = (
         }
         // a highlight names a package, so opening it goes to that
         // package where it lives rather than to a screen about it
+        // by change, not by package: an edge is a slot rather than a
+        // node, and would otherwise open nothing
         const at =
           row?.kind === 'change' ?
-            locate(diff, state, nodeIdOf(row.mutation))
+            locate(diff, state, isMutation(row.mutation.id))
           : undefined
         return at ? { ...state, screen: 'tree', ...at } : state
       }
       if (state.screen === 'search') {
         const { hits } = view(diff, state)
+        const hit = hits[state.searchIndex]
         const at = locate(
           diff,
           state,
-          nodeIdOf(hits[state.searchIndex]?.mutation),
+          hit?.mutation && isMutation(hit.mutation.id),
         )
         return at ? { ...state, screen: 'tree', ...at } : state
       }
@@ -1051,9 +1098,30 @@ export const reduce = (
         const at = locate(
           diff,
           state,
-          group?.packages[state.alertPackageIndex]?.id,
+          isNode(group?.packages[state.alertPackageIndex]?.id),
         )
         return at ? { ...state, screen: 'tree', ...at } : state
+      }
+      if (state.screen === 'reach') {
+        // the same tree, read from another workspace: that is the whole
+        // question "who else gets this" is asking
+        const { reached, tree } = view(diff, state)
+        const label = reached[state.reachIndex]
+        const workspaces = workspacesOf(diff, state)
+        const ws = workspaces.find(w => w.label === label)
+        if (!ws) return state
+        const treeIndex = treesOf(ws.changes).findIndex(
+          t => t.name === tree?.name,
+        )
+        /* c8 ignore next - a workspace that reaches a tree has it */
+        if (treeIndex < 0) return state
+        return {
+          ...state,
+          screen: 'tree',
+          workspaceIndex: workspaces.indexOf(ws),
+          treeIndex,
+          depIndex: 0,
+        }
       }
       if (state.screen === 'workspace') {
         return { ...state, screen: 'tree', depIndex: 0 }

@@ -7,6 +7,8 @@ import {
   highlights,
   initialState,
   layout,
+  isMutation,
+  isNode,
   locate,
   nameOf,
   nodeIdOf,
@@ -515,6 +517,7 @@ t.test(
         key: 'x',
         name: 'x',
         changes: [resolved('loose', 'loose', '1.0.0', '1.0.1')],
+        also: [],
       }).map(l => `${l.prefix}${l.name}`),
       ['x', '└─ loose'],
       'directly under the root',
@@ -904,13 +907,55 @@ t.test(
     )
     const reach = reduce(tree, 'ShowReach', diff)
     t.equal(reduce(reach, 'Back', diff).screen, 'tree')
-    t.equal(
-      reduce(reach, 'MoveNext', diff).depIndex,
-      reach.depIndex,
-      'it is read, not walked',
-    )
   },
 )
+
+t.test('reading the same tree in another workspace', async t => {
+  // one region, two importers, so beta's tree lands in both
+  const shared = {
+    ...diff,
+    regions: [
+      {
+        ...(diff.regions[0] as object),
+        importers: ['workspace~www+docs', 'workspace~src+cli-sdk'],
+      },
+    ],
+  } as unknown as GraphDiff
+  const reach = run(
+    ['Select', 'Select', 'ShowReach'],
+    at('workspace', shared),
+    shared,
+  )
+  t.strictSame(view(shared, reach).reached, [
+    'src/cli-sdk',
+    'www/docs',
+  ])
+  t.equal(reach.reachIndex, 0, 'and starts at the top of the list')
+
+  const moved = reduce(reach, 'MoveNext', shared)
+  t.equal(
+    moved.reachIndex,
+    1,
+    'the list is walked now, not just read',
+  )
+
+  const there = reduce(moved, 'Select', shared)
+  t.equal(there.screen, 'tree')
+  t.equal(
+    view(shared, there).workspace?.label,
+    'www/docs',
+    'the same tree, read from the workspace that was picked',
+  )
+  t.equal(view(shared, there).tree?.name, 'beta')
+  t.equal(there.depIndex, 0)
+
+  // a name that is not a workspace, and a tree that is not in one
+  t.strictSame(
+    reduce({ ...reach, reachIndex: 99 }, 'Select', shared),
+    { ...reach, reachIndex: 99 },
+    'nothing to open',
+  )
+})
 
 t.test('alerts flatten worst-first and resolve to names', async t => {
   const d = {
@@ -1165,10 +1210,16 @@ t.test('every summary row opens something', async t => {
 t.test('opening something that is not in the tree', async t => {
   t.equal(locate(rich, OFF, undefined), undefined, 'nothing to find')
   t.equal(
-    locate(rich, OFF, '~npm~nowhere@1.0.0'),
+    locate(rich, OFF, isNode('~npm~nowhere@1.0.0')),
     undefined,
     'not in any workspace',
   )
+  t.equal(
+    locate(rich, OFF, isMutation('no-such-change')),
+    undefined,
+    'nor is that change anywhere',
+  )
+  t.equal(isNode(undefined), undefined, 'nothing to match on')
   // a group whose package is not in a tree leaves the reader where they are
   const orphan = {
     ...rich,
@@ -1483,4 +1534,100 @@ t.test('a long section shows its first few', async t => {
   t.strictSame(shut.expanded, [])
   t.equal(shown(shut), capped)
   t.equal(summaryRows(many, shut)[shut.summaryIndex]?.kind, 'more')
+})
+
+t.test('two changes about the same name, one parent', async t => {
+  // two importers retargeting the same dependency is two facts, and
+  // silently keeping only the later one loses a row nobody can reach
+  const step = { id: '~npm~beta@1.1.0', name: 'beta' }
+  const retarget = (id: string, parent: string): Mutation =>
+    mut({
+      id,
+      kind: 'edge-retargeted',
+      from: { from: parent, name: 'alpha', to: '~npm~alpha@1.0.0' },
+      to: { from: parent, name: 'alpha', to: '~npm~alpha@1.0.1' },
+      path: [step],
+    } as never)
+  const d = {
+    ...diff,
+    mutations: [
+      resolved('real-b', 'beta', '1.0.0', '1.1.0'),
+      retarget('e1', '~npm~one@1.0.0'),
+      retarget('e2', '~npm~two@1.0.0'),
+    ],
+    regions: [
+      {
+        ...(diff.regions[0] as object),
+        mutationIds: ['real-b', 'e1', 'e2'],
+      },
+    ],
+  } as unknown as GraphDiff
+
+  const [tree] = treesOf(
+    workspacesOf(d, initialState)[0]?.changes ?? [],
+  )
+  const lines = treeLines(tree!)
+  t.strictSame(
+    lines.map(l => l.mutation?.id),
+    ['real-b', 'e1', 'e2'],
+    'both are drawn',
+  )
+  t.equal(
+    new Set(lines.map(l => l.key)).size,
+    lines.length,
+    'and each line is its own line',
+  )
+
+  // an edge is a slot, not a node, so it opens by change rather than by
+  // package -- which is the only way either of these opens at all
+  for (const id of ['e1', 'e2']) {
+    t.ok(locate(d, OFF, isMutation(id)), `${id} opens`)
+  }
+})
+
+t.test('a change the root line already stands for', async t => {
+  // the package arriving and the edge that now points at it are two
+  // facts about one line: the tree draws one, and the other still has
+  // to lead somewhere
+  const d = {
+    ...diff,
+    mutations: [
+      mut({
+        id: 'new',
+        kind: 'node-added',
+        node: node('brand', '1.0.0'),
+      }),
+      mut({
+        id: 'wire',
+        kind: 'edge-added',
+        edge: { name: 'brand', spec: '^1', type: 'prod' } as never,
+      }),
+    ],
+    regions: [
+      {
+        ...(diff.regions[0] as object),
+        mutationIds: ['new', 'wire'],
+      },
+    ],
+  } as unknown as GraphDiff
+
+  const [tree] = treesOf(
+    workspacesOf(d, initialState)[0]?.changes ?? [],
+  )
+  t.equal(tree?.root?.id, 'new')
+  t.strictSame(
+    tree?.also.map(m => m.id),
+    ['wire'],
+    'kept, rather than overwriting the root',
+  )
+  t.equal(
+    treeLines(tree!).length,
+    1,
+    'and not drawn as a second row saying the same thing',
+  )
+  t.strictSame(locate(d, OFF, isMutation('wire')), {
+    workspaceIndex: 0,
+    treeIndex: 0,
+    depIndex: 0,
+  })
 })

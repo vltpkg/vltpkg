@@ -88,8 +88,9 @@ package       one change in full"
 
 A tree lives in one workspace but its packages are usually shared, so
 each one reports how far it reaches. Press `w` on a tree to list the
-workspaces it actually lands on, and `n` / `p` to step between trees
-without going back up.
+workspaces it actually lands on, and `⏎` on one of those to read the
+same tree from there — which is what "who else gets this" is really
+asking. `n` / `p` step between trees without going back up.
 
 The summary leads with the changes that are not a routine version bump,
 each under a heading that names exactly what it holds — a section that
@@ -141,6 +142,13 @@ else for one consumer — so those rows name the consumer instead of the
 workspace, since several parents can repoint the same dependency and the
 rows would otherwise read as duplicates.
 
+Every row on the page opens: an alert to the packages carrying it, a
+highlight or an edge to that change inside its tree, a workspace to its
+trees. An edge is a slot rather than a package, so it opens by the
+change rather than by the package it points at — the same `⏎` that gets
+you to a bump gets you to the wiring, and one more shows the slot, both
+specs, and both targets.
+
 A long section shows its first six and offers the rest as a `▾ N more`
 row; `⏎` opens it and folds it back. A hundred and forty-nine patch
 bumps under a heading is the noise this command exists to remove, but
@@ -172,7 +180,7 @@ Press `?` for a legend of every symbol.
 ←  / esc  back a level
 /         find a package by name
 n / p     step to the next or previous tree
-w         which workspaces this tree reaches
+w         which workspaces this tree reaches — and open it in one
 d         direct dependencies only
 i         show the hidden changes (see below)
 ?         legend

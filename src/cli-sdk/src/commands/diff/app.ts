@@ -913,6 +913,7 @@ const TreeScreen = ({
 }
 
 /** Which workspaces the focused tree actually lands on. */
+/** Every workspace the focused tree lands on, and a way into each. */
 const ReachScreen = ({
   diff,
   state,
@@ -922,58 +923,41 @@ const ReachScreen = ({
   state: State
   rows: number
 }) => {
-  const { tree } = view(diff, state)
-  const names = tree ? workspacesFor(diff, tree.changes) : []
+  const { tree, reached } = view(diff, state)
   const { body } = layout(rows)
-  // two columns, so a long list of workspaces stays on one screen
-  const half = Math.ceil(names.length / 2)
-  const left = names.slice(0, half)
-  const right = names.slice(half)
+  const win = windowed(reached, state.reachIndex, body)
 
   return $(
     Box,
     { flexDirection: 'column', width: '100%', height: rows },
     $(Title, {
-      // a count, not a cursor position: nothing here is walked
+      at: Math.min(state.reachIndex + 1, reached.length),
+      of: reached.length,
       label: `WORKSPACES REACHED BY ${tree?.name ?? ''}`,
-      trailing: `${names.length} of them`,
     }),
     $(
       Box,
-      { height: body, width: '100%', flexDirection: 'row' },
-      $(
-        Box,
-        { width: '50%', flexDirection: 'column' },
-        ...left
-          .slice(0, body)
-          .map(n =>
-            $(
-              Box,
-              { key: n, height: 1, width: '100%' },
-              $(Text, { wrap: 'truncate-end' }, `    ${n}`),
-            ),
-          ),
-      ),
-      $(
-        Box,
-        {
-          flexGrow: 1,
-          flexBasis: 0,
-          minWidth: 0,
-          flexDirection: 'column',
-        },
-        ...right
-          .slice(0, body)
-          .map(n =>
-            $(
-              Box,
-              { key: n, height: 1, width: '100%' },
-              $(Text, { wrap: 'truncate-end' }, `  ${n}`),
-            ),
-          ),
+      { height: body, width: '100%', flexDirection: 'column' },
+      ...win.slice.map((n, i) =>
+        $(
+          Box,
+          {
+            key: n,
+            height: 1,
+            width: '100%',
+            ...(win.start + i === state.reachIndex ?
+              { backgroundColor: 'blue' }
+            : {}),
+          },
+          $(Text, { wrap: 'truncate-end' }, `    ${n}`),
+        ),
       ),
     ),
-    $(Footer, { keys: '← back   q quit' }),
+    $(Footer, {
+      keys:
+        '↑↓ move   ⏎ read it there   ← back   q quit' +
+        (win.more ? `      ${win.more} below` : ''),
+    }),
   )
 }
 
