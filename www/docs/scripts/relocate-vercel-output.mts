@@ -11,8 +11,8 @@
  * guessing a static `dist` output and the deploy fails or serves
  * an incomplete site (functions/routes silently dropped).
  */
-import { existsSync, rmSync, renameSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, mkdirSync, rmSync, renameSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 
 const from = resolve(import.meta.dirname, '../.vercel/output')
 const to = resolve(import.meta.dirname, '../../../.vercel/output')
@@ -22,6 +22,7 @@ if (!existsSync(from)) {
   process.exit(1)
 }
 
+mkdirSync(dirname(to), { recursive: true })
 rmSync(to, { recursive: true, force: true })
 renameSync(from, to)
 console.log(`relocate-vercel-output: moved output to ${to}`)
