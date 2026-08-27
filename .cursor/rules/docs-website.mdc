@@ -1,6 +1,6 @@
 ---
 description: Documentation website development (Astro/Starlight)
-globs: www/docs/src/**/*,vercel.json,www/docs/vercel.json,www/docs/astro.config.mts
+globs: www/docs/src/**/*
 alwaysApply: false
 ---
 # Documentation Website (`www/docs/`)
@@ -12,15 +12,12 @@ Refer to [Astro/Starlight](https://docs.vlt.sh) for code blocks, components and 
 
 ```
 www/docs/src/content/docs/
-├── get-started/            # Intro, use cases, npm interop
-│   └── concepts/           # Core concepts (dependencies, manifests, registries)
+├── get-started/concepts/   # Core concepts (dependencies, manifests, registries)
+├── migration/              # Migration guides from npm/pnpm/yarn
 ├── cli/                    # CLI reference (options, guides)
 │   ├── commands/           # Per-command docs
-│   ├── migration/          # Migration guides from npm/pnpm/yarn
 │   └── selectors/          # DSS selector reference (pseudo-classes, combinators, etc.)
-├── registry/               # vlt registry docs (publishing, tokens, dashboard)
 ├── packages/               # Package API docs (auto-generated)
-├── feedback/               # Feedback page
 └── index.mdx               # Site homepage
 ```
 
@@ -53,26 +50,3 @@ cd www/docs
 pnpm dev    # local dev server
 pnpm build  # production build
 ```
-
-## Deployment (Vercel)
-
-`www/docs` uses `output: 'server'` with the `@astrojs/vercel` adapter,
-which emits Vercel's Build Output API v3 (`www/docs/.vercel/output/`) —
-this includes both the static assets **and** the `_render` serverless
-function plus `config.json` routing rules that make dynamic/SSR routes
-(e.g. `src/pages/api/**`) work.
-
-**Never set an `outputDirectory` for this project** — not in the root
-`vercel.json`, and not in the Vercel dashboard's Framework Settings.
-Pointing `outputDirectory` at `www/docs/dist` or even
-`www/docs/.vercel/output/static` makes Vercel deploy only that static
-folder as a plain static site, silently dropping the adapter's
-serverless function and routing config. Symptoms: static pages still
-render fine, but any SSR/API route (`/api/markdown/*`, `/_image`, etc.)
-404s at the Vercel platform level (`x-vercel-error: NOT_FOUND`), and if
-`outputDirectory` points above `.vercel/output/static`, pages can end
-up served from an unexpected subpath (e.g. `/client/`).
-
-Vercel should auto-detect `.vercel/output` produced by the adapter —
-leave Output Directory unset/default in both `vercel.json` and the
-dashboard.
