@@ -1,17 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" \"$VERCEL_GIT_COMMIT_SHA\" -- www/docs/ vercel.json || exit 1",
-  "headers": [
-    {
-      "source": "/",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "</.well-known/agent-skills/markdown-negotiation/SKILL.md>; rel=\"agent-skill\""
-        }
-      ]
-    }
-  ],
+  "ignoreCommand": "git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" \"$VERCEL_GIT_COMMIT_SHA\" -- www/docs/ || exit 1",
+  "outputDirectory": "www/docs/dist",
   "redirects": [
     {
       "source": "/migration/from-pnpm",
@@ -27,18 +17,6 @@
       "source": "/migration/from-npm",
       "destination": "/cli/migration/from-npm",
       "permanent": true
-    },
-    {
-      "source": "/:slug((?!api/)(?!.*\\$).*)",
-      "has": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": "(.*)text/markdown(.*)"
-        }
-      ],
-      "destination": "/api/markdown/:slug",
-      "permanent": false
     }
   ]
 }
