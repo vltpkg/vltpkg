@@ -12,7 +12,13 @@ import {
   windowed,
   workspacesFor,
 } from './state.ts'
-import type { State, SummaryRow, Tree, TreeLine } from './state.ts'
+import type {
+  Event,
+  State,
+  SummaryRow,
+  Tree,
+  TreeLine,
+} from './state.ts'
 import { depName } from '@vltpkg/graph-diff'
 import type {
   GraphDiff,
@@ -406,7 +412,9 @@ const SummaryScreen = ({
   const { rows: all, summaryIndex } = view(diff, state)
   const { summary } = diff
   const alerts = Object.values(diff.alerts ?? {}).length
-  const budget = Math.max(1, rows - 3)
+  // 4, not 3: the header owns a blank row under it, or the first
+  // section runs straight into the counts above it
+  const budget = Math.max(1, rows - 4)
   const win = windowed(all, summaryIndex, budget)
 
   // one set of columns down the whole screen, whatever the row is
@@ -521,7 +529,7 @@ const SummaryScreen = ({
     { flexDirection: 'column', width: '100%', height: rows },
     $(
       Box,
-      { height: 2, width: '100%', flexDirection: 'column' },
+      { height: 3, width: '100%', flexDirection: 'column' },
       $(
         Box,
         { height: 1, width: '100%', justifyContent: 'space-between' },
@@ -554,6 +562,7 @@ const SummaryScreen = ({
           `    ${summary.identityOnly} hidden`,
         ),
       ),
+      $(Box, { height: 1 }),
     ),
     $(
       Box,
@@ -563,7 +572,7 @@ const SummaryScreen = ({
       ),
     ),
     $(Footer, {
-      keys: `↑↓ move   ⏎ open   d direct (${state.directOnly ? 'on' : 'off'})   i hidden (${state.identity ? 'on' : 'off'})   ? legend   q quit`,
+      keys: `↑↓ move   ⏎ open   / find   d direct (${state.directOnly ? 'on' : 'off'})   i hidden (${state.identity ? 'on' : 'off'})   ? legend   q quit`,
     }),
   )
 }
@@ -620,9 +629,9 @@ const AlertScreen = ({
           }),
           $(Cell, {
             text:
-              p.reach.length === 1 ? p.reach[0]!
-              : p.reach.length ? `${p.reach.length} workspaces`
-              : '',
+              p.reach.length > 1 ?
+                `${p.reach.length} workspaces`
+              : (p.reach[0] ?? ''),
             dim: true,
           }),
         ),
@@ -630,6 +639,100 @@ const AlertScreen = ({
     ),
     $(Footer, {
       keys: '↑↓ move   ⏎ find it in its tree   ← back   q quit',
+    }),
+  )
+}
+
+/**
+ * Find a package by name, and answer the question behind looking: where
+ * is it, and did it come in under something I chose?
+ *
+ * Context rows count as hits. A package that only ever appears partway
+ * down someone else's tree is exactly what a reader cannot find by
+ * scrolling, so leaving it out would gut the feature -- it just has
+ * nothing to open, and says so by staying dim.
+ */
+const SearchScreen = ({
+  diff,
+  state,
+  rows,
+}: {
+  diff: GraphDiff
+  state: State
+  rows: number
+}) => {
+  const { hits } = view(diff, state)
+  const { body } = layout(rows)
+  const win = windowed(hits, state.searchIndex, body)
+  const nameWidth = Math.min(
+    36,
+    Math.max(16, ...hits.map(h => h.name.length + 2)),
+  )
+
+  return $(
+    Box,
+    { flexDirection: 'column', width: '100%', height: rows },
+    $(
+      Box,
+      { height: 1, width: '100%', justifyContent: 'space-between' },
+      $(
+        Box,
+        null,
+        $(Text, { bold: true }, '  /'),
+        $(Text, null, `${state.query}\u2588`),
+      ),
+      $(
+        Text,
+        { dimColor: true },
+        `${state.query ? `${hits.length} found` : 'type a package name'}  `,
+      ),
+    ),
+    $(
+      Box,
+      { height: body, width: '100%', flexDirection: 'column' },
+      ...win.slice.map((h, i) => {
+        const d = h.mutation ? describe(h.mutation) : undefined
+        return $(
+          Box,
+          {
+            key: h.key,
+            height: 1,
+            width: '100%',
+            ...(win.start + i === state.searchIndex ?
+              { backgroundColor: 'blue' }
+            : {}),
+          },
+          $(Cell, {
+            text: `    ${d?.mark ?? '\u00b7'}`,
+            width: 7,
+            color: d?.color ?? 'gray',
+          }),
+          $(Cell, {
+            text: h.name,
+            width: nameWidth,
+            dim: !h.mutation,
+          }),
+          $(Cell, {
+            text: d?.detail ?? '',
+            width: 20,
+            color: d?.color,
+          }),
+          $(Cell, {
+            text:
+              h.workspaces.length > 1 ?
+                `${h.workspaces.length} workspaces`
+              : (h.workspaces[0] ?? ''),
+            width: 16,
+            dim: true,
+          }),
+          // named, not counted: which direct dependency dragged it in is
+          // the whole reason to look a transitive package up
+          $(Cell, { text: h.trees.join(', '), dim: true }),
+        )
+      }),
+    ),
+    $(Footer, {
+      keys: '↑↓ move   ⏎ open its tree   ⌫ edit   esc back   q quit',
     }),
   )
 }
@@ -716,7 +819,7 @@ const WorkspaceScreen = ({
     ),
     $(Footer, {
       keys:
-        '↑↓ move   ⏎ open tree   ← back   ? legend   q quit' +
+        '↑↓ move   ⏎ open tree   / find   ← back   q quit' +
         (win.more ? `      ${win.more} below` : ''),
     }),
   )
@@ -771,7 +874,7 @@ const TreeScreen = ({
     ),
     $(Footer, {
       keys:
-        '↑↓ move   ⏎ details   n/p tree   w workspaces   ← back   q quit' +
+        '↑↓ move   ⏎ details   n/p tree   w reach   / find   ← back   q quit' +
         (win.more ? `      ${win.more} below` : ''),
     }),
   )
@@ -1007,7 +1110,24 @@ export const App = ({
   const { exit } = useApp()
 
   useInput((input, key) => {
-    if (input === 'q' || (key.ctrl && input === 'c')) return exit()
+    if (key.ctrl && input === 'c') return exit()
+
+    // while the box is open every letter is text: a search you cannot
+    // type `d` or `q` into is not a search
+    if (state.screen === 'search' && !state.legend) {
+      const typed: Event | undefined =
+        key.downArrow ? 'MoveNext'
+        : key.upArrow ? 'MovePrevious'
+        : key.return ? 'Select'
+        : key.escape ? 'Back'
+        : key.backspace || key.delete ? 'Backspace'
+        : input && !key.meta ? { key: 'Type', char: input }
+        : undefined
+      if (typed) setState(s => reduce(s, typed, diff))
+      return
+    }
+
+    if (input === 'q') return exit()
     const event =
       key.downArrow || input === 'j' ? 'MoveNext'
       : key.upArrow || input === 'k' ? 'MovePrevious'
@@ -1019,6 +1139,7 @@ export const App = ({
       : input === 'n' ? 'NextTree'
       : input === 'p' ? 'PreviousTree'
       : input === 'w' ? 'ShowReach'
+      : input === '/' ? 'OpenSearch'
       : undefined
     if (event) setState(s => reduce(s, event, diff))
   })
@@ -1032,6 +1153,8 @@ export const App = ({
   return (
     state.screen === 'summary' ?
       $(SummaryScreen, { diff, state, rows })
+    : state.screen === 'search' ?
+      $(SearchScreen, { diff, state, rows })
     : state.screen === 'alert' ? $(AlertScreen, { diff, state, rows })
     : state.screen === 'workspace' ?
       $(WorkspaceScreen, { diff, state, rows })

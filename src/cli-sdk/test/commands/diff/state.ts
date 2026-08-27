@@ -11,6 +11,7 @@ import {
   nameOf,
   nodeIdOf,
   reduce,
+  searchHits,
   selectable,
   summaryCursor,
   summaryRows,
@@ -27,7 +28,6 @@ import {
 import type {
   Event,
   State,
-  SummaryRow,
 } from '../../../src/commands/diff/state.ts'
 import type { GraphDiff, Mutation } from '@vltpkg/graph-diff'
 
@@ -1016,7 +1016,11 @@ t.test('the summary reads top down, worst first', async t => {
   t.equal(
     summaryCursor(
       [
-        rows[1]!,
+        {
+          kind: 'workspace',
+          key: 'w',
+          workspace: { id: 'a', label: 'a', changes: [] },
+        },
         { kind: 'heading', key: 'h', label: 'X', count: 0 },
       ],
       1,
@@ -1071,11 +1075,7 @@ t.test('every summary row opens something', async t => {
   // and from there, the package's own tree
   const tree = reduce(alert, 'Select', rich)
   t.equal(tree.screen, 'tree')
-  t.equal(
-    view(rich, tree).tree?.name,
-    'beta',
-    'alpha hangs off beta',
-  )
+  t.equal(view(rich, tree).tree?.name, 'beta', 'alpha hangs off beta')
   t.equal(
     reduce(alert, 'Back', rich).screen,
     'summary',
@@ -1183,4 +1183,156 @@ t.test('walking a list of flagged packages', async t => {
     bare,
     'and opens nothing either',
   )
+})
+
+t.test('finding a package says where it lives', async t => {
+  const hits = searchHits(rich, OFF, 'alpha')
+  t.equal(hits.length, 1)
+  t.equal(hits[0]?.name, 'alpha')
+  t.strictSame(hits[0]?.workspaces, ['www/docs'])
+  t.strictSame(
+    hits[0]?.trees,
+    ['beta'],
+    'the direct dependency it came in under, which is the point',
+  )
+  t.equal(
+    nodeIdOf(hits[0]?.mutation),
+    '~npm~alpha@1.0.1',
+    'and something to open',
+  )
+
+  t.strictSame(searchHits(rich, OFF, ''), [], 'nothing typed yet')
+  t.strictSame(searchHits(rich, OFF, '  '), [], 'nor whitespace')
+  t.strictSame(searchHits(rich, OFF, 'nope'), [], 'no such package')
+  t.equal(
+    searchHits(rich, OFF, 'ALPH').length,
+    1,
+    'case is not something a reader should have to get right',
+  )
+  t.strictSame(
+    searchHits(rich, OFF, 'a').map(h => h.name),
+    ['alpha', 'beta', 'gamma'],
+    'a substring matches anywhere in the name',
+  )
+})
+
+/**
+ * A tree whose root never changed: nobody bumped delta, but the package
+ * under it moved, so delta is drawn as context -- and is exactly what a
+ * reader cannot find by scrolling.
+ */
+const context = {
+  ...rich,
+  mutations: [
+    ...rich.mutations,
+    resolved('ctx', 'epsilon', '1.0.0', '1.0.1', {
+      path: [{ id: '~npm~delta@1.0.0', name: 'delta' }],
+    }),
+  ],
+  regions: [
+    {
+      ...(rich.regions[0] as object),
+      mutationIds: ['real-a', 'real-b', 'noise-a', 'big', 'ctx'],
+    },
+    rich.regions[1],
+  ],
+} as unknown as GraphDiff
+
+t.test(
+  'a package that is only ever context still turns up',
+  async t => {
+    const [hit] = searchHits(context, OFF, 'delta')
+    t.equal(hit?.name, 'delta', 'found by the tree it roots')
+    t.equal(hit?.mutation, undefined, 'so there is nothing to open')
+    t.strictSame(hit?.trees, ['delta'])
+    t.strictSame(hit?.workspaces, ['www/docs'])
+  },
+)
+
+t.test(
+  'what was typed sorts above what merely contains it',
+  async t => {
+    const named = (q: string) =>
+      searchHits(rich, OFF, q).map(h => h.name)
+    t.strictSame(
+      named('beta'),
+      ['beta'],
+      'an exact name is the one wanted',
+    )
+    const prefixed = {
+      ...rich,
+      mutations: [
+        ...rich.mutations,
+        resolved('pre', 'alp', '1.0.0', '1.0.1', {
+          path: [{ id: '~npm~beta@1.1.0', name: 'beta' }],
+        }),
+        resolved('mid', 'unalpha', '1.0.0', '1.0.1', {
+          path: [{ id: '~npm~beta@1.1.0', name: 'beta' }],
+        }),
+      ],
+      regions: [
+        {
+          ...(rich.regions[0] as object),
+          mutationIds: ['real-a', 'real-b', 'big', 'pre', 'mid'],
+        },
+        rich.regions[1],
+      ],
+    } as unknown as GraphDiff
+    t.strictSame(
+      searchHits(prefixed, OFF, 'alp').map(h => h.name),
+      ['alp', 'alpha', 'unalpha'],
+      'exact, then what starts with it, then the rest by name',
+    )
+  },
+)
+
+t.test('the search box takes what is typed', async t => {
+  const open = reduce(initialState, 'OpenSearch', rich)
+  t.equal(open.screen, 'search')
+  t.equal(open.query, '')
+
+  const typed = ['a', 'l', 'p'].reduce(
+    (s, char) => reduce(s, { key: 'Type', char }, rich),
+    open,
+  )
+  t.equal(typed.query, 'alp')
+  t.equal(reduce(typed, 'Backspace', rich).query, 'al')
+  t.equal(
+    reduce(reduce(open, 'Backspace', rich), 'Backspace', rich).query,
+    '',
+    'backing off an empty box is not an error',
+  )
+
+  // the list under the cursor is a different list after every keystroke
+  const moved = reduce(typed, 'MoveNext', rich)
+  t.equal(moved.searchIndex, 0, 'one hit, so nowhere to move')
+  t.equal(
+    reduce(moved, { key: 'Type', char: 'x' }, rich).searchIndex,
+    0,
+  )
+
+  t.equal(reduce(typed, 'Back', rich).screen, 'summary')
+})
+
+t.test('opening a search hit goes to its tree', async t => {
+  const found = ['a', 'l', 'p', 'h', 'a'].reduce(
+    (s, char) => reduce(s, { key: 'Type', char }, rich),
+    reduce(initialState, 'OpenSearch', rich),
+  )
+  const at = reduce(found, 'Select', rich)
+  t.equal(at.screen, 'tree')
+  t.equal(view(rich, at).tree?.name, 'beta')
+  t.equal(
+    view(rich, at).lines[at.depIndex]?.name,
+    'alpha',
+    'with the cursor already on it',
+  )
+
+  // a context row has no change behind it, so there is nowhere to go
+  const dim = ['d', 'e', 'l', 't', 'a'].reduce(
+    (s, char) => reduce(s, { key: 'Type', char }, context),
+    reduce(initialState, 'OpenSearch', context),
+  )
+  t.equal(view(context, dim).hits.length, 1)
+  t.strictSame(reduce(dim, 'Select', context), dim)
 })

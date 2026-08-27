@@ -19,6 +19,8 @@ export type Screen =
   | 'dep'
   /** which workspaces the focused tree lands on */
   | 'reach'
+  /** find a package by name, anywhere in the diff */
+  | 'search'
 
 export type State = {
   screen: Screen
@@ -40,6 +42,10 @@ export type State = {
   directOnly: boolean
   /** the symbol legend, over whichever screen is showing */
   legend: boolean
+  /** what has been typed into the search box */
+  query: string
+  /** cursor into the search results */
+  searchIndex: number
 }
 
 export type Event =
@@ -53,6 +59,10 @@ export type Event =
   | 'NextTree'
   | 'PreviousTree'
   | 'ShowReach'
+  | 'OpenSearch'
+  | 'Backspace'
+  // the one event with something to carry
+  | { key: 'Type'; char: string }
 
 export const initialState: State = {
   screen: 'summary',
@@ -65,6 +75,8 @@ export const initialState: State = {
   identity: false,
   directOnly: false,
   legend: false,
+  query: '',
+  searchIndex: 0,
 }
 
 export type Filters = Pick<State, 'identity' | 'directOnly'>
@@ -424,6 +436,95 @@ export const alertGroups = (diff: GraphDiff): AlertGroup[] => {
   )
 }
 
+/** Every package name a tree draws, context rows included. */
+const namesIn = (tree: Tree) => {
+  const names = new Set<string>([tree.name])
+  if (tree.root) names.add(nameOf(tree.root))
+  for (const m of tree.changes) {
+    names.add(nameOf(m))
+    // an intermediate that did not itself change is still in the tree,
+    // and is exactly the kind of thing a search is looking for
+    /* c8 ignore next - only a change with a path is under a tree */
+    for (const step of m.path ?? []) names.add(step.name)
+  }
+  return names
+}
+
+export type SearchHit = {
+  key: string
+  name: string
+  /** the change to open, absent for a package drawn only as context */
+  mutation?: Mutation
+  /** the workspaces this package is reachable from */
+  workspaces: string[]
+  /** the direct dependencies it came in under */
+  trees: string[]
+}
+
+/**
+ * Find a package by name and say where it lives.
+ *
+ * The question behind `/` is never "does this exist" -- it is "am I on
+ * the hook for this one", so a hit is only worth showing with the
+ * workspaces and the trees it turned up in attached.
+ */
+export const searchHits = (
+  diff: GraphDiff,
+  filters: Filters,
+  query: string,
+): SearchHit[] => {
+  const q = query.trim().toLowerCase()
+  if (!q) return []
+  type Building = Omit<SearchHit, 'workspaces' | 'trees'> & {
+    workspaces: Set<string>
+    trees: Set<string>
+  }
+  const found = new Map<string, Building>()
+  const workspaces = workspacesOf(diff, filters)
+  // from what is on screen, not from every mutation: a row describing a
+  // change the reader has hidden is a row that opens nothing
+  const byName = new Map<string, Mutation>()
+  for (const ws of workspaces) {
+    for (const m of ws.changes) {
+      if (!byName.has(nameOf(m))) byName.set(nameOf(m), m)
+    }
+  }
+  for (const ws of workspaces) {
+    for (const tree of treesOf(ws.changes)) {
+      for (const name of namesIn(tree)) {
+        if (!name.toLowerCase().includes(q)) continue
+        let hit = found.get(name)
+        if (!hit) {
+          const m = byName.get(name)
+          hit = {
+            key: name,
+            name,
+            workspaces: new Set(),
+            trees: new Set(),
+            ...(m ? { mutation: m } : {}),
+          }
+          found.set(name, hit)
+        }
+        hit.workspaces.add(ws.label)
+        hit.trees.add(tree.name)
+      }
+    }
+  }
+  return [...found.values()]
+    .map(h => ({
+      ...h,
+      workspaces: [...h.workspaces],
+      trees: [...h.trees],
+    }))
+    .sort(
+      (a, z) =>
+        // what was typed, if it is a package, is the one wanted
+        Number(z.name === q) - Number(a.name === q) ||
+        Number(z.name.startsWith(q)) - Number(a.name.startsWith(q)) ||
+        a.name.localeCompare(z.name),
+    )
+}
+
 /**
  * Where a package sits, so a reader can be taken there.
  *
@@ -686,6 +787,7 @@ export const view = (diff: GraphDiff, state: State) => {
     rows,
     // where the summary cursor actually is, never on a heading
     summaryIndex: summaryCursor(rows, state.summaryIndex),
+    hits: searchHits(diff, state, state.query),
     groups,
     group,
     workspaces,
@@ -698,9 +800,10 @@ export const view = (diff: GraphDiff, state: State) => {
 
 /** The rows the cursor walks on whichever screen is showing. */
 const rowCount = (diff: GraphDiff, state: State) => {
-  const { rows, trees, lines, group } = view(diff, state)
+  const { rows, trees, lines, group, hits } = view(diff, state)
   return (
     state.screen === 'summary' ? rows.length
+    : state.screen === 'search' ? hits.length
     : state.screen === 'alert' ? (group?.packages.length ?? 0)
     : state.screen === 'workspace' ? trees.length
       // the reach list is read, not walked
@@ -711,6 +814,7 @@ const rowCount = (diff: GraphDiff, state: State) => {
 
 const cursorKey = (screen: Screen) =>
   screen === 'summary' ? ('summaryIndex' as const)
+  : screen === 'search' ? ('searchIndex' as const)
   : screen === 'alert' ? ('alertPackageIndex' as const)
   : screen === 'workspace' ? ('treeIndex' as const)
   : ('depIndex' as const)
@@ -728,6 +832,16 @@ export const reduce = (
   // way out reach the screen underneath
   if (state.legend && event !== 'ToggleLegend' && event !== 'Back') {
     return state
+  }
+
+  // typing is the only event that carries anything, and it resets the
+  // cursor: the list under it is about to be a different list
+  if (typeof event === 'object') {
+    return {
+      ...state,
+      query: state.query + event.char,
+      searchIndex: 0,
+    }
   }
 
   const move = (delta: number): State => {
@@ -824,6 +938,15 @@ export const reduce = (
           : undefined
         return at ? { ...state, screen: 'tree', ...at } : state
       }
+      if (state.screen === 'search') {
+        const { hits } = view(diff, state)
+        const at = locate(
+          diff,
+          state,
+          nodeIdOf(hits[state.searchIndex]?.mutation),
+        )
+        return at ? { ...state, screen: 'tree', ...at } : state
+      }
       if (state.screen === 'alert') {
         const { group } = view(diff, state)
         const at = locate(
@@ -844,6 +967,21 @@ export const reduce = (
       }
       return state
     }
+
+    case 'OpenSearch':
+      return {
+        ...state,
+        screen: 'search',
+        query: '',
+        searchIndex: 0,
+      }
+
+    case 'Backspace':
+      return {
+        ...state,
+        query: state.query.slice(0, -1),
+        searchIndex: 0,
+      }
 
     case 'Back':
       if (state.legend) return { ...state, legend: false }
