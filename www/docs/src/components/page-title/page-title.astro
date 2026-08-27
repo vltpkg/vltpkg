@@ -1,19 +1,15 @@
 ---
 import type { Props } from '@astrojs/starlight/props'
-import { PageTitleWithCopyButton as ReactPageTitle } from './page-title-with-copy-button.tsx'
+import { PageTitle as ReactPageTitle } from './page-title.tsx'
 import { getBreadcrumbs } from '@/lib/breadcrumbs.ts'
 
 const props = Astro.props as Props
 const isHome = Astro.url.pathname === '/'
 const crumbs = getBreadcrumbs(Astro.url.pathname, props.sidebar)
-
-// Filter out incompatible props for the React component
-// Only pass entry which is what the React component needs
-const { entry } = props
 ---
 
 {
   isHome ?
     <div class="mt-4" />
-  : <ReactPageTitle client:load entry={entry} crumbs={crumbs} />
+  : <ReactPageTitle crumbs={crumbs} {...props} />
 }
