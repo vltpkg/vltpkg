@@ -1631,3 +1631,47 @@ t.test('a change the root line already stands for', async t => {
     depIndex: 0,
   })
 })
+
+t.test('a capped section shows the six worth reading', async t => {
+  // reach varies wildly inside a section, and sorting by name puts the
+  // narrowest changes on show
+  const step = { id: '~npm~beta@1.1.0', name: 'beta' }
+  const d = {
+    ...diff,
+    mutations: [
+      ...Array.from({ length: 8 }, (_, i) =>
+        resolved(`u${i}`, `pkg-${i}`, '1.0.0', '1.0.1', {
+          path: [step],
+        }),
+      ),
+      // last by name, but it lands everywhere
+      resolved('wide', 'zzz', '1.0.0', '1.0.1', { path: [step] }),
+    ],
+    regions: [
+      {
+        id: 'narrow',
+        label: 'www/docs',
+        importers: ['workspace~www+docs'],
+        nodes: [],
+        mutationIds: Array.from({ length: 8 }, (_, i) => `u${i}`),
+      },
+      {
+        id: 'wide',
+        label: 'everywhere',
+        importers: ['workspace~www+docs', 'workspace~src+cli-sdk'],
+        nodes: [],
+        mutationIds: ['wide'],
+      },
+    ],
+  } as unknown as GraphDiff
+
+  const shown = summaryRows(d, initialState)
+    .filter(r => r.kind === 'change')
+    .map(r => nameOf(r.mutation))
+  t.equal(
+    shown[0],
+    'zzz',
+    'widest reach leads, whatever it is called',
+  )
+  t.equal(shown.length, 6, 'and the rest are behind the more row')
+})

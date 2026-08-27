@@ -713,9 +713,20 @@ export const summaryRows = (
     })
     // a hundred and forty-nine patch bumps under a heading is the noise
     // this command exists to remove, so a long section shows its first
-    // few and offers the rest
+    // few and offers the rest -- widest reach first, or the six on show
+    // are whichever six sort first, which is not the same as the six
+    // worth reading
     const open = state.expanded.includes(label)
-    const shown = open ? ms : ms.slice(0, SECTION_MAX)
+    const order =
+      ms.length > SECTION_MAX ?
+        [...ms].sort(
+          (a, z) =>
+            workspacesFor(diff, [z]).length -
+              workspacesFor(diff, [a]).length ||
+            nameOf(a).localeCompare(nameOf(z)),
+        )
+      : ms
+    const shown = open ? order : order.slice(0, SECTION_MAX)
     for (const m of shown) {
       rows.push({ kind: 'change', key: `c:${m.id}`, mutation: m })
     }
