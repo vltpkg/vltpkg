@@ -10,6 +10,7 @@ import * as OS from 'node:os'
 import { resolve } from 'node:path'
 import { format } from 'node:util'
 import t from 'tap'
+import type { Test } from 'tap'
 import type { ConfigDefinitions } from '../../src/config/index.ts'
 
 const clearEnv = () => {
@@ -150,7 +151,7 @@ t.test('read and write a user config', async t => {
 })
 
 t.test(
-  'load both configs, project writes over userconfig',
+  'load both configs, layers merge with project taking precedence',
   async t => {
     const dir = t.testdir({
       'vlt.json':
@@ -203,14 +204,24 @@ t.test(
       },
     })
     const conf = await Config.load(dir + '/a/b')
-    t.equal(conf.get('registry'), 'https://registry.vlt.sh/')
+    t.equal(
+      conf.get('registry'),
+      undefined,
+      'project sets registries, so it owns registry selection and the ' +
+        'user-level registry no longer applies',
+    )
     t.equal(conf.get('tag'), 'beta')
     t.equal(conf.get('node-version'), '1.2.3')
     const regs = conf.getRecord('registries')
-    t.strictSame(regs, {
-      example: 'https://example.com',
-      foo: 'https://registry.foo',
-    })
+    t.strictSame(
+      regs,
+      {
+        example: 'https://example.com',
+        bar: 'https://registry.bar',
+        foo: 'https://registry.foo',
+      },
+      'record fields merge per key, project wins on conflict',
+    )
     t.equal(conf.getRecord('registries'), regs, 'memoized')
     t.strictSame(
       conf.getRecord('git-hosts'),
@@ -1125,5 +1136,284 @@ t.test('reloadFromDisk method', async t => {
   await t.resolves(
     conf.reloadFromDisk(),
     'second reloadFromDisk call completes',
+  )
+})
+
+t.test('config layers', async t => {
+  // Loading a Config mutates the module-level jack definition, so each case
+  // gets its own import of the module, and a cleared env, since parse()
+  // writes the values it resolved back out as VLT_* vars.
+  const layered = async (
+    t: Test,
+    user: Record<string, unknown>,
+    project: Record<string, unknown>,
+    argv: string[] = ['whoami'],
+  ) => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ config: project }),
+      xdg: { 'vlt.json': JSON.stringify({ config: user }) },
+      '.git': {},
+    })
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
+      '@vltpkg/xdg': {
+        XDG: class XDG {
+          config() {
+            return dir + '/xdg/vlt.json'
+          }
+          cache() {
+            return dir + '/default/cache'
+          }
+        },
+      },
+    })
+    clearEnv()
+    const conf = await Config.load(dir, argv, true)
+    return { conf, dir }
+  }
+
+  await t.test(
+    'a project registries alias beats a user registry',
+    async t => {
+      const { conf } = await layered(
+        t,
+        { registry: 'https://user/' },
+        { registries: { npm: 'https://project/' } },
+      )
+      t.equal(conf.options.registry, undefined)
+      const { requireRegistry } = await t.mockImport<
+        typeof import('../../src/require-registry.ts')
+      >('../../src/require-registry.ts')
+      t.equal(requireRegistry(conf), 'https://project/')
+    },
+  )
+
+  await t.test(
+    'a user default-registry-alias does not leak',
+    async t => {
+      const { conf } = await layered(
+        t,
+        {
+          'default-registry-alias': 'main',
+          registries: { main: 'https://user-main/' },
+        },
+        { registries: { npm: 'https://project/' } },
+      )
+      t.equal(conf.options['default-registry-alias'], 'npm')
+      const { hasNpmRegistry } = await t.mockImport<
+        typeof import('../../src/require-registry.ts')
+      >('../../src/require-registry.ts')
+      t.equal(
+        hasNpmRegistry(conf),
+        true,
+        'install commands are configured',
+      )
+      t.equal(
+        conf.options.registries.main,
+        'https://user-main/',
+        'the user alias is still addressable by name',
+      )
+    },
+  )
+
+  await t.test(
+    'a project alias adds to the user aliases',
+    async t => {
+      const { conf } = await layered(
+        t,
+        {
+          registries: {
+            npm: 'https://user-npm/',
+            main: 'https://user-main/',
+          },
+        },
+        { registries: { internal: 'https://internal/' } },
+      )
+      t.strictSame(conf.options.registries, {
+        gh: 'https://npm.pkg.github.com/',
+        npm: 'https://user-npm/',
+        main: 'https://user-main/',
+        internal: 'https://internal/',
+      })
+    },
+  )
+
+  await t.test('null removes a field', async t => {
+    const { conf } = await layered(
+      t,
+      { registry: 'https://user/', tag: 'beta' },
+      { registry: null },
+    )
+    t.equal(conf.options.registry, undefined)
+    t.equal(conf.get('tag'), 'beta', 'unrelated fields are untouched')
+  })
+
+  await t.test('null removes a single record key', async t => {
+    const { conf } = await layered(
+      t,
+      {
+        registries: {
+          npm: 'https://user-npm/',
+          main: 'https://user-main/',
+        },
+      },
+      { registries: { npm: null } },
+    )
+    t.strictSame(conf.options.registries, {
+      gh: 'https://npm.pkg.github.com/',
+      main: 'https://user-main/',
+    })
+  })
+
+  await t.test('command blocks are layered too', async t => {
+    const { conf } = await layered(
+      t,
+      { command: { publish: { registry: 'https://user/' } } },
+      {
+        command: {
+          publish: { registries: { npm: 'https://project/' } },
+        },
+      },
+      ['publish'],
+    )
+    t.equal(
+      conf.get('registry'),
+      undefined,
+      'the project command block owns registry selection',
+    )
+    t.strictSame(conf.getRecord('registries'), {
+      npm: 'https://project/',
+    })
+  })
+
+  await t.test('re-reading a config file is idempotent', async t => {
+    const { conf } = await layered(
+      t,
+      { registry: 'https://user/' },
+      { registries: { npm: 'https://project/' } },
+    )
+    // both of these re-run the user config validator
+    await conf.addConfigToFile('user', { tag: 'beta' })
+    await conf.deleteConfigKeys('user', ['tag'])
+    t.equal(
+      conf.options.registry,
+      undefined,
+      'the user layer did not get stacked back on top',
+    )
+    t.strictSame(
+      conf.options.registries,
+      { gh: 'https://npm.pkg.github.com/', npm: 'https://project/' },
+      'and neither did its registries',
+    )
+  })
+
+  await t.test('layers are exposed, and track writes', async t => {
+    const { conf } = await layered(
+      t,
+      { registries: { npm: 'https://user/', main: 'https://main/' } },
+      { tag: 'beta' },
+    )
+    t.strictSame(conf.layers.project, { tag: 'beta' })
+    t.strictSame(conf.layers.user?.registries, {
+      npm: 'https://user/',
+      main: 'https://main/',
+    })
+    await conf.deleteConfigKeys('user', ['registries.npm'])
+    t.strictSame(
+      conf.layers.user?.registries,
+      { main: 'https://main/' },
+      'a write to a file updates its layer',
+    )
+  })
+
+  await t.test('a vanished layer is dropped', async t => {
+    const { conf, dir } = await layered(
+      t,
+      { registry: 'https://user/' },
+      { registry: 'https://project/' },
+    )
+    t.equal(conf.options.registry, 'https://project/')
+    t.chdir(dir)
+    writeFileSync(dir + '/vlt.json', JSON.stringify({}))
+    // parse() round-trips the resolved values through VLT_* env vars, and
+    // env beats both config files.
+    clearEnv()
+    await conf.reloadFromDisk()
+    t.equal(conf.layers.project, undefined)
+    t.equal(
+      conf.options.registry,
+      'https://user/',
+      'falls back to the user config',
+    )
+  })
+
+  await t.test(
+    'an invalid value is blamed on its own file',
+    async t => {
+      const dir = t.testdir({
+        'vlt.json': JSON.stringify({ config: { tag: 'beta' } }),
+        xdg: {
+          'vlt.json': JSON.stringify({
+            config: { 'fetch-retries': 'not a number' },
+          }),
+        },
+        '.git': {},
+      })
+      const { Config } = await t.mockImport<
+        typeof import('../../src/config/index.ts')
+      >('../../src/config/index.ts', {
+        '@vltpkg/xdg': {
+          XDG: class XDG {
+            config() {
+              return dir + '/xdg/vlt.json'
+            }
+            cache() {
+              return dir + '/default/cache'
+            }
+          },
+        },
+      })
+      clearEnv()
+      await t.rejects(Config.load(dir, ['vlt'], true), {
+        cause: { path: dir + '/xdg/vlt.json', name: 'fetch-retries' },
+      })
+    },
+  )
+})
+
+t.test('configWriteTarget', async t => {
+  const { configWriteTarget } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  const conf = (config: string) =>
+    ({ get: () => config }) as unknown as Parameters<
+      typeof configWriteTarget
+    >[0]
+  t.equal(configWriteTarget(conf('user'), 'project'), 'user')
+  t.equal(configWriteTarget(conf('project'), 'user'), 'project')
+  t.equal(configWriteTarget(conf('all'), 'user'), 'user')
+})
+
+t.test('pairsToRecords/recordsToPairs round-trip', async t => {
+  const { pairsToRecords, recordsToPairs } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  const records = {
+    tag: 'beta',
+    registries: { npm: 'https://npm/' },
+    command: {
+      publish: { registries: { npm: 'https://publish/' } },
+    },
+  }
+  const pairs = recordsToPairs(records)
+  t.strictSame(pairs, {
+    tag: 'beta',
+    registries: ['npm=https://npm/'],
+    command: { publish: { registries: ['npm=https://publish/'] } },
+  })
+  t.strictSame(
+    pairsToRecords(pairs as Parameters<typeof pairsToRecords>[0]),
+    records,
   )
 })

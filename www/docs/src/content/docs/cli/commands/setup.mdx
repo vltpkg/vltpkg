@@ -35,7 +35,16 @@ wizard.
 4. Loops to let you add any additional custom aliases (for partner or
    team registries), optionally authenticating against each.
 5. Writes the staged aliases into your user `vlt.json` (merging with,
-   not clobbering, existing entries).
+   not clobbering, existing entries). Aliases that already live in a
+   `vlt.json` are left where they are, so a project-local alias does
+   not get copied into your user config (or the reverse).
+
+If the project you run this in configures its own registries, the
+output says so:
+[project config takes precedence](/cli/configuring#registry-selection-across-layers)
+for registry selection, so writing your user config would not take
+effect there. Re-run with `--config=project` to configure that
+project.
 
 ## Options
 

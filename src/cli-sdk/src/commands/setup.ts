@@ -2,6 +2,8 @@ import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import { createInterface } from 'node:readline/promises'
+import { configWriteTarget } from '../config/index.ts'
+import { registrySelectionFields } from '../config/merge-layers.ts'
 import { commandUsage } from '../config/usage.ts'
 import { stdout } from '../output.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -51,6 +53,11 @@ export type SetupResult = {
   which: 'user' | 'project'
   /** the alias -> url map that was staged into config */
   registries: Record<string, string>
+  /**
+   * set when the config we wrote to is outranked for registry selection by
+   * the project's `vlt.json`, so the result won't take effect here.
+   */
+  shadowedByProject?: boolean
 }
 
 export const views = {
@@ -64,6 +71,14 @@ export const views = {
     ]
     for (const [name, url] of Object.entries(result.registries)) {
       lines.push(`  ${name} -> ${url}`)
+    }
+    if (result.shadowedByProject) {
+      lines.push(
+        '',
+        `Note: this project's vlt.json configures its own registries, and`,
+        'project config takes precedence. Re-run with `--config=project`',
+        'to configure this project instead.',
+      )
     }
     lines.push(
       '',
@@ -108,8 +123,7 @@ export const usage: CommandUsage = () =>
 
 export const command: CommandFn<SetupResult> = async conf => {
   const yes = !!conf.get('yes')
-  const which: 'user' | 'project' =
-    conf.get('config') === 'project' ? 'project' : 'user'
+  const which = configWriteTarget(conf, 'user')
 
   let rl: ReturnType<typeof createInterface> | undefined
   const ask = async (question: string): Promise<string> => {
@@ -144,15 +158,22 @@ export const command: CommandFn<SetupResult> = async conf => {
       registries[name] = accountRegistryURL(account, name)
     }
 
-    // 3. merge any user-supplied registry aliases (skip built-in defaults)
+    // 3. merge in registry aliases supplied for this invocation. aliases
+    // that came from a config file are left where they are: copying them
+    // would turn a project-local alias into a global one (or vice versa).
     const builtinRegistries = defaultRegistries as Record<
       string,
       string
     >
+    const fileRegistries: Record<string, string> = {
+      ...conf.layers.user?.registries,
+      ...conf.layers.project?.registries,
+    }
     for (const [name, url] of Object.entries(
       conf.options.registries,
     )) {
       if (builtinRegistries[name] === url) continue
+      if (fileRegistries[name] === url) continue
       registries[name] = normalizeRegistryURL(url)
     }
 
@@ -206,7 +227,21 @@ export const command: CommandFn<SetupResult> = async conf => {
     // 6. persist the staged registries (merged, not clobbered)
     await conf.addConfigToFile(which, { registries })
 
-    return { account, which, registries }
+    // writing the user config from inside a project that configures its own
+    // registries has no effect here, so say so rather than looking like it
+    // worked.
+    const shadowedByProject =
+      which === 'user' &&
+      registrySelectionFields.some(
+        f => f in (conf.layers.project ?? {}),
+      )
+
+    return {
+      account,
+      which,
+      registries,
+      ...(shadowedByProject ? { shadowedByProject } : undefined),
+    }
   } finally {
     if (rl) {
       rl.close()

@@ -47,11 +47,11 @@ Run `vlt setup` to get configured.
 See https://docs.vlt.sh/cli for other ways to set a registry.
 ```
 
-There are three ways to configure the registry directly, in increasing
+There are four ways to configure the registry directly, in increasing
 order of precedence:
 
-1. **A `vlt.json` file**, either in your project or in your user
-   config directory. Either write it by hand:
+1. **The `vlt.json` in your user config directory**, which applies to
+   every project. Either write it by hand:
 
    ```json
    {
@@ -64,20 +64,50 @@ order of precedence:
    or set it with the CLI:
 
    ```bash
+   vlt config set registry=https://registry.npmjs.org/ --config=user
+   ```
+
+2. **The `vlt.json` in your project root**, which applies to that
+   project only:
+
+   ```bash
    vlt config set registry=https://registry.npmjs.org/
    ```
 
-2. **The `VLT_REGISTRY` environment variable**, which is handy in CI:
+3. **The `VLT_REGISTRY` environment variable**, which is handy in CI:
 
    ```bash
    VLT_REGISTRY=https://registry.npmjs.org/ vlt install
    ```
 
-3. **The `--registry` flag**, for a single command:
+4. **The `--registry` flag**, for a single command:
 
    ```bash
    vlt install --registry=https://registry.npmjs.org/
    ```
+
+### Project vs. user registry configuration
+
+A project's registry configuration always wins over the user-level
+one. Because `registry` outranks any `registries` alias, that holds
+even when the two layers use different fields: a project that sets
+`registries` (or `default-registry-alias`) and no `registry` drops the
+user-level `registry`, rather than being sent to it.
+
+```json
+// ~/.config/vlt/vlt.json
+{ "config": { "registry": "https://user/", "registries": { "main": "https://main/" } } }
+
+// ./vlt.json
+{ "config": { "registries": { "npm": "https://project/" } } }
+```
+
+In that project, bare specs and account commands resolve to
+`https://project/`. The user's `main` alias is still merged in and
+addressable as `main:` in a specifier, or with
+[`vlt registry main …`](/cli/commands/registry) — only the _selection_
+is taken over. See [Configuring](/cli/configuring) for the full
+layering rules.
 
 ### Bootstrapping with `vlt login`
 
@@ -89,6 +119,8 @@ already configured:
 ```bash
 vlt login --registry=https://registry.vlt.io/myorg/
 ```
+
+Pass `--config=user` to configure it for every project instead.
 
 There can be only one registry configured this way, and it is used as
 the fallback for all package registry resolutions. Normally, if an
@@ -126,6 +158,11 @@ Because the `npm` alias has no built-in URL, a fresh, unconfigured
 project cannot resolve bare specs until you configure one — the guided
 way to do that is `vlt setup`.
 
+Note that a project which sets `registries` without also setting
+`default-registry-alias` gets the default `npm` back, even if your
+user config points it somewhere else. Set it in the project `vlt.json`
+to route that project's bare specs through a different alias.
+
 ## Getting started with `vlt setup`
 
 `vlt setup` is the onboarding wizard for a vlt.io account. Sign up or
@@ -160,8 +197,16 @@ each. To run it unattended (for example in CI or a setup script):
 vlt setup my-account --yes --registries team=https://registry.example.com/
 ```
 
+Only the account aliases, aliases passed on the command line, and
+aliases you type at the prompt are written. Aliases that already live
+in a `vlt.json` are left where they are, so a project-local alias does
+not become a global one.
+
 Pass `--config=project` to write to the project's `vlt.json` instead
-of your user config.
+of your user config. If you run `vlt setup` inside a project that
+configures its own registries, it will say so — the project config
+takes precedence, so writing your user config would have no effect
+there.
 
 ## Targeting a specific registry
 

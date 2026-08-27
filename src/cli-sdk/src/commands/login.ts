@@ -1,4 +1,5 @@
 import { RegistryClient } from '@vltpkg/registry-client'
+import { configWriteTarget } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import { missingRegistryError } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -13,7 +14,9 @@ export const usage: CommandUsage = () =>
                   There is no default registry, so a registry must either
                   already be configured or be provided with
                   \`--registry=<url>\`. On success the registry is written to
-                  the project's \`vlt.json\`.`,
+                  the project's \`vlt.json\`, so that it applies to this
+                  project only. Pass \`--config=user\` to configure it for
+                  every project instead.`,
     options: {
       registry: {
         value: '<url>',
@@ -23,6 +26,12 @@ export const usage: CommandUsage = () =>
       identity: {
         value: '<name>',
         description: 'Identity namespace used to store auth tokens.',
+      },
+      config: {
+        value: '<user | project>',
+        description:
+          'Which config file to write the registry to. Defaults to ' +
+          '`project`.',
       },
     },
   })
@@ -35,5 +44,7 @@ export const command: CommandFn<void> = async conf => {
   const rc = new RegistryClient(conf.options)
   await rc.login(registry)
   // persist the registry so subsequent commands are configured
-  await conf.addConfigToFile('project', { registry })
+  await conf.addConfigToFile(configWriteTarget(conf, 'project'), {
+    registry,
+  })
 }

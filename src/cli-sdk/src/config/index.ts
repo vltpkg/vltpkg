@@ -2,8 +2,8 @@
  * Module that handles all vlt configuration needs
  *
  * Project-level configs are set in a `vlt.json` file in the local project
- * if present. This will override the user-level configs in the appropriate
- * XDG config path.
+ * if present, and are layered over the user-level configs in the appropriate
+ * XDG config path. See `./merge-layers.ts` for the layering rules.
  *
  * Command-specific configuration can be specified by putting options in a
  * field in the `command` object. For example:
@@ -43,11 +43,13 @@ import type { Commands, RecordField } from './definition.ts'
 import {
   commands,
   definition,
+  defaultValues,
   getCommand,
   isRecordField,
   recordFields,
 } from './definition.ts'
 import { merge } from './merge.ts'
+import { cloneLayer, mergeLayers } from './merge-layers.ts'
 export {
   commands,
   definition,
@@ -89,6 +91,32 @@ export type PairsAsRecords = ConfigOptionsNoExtras & {
   }
 }
 
+/**
+ * One `vlt.json` file's `config` object, in record form. Every field is
+ * optional, since a config file only sets what it sets.
+ */
+export type ConfigFileLayer = Partial<PairsAsRecords>
+
+/**
+ * `registries` alias names are used as spec prefixes, where `~` is
+ * reserved, and an empty name has nothing to prefix with.
+ */
+const assertRegistryKeys = (registries: unknown, file: string) => {
+  if (!registries || typeof registries !== 'object') return
+  const obj =
+    Array.isArray(registries) ?
+      reducePairs(registries as string[])
+    : (registries as RecordPairs)
+  for (const key of Object.keys(obj)) {
+    if (key === '' || key.includes('~')) {
+      throw error('Reserved character found in registries name', {
+        path: file,
+        found: key,
+      })
+    }
+  }
+}
+
 export const pairsToRecords = (
   obj:
     NonNullable<ConfigFileData> | OptionsResults<ConfigDefinitions>,
@@ -126,7 +154,14 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
       .map(([k, v]) => [
         k,
         k === 'command' && v && typeof v === 'object' ?
-          recordsToPairs(v as RecordPairs)
+          // each command's own block gets converted too, mirroring
+          // pairsToRecords
+          Object.fromEntries(
+            Object.entries(v).map(([k, v]) => [
+              k,
+              recordsToPairs(v as RecordPairs),
+            ]),
+          )
         : (
           !v ||
           typeof v !== 'object' ||
@@ -460,9 +495,17 @@ export class Config {
     which: WhichConfig,
     values: NonNullable<ConfigFileData>,
   ) {
+    // normalize both sides to record form first, so that a record field
+    // written as a `key=value` list in an existing file is still merged key
+    // by key, rather than replaced wholesale.
     return this.writeConfigFile(
       which,
-      merge((await this.#maybeLoadConfigFile(which)) ?? {}, values),
+      merge(
+        pairsToRecords(
+          (await this.#maybeLoadConfigFile(which)) ?? {},
+        ),
+        pairsToRecords(values),
+      ),
     )
   }
 
@@ -488,57 +531,84 @@ export class Config {
       })
     }
 
-    const { command, ...values } = recordsToPairs(c as RecordPairs)
+    const { command, ...values } = c as RecordPairs
 
-    // Validate registries keys don't contain reserved ~ character
-    const registries = (c as RecordPairs).registries
-    if (registries && typeof registries === 'object') {
-      const registriesObj =
-        Array.isArray(registries) ?
-          reducePairs(registries)
-        : registries
-      for (const key of Object.keys(registriesObj)) {
-        if (key === '' || key.includes('~')) {
-          throw error('Reserved character found in registries name', {
-            path: file,
-            found: key,
-          })
+    assertRegistryKeys(values.registries, file)
+    if (command && typeof command === 'object') {
+      for (const opts of Object.values(command)) {
+        if (opts && typeof opts === 'object') {
+          assertRegistryKeys((opts as RecordPairs).registries, file)
         }
       }
     }
 
-    if (command) {
-      for (const [c, opts] of Object.entries(command)) {
-        const cmd = getCommand(c)
-        if (cmd && opts && typeof opts === 'object') {
-          // Validate registries in command-specific config
-          const cmdRegistries = (opts as RecordPairs).registries
-          if (cmdRegistries && typeof cmdRegistries === 'object') {
-            const cmdRegistriesObj =
-              Array.isArray(cmdRegistries) ?
-                reducePairs(cmdRegistries)
-              : cmdRegistries
-            for (const key of Object.keys(cmdRegistriesObj)) {
-              if (key === '' || key.includes('~')) {
-                throw error(
-                  'Reserved character found in registries name',
-                  {
-                    path: file,
-                    found: key,
-                  },
-                )
-              }
-            }
-          }
+    // validate this layer on its own, so that an invalid value is blamed on
+    // the file it actually came from. `mergeLayers` on a single layer just
+    // strips the `null`s, which mean "remove this field" rather than being
+    // a value jack should ever see.
+    const layer = cloneLayer(pairsToRecords(c as ConfigFileData))
+    const { command: _cmd, ...single } = mergeLayers([layer])
+    try {
+      this.jack.validate(recordsToPairs(single))
+    } catch (er) {
+      /* c8 ignore next - for TS */
+      if (er instanceof Error) {
+        // jack only attaches the source path when going through
+        // setConfigValues(), and the CLI's "Problem in Config File" banner
+        // keys off it.
+        /* c8 ignore next - jack always throws with a cause object */
+        const cause = typeof er.cause === 'object' ? er.cause : {}
+        er.cause = { ...cause, path: file }
+      }
+      throw er
+    }
 
-          this.commandValues[cmd] = merge<ConfigData>(
-            this.commandValues[cmd] ?? {},
-            opts as ConfigData,
-          )
-        }
+    this.#layers[file === find('user') ? 'user' : 'project'] = layer
+    this.#applyLayers()
+  }
+
+  /**
+   * The raw config data from each `vlt.json` file, normalized to record
+   * form, before the layers are merged together. `undefined` for a layer
+   * with no file, or a file with no `config` field.
+   */
+  get layers(): Readonly<{ [k in WhichConfig]?: ConfigFileLayer }> {
+    return this.#layers
+  }
+
+  #layers: { [k in WhichConfig]?: ConfigFileLayer } = {}
+
+  /**
+   * Recompute the jack defaults and {@link Config#commandValues} from
+   * {@link Config#layers}.
+   *
+   * Everything is derived from `#layers`, and every known field is applied,
+   * so this is idempotent: re-reading a config file (which
+   * `addConfigToFile` and `deleteConfigKeys` both do) can't stack the user
+   * layer back on top of the project layer, and a field a layer stopped
+   * setting goes back to its definitional default.
+   */
+  #applyLayers() {
+    const { command, ...values } = mergeLayers([
+      this.#layers.user,
+      this.#layers.project,
+    ])
+
+    this.commandValues = {}
+    for (const [c, opts] of Object.entries(command ?? {})) {
+      const cmd = getCommand(c)
+      if (cmd && opts && typeof opts === 'object') {
+        this.commandValues[cmd] = opts as ConfigData
       }
     }
-    this.jack.setConfigValues(values, file)
+
+    const pairs = recordsToPairs(values)
+    const applied: RecordPairs = {}
+    for (const [field, dflt] of Object.entries(defaultValues)) {
+      applied[field] = field in pairs ? pairs[field] : dflt
+    }
+    this.jack.setConfigValues(applied)
+    this.#options = undefined
   }
 
   /**
@@ -546,7 +616,17 @@ export class Config {
    * loaded, or undefined if not.
    */
   async #maybeLoadConfigFile(whichConfig: WhichConfig) {
-    return load('config', this.#validator, whichConfig)
+    const data = load('config', this.#validator, whichConfig)
+    if (
+      data === undefined &&
+      this.#layers[whichConfig] !== undefined
+    ) {
+      // the file (or its `config` field) went away, so the validator never
+      // ran. drop the layer it left behind.
+      delete this.#layers[whichConfig]
+      this.#applyLayers()
+    }
+    return data
   }
 
   /**
@@ -733,3 +813,18 @@ export type ParsedConfig = Config & {
  * A fully loaded {@link Config} object
  */
 export type LoadedConfig = ParsedConfig
+
+/**
+ * Which `vlt.json` a command that persists settings should write to.
+ *
+ * `--config=user` and `--config=project` are explicit. Anything else means
+ * the caller's own default, since `--config` also takes `all` (its default,
+ * meaningful only for `vlt config` reads).
+ */
+export const configWriteTarget = (
+  conf: Pick<LoadedConfig, 'get'>,
+  fallback: WhichConfig,
+): WhichConfig => {
+  const which = conf.get('config')
+  return which === 'user' || which === 'project' ? which : fallback
+}

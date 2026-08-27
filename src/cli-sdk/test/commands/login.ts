@@ -16,22 +16,39 @@ const { usage, command } = await t.mockImport<
 
 t.matchSnapshot(usage().usageMarkdown())
 
-t.test('logs in and persists the registry', async t => {
-  const added: [string, Record<string, unknown>][] = []
-  await command({
+const makeConf = (
+  config: string,
+  added: [string, Record<string, unknown>][],
+) =>
+  ({
     options: { registry: 'registry' },
+    get: (k: string) => (k === 'config' ? config : undefined),
     addConfigToFile: async (
       which: string,
       values: Record<string, unknown>,
     ) => {
       added.push([which, values])
     },
-  } as unknown as LoadedConfig)
+  }) as unknown as LoadedConfig
+
+t.test('logs in and persists the registry', async t => {
+  const added: [string, Record<string, unknown>][] = []
+  await command(makeConf('all', added))
   t.equal(loginCalled, 'registry')
   t.strictSame(
     added,
     [['project', { registry: 'registry' }]],
     'writes the registry to the project vlt.json',
+  )
+})
+
+t.test('--config=user writes the user config', async t => {
+  const added: [string, Record<string, unknown>][] = []
+  await command(makeConf('user', added))
+  t.strictSame(
+    added,
+    [['user', { registry: 'registry' }]],
+    'writes the registry to the user vlt.json',
   )
 })
 
