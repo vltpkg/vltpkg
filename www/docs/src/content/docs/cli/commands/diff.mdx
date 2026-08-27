@@ -110,6 +110,18 @@ is empty is one you never have to read:
 1 REMOVED
    -  require-directory  2.1.1             www/docs
 
+9 ADDED
+   +  rehype-slug        6.0.0             www/docs
+   +  yargs-parser       22.0.0            www/docs
+   ▾  3 more
+
+149 UPGRADED
+   ↑  @babel/parser      7.29.7 → 7.29.8   www/docs
+   ▾  143 more
+
+12 EDGES
+   →  yaml               2.8.3 → 2.9.0     for @astrojs/yaml2ts
+
 43 WORKSPACES
    www/docs              151
    src/cli-sdk            51"
@@ -121,6 +133,22 @@ Counts read as deltas, the way a `git diff` stat does, and the
 workspaces are the real ones — a change that reaches forty of them is
 counted for all forty, because "does this affect me" is the question
 being asked.
+
+The sections run worst first: what could break, then what left, then
+what arrived, then routine bumps, then who points at what. `EDGES` is
+about wiring rather than contents — the same package, resolved somewhere
+else for one consumer — so those rows name the consumer instead of the
+workspace, since several parents can repoint the same dependency and the
+rows would otherwise read as duplicates.
+
+A long section shows its first six and offers the rest as a `▾ N more`
+row; `⏎` opens it and folds it back. A hundred and forty-nine patch
+bumps under a heading is the noise this command exists to remove, but
+they are two keystrokes away when a bump is what you are chasing.
+
+Identity-only changes never appear in any of these. Same package, same
+version, different id is not an arrival, a departure or a bump — the
+header counts them as hidden and `i` shows them in the trees.
 
 A tree is drawn as one. Packages on the route that did not themselves
 change are dimmed and shown for context, so the shape has no holes:
@@ -219,6 +247,11 @@ A lockfile review happens in a PR, not in a terminal:
 The report leads with what could break and folds the rest away behind
 `<details>`, so a 263-change diff does not bury the conversation it is
 attached to. Paste it into a comment, or pipe it there from CI.
+
+It carries the same sections as the summary bar one: there is no
+`Upgraded` table, because a hundred and forty-nine patch bumps would
+bury the conversation the comment is attached to, and every one of them
+is already in the folded trees below.
 
 ### Security
 

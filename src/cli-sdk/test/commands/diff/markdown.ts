@@ -207,6 +207,50 @@ t.test(
   },
 )
 
+t.test('what arrived and what merely repointed', async t => {
+  const out = markdownDiffOutput({
+    ...diff,
+    mutations: [
+      ...diff.mutations,
+      mut({
+        id: 'new',
+        kind: 'node-added',
+        node: node('brand', '1.0.0'),
+      }),
+      mut({
+        id: 'ea',
+        kind: 'edge-added',
+        edge: { name: 'fresh', spec: '^1', type: 'prod' } as never,
+      }),
+      mut({
+        id: 'er',
+        kind: 'edge-removed',
+        edge: { name: 'stale', spec: '^1', type: 'prod' } as never,
+      }),
+      mut({
+        id: 'et',
+        kind: 'edge-retargeted',
+        from: { from: '~npm~p@1.0.0', name: 'q', to: '~npm~q@1.0.0' },
+        to: { from: '~npm~p@1.0.0', name: 'q', to: '~npm~q@2.0.0' },
+      } as never),
+    ],
+    regions: [
+      {
+        ...(diff.regions[0] as object),
+        mutationIds: ['big', 'new', 'ea', 'er', 'et'],
+      },
+    ],
+  } as unknown as GraphDiff)
+  t.match(out, /### Added/)
+  // an addition has nothing on the left, a removal nothing on the right
+  t.match(out, /\| `brand` \| {2}\| `1\.0\.0` \|/)
+  t.match(out, /### Edges/)
+  t.match(out, /\| `fresh` \| {2}\| `\^1` \|/)
+  t.match(out, /\| `stale` \| `\^1` \| {2}\|/)
+  t.match(out, /\| `q` \| `1\.0\.0` \| `2\.0\.0` \|/)
+  t.notMatch(out, /### Upgraded/, 'those live in the folded trees')
+})
+
 t.test('sections with nothing in them are dropped', async t => {
   const quiet = {
     ...diff,

@@ -47,9 +47,9 @@ const delta = (n: number, label: string) =>
 const NONE: [string, string] = ['', '']
 
 /**
- * The two version cells for a highlight row. `highlights` only ever
- * yields resolutions and removals, and a removal has a `from` with
- * nothing on the other side.
+ * The two version cells for a highlight row: where it was, and where it
+ * is now. A removal has nothing on the right and an addition nothing on
+ * the left, which is the whole story those rows have to tell.
  */
 const versions = (m: Mutation): [string, string] =>
   m.kind === 'package-resolved' ?
@@ -59,6 +59,12 @@ const versions = (m: Mutation): [string, string] =>
     ]
   : m.kind === 'node-removed' ?
     [code(m.node.version ?? m.node.type), '']
+  : m.kind === 'node-added' ?
+    ['', code(m.node.version ?? m.node.type)]
+  : m.kind === 'edge-retargeted' ?
+    [code(atVersion(m.from.to)), code(atVersion(m.to.to))]
+  : m.kind === 'edge-added' ? ['', code(m.edge.spec)]
+  : m.kind === 'edge-removed' ? [code(m.edge.spec), '']
   : /* c8 ignore next - nothing else reaches a highlight table */ NONE
 
 const reach = (diff: GraphDiff, m: Mutation) => {
@@ -89,7 +95,8 @@ export const markdownDiffOutput = (
 ) => {
   const { base, head, identity = false, maxWorkspaces = 8 } = options
   const { summary } = diff
-  const { major, downgraded, removed } = highlights(diff)
+  const { major, downgraded, removed, added, edges } =
+    highlights(diff)
   const out: string[] = ['## Lockfile diff', '']
 
   if (base && head) out.push(`\`${base}\` → \`${head}\``, '')
@@ -152,7 +159,12 @@ export const markdownDiffOutput = (
     ...section('Major versions', major),
     ...section('Downgraded', downgraded),
     ...section('Removed', removed),
+    ...section('Added', added),
+    ...section('Edges', edges),
   )
+  // no Upgraded section: a hundred and forty-nine patch bumps would
+  // bury the conversation this comment is attached to, and they are all
+  // in the folded trees below anyway
 
   const filters = { identity, directOnly: false }
   const workspaces = workspacesOf(diff, filters)

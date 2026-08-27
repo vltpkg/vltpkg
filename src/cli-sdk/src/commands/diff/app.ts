@@ -132,12 +132,16 @@ const describe = (
         mark: '+',
         color: 'green',
         text: `${m.edge.name} ${m.edge.spec}`,
+        name: m.edge.name,
+        detail: m.edge.spec,
       }
     case 'edge-removed':
       return {
         mark: '-',
         color: 'red',
         text: `${m.edge.name} ${m.edge.spec}`,
+        name: m.edge.name,
+        detail: m.edge.spec,
       }
     case 'edge-retargeted':
       return {
@@ -148,12 +152,16 @@ const describe = (
         text:
           `${m.to.name}  ${atVersion(m.from.to)} → ${atVersion(m.to.to)}` +
           `  for ${depName(m.to.from)}`,
+        name: m.to.name,
+        detail: `${atVersion(m.from.to)} → ${atVersion(m.to.to)}`,
       }
     case 'edge-respecified':
       return {
         mark: '~',
         color: 'yellow',
         text: `${m.to.name}  ${m.fields.join(', ')}`,
+        name: m.to.name,
+        detail: m.fields.join(', '),
       }
     case 'options-changed':
       return {
@@ -485,14 +493,38 @@ const SummaryScreen = ({
         }),
         $(Cell, {
           key: 'r',
+          // several parents can retarget the same dependency, so an edge
+          // row names the consumer or the rows read as duplicates
           text:
-            at === 1 ? depName(region?.importers[0] as never)
+            row.mutation.kind === 'edge-retargeted' ?
+              `for ${depName(row.mutation.to.from)}`
+            : at === 1 ? depName(region?.importers[0] as never)
             : at ? `${at} workspaces`
             : '',
           dim: true,
         }),
         ...Flag({
           n: alertsFor(diff, nodeIdOf(row.mutation)).length,
+        }),
+      )
+    } else if (row.kind === 'more') {
+      // the arrow points the way the row will move: open, or fold back
+      const open = state.expanded.includes(row.section)
+      cells.push(
+        $(Cell, {
+          key: 'm',
+          text: `    ${open ? '\u25b4' : '\u25be'}`,
+          width: 7,
+          dim: true,
+        }),
+        $(Cell, {
+          key: 'n',
+          text:
+            open ?
+              `show fewer ${row.section.toLowerCase()}`
+            : `${row.hidden} more`,
+          width: nameWidth,
+          dim: true,
         }),
       )
     } else {

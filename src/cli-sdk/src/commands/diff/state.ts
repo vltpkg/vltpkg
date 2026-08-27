@@ -46,6 +46,8 @@ export type State = {
   query: string
   /** cursor into the search results */
   searchIndex: number
+  /** sections opened past the first few rows */
+  expanded: string[]
 }
 
 export type Event =
@@ -77,6 +79,7 @@ export const initialState: State = {
   legend: false,
   query: '',
   searchIndex: 0,
+  expanded: [],
 }
 
 export type Filters = Pick<State, 'identity' | 'directOnly'>
@@ -264,7 +267,7 @@ export const workspacesOf = (
  * being dropped looks identical to a package going away. A package is
  * only gone when its name appears nowhere on the head side.
  */
-const survivors = (diff: GraphDiff) => {
+const namesOn = (diff: GraphDiff, side: 'base' | 'head') => {
   const names = new Set<string>()
   for (const m of diff.mutations) {
     switch (m.kind) {
@@ -273,11 +276,14 @@ const survivors = (diff: GraphDiff) => {
         names.add(m.name)
         break
       case 'node-added':
-        names.add(m.node.name)
+        if (side === 'head') names.add(m.node.name)
+        break
+      case 'node-removed':
+        if (side === 'base') names.add(m.node.name)
         break
       case 'node-changed':
       case 'node-identity-changed':
-        names.add(m.to.name)
+        names.add(side === 'head' ? m.to.name : m.from.name)
         break
     }
   }
@@ -293,22 +299,53 @@ export type Highlights = {
   major: Mutation[]
   downgraded: Mutation[]
   removed: Mutation[]
+  added: Mutation[]
+  /** every resolution that is not a major bump or a downgrade */
+  upgraded: Mutation[]
+  /** who points at what, rather than what is in the graph */
+  edges: Mutation[]
 }
 
 export const highlights = (diff: GraphDiff): Highlights => {
-  const gone = survivors(diff)
-  const major: Mutation[] = []
-  const downgraded: Mutation[] = []
-  const removed: Mutation[] = []
+  // a bucket leftover is not a removal, and its mirror is not an
+  // addition: a peer variant that arrives under a new id is the same
+  // package it always was, and only the name says so
+  const head = namesOn(diff, 'head')
+  const base = namesOn(diff, 'base')
+  const out: Highlights = {
+    major: [],
+    downgraded: [],
+    removed: [],
+    added: [],
+    upgraded: [],
+    edges: [],
+  }
   for (const m of diff.mutations) {
-    if (m.kind === 'package-resolved') {
-      if (m.direction === 'downgrade') downgraded.push(m)
-      else if (m.severity === 'major') major.push(m)
-    } else if (m.kind === 'node-removed' && !gone.has(m.node.name)) {
-      removed.push(m)
+    // an identity-only change is the same package it always was, so it
+    // is never an arrival, a departure or a bump -- and the header has
+    // already counted it as hidden
+    if (m.identityOnly) continue
+    switch (m.kind) {
+      case 'package-resolved':
+        if (m.direction === 'downgrade') out.downgraded.push(m)
+        else if (m.severity === 'major') out.major.push(m)
+        else out.upgraded.push(m)
+        break
+      case 'node-added':
+        if (!base.has(m.node.name)) out.added.push(m)
+        break
+      case 'node-removed':
+        if (!head.has(m.node.name)) out.removed.push(m)
+        break
+      case 'edge-added':
+      case 'edge-removed':
+      case 'edge-retargeted':
+      case 'edge-respecified':
+        out.edges.push(m)
+        break
     }
   }
-  return { major, downgraded, removed }
+  return out
 }
 
 export type AlertRow = {
@@ -581,12 +618,14 @@ export type SummaryRow =
   | { kind: 'alert'; key: string; group: AlertGroup }
   | { kind: 'change'; key: string; mutation: Mutation }
   | { kind: 'workspace'; key: string; workspace: Workspace }
+  | { kind: 'more'; key: string; section: string; hidden: number }
 
 /** Rows a cursor can stop on. Headings and spacers are neither. */
 export const selectable = (r: SummaryRow | undefined) =>
   r?.kind === 'alert' ||
   r?.kind === 'change' ||
-  r?.kind === 'workspace'
+  r?.kind === 'workspace' ||
+  r?.kind === 'more'
 
 /**
  * The nearest row the cursor can actually rest on.
@@ -611,9 +650,12 @@ export const summaryCursor = (rows: SummaryRow[], index: number) => {
  * and a cursor over something the renderer invented separately is how
  * the two drift apart.
  */
+/** How much of a long section is shown before it has to be asked for. */
+const SECTION_MAX = 6
+
 export const summaryRows = (
   diff: GraphDiff,
-  filters: Filters,
+  state: State,
 ): SummaryRow[] => {
   const rows: SummaryRow[] = []
   const groups = alertGroups(diff)
@@ -633,11 +675,15 @@ export const summaryRows = (
     rows.push({ kind: 'gap', key: 'g:security' })
   }
 
-  const { major, downgraded, removed } = highlights(diff)
+  const { major, downgraded, removed, added, upgraded, edges } =
+    highlights(diff)
   for (const [label, ms, color] of [
     ['MAJOR VERSIONS', major, 'yellow'],
     ['DOWNGRADED', downgraded, 'magenta'],
     ['REMOVED', removed, 'red'],
+    ['ADDED', added, 'green'],
+    ['UPGRADED', upgraded, 'cyan'],
+    ['EDGES', edges, 'blue'],
   ] as const) {
     if (!ms.length) continue
     rows.push({
@@ -647,13 +693,26 @@ export const summaryRows = (
       count: ms.length,
       color,
     })
-    for (const m of ms) {
+    // a hundred and forty-nine patch bumps under a heading is the noise
+    // this command exists to remove, so a long section shows its first
+    // few and offers the rest
+    const open = state.expanded.includes(label)
+    const shown = open ? ms : ms.slice(0, SECTION_MAX)
+    for (const m of shown) {
       rows.push({ kind: 'change', key: `c:${m.id}`, mutation: m })
+    }
+    if (ms.length > SECTION_MAX) {
+      rows.push({
+        kind: 'more',
+        key: `m:${label}`,
+        section: label,
+        hidden: ms.length - shown.length,
+      })
     }
     rows.push({ kind: 'gap', key: `g:${label}` })
   }
 
-  const workspaces = workspacesOf(diff, filters)
+  const workspaces = workspacesOf(diff, state)
   rows.push({
     kind: 'heading',
     key: 'h:ws',
@@ -945,6 +1004,23 @@ export const reduce = (
             depIndex: 0,
           }
         }
+        if (row?.kind === 'more') {
+          const toggled = {
+            ...state,
+            expanded:
+              state.expanded.includes(row.section) ?
+                state.expanded.filter(k => k !== row.section)
+              : [...state.expanded, row.section],
+          }
+          // the rows above it just moved, so follow it: leaving the
+          // cursor behind means the row cannot be folded back up
+          return {
+            ...toggled,
+            summaryIndex: summaryRows(diff, toggled).findIndex(
+              r => r.key === row.key,
+            ),
+          }
+        }
         if (row?.kind === 'alert') {
           return {
             ...state,
@@ -1030,7 +1106,7 @@ export const reduce = (
       )
       const summaryIndex = clamp(
         state.summaryIndex,
-        summaryRows(diff, filters).length,
+        summaryRows(diff, { ...state, ...filters }).length,
       )
       const trees = treesOf(workspaces[workspaceIndex]?.changes ?? [])
       const treeIndex = clamp(state.treeIndex, trees.length)

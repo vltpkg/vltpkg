@@ -28,6 +28,7 @@ import {
 import type {
   Event,
   State,
+  SummaryRow,
 } from '../../../src/commands/diff/state.ts'
 import type { GraphDiff, Mutation } from '@vltpkg/graph-diff'
 
@@ -106,8 +107,25 @@ const empty = {
 const OFF = { identity: false, directOnly: false }
 const ON = { identity: true, directOnly: false }
 
-const run = (events: Event[], from: State = initialState, d = diff) =>
-  events.reduce((s, e) => reduce(s, e, d), from)
+/** A cursor parked on the first row of a given kind. */
+const at = (
+  kind: SummaryRow['kind'],
+  d = diff,
+  from: State = initialState,
+): State => ({
+  ...from,
+  summaryIndex: summaryRows(d, from).findIndex(r => r.kind === kind),
+})
+
+const IDENTITY: State = { ...initialState, identity: true }
+
+// the summary leads with what changed, so getting to the workspace
+// browser means walking past it
+const run = (
+  events: Event[],
+  from: State = at('workspace'),
+  d = diff,
+) => events.reduce((s, e) => reduce(s, e, d), from)
 
 t.test(
   'layout budgets a frame to exactly the rows given',
@@ -211,9 +229,65 @@ t.test('highlights name exactly what they hold', async t => {
     ['gone'],
   )
   t.strictSame(
-    highlights(diff),
-    { major: [], downgraded: [], removed: [] },
-    'a routine diff highlights nothing, so the reader skips all three',
+    h.added.map(m => m.id),
+    [],
+    'nothing arrived that was not already there',
+  )
+  t.strictSame(
+    h.upgraded.map(m => m.id),
+    ['dull'],
+    'a patch bump is still a bump, it just is not a headline',
+  )
+  t.strictSame(
+    h.edges.map(m => m.id),
+    [],
+  )
+
+  const quiet = highlights({
+    ...diff,
+    mutations: [],
+  })
+  t.strictSame(
+    Object.values(quiet).flat(),
+    [],
+    'an empty diff highlights nothing, so every section is dropped',
+  )
+})
+
+t.test('what arrived, and what merely moved', async t => {
+  const d = {
+    ...diff,
+    mutations: [
+      mut({
+        id: 'new',
+        kind: 'node-added',
+        node: node('brand', '1.0.0'),
+      }),
+      // beta is bumped, so a node-added for it is a peer variant
+      // arriving under a new id rather than a package arriving
+      mut({
+        id: 'variant',
+        kind: 'node-added',
+        node: node('beta', '1.1.0'),
+      }),
+      resolved('real-b', 'beta', '1.0.0', '1.1.0'),
+      mut({
+        id: 'edge',
+        kind: 'edge-added',
+        edge: { name: 'z', spec: '^1', type: 'prod' } as never,
+      }),
+    ],
+  }
+  const h = highlights(d)
+  t.strictSame(
+    h.added.map(m => m.id),
+    ['new'],
+    'the mirror of a dropped variant is not an addition',
+  )
+  t.strictSame(
+    h.edges.map(m => m.id),
+    ['edge'],
+    'who points at what, rather than what is in the graph',
   )
 })
 
@@ -576,7 +650,6 @@ t.test('toggling a filter re-clamps every cursor', async t => {
 
   const deep = run(
     [
-      'ToggleIdentity',
       'Select',
       'Select',
       'MoveNext',
@@ -584,7 +657,7 @@ t.test('toggling a filter re-clamps every cursor', async t => {
       'MoveNext',
       'MoveNext',
     ],
-    initialState,
+    at('workspace', d, IDENTITY),
     d,
   )
   t.equal(deep.depIndex, 4, 'parked on the last of five rows')
@@ -620,8 +693,8 @@ t.test(
     } as unknown as GraphDiff
 
     const deep = run(
-      ['ToggleIdentity', 'Select', 'Select'],
-      initialState,
+      ['Select', 'Select'],
+      at('workspace', onlyNoise, IDENTITY),
       onlyNoise,
     )
     t.equal(deep.screen, 'tree')
@@ -787,7 +860,7 @@ t.test('n and p step sideways between trees', async t => {
     ],
   } as unknown as GraphDiff
 
-  const tree = run(['Select', 'Select'], initialState, d)
+  const tree = run(['Select', 'Select'], at('workspace', d), d)
   t.equal(tree.screen, 'tree')
   t.equal(tree.treeIndex, 0)
 
@@ -983,12 +1056,12 @@ t.test('alerts group by kind, worst first', async t => {
 })
 
 t.test('the summary reads top down, worst first', async t => {
-  const rows = summaryRows(rich, OFF)
+  const rows = summaryRows(rich, initialState)
   t.strictSame(
     rows
       .filter(r => r.kind === 'heading')
       .map(r => `${r.label} ${r.count}`),
-    ['SECURITY 2', 'MAJOR VERSIONS 1', 'WORKSPACES 1'],
+    ['SECURITY 2', 'MAJOR VERSIONS 1', 'UPGRADED 2', 'WORKSPACES 1'],
     'the count matches the rows under it, or something looks hidden',
   )
   t.notOk(selectable(rows[0]), 'a heading is not a place to stop')
@@ -1045,14 +1118,7 @@ t.test('walking the summary skips its scaffolding', async t => {
   )
   t.strictSame(
     seen,
-    [
-      'alert',
-      'alert',
-      'change',
-      'workspace',
-      'workspace',
-      'workspace',
-    ],
+    ['alert', 'alert', 'change', 'change', 'change', 'workspace'],
     'straight down the page, section to section',
   )
   t.equal(
@@ -1091,11 +1157,7 @@ t.test('every summary row opens something', async t => {
   t.equal(change.screen, 'tree')
 
   // a workspace row opens its list of trees
-  const ws = run(
-    ['MoveNext', 'MoveNext', 'MoveNext', 'Select'],
-    initialState,
-    rich,
-  )
+  const ws = run(['Select'], at('workspace', rich), rich)
   t.equal(ws.screen, 'workspace')
   t.equal(view(rich, ws).workspace?.label, 'www/docs')
 })
@@ -1369,4 +1431,56 @@ t.test('opening a search hit goes to its tree', async t => {
   )
   t.equal(view(context, dim).hits.length, 1)
   t.strictSame(reduce(dim, 'Select', context), dim)
+})
+
+t.test('a long section shows its first few', async t => {
+  const many = {
+    ...rich,
+    mutations: [
+      ...rich.mutations,
+      ...Array.from({ length: 8 }, (_, i) =>
+        resolved(`u${i}`, `pkg-${i}`, '1.0.0', '1.0.1', {
+          path: [{ id: '~npm~beta@1.1.0', name: 'beta' }],
+        }),
+      ),
+    ],
+    regions: [
+      {
+        ...(rich.regions[0] as object),
+        mutationIds: [
+          'real-a',
+          'real-b',
+          'big',
+          ...Array.from({ length: 8 }, (_, i) => `u${i}`),
+        ],
+      },
+      rich.regions[1],
+    ],
+  } as unknown as GraphDiff
+
+  const shown = (s: State) =>
+    summaryRows(many, s).filter(r => r.kind === 'change').length
+  const more = (s: State) =>
+    summaryRows(many, s).find(r => r.kind === 'more')
+
+  // ten upgrades, and the reader is not made to scroll past them all to
+  // reach the workspaces
+  t.equal(more(initialState)?.hidden, 4)
+  const capped = shown(initialState)
+
+  const on = at('more', many)
+  const open = reduce(on, 'Select', many)
+  t.strictSame(open.expanded, ['UPGRADED'])
+  t.equal(shown(open), capped + 4, 'the rest of the section')
+  t.equal(more(open)?.hidden, 0, 'and nothing left to ask for')
+  t.equal(
+    summaryRows(many, open)[open.summaryIndex]?.kind,
+    'more',
+    'the cursor follows the row it was on, or it cannot fold back',
+  )
+
+  const shut = reduce(open, 'Select', many)
+  t.strictSame(shut.expanded, [])
+  t.equal(shown(shut), capped)
+  t.equal(summaryRows(many, shut)[shut.summaryIndex]?.kind, 'more')
 })
