@@ -1201,8 +1201,16 @@ t.test('finding a package says where it lives', async t => {
     'and something to open',
   )
 
-  t.strictSame(searchHits(rich, OFF, ''), [], 'nothing typed yet')
-  t.strictSame(searchHits(rich, OFF, '  '), [], 'nor whitespace')
+  t.strictSame(
+    searchHits(rich, OFF, '').map(h => h.name),
+    ['alpha', 'beta', 'gamma'],
+    'the box opens onto everything, so it can be browsed',
+  )
+  t.strictSame(
+    searchHits(rich, OFF, '  ').map(h => h.name),
+    ['alpha', 'beta', 'gamma'],
+    'and whitespace is not a query',
+  )
   t.strictSame(searchHits(rich, OFF, 'nope'), [], 'no such package')
   t.equal(
     searchHits(rich, OFF, 'ALPH').length,
@@ -1282,6 +1290,32 @@ t.test(
       searchHits(prefixed, OFF, 'alp').map(h => h.name),
       ['alp', 'alpha', 'unalpha'],
       'exact, then what starts with it, then the rest by name',
+    )
+
+    // the scope is not the part anyone types
+    const scoped = {
+      ...rich,
+      mutations: [
+        ...rich.mutations,
+        resolved('sc', '@scope/alping', '1.0.0', '1.0.1', {
+          path: [{ id: '~npm~beta@1.1.0', name: 'beta' }],
+        }),
+        resolved('un', 'unalp', '1.0.0', '1.0.1', {
+          path: [{ id: '~npm~beta@1.1.0', name: 'beta' }],
+        }),
+      ],
+      regions: [
+        {
+          ...(rich.regions[0] as object),
+          mutationIds: ['real-a', 'real-b', 'big', 'sc', 'un'],
+        },
+        rich.regions[1],
+      ],
+    } as unknown as GraphDiff
+    t.strictSame(
+      searchHits(scoped, OFF, 'alp').map(h => h.name),
+      ['alpha', '@scope/alping', 'unalp'],
+      'the scope is not the part anyone types, so it is skipped',
     )
   },
 )

@@ -684,7 +684,7 @@ const SearchScreen = ({
       $(
         Text,
         { dimColor: true },
-        `${state.query ? `${hits.length} found` : 'type a package name'}  `,
+        `${hits.length} ${state.query ? 'found' : 'packages'}  `,
       ),
     ),
     $(

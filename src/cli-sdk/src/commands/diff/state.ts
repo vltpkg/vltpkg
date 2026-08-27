@@ -467,14 +467,34 @@ export type SearchHit = {
  * The question behind `/` is never "does this exist" -- it is "am I on
  * the hook for this one", so a hit is only worth showing with the
  * workspaces and the trees it turned up in attached.
+ *
+ * An empty query is every package, not none: the box opens onto the
+ * whole list and typing narrows it, which is the only way to find
+ * something whose spelling you are not sure of.
  */
+/**
+ * How well a name answers what was typed, lowest first.
+ *
+ * The scope is not the part anyone types, so `@rollup/rollup-x` has to
+ * beat `@astrojs/check` on "ro" -- both contain it, but only one is
+ * what the reader meant.
+ */
+const rank = (name: string, q: string) => {
+  const n = name.toLowerCase()
+  return (
+    n === q ? 0
+    : n.startsWith(q) ? 1
+    : n.slice(n.lastIndexOf('/') + 1).startsWith(q) ? 2
+    : 3
+  )
+}
+
 export const searchHits = (
   diff: GraphDiff,
   filters: Filters,
   query: string,
 ): SearchHit[] => {
   const q = query.trim().toLowerCase()
-  if (!q) return []
   type Building = Omit<SearchHit, 'workspaces' | 'trees'> & {
     workspaces: Set<string>
     trees: Set<string>
@@ -492,7 +512,7 @@ export const searchHits = (
   for (const ws of workspaces) {
     for (const tree of treesOf(ws.changes)) {
       for (const name of namesIn(tree)) {
-        if (!name.toLowerCase().includes(q)) continue
+        if (q && !name.toLowerCase().includes(q)) continue
         let hit = found.get(name)
         if (!hit) {
           const m = byName.get(name)
@@ -518,9 +538,7 @@ export const searchHits = (
     }))
     .sort(
       (a, z) =>
-        // what was typed, if it is a package, is the one wanted
-        Number(z.name === q) - Number(a.name === q) ||
-        Number(z.name.startsWith(q)) - Number(a.name.startsWith(q)) ||
+        rank(a.name, q) - rank(z.name, q) ||
         a.name.localeCompare(z.name),
     )
 }
@@ -787,7 +805,12 @@ export const view = (diff: GraphDiff, state: State) => {
     rows,
     // where the summary cursor actually is, never on a heading
     summaryIndex: summaryCursor(rows, state.summaryIndex),
-    hits: searchHits(diff, state, state.query),
+    // every screen calls view(), and this walks every tree of every
+    // workspace: only the one showing it should pay for that
+    hits:
+      state.screen === 'search' ?
+        searchHits(diff, state, state.query)
+      : [],
     groups,
     group,
     workspaces,
