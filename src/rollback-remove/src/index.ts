@@ -2,10 +2,8 @@ import { spawn } from 'node:child_process'
 import { rename } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
 import { rimraf } from 'rimraf'
+import { daemonSpawn, detached, endPayload } from './daemon.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './remove.ts'
-
-const isDeno =
-  (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
 
 export class RollbackRemove {
   #key = String(Math.random()).substring(2)
@@ -36,23 +34,13 @@ export class RollbackRemove {
     // nothing to confirm!
     if (!this.#paths.size) return
 
-    const env = { ...process.env }
-    const args = []
-    // Deno on Windows does not support detached processes
-    // https://github.com/denoland/deno/issues/25867
-    // TODO: figure out something better to do here?
-    const detached = !(isDeno && process.platform === 'win32')
-    // If we are running deno from source we need to add the
-    // unstable flags we need. The '-A' flag does not need
-    // to be passed in as Deno supplies that automatically.
-    if (isDeno) {
-      args.push(
-        '--unstable-node-globals',
-        '--unstable-bare-node-builtins',
-      )
-    }
-    args.push(__CODE_SPLIT_SCRIPT_NAME)
-    const child = spawn(process.execPath, args, {
+    const {
+      command,
+      args,
+      env: daemonEnv,
+    } = daemonSpawn(__CODE_SPLIT_SCRIPT_NAME)
+    const env = { ...process.env, ...daemonEnv }
+    const child = spawn(command, args, {
       stdio: ['pipe', 'ignore', 'ignore'],
       detached,
       env,
@@ -60,7 +48,7 @@ export class RollbackRemove {
     for (const path of this.#paths.values()) {
       child.stdin.write(`${path}\0`)
     }
-    child.stdin.end()
+    endPayload(child.stdin)
     if (detached) {
       child.unref()
     }

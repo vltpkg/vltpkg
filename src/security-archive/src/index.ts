@@ -8,6 +8,7 @@ import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { defaultRegistryName } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
+import { daemonSpawn, detached, endPayload } from './daemon.ts'
 import { asPackageReportData } from './types.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-expired.ts'
 import type { UpdateExpiredPayload } from './update-expired.ts'
@@ -264,10 +265,6 @@ export class SecurityArchive
       return
     }
 
-    const isDeno =
-      (globalThis as typeof globalThis & { Deno?: any }).Deno !=
-      undefined
-
     const payload: UpdateExpiredPayload = {
       dbPath: this.#path,
       retries: this.#retries,
@@ -275,30 +272,18 @@ export class SecurityArchive
       expired,
     }
 
-    const args = []
-    // Deno on Windows does not support detached processes
-    /* c8 ignore next */
-    const detached = !(isDeno && process.platform === 'win32')
+    const { command, args, env } = daemonSpawn(
+      __CODE_SPLIT_SCRIPT_NAME,
+    )
 
-    /* c8 ignore start */
-    if (isDeno) {
-      args.push(
-        '--unstable-node-globals',
-        '--unstable-bare-node-builtins',
-      )
-    }
-    /* c8 ignore stop */
-
-    args.push(__CODE_SPLIT_SCRIPT_NAME)
-
-    const proc = spawn(process.execPath, args, {
+    const proc = spawn(command, args, {
       detached,
       stdio: ['pipe', 'ignore', 'ignore'],
-      env: { ...process.env },
+      env: { ...process.env, ...env },
     })
 
     proc.stdin.write(JSON.stringify(payload))
-    proc.stdin.end()
+    endPayload(proc.stdin)
 
     /* c8 ignore start */
     if (detached) {

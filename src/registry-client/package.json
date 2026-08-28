@@ -63,6 +63,11 @@
       "import": {
         "default": "./src/cache-entry.ts"
       }
+    },
+    "./revalidate": {
+      "import": {
+        "default": "./src/revalidate.ts"
+      }
     }
   },
   "files": [

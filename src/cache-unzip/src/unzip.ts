@@ -2,6 +2,7 @@ import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
 import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
+import { readPayload } from './daemon.ts'
 import type { Integrity } from '@vltpkg/types'
 import type EventEmitter from 'node:events'
 
@@ -33,22 +34,7 @@ const main = async (
     return false
   }
 
-  const keys = await new Promise<string[]>(res => {
-    const chunks: Buffer[] = []
-    let chunkLen = 0
-    input.on('data', (chunk: Buffer) => {
-      chunks.push(chunk)
-      chunkLen += chunk.length
-    })
-    input.on('end', () => {
-      res(
-        Buffer.concat(chunks, chunkLen)
-          .toString()
-          .split('\0')
-          .filter(i => !!i),
-      )
-    })
-  })
+  const keys = (await readPayload(input)).split('\0').filter(i => !!i)
 
   if (!keys.length) {
     return false

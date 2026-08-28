@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import pRetry, { AbortError } from 'p-retry'
 import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import { readPayload } from './daemon.ts'
 import { asPackageReportData } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { JSONItemResponse } from './index.ts'
@@ -92,28 +93,9 @@ const retrieveRemoteData = async (
 export const main = async (
   input: EventEmitter = process.stdin,
 ): Promise<boolean> => {
-  const payload = await new Promise<UpdateExpiredPayload>(
-    (resolve, reject) => {
-      const chunks: Buffer[] = []
-      let chunkLen = 0
-      input.on('data', (chunk: Buffer) => {
-        chunks.push(chunk)
-        chunkLen += chunk.length
-      })
-      input.on('end', () => {
-        try {
-          const raw = Buffer.concat(chunks, chunkLen).toString()
-          resolve(JSON.parse(raw) as UpdateExpiredPayload)
-          /* c8 ignore start */
-        } catch (err) {
-          reject(err)
-        }
-        /* c8 ignore stop */
-      })
-      /* c8 ignore next */
-      input.on('error', reject)
-    },
-  )
+  const payload = JSON.parse(
+    await readPayload(input),
+  ) as UpdateExpiredPayload
 
   const { dbPath, retries, ttl, expired } = payload
   if (!expired.length) {

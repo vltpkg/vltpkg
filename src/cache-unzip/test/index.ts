@@ -76,7 +76,7 @@ t.test('registering the beforeExit event', async t => {
 
   t.equal(state.unrefCalled, true)
 
-  t.strictSame(state.written, ['key 1\0', 'key 2\0'])
+  t.strictSame(state.written, ['key 1\0', 'key 2\0', '\x04'])
 })
 
 t.test('shares the compile cache dir with the worker', async t => {
@@ -152,5 +152,5 @@ t.test('deno + windows', async t => {
 
   t.equal(state.opts.detached, false, 'detached is false on windows')
   t.equal(state.unrefCalled, false, 'unref is not called on windows')
-  t.strictSame(state.written, ['key 1\0'])
+  t.strictSame(state.written, ['key 1\0', '\x04'])
 })

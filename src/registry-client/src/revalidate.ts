@@ -1,6 +1,7 @@
 import type EventEmitter from 'node:events'
 import { setPriority } from 'node:os'
 import { pathToFileURL } from 'node:url'
+import { readPayload } from './daemon.ts'
 import { RegistryClient } from './index.ts'
 import { revalidateEntry } from './revalidate-entry.ts'
 
@@ -47,32 +48,16 @@ export const main = async (
   if (!cache) {
     return false
   }
-  const reqs = await new Promise<['GET' | 'HEAD', URL][]>(res => {
-    const chunks: Buffer[] = []
-    let chunkLen = 0
-    input.on('data', (chunk: Buffer) => {
-      chunks.push(chunk)
-      chunkLen += chunk.length
-    })
-    input.on('end', () => {
-      const reqs: ['GET' | 'HEAD', URL][] = Buffer.concat(
-        chunks,
-        chunkLen,
-      )
-        .toString()
-        .split('\0')
-        .filter(
-          i => !!i && (i.startsWith('GET ') || i.startsWith('HEAD ')),
-        )
-        .map(i =>
-          i.startsWith('GET ') ?
-            ['GET', new URL(i.substring('GET '.length))]
-          : ['HEAD', new URL(i.substring('HEAD '.length))],
-        )
-
-      res(reqs)
-    })
-  })
+  const reqs: ['GET' | 'HEAD', URL][] = (await readPayload(input))
+    .split('\0')
+    .filter(
+      i => !!i && (i.startsWith('GET ') || i.startsWith('HEAD ')),
+    )
+    .map(i =>
+      i.startsWith('GET ') ?
+        ['GET', new URL(i.substring('GET '.length))]
+      : ['HEAD', new URL(i.substring('HEAD '.length))],
+    )
 
   if (!reqs.length) {
     return false

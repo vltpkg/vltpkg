@@ -45,6 +45,7 @@ t.test('registering the beforeExit event', async t => {
               'GET https://example.com/\x00',
               'HEAD https://example.com/2\x00',
               'GET https://example.com/3\x00',
+              '\x04',
             ])
           },
         }

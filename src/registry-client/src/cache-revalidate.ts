@@ -1,9 +1,7 @@
 import { spawn } from 'node:child_process'
 import module from 'node:module'
+import { daemonSpawn, detached, endPayload } from './daemon.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './revalidate.ts'
-
-const isDeno =
-  (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
 
 let didProcessBeforeExitHook = false
 const registered = new Map<string, Set<string>>()
@@ -31,28 +29,16 @@ const handleBeforeExit = () => {
   for (const [path, r] of registered) {
     /* c8 ignore next */
     if (!r.size) continue
-    const env = { ...process.env }
+    const {
+      command,
+      args,
+      env: daemonEnv,
+    } = daemonSpawn(__CODE_SPLIT_SCRIPT_NAME)
+    const env = { ...process.env, ...daemonEnv }
     if (compileCacheDir) env.NODE_COMPILE_CACHE ??= compileCacheDir
-    const args = []
-    /* c8 ignore start */
-    // If we are running deno from source we need to add the
-    // unstable flags we need. The '-A' flag does not need
-    // to be passed in as Deno supplies that automatically.
-    if (isDeno) {
-      args.push(
-        '--unstable-node-globals',
-        '--unstable-bare-node-builtins',
-      )
-    }
-    /* c8 ignore stop */
-    args.push(__CODE_SPLIT_SCRIPT_NAME, path)
+    args.push(path)
     registered.delete(path)
-    // Deno on Windows does not support detached processes
-    // https://github.com/denoland/deno/issues/25867
-    // TODO: figure out something better to do here?
-    /* c8 ignore next */
-    const detached = !(isDeno && process.platform === 'win32')
-    const proc = spawn(process.execPath, args, {
+    const proc = spawn(command, args, {
       detached,
       stdio: ['pipe', 'ignore', 'ignore'],
       env,
@@ -60,7 +46,7 @@ const handleBeforeExit = () => {
     for (const key of r) {
       proc.stdin.write(`${key}\0`)
     }
-    proc.stdin.end()
+    endPayload(proc.stdin)
     // Another Deno oddity. Calling unref on a spawned process will kill the
     // process unless it is detached. https://github.com/denoland/deno/issues/21446
     // So in this case Deno on Windows will be slower to exit the main process

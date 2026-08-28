@@ -48,6 +48,11 @@
       "import": {
         "default": "./src/index.ts"
       }
+    },
+    "./remove": {
+      "import": {
+        "default": "./src/remove.ts"
+      }
     }
   },
   "files": [
