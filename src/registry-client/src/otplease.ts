@@ -1,32 +1,22 @@
+import type { TransportResponse } from './transport.ts'
 import { error } from '@vltpkg/error-cause'
-import type { Dispatcher } from 'undici'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,
 } from './index.ts'
+import { question } from './prompt.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { urlOpen } from '@vltpkg/url-open'
-import { createInterface } from 'node:readline/promises'
 import { gunzipSync } from 'node:zlib'
 
 // eslint-disable-next-line no-console
 const log = (msg: string) => console.error(msg)
 
-const question = async (text: string): Promise<string> => {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  })
-  const answer = await rl.question(text)
-  rl.close()
-  return answer
-}
-
 const otpChallengeNotice =
   /^Open ([^ ]+) to use your security key for authentication or enter OTP from your authenticator app/i
 
 const responseBodyText = async (
-  response: Dispatcher.ResponseData,
+  response: TransportResponse,
 ): Promise<string> => {
   const contentEncoding = String(
     response.headers['content-encoding'] ?? '',
@@ -45,7 +35,7 @@ export type OtpResult =
 export const otplease = async (
   client: RegistryClient,
   options: RegistryClientRequestOptions,
-  response: Dispatcher.ResponseData,
+  response: TransportResponse,
 ): Promise<OtpResult> => {
   const waHeader = String(response.headers['www-authenticate'] ?? '')
   const wwwAuth = new Set(

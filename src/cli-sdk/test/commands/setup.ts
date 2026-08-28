@@ -4,7 +4,7 @@ import type { LoadedConfig } from '../../src/config/index.ts'
 
 type Added = [string, Record<string, unknown>]
 
-// Build a mocked setup module with injectable readline answers and a
+// Build a mocked setup module with injectable prompt answers and a
 // RegistryClient stub that records the registries it logs in against.
 const loadSetup = async (answers: string[]) => {
   const loginCalls: (string | string[])[] = []
@@ -21,14 +21,11 @@ const loadSetup = async (answers: string[]) => {
         }
       },
     },
-    'node:readline/promises': {
-      createInterface: () => ({
-        question: async (q: string) => {
-          questions.push(q)
-          return queue.shift() ?? ''
-        },
-        close: () => {},
-      }),
+    '../../src/prompt.ts': {
+      question: async (q: string) => {
+        questions.push(q)
+        return queue.shift() ?? ''
+      },
     },
     '../../src/output.ts': {
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),

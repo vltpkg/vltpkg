@@ -13,14 +13,11 @@ const load = async (answers: string[]) => {
   const mod = await t.mockImport<
     typeof import('../src/select-registry.ts')
   >('../src/select-registry.ts', {
-    'node:readline/promises': {
-      createInterface: () => ({
-        question: async (q: string) => {
-          questions.push(q)
-          return queue.shift() ?? ''
-        },
-        close: () => {},
-      }),
+    '../src/prompt.ts': {
+      question: async (q: string) => {
+        questions.push(q)
+        return queue.shift() ?? ''
+      },
     },
   })
   const output = {

@@ -23,23 +23,16 @@ t.test('promptFn', async t => {
   const { promptFn } = await t.mockImport<
     typeof import('../../src/commands/create.ts')
   >('../../src/commands/create.ts', {
-    'node:readline/promises': {
-      createInterface: (stdin: unknown, stdout: unknown) => {
-        t.equal(stdin, process.stdin)
-        t.equal(stdout, process.stdout)
-        return {
-          question: async (prompt: unknown) => {
-            askedQuestion = true
-            t.matchSnapshot(prompt)
-            return 'yes'
-          },
-        }
+    '../../src/prompt.ts': {
+      question: async (prompt: unknown) => {
+        askedQuestion = true
+        t.matchSnapshot(prompt)
+        return 'yes'
       },
     },
   })
   unload()
 
-  const pauses = t.capture(process.stdin, 'pause').args
   t.equal(
     await promptFn(
       Spec.parse('a@1.2.3'),
@@ -48,7 +41,6 @@ t.test('promptFn', async t => {
     ),
     'yes',
   )
-  t.strictSame(pauses(), [[]])
   t.equal(askedQuestion, true)
 })
 

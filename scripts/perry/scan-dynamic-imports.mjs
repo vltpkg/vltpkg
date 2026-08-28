@@ -67,6 +67,13 @@ const ALLOW = [
     track: '3e',
   },
   {
+    // deliberately dropped when compiled: it is how undici stays out of the
+    // binary's module graph. The compiled build never reaches this branch.
+    file: 'src/registry-client/src/transport.ts',
+    spec: './transport-undici.ts',
+    track: 'node-build-only',
+  },
+  {
     file: 'infra/build/src/bins.ts',
     spec: '@vltpkg/cli-sdk',
     track: 'node-build-only',

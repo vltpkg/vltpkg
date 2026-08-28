@@ -1,0 +1,46 @@
+diff -u -r a/dist/commonjs/index.js b/dist/commonjs/index.js
+--- a/dist/commonjs/index.js	2026-08-01 02:43:02.215496819 +0000
++++ b/dist/commonjs/index.js	2026-08-28 21:39:11.433649422 +0000
+@@ -91,12 +91,13 @@
+                     ? ZeroArray
+                     : null;
+ /* c8 ignore stop */
+-class ZeroArray extends Array {
+-    constructor(size) {
+-        super(size);
+-        this.fill(0);
+-    }
+-}
++// perry: `class X extends Array` produces a non-Array object — Array.isArray
++// is false, prototype methods are missing, and growing it by index throws
++// `Cannot assign to read only property`. A factory returning a real Array is
++// identical under node, including through `new`.
++const ZeroArray = function (size) {
++    return new Array(size).fill(0);
++};
+ class Stack {
+     heap;
+     length;
+diff -u -r a/dist/esm/index.js b/dist/esm/index.js
+--- a/dist/esm/index.js	2026-08-01 02:43:02.216496861 +0000
++++ b/dist/esm/index.js	2026-08-28 21:39:11.430649292 +0000
+@@ -88,12 +88,13 @@
+                     ? ZeroArray
+                     : null;
+ /* c8 ignore stop */
+-class ZeroArray extends Array {
+-    constructor(size) {
+-        super(size);
+-        this.fill(0);
+-    }
+-}
++// perry: `class X extends Array` produces a non-Array object — Array.isArray
++// is false, prototype methods are missing, and growing it by index throws
++// `Cannot assign to read only property`. A factory returning a real Array is
++// identical under node, including through `new`.
++const ZeroArray = function (size) {
++    return new Array(size).fill(0);
++};
+ class Stack {
+     heap;
+     length;

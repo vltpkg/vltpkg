@@ -1,4 +1,4 @@
-import { request } from 'undici'
+import { request } from './oidc-request.ts'
 import type { Token } from './auth.ts'
 import { setRuntimeToken } from './auth.ts'
 

@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { createInterface } from 'node:readline/promises'
+import { question } from './prompt.ts'
 
 /** A configured registry the user can act against. */
 export type RegistryCandidate = {
@@ -42,31 +42,29 @@ export const selectRegistry = async (
     throw error('No registries to select from', { code: 'ECONFIG' })
   }
 
-  const rl = createInterface({ input, output })
-  try {
-    output.write('Multiple registries are configured. Select one:\n')
-    for (const [i, c] of candidates.entries()) {
-      const marker = i === defaultIndex ? ' (default)' : ''
-      output.write(`  ${i + 1}) ${c.alias} -> ${c.url}${marker}\n`)
-    }
-
-    const answer = (
-      await rl.question(`Registry [${defaultIndex + 1}]: `)
-    ).trim()
-
-    if (!answer) return fallback.url
-
-    const choice = Number(answer)
-    const picked = candidates[choice - 1]
-    if (!Number.isInteger(choice) || !picked) {
-      throw error('Invalid registry selection', {
-        found: answer,
-        validOptions: candidates.map((_, i) => String(i + 1)),
-        code: 'EUSAGE',
-      })
-    }
-    return picked.url
-  } finally {
-    rl.close()
+  output.write('Multiple registries are configured. Select one:\n')
+  for (const [i, c] of candidates.entries()) {
+    const marker = i === defaultIndex ? ' (default)' : ''
+    output.write(`  ${i + 1}) ${c.alias} -> ${c.url}${marker}\n`)
   }
+
+  const answer = (
+    await question(`Registry [${defaultIndex + 1}]: `, {
+      input,
+      output,
+    })
+  ).trim()
+
+  if (!answer) return fallback.url
+
+  const choice = Number(answer)
+  const picked = candidates[choice - 1]
+  if (!Number.isInteger(choice) || !picked) {
+    throw error('Invalid registry selection', {
+      found: answer,
+      validOptions: candidates.map((_, i) => String(i + 1)),
+      code: 'EUSAGE',
+    })
+  }
+  return picked.url
 }

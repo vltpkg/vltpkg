@@ -3,7 +3,7 @@ import type { PromptFn } from '@vltpkg/vlx'
 import * as vlx from '@vltpkg/vlx'
 import { homedir } from 'node:os'
 import { env, platform } from 'node:process'
-import { createInterface } from 'node:readline/promises'
+import { question } from '../prompt.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { ExecResult } from '../exec-command.ts'
 import { ExecCommand } from '../exec-command.ts'
@@ -130,10 +130,7 @@ export const promptFn: PromptFn = async (
   path,
   resolution,
 ) => {
-  const response = await createInterface(
-    process.stdin,
-    process.stdout,
-  ).question(
+  const response = await question(
     `About to install: ${styleTextStdout(
       ['bgWhiteBright', 'black', 'bold'],
       String(pkgSpec),
@@ -148,7 +145,6 @@ into: ${styleTextStdout(
     )}
 Is this ok? (y) `,
   )
-  process.stdin.pause()
   return response
 }
 

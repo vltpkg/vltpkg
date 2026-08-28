@@ -6,11 +6,8 @@ const load = async (answers: string[] = []) => {
   return t.mockImport<
     typeof import('../../src/commands/registry.ts')
   >('../../src/commands/registry.ts', {
-    'node:readline/promises': {
-      createInterface: () => ({
-        question: async () => queue.shift() ?? '',
-        close: () => {},
-      }),
+    '../../src/prompt.ts': {
+      question: async () => queue.shift() ?? '',
     },
   })
 }

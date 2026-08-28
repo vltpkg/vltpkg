@@ -681,29 +681,31 @@ export class CacheEntry {
     let headLength = 4 + statusBytes.byteLength
     for (const h of this.#headers) headLength += 4 + h.byteLength
 
-    const out = Buffer.from(
-      new ArrayBuffer(headLength),
-      0,
-      headLength,
-    )
+    // Built as a Uint8Array, not a Buffer. In the compiled binary a Buffer
+    // keeps element writes off its backing ArrayBuffer — `writeUInt32BE` and
+    // some indexed stores are visible through the Buffer and invisible to
+    // anything that copies from it — so every length prefix reached the cache
+    // as zero and the entry decoded as garbage. Uint8Array stores write
+    // through, and Buffer.from() copies faithfully.
+    const out = new Uint8Array(headLength)
     let off = 0
-    out[off++] = (headLength >> 24) & 0xff
-    out[off++] = (headLength >> 16) & 0xff
-    out[off++] = (headLength >> 8) & 0xff
-    out[off++] = headLength & 0xff
+    const writeSize = (n: number) => {
+      out[off] = (n >>> 24) & 0xff
+      out[off + 1] = (n >>> 16) & 0xff
+      out[off + 2] = (n >>> 8) & 0xff
+      out[off + 3] = n & 0xff
+      off += 4
+    }
+    writeSize(headLength)
     out.set(statusBytes, off)
     off += statusBytes.byteLength
     for (const h of this.#headers) {
-      const l = 4 + h.byteLength
-      out[off++] = (l >> 24) & 0xff
-      out[off++] = (l >> 16) & 0xff
-      out[off++] = (l >> 8) & 0xff
-      out[off++] = l & 0xff
+      writeSize(4 + h.byteLength)
       out.set(h, off)
       off += h.byteLength
     }
     this.#headSize = headLength
-    return out
+    return Buffer.from(out)
   }
 
   /**
@@ -714,10 +716,10 @@ export class CacheEntry {
     const head = this.encodeHead()
     const body = this._body
     const total = head.byteLength + body.byteLength
-    const out = Buffer.from(new ArrayBuffer(total), 0, total)
+    const out = new Uint8Array(total)
     out.set(head, 0)
     out.set(body, head.byteLength)
-    return out
+    return Buffer.from(out)
   }
 }
 

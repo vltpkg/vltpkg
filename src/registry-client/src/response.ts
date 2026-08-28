@@ -1,9 +1,9 @@
-import type { Dispatcher } from 'undici'
+import type { TransportResponse } from './transport.ts'
 import type { CacheEntry } from './cache-entry.ts'
 import { getEncondedValue } from './string-encoding.ts'
 
 export const collectHeaders = (
-  response: Dispatcher.ResponseData,
+  response: TransportResponse,
 ): Uint8Array[] => {
   const h: Uint8Array[] = []
   for (const [key, value] of Object.entries(response.headers)) {
@@ -20,7 +20,7 @@ export const collectHeaders = (
 }
 
 export const readBody = async (
-  response: Dispatcher.ResponseData,
+  response: TransportResponse,
   entry: CacheEntry,
 ): Promise<CacheEntry> => {
   response.body.on('data', (chunk: Uint8Array) =>

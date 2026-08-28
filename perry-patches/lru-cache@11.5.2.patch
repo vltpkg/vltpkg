@@ -1,0 +1,46 @@
+diff -u -r a/dist/commonjs/index.js b/dist/commonjs/index.js
+--- a/dist/commonjs/index.js	2026-08-01 02:42:37.186458445 +0000
++++ b/dist/commonjs/index.js	2026-08-28 21:39:11.644658567 +0000
+@@ -41,12 +41,13 @@
+                 : max <= Number.MAX_SAFE_INTEGER ? ZeroArray
+                     : null;
+ /* c8 ignore stop */
+-class ZeroArray extends Array {
+-    constructor(size) {
+-        super(size);
+-        this.fill(0);
+-    }
+-}
++// perry: `class X extends Array` produces a non-Array object — Array.isArray
++// is false, prototype methods are missing, and growing it by index throws
++// `Cannot assign to read only property`. A factory returning a real Array is
++// identical under node, including through `new`.
++const ZeroArray = function (size) {
++    return new Array(size).fill(0);
++};
+ class Stack {
+     /* c8 ignore start - not sure why this is showing up uncovered?? */
+     heap;
+diff -u -r a/dist/esm/index.js b/dist/esm/index.js
+--- a/dist/esm/index.js	2026-08-01 02:42:37.188458528 +0000
++++ b/dist/esm/index.js	2026-08-28 21:39:11.643658523 +0000
+@@ -38,12 +38,13 @@
+                 : max <= Number.MAX_SAFE_INTEGER ? ZeroArray
+                     : null;
+ /* c8 ignore stop */
+-class ZeroArray extends Array {
+-    constructor(size) {
+-        super(size);
+-        this.fill(0);
+-    }
+-}
++// perry: `class X extends Array` produces a non-Array object — Array.isArray
++// is false, prototype methods are missing, and growing it by index throws
++// `Cannot assign to read only property`. A factory returning a real Array is
++// identical under node, including through `new`.
++const ZeroArray = function (size) {
++    return new Array(size).fill(0);
++};
+ class Stack {
+     /* c8 ignore start - not sure why this is showing up uncovered?? */
+     heap;

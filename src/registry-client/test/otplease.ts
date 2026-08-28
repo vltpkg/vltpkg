@@ -21,13 +21,6 @@ t.beforeEach(() => {
   logs.length = 0
 })
 
-class MockInterface {
-  async question(text: string) {
-    return text
-  }
-  close() {}
-}
-
 const mockClient = {
   async webAuthOpener({ doneUrl, authUrl }: WebAuthChallenge) {
     urlsOpened.push(authUrl)
@@ -47,10 +40,9 @@ const { otplease } = await t.mockImport<
   '@vltpkg/url-open': {
     urlOpen: mockUrlOpen,
   },
-  'node:readline/promises': {
-    createInterface() {
-      return new MockInterface()
-    },
+  '../src/prompt.ts': {
+    // the prompt echoes back, so a test asserts on what was asked
+    question: async (text: string) => text,
   },
 })
 

@@ -1012,8 +1012,9 @@ t.test('per-request options omit agent knobs', async t => {
   dropConnection = false
   const rc = t.context.rc as RegistryClient
   const seen: Dispatcher.RequestOptions[] = []
-  const orig = rc.agent.request.bind(rc.agent)
-  rc.agent.request = async (opts: Dispatcher.RequestOptions) => {
+  const transport = await rc.transport()
+  const orig = transport.request.bind(transport)
+  transport.request = async (opts: Dispatcher.RequestOptions) => {
     seen.push(opts)
     return orig(opts)
   }

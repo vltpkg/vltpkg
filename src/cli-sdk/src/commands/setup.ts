@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
-import { createInterface } from 'node:readline/promises'
+import { question } from '../prompt.ts'
 import { configWriteTarget } from '../config/index.ts'
 import { registrySelectionFields } from '../config/merge-layers.ts'
 import { commandUsage } from '../config/usage.ts'
@@ -110,131 +110,121 @@ export const command: CommandFn<SetupResult> = async conf => {
   const yes = !!conf.get('yes')
   const which = configWriteTarget(conf, 'user')
 
-  let rl: ReturnType<typeof createInterface> | undefined
-  const ask = async (question: string): Promise<string> => {
-    rl ??= createInterface(process.stdin, process.stdout)
-    return (await rl.question(question)).trim()
+  // `question` pauses stdin once it has its line, so there is nothing to
+  // clean up afterwards the way `readline`'s interface needed.
+  const ask = async (text: string): Promise<string> =>
+    (await question(text)).trim()
+
+  stdout(`Sign up or log in at ${VLT_SIGNUP_URL} before continuing.`)
+
+  // 1. resolve the account slug
+  let account = conf.positionals[0]?.trim()
+  if (!account) {
+    if (yes) {
+      throw error(
+        'An account slug is required in non-interactive mode. ' +
+          'Pass it as an argument: `vlt setup <account> --yes`.',
+        { code: 'ECONFIG' },
+      )
+    }
+    account = await ask('vlt.io account or organization slug: ')
+    if (!account) {
+      throw error('No account slug provided.', { code: 'ECONFIG' })
+    }
   }
 
-  try {
-    stdout(
-      `Sign up or log in at ${VLT_SIGNUP_URL} before continuing.`,
+  // 2. stage the two known account registries
+  const registries: Record<string, string> = {}
+  for (const name of accountRegistries) {
+    registries[name] = accountRegistryURL(account, name)
+  }
+
+  // 3. merge in registry aliases supplied for this invocation. aliases
+  // that came from a config file are left where they are: copying them
+  // would turn a project-local alias into a global one (or vice versa).
+  const builtinRegistries = defaultRegistries as Record<
+    string,
+    string
+  >
+  const fileRegistries: Record<string, string> = {
+    ...conf.layers.user?.registries,
+    ...conf.layers.project?.registries,
+  }
+  for (const [name, url] of Object.entries(
+    conf.options.registries,
+  )) {
+    if (builtinRegistries[name] === url) continue
+    if (fileRegistries[name] === url) continue
+    registries[name] = normalizeRegistryURL(url)
+  }
+
+  const rc = new RegistryClient(conf.options)
+
+  // 4. authenticate against the account registries (interactive only)
+  if (!yes) {
+    const doAuth = await ask(
+      'Authenticate with your vlt.io account now? (Y/n) ',
+    )
+    if (!/^n/i.test(doAuth)) {
+      // one token covers every registry on the account, so the browser
+      // opens once and the token is stored for all of them.
+      stdout(
+        `Authenticating your account registries (${accountRegistries.join(
+          ', ',
+        )})...`,
+      )
+      await rc.login(
+        accountRegistries.map(name =>
+          accountRegistryURL(account, name),
+        ),
+      )
+    }
+
+    // 5. offer to add further custom aliases
+    for (;;) {
+      const more = await ask('Add another registry alias? (y/N) ')
+      if (!/^y/i.test(more)) break
+      const name = await ask('  alias name: ')
+      if (!name) {
+        stdout('  alias name is required, skipping.')
+        continue
+      }
+      if (name in registries) {
+        stdout(`  alias "${name}" is already staged, skipping.`)
+        continue
+      }
+      const url = await ask('  registry url: ')
+      if (!url) {
+        stdout('  registry url is required, skipping.')
+        continue
+      }
+      const normalized = normalizeRegistryURL(url)
+      registries[name] = normalized
+      const auth = await ask(
+        `  authenticate against "${name}" now? (y/N) `,
+      )
+      if (/^y/i.test(auth)) {
+        await rc.login(normalized)
+      }
+    }
+  }
+
+  // 6. persist the staged registries (merged, not clobbered)
+  await conf.addConfigToFile(which, { registries })
+
+  // writing the user config from inside a project that configures its own
+  // registries has no effect here, so say so rather than looking like it
+  // worked.
+  const shadowedByProject =
+    which === 'user' &&
+    registrySelectionFields.some(
+      f => f in (conf.layers.project ?? {}),
     )
 
-    // 1. resolve the account slug
-    let account = conf.positionals[0]?.trim()
-    if (!account) {
-      if (yes) {
-        throw error(
-          'An account slug is required in non-interactive mode. ' +
-            'Pass it as an argument: `vlt setup <account> --yes`.',
-          { code: 'ECONFIG' },
-        )
-      }
-      account = await ask('vlt.io account or organization slug: ')
-      if (!account) {
-        throw error('No account slug provided.', { code: 'ECONFIG' })
-      }
-    }
-
-    // 2. stage the two known account registries
-    const registries: Record<string, string> = {}
-    for (const name of accountRegistries) {
-      registries[name] = accountRegistryURL(account, name)
-    }
-
-    // 3. merge in registry aliases supplied for this invocation. aliases
-    // that came from a config file are left where they are: copying them
-    // would turn a project-local alias into a global one (or vice versa).
-    const builtinRegistries = defaultRegistries as Record<
-      string,
-      string
-    >
-    const fileRegistries: Record<string, string> = {
-      ...conf.layers.user?.registries,
-      ...conf.layers.project?.registries,
-    }
-    for (const [name, url] of Object.entries(
-      conf.options.registries,
-    )) {
-      if (builtinRegistries[name] === url) continue
-      if (fileRegistries[name] === url) continue
-      registries[name] = normalizeRegistryURL(url)
-    }
-
-    const rc = new RegistryClient(conf.options)
-
-    // 4. authenticate against the account registries (interactive only)
-    if (!yes) {
-      const doAuth = await ask(
-        'Authenticate with your vlt.io account now? (Y/n) ',
-      )
-      if (!/^n/i.test(doAuth)) {
-        // one token covers every registry on the account, so the browser
-        // opens once and the token is stored for all of them.
-        stdout(
-          `Authenticating your account registries (${accountRegistries.join(
-            ', ',
-          )})...`,
-        )
-        await rc.login(
-          accountRegistries.map(name =>
-            accountRegistryURL(account, name),
-          ),
-        )
-      }
-
-      // 5. offer to add further custom aliases
-      for (;;) {
-        const more = await ask('Add another registry alias? (y/N) ')
-        if (!/^y/i.test(more)) break
-        const name = await ask('  alias name: ')
-        if (!name) {
-          stdout('  alias name is required, skipping.')
-          continue
-        }
-        if (name in registries) {
-          stdout(`  alias "${name}" is already staged, skipping.`)
-          continue
-        }
-        const url = await ask('  registry url: ')
-        if (!url) {
-          stdout('  registry url is required, skipping.')
-          continue
-        }
-        const normalized = normalizeRegistryURL(url)
-        registries[name] = normalized
-        const auth = await ask(
-          `  authenticate against "${name}" now? (y/N) `,
-        )
-        if (/^y/i.test(auth)) {
-          await rc.login(normalized)
-        }
-      }
-    }
-
-    // 6. persist the staged registries (merged, not clobbered)
-    await conf.addConfigToFile(which, { registries })
-
-    // writing the user config from inside a project that configures its own
-    // registries has no effect here, so say so rather than looking like it
-    // worked.
-    const shadowedByProject =
-      which === 'user' &&
-      registrySelectionFields.some(
-        f => f in (conf.layers.project ?? {}),
-      )
-
-    return {
-      account,
-      which,
-      registries,
-      ...(shadowedByProject ? { shadowedByProject } : undefined),
-    }
-  } finally {
-    if (rl) {
-      rl.close()
-      process.stdin.pause()
-    }
+  return {
+    account,
+    which,
+    registries,
+    ...(shadowedByProject ? { shadowedByProject } : undefined),
   }
 }

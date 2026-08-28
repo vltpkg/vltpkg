@@ -7,12 +7,10 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
-import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { version } from './version.ts'
-import type { Agent, Dispatcher } from 'undici'
-import { RetryAgent } from 'undici'
+import type { Dispatcher } from 'undici'
 import { addHeader } from './add-header.ts'
 import type { Token } from './auth.ts'
 import {
@@ -35,7 +33,6 @@ import { register } from './cache-revalidate.ts'
 import { bun, deno, node } from './env.ts'
 import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
-import { getDispatcher } from './proxy.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 import type { TokenResponse } from './token-response.ts'
@@ -46,6 +43,12 @@ import { collectHeaders, readBody } from './response.ts'
 import { oidc } from './oidc.ts'
 import type { OidcOptions } from './oidc.ts'
 import { DecodedMemo } from './decoded-memo.ts'
+import { loadTransport } from './transport.ts'
+import type {
+  Transport,
+  TransportOptions,
+  TransportResponse,
+} from './transport.ts'
 export {
   CacheEntry,
   clearRuntimeTokens,
@@ -193,41 +196,6 @@ const nua =
 
 export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
-// Agent-level knobs only. Do not spread these onto per-request options —
-// connections/pipelining/keepAlive/connect are ignored at dispatch time,
-// and bodyTimeout/headersTimeout would clobber caller overrides.
-//
-// Keep undici (not globalThis.fetch): fetch measured +56% user CPU and
-// +90–140MB RSS on the same 753-body install workload.
-// pipelining:1 is intentional — pipelining:10 had no measured CPU benefit
-// and HOL-blocks packuments behind large tarballs; some CDNs drop pipelined
-// requests.
-// connections scales with reify's in-flight cap ((cores-1)*8, see
-// src/graph/src/reify/index.ts) so tarball fetches don't queue behind
-// the pool on many-core machines. The floor of 64 bounds cold-start TLS
-// on small machines; the ceiling of 128 avoids connection storms and
-// CDN throttling beyond what reify can consume.
-// HTTP/2 (allowH2) is untested and unjustified while transport CPU is ~1/4
-// of body handling.
-const agentOptions: Agent.Options = {
-  bodyTimeout: 600_000,
-  headersTimeout: 600_000,
-  keepAliveMaxTimeout: 1_200_000,
-  keepAliveTimeout: 600_000,
-  keepAliveTimeoutThreshold: 30_000,
-  connect: {
-    timeout: 600_000,
-    keepAlive: true,
-    keepAliveInitialDelay: 30_000,
-    sessionTimeout: 600,
-  },
-  connections: Math.min(
-    128,
-    Math.max(64, (availableParallelism() - 1) * 8),
-  ),
-  pipelining: 1,
-}
-
 const xdg = new XDG('vlt')
 
 const defaultCacheMaxSize = 256 * 1024 * 1024
@@ -240,7 +208,6 @@ const parseCacheMaxSize = (raw: string | undefined): number => {
 }
 
 export class RegistryClient {
-  agent: RetryAgent
   cache: Cache
   identity: string
   staleWhileRevalidateFactor: number
@@ -257,6 +224,8 @@ export class RegistryClient {
    * published package and the memo does not warrant a new dependency.
    */
   #decoded = new DecodedMemo()
+  #transport?: Promise<Transport>
+  #transportOptions!: TransportOptions
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -281,24 +250,20 @@ export class RegistryClient {
         }
       },
     })
-    const dispatch = getDispatcher(agentOptions)
-    this.agent = new RetryAgent(dispatch, {
+    this.#transportOptions = {
       maxRetries,
       timeoutFactor,
       minTimeout,
       maxTimeout,
-      retryAfter: true,
-      errorCodes: [
-        'ECONNREFUSED',
-        'ECONNRESET',
-        'EHOSTDOWN',
-        'ENETDOWN',
-        'ENETUNREACH',
-        'ENOTFOUND',
-        'EPIPE',
-        'UND_ERR_SOCKET',
-      ],
-    })
+    }
+  }
+
+  /**
+   * The HTTP backend, resolved once per client. Lazy because the undici
+   * backend is loaded dynamically — see {@link loadTransport}.
+   */
+  transport(): Promise<Transport> {
+    return (this.#transport ??= loadTransport(this.#transportOptions))
   }
 
   /**
@@ -573,11 +538,11 @@ export class RegistryClient {
       await getTokenByURL(String(u), this.identity),
     )
 
-    let response: Dispatcher.ResponseData | null = null
+    let response: TransportResponse | null = null
     try {
-      response = await this.agent.request(
-        options as Dispatcher.RequestOptions,
-      )
+      response = await (
+        await this.transport()
+      ).request(options as Dispatcher.RequestOptions)
       /* c8 ignore start */
     } catch (er) {
       // Rethrow so we get a better stack trace
@@ -635,7 +600,7 @@ export class RegistryClient {
   async #handleResponse(
     url: URL,
     options: RegistryClientRequestOptions,
-    response: Dispatcher.ResponseData,
+    response: TransportResponse,
     entry?: CacheEntry,
   ): Promise<CacheEntry> {
     if (handleCacheHitResponse(response, entry)) return entry

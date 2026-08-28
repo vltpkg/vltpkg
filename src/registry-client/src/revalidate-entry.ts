@@ -1,7 +1,7 @@
+import type { TransportRequestOptions } from './transport.ts'
 import { randomUUID } from 'node:crypto'
 import { open, readFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
-import type { Dispatcher } from 'undici'
 import { addHeader } from './add-header.ts'
 import { getTokenByURL } from './auth.ts'
 import { CacheEntry } from './cache-entry.ts'
@@ -93,9 +93,9 @@ export const revalidateEntry = async (
         await getTokenByURL(String(u), rc.identity),
       )
 
-      const response = await rc.agent.request(
-        options as Dispatcher.RequestOptions,
-      )
+      const response = await (
+        await rc.transport()
+      ).request(options as TransportRequestOptions)
 
       if (handleCacheHitResponse(response, entry)) {
         const newHead = entry.encodeHead()

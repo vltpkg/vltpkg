@@ -245,7 +245,10 @@ export class Cache extends LRUCache<
       integrity?: Integrity
     },
   ) {
-    super.set(key, val, options)
+    // `options ?? {}`, never a bare `super.set(key, val)`: in the compiled
+    // binary a parameter that falls back to its default in a `super` call is
+    // read-only, and lru-cache writes `setOptions.status` on it.
+    super.set(key, val, options ?? {})
     const { noDiskWrite, integrity } = options ?? {}
     // set/delete also used internally by LRUCache to manage async fetches
     // only write when we're putting an actual value into the cache

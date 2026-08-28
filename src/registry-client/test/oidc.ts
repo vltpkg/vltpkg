@@ -9,8 +9,8 @@ const mockAuth = {
   },
 }
 
-// Helper to create a mock undici module
-const createMockUndici = (
+// Helper to create a mock one-shot request module
+const createMockRequest = (
   handler: (
     url: URL,
     opts: {
@@ -50,7 +50,7 @@ t.test('returns undefined when not in CI', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async () => {
+    '../src/oidc-request.ts': createMockRequest(async () => {
       throw new Error('should not make requests')
     }),
   })
@@ -71,7 +71,7 @@ t.test('GitHub Actions: uses NPM_ID_TOKEN override', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async (url, opts) => {
+    '../src/oidc-request.ts': createMockRequest(async (url, opts) => {
       // Should be the exchange request
       t.match(String(url), /oidc\/token\/exchange/)
       t.equal(opts.method, 'POST')
@@ -110,37 +110,45 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async (url, opts) => {
-        callCount++
-        if (callCount === 1) {
-          // ID token fetch from GitHub
-          t.match(
-            String(url),
-            /token\.actions\.githubusercontent\.com/,
+      '../src/oidc-request.ts': createMockRequest(
+        async (url, opts) => {
+          callCount++
+          if (callCount === 1) {
+            // ID token fetch from GitHub
+            t.match(
+              String(url),
+              /token\.actions\.githubusercontent\.com/,
+            )
+            t.match(
+              String(url),
+              /audience=npm%3Aregistry\.npmjs\.org/,
+            )
+            t.equal(opts.headers.authorization, 'Bearer gha-token')
+            return {
+              statusCode: 200,
+              body: {
+                json: async () => ({
+                  value: 'github-id-token',
+                }),
+              },
+            }
+          }
+          // Token exchange
+          t.match(String(url), /@scope%2Fpkg/)
+          t.equal(
+            opts.headers.authorization,
+            'Bearer github-id-token',
           )
-          t.match(String(url), /audience=npm%3Aregistry\.npmjs\.org/)
-          t.equal(opts.headers.authorization, 'Bearer gha-token')
           return {
             statusCode: 200,
             body: {
               json: async () => ({
-                value: 'github-id-token',
+                token: 'registry-token',
               }),
             },
           }
-        }
-        // Token exchange
-        t.match(String(url), /@scope%2Fpkg/)
-        t.equal(opts.headers.authorization, 'Bearer github-id-token')
-        return {
-          statusCode: 200,
-          body: {
-            json: async () => ({
-              token: 'registry-token',
-            }),
-          },
-        }
-      }),
+        },
+      ),
     })
 
     const result = await oidc({
@@ -162,7 +170,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async () => {
+      '../src/oidc-request.ts': createMockRequest(async () => {
         throw new Error('should not make requests')
       }),
     })
@@ -195,7 +203,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async () => ({
+      '../src/oidc-request.ts': createMockRequest(async () => ({
         statusCode: 403,
         body: {
           json: async () => ({
@@ -232,7 +240,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async () => ({
+      '../src/oidc-request.ts': createMockRequest(async () => ({
         statusCode: 403,
         body: {
           json: async () => {
@@ -262,7 +270,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async () => ({
+      '../src/oidc-request.ts': createMockRequest(async () => ({
         statusCode: 200,
         body: {
           json: async () => ({}),
@@ -286,7 +294,7 @@ t.test('GitLab CI: uses NPM_ID_TOKEN', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async (url, opts) => {
+    '../src/oidc-request.ts': createMockRequest(async (url, opts) => {
       t.match(String(url), /oidc\/token\/exchange/)
       t.equal(opts.headers.authorization, 'Bearer gitlab-id-token')
       return {
@@ -315,17 +323,19 @@ t.test('CircleCI: uses NPM_ID_TOKEN', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async (_url, opts) => {
-      t.equal(opts.headers.authorization, 'Bearer circle-id-token')
-      return {
-        statusCode: 200,
-        body: {
-          json: async () => ({
-            token: 'circle-registry-tok',
-          }),
-        },
-      }
-    }),
+    '../src/oidc-request.ts': createMockRequest(
+      async (_url, opts) => {
+        t.equal(opts.headers.authorization, 'Bearer circle-id-token')
+        return {
+          statusCode: 200,
+          body: {
+            json: async () => ({
+              token: 'circle-registry-tok',
+            }),
+          },
+        }
+      },
+    ),
   })
 
   const result = await oidc({
@@ -344,7 +354,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async () => {
+      '../src/oidc-request.ts': createMockRequest(async () => {
         throw new Error('should not make requests')
       }),
     })
@@ -365,7 +375,7 @@ t.test('exchange accepts 201 Created from registry', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async () => ({
+    '../src/oidc-request.ts': createMockRequest(async () => ({
       statusCode: 201,
       body: {
         json: async () => ({
@@ -394,7 +404,7 @@ t.test('exchange returns undefined on non-2xx', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async () => ({
+    '../src/oidc-request.ts': createMockRequest(async () => ({
       statusCode: 500,
       body: {
         json: async () => ({
@@ -420,7 +430,7 @@ t.test('exchange logs non-JSON body on non-2xx response', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async () => ({
+    '../src/oidc-request.ts': createMockRequest(async () => ({
       statusCode: 500,
       body: {
         json: async () => {
@@ -448,7 +458,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async () => ({
+      '../src/oidc-request.ts': createMockRequest(async () => ({
         statusCode: 200,
         body: {
           json: async () => ({}),
@@ -473,7 +483,7 @@ t.test('unscoped package name in exchange URL', async t => {
     typeof import('../src/oidc.ts')
   >('../src/oidc.ts', {
     '../src/auth.ts': mockAuth,
-    undici: createMockUndici(async url => {
+    '../src/oidc-request.ts': createMockRequest(async url => {
       // Unscoped package: no encoding needed
       t.match(String(url), /\/package\/my-package$/)
       return {
@@ -502,7 +512,7 @@ t.test(
       typeof import('../src/oidc.ts')
     >('../src/oidc.ts', {
       '../src/auth.ts': mockAuth,
-      undici: createMockUndici(async url => {
+      '../src/oidc-request.ts': createMockRequest(async url => {
         // @scope/name → @scope%2Fname
         t.match(String(url), /\/package\/@scope%2Fname$/)
         return {

@@ -1,8 +1,8 @@
-import type { Dispatcher } from 'undici'
+import type { TransportResponse } from './transport.ts'
 import type { CacheEntry } from './cache-entry.ts'
 
 export const handleCacheHitResponse = (
-  resp: Dispatcher.ResponseData,
+  resp: TransportResponse,
   entry?: CacheEntry,
 ): entry is CacheEntry => {
   if ((resp.statusCode !== 304 && resp.statusCode !== 412) || !entry)
