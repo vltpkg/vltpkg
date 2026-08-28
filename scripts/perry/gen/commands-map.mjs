@@ -16,20 +16,26 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { dirname, resolve, join } from 'node:path'
 
-const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '../../..')
+const ROOT = resolve(
+  dirname(new URL(import.meta.url).pathname),
+  '../../..',
+)
 const DEF = join(ROOT, 'src/cli-sdk/src/config/definition.ts')
 const OUT = join(ROOT, 'src/cli-sdk/src/commands-map.ts')
 
 // canonical module names = the values of `commands` (canonical + aliases),
 // which are exactly the files under commands/
 const src = readFileSync(DEF, 'utf8')
-const block = (name) => {
+const block = name => {
   const i = src.indexOf(`const ${name} = {`)
   if (i === -1) throw new Error(`no ${name} in definition.ts`)
   return src.slice(i, src.indexOf('} as const', i))
 }
 const pairs = s =>
-  [...s.matchAll(/^\s*'?([\w?-]+)'?:\s*'([\w-]+)',/gm)].map(m => [m[1], m[2]])
+  [...s.matchAll(/^\s*'?([\w?-]+)'?:\s*'([\w-]+)',/gm)].map(m => [
+    m[1],
+    m[2],
+  ])
 const commands = Object.fromEntries([
   ...pairs(block('canonicalCommands')),
   ...pairs(block('aliases')),
@@ -56,17 +62,23 @@ import type { Command } from './load-command.ts'
 import type { Commands } from './config/definition.ts'
 
 export const commandModules = {
-${modules.map(m => `  '${m}': ${ident(m)},`).join('\n')}
+${modules.map(m => `  ${/^[A-Za-z_$][\w$]*$/.test(m) ? m : `'${m}'`}: ${ident(m)},`).join('\n')}
 } as unknown as Record<Commands[keyof Commands], Command<unknown>>
 `
 
 if (process.argv.includes('--check')) {
   if (!existsSync(OUT) || readFileSync(OUT, 'utf8') !== text) {
-    console.error('src/cli-sdk/src/commands-map.ts is stale — re-run scripts/perry/gen/commands-map.mjs')
+    console.error(
+      'src/cli-sdk/src/commands-map.ts is stale — re-run scripts/perry/gen/commands-map.mjs',
+    )
     process.exit(1)
   }
-  console.log(`commands-map.ts up to date (${modules.length} commands)`)
+  console.log(
+    `commands-map.ts up to date (${modules.length} commands)`,
+  )
 } else {
   writeFileSync(OUT, text)
-  console.log(`wrote src/cli-sdk/src/commands-map.ts (${modules.length} commands)`)
+  console.log(
+    `wrote src/cli-sdk/src/commands-map.ts (${modules.length} commands)`,
+  )
 }

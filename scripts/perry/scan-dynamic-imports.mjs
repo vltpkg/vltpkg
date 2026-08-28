@@ -15,7 +15,10 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, resolve, join, relative } from 'node:path'
 
-const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '../..')
+const ROOT = resolve(
+  dirname(new URL(import.meta.url).pathname),
+  '../..',
+)
 const SCAN = ['src', 'infra/build/src']
 const SKIP =
   /(^|\/)(node_modules|dist|\.build[^/]*|test|tap-snapshots|fixtures|__tests__)(\/|$)/
@@ -23,15 +26,51 @@ const SKIP =
 // Known sites, each owned by a track: it is either removed by that track or
 // it is a bug. Nothing else may appear.
 const ALLOW = [
-  { file: 'src/cli-sdk/src/commands/install.ts', spec: './install/reporter.ts', track: '3c' },
-  { file: 'src/cli-sdk/src/commands/update.ts', spec: './install/reporter.ts', track: '3c' },
-  { file: 'src/cli-sdk/src/commands/uninstall.ts', spec: './install/reporter.ts', track: '3c' },
-  { file: 'src/cli-sdk/src/commands/ci.ts', spec: './install/reporter.ts', track: '3c' },
-  { file: 'src/cli-sdk/src/mermaid-image-view.ts', spec: './render-mermaid.ts', track: '3e' },
-  { file: 'src/cli-sdk/src/render-mermaid.ts', spec: '@resvg/resvg-wasm', track: '3e' },
-  { file: 'src/cli-sdk/src/render-mermaid.ts', spec: 'node:fs/promises', track: '3e' },
-  { file: 'src/cli-sdk/src/render-mermaid.ts', spec: 'node:module', track: '3e' },
-  { file: 'infra/build/src/bins.ts', spec: '@vltpkg/cli-sdk', track: 'node-build-only' },
+  {
+    file: 'src/cli-sdk/src/commands/install.ts',
+    spec: './install/reporter.ts',
+    track: '3c',
+  },
+  {
+    file: 'src/cli-sdk/src/commands/update.ts',
+    spec: './install/reporter.ts',
+    track: '3c',
+  },
+  {
+    file: 'src/cli-sdk/src/commands/uninstall.ts',
+    spec: './install/reporter.ts',
+    track: '3c',
+  },
+  {
+    file: 'src/cli-sdk/src/commands/ci.ts',
+    spec: './install/reporter.ts',
+    track: '3c',
+  },
+  {
+    file: 'src/cli-sdk/src/mermaid-image-view.ts',
+    spec: './render-mermaid.ts',
+    track: '3e',
+  },
+  {
+    file: 'src/cli-sdk/src/render-mermaid.ts',
+    spec: '@resvg/resvg-wasm',
+    track: '3e',
+  },
+  {
+    file: 'src/cli-sdk/src/render-mermaid.ts',
+    spec: 'node:fs/promises',
+    track: '3e',
+  },
+  {
+    file: 'src/cli-sdk/src/render-mermaid.ts',
+    spec: 'node:module',
+    track: '3e',
+  },
+  {
+    file: 'infra/build/src/bins.ts',
+    spec: '@vltpkg/cli-sdk',
+    track: 'node-build-only',
+  },
 ]
 
 const files = []
@@ -52,7 +91,8 @@ for (const f of files) {
   const src = readFileSync(f, 'utf8')
   for (const m of src.matchAll(RE)) {
     const head = m.index + m[1].length
-    if (/typeof\s+$/.test(src.slice(Math.max(0, head - 10), head))) continue
+    if (/typeof\s+$/.test(src.slice(Math.max(0, head - 10), head)))
+      continue
     const rest = src.slice(head + m[0].length - m[1].length)
     // `import('x').Foo` / `import('x')['Foo']` in a type position
     if (/^\s*\)\s*[.[]/.test(rest)) continue
@@ -81,5 +121,6 @@ if (process.argv.includes('--json')) {
     `${found.length} site(s), ${unexpected.length} unexpected, ${stale.length} stale`,
   )
 }
-for (const s of stale) console.error(`stale allowlist entry: ${key(s)}`)
+for (const s of stale)
+  console.error(`stale allowlist entry: ${key(s)}`)
 process.exit(unexpected.length || stale.length ? 1 : 0)

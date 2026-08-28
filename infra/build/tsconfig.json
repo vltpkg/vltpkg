@@ -1,3 +1,5 @@
 {
-  "extends": "../../tsconfig.json"
+  "extends": "../../tsconfig.json",
+  "//": "cli-sdk's ambient hosted-git-info declaration has to be in this program too: bins.ts reaches @vltpkg/cli-sdk, and since command dispatch became a static table (commands-map.ts) that pulls in commands/{bugs,docs,repo}.ts, which import the untyped hosted-git-info.",
+  "include": ["**/*", "../../src/cli-sdk/src/hosted-git-info.d.ts"]
 }
