@@ -1,5 +1,5 @@
 {
-  "$comment": "Pinned Perry toolchain (D2). Upgrades are deliberate PRs: bump version/tag/commit + all sha256, re-run scripts/perry/gate-g0.sh, log the bump in perry-notes.md.",
+  "$comment": "Pinned Perry toolchain (D2). Upgrades are deliberate PRs: bump version/tag/commit + all sha256, re-run scripts/perry/gate-g0.sh.",
   "version": "0.5.1220",
   "tag": "v0.5.1220",
   "commit": "06137858dc8c6f80975238377138f2f948d6ef88",

@@ -22,7 +22,7 @@ import type { PeerContext } from './ideal/types.ts'
 import { brand } from './brand.ts'
 
 // `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
-// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// this spelling is honoured by the compiler. Same symbol
 // under Node.
 const kCustomInspect = inspect.custom
 
@@ -174,7 +174,7 @@ export class Graph implements GraphLike {
 
   constructor(options: GraphOptions) {
     // own + non-enumerable: a getter reads back `undefined` compiled
-    // (perry-notes F6) and a class field changes Node's inspect output
+    // and a class field changes Node's inspect output
     brand(this, '@vltpkg/graph.Graph')
     const { mainManifest, monorepo } = options
     this.#options = options

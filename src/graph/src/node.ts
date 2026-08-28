@@ -293,7 +293,7 @@ export class Node implements NodeLike {
     version?: string,
   ) {
     // own + non-enumerable: a getter reads back `undefined` compiled
-    // (perry-notes F6) and a class field changes Node's inspect output
+    // and a class field changes Node's inspect output
     brand(this, '@vltpkg/graph.Node')
     this.#options = options
     this.projectRoot = options.projectRoot

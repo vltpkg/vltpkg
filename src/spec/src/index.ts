@@ -32,7 +32,7 @@ export class Spec extends BrowserSpec implements SpecLike<Spec> {
 }
 
 // Republish the inspect hook under `inspect.custom`. Only that spelling is
-// honoured by the compiler (perry-notes F7), and browser.ts must keep
+// honoured by the compiler, and browser.ts must keep
 // `Symbol.for('nodejs.util.inspect.custom')` because non-node hosts have no
 // `node:util`. Under Node the two are the same symbol and this is a no-op.
 /* c8 ignore start */

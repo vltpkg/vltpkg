@@ -1,8 +1,7 @@
 # perry-patches
 
 Ledger dir for node_modules patches needed to make deps
-Perry-compilable. Empty through Phase 0/1 — filled by the Phase 2
-mechanical wave.
+Perry-compilable.
 
 Rules:
 
@@ -12,10 +11,12 @@ Rules:
 - Every patch must be Node-compatible. Cross-cutting invariant: single
   source tree, no fork — the tap suite stays green on Node after any
   patch lands.
-- Every patch gets a `perry-notes.md` ledger entry: why, upstream
-  issue/PR if filed, and the `perry check` command that verifies it.
+- Every patch carries its rationale where it applies: a `perry:`
+  comment in the patched code explaining why, plus the upstream
+  issue/PR if filed.
 - Prefer vendoring over patching when a dep needs structural change.
 - G2 requires CI to prove reapply-after-install: fresh install → apply
   → compile.
 
-Apply/reapply tooling is Phase 2 work; there is no applier script yet.
+Apply/reapply: `scripts/perry/apply-patches.sh` (idempotent;
+`--check` verifies).

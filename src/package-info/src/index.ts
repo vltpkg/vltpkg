@@ -5,7 +5,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
 // value imports, not `import()`: any `import()` below module top level is
-// silently dropped by the compiler and throws at runtime (perry-notes F4).
+// silently dropped by the compiler and throws at runtime.
 // Costs eager load of registry-client + tar; the lazy shape is kept behind
 // the same promise-returning accessors.
 import { RegistryClient } from '@vltpkg/registry-client'

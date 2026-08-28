@@ -60,7 +60,7 @@ export {
 }
 
 // `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
-// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// this spelling is honoured by the compiler. Same symbol
 // under Node.
 export const kCustomInspect = inspect.custom
 

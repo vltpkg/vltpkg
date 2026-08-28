@@ -437,7 +437,7 @@ export class SecurityArchive
     )
     for (const [depID, report, start, ttl] of insertData) {
       // positional, not `run(...data)`: spread into a native with fixed
-      // parameters collapses into the first one (perry-notes F14), so the
+      // parameters collapses into the first one, so the
       // spread form throws `Unknown named parameter '0'` in the binary
       dbWrite.run(depID, report, start, ttl)
     }
