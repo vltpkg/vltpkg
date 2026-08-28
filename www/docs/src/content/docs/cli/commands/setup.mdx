@@ -29,9 +29,10 @@ wizard.
    - `main` → `https://registry.vlt.io/<account>/main/` (your
      account's primary private registry)
 3. Optionally authenticates against those registries via the browser
-   web-login flow. Each registry has its own credentials, so the
-   browser opens once per registry — first for the public `npm`
-   mirror, then for your private `main` registry.
+   web-login flow. A single token covers every registry on your
+   account, so the browser opens once and the token it returns is
+   saved for both the public `npm` mirror and your private `main`
+   registry.
 4. Loops to let you add any additional custom aliases (for partner or
    team registries), optionally authenticating against each.
 5. Writes the staged aliases into your user `vlt.json` (merging with,

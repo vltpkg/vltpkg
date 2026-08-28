@@ -681,6 +681,37 @@ t.test('client.login() with retry-after 1 second', async t => {
   )
 })
 
+t.test('client.login() with multiple registries', async t => {
+  // registries that share credentials only log in once: the browser opens
+  // for the first, and the token is saved for all of them.
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  await rc.login([registryURL, `${registryURL}/shared`])
+  await getKC('').save()
+  const auths = JSON.parse(
+    readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
+  )
+  const origin = new URL(registryURL).origin
+  t.match(
+    auths,
+    {
+      [origin]: /^Bearer npm_Yy[0-9]+$/,
+      [`${origin}/shared`]: /^Bearer npm_Yy[0-9]+$/,
+    },
+    'saved the same auth for every registry',
+  )
+  t.equal(
+    auths[origin],
+    auths[`${origin}/shared`],
+    'only one token was issued',
+  )
+  await t.rejects(
+    rc.login([]),
+    { message: 'No registry provided to log in against' },
+    'no registries to log in against',
+  )
+})
+
 t.test('client.logout()', async t => {
   dropConnection = false
   const rc = t.context.rc as RegistryClient
