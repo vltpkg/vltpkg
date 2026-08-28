@@ -161,14 +161,22 @@ export const definition = j
    */
   .heading('Configuration')
   .description(
-    `If a \`vlt.json\` file is present in the root of the current project,
-     then that will be used as a source of configuration information.
+    `The \`vlt.json\` file in the XDG specified config directory is loaded
+     first, and then the \`vlt.json\` file in the root of the current
+     project, if present, is layered on top of it.
 
-     Next, the \`vlt.json\` file in the XDG specified config directory
-     will be checked, and loaded for any fields not set in the local project.
+     Scalar values are overridden by the innermost layer that sets them.
+     Object type values are merged together key by key. Set a field, or a
+     key within an object field, to \`null\` in the JSON configuration to
+     explicitly remove it.
 
-     Object type values will be merged together. Set a field to \`null\` in
-     the JSON configuration to explicitly remove it.
+     Registry *selection* is an exception, since \`--registry\` outranks any
+     \`--registries\` alias. A layer that sets any of \`registry\`,
+     \`registries\`, or \`default-registry-alias\` owns selection: the
+     \`registry\` and \`default-registry-alias\` it does *not* set are
+     dropped, rather than inherited from an outer layer. So a project that
+     configures its own registry is never sent to the user-level one, while
+     the aliases in the user config stay addressable by name.
 
      Command-specific fields may be set in a nested \`command\` object that
      overrides any options defined at the top level.
@@ -821,6 +829,24 @@ export const definition = j
       description: 'Show all commands, bins, and flags',
     },
   })
+
+/**
+ * The pristine `default` of every known config field, captured here at
+ * module load, before anything can call `jack.setConfigValues()`.
+ *
+ * Config layers are applied by overwriting jackspeak's defaults, and
+ * `setConfigValues()` can only set them. So when a layer stops setting a
+ * field (or removes it with `null`), the definitional default has to be
+ * put back explicitly, otherwise a value left behind by a previous apply
+ * would leak through.
+ */
+export const defaultValues: Record<string, unknown> =
+  Object.fromEntries(
+    Object.entries(definition.toJSON()).map(([field, def]) => [
+      field,
+      def.default,
+    ]),
+  )
 
 export const getSortedCliOptions = () => {
   const defs = definition.toJSON()

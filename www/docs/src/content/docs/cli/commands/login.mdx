@@ -12,3 +12,22 @@ Usage:
 
 Authenticate against a registry, and store the token in the
 appropriate config file for later use.
+
+There is no default registry, so a registry must either already be
+configured or be provided with `--registry=<url>`. On success the
+registry is written to the project's `vlt.json`, so that it applies to
+this project only.
+
+## Options
+
+| Flag                       | Description                                                        |
+| -------------------------- | ------------------------------------------------------------------ |
+| `--registry=<url>`         | Registry URL to authenticate against. Saved to `vlt.json`.         |
+| `--identity=<name>`        | Identity namespace used to store auth tokens.                      |
+| `--config=<user\|project>` | Which config file to write the registry to. Defaults to `project`. |
+
+## See also
+
+- [Working with Named Registries](/cli/registries)
+- [Authentication](/cli/auth)
+- [`vlt setup`](/cli/commands/setup)

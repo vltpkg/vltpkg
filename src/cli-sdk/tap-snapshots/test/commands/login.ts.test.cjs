@@ -14,7 +14,7 @@ vlt login
 
 Authenticate against a registry, and store the token in the appropriate config file for later use.
 
-There is no default registry, so a registry must either already be configured or be provided with \`--registry=<url>\`. On success the registry is written to the project's \`vlt.json\`.
+There is no default registry, so a registry must either already be configured or be provided with \`--registry=<url>\`. On success the registry is written to the project's \`vlt.json\`, so that it applies to this project only. Pass \`--config=user\` to configure it for every project instead.
 
 ## Options
 
@@ -32,6 +32,14 @@ Identity namespace used to store auth tokens.
 
 \`\`\`
 --identity=<name>
+\`\`\`
+
+### config
+
+Which config file to write the registry to. Defaults to \`project\`.
+
+\`\`\`
+--config=<user | project>
 \`\`\`
 
 `

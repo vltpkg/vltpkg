@@ -43,6 +43,10 @@ const makeConf = (
     config?: string
     positionals?: string[]
     registries?: Record<string, string>
+    layers?: {
+      user?: Record<string, unknown>
+      project?: Record<string, unknown>
+    }
   },
   added: Added[],
 ): LoadedConfig =>
@@ -53,6 +57,7 @@ const makeConf = (
       : k === 'config' ? opts.config
       : undefined,
     options: { registries: opts.registries ?? {} },
+    layers: opts.layers ?? {},
     addConfigToFile: async (
       which: string,
       values: Record<string, unknown>,
@@ -91,6 +96,15 @@ t.test('url + view helpers', async t => {
       registries: { npm: 'u', main: 'm' },
     }),
     /2 registry aliases/,
+  )
+  t.match(
+    mod.views.human({
+      account: 'acme',
+      which: 'user',
+      registries: { npm: 'u' },
+      shadowedByProject: true,
+    }),
+    /project config takes precedence/,
   )
 })
 
@@ -131,6 +145,55 @@ t.test('non-interactive with account + extras', async t => {
   t.equal(result.account, 'acme')
   t.equal(result.which, 'user')
 })
+
+t.test(
+  'aliases from a config file are left where they are',
+  async t => {
+    const added: Added[] = []
+    const { mod } = await loadSetup([])
+    const result = await mod.command(
+      makeConf(
+        {
+          yes: true,
+          positionals: ['acme'],
+          registries: {
+            fromUser: 'https://from-user/',
+            fromProject: 'https://from-project/',
+            moved: 'https://cli-override/',
+            fromCli: 'https://from-cli/',
+          },
+          layers: {
+            user: { registries: { fromUser: 'https://from-user/' } },
+            project: {
+              registries: {
+                fromProject: 'https://from-project/',
+                // same alias, different url: the effective value came from
+                // the CLI, so it is not a config-file alias
+                moved: 'https://project-value/',
+              },
+            },
+          },
+        },
+        added,
+      ),
+    )
+    t.strictSame(
+      result.registries,
+      {
+        npm: 'https://registry.vlt.io/acme/npm/',
+        main: 'https://registry.vlt.io/acme/main/',
+        moved: 'https://cli-override/',
+        fromCli: 'https://from-cli/',
+      },
+      'only account, CLI and interactive aliases are written',
+    )
+    t.equal(
+      result.shadowedByProject,
+      true,
+      'warns that the project vlt.json outranks the user config',
+    )
+  },
+)
 
 t.test('non-interactive requires an account', async t => {
   const added: Added[] = []

@@ -21,26 +21,89 @@ More documentation available at
 ## Subcommands
 
 ```
-cache, config, exec, exec-local, help, init, install, login, logout, list, ls, pkg, query, run-exec, run, token, uninstall, exec-cache, whoami
+access, bugs, build, cache, ci, config, create, deprecate, dist-tag, docs, exec, exec-cache, exec-local, help, init, add, install, list, login, logout, pack, ping, pkg, profile, publish, query, registry, repo, run-script, run, run-exec, setup, token, uninstall, unpublish, update, version, view, whoami
 ```
 
 Run `vlt <cmd> --help` for more information about a specific command
 
 ## Configuration
 
-If a `vlt.json` file is present in the root of the current project,
-then the `config` field in that file that will be used as a source of
-configuration information. (This file is also used to define
-workspaces and other `vlt` behaviors.)
+The `vlt.json` file in the XDG specified config directory is loaded
+first. Then, if a `vlt.json` file is present in the root of the
+current project, the `config` field in that file is layered on top of
+it. (The project file is also used to define workspaces and other
+`vlt` behaviors.)
 
-Next, the `vlt.json` file in the XDG specified config directory will
-be checked, and loaded for any fields not set in the local project.
+Scalar values are overridden by the innermost layer that sets them.
+Object type values are merged together key by key, with the project
+file winning on conflict. Set a field, or a key within an object
+field, to `null` in the JSON configuration to explicitly remove it:
 
-Object type values will be merged together. Set a field to `null` in
-the JSON configuration to explicitly remove it.
+```json
+// ~/.config/vlt/vlt.json
+// User level config
+{
+  "config": {
+    "registries": { "npm": "https://a/", "old": "https://b/" }
+  }
+}
+```
+
+```json
+// ./vlt.json
+// Project level config
+{ "config": { "registries": { "npm": "https://c/", "old": null } } }
+```
+
+```json
+// Effective parsed config
+{ "registries": { "npm": "https://c/" } }
+```
+
+> Note: The user level config file uses XDG paths that are
+> OS-specific, the example `~/.config/vlt/vlt.json` path used here
+> might not be the same path used in your system, to learn what is the
+> user level config location for your system, run:
+> `vlt config location --config=user`
+
+### Registry selection across layers
+
+Registry selection is an exception to plain per-field layering,
+because `registry` outranks any `registries` alias. A layer that sets
+any of `registry`, `registries`, or `default-registry-alias` owns
+selection: the `registry` and `default-registry-alias` it does _not_
+set are dropped rather than inherited from an outer layer.
+
+So a project that configures its own registry is never quietly sent to
+the user-level one:
+
+```json
+// ~/.config/vlt/vlt.json
+// User level config
+{
+  "config": {
+    "registry": "https://user/",
+    "registries": { "main": "https://main/" }
+  }
+}
+```
+
+```json
+// ./vlt.json
+// Project level config
+{ "config": { "registries": { "npm": "https://project/" } } }
+```
+
+resolves to `https://project/`. The user's `main` alias is still
+addressable as `main:` in a specifier, or with
+`vlt registry main <cmd>`.
+
+`scoped-registries` and `jsr-registries` are purely additive, so they
+do not take over selection.
 
 Command-specific fields may be set in a nested `command` object that
-overrides any options defined at the top level.
+overrides any options defined at the top level, following the same
+rules.
 
 For information about catalog configuration and the `catalog:`
 protocol, see the [Catalogs documentation](/cli/catalogs).

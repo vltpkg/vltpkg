@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/config/index.ts > TAP > load both configs, project writes over userconfig > formatted options uses custom inspect 1`] = `
+exports[`test/config/index.ts > TAP > load both configs, layers merge with project taking precedence > formatted options uses custom inspect 1`] = `
 {
   'git-hosts': {
     github: 'https://github',
@@ -14,7 +14,7 @@ exports[`test/config/index.ts > TAP > load both configs, project writes over use
     gist: 'git+ssh://git@gist.github.com/$1.git',
     asdfasdf: 'https://example.com'
   },
-  projectRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-project-writes-over-userconfig',
+  projectRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-layers-merge-with-project-taking-precedence',
   catalog: undefined,
   catalogs: undefined,
   'jsr-registries': { jsr: 'https://npm.jsr.io/' },
