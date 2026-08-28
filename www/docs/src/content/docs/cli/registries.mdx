@@ -96,11 +96,24 @@ user-level `registry`, rather than being sent to it.
 
 ```json
 // ~/.config/vlt/vlt.json
-{ "config": { "registry": "https://user/", "registries": { "main": "https://main/" } } }
+{
+  "config": {
+    "registry": "https://user/",
+    "registries": { "main": "https://main/" }
+  }
+}
+```
 
+```json
 // ./vlt.json
 { "config": { "registries": { "npm": "https://project/" } } }
 ```
+
+> Note: The user level config file uses XDG paths that are
+> OS-specific, the example `~/.config/vlt/vlt.json` path used here
+> might not be the same path used in your system, to learn what is the
+> user level config location for your system, run:
+> `vlt config location --config=user`
 
 In that project, bare specs and account commands resolve to
 `https://project/`. The user's `main` alias is still merged in and
