@@ -358,12 +358,24 @@ export class RegistryClient {
   }
 
   /**
-   * Log into the registry specified
+   * Log into the registry specified.
+   *
+   * When a list of registries is provided, the web login flow runs once
+   * against the first of them, and the token it returns is saved for all
+   * of them. This is for registries that share credentials -- like the
+   * ones under a single vlt.io account -- where opening the browser once
+   * per registry would just be asking for the same token again.
    *
    * Does not return the token or expose it, just saves to the auth keychain
    * and returns void if it worked. Otherwise, error is raised.
    */
-  async login(registry: string) {
+  async login(registry: string | string[]) {
+    const registries = Array.isArray(registry) ? registry : [registry]
+    const [first] = registries
+    if (!first) {
+      throw error('No registry provided to log in against')
+    }
+
     // - make POST to '/-/v1/login'
     // - include a body of {} and npm-auth-type:web
     // - get a {doneUrl, authUrl}
@@ -371,7 +383,7 @@ export class RegistryClient {
     // - hang on the doneUrl until done
     //
     // if that fails: fall back to couchdb login
-    const webLoginURL = new URL('-/v1/login', registryBase(registry))
+    const webLoginURL = new URL('-/v1/login', registryBase(first))
     const response = await this.request(webLoginURL, {
       method: 'POST',
       useCache: false,
@@ -386,11 +398,10 @@ export class RegistryClient {
       const challenge = getWebAuthChallenge(response.json())
       if (challenge) {
         const result = await this.webAuthOpener(challenge)
-        await setToken(
-          registry,
-          `Bearer ${result.token}`,
-          this.identity,
-        )
+        // sequential, because they all write to the same keychain file
+        for (const reg of registries) {
+          await setToken(reg, `Bearer ${result.token}`, this.identity)
+        }
         return
       }
     }

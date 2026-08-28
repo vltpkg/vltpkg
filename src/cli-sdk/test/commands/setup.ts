@@ -7,7 +7,7 @@ type Added = [string, Record<string, unknown>]
 // Build a mocked setup module with injectable readline answers and a
 // RegistryClient stub that records the registries it logs in against.
 const loadSetup = async (answers: string[]) => {
-  const loginCalls: string[] = []
+  const loginCalls: (string | string[])[] = []
   const questions: string[] = []
   const logged: string[] = []
   const queue = [...answers]
@@ -16,7 +16,7 @@ const loadSetup = async (answers: string[]) => {
   >('../../src/commands/setup.ts', {
     '@vltpkg/registry-client': {
       RegistryClient: class {
-        async login(registry: string) {
+        async login(registry: string | string[]) {
           loginCalls.push(registry)
         }
       },
@@ -229,26 +229,27 @@ t.test('interactive: prompt account, auth, add alias', async t => {
     'n', // add another alias?
   ])
   const result = await mod.command(makeConf({}, added))
-  t.strictSame(loginCalls, [
-    'https://registry.vlt.io/acme/npm/',
-    'https://registry.vlt.io/acme/main/',
-    'https://partner.example.com/',
-  ])
+  t.strictSame(
+    loginCalls,
+    [
+      [
+        'https://registry.vlt.io/acme/npm/',
+        'https://registry.vlt.io/acme/main/',
+      ],
+      'https://partner.example.com/',
+    ],
+    'account registries authenticated in a single login',
+  )
   t.strictSame(result.registries, {
     npm: 'https://registry.vlt.io/acme/npm/',
     main: 'https://registry.vlt.io/acme/main/',
     partner: 'https://partner.example.com/',
   })
   t.equal(added[0]?.[0], 'user')
-  // each browser login says which registry it is for, so the second
-  // prompt does not look like a repeat of the first
+  // the account registries share a token, so the browser only opens once
   t.match(
-    logged.filter(l => /authenticat/i.test(l)),
-    [
-      /browser opens once per registry/,
-      /First, let's authenticate your public npm registry mirror \("npm"\)/,
-      /Now let's authenticate your private registry \("main"\)/,
-    ],
+    logged.filter(l => /^Authenticat/i.test(l)),
+    [/Authenticating your account registries \(npm, main\)/],
   )
 })
 
