@@ -1,15 +1,20 @@
 import { error } from '@vltpkg/error-cause'
+import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
 import type { Edge } from './edge.ts'
 import type { Graph } from './graph.ts'
 import type { Node } from './node.ts'
+import { brand } from './brand.ts'
 
 // XXX should file deps *always* be considered changed?
 // unless the thing containing it wasn't possibly changed because it's inside
 // a dep that didn't change?
 // Same with remote deps
 
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+// `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
+// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// under Node.
+const kCustomInspect = inspect.custom
 
 /**
  * A Diff object is a representation of a set of changes from one
@@ -23,6 +28,9 @@ const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
  * and `to` is the Graph we're trying to create.
  */
 export class Diff {
+  /** set as an own, non-enumerable property in the constructor - see brand.ts */
+  declare readonly [Symbol.toStringTag]: string
+
   from: Graph
   to: Graph
 
@@ -59,11 +67,10 @@ export class Diff {
    */
   optionalOnly = true
 
-  get [Symbol.toStringTag]() {
-    return '@vltpkg/graph.Diff'
-  }
-
   constructor(from: Graph, to: Graph) {
+    // own + non-enumerable: a getter reads back `undefined` compiled
+    // (perry-notes F6) and a class field changes Node's inspect output
+    brand(this, '@vltpkg/graph.Diff')
     this.from = from
     this.to = to
     this.projectRoot = from.projectRoot

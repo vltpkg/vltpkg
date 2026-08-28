@@ -4,7 +4,6 @@ import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
-import { loadPackageJson } from 'package-json-from-dist'
 import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { defaultRegistryName } from '@vltpkg/spec'
@@ -19,6 +18,10 @@ import type {
   SecurityArchiveLike,
   SecurityArchiveRefreshOptions,
 } from './types.ts'
+import { version } from './version.ts'
+
+// the version number used in the User-Agent header
+export { version }
 
 export * from './types.ts'
 
@@ -93,14 +96,6 @@ export const usesNpmRegistry = (node: NodeLike): boolean => {
   if (origin === npmRegistryURL) return true
   const npmAlias = node.options.registries?.[defaultRegistryName]
   return !!npmAlias && normalizeRegistryURL(npmAlias) === origin
-}
-
-// Loads the version number to be used in the User-Agent header
-export const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
 }
 
 /**
@@ -440,8 +435,11 @@ export class SecurityArchive
       'INSERT OR REPLACE INTO cache (depID, report, start, ttl) ' +
         'VALUES (?, ?, ?, ?)',
     )
-    for (const data of insertData) {
-      dbWrite.run(...data)
+    for (const [depID, report, start, ttl] of insertData) {
+      // positional, not `run(...data)`: spread into a native with fixed
+      // parameters collapses into the first one (perry-notes F14), so the
+      // spread form throws `Unknown named parameter '0'` in the binary
+      dbWrite.run(depID, report, start, ttl)
     }
   }
 

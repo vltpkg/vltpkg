@@ -34,7 +34,12 @@ export const run = async (
   const index = await t.mockImport<typeof import('../src/index.ts')>(
     '../src/index.ts',
     {
+      // spread the real module: command dispatch is a static table now
+      // (commands-map.ts, S2 fallback), so every command module is in the
+      // graph and a partial mock breaks whichever one imports a name the
+      // mock omits
       '../src/output.ts': {
+        ...(await import('../src/output.ts')),
         stdout: (v: string) => state.logs.push(v),
         stderr: (v: string) => state.logs.push(v),
         outputCommand: (_: unknown, conf: LoadedConfig) =>

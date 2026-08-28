@@ -33,9 +33,10 @@ import {
   isRecordStringString,
 } from '@vltpkg/types'
 import type { Validator, WhichConfig } from '@vltpkg/vlt-json'
-import { find, load, reload, save } from '@vltpkg/vlt-json'
+import { find, load, reload, save, unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
+import { inspect } from 'node:util'
 import { readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { PathScurry } from 'path-scurry'
@@ -58,7 +59,10 @@ export {
   type Commands,
 }
 
-export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+// `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
+// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// under Node.
+export const kCustomInspect = inspect.custom
 
 export type RecordPairs = Record<string, unknown>
 export type RecordString = Record<string, string>
@@ -761,7 +765,6 @@ export class Config {
 
     // Clear vlt-json caches for both user and project configs
     // This ensures that the next time config files are read, they'll be re-read from disk
-    const { unload } = await import('@vltpkg/vlt-json')
     unload('user')
     unload('project')
 

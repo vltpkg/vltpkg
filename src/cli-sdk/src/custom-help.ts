@@ -1,14 +1,7 @@
-import { loadPackageJson } from 'package-json-from-dist'
 import chalk from 'chalk'
+import { version } from './version.ts'
 import { commandAliases } from './config/definition.ts'
 import type { Commands } from './config/definition.ts'
-
-const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
-}
 
 // Custom yellow color: #FFE15D
 const customYellow = chalk.hex('#FFE15D')

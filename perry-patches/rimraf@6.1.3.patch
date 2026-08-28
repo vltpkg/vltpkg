@@ -1,0 +1,22 @@
+--- a/dist/esm/fs.js	2026-08-28 03:38:18.671816419 +0000
++++ b/dist/esm/fs.js	2026-08-28 03:38:18.674816546 +0000
+@@ -2,7 +2,18 @@
+ import fsPromises from 'fs/promises';
+ // sync ones just take the sync version from node
+ // readdir forces withFileTypes: true
+-export { chmodSync, mkdirSync, renameSync, rmdirSync, rmSync, statSync, lstatSync, unlinkSync, } from 'fs';
++// perry: `export { X } from '<builtin>'` is referenced but never emitted,
++// so the link fails with an undefined reference. Importing and re-exporting
++// through a local const compiles and is identical under node.
++import { chmodSync as _chmodSync, mkdirSync as _mkdirSync, renameSync as _renameSync, rmdirSync as _rmdirSync, rmSync as _rmSync, statSync as _statSync, lstatSync as _lstatSync, unlinkSync as _unlinkSync, } from 'fs';
++export const chmodSync = _chmodSync;
++export const mkdirSync = _mkdirSync;
++export const renameSync = _renameSync;
++export const rmdirSync = _rmdirSync;
++export const rmSync = _rmSync;
++export const statSync = _statSync;
++export const lstatSync = _lstatSync;
++export const unlinkSync = _unlinkSync;
+ export const readdirSync = (path) => rdSync(path, { withFileTypes: true });
+ export const promises = {
+     chmod: fsPromises.chmod,

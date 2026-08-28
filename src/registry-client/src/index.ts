@@ -10,7 +10,7 @@ import { randomUUID } from 'node:crypto'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
-import { loadPackageJson } from 'package-json-from-dist'
+import { version } from './version.ts'
 import type { Agent, Dispatcher } from 'undici'
 import { RetryAgent } from 'undici'
 import { addHeader } from './add-header.ts'
@@ -45,6 +45,7 @@ import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { collectHeaders, readBody } from './response.ts'
 import { oidc } from './oidc.ts'
 import type { OidcOptions } from './oidc.ts'
+import { DecodedMemo } from './decoded-memo.ts'
 export {
   CacheEntry,
   clearRuntimeTokens,
@@ -183,13 +184,6 @@ export type RegistryClientRequestOptions = Omit<
   staleWhileRevalidate?: false
 }
 
-const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_REGISTRY_CLIENT_PACKAGE_JSON,
-) as {
-  version: string
-}
-
 const nua =
   (globalThis.navigator as Navigator | undefined)?.userAgent ??
   (bun ? `Bun/${bun}`
@@ -251,7 +245,18 @@ export class RegistryClient {
   identity: string
   staleWhileRevalidateFactor: number
   #session = randomUUID()
-  #decoded = new WeakMap<Uint8Array, CacheEntry>()
+  /**
+   * memo of decoded cache entries, keyed by the raw buffer.
+   *
+   * Bounded, and deliberately not a `WeakMap`: `WeakMap` entries are never
+   * collected in the compiled binary, so the memo would pin every decoded
+   * packument for the life of the process. It pins parsed JSON under Node
+   * too — measured at +286MB RSS on a cold install. Bounding on total
+   * buffer bytes keeps the hit rate on the repeated lookups that matter and
+   * caps the worst case. `lru-cache` is not used here on purpose: this is a
+   * published package and the memo does not warrant a new dependency.
+   */
+  #decoded = new DecodedMemo()
 
   constructor(options: RegistryClientOptions) {
     const {

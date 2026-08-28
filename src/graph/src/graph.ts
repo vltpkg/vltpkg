@@ -19,8 +19,12 @@ import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
 import type { PeerContext } from './ideal/types.ts'
+import { brand } from './brand.ts'
 
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+// `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
+// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// under Node.
+const kCustomInspect = inspect.custom
 
 const cacheKeySeparator = '│'
 
@@ -81,9 +85,8 @@ export type GraphOptions = SpecOptions & {
 }
 
 export class Graph implements GraphLike {
-  get [Symbol.toStringTag]() {
-    return '@vltpkg/graph.Graph'
-  }
+  /** set as an own, non-enumerable property in the constructor - see brand.ts */
+  declare readonly [Symbol.toStringTag]: string
 
   #options: GraphOptions
 
@@ -170,6 +173,9 @@ export class Graph implements GraphLike {
   currentPeerContextIndex = 0
 
   constructor(options: GraphOptions) {
+    // own + non-enumerable: a getter reads back `undefined` compiled
+    // (perry-notes F6) and a class field changes Node's inspect output
+    brand(this, '@vltpkg/graph.Graph')
     const { mainManifest, monorepo } = options
     this.#options = options
     // hydrate spec options to their full contents, including defaults

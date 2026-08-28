@@ -1,6 +1,5 @@
 import { format } from 'node:util'
 import { asRootError } from '@vltpkg/output/error'
-import { loadPackageJson } from 'package-json-from-dist'
 import {
   getSortedCliOptions,
   getSortedKeys,
@@ -8,6 +7,8 @@ import {
 import { Config } from './config/index.ts'
 import { outputCommand, stderr, stdout } from './output.ts'
 import { indent } from './print-err.ts'
+import { dispatchRegistry } from './commands/registry.ts'
+import { version } from './version.ts'
 import { loadCommand } from './load-command.ts'
 
 export type {
@@ -15,13 +16,6 @@ export type {
   CommandFn,
   CommandUsage,
 } from './load-command.ts'
-
-const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
-}
 
 const loadVlt = async (cwd: string, argv: string[]) => {
   try {
@@ -104,8 +98,6 @@ const run = async () => {
   }
 
   if (vlt.command === 'registry') {
-    const { dispatchRegistry } =
-      await import('./commands/registry.ts')
     await dispatchRegistry(vlt)
   }
 

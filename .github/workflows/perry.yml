@@ -1,26 +1,30 @@
 name: Perry
 
-# Phase 0 of the vlt → Perry native-binary port (perry-port-plan.md).
-# Scope today: prove the pinned toolchain compiles + runs a hello-world in CI.
-# Phases 2/6 grow this into the per-PR `perry check` gate and the smoke job.
+# The vlt → Perry native-binary port (perry-port-plan.md).
+#
+#   gate-g0     the pinned toolchain compiles + runs a hello-world
+#   codegen     generated files are current, and no new `import()` appears
+#   gate-g2     patches reapply after a fresh install, and the set of
+#               packages that fail to compile matches perry-deferred.json
+#
+# Phase 6 adds the per-PR `perry check` gate over the workspaces and the
+# compiled smoke job.
 
 on:
   push:
     branches:
       - main
-    paths:
+    paths: &perry-paths
       - 'perry.toml'
       - 'perry-toolchain.json'
       - 'perry-patches/**'
+      - 'perry-deps.json'
+      - 'perry-deferred.json'
       - 'scripts/perry/**'
+      - 'src/**'
       - '.github/workflows/perry.yml'
   pull_request:
-    paths:
-      - 'perry.toml'
-      - 'perry-toolchain.json'
-      - 'perry-patches/**'
-      - 'scripts/perry/**'
-      - '.github/workflows/perry.yml'
+    paths: *perry-paths
   workflow_dispatch:
 
 concurrency:
@@ -62,3 +66,88 @@ jobs:
 
       - name: Gate G0
         run: ./scripts/perry/gate-g0.sh
+
+  # Cheap, no toolchain: everything that is a pure source-shape assertion.
+  codegen:
+    name: Codegen + F4 gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.22.0'
+          check-latest: true
+
+      # Regenerating must be a no-op. A new command, a version bump or a
+      # dependency change that is not reflected here fails the build.
+      - name: Generated files are current
+        run: |
+          node scripts/perry/gen/commands-map.mjs --check
+          node scripts/perry/gen/version-modules.mjs --check
+          node scripts/perry/deps/inventory.mjs --check
+
+      # `import()` below module top level compiles clean and throws at
+      # runtime (perry-notes F4). This is the only gate that catches it.
+      - name: No unowned dynamic imports
+        run: node scripts/perry/scan-dynamic-imports.mjs
+
+  gate-g2:
+    name: Gate G2 (patch reapply + deferred allowlist)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.22.0'
+          check-latest: true
+
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
+      - name: Read Perry Pin
+        id: pin
+        run: echo "version=$(jq -r .version perry-toolchain.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Perry Toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vltpkg-perry
+          key: perry-${{ runner.os }}-${{ runner.arch }}-${{ steps.pin.outputs.version }}
+
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      - name: Install Perry
+        run: ./scripts/perry/setup-toolchain.sh
+
+      # Fresh install, then reapply: this is the half of G2 that proves the
+      # patch ledger survives an install rewriting node_modules.
+      - name: Install Dependencies
+        run: vlt install
+
+      - name: Patches are not applied on a fresh install
+        run: |
+          if ./scripts/perry/apply-patches.sh --check; then
+            echo "patches survived a fresh install - the ledger is not proving anything" >&2
+            exit 1
+          fi
+
+      - name: Apply patches
+        run: ./scripts/perry/apply-patches.sh
+
+      - name: Patches verify
+        run: ./scripts/perry/apply-patches.sh --check
+
+      # Compile + run every mechanical dep; the observed failure set must
+      # match perry-deferred.json exactly. Needs >=8GB RAM (perry-notes F17).
+      - name: Dependency compile loop
+        run: ./scripts/perry/deps/run.sh || true
+
+      - name: Deferred allowlist matches
+        run: node scripts/perry/deps/report.mjs --check

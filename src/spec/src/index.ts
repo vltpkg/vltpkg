@@ -31,6 +31,20 @@ export class Spec extends BrowserSpec implements SpecLike<Spec> {
   }
 }
 
+// Republish the inspect hook under `inspect.custom`. Only that spelling is
+// honoured by the compiler (perry-notes F7), and browser.ts must keep
+// `Symbol.for('nodejs.util.inspect.custom')` because non-node hosts have no
+// `node:util`. Under Node the two are the same symbol and this is a no-op.
+/* c8 ignore start */
+if ((inspect.custom as symbol) !== (kCustomInspect as symbol)) {
+  Object.defineProperty(Spec.prototype, inspect.custom, {
+    value: Spec.prototype[kCustomInspect],
+    writable: true,
+    configurable: true,
+  })
+}
+/* c8 ignore stop */
+
 Spec.nodejsDependencies = {
   homedir,
   isAbsolute,

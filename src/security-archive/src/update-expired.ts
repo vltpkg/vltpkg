@@ -5,24 +5,20 @@ import { pathToFileURL } from 'node:url'
 import pRetry, { AbortError } from 'p-retry'
 import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { loadPackageJson } from 'package-json-from-dist'
 import { asPackageReportData } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { JSONItemResponse } from './index.ts'
 import type EventEmitter from 'node:events'
+import { version } from './version.ts'
+
+// the version number used in the User-Agent header
+export { version }
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
 const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
   'sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api'
-
-export const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
-}
 
 /**
  * Serialized payload sent to the detached process via stdin.

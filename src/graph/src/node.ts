@@ -21,6 +21,7 @@ import type { Graph } from './graph.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { GraphModifier } from './modifiers.ts'
+import { brand } from './brand.ts'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
@@ -28,9 +29,8 @@ export type NodeOptions = SpecOptions & {
 }
 
 export class Node implements NodeLike {
-  get [Symbol.toStringTag]() {
-    return '@vltpkg/graph.Node'
-  }
+  /** set as an own, non-enumerable property in the constructor - see brand.ts */
+  declare readonly [Symbol.toStringTag]: string
 
   #options: SpecOptions
   #location?: string
@@ -292,6 +292,9 @@ export class Node implements NodeLike {
     name?: string,
     version?: string,
   ) {
+    // own + non-enumerable: a getter reads back `undefined` compiled
+    // (perry-notes F6) and a class field changes Node's inspect output
+    brand(this, '@vltpkg/graph.Node')
     this.#options = options
     this.projectRoot = options.projectRoot
     if (id) {

@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { commandModules } from './commands-map.ts'
 import type { Jack } from 'jackspeak'
 import type { Commands, LoadedConfig } from './config/index.ts'
 import type { Views } from './view.ts'
@@ -33,15 +34,23 @@ export type Command<T> = {
   needsNpmRegistry?: boolean
 }
 
+/**
+ * Resolve a command module.
+ *
+ * Dispatch is a static table (`commands-map.ts`, generated) rather than a
+ * dynamic `import()`: the compiler drops any `import()` below module top
+ * level without a build error (perry-notes F4), and a template-literal
+ * specifier fails `check --check-deps` (S2). Consequence: no lazy command
+ * loading — every command links in. Stays `async` for its callers.
+ */
 export const loadCommand = async <T>(
   command: Commands[keyof Commands] | undefined,
 ): Promise<Command<T>> => {
-  try {
-    return (await import(`./commands/${command}.ts`)) as Command<T>
-  } catch (e) {
+  const mod = command ? commandModules[command] : undefined
+  if (!mod) {
     throw error('Could not load command', {
       found: command,
-      cause: e,
     })
   }
+  return mod as Command<T>
 }

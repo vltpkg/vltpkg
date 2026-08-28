@@ -72,7 +72,10 @@ const readSize = (buf: Uint8Array, offset: number) => {
   return (a << 24) | (b << 16) | (c << 8) | d
 }
 
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+// `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
+// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// under Node.
+const kCustomInspect = inspect.custom
 
 export type CacheEntryOptions = {
   /**

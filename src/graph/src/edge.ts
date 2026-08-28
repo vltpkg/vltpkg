@@ -4,13 +4,16 @@ import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
 import type { DependencyTypeShort, EdgeLike } from '@vltpkg/types'
 import type { Node } from './node.ts'
+import { brand } from './brand.ts'
 
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+// `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
+// this spelling is honoured by the compiler (perry-notes F7). Same symbol
+// under Node.
+const kCustomInspect = inspect.custom
 
 export class Edge implements EdgeLike {
-  get [Symbol.toStringTag]() {
-    return '@vltpkg/graph.Edge'
-  }
+  /** set as an own, non-enumerable property in the constructor - see brand.ts */
+  declare readonly [Symbol.toStringTag]: string;
 
   [kCustomInspect](_: number, options: InspectOptions) {
     const str = inspect(
@@ -51,6 +54,9 @@ export class Edge implements EdgeLike {
     from: Node,
     to?: Node,
   ) {
+    // own + non-enumerable: a getter reads back `undefined` compiled
+    // (perry-notes F6) and a class field changes Node's inspect output
+    brand(this, '@vltpkg/graph.Edge')
     this.from = from
     this.to = to
     this.type = type

@@ -4,14 +4,18 @@ import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
+// value imports, not `import()`: any `import()` below module top level is
+// silently dropped by the compiler and throws at runtime (perry-notes F4).
+// Costs eager load of registry-client + tar; the lazy shape is kept behind
+// the same promise-returning accessors.
+import { RegistryClient } from '@vltpkg/registry-client'
 import type {
-  RegistryClient,
   RegistryClientOptions,
   RegistryClientRequestOptions,
 } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
-import type { Pool } from '@vltpkg/tar'
+import { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
 import ssri from 'ssri'
@@ -126,22 +130,19 @@ export class PackageInfoClient {
 
   async getRegistryClient() {
     if (this.#registryClient) return this.#registryClient
-    this.#registryClientPromise ??=
-      import('@vltpkg/registry-client').then(({ RegistryClient }) => {
-        this.#registryClient = new RegistryClient(this.options)
-        return this.#registryClient
-      })
+    this.#registryClientPromise ??= Promise.resolve().then(() => {
+      this.#registryClient = new RegistryClient(this.options)
+      return this.#registryClient
+    })
     return this.#registryClientPromise
   }
 
   async getTarPool() {
     if (this.#tarPool) return this.#tarPool
-    this.#tarPoolPromise ??= import('@vltpkg/tar').then(
-      ({ Pool }) => {
-        this.#tarPool = new Pool()
-        return this.#tarPool
-      },
-    )
+    this.#tarPoolPromise ??= Promise.resolve().then(() => {
+      this.#tarPool = new Pool()
+      return this.#tarPool
+    })
     return this.#tarPoolPromise
   }
 
