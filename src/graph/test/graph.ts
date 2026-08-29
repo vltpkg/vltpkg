@@ -2638,6 +2638,49 @@ t.test(
     const integrity = 'sha512-LOCKFILE-SIBLING=='
     const resolved =
       'https://registry.npmjs.org/oxlint/-/oxlint-1.77.0.tgz'
+
+    // same-name node with a different base id: iterated first and skipped
+    const otherBase = graph.addNode(
+      joinDepIDTuple(['registry', '', 'oxlint@1.0.0']),
+      undefined,
+      undefined,
+      'oxlint',
+      '1.0.0',
+    )
+    otherBase.integrity = 'sha512-OTHER-BASE=='
+
+    // same-base sibling with no metadata at all: skipped
+    const bareSibling = graph.addNode(
+      joinDepIDTuple([
+        'registry',
+        '',
+        'oxlint@1.77.0',
+        'peer.000000000000000a',
+      ]),
+      undefined,
+      undefined,
+      'oxlint',
+      '1.77.0',
+    )
+    bareSibling.peerSetHash = 'peer.000000000000000a'
+
+    // same-base sibling carrying only a resolved value: remembered as a
+    // candidate but scanning continues looking for one with integrity
+    const resolvedOnly = graph.addNode(
+      joinDepIDTuple([
+        'registry',
+        '',
+        'oxlint@1.77.0',
+        'peer.0123456789abcdef',
+      ]),
+      undefined,
+      undefined,
+      'oxlint',
+      '1.77.0',
+    )
+    resolvedOnly.resolved = resolved
+    resolvedOnly.peerSetHash = 'peer.0123456789abcdef'
+
     const lockfileId = joinDepIDTuple([
       'registry',
       '',
@@ -2685,6 +2728,17 @@ t.test(
       true,
       'lockfile verification flag preserved',
     )
+
+    // id-only placement (no manifest) falls back to the spec name for
+    // the same-package lookup
+    const idOnly = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('no-mani', '^1.0.0', configData),
+      undefined,
+      joinDepIDTuple(['registry', '', 'no-mani@1.0.0']),
+    )
+    t.equal(idOnly?.name, 'no-mani', 'node placed from id alone')
   },
 )
 

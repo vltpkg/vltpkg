@@ -496,9 +496,7 @@ export class Graph implements GraphLike {
     // Copy integrity/resolved from the same package version (same tarball).
     let samePackage: Node | undefined
     const base = baseDepID(depId)
-    const nbn = this.nodesByName.get(
-      manifest?.name ?? spec.name ?? '',
-    )
+    const nbn = this.nodesByName.get(manifest?.name ?? spec.name)
     if (nbn) {
       for (const n of nbn) {
         if (baseDepID(n.id) !== base) continue
@@ -645,8 +643,9 @@ export class Graph implements GraphLike {
       // Mark nodes as detached so ideal rebuild treats them as candidates
       // that must be (re)placed during traversal. Detached nodes with a
       // manifest can skip refetch; detached nodes without a manifest must
-      // fetch from package-info during ideal rebuild.
-      node.detached = true
+      // fetch from package-info during ideal rebuild. Importers are the
+      // traversal roots and are never re-placed, so they stay attached.
+      node.detached = !node.importer
 
       // detaches all edges from this node
       node.edgesOut.clear()
