@@ -832,8 +832,11 @@ export const endPeerPlacement = (
       const siblingEntry = queuedEntries.find(
         e => (e.target?.name ?? e.spec.final.name) === name,
       )
+      // prefer the parent's live edge target over the queued snapshot:
+      // the snapshot is captured at placement time and may be stale if a
+      // peer context target update has since re-pointed the parent's edge
       const siblingTarget =
-        siblingEntry?.target ?? fromNode.edgesOut.get(name)?.to
+        fromNode.edgesOut.get(name)?.to ?? siblingEntry?.target
 
       if (
         siblingTarget &&
