@@ -1,11 +1,17 @@
-import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
+import {
+  baseDepID,
+  getTuple,
+  joinDepIDTuple,
+  joinExtra,
+  splitDepID,
+} from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/satisfies'
-import { Version } from '@vltpkg/semver'
+import { parse as parseVersion } from '@vltpkg/semver'
 import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
 import type {
   DependencyTypeLong,
@@ -182,20 +188,44 @@ const findCompatibleResolution = (
   }
   const lockedFits = (n: Node) => {
     if (satisfiesFinal(n)) return true
-    /* c8 ignore next 2 */
+    // loose fallback for sources satisfies() cannot verify (named jsr
+    // registries, dist-tags): only for a registry node stamped with the
+    // same type+registry segments a fresh node for this spec would get,
+    // so a locked node from another source is never reused
+    if (final.type !== 'registry') return false
+    const [idType, idRegistry] = splitDepID(n.id)
+    if (idType !== 'registry') return false
+    const expected = getTuple(spec, {
+      name: n.name,
+      version: n.version,
+    })
+    if (idRegistry !== expected[1]) return false
     if (n.name !== spec.name && n.name !== final.name) return false
     if (!final.range) return true
     /* c8 ignore next */
     if (!n.version) return false
-    return final.range.test(Version.parse(n.version))
+    const version = parseVersion(n.version)
+    return !!version && final.range.test(version)
   }
 
   // Prefer existing edge target if it satisfies the spec.
   // This ensures lockfile resolutions are preserved when still valid,
   // rather than potentially picking a different satisfying version.
   const existingEdge = fromNode.edgesOut.get(spec.name)
-  const lockKey = `${fromNode.id}\0${spec.name}`
-  const lockedId = graph.lockedResolutions?.get(lockKey)
+  let lockedId = graph.lockedResolutions?.get(
+    `${fromNode.id}\0${spec.name}`,
+  )
+  if (lockedId === undefined && graph.lockedResolutions) {
+    // a peer-fork rebuild gives fromNode a provisional `peer.N` id that
+    // misses the canonical id key; retry with the base id key, recorded
+    // only when unambiguous across peer copies
+    const baseFrom = baseDepID(fromNode.id)
+    if (baseFrom !== fromNode.id) {
+      lockedId = graph.lockedResolutions.get(
+        `${baseFrom}\0${spec.name}`,
+      )
+    }
+  }
   const lockedNode = lockedId ? graph.nodes.get(lockedId) : undefined
   let existingNode: Node | undefined
   if (

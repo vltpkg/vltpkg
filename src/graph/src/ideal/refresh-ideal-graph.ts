@@ -4,6 +4,7 @@ import {
   getNodeOrderedDependencies,
 } from './sorting.ts'
 import type { PathScurry } from 'path-scurry'
+import { baseDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -117,9 +118,28 @@ export const refreshIdealGraph = async ({
     graph.optionsChanged
   ) {
     const locked = new Map<string, DepID>()
+    const ambiguous = new Set<string>()
+    const record = (key: string, id: DepID) => {
+      if (ambiguous.has(key)) return
+      const prev = locked.get(key)
+      if (prev === undefined) {
+        locked.set(key, id)
+      } else if (prev !== id) {
+        // two peer copies of the same base resolve the name differently;
+        // a base-keyed lookup would be a guess, so drop the key
+        locked.delete(key)
+        ambiguous.add(key)
+      }
+    }
     for (const edge of graph.edges) {
-      if (edge.to) {
-        locked.set(`${edge.from.id}\0${edge.spec.name}`, edge.to.id)
+      if (!edge.to) continue
+      record(`${edge.from.id}\0${edge.spec.name}`, edge.to.id)
+      // peer-fork rebuilds mint provisional `peer.N` parent ids that miss
+      // the canonical `peer.<hash>` keys captured here, so also key by
+      // the base id when that is unambiguous across peer copies
+      const base = baseDepID(edge.from.id)
+      if (base !== edge.from.id) {
+        record(`${base}\0${edge.spec.name}`, edge.to.id)
       }
     }
     graph.lockedResolutions = locked
@@ -162,6 +182,9 @@ export const refreshIdealGraph = async ({
       transientRemove,
     )
   }
+
+  // locked resolutions only apply to the rebuild that captured them
+  graph.lockedResolutions = undefined
 
   // set default node locations, if possible
   for (const node of graph.nodes.values()) {

@@ -715,3 +715,115 @@ t.test(
     )
   },
 )
+
+t.test(
+  'locked capture keys peer copies by base id only when unambiguous',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const dupManifest = {
+      name: 'dup',
+      version: '1.0.0',
+      dependencies: { x: '^1.0.0' },
+    }
+    const parents = []
+    const suffixes = [
+      'peer.aaaaaaaaaaaaaaaa',
+      'peer.bbbbbbbbbbbbbbbb',
+      'peer.cccccccccccccccc',
+    ]
+    for (const [i, suffix] of suffixes.entries()) {
+      const parName = `par-${i}`
+      const par = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse(parName, '^1.0.0', configData),
+        {
+          name: parName,
+          version: '1.0.0',
+          dependencies: { dup: '^1.0.0' },
+        },
+      )!
+      parents.push(par)
+      const dup = graph.placePackage(
+        par,
+        'prod',
+        Spec.parse('dup', '^1.0.0', configData),
+        dupManifest,
+        joinDepIDTuple(['registry', '', 'dup@1.0.0', suffix]),
+      )!
+      // three copies of the same base resolving x to different versions
+      // make the base-id key ambiguous and dropped from the capture
+      graph.placePackage(dup, 'prod', Spec.parse('x', '^1.0.0'), {
+        name: 'x',
+        version: `1.0.${i + 1}`,
+      })
+    }
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        switch (spec.name) {
+          case 'new-dep':
+            return { name: 'new-dep', version: '1.0.0' }
+          case 'dup':
+            return dupManifest
+          default:
+            return { name: 'x', version: '1.0.9' }
+        }
+      },
+    } as PackageInfoClient
+
+    await refreshIdealGraph({
+      add: Object.assign(
+        new Map([
+          [
+            joinDepIDTuple(['file', '.']),
+            new Map(
+              Object.entries({
+                'new-dep': {
+                  spec: Spec.parse('new-dep', '^1.0.0'),
+                  type: 'prod',
+                } satisfies Dependency,
+              }),
+            ),
+          ],
+        ]),
+        { modifiedDependencies: true },
+      ),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      graph,
+      packageInfo,
+      scurry: new PathScurry(t.testdirName),
+      remover: new RollbackRemove(),
+      ...configData,
+    })
+
+    // without peer deps in the manifest the rebuild re-derives the
+    // unsuffixed id, so the three peer copies collapse into one node;
+    // the point of this test is the capture loop above: the base-keyed
+    // `dup@1.0.0 x` entry is recorded once, then dropped as ambiguous
+    for (const par of parents) {
+      t.equal(
+        par.edgesOut.get('dup')?.to?.id,
+        joinDepIDTuple(['registry', '', 'dup@1.0.0']),
+        'parents share the rebuilt dup node',
+      )
+    }
+    t.ok(
+      graph.mainImporter.edgesOut.get('new-dep')?.to,
+      'new dependency was added',
+    )
+    t.equal(
+      graph.lockedResolutions,
+      undefined,
+      'locked capture is cleared after the rebuild',
+    )
+  },
+)

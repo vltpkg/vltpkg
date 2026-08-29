@@ -3962,3 +3962,432 @@ t.test(
     )
   },
 )
+
+t.test(
+  'lockedResolutions ignores a lock when the spec moved off the registry',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const regNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, regNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const gitSpec = Spec.parse('foo', 'github:a/b', configData)
+    const fooDep = asDependency({ spec: gitSpec, type: 'prod' })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.ok(manifestCalled, 'git spec fetches instead of reusing lock')
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['git', 'github:a/b', '']),
+      'resolves to a fresh git node, not the locked registry node',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions never reuses a git lock for a registry spec',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const gitNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', 'github:a/b', configData),
+      { name: 'foo', version: '9.9.9' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, gitNode.id],
+    ])
+    graph.resetEdges()
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      'resolves fresh from the registry, not the locked git node',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock from a different registry',
+  async t => {
+    const customConfig: SpecOptions = {
+      ...configData,
+      registries: {
+        ...configData.registries,
+        custom: 'http://example.com/',
+      },
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...customConfig,
+      mainManifest,
+    })
+
+    const customNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', 'custom:foo@^1.0.0', customConfig),
+      { name: 'foo', version: '1.0.0' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, customNode.id],
+    ])
+    graph.resetEdges()
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', customConfig),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      customConfig,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      'default-registry spec never reuses the custom-registry lock',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock outside the requested range',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const foo2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^2.0.0', configData),
+      { name: 'foo', version: '2.0.0' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo2.id],
+    ])
+    graph.resetEdges()
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      'out-of-range lock is not reused',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock with an unparseable version',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const jsrConfig: SpecOptions = {
+      ...configData,
+      'jsr-registries': {
+        jsr: 'https://npm.jsr.io/',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...jsrConfig,
+      mainManifest,
+    })
+    const weirdId = joinDepIDTuple([
+      'registry',
+      'jsr',
+      '@jsr/std__semver@not-a-version',
+    ])
+    const weirdNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+      { name: '@jsr/std__semver', version: 'not-a-version' },
+      weirdId,
+    )!
+    const alias = Spec.parse(
+      'semver',
+      'jsr:@std/semver@^1.0.8',
+      jsrConfig,
+    )
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${alias.name}`, weirdNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        return { name: '@jsr/std__semver', version: '1.0.8' }
+      },
+    } as unknown as PackageInfoClient
+
+    const semverDep = asDependency({ spec: alias, type: 'prod' })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [semverDep],
+      new PathScurry(t.testdirName),
+      jsrConfig,
+      new Set<DepID>(),
+      new Map([[alias.name, semverDep]]),
+    )
+
+    t.ok(manifestCalled, 'unparseable locked version forces a fetch')
+    t.equal(
+      graph.mainImporter.edgesOut.get(alias.name)?.to?.version,
+      '1.0.8',
+      'resolves a fresh node instead of the unparseable lock',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions falls back to the base id for provisional peer parents',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // two satisfying candidates; findResolution would pick 1.0.2 first
+    graph.addNode(joinDepIDTuple(['registry', '', 'x@1.0.2']), {
+      name: 'x',
+      version: '1.0.2',
+    })
+    const x103 = graph.addNode(
+      joinDepIDTuple(['registry', '', 'x@1.0.3']),
+      { name: 'x', version: '1.0.3' },
+    )
+
+    // the lockfile captured dup's x target under dup's base id; the
+    // rebuild will mint a provisional peer.0 id for dup, missing the
+    // exact-id key
+    graph.lockedResolutions = new Map([
+      [
+        `${joinDepIDTuple(['registry', '', 'dup@1.0.0'])}\0x`,
+        x103.id,
+      ],
+    ])
+
+    const dupManifest = {
+      name: 'dup',
+      version: '1.0.0',
+      peerDependencies: { x: '^1.0.0' },
+    }
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'dup') return dupManifest
+        return { name: 'x', version: '1.0.3' }
+      },
+    } as unknown as PackageInfoClient
+
+    const dupDep = asDependency({
+      spec: Spec.parse('dup', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dupDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['dup', dupDep]]),
+    )
+
+    const dupNode = graph.mainImporter.edgesOut.get('dup')?.to
+    t.ok(dupNode, 'dup was placed')
+    t.match(dupNode?.id, /peer\.0/, 'dup got a provisional peer id')
+    t.equal(
+      dupNode?.edgesOut.get('x')?.to,
+      x103,
+      'base-id lock keeps the captured x@1.0.3 over first-satisfying',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions reuses a jsr dist-tag lock via the loose fallback',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const jsrConfig: SpecOptions = {
+      ...configData,
+      'jsr-registries': {
+        jsr: 'https://npm.jsr.io/',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...jsrConfig,
+      mainManifest,
+    })
+    const jsrId = joinDepIDTuple([
+      'registry',
+      'jsr',
+      '@jsr/std__semver@1.0.8',
+    ])
+    const jsrNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+      { name: '@jsr/std__semver', version: '1.0.8' },
+      jsrId,
+    )!
+    const alias = Spec.parse(
+      'semver',
+      'jsr:@std/semver@latest',
+      jsrConfig,
+    )
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${alias.name}`, jsrNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch')
+      },
+    } as unknown as PackageInfoClient
+
+    const semverDep = asDependency({ spec: alias, type: 'prod' })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [semverDep],
+      new PathScurry(t.testdirName),
+      jsrConfig,
+      new Set<DepID>(),
+      new Map([[alias.name, semverDep]]),
+    )
+
+    t.notOk(manifestCalled, 'dist-tag jsr lock skips manifest()')
+    t.equal(
+      graph.mainImporter.edgesOut.get(alias.name)?.to?.id,
+      jsrNode.id,
+      'source-compatible dist-tag lock is reused',
+    )
+  },
+)
