@@ -322,6 +322,16 @@ export default [
     },
   },
   {
+    // Perry's built-in modules have no package on disk — the compiler
+    // provides them — so the resolver cannot see them. Types come from the
+    // vendored stub in src/cli-sdk/src/perry-tui.d.ts.
+    name: `${NAME}/perry-builtins`,
+    files: [`src/cli-sdk/**/*${extGlobs.ts}`],
+    rules: {
+      'import/no-unresolved': ['error', { ignore: ['^perry/'] }],
+    },
+  },
+  {
     // Benchmarks must be run against dist code and the import/no-unresolved
     // looks at the state of the filesystem so these files could fail intermittently
     // based on what has been built which is no good. So we turn it off.

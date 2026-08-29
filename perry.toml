@@ -1,11 +1,13 @@
 # Perry project config for the vlt native-binary port.
-# Phase 0 scaffold: `entry` is still the gate probe. The canonical vlt entry
-# (equivalent of infra/build/src/bins/vlt.ts) lands in Phase 3f.
-# Toolchain pin lives in perry-toolchain.json, not here.
+# The toolchain pin lives in perry-toolchain.json, not here.
+#
+# `perry compile` alone will not link this entry — the pin's driver cannot
+# link anything that reaches the full stdlib. Build with
+# ./scripts/perry/build.sh, which owns that link step.
 
 [project]
 name = "vlt"
-entry = "scripts/perry/hello.ts"
+entry = "scripts/perry/entry.ts"
 
 [build]
 out_dir = ".build-perry"

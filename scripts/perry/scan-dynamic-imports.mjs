@@ -27,24 +27,26 @@ const SKIP =
 // it is a bug. Nothing else may appear.
 const ALLOW = [
   {
+    // the selector; compiled it returns the reporter the entry registered and
+    // never reaches this import
     file: 'src/cli-sdk/src/commands/install.ts',
     spec: './install/reporter.ts',
-    track: '3c',
+    track: 'node-build-only',
   },
   {
     file: 'src/cli-sdk/src/commands/update.ts',
     spec: './install/reporter.ts',
-    track: '3c',
+    track: 'node-build-only',
   },
   {
     file: 'src/cli-sdk/src/commands/uninstall.ts',
     spec: './install/reporter.ts',
-    track: '3c',
+    track: 'node-build-only',
   },
   {
     file: 'src/cli-sdk/src/commands/ci.ts',
     spec: './install/reporter.ts',
-    track: '3c',
+    track: 'node-build-only',
   },
   {
     file: 'src/cli-sdk/src/mermaid-image-view.ts',
@@ -52,25 +54,17 @@ const ALLOW = [
     track: '3e',
   },
   {
-    file: 'src/cli-sdk/src/render-mermaid.ts',
-    spec: '@resvg/resvg-wasm',
-    track: '3e',
-  },
-  {
-    file: 'src/cli-sdk/src/render-mermaid.ts',
-    spec: 'node:fs/promises',
-    track: '3e',
-  },
-  {
-    file: 'src/cli-sdk/src/render-mermaid.ts',
-    spec: 'node:module',
-    track: '3e',
-  },
-  {
     // deliberately dropped when compiled: it is how undici stays out of the
     // binary's module graph. The compiled build never reaches this branch.
     file: 'src/registry-client/src/transport.ts',
     spec: './transport-undici.ts',
+    track: 'node-build-only',
+  },
+  {
+    // the Ink reporter, which cannot compile: its yoga layer is WebAssembly
+    // and the pin ships no wasm host archive
+    file: 'src/cli-sdk/src/commands/install/reporter.ts',
+    spec: './reporter-ink.ts',
     track: 'node-build-only',
   },
   {

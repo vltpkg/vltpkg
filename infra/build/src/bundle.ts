@@ -59,22 +59,6 @@ const nodeImports: esbuild.Plugin = {
   },
 }
 
-/**
- * Marks `@resvg/resvg-wasm` as external so esbuild
- * does not try to bundle the `.wasm` binary. The WASM
- * module files are copied to the output directory in
- * the `bundle()` function instead.
- */
-const resvgWasmExternal: esbuild.Plugin = {
-  name: 'resvg-wasm-external',
-  setup({ onResolve }) {
-    onResolve({ filter: /^@resvg\/resvg-wasm/ }, args => ({
-      path: args.path,
-      external: true,
-    }))
-  },
-}
-
 const addBinHashbangs: esbuild.Plugin = {
   name: 'hashbangs',
   setup({ onLoad }) {
@@ -189,7 +173,7 @@ const bundleEntryPoints = async (
     `${importName} as ${u(importName)}`
   const { errors, warnings } = await esbuild.build({
     entryPoints: o.entryPoints,
-    plugins: [nodeImports, resvgWasmExternal, ...o.plugins],
+    plugins: [nodeImports, ...o.plugins],
     sourcemap: o.sourcemap,
     minify: o.minify,
     outdir: o.outdir,
@@ -330,35 +314,6 @@ export const bundle = async ({
     join(CLI, 'package.json'),
     join(outdir, define.CLI_PACKAGE_JSON),
   )
-
-  // copy @resvg/resvg-wasm for PNG rendering (marked external)
-  // Resolve from cli-sdk context since it's a cli-sdk dependency
-  /* c8 ignore start - optional dep copy, not testable in isolation */
-  const cliRequire = createRequire(join(CLI, 'package.json'))
-  try {
-    const resvgSrc = dirname(
-      cliRequire.resolve('@resvg/resvg-wasm/package.json'),
-    )
-    const resvgDest = join(
-      outdir,
-      'node_modules',
-      '@resvg',
-      'resvg-wasm',
-    )
-    mkdirSync(resvgDest, { recursive: true })
-    for (const file of [
-      'index.mjs',
-      'index_bg.wasm',
-      'package.json',
-    ]) {
-      if (existsSync(join(resvgSrc, file))) {
-        cpSync(join(resvgSrc, file), join(resvgDest, file))
-      }
-    }
-  } catch {
-    // @resvg/resvg-wasm not installed — skip PNG asset copy
-  }
-  /* c8 ignore stop */
 
   return { outdir }
 }

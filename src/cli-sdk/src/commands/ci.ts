@@ -36,9 +36,8 @@ export const usage: CommandUsage = () =>
 
 export const views = {
   json: i => i.graph.toJSON(),
-  human: lazyView(
-    async () =>
-      (await import('./install/reporter.ts')).InstallReporter,
+  human: lazyView(async () =>
+    (await import('./install/reporter.ts')).installReporter(),
   ),
 } as const satisfies Views<CIResult>
 

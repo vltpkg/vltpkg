@@ -34,9 +34,8 @@ export const views = {
     : null),
     graph: i.graph.toJSON(),
   }),
-  human: lazyView(
-    async () =>
-      (await import('./install/reporter.ts')).InstallReporter,
+  human: lazyView(async () =>
+    (await import('./install/reporter.ts')).installReporter(),
   ),
 } as const satisfies Views<InstallResult>
 

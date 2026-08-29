@@ -65,26 +65,3 @@ t.test('renderMermaidToFile', async t => {
   const contents = await readFile(filePath, 'utf8')
   t.ok(contents.startsWith('<svg'), 'file should contain SVG')
 })
-
-t.test('renderMermaidToPng', async t => {
-  const { renderMermaidToPng } =
-    await import('../src/render-mermaid.ts')
-
-  const filePath = await renderMermaidToPng('graph TD\n  A --> B')
-  t.match(filePath, /graph\.png$/, 'should return png file path')
-
-  const contents = await readFile(filePath)
-  // PNG magic bytes: 137 80 78 71 (0x89 0x50 0x4E 0x47)
-  t.equal(contents[0], 0x89, 'should start with PNG magic byte')
-  t.equal(contents[1], 0x50, 'should have P')
-  t.equal(contents[2], 0x4e, 'should have N')
-  t.equal(contents[3], 0x47, 'should have G')
-
-  // Call again to exercise the WASM-already-initialized path
-  const filePath2 = await renderMermaidToPng('graph TD\n  X --> Y')
-  t.match(
-    filePath2,
-    /graph\.png$/,
-    'should work on second call (WASM already init)',
-  )
-})

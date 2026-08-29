@@ -9,7 +9,6 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
-    "@resvg/resvg-wasm": "^2.6.2",
     "@vltpkg/cache-unzip": "workspace:*",
     "@vltpkg/config": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",

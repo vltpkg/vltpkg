@@ -157,9 +157,8 @@ export const views = {
       : null),
     }
   },
-  human: lazyView(
-    async () =>
-      (await import('./install/reporter.ts')).InstallReporter,
+  human: lazyView(async () =>
+    (await import('./install/reporter.ts')).installReporter(),
   ),
 } as const satisfies Views<InstallResult>
 
