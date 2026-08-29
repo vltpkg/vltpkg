@@ -84,6 +84,8 @@ jobs:
         run: |
           node scripts/perry/gen/commands-map.mjs --check
           node scripts/perry/gen/version-modules.mjs --check
+          node scripts/perry/gen/daemon-modules.mjs --check
+          node scripts/perry/gen/prompt-modules.mjs --check
 
       # `import()` below module top level compiles clean and throws at
       # runtime. This is the only gate that catches it.
