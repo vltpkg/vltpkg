@@ -87,7 +87,9 @@ const formatAlertSeverity = (
       return '[CRITICAL]'
     case 'high':
       return '[HIGH]'
-    case 'medium':
+    // `middle` is the feed's spelling of medium; previously unhandled,
+    // so these alerts fell through and rendered as `[MIDDLE]`
+    case 'middle':
       return '[MEDIUM]'
     case 'low':
       return '[LOW]'

@@ -340,3 +340,147 @@ t.test('parseInternals', async t => {
     'should throw for out of range number with comparator',
   )
 })
+
+t.test('grades from the alert severity field', async t => {
+  // The fixtures above carry a type and no `severity`, so they exercise
+  // the type-name fallback. These carry a `severity`, which is the axis
+  // the feed actually grades on: it sends `mediumCVE` and `highCVE`,
+  // which no type-name mapping covers, so matching on type alone made
+  // those findings unselectable.
+  const getState = (
+    query: string,
+    alerts: Record<string, unknown[]>,
+    graph = getSimpleGraph(),
+  ) => {
+    const ast = parse(query)
+    const current = ast.first.first
+    const state: ParserState = {
+      comment: '',
+      current,
+      initial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      partial: {
+        edges: new Set(graph.edges.values()),
+        nodes: new Set(graph.nodes.values()),
+      },
+      collect: { edges: new Set(), nodes: new Set() },
+      cancellable: async () => {},
+      walk: async i => i,
+      importers: new Set(),
+      retries: 0,
+      signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
+      securityArchive: asSecurityArchiveLike(
+        new Map(
+          Object.entries(alerts).map(([name, list]) => {
+            const id = joinDepIDTuple(['registry', '', name])
+            return [id, { id, alerts: list }]
+          }),
+        ),
+      ),
+    }
+    return state
+  }
+
+  const names = (res: ParserState) =>
+    [...res.partial.nodes].map(n => n.name).sort()
+
+  await t.test('matches mediumCVE via its severity', async t => {
+    const res = await severity(
+      getState(':severity(medium)', {
+        'e@1.0.0': [
+          {
+            type: 'mediumCVE',
+            severity: 'middle',
+            category: 'vulnerability',
+          },
+        ],
+      }),
+    )
+    t.strictSame(
+      names(res),
+      ['e'],
+      'middle is the wire spelling of medium',
+    )
+  })
+
+  await t.test('matches highCVE via its severity', async t => {
+    const res = await severity(
+      getState(':severity(high)', {
+        'f@1.0.0': [
+          {
+            type: 'highCVE',
+            severity: 'high',
+            category: 'vulnerability',
+          },
+        ],
+      }),
+    )
+    t.strictSame(names(res), ['f'])
+  })
+
+  await t.test(
+    'mediumCVE is reachable by comparator, as audit queries it',
+    async t => {
+      const res = await severity(
+        getState(':severity(<=medium)', {
+          'e@1.0.0': [
+            {
+              type: 'mediumCVE',
+              severity: 'middle',
+              category: 'vulnerability',
+            },
+          ],
+        }),
+      )
+      t.strictSame(
+        names(res),
+        ['e'],
+        'previously unselectable, so audit never discovered it',
+      )
+    },
+  )
+
+  await t.test(
+    'the severity field wins over the type name',
+    async t => {
+      const res = await severity(
+        getState(':severity(low)', {
+          // type says critical, the feed graded it low
+          'e@1.0.0': [
+            {
+              type: 'criticalCVE',
+              severity: 'low',
+              category: 'vulnerability',
+            },
+          ],
+        }),
+      )
+      t.strictSame(names(res), ['e'])
+    },
+  )
+
+  await t.test(
+    'does not select non-vulnerability alerts',
+    async t => {
+      const res = await severity(
+        getState(':severity(high)', {
+          'e@1.0.0': [
+            {
+              type: 'networkAccess',
+              severity: 'high',
+              category: 'supplyChainRisk',
+            },
+          ],
+        }),
+      )
+      t.strictSame(
+        names(res),
+        [],
+        'a capability alert is not a severity finding',
+      )
+    },
+  )
+})

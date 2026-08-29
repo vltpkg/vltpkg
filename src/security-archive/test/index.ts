@@ -807,3 +807,35 @@ t.test('DepID normalization', async t => {
     },
   )
 })
+
+t.test(
+  'ok is false when no registry-eligible nodes are found',
+  async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'empty.db')
+
+    // A graph with only an importer — no registry-eligible nodes
+    const graph = newGraph('no-deps-project')
+    const nodes = [...graph.nodes.values()]
+
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: true,
+          status: 200,
+          text: async () => '',
+        }) as unknown as Response,
+    })
+
+    const archive = await SecurityArchive.start({
+      nodes,
+      path,
+    })
+
+    t.equal(
+      archive.ok,
+      false,
+      'ok should be false when no registry-eligible nodes exist',
+    )
+  },
+)

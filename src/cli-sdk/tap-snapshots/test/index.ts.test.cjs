@@ -38,6 +38,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --all
     --allow-scripts=<query>
     --arch=<arch>
+    --audit-level=<level>
     --bail
     --before=<date>
     --cache=<path>
@@ -108,6 +109,7 @@ Unknown config option: asdf
     all
     allow-scripts
     arch
+    audit-level
     bail
     before
     cache

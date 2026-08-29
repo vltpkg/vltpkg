@@ -27,6 +27,7 @@
     "@vltpkg/rollback-remove": "workspace:*",
     "@vltpkg/run": "workspace:*",
     "@vltpkg/security-archive": "workspace:*",
+    "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/url-open": "workspace:*",

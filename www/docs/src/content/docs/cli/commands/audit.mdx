@@ -1,0 +1,114 @@
+---
+title: vlt audit
+sidebar:
+  label: audit
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt audit
+$ vlt audit [--audit-level=level]
+$ vlt audit [--view=human | json | count]
+"
+  title="Terminal"
+  lang="bash"
+/>
+
+Checks installed dependencies for security issues and provides a
+summary of security findings including malware, vulnerable packages,
+and typosquats.
+
+Use `--audit-level` to filter by minimum severity. Exits `1` when any
+finding is reported and `0` when none is, so it can gate CI directly.
+
+## Examples
+
+Scan all dependencies for security issues
+
+<Code code="$ vlt audit" title="Terminal" lang="bash" />
+
+Only show high and critical severity issues
+
+<Code
+  code="$ vlt audit --audit-level=high"
+  title="Terminal"
+  lang="bash"
+/>
+
+Output results as JSON
+
+<Code code="$ vlt audit --view=json" title="Terminal" lang="bash" />
+
+Count packages with security findings
+
+<Code code="$ vlt audit --view=count" title="Terminal" lang="bash" />
+
+## Options
+
+### audit-level
+
+Minimum severity level to report. Defaults to `low`.
+
+```
+--audit-level=[low | medium | high | critical]
+```
+
+`moderate` is accepted as an alias for `medium`, for npm
+compatibility.
+
+### view
+
+Output format. Defaults to human-readable, or json if no tty.
+
+```
+--view=[human | json | count]
+```
+
+- `human` — Formatted summary with counts by severity
+- `json` — Full result object with package details and alerts
+- `count` — Total number of packages with findings
+
+## What gets reported
+
+Findings the security feed marks as ignorable — capability signals
+such as environment variable access on ordinary packages — are not
+reported, keeping the output to what is actionable.
+
+CISA Known Exploited Vulnerabilities are reported regardless of the
+`--audit-level` set, so a severity gate cannot silently discard
+something being exploited in the wild.
+
+### How counts work
+
+The summary counts **packages**, not individual alerts. A package with
+three vulnerabilities and a typosquat alert is one entry in the total,
+filed under the worst severity across all its alerts. The category
+line (`N malware, M vulnerable, K squat`) also counts packages: a
+package with alerts in multiple categories contributes once to each
+category, so the category counts don't necessarily sum to the total.
+
+The severity line (`N critical, M high, ...`) counts packages per
+severity bucket after `--audit-level` filtering. A package appears in
+exactly one severity bucket — the worst one across its alerts.
+
+`directCount` and `indirectCount` classify packages as direct or
+transitive based on whether they appear in an importer's `edgesOut`
+(the importers include workspace roots, not just the main project).
+These counts are recomputed after `--audit-level` filtering so they
+always match the findings actually shown.
+
+### Scan coverage
+
+The coverage line (`N of M installed versions scanned`) counts every
+node in the dependency graph, not just the findings. Only packages
+from the public npm registry are sent to the security feed —
+non-registry dependencies (git, file, and workspace packages) are
+never queried, so they count as unscanned. A version counts as
+"scanned" when the feed returned a report for it (even if the report
+has no alerts). When some versions are unscanned the line notes that
+findings may be incomplete: "0 packages with security issues" only
+covers the versions that were scanned, not the ones the feed never
+saw.
