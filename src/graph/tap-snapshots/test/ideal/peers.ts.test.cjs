@@ -75,10 +75,10 @@ k -->|"#64;isaacs/peer-dep-cycle-c#64;^1.0.0 (peer)"| l("npm:#64;isaacs/peer-dep
 l -->|"#64;isaacs/peer-dep-cycle-a#64;^1.0.0 (peer)"| j
 b -->|"#64;ruyadorno/package-with-flexible-peer-deps#64;^1.1.0"| p("npm:#64;ruyadorno/package-with-flexible-peer-deps#64;1.1.0")
 p -->|"#64;isaacs/peer-dep-cycle-a#64;1 || 2 (peer)"| j
-p -->|"react#64;18 || 19 (peer)"| g("npm:react#64;19.2.0")
+p -->|"react#64;18 || 19 (peer)"| f
 p -->|"#64;isaacs/peer-dep-cycle-c#64;1 || 2 (peer)"| l
 a -->|"#64;ruyadorno/package-peer-parent-2#64;^1.0.0"| c("npm:#64;ruyadorno/package-peer-parent-2#64;1.0.0")
-c -->|"react#64;^19.1.0"| g
+c -->|"react#64;^19.1.0"| g("npm:react#64;19.2.0")
 c -->|"#64;isaacs/peer-dep-cycle-a#64;^2.0.0"| m("npm:#64;isaacs/peer-dep-cycle-a#64;2.0.0")
 m -->|"#64;isaacs/peer-dep-cycle-b#64;^2.0.0 (peer)"| n("npm:#64;isaacs/peer-dep-cycle-b#64;2.0.0")
 n -->|"#64;isaacs/peer-dep-cycle-c#64;^2.0.0 (peer)"| o("npm:#64;isaacs/peer-dep-cycle-c#64;2.0.0")
