@@ -73,18 +73,31 @@ export class SecurityArchive
    */
   ok = false
 
+  /**
+   * Get the report data for a node, keyed by its base {@link DepID}.
+   */
   override get(depId: DepID): PackageReportData | undefined {
     return super.get(baseDepID(depId))
   }
 
+  /**
+   * Check for report data, keyed by the base {@link DepID}.
+   */
   override has(depId: DepID): boolean {
     return super.has(baseDepID(depId))
   }
 
+  /**
+   * Store report data for a node, keyed by its base {@link DepID} so
+   * peer-suffixed copies of the same package share one entry.
+   */
   override set(depId: DepID, data: PackageReportData): this {
     return super.set(baseDepID(depId), data)
   }
 
+  /**
+   * Delete the report data stored under the base {@link DepID}.
+   */
   override delete(depId: DepID): boolean {
     return super.delete(baseDepID(depId))
   }

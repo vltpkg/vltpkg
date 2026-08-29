@@ -140,6 +140,9 @@ export class SecurityArchive
     this.#retries = options.retries ?? 3
   }
 
+  /**
+   * Get the report data for a node, keyed by its base {@link DepID}.
+   */
   override get(
     k: DepID,
     options?: Parameters<
@@ -149,10 +152,17 @@ export class SecurityArchive
     return super.get(baseDepID(k), options)
   }
 
+  /**
+   * Check for report data, keyed by the base {@link DepID}.
+   */
   override has(k: DepID) {
     return super.has(baseDepID(k))
   }
 
+  /**
+   * Store report data for a node, keyed by its base {@link DepID} so
+   * peer-suffixed copies of the same package share one entry.
+   */
   override set(
     k: DepID,
     v: PackageReportData,
@@ -163,6 +173,9 @@ export class SecurityArchive
     return super.set(baseDepID(k), v, setOptions)
   }
 
+  /**
+   * Delete the report data stored under the base {@link DepID}.
+   */
   override delete(k: DepID) {
     return super.delete(baseDepID(k))
   }
