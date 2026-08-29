@@ -656,6 +656,109 @@ t.test('merge duplicate nodes with equal serializations', async t => {
   )
 })
 
+t.test(
+  'merge preserves lockfile metadata from the loser',
+  async t => {
+    const graph = makeGraph(t)
+    const react = place(
+      graph,
+      graph.mainImporter,
+      'react',
+      '18.0.0',
+      {
+        name: 'react',
+        version: '18.0.0',
+      },
+    )
+    const libA = place(graph, graph.mainImporter, 'lib-a', '1.0.0', {
+      name: 'lib-a',
+      version: '1.0.0',
+    })
+    const libB = place(graph, graph.mainImporter, 'lib-b', '1.0.0', {
+      name: 'lib-b',
+      version: '1.0.0',
+    })
+
+    // winner-to-be: sorts first, carries no metadata and no manifest
+    const bare = graph.addNode(
+      joinDepIDTuple(['registry', '', 'ui@1.0.0', 'peer.aa']),
+      undefined,
+      undefined,
+      'ui',
+      '1.0.0',
+    )
+    bare.peerSetHash = 'peer.aa'
+
+    // loser-to-be: carries lockfile metadata and the manifest
+    const uiManifest = {
+      name: 'ui',
+      version: '1.0.0',
+      peerDependencies: { react: '^18' },
+    }
+    const rich = graph.addNode(
+      joinDepIDTuple(['registry', '', 'ui@1.0.0', 'peer.bb']),
+      uiManifest,
+    )
+    rich.peerSetHash = 'peer.bb'
+    rich.integrity = 'sha512-UI-LOCKFILE=='
+    rich.resolved = 'https://registry.npmjs.org/ui/-/ui-1.0.0.tgz'
+    rich.resolvedFromLockfile = true
+
+    graph.addEdge(
+      'prod',
+      Spec.parse('ui', '1.0.0', configData),
+      libA,
+      bare,
+    )
+    graph.addEdge(
+      'prod',
+      Spec.parse('ui', '1.0.0', configData),
+      libB,
+      rich,
+    )
+    graph.addEdge(
+      'peer',
+      Spec.parse('react', '^18', configData),
+      bare,
+      react,
+    )
+    graph.addEdge(
+      'peer',
+      Spec.parse('react', '^18', configData),
+      rich,
+      react,
+    )
+
+    canonicalizePeerIds(graph)
+
+    const uis = [...graph.nodes.values()].filter(n => n.name === 'ui')
+    t.equal(uis.length, 1, 'duplicates merged')
+    const winner = uis[0]!
+    t.equal(winner, bare, 'first-sorted copy wins')
+    t.equal(
+      winner.integrity,
+      'sha512-UI-LOCKFILE==',
+      'integrity transferred from loser',
+    )
+    t.equal(
+      winner.resolved,
+      'https://registry.npmjs.org/ui/-/ui-1.0.0.tgz',
+      'resolved transferred from loser',
+    )
+    t.equal(
+      winner.resolvedFromLockfile,
+      true,
+      'lockfile verification flag transferred',
+    )
+    t.equal(winner.manifest, uiManifest, 'manifest transferred')
+    t.equal(
+      graph.manifests.get(winner.id),
+      uiManifest,
+      'manifest inventory updated for the canonical id',
+    )
+  },
+)
+
 t.test('verified-different collision extends to 32 hex', async t => {
   const graph = makeGraph(t)
   const a = place(

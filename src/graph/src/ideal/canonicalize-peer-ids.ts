@@ -218,19 +218,24 @@ const refineSccOrder = (
     scc.map(n => [n, mapGet(initRank, baseDepID(n.id))]),
   )
 
+  // classic WL: each signature includes the node's own current color so
+  // refinement is monotone (the partition only ever gets finer), and the
+  // loop stops when the number of classes stops growing rather than when
+  // rank labels are literally identical, so it terminates in at most
+  // `scc.length` rounds even when labels permute on a stable partition
+  let classCount = new Set(color.values()).size
   for (;;) {
     const rows = scc.map(n => ({
       n,
-      key: `${baseDepID(n.id)}${NUL}${serializeWithColors(n, sccSet, color, resolvedIds)}`,
+      key: `${baseDepID(n.id)}${NUL}${mapGet(color, n)}${NUL}${serializeWithColors(n, sccSet, color, resolvedIds)}`,
     }))
     const uniq = [...new Set(rows.map(r => r.key))].sort(byteCompare)
     const rank = new Map(uniq.map((k, i) => [k, String(i)]))
-    const next = new Map<Node, string>(
+    color = new Map<Node, string>(
       rows.map(r => [r.n, mapGet(rank, r.key)]),
     )
-    const stable = scc.every(n => color.get(n) === next.get(n))
-    color = next
-    if (stable) break
+    if (uniq.length === classCount) break
+    classCount = uniq.length
   }
 
   const order = [...scc].sort(
@@ -255,6 +260,22 @@ type Assignment = {
 const mergeNode = (graph: Graph, winner: Node, loser: Node) => {
   winner.dev &&= loser.dev
   winner.optional &&= loser.optional
+
+  // the loser may be the copy carrying lockfile/registry metadata or the
+  // manifest; preserve anything the winner is missing before deletion
+  winner.integrity ??= loser.integrity
+  winner.resolved ??= loser.resolved
+  if (
+    loser.resolvedFromLockfile &&
+    winner.integrity &&
+    winner.resolved
+  ) {
+    winner.resolvedFromLockfile = true
+  }
+  if (!winner.manifest && loser.manifest) {
+    winner.manifest = loser.manifest
+    graph.manifests.set(winner.id, loser.manifest)
+  }
 
   for (const edge of loser.edgesIn) {
     edge.to = winner
