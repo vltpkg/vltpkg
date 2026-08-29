@@ -988,15 +988,27 @@ t.test(
       },
     } as PackageInfoClient
 
-    const mk = (deps: Record<string, string>) => {
-      const projectRoot = t.testdir({
-        'package.json': JSON.stringify({
-          name: 'my-project',
-          version: '1.0.0',
-          dependencies: deps,
-        }),
-        'vlt.json': '{}',
-      })
+    // a single fixture with one subdir per project: calling t.testdir()
+    // again mid-test would rmdir the fixture while it is the cwd, which
+    // fails with EBUSY on Windows
+    const project = (deps: Record<string, string>) => ({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: deps,
+      }),
+      'vlt.json': '{}',
+    })
+    const root = t.testdir({
+      base: project({ ui: '^1.0.0', react: '^18.0.0' }),
+      'with-extra': project({
+        ui: '^1.0.0',
+        react: '^18.0.0',
+        extra: '^1.0.0',
+      }),
+    })
+    const mk = (dir: string) => {
+      const projectRoot = `${root}/${dir}`
       t.chdir(projectRoot)
       unload('project')
       return build({
@@ -1010,13 +1022,9 @@ t.test(
       })
     }
 
-    const base = await mk({ ui: '^1.0.0', react: '^18.0.0' })
+    const base = await mk('base')
     const ui1 = [...base.nodes.values()].find(n => n.name === 'ui')
-    const withExtra = await mk({
-      ui: '^1.0.0',
-      react: '^18.0.0',
-      extra: '^1.0.0',
-    })
+    const withExtra = await mk('with-extra')
     const ui2 = [...withExtra.nodes.values()].find(
       n => n.name === 'ui',
     )
@@ -1122,7 +1130,9 @@ t.test('workspace add keeps existing peer hashes', async t => {
     },
   } as PackageInfoClient
 
-  const mk = (workspaces: string[]) => {
+  // single fixture with one subdir per project: a second t.testdir()
+  // call would rmdir the cwd and fail with EBUSY on Windows
+  const project = (workspaces: string[]) => {
     const packages: Record<string, { 'package.json': string }> = {}
     for (const ws of workspaces) {
       packages[ws] = {
@@ -1133,7 +1143,7 @@ t.test('workspace add keeps existing peer hashes', async t => {
         }),
       }
     }
-    const projectRoot = t.testdir({
+    return {
       'package.json': JSON.stringify({
         name: 'my-project',
         version: '1.0.0',
@@ -1142,7 +1152,14 @@ t.test('workspace add keeps existing peer hashes', async t => {
         workspaces: { packages: ['packages/*'] },
       }),
       packages,
-    })
+    }
+  }
+  const root = t.testdir({
+    one: project(['wsa']),
+    two: project(['wsa', 'wsb']),
+  })
+  const mk = (dir: string) => {
+    const projectRoot = `${root}/${dir}`
     t.chdir(projectRoot)
     unload('project')
     return build({
@@ -1156,9 +1173,9 @@ t.test('workspace add keeps existing peer hashes', async t => {
     })
   }
 
-  const one = await mk(['wsa'])
+  const one = await mk('one')
   const ui1 = [...one.nodes.values()].find(n => n.name === 'ui')
-  const two = await mk(['wsa', 'wsb'])
+  const two = await mk('two')
   const ui2 = [...two.nodes.values()].find(n => n.name === 'ui')
   t.ok(ui1?.peerSetHash)
   t.equal(ui1?.peerSetHash, ui2?.peerSetHash)
