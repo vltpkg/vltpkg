@@ -47,7 +47,11 @@ AddImportersDependenciesMapImpl {}
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and new things to add > should have root specs along with the added ones 1`] = `
 AddImportersDependenciesMapImpl(1) {
-  'file~_d' => Map(2) {
+  'file~_d' => Map(3) {
+    'foo' => {
+      spec: Spec {foo@^1.0.0},
+      type: 'prod'
+    },
     'bar' => {
       spec: Spec {bar@^1.0.0},
       type: 'dev'
@@ -62,8 +66,18 @@ AddImportersDependenciesMapImpl(1) {
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and nothing to add > should have root specs added only 1`] = `
-AddImportersDependenciesMapImpl(0) {
-  modifiedDependencies: false
+AddImportersDependenciesMapImpl(1) {
+  'file~_d' => Map(2) {
+    'foo' => {
+      spec: Spec {foo@^1.0.0},
+      type: 'prod'
+    },
+    'bar' => {
+      spec: Spec {bar@^1.0.0},
+      type: 'dev'
+    }
+  },
+  modifiedDependencies: true
 }
 `
 
@@ -97,19 +111,31 @@ AddImportersDependenciesMapImpl(1) {
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces and something to add > should have root and workspaces nodes with specs to add 1`] = `
 AddImportersDependenciesMapImpl(3) {
-  'file~_d' => Map(1) {
+  'file~_d' => Map(2) {
+    'foo' => {
+      spec: Spec {foo@^1.0.0},
+      type: 'prod'
+    },
     'bar' => {
       spec: Spec {bar@^2.0.0},
       type: 'prod'
     }
   },
-  'workspace~packages+a' => Map(1) {
+  'workspace~packages+a' => Map(2) {
+    'bar' => {
+      spec: Spec {bar@^1.0.0},
+      type: 'dev'
+    },
     'baz' => {
       spec: Spec {baz@^1.0.0},
       type: 'prod'
     }
   },
-  'workspace~packages+b' => Map(1) {
+  'workspace~packages+b' => Map(2) {
+    'a' => {
+      spec: Spec {a@workspace:*},
+      type: 'prod'
+    },
     'baz' => {
       spec: Spec {baz@^1.0.0},
       type: 'prod'
@@ -224,8 +250,14 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd from file-type di
 
 exports[`test/ideal/get-importer-specs.ts > TAP > transientRemove from file-type directory with removed edge > should populate transientRemove for edge not in manifest 1`] = `
 {
-  add: AddImportersDependenciesMapImpl(0) {
-    modifiedDependencies: false
+  add: AddImportersDependenciesMapImpl(1) {
+    'file~_d' => Map(1) {
+      'nested' => {
+        spec: Spec {nested@file:./nested},
+        type: 'prod'
+      }
+    },
+    modifiedDependencies: true
   },
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
