@@ -11,7 +11,9 @@ Array [
     Error: Could not retrieve registry versions {
       "cause": Object {
         "cause": Error: Missing API,
-        "name": "c",
+        "found": Array [
+          "c",
+        ],
       },
     },
   ],
