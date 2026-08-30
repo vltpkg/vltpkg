@@ -1733,3 +1733,122 @@ t.test('specCache skips (unknown) names', async t => {
   )
   t.equal(specCache.size, 0)
 })
+
+t.test('catalog specs resolve against current config', async t => {
+  const onceId = joinDepIDTuple(['registry', '', 'once@1.3.3'])
+  const abbrevId = joinDepIDTuple(['registry', '', 'abbrev@1.1.1'])
+  const lockfileData = {
+    lockfileVersion: 1,
+    options: {
+      catalog: { abbrev: '^1.0.0' },
+      catalogs: { legacy: { once: '1.3.3' } },
+    },
+    nodes: {
+      [onceId]: [0, 'once', 'sha512-abc=='],
+      [abbrevId]: [0, 'abbrev', 'sha512-abc=='],
+    },
+    edges: {
+      [edgeKey(['file', '.'], 'once')]:
+        `prod catalog:legacy ${onceId}`,
+      [edgeKey(['file', '.'], 'abbrev')]: `prod catalog: ${abbrevId}`,
+    },
+  } as unknown as LockfileData
+
+  const findEdge = (graph: Graph, name: string) =>
+    [...graph.edges].find(e => e.name === name)
+
+  t.test('current catalog/catalogs win when defined', async t => {
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileData),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        mainManifest,
+        projectRoot,
+        catalog: { abbrev: '^2.0.0' },
+        catalogs: { legacy: { once: '^1.3.0' } },
+      },
+      lockfileData,
+    )
+    t.equal(
+      findEdge(graph, 'once')?.spec.final.bareSpec,
+      '^1.3.0',
+      'named catalog entry from current config',
+    )
+    t.equal(
+      findEdge(graph, 'abbrev')?.spec.final.bareSpec,
+      '^2.0.0',
+      'default catalog entry from current config',
+    )
+    t.equal(graph.optionsChanged, true, 'flags options change')
+  })
+
+  t.test(
+    'falls back to lockfile catalogs when config has none',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileData),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const graph = loadObject(
+        { ...configData, mainManifest, projectRoot },
+        lockfileData,
+      )
+      t.equal(
+        findEdge(graph, 'once')?.spec.final.bareSpec,
+        '1.3.3',
+        'named catalog entry from lockfile snapshot',
+      )
+      t.equal(
+        findEdge(graph, 'abbrev')?.spec.final.bareSpec,
+        '^1.0.0',
+        'default catalog entry from lockfile snapshot',
+      )
+    },
+  )
+
+  t.test(
+    'specCache does not leak across catalog configs',
+    async t => {
+      const projectRoot = t.testdir({
+        'vlt-lock.json': JSON.stringify(lockfileData),
+        'vlt.json': '{}',
+      })
+      t.chdir(projectRoot)
+      unload('project')
+      const specCache = new Map()
+      const first = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          specCache,
+          catalogs: { legacy: { once: '^1.3.0' } },
+        },
+        lockfileData,
+      )
+      t.equal(findEdge(first, 'once')?.spec.final.bareSpec, '^1.3.0')
+      const second = loadObject(
+        {
+          ...configData,
+          mainManifest,
+          projectRoot,
+          specCache,
+          catalogs: { legacy: { once: '~1.3.1' } },
+        },
+        lockfileData,
+      )
+      t.equal(
+        findEdge(second, 'once')?.spec.final.bareSpec,
+        '~1.3.1',
+        'second load parses with its own catalog values',
+      )
+    },
+  )
+})

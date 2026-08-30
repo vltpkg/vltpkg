@@ -113,6 +113,9 @@ const removeDefaultItems = (
   return res
 }
 
+const hasItems = (o: Record<string, unknown> | undefined) =>
+  !!o && Object.keys(o).length > 0
+
 /**
  * Builds a normalized options object from the current runtime config
  * using the same cleaning logic as `lockfile/save.ts` so that it can
@@ -121,9 +124,6 @@ const removeDefaultItems = (
 const buildCurrentOptions = (
   options: LoadOptions,
 ): LockfileData['options'] => {
-  const hasItems = (o: Record<string, unknown> | undefined) =>
-    o && Object.keys(o).length > 0
-
   const cleanModifiers =
     (
       options.modifiers &&
@@ -268,8 +268,14 @@ export const loadObject = (
   // Optimize options merging - only create new objects when needed
   const mergedOptions = {
     ...options,
-    catalog,
-    catalogs,
+    // catalog entries are indirections resolved at parse time: prefer
+    // the current config so loading a lockfile (e.g. the hidden
+    // lockfile cache) yields the same edge specs as a fresh scan of
+    // the project; fall back to the stored values so a standalone
+    // lockfile still parses when the config no longer defines them
+    catalog: hasItems(options.catalog) ? options.catalog : catalog,
+    catalogs:
+      hasItems(options.catalogs) ? options.catalogs : catalogs,
     'scoped-registries':
       scopeRegistries ?
         { ...options['scoped-registries'], ...scopeRegistries }
@@ -309,7 +315,11 @@ export const loadObject = (
       undefined
     : {
         specCache: options.specCache,
-        prefix: JSON.stringify(lockfileOptions),
+        prefix: JSON.stringify([
+          lockfileOptions,
+          mergedOptions.catalog,
+          mergedOptions.catalogs,
+        ]),
       }
   loadEdges(graph, lockfileData.edges, mergedOptions, specCache)
 

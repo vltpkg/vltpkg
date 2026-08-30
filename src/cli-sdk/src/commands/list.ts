@@ -11,6 +11,7 @@ import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { createGetAuthHeader } from '../query-auth.ts'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
@@ -144,6 +145,7 @@ export const command: CommandFn<ListResult> = async conf => {
   const projectQueryString = ':workspace, :project > *'
   const selectImporters: string[] = []
   const hostContexts = await createHostContextsMap(conf)
+  const getAuthHeader = createGetAuthHeader(conf)
   const importers = new Set<Node>()
   const scopeIDs: DepID[] = []
 
@@ -165,6 +167,7 @@ export const command: CommandFn<ListResult> = async conf => {
       importers,
       securityArchive,
       hostContexts,
+      getAuthHeader,
     })
     const { nodes: resultNodes } = await scopeQuery.search(
       scopeQueryString,
@@ -226,6 +229,7 @@ export const command: CommandFn<ListResult> = async conf => {
     importers: importers_,
     securityArchive,
     hostContexts,
+    getAuthHeader,
   })
   const query =
     queryString ||

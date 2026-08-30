@@ -21,6 +21,7 @@ import type {
 } from '@vltpkg/dss-parser'
 import type {
   DiffFilesProvider,
+  GetAuthHeader,
   HostContextsMap,
   ParsedSelectorToken,
   ParserState,
@@ -149,6 +150,7 @@ export type QueryOptions = {
   securityArchive: SecurityArchiveLike | undefined
   hostContexts?: HostContextsMap
   diffFiles?: DiffFilesProvider
+  getAuthHeader?: GetAuthHeader
 }
 
 // A list of known security selectors that rely on
@@ -206,6 +208,7 @@ const setMethodToJSON = (node: QueryResponseNode) => {
 export class Query {
   #cache: Map<string, QueryResponse>
   #diffFiles: DiffFilesProvider | undefined
+  #getAuthHeader: GetAuthHeader | undefined
   #edges: Set<EdgeLike>
   #nodes: Set<NodeLike>
   #importers: Set<NodeLike>
@@ -264,9 +267,11 @@ export class Query {
     securityArchive,
     hostContexts,
     diffFiles,
+    getAuthHeader,
   }: QueryOptions) {
     this.#cache = new Map()
     this.#diffFiles = diffFiles
+    this.#getAuthHeader = getAuthHeader
     this.#edges = edges
     this.#nodes = nodes
     this.#importers = importers
@@ -524,6 +529,7 @@ export class Query {
       },
       comment: '',
       diffFiles: this.#diffFiles,
+      getAuthHeader: this.#getAuthHeader,
       loose,
       importers,
       partial: { nodes, edges },
