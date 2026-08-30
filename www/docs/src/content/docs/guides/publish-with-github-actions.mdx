@@ -1,0 +1,542 @@
+---
+title: Automate package publishing with GitHub Actions
+sidebar:
+  label: Publish with GitHub Actions
+  order: 1
+---
+
+import {
+  Aside,
+  Code,
+  Steps,
+  Tabs,
+  TabItem,
+  LinkButton,
+} from '@astrojs/starlight/components'
+import PackageManagerSelect from '../../../components/package-manager-select/package-manager-select.astro'
+
+<PackageManagerSelect />
+
+Automate publishing your vlt packages whenever you push a new version
+tag or release to GitHub.
+
+## Before you begin
+
+- A vlt.io account with a private registry set up
+  ([Sign Up](https://vlt.io/sign-up))
+- A GitHub repository with your package code
+- Permission to create repository secrets
+- You've
+  [set up your package manager](https://docs.vlt.sh/registry#set-up-your-package-manager)
+  to publish to the vlt registry
+
+## Step 1: Create a service token
+
+Service tokens allow CI/CD systems to publish without requiring
+two-factor authentication.
+
+1. Log in and go to your vlt account tokens page at
+   `https://www.vlt.io/tokens/YOUR_ACCOUNT_SLUG`
+2. Click "Create token"
+3. Give it a descriptive name (e.g., `github-actions-publish`)
+4. Select the **`package:write`** privilege to allow publishing
+5. Copy the token (you won't be able to see it again, so save it in a
+   password manager)
+
+## Step 2: Add the token to GitHub secrets
+
+1. Go to your GitHub repository
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Name it `VLT_TOKEN`
+5. Paste the service token you created
+6. Click **Add secret**
+
+## Step 3: Prepare your package
+
+Before publishing from CI, make sure your local configuration is
+committed to the repository:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+
+Ensure you've run `vlt install` to create a `vlt.lock` file and
+committed it to your repo. Commit your `vlt.json` with your scoped
+registry configured — see the
+[registry setup guide](/registry#set-up-your-package-manager) for
+details.
+
+  </TabItem>
+
+  <TabItem label="npm">
+
+Ensure you've run `npm install` to create a `package-lock.json` file
+and committed it to your repo. Commit your project `.npmrc` with the
+registry and scope configured — see the
+[registry setup guide](/registry#set-up-your-package-manager) for
+details.
+
+  </TabItem>
+
+  <TabItem label="pnpm">
+
+Ensure you've run `pnpm install` to create a `pnpm-lock.yaml` or
+`pnpm-workspace.yaml` file and committed it to your repo. Commit your
+project `.npmrc` with the registry and scope configured — see the
+[registry setup guide](/registry#set-up-your-package-manager) for
+details.
+
+  </TabItem>
+
+  <TabItem label="yarn">
+
+Ensure you've run `yarn install` to create a `yarn.lock` file and
+committed it to your repo. Commit your project `.yarnrc.yml` with the
+registry and scope configured — see the
+[registry setup guide](/registry#set-up-your-package-manager) for
+details.
+
+  </TabItem>
+</Tabs>
+
+## Step 4: Create the workflow file
+
+Create a new file at `.github/workflows/publish.yml` in your
+repository:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+
+```yaml title=".github/workflows/publish.yml"
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: vltpkg/setup-vlt@v1
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: vlt install
+
+      - name: Build
+        run: vlt run build
+
+      - name: Publish
+        run: vlt publish
+        env:
+          VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main:
+            ${{ secrets.VLT_TOKEN }}
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```yaml title=".github/workflows/publish.yml"
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.VLT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure vlt registry
+        run: |
+          {
+            echo "registry=https://registry.vlt.io/YOUR_ACCOUNT/npm/"
+            echo "//registry.vlt.io/YOUR_ACCOUNT/npm/:_authToken=${NODE_AUTH_TOKEN}"
+            echo "@YOUR_ACCOUNT:registry=https://registry.vlt.io/jenc/main/"
+            echo "//registry.vlt.io/YOUR_ACCOUNT/main/:_authToken=${NODE_AUTH_TOKEN}"
+          } >> ~/.npmrc
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm publish --access restricted
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```yaml title=".github/workflows/publish.yml"
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish to vlt registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Configure vlt registry auth
+        run: |
+          registry_url=$(grep 'registry=' .npmrc | grep -o 'https://[^ ]*' | head -1)
+          auth_path="${registry_url#https:}"
+          echo "${auth_path}:_authToken=${VLT_TOKEN}" >>~/.npmrc
+        env:
+          VLT_TOKEN: ${{ secrets.VLT_TOKEN }}
+
+      - name: Publish
+        run: pnpm publish --access public --no-git-checks
+        env:
+          VLT_TOKEN: ${{ secrets.VLT_TOKEN }}
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```yaml title=".github/workflows/publish.yml"
+name: Publish to vlt
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build
+
+      - name: Configure VLT authentication
+        run:
+          yarn config set npmScopes.YOUR-ACCOUNT.npmAuthToken ${{
+          secrets.VLT_TOKEN }}
+
+      - name: Publish
+        run: yarn npm publish --access public
+```
+
+  </TabItem>
+</Tabs>
+
+Replace `YOUR_ACCOUNT` with your vlt account slug.
+
+## Step 5: Trigger package publishing
+
+Once the workflow is configured, publishing is automatic:
+
+1. **Bump the version** in `package.json`
+2. **Commit and create a tag:**
+
+   <Code
+     code="git tag v1.0.0 && git push origin v1.0.0"
+     title="Terminal"
+     lang="bash"
+   />
+
+3. GitHub Actions automatically triggers the workflow
+4. Your package is published to vlt when the build passes
+
+## Customizing the workflow
+
+### Publish on release instead of tags
+
+If you prefer to publish when you create a GitHub Release:
+
+<Code
+  code={`on:
+  release:
+    types: [published]
+`}
+  title=".github/workflows/publish.yml (trigger section)"
+  lang="yaml"
+/>
+
+### Publish on manual trigger
+
+To allow publishing with a button click:
+
+<Code
+  code={`on:
+  workflow_dispatch
+`}
+  title=".github/workflows/publish.yml (trigger section)"
+  lang="yaml"
+/>
+
+### Use Node.js version matrix
+
+Test and build against multiple Node versions:
+
+<Code
+  code={`jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: \${{ matrix.node-version }}
+
+      - uses: vltpkg/setup-vlt@v1
+        with:
+          version: latest
+
+      - name: Install and build
+        run: |
+          vlt install
+          vlt run build
+
+      - name: Publish
+        if: matrix.node-version == '20'
+        run: vlt publish
+        env:
+          VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main: \${{ secrets.VLT_TOKEN }}
+
+`} title=".github/workflows/publish.yml (with matrix)" lang="yaml" />
+
+This example only publishes on Node 20, but tests on all versions.
+
+## Troubleshooting
+
+### "Unable to authenticate" error
+
+Make sure:
+
+- The `VLT_TOKEN` secret is set in your GitHub repository
+- The token has the `package:write` privilege
+- The environment variable name matches your registry URL exactly
+
+The variable name format is:
+`VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main`
+
+<Aside type="note">
+  The environment variable name encodes the registry URL by replacing
+  `://`, `/`, and `:` with underscores. Double-check that every
+  segment matches your actual registry URL — a trailing slash or
+  mismatched scope will cause authentication to fail silently.
+</Aside>
+
+### "Missing registry configuration"
+
+If your workflow can't find the registry or publishes to the wrong
+place, your project's registry configuration may be missing or
+incorrect. Check the config file for your package manager:
+
+<Tabs syncKey="pkg-manager">
+  <TabItem label="vlt">
+
+Verify `vlt.json` includes your scoped registry. The
+`scoped-registries` entry must match your account slug:
+
+<Code
+  code={`{
+  "config": {
+    "scoped-registries": {
+      "@YOUR-ACCOUNT": "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+    }
+  }
+}`}
+  title="vlt.json"
+  lang="json"
+/>
+
+See the [registry setup guide](/registry#set-up-your-package-manager)
+for full configuration instructions.
+
+  </TabItem>
+  <TabItem label="npm">
+
+Verify your project `.npmrc` has both the registry and the scoped
+registry with matching auth tokens:
+
+<Code
+  code={`registry=https://registry.vlt.io/YOUR-ACCOUNT/npm/
+//registry.vlt.io/YOUR-ACCOUNT/npm/:_authToken=\${NODE_AUTH_TOKEN}
+@YOUR-ACCOUNT:registry=https://registry.vlt.io/YOUR-ACCOUNT/main/
+//registry.vlt.io/YOUR-ACCOUNT/main/:_authToken=\${NODE_AUTH_TOKEN}`}
+  title=".npmrc"
+  lang="ini"
+/>
+
+Also check that `package.json` has a `publishConfig` pointing to your
+private registry:
+
+<Code
+  code={`"publishConfig": {
+  "access": "restricted",
+  "registry": "https://registry.vlt.io/YOUR_ACCOUNT/main/"
+}`}
+  title="package.json"
+  lang="json"
+/>
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+Verify your project `.npmrc` has the registry and scoped registry
+configured the same way as npm above, and that `package.json` has
+`publishConfig` set.
+
+  </TabItem>
+  <TabItem label="yarn">
+
+Verify `.yarnrc.yml` has both the npm mirror and your private scope:
+
+<Code
+  code={`npmRegistryServer: "https://registry.vlt.io/YOUR-ACCOUNT/npm/"
+npmScopes:
+  YOUR-ACCOUNT:
+    npmRegistryServer: "https://registry.vlt.io/YOUR-ACCOUNT/main/"
+    npmPublishRegistry: "https://registry.vlt.io/YOUR-ACCOUNT/main/"`}
+  title=".yarnrc.yml"
+  lang="yaml"
+/>
+
+  </TabItem>
+</Tabs>
+
+Also check that the scope in `package.json` (e.g. `@YOUR-ACCOUNT`)
+matches your vlt account slug exactly.
+
+### Tag push doesn't trigger the workflow
+
+The workflow triggers on tags matching `v*` (e.g. `v1.0.0`,
+`v2.1.3-rc.1`). If your tag doesn't match:
+
+- Confirm the tag starts with `v` (not just the version number)
+- Check that you pushed the tag itself, not just the commit:
+  `git push origin v1.0.0` (not just `git push`)
+- If using `workflow_dispatch`, trigger it manually from the
+  **Actions** tab in your GitHub repository
+
+### Permission denied on publish
+
+The `package:write` privilege is required to publish. If the token was
+created with only `package:read`:
+
+1. Go to your
+   [vlt account tokens page](https://registry.vlt.io/tokens)
+2. Create a new token with `package:write`
+3. Update the `VLT_TOKEN` secret in GitHub with the new token value
+
+### npm: `ENEEDAUTH` or `E401` from registry
+
+This usually means the `.npmrc` configuration in the workflow doesn't
+match your registry URL. Check that:
+
+- The `registry` line in the `Configure vlt registry` step points to
+  your account's registry, not the public one
+- The `_authToken` line uses the same registry path (with `//` prefix)
+- The `NODE_AUTH_TOKEN` env var references `${{ secrets.VLT_TOKEN }}`
+
+### pnpm: `ERR_PNPM_NO_IMPORTER_MANIFEST`
+
+This means `package.json` is missing from the repository root. Make
+sure your package's `package.json` is committed and the workflow runs
+from the correct directory. If your package is in a subdirectory, add
+`working-directory: ./your-package` to each step.
+
+### Build fails but workflow shows success
+
+Make sure to check the build logs:
+
+- `vlt install` step must succeed
+- `vlt run build` step must succeed
+- Only then will `vlt publish` run
+
+Add the `--verbose` flag for more detailed output:
+
+<Code
+  code={`- name: Publish (verbose)
+  run: vlt publish --verbose
+  env:
+    VLT_TOKEN_https_registry_vlt_io_YOUR_ACCOUNT_main: \${{ secrets.VLT_TOKEN }}`}
+  title=".github/workflows/publish.yml"
+  lang="yaml"
+/>
+
+### Invalid package
+
+Check that your `package.json` name is spelled correctly, and that
+there is a `@` before your account scope.
+
+### Token expired or revoked
+
+Service tokens can expire or be revoked. If your workflow was working
+and suddenly starts failing with auth errors:
+
+1. Go to your
+   [vlt account tokens page](https://registry.vlt.io/tokens)
+2. Check if the token is still active
+3. If expired, create a new token and update the `VLT_TOKEN` GitHub
+   secret
+
+## Next steps
+
+- Learn about
+  [best practices for token management](/guides/best-practices-for-token-management)
+- Explore [dist-tags](/registry/publishing#dist-tags) for pre-releases
+  with the vlt CLI
+- Read the full [publishing documentation](/registry/publishing)

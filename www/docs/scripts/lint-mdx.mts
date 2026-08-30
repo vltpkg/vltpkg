@@ -25,6 +25,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { compile } from '@mdx-js/mdx'
 import { typedocBasePath } from '../typedoc/constants.mts'
 
 const docsRoot = resolve(
@@ -162,20 +163,49 @@ const checkAsides = (file: string, lines: string[]): Problem[] => {
 }
 
 /**
- * Lint a single file with every structural check.
+ * Compile each .mdx file with @mdx-js/mdx to catch syntax errors
+ * (bad JSX, autolinks like `<https://...>`, mismatched tags) that
+ * line-based checks cannot detect. Only .mdx files are compiled —
+ * plain .md files use standard markdown syntax.
  */
-const lintFile = (path: string): Problem[] => {
-  const rel = relative(process.cwd(), path)
-  const lines = readFileSync(path, 'utf8').split('\n')
-  return [...checkSteps(rel, lines), ...checkAsides(rel, lines)]
+const checkMdxParse = async (
+  file: string,
+  source: string,
+): Promise<Problem[]> => {
+  if (!file.endsWith('.mdx')) return []
+  try {
+    await compile(source)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return [{ file, line: 0, message: `MDX parse error: ${message}` }]
+  }
+  return []
 }
 
-const targets = process.argv.slice(2).map(arg => resolve(arg))
+/**
+ * Lint a single file with every structural check.
+ */
+const lintFile = async (path: string): Promise<Problem[]> => {
+  const rel = relative(process.cwd(), path)
+  const source = readFileSync(path, 'utf8')
+  const lines = source.split('\n')
+  const structural = [
+    ...checkSteps(rel, lines),
+    ...checkAsides(rel, lines),
+  ]
+  const parse = await checkMdxParse(rel, source)
+  return [...structural, ...parse]
+}
+
+const targets = process.argv
+  .slice(2)
+  .filter(a => !a.startsWith('-'))
+  .map(arg => resolve(arg))
 const files = targets.length ? targets : collectFiles(docsRoot)
-const problems = files.flatMap(lintFile)
+const problems = (await Promise.all(files.map(lintFile))).flat()
 
 for (const { file, line, message } of problems) {
-  console.error(`${file}:${line} ${message}`)
+  console.error(`${file}${line ? `:${line}` : ''} ${message}`)
 }
 if (problems.length) {
   console.error(`\n${problems.length} problem(s) found.`)
