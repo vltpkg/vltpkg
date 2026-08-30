@@ -296,7 +296,25 @@ export class Graph implements GraphLike {
     for (const node of nodes.values()) {
       this.removeNode(node)
     }
+    this.sortNodes()
     return nodes
+  }
+
+  /**
+   * Rebuild `nodes` so importers come first, then remaining nodes in
+   * DepID order. Matches lockfile save so a built graph and a
+   * save→load round-trip iterate the same way.
+   */
+  sortNodes() {
+    const rest: Node[] = []
+    for (const node of this.nodes.values()) {
+      if (!this.importers.has(node)) rest.push(node)
+    }
+    rest.sort((a, b) => a.id.localeCompare(b.id, 'en'))
+    const nodes = new Map<DepID, Node>()
+    for (const node of this.importers) nodes.set(node.id, node)
+    for (const node of rest) nodes.set(node.id, node)
+    this.nodes = nodes
   }
 
   /**

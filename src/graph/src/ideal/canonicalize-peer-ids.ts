@@ -18,6 +18,13 @@ export type CanonicalizePeerIdsOptions = {
   digest?: (input: string, length: number) => string
 }
 
+export type PeerStoreMove = {
+  node: Node
+  from: DepID
+  /** absent = merged-away copy, discard its dir */
+  to?: DepID
+}
+
 export const peerEnvDigest = (input: string, length = 16): string =>
   createHash('sha256').update(input).digest('hex').slice(0, length)
 
@@ -306,7 +313,7 @@ const applyAssignments = (
   graph: Graph,
   keep: Assignment[],
   losers: Map<Node, Node>,
-) => {
+): PeerStoreMove[] => {
   const newKeys = new Map<DepID, Node>()
   for (const a of keep) newKeys.set(a.newId, a.node)
 
@@ -321,9 +328,14 @@ const applyAssignments = (
     graph.manifests.delete(loser.id)
   }
 
+  const moves: PeerStoreMove[] = []
   for (const a of keep) {
     if (a.node.id !== a.newId) {
+      const from = a.node.id
       a.node.setPeerIdentity(a.newId, a.suffix)
+      if (a.node.extracted) {
+        moves.push({ node: a.node, from, to: a.newId })
+      }
     } else {
       a.node.peerSetHash = a.suffix
     }
@@ -336,6 +348,9 @@ const applyAssignments = (
   }
 
   for (const [loser, winner] of losers) {
+    if (loser.extracted) {
+      moves.push({ node: loser, from: loser.id })
+    }
     mergeNode(graph, winner, loser)
   }
 
@@ -355,6 +370,8 @@ const applyAssignments = (
   graph.resolutionsReverse.clear()
 
   if (losers.size > 0) graph.gc()
+  graph.sortNodes()
+  return moves
 }
 
 /**
@@ -364,12 +381,12 @@ const applyAssignments = (
 export const canonicalizePeerIds = (
   graph: Graph,
   options: CanonicalizePeerIdsOptions = {},
-): void => {
+): PeerStoreMove[] => {
   const digest = options.digest ?? peerEnvDigest
   const scoped = [...graph.nodes.values()]
     .filter(n => isPeerScoped(n, graph))
     .sort((a, b) => byteCompare(a.id, b.id))
-  if (!scoped.length) return
+  if (!scoped.length) return []
 
   const scopedSet = new Set(scoped)
   const adj = new Map<Node, Node[]>()
@@ -493,5 +510,5 @@ export const canonicalizePeerIds = (
     }
   }
 
-  applyAssignments(graph, keep, losers)
+  return applyAssignments(graph, keep, losers)
 }

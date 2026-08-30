@@ -2790,3 +2790,55 @@ t.test('addEdge rejects a traversing node name', async t => {
     { cause: { code: 'EINVALIDNAME' } },
   )
 })
+
+t.test('sortNodes puts importers first then DepID order', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+  })
+  const zed = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('zed@1.0.0', configData),
+    { name: 'zed', version: '1.0.0' },
+  )
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@1.0.0', configData),
+    { name: 'foo', version: '1.0.0' },
+  )
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar@1.0.0', configData),
+    { name: 'bar', version: '1.0.0' },
+  )
+  if (!zed || !foo || !bar) throw new Error('failed to place')
+
+  const expected = [
+    joinDepIDTuple(['file', '.']),
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    joinDepIDTuple(['registry', '', 'zed@1.0.0']),
+  ]
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected)
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected, 'idempotent')
+
+  graph.addNode(joinDepIDTuple(['registry', '', 'orphan@1.0.0']), {
+    name: 'orphan',
+    version: '1.0.0',
+  })
+  graph.gc()
+  t.strictSame(
+    [...graph.nodes.keys()],
+    expected,
+    'gc leaves a sorted map',
+  )
+})

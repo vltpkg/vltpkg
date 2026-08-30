@@ -1,5 +1,6 @@
 import { getImporterSpecs } from './get-importer-specs.ts'
 import { canonicalizePeerIds } from './canonicalize-peer-ids.ts'
+import { movePeerStoreDirs } from './move-peer-store-dirs.ts'
 import { refreshIdealGraph } from './refresh-ideal-graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
 import type { PackageJson } from '@vltpkg/package-json'
@@ -85,7 +86,7 @@ export const buildIdealFromStartingGraph = async (
   })
 
   options.graph.gc()
-  canonicalizePeerIds(options.graph)
+  await movePeerStoreDirs(canonicalizePeerIds(options.graph), options)
 
   return options.graph
 }

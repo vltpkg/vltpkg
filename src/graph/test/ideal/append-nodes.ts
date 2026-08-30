@@ -1069,7 +1069,7 @@ t.test('early extraction during appendNodes', async t => {
   )
 
   t.test(
-    'skip extraction for nodes with a provisional peer suffix',
+    'extract peer-suffixed node when actual has no matching base',
     async t => {
       const fooManifest = {
         name: 'foo',
@@ -1142,7 +1142,94 @@ t.test('early extraction during appendNodes', async t => {
         n => n.name === 'foo',
       )
       t.ok(foo?.peerSetHash, 'foo carries a provisional peer suffix')
-      t.equal(extractedNodes.length, 0, 'peer-suffixed node skipped')
+      t.ok(extractedNodes.includes('foo'), 'foo was extracted')
+    },
+  )
+
+  t.test(
+    'skip extraction for peer-suffixed node whose base is in actual',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      actualGraph.placePackage(
+        actualGraph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0'),
+        fooManifest,
+      )
+
+      const extractedNodes: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          if (spec.name === 'foo') return fooManifest
+          if (spec.name === 'react') {
+            return { name: 'react', version: '18.0.0' }
+          }
+          return null
+        },
+        async extract(spec: Spec) {
+          extractedNodes.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      const extractPromises: Promise<ExtractResult>[] = []
+      const seenExtracted = new Set<DepID>()
+
+      await appendNodes(
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', fooDep]]),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      const foo = [...idealGraph.nodes.values()].find(
+        n => n.name === 'foo',
+      )
+      t.ok(foo?.peerSetHash, 'foo carries a provisional peer suffix')
+      t.notOk(
+        extractedNodes.includes('foo'),
+        'foo was not extracted: same base already in actual',
+      )
     },
   )
 

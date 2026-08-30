@@ -321,5 +321,6 @@ export const loadObject = (
     }
   }
 
+  graph.sortNodes()
   return graph
 }

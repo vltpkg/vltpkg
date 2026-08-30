@@ -121,6 +121,16 @@ const getFileTypeInfo = (
 const isStringArray = (a: unknown): a is string[] =>
   Array.isArray(a) && !a.some(b => typeof b !== 'string')
 
+const actualBases = new WeakMap<Graph, Set<DepID>>()
+const hasActualBase = (actual: Graph, id: DepID): boolean => {
+  let bases = actualBases.get(actual)
+  if (!bases) {
+    bases = new Set([...actual.nodes.keys()].map(baseDepID))
+    actualBases.set(actual, bases)
+  }
+  return bases.has(baseDepID(id))
+}
+
 /**
  * Represents a manifest fetch operation with all the context needed.
  */
@@ -585,8 +595,13 @@ const processPlacementTasks = async (
       // this fixes an issue with installing `file:pathname` specs
       /* c8 ignore next */ !fileTypeInfo?.isDirectory &&
       !node.importer &&
-      // provisional peer suffixes are rewritten after gc; file ids never change
-      (!node.peerSetHash || !!fileTypeInfo)
+      // provisional peer suffixes are rewritten by canonicalizePeerIds,
+      // which moves the store dir into place. Skip when a dir for this
+      // package version already exists: the rewrite most likely lands
+      // back on it, and re-extracting would be pure waste.
+      (!node.peerSetHash ||
+        !!fileTypeInfo ||
+        !hasActualBase(actual, node.id))
 
     // extract the node if it meets the criteria for early extraction
     if (eligibleForExtraction) {

@@ -6,6 +6,13 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs'
+import { join } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.ts'
@@ -20,6 +27,7 @@ import type {
   LockfileEdges,
   LockfileNode,
 } from '../../src/index.ts'
+import { Graph } from '../../src/graph.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
@@ -806,4 +814,88 @@ t.test('optional subdeps binary distribution strategy', async t => {
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
+})
+
+t.test('early-extracts peer node and moves store dir', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { ui: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const scurry = new PathScurry(projectRoot)
+  const packageJson = new PackageJson()
+  const actual = new Graph({
+    projectRoot,
+    mainManifest,
+    ...configData,
+  })
+  const starting = new Graph({
+    projectRoot,
+    mainManifest,
+    ...configData,
+  })
+
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'ui') {
+        return {
+          name: 'ui',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        }
+      }
+      if (spec.name === 'react') {
+        return { name: 'react', version: '18.0.0' }
+      }
+      return null
+    },
+    async extract(_spec: Spec, target: string) {
+      mkdirSync(target, { recursive: true })
+      writeFileSync(
+        join(target, 'package.json'),
+        JSON.stringify({ name: 'extracted' }),
+      )
+      return {
+        integrity: 'sha512-abc==',
+        resolved: 'https://example.com/ui.tgz',
+      }
+    },
+  } as unknown as PackageInfoClient
+
+  const graph = await buildIdealFromStartingGraph({
+    ...configData,
+    packageInfo,
+    packageJson,
+    scurry,
+    actual,
+    graph: starting,
+    add: new Map() as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+
+  const ui = [...graph.nodes.values()].find(n => n.name === 'ui')
+  t.ok(ui?.peerSetHash)
+  t.match(ui?.peerSetHash, /^peer\.[0-9a-f]{16}$/)
+  t.equal(ui?.extracted, true)
+  t.ok(
+    ui && existsSync(ui.resolvedLocation(scurry)),
+    'package dir is at the canonical id',
+  )
+
+  const store = join(projectRoot, 'node_modules/.vlt')
+  const dirs = readdirSync(store).filter(
+    d => d !== 'vlt.json' && !d.startsWith('.'),
+  )
+  t.ok(
+    dirs.every(d => graph.nodes.has(d as DepID)),
+    'no leftover provisional store dirs',
+  )
 })

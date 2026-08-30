@@ -285,7 +285,7 @@ t.test(
   'skips file, workspace, and graphs with no scoped nodes',
   async t => {
     const graph = makeGraph(t)
-    canonicalizePeerIds(graph)
+    t.strictSame(canonicalizePeerIds(graph), [])
     t.equal(graph.nodes.size, 1)
 
     const file = graph.placePackage(
@@ -891,6 +891,97 @@ t.test('two edges to the same scoped target', async t => {
   canonicalizePeerIds(graph)
   t.match(foo.peerSetHash, hex16)
   t.equal(foo.peerSetHash, bar.peerSetHash)
+})
+
+t.test('move plan includes extracted renames only', async t => {
+  const graph = makeGraph(t)
+  const react = place(graph, graph.mainImporter, 'react', '18.0.0', {
+    name: 'react',
+    version: '18.0.0',
+  })
+  const ui = place(
+    graph,
+    graph.mainImporter,
+    'ui',
+    '1.0.0',
+    {
+      name: 'ui',
+      version: '1.0.0',
+      peerDependencies: { react: '^18' },
+    },
+    'peer.7',
+  )
+  graph.addEdge(
+    'peer',
+    Spec.parse('react', '^18', configData),
+    ui,
+    react,
+  )
+  const from = ui.id
+  ui.extracted = true
+  const moves = canonicalizePeerIds(graph)
+  t.equal(moves.length, 1)
+  t.equal(moves[0]?.from, from)
+  t.equal(moves[0]?.to, ui.id)
+  t.equal(moves[0]?.node, ui)
+  t.not(from, ui.id, 'id changed')
+})
+
+t.test('move plan discards extracted merge losers', async t => {
+  const graph = makeGraph(t)
+  const react = place(graph, graph.mainImporter, 'react', '18.0.0', {
+    name: 'react',
+    version: '18.0.0',
+  })
+  const libA = place(graph, graph.mainImporter, 'lib-a', '1.0.0', {
+    name: 'lib-a',
+    version: '1.0.0',
+  })
+  const libB = place(graph, graph.mainImporter, 'lib-b', '1.0.0', {
+    name: 'lib-b',
+    version: '1.0.0',
+  })
+  const ui1 = place(
+    graph,
+    libA,
+    'ui',
+    '1.0.0',
+    {
+      name: 'ui',
+      version: '1.0.0',
+      peerDependencies: { react: '^18' },
+    },
+    'peer.12',
+  )
+  const ui2 = graph.addNode(
+    joinDepIDTuple(['registry', '', 'ui@1.0.0', 'peer.13']),
+  )
+  ui2.peerSetHash = 'peer.13'
+  ui2.extracted = true
+  const loserId = ui2.id
+  graph.addEdge(
+    'prod',
+    Spec.parse('ui', '1.0.0', configData),
+    libB,
+    ui2,
+  )
+  graph.addEdge(
+    'peer',
+    Spec.parse('react', '^18', configData),
+    ui1,
+    react,
+  )
+  graph.addEdge(
+    'peer',
+    Spec.parse('react', '^18', configData),
+    ui2,
+    react,
+  )
+  const moves = canonicalizePeerIds(graph)
+  t.ok(
+    moves.some(m => m.from === loserId && !m.to),
+    'extracted loser is discarded',
+  )
 })
 
 t.test('already-canonical node is a no-op rename', async t => {
