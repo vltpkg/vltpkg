@@ -69,6 +69,16 @@ await safe('404', async () => {
   const e = await rc.request(`${base}/missing`, noCache)
   return { status: e.statusCode }
 })
+// caller-supplied conditional headers reach the wire — F51 regression
+// (the plain `conditional` case above is vacuous about this: with the
+// cache off neither runtime sends validators)
+await safe('conditionalExplicit', async () => {
+  const e = await rc.request(`${base}/conditional`, {
+    ...noCache,
+    headers: { 'if-none-match': '"pack-1"' },
+  })
+  return { status: e.statusCode }
+})
 // the cached path: response reaches disk through @vltpkg/cache, and a
 // second request is served from / revalidated against it
 await safe('cachedWrite', async () => {

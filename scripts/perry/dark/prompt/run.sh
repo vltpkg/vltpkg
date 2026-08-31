@@ -38,4 +38,37 @@ for (const k of Object.keys(n)) {
 }
 process.exit(bad ? 1 : 0)
 ' "$WORK"
+
+# Phase 4's deferred TTY half: the same prompts through a real pty.
+# script(1) puts the child on a pty (isTTY true, canonical mode, echo),
+# with our piped input feeding the pty master. The child's stdout comes
+# back interleaved with the echo, so the JSON record is fished out by
+# its leading brace.
+if command -v script >/dev/null && script -qec true /dev/null >/dev/null 2>&1; then
+  printf '%s' "$INPUT" |
+    script -qec "$WORK/prompt" /dev/null |
+    tr -d '\r' | grep '^{' | tail -1 >"$WORK/compiled-tty.json"
+  printf '%s' "$INPUT" |
+    script -qec "node --experimental-strip-types $HERE/entry.ts" /dev/null |
+    tr -d '\r' | grep '^{' | tail -1 >"$WORK/node-tty.json"
+
+  node -e '
+const fs = require("node:fs")
+const [c, n] = ["compiled-tty", "node-tty"].map(f =>
+  JSON.parse(fs.readFileSync(process.argv[1] + "/" + f + ".json", "utf8")))
+let bad = 0
+if (!c.compiled) { bad++; console.log("  FAIL the compiled tty run did not report perry") }
+else console.log("  ok   ran compiled on a pty")
+if (c.stdinIsTTY !== true) { bad++; console.log("  FAIL compiled stdin.isTTY is not true on a pty") }
+for (const k of Object.keys(n)) {
+  if (k === "compiled") continue
+  const ok = JSON.stringify(c[k]) === JSON.stringify(n[k])
+  if (!ok) bad++
+  console.log(`  ${ok ? "ok  " : "FAIL"} tty ${k}${ok ? "" : `\n    compiled ${JSON.stringify(c[k])}\n    node     ${JSON.stringify(n[k])}`}`)
+}
+process.exit(bad ? 1 : 0)
+' "$WORK"
+else
+  echo "  skip tty phase: no usable script(1) on this host"
+fi
 echo "3g dark test: pass"

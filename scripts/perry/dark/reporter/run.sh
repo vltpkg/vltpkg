@@ -40,4 +40,31 @@ want '1cachehit'
 want 'Donein1234ms'
 want '✓'
 [ "$bad" = 0 ] || { echo; echo "--- painted output ---"; cat "$WORK/plain.txt"; exit 1; }
+
+# Phase 4's deferred pty half: the same frames painted onto a real tty
+# (isTTY true, real window size), via script(1).
+if command -v script >/dev/null && script -qec true /dev/null >/dev/null 2>&1; then
+  script -qec "$WORK/reporter" /dev/null >"$WORK/out-tty.txt" 2>&1 || {
+    echo "  FAIL the reporter binary exited non-zero on a pty"
+    cat "$WORK/out-tty.txt"; exit 1
+  }
+  sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/\x1b[()][A-Z0-9]//g' \
+    "$WORK/out-tty.txt" | tr -d ' \t\r\n' >"$WORK/plain.txt"
+  echo >>"$WORK/plain.txt"
+  want() {
+    if grep -qF "$1" "$WORK/plain.txt"; then
+      echo "  ok   tty $1"
+    else
+      echo "  FAIL tty missing: $1"
+      bad=1
+    fi
+  }
+  want '2requests'
+  want '1cachehit'
+  want 'Donein1234ms'
+  want '✓'
+  [ "$bad" = 0 ] || { echo; echo "--- tty painted output ---"; cat "$WORK/plain.txt"; exit 1; }
+else
+  echo "  skip tty phase: no usable script(1) on this host"
+fi
 echo "3c dark test: pass"
