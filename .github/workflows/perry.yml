@@ -5,6 +5,7 @@ name: Perry
 #   gate-g0     the pinned toolchain compiles + runs a hello-world
 #   codegen     generated files are current, and no new `import()` appears
 #   gate-g2     patches reapply after a fresh install
+#   dark-tests  the five compiled-vs-Node subsystem suites
 #
 # Phase 6 adds the per-PR `perry check` gate over the workspaces and the
 # compiled smoke job.
@@ -131,3 +132,60 @@ jobs:
       # lru-cache is generated from the patched install).
       - name: Vendored lru-cache modules are current
         run: node scripts/perry/gen/lru-cache-modules.mjs --check
+
+  # The Phase 3/4 dark tests: each compiles a real subsystem and diffs its
+  # behaviour against Node (reporter is compiled-only). These fit in ~3GB;
+  # the full-binary build does NOT and stays out until an 8GB runner class
+  # is sorted (notes F46).
+  dark-tests:
+    name: Dark tests (compiled vs Node)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Read Perry Pin
+        id: pin
+        run: echo "version=$(jq -r .version perry-toolchain.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Perry Toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vltpkg-perry
+          key: perry-${{ runner.os }}-${{ runner.arch }}-${{ steps.pin.outputs.version }}
+
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      - name: Install Perry
+        run: ./scripts/perry/setup-toolchain.sh
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.22.0'
+          check-latest: true
+
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
+      - name: Install Dependencies
+        run: vlt install
+
+      - name: Apply patches
+        run: ./scripts/perry/apply-patches.sh
+
+      - name: Cache dark test
+        run: ./scripts/perry/dark/cache/run.sh
+
+      - name: Transport dark test
+        run: ./scripts/perry/dark/transport/run.sh
+
+      - name: Prompt dark test
+        run: ./scripts/perry/dark/prompt/run.sh
+
+      - name: Reporter dark test
+        run: ./scripts/perry/dark/reporter/run.sh
+
+      - name: Daemons dark test
+        run: ./scripts/perry/dark/daemons/run.sh
