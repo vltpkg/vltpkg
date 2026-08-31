@@ -112,9 +112,14 @@ export const endPayload = (stdin: NodeJS.WritableStream): void => {
 
 /** the whole stdin payload, up to the sentinel or (under Node) EOF */
 export const readPayload = (
-  input: EventEmitter = process.stdin,
+  stdinOverride?: EventEmitter,
 ): Promise<string> =>
   new Promise((res, rej) => {
+    // \`?? process.stdin\` here, NEVER \`= process.stdin\` in the parameter:
+    // compiled, stdin routed through a parameter slot (default or
+    // explicit argument) loses its event delivery and 'data' never
+    // fires. A fallback bound inside the body works. (notes F48)
+    const input = stdinOverride ?? process.stdin
     // the live handle is what makes 'data' fire at all when compiled
     const keepAlive = setInterval(() => {}, 50)
     const chunks: Buffer[] = []

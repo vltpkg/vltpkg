@@ -91,7 +91,9 @@ const retrieveRemoteData = async (
  * and writes it back to the SQLite database.
  */
 export const main = async (
-  input: EventEmitter = process.stdin,
+  // optional, `??`-defaulted inside readPayload: a `= process.stdin`
+  // parameter default breaks event delivery compiled (notes F48)
+  input?: EventEmitter,
 ): Promise<boolean> => {
   const payload = JSON.parse(
     await readPayload(input),
@@ -200,7 +202,7 @@ export const main = async (
 /* c8 ignore start */
 if (isMain(process.argv[1])) {
   process.title = 'vlt-security-archive-update'
-  const res = await main(process.stdin)
+  const res = await main()
   if (!res) {
     process.exit(1)
   }

@@ -113,14 +113,12 @@ export const fetchTransport = (
     async request(o: TransportRequestOptions) {
       const url = String(new URL(o.path, String(o.origin)))
       const method = o.method.toUpperCase()
-      const init: RequestInit = {
-        method,
-        headers: toHeaders(o.headers),
-        signal: o.signal as AbortSignal | undefined,
-      }
-      if (o.body !== undefined && o.body !== null) {
-        init.body = o.body as BodyInit
-      }
+      const headers = toHeaders(o.headers)
+      const signal = o.signal as AbortSignal | undefined
+      const body =
+        o.body === undefined || o.body === null ?
+          undefined
+        : (o.body as BodyInit)
       const replayable = retryMethods.includes(method)
       // undici's RetryHandler schedule, without its jitter
       const backoff = (attempt: number) =>
@@ -135,7 +133,16 @@ export const fetchTransport = (
         let res: Response | undefined
         let failure: unknown
         try {
-          res = await fetch(url, init)
+          // the init MUST be an object literal at the call site with
+          // every property spelled `key: value`: compiled, an options
+          // VARIABLE or a shorthand property is silently ignored and
+          // the headers never hit the wire (notes F51)
+          res = await fetch(url, {
+            method: method,
+            headers: headers,
+            signal: signal,
+            body: body,
+          })
         } catch (er) {
           failure = er
         }

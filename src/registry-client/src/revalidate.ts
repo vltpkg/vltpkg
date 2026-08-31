@@ -35,7 +35,17 @@ const runPool = async (
         const req = reqs[i]
         /* c8 ignore next */
         if (req === undefined) return
-        await fn(req[0], req[1])
+        // bind the promise and attach a subscriber before awaiting:
+        // compiled, awaiting this call expression directly never
+        // resumes and the worker exits with an unsettled top-level
+        // await; the extra .then() is what makes the await resume
+        // (notes F50)
+        const p = fn(req[0], req[1])
+        void p.then(
+          () => {},
+          () => {},
+        )
+        await p
       }
     }),
   )
@@ -43,7 +53,9 @@ const runPool = async (
 
 export const main = async (
   cache?: string,
-  input: EventEmitter = process.stdin,
+  // optional, `??`-defaulted inside readPayload: a `= process.stdin`
+  // parameter default breaks event delivery compiled (notes F48)
+  input?: EventEmitter,
 ) => {
   if (!cache) {
     return false
@@ -81,7 +93,7 @@ if (isMain(process.argv[1])) {
   } catch {}
   const cacheFolder =
     process.argv.length === 2 ? undefined : process.argv.at(-1)
-  const res = await main(cacheFolder, process.stdin)
+  const res = await main(cacheFolder)
   if (!res) {
     process.exit(1)
   }

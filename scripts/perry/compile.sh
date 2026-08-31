@@ -62,7 +62,7 @@ fi
 "$PERRY" compile --no-link "$SRC" -o "$OUT.o" "$@" >"$LOG" 2>&1 || {
   cat "$LOG" >&2; exit 1
 }
-mapfile -t OBJS < <(sed -n 's/.*cached object: //p' "$LOG")
+mapfile -t OBJS < <(sed -n 's/.*cached object: //p; s/.*Wrote object file: //p' "$LOG")
 [ "${#OBJS[@]}" -gt 0 ] || { echo "compile.sh: --no-link reported no objects" >&2; exit 1; }
 
 "${PERRY_LLVM_CLANG:-clang}" -o "$OUT" "${OBJS[@]}" \

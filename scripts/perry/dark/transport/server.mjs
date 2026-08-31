@@ -15,8 +15,10 @@ const PACKUMENT = gzipSync(
 let flaky = 0
 let throttled = 0
 
+const hits = {}
 const server = createServer((req, res) => {
   const u = req.url
+  hits[u] = (hits[u] ?? 0) + 1
   const send = (code, headers, body) => {
     res.writeHead(code, headers)
     res.end(body)
@@ -55,6 +57,12 @@ const server = createServer((req, res) => {
     throttled = 0
     return send(200, {}, 'reset')
   }
+  if (u === '/hits')
+    return send(
+      200,
+      { 'content-type': 'application/json' },
+      JSON.stringify(hits),
+    )
   if (u === '/redirect') return send(302, { location: '/abbrev' })
   if (u === '/auth')
     return send(

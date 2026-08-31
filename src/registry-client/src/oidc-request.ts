@@ -15,6 +15,12 @@ export const request = async (
   url: URL | string,
   options: { method: string; headers: Record<string, string> },
 ): Promise<OidcResponse> => {
-  const res = await fetch(String(url), options)
+  // inline literal, not `fetch(url, options)`: compiled, an options
+  // VARIABLE is silently ignored and the headers never hit the wire
+  // (notes F51)
+  const res = await fetch(String(url), {
+    method: options.method,
+    headers: options.headers,
+  })
   return { statusCode: res.status, body: { json: () => res.json() } }
 }

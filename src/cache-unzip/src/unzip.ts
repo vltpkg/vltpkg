@@ -28,7 +28,9 @@ const isMain = (path?: string) =>
 
 const main = async (
   path: undefined | string,
-  input: EventEmitter = process.stdin,
+  // optional, `??`-defaulted inside readPayload: a `= process.stdin`
+  // parameter default breaks event delivery compiled (notes F48)
+  input?: EventEmitter,
 ) => {
   if (!path) {
     return false
@@ -175,7 +177,10 @@ const main = async (
           ],
           0,
         )
-        chunks.unshift(hlBuf)
+        // splice, not unshift: compiled, a direct `.unshift()` after an
+        // `await` in an async function corrupts the binding and drops
+        // the mutation (notes F49)
+        chunks.splice(0, 0, hlBuf)
         chunks.push(unz)
         cache.set(
           key,
@@ -196,7 +201,7 @@ if (isMain(process.argv[1])) {
   process.title = 'vlt-cache-unzip'
   const path =
     process.argv.length === 2 ? undefined : process.argv.at(-1)
-  const res = await main(path, process.stdin)
+  const res = await main(path)
   if (!res) {
     process.exit(1)
   }
