@@ -7,6 +7,7 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
+import { STATUS_CODES } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
@@ -405,11 +406,21 @@ export class RegistryClient {
         return
       }
     }
-    /* c8 ignore start */
     // TODO: fall back to username/password login, and/or couchdb PUT login
-    throw error('Failed to perform web login', { response })
+    const { statusCode } = response
+    const status = STATUS_CODES[statusCode]
+    throw error(
+      `Failed to perform web login: ${statusCode}${
+        status ? ` ${status}` : ''
+      }`,
+      {
+        code: 'EREQUEST',
+        url: webLoginURL,
+        status: statusCode,
+        response,
+      },
+    )
   }
-  /* c8 ignore stop */
 
   /**
    * Given a {@link WebAuthChallenge}, open the `authUrl` in a browser and

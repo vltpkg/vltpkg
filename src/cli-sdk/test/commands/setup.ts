@@ -6,7 +6,7 @@ type Added = [string, Record<string, unknown>]
 
 // Build a mocked setup module with injectable readline answers and a
 // RegistryClient stub that records the registries it logs in against.
-const loadSetup = async (answers: string[]) => {
+const loadSetup = async (answers: string[], loginError?: Error) => {
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
   const logged: string[] = []
@@ -18,6 +18,7 @@ const loadSetup = async (answers: string[]) => {
       RegistryClient: class {
         async login(registry: string | string[]) {
           loginCalls.push(registry)
+          if (loginError) throw loginError
         }
       },
     },
@@ -283,6 +284,46 @@ t.test(
     })
   },
 )
+
+t.test('interactive: unknown account slug', async t => {
+  const added: Added[] = []
+  // the account registries only exist for accounts that exist, so the login
+  // endpoint 404s on a slug that was mistyped
+  const { mod } = await loadSetup(
+    ['nope', 'y'],
+    Object.assign(
+      new Error('Failed to perform web login: 404 Not Found'),
+      { cause: { code: 'EREQUEST', status: 404 } },
+    ),
+  )
+  await t.rejects(
+    mod.command(makeConf({}, added)),
+    {
+      message: /No vlt.io account or organization named "nope"/,
+      cause: { code: 'ECONFIG' },
+    },
+    'names the slug rather than the HTTP failure',
+  )
+  t.strictSame(added, [], 'nothing written to config')
+})
+
+t.test('interactive: other login failures pass through', async t => {
+  const added: Added[] = []
+  const { mod } = await loadSetup(
+    ['acme', 'y'],
+    Object.assign(
+      new Error(
+        'Failed to perform web login: 500 Internal Server Error',
+      ),
+      { cause: { code: 'EREQUEST', status: 500 } },
+    ),
+  )
+  await t.rejects(
+    mod.command(makeConf({}, added)),
+    { message: /500 Internal Server Error/ },
+    'not reported as a bad account slug',
+  )
+})
 
 t.test('interactive: empty account slug rejects', async t => {
   const added: Added[] = []
