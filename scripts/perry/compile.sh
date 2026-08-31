@@ -33,11 +33,14 @@ fi
 export PERRY_LLVM_CLANG="${PERRY_LLVM_CLANG:-}"
 [ -n "$PERRY_LLVM_CLANG" ] || unset PERRY_LLVM_CLANG
 
-# Where -lssl/-lcrypto live, if not on the default search path.
+# Where -lssl/-lcrypto live, if not on the default search path. On macOS
+# the system libssl is not linkable; homebrew openssl is required.
 if [ -z "${PERRY_OPENSSL_LIB:-}" ]; then
   for d in /home/linuxbrew/.linuxbrew/opt/openssl@3/lib \
-    /home/linuxbrew/.linuxbrew/opt/openssl/lib /usr/lib/x86_64-linux-gnu; do
-    [ -e "$d/libssl.so" ] && { PERRY_OPENSSL_LIB="$d"; break; }
+    /home/linuxbrew/.linuxbrew/opt/openssl/lib /usr/lib/x86_64-linux-gnu \
+    /opt/homebrew/opt/openssl@3/lib /usr/local/opt/openssl@3/lib; do
+    [ -e "$d/libssl.so" ] || [ -e "$d/libssl.dylib" ] &&
+      { PERRY_OPENSSL_LIB="$d"; break; }
   done
 fi
 [ -n "${PERRY_OPENSSL_LIB:-}" ] && export LIBRARY_PATH="${PERRY_OPENSSL_LIB}${LIBRARY_PATH:+:$LIBRARY_PATH}"
@@ -62,12 +65,26 @@ fi
 "$PERRY" compile --no-link "$SRC" -o "$OUT.o" "$@" >"$LOG" 2>&1 || {
   cat "$LOG" >&2; exit 1
 }
-mapfile -t OBJS < <(sed -n 's/.*cached object: //p; s/.*Wrote object file: //p' "$LOG")
+# no mapfile: macOS ships bash 3.2
+OBJS=()
+while IFS= read -r o; do OBJS+=("$o"); done \
+  < <(sed -n 's/.*cached object: //p; s/.*Wrote object file: //p' "$LOG")
 [ "${#OBJS[@]}" -gt 0 ] || { echo "compile.sh: --no-link reported no objects" >&2; exit 1; }
 
-"${PERRY_LLVM_CLANG:-clang}" -o "$OUT" "${OBJS[@]}" \
-  -Wl,--allow-multiple-definition -Wl,--start-group \
-  "$PERRY_DIR"/libperry_stdlib.a "$PERRY_DIR"/libperry_runtime.a \
-  "$PERRY_DIR"/libperry_ext_*.a -Wl,--end-group \
-  ${PERRY_OPENSSL_LIB:+-L"$PERRY_OPENSSL_LIB"} -lssl -lcrypto -lm -lpthread -ldl
+if [ "$(uname -s)" = Darwin ]; then
+  # UNTESTED (written blind for the macOS bring-up): ld64 has no
+  # --start-group (it resolves archive cycles itself) and no
+  # --allow-multiple-definition (on-demand member loading may make the
+  # duplicate Rust cores moot). -ldl/-lpthread resolve via SDK stubs.
+  "${PERRY_LLVM_CLANG:-clang}" -o "$OUT" "${OBJS[@]}" \
+    "$PERRY_DIR"/libperry_stdlib.a "$PERRY_DIR"/libperry_runtime.a \
+    "$PERRY_DIR"/libperry_ext_*.a \
+    ${PERRY_OPENSSL_LIB:+-L"$PERRY_OPENSSL_LIB"} -lssl -lcrypto -lm -lpthread -ldl
+else
+  "${PERRY_LLVM_CLANG:-clang}" -o "$OUT" "${OBJS[@]}" \
+    -Wl,--allow-multiple-definition -Wl,--start-group \
+    "$PERRY_DIR"/libperry_stdlib.a "$PERRY_DIR"/libperry_runtime.a \
+    "$PERRY_DIR"/libperry_ext_*.a -Wl,--end-group \
+    ${PERRY_OPENSSL_LIB:+-L"$PERRY_OPENSSL_LIB"} -lssl -lcrypto -lm -lpthread -ldl
+fi
 echo "compile.sh: manual (${#OBJS[@]} objects)" >&2

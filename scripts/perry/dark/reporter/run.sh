@@ -20,7 +20,9 @@ trap '[ -n "${DARK_WORK:-}" ] || rm -rf "$WORK"' EXIT
 # frame and only emits the cells that changed — and a space is identical to
 # the cleared cell behind it, so spaces never reach stdout at all. The bytes
 # are the content, not the layout, so the assertions have to be too.
-sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/\x1b[()][A-Z0-9]//g' \
+# ESC via $'…' — BSD sed does not interpret \x1b.
+ESC=$'\x1b'
+sed -e "s/$ESC\\[[0-9;?]*[a-zA-Z]//g" -e "s/$ESC[()][A-Z0-9]//g" \
   "$WORK/out.txt" | tr -d ' \t\r\n' >"$WORK/plain.txt"
 echo >>"$WORK/plain.txt"
 
@@ -48,7 +50,7 @@ if command -v script >/dev/null && script -qec true /dev/null >/dev/null 2>&1; t
     echo "  FAIL the reporter binary exited non-zero on a pty"
     cat "$WORK/out-tty.txt"; exit 1
   }
-  sed -e 's/\x1b\[[0-9;?]*[a-zA-Z]//g' -e 's/\x1b[()][A-Z0-9]//g' \
+  sed -e "s/$ESC\\[[0-9;?]*[a-zA-Z]//g" -e "s/$ESC[()][A-Z0-9]//g" \
     "$WORK/out-tty.txt" | tr -d ' \t\r\n' >"$WORK/plain.txt"
   echo >>"$WORK/plain.txt"
   want() {

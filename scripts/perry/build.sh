@@ -21,7 +21,13 @@ BINS=(vlt vlr vlrx vlx vlxl)
 # one OOM event, it does not stop the next one, and the process that dies
 # second is whatever else is running — a test suite, an editor, your shell.
 NEED_MB="${PERRY_BUILD_MIN_MEM_MB:-8192}"
-HAVE_MB=$(( $(awk '/MemAvailable/{print $2}' /proc/meminfo) / 1024 ))
+if [ -r /proc/meminfo ]; then
+  HAVE_MB=$(( $(awk '/MemAvailable/{print $2}' /proc/meminfo) / 1024 ))
+else
+  # darwin: no /proc. Total RAM, not available — close enough for a
+  # refuse-below-8GB gate on a machine class that starts at 8 GB.
+  HAVE_MB=$(( $(sysctl -n hw.memsize) / 1024 / 1024 ))
+fi
 if [ "$HAVE_MB" -lt "$NEED_MB" ] && [ -z "${PERRY_BUILD_ALLOW_LOW_MEM:-}" ]; then
   echo "build.sh: ${HAVE_MB} MB available, want ${NEED_MB} MB." >&2
   echo "  A full compile will OOM and take other processes with it." >&2
