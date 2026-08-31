@@ -100,9 +100,11 @@ export const retrieveRemoteVersions = async (
 
   // Corgi is safe here: raw fetch (never the RegistryClient disk cache),
   // and only versions keys are read.
+  // every init property spelled `key: value`: compiled, a shorthand
+  // property makes the whole init silently ignored (notes F51)
   const response = await fetch(String(url), {
-    headers,
-    signal,
+    headers: headers,
+    signal: signal,
   })
   // on missing valid auth or API, it should abort the retry logic
   if (response.status === 404) {

@@ -46,8 +46,10 @@ export const retrieveRemoteDate = async (
   const url = new URL(spec.registry)
   url.pathname = `/${node.name}`
 
+  // spelled `key: value`: compiled, a shorthand property makes the
+  // whole init silently ignored (notes F51)
   const response = await fetch(String(url), {
-    signal,
+    signal: signal,
   })
   // on missing valid auth or API, it should abort the retry logic
   if (response.status === 404) {
