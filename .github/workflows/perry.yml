@@ -29,6 +29,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Every job only reads the repo; keep the token that way even if the
+# repository default is broader.
+permissions:
+  contents: read
+
 jobs:
   gate-g0:
     name: Gate G0 (compile hello-world)
