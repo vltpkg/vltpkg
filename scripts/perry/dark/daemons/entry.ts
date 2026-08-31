@@ -1,4 +1,4 @@
-// Dark-test entry for the ×4 detached workers (3b's deferred DoD item).
+// Dark-test entry for the ×4 detached workers.
 // Mirrors the compiled binary's daemon gate in src/cli-sdk/src/perry.ts:
 // VLT_INTERNAL_CMD names the worker, the payload arrives on stdin
 // EOT-terminated, and runDaemon never returns.

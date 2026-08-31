@@ -1,4 +1,4 @@
-// Dark-test entry for @vltpkg/cache (the F43/F47 blocker): exercises the
+// Dark-test entry for @vltpkg/cache: exercises the
 // real Cache class — memory roundtrip, disk write-back, fetch-from-disk,
 // integrity hard-links, delete-from-disk, walk — and prints a JSON record
 // a runner diffs between the compiled binary and Node.
@@ -77,7 +77,7 @@ const main = async () => {
     !existsSync(c2.path('key-a')) &&
     !existsSync(c2.path('key-a') + '.key')
 
-  // 8. many entries: content survives (would catch F41-style corruption)
+  // 8. many entries: content survives eviction churn intact
   const c4 = new Cache({ path: dir, max: 5 })
   for (let i = 0; i < 20; i++) {
     c4.set(`bulk-${i}`, Buffer.from(`payload-${i}-`.repeat(20)))

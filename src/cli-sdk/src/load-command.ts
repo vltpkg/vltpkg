@@ -40,7 +40,7 @@ export type Command<T> = {
  * Dispatch is a static table (`commands-map.ts`, generated) rather than a
  * dynamic `import()`: the compiler drops any `import()` below module top
  * level without a build error, and a template-literal
- * specifier fails `check --check-deps` (S2). Consequence: no lazy command
+ * specifier fails `check --check-deps`. Consequence: no lazy command
  * loading — every command links in. Stays `async` for its callers.
  */
 export const loadCommand = async <T>(

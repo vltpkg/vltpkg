@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# 3g dark test. Compiles the shipped prompt path and drives it from piped
+# Prompt dark test. Compiles the shipped prompt path and drives it from piped
 # stdin, then runs the same source under Node and diffs. Exit 0 = the compiled
 # prompt reads a line the way Node's does.
 #
-# Not covered here: an interactive tty. That needs a pty and belongs with the
-# node-pty smoke suite (Phase 4).
+# The pty pass below covers the basic tty path; a fuller interactive
+# suite would need node-pty and lives outside this test.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../../../.." && pwd)"
@@ -39,7 +39,7 @@ for (const k of Object.keys(n)) {
 process.exit(bad ? 1 : 0)
 ' "$WORK"
 
-# Phase 4's deferred TTY half: the same prompts through a real pty.
+# The TTY half: the same prompts through a real pty.
 # script(1) puts the child on a pty (isTTY true, canonical mode, echo),
 # with our piped input feeding the pty master. The child's stdout comes
 # back interleaved with the echo, so the JSON record is fished out by
@@ -71,4 +71,4 @@ process.exit(bad ? 1 : 0)
 else
   echo "  skip tty phase: no usable script(1) on this host"
 fi
-echo "3g dark test: pass"
+echo "prompt dark test: pass"

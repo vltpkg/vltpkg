@@ -29,7 +29,7 @@ const isMain = (path?: string) =>
 const main = async (
   path: undefined | string,
   // optional, `??`-defaulted inside readPayload: a `= process.stdin`
-  // parameter default breaks event delivery compiled (notes F48)
+  // parameter default breaks event delivery compiled
   input?: EventEmitter,
 ) => {
   if (!path) {
@@ -179,7 +179,7 @@ const main = async (
         )
         // splice, not unshift: compiled, a direct `.unshift()` after an
         // `await` in an async function corrupts the binding and drops
-        // the mutation (notes F49)
+        // the mutation
         chunks.splice(0, 0, hlBuf)
         chunks.push(unz)
         cache.set(

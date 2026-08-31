@@ -1,4 +1,4 @@
-// 3c dark test harness: the shipped perry/tui install reporter, driven by the
+// Reporter dark-test harness: the shipped perry/tui install reporter, driven by the
 // same `@vltpkg/output` events an install emits. Imported by relative path —
 // this directory is not a workspace.
 import { emitter } from '../../../../src/output/src/index.ts'

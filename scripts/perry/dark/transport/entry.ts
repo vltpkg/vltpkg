@@ -1,4 +1,4 @@
-// 3a dark test: the real RegistryClient, compiled, against the fixture above.
+// Transport dark test: the real RegistryClient, compiled, against the fixture above.
 // Imported by relative path — this directory is not a workspace, and the
 // point is to exercise the shipped module.
 import {
@@ -11,8 +11,7 @@ const cache = process.argv[3]!
 const out: Record<string, unknown> = {}
 // The transport checks run with `useCache: false` so they exercise the
 // wire, not the disk. The `cached*` checks at the end run with the cache
-// on — that path works compiled since the F43/F47 fix (vendored
-// lru-cache).
+// on — that path works compiled since the vendored-lru-cache fix.
 const rc = new RegistryClient({ cache, 'fetch-retries': 3 })
 const noCache = { useCache: false } as const
 
@@ -69,9 +68,10 @@ await safe('404', async () => {
   const e = await rc.request(`${base}/missing`, noCache)
   return { status: e.statusCode }
 })
-// caller-supplied conditional headers reach the wire — F51 regression
-// (the plain `conditional` case above is vacuous about this: with the
-// cache off neither runtime sends validators)
+// caller-supplied conditional headers reach the wire — guards the
+// compiled fetch-init drop (the plain `conditional` case above is
+// vacuous about this: with the cache off neither runtime sends
+// validators)
 await safe('conditionalExplicit', async () => {
   const e = await rc.request(`${base}/conditional`, {
     ...noCache,

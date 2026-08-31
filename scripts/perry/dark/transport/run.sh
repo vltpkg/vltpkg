@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 3a dark test. Compiles the real RegistryClient and runs it against a Node
+# Transport dark test. Compiles the real RegistryClient and runs it against a Node
 # fixture registry, then runs the same source under Node and diffs. Exit 0 =
 # the compiled fetch transport behaves like the undici one.
 set -euo pipefail
@@ -36,4 +36,4 @@ if (!c.compiled) { bad++; console.log("  FAIL the compiled run did not report pe
 for (const k of Object.keys(n)) if (k !== "backend" && k !== "compiled") eq(k, c[k], n[k])
 process.exit(bad ? 1 : 0)
 ' "$WORK"
-echo "3a dark test: pass"
+echo "transport dark test: pass"

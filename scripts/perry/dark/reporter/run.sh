@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# 3c dark test. Compiles the perry/tui install reporter and drives it with the
+# Reporter dark test. Compiles the perry/tui install reporter and drives it with the
 # same events an install emits, then checks the frames it painted.
 #
 # There is no Node side to diff against: the Ink reporter it replaces cannot
 # compile, and this one cannot run under Node. So the assertions are on the
-# text of the final frame, which is what the DoD is about.
+# text of the final frame, which is what matters to the user.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../../../.." && pwd)"
@@ -43,7 +43,7 @@ want 'Donein1234ms'
 want '✓'
 [ "$bad" = 0 ] || { echo; echo "--- painted output ---"; cat "$WORK/plain.txt"; exit 1; }
 
-# Phase 4's deferred pty half: the same frames painted onto a real tty
+# The pty half: the same frames painted onto a real tty
 # (isTTY true, real window size), via script(1).
 if command -v script >/dev/null && script -qec true /dev/null >/dev/null 2>&1; then
   script -qec "$WORK/reporter" /dev/null >"$WORK/out-tty.txt" 2>&1 || {
@@ -69,4 +69,4 @@ if command -v script >/dev/null && script -qec true /dev/null >/dev/null 2>&1; t
 else
   echo "  skip tty phase: no usable script(1) on this host"
 fi
-echo "3c dark test: pass"
+echo "reporter dark test: pass"

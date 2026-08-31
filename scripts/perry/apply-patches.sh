@@ -10,7 +10,7 @@
 #   ./scripts/perry/apply-patches.sh          apply (idempotent)
 #   ./scripts/perry/apply-patches.sh --check  fail if any patch is not applied
 #
-# `--check` is the G2 reapply gate: fresh install -> apply -> check -> compile.
+# `--check` is the CI reapply gate: fresh install -> apply -> check -> compile.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PATCHES="$ROOT/perry-patches"

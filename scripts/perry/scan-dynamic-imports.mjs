@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * F4 gate. `import()` below module top level is collected by neither
- * `check` nor `compile` — it compiles clean and throws `Uncaught exception:
+ * Dynamic-import gate. `import()` below module top level is collected by
+ * neither `check` nor `compile` — it compiles clean and throws `Uncaught exception:
  * undefined` at runtime. No compiler gate catches it, so this is the gate:
  * enumerate every runtime `import()` in first-party source and fail on
  * anything not in the allowlist below.
@@ -23,8 +23,8 @@ const SCAN = ['src', 'infra/build/src']
 const SKIP =
   /(^|\/)(node_modules|dist|\.build[^/]*|test|tap-snapshots|fixtures|__tests__)(\/|$)/
 
-// Known sites, each owned by a track: it is either removed by that track or
-// it is a bug. Nothing else may appear.
+// Known sites, each tagged with why it may stay: the compiled build never
+// reaches it, or a pending port removes it. Nothing else may appear.
 const ALLOW = [
   {
     // the selector; compiled it returns the reporter the entry registered and
@@ -49,9 +49,10 @@ const ALLOW = [
     track: 'node-build-only',
   },
   {
+    // goes away when the mermaid image view is made compile-safe
     file: 'src/cli-sdk/src/mermaid-image-view.ts',
     spec: './render-mermaid.ts',
-    track: '3e',
+    track: 'pending-port',
   },
   {
     // deliberately dropped when compiled: it is how undici stays out of the

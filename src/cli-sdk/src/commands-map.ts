@@ -2,7 +2,7 @@
  *
  * Static command dispatch. `import()` below module top level is silently
  * dropped by the compiler and a template-literal specifier
- * fails `check --check-deps` (S2), so the compiled binary cannot load
+ * fails `check --check-deps`, so the compiled binary cannot load
  * commands lazily. Every command's dep closure therefore links into the
  * binary whether or not it runs.
  *

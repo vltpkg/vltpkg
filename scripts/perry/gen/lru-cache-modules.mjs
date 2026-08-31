@@ -6,11 +6,11 @@
  * A bare `import 'lru-cache'` never reaches the npm package in a compiled
  * build: the specifier is in Perry's well-known native-bindings registry
  * (`perry native list`), so the compiler silently substitutes its own
- * native reimplementation (notes F47). That reimplementation corrupts
+ * native reimplementation. That reimplementation corrupts
  * subclasses that declare primitive-initialized private fields — the
  * `@vltpkg/cache` blocker — and its semantics for fetchMethod / stale /
  * dispose are unverified. The only way past the interception is a
- * relative import, so the real (patched — see perry-patches, F42)
+ * relative import, so the real (patched — see perry-patches/)
  * `dist/esm/index.js` of the version each package resolves is vendored
  * into the package, with a `.d.ts` that re-exports the npm package's
  * types. The npm dependency stays for those types.
@@ -24,19 +24,19 @@
  * directly. Routing it through a const alias — even a bare
  * `const A = LRUCache` — or casting it in the heritage clause of a class
  * with an explicit constructor makes the Perry compiler lose the class
- * and substitute the native binding again (notes F47).
+ * and substitute the native binding again.
  *
  * Under Node the vendored file is the same code node_modules would
  * serve, with one difference: the `import('node:diagnostics_channel')`
  * hookup is replaced by its own no-op fallback (runtime dynamic import
- * is not viable compiled — S2/F4 — and vlt subscribes to no lru-cache
+ * is not viable compiled — and vlt subscribes to no lru-cache
  * channels).
  *
  *   node scripts/perry/gen/lru-cache-modules.mjs           regenerate
  *   node scripts/perry/gen/lru-cache-modules.mjs --check   fail if stale (CI)
  *
  * Run only with perry-patches applied (apply-patches.sh) — the source
- * must carry the F42 ZeroArray patch, and --check asserts it.
+ * must carry the ZeroArray patch, and --check asserts it.
  */
 import {
   readFileSync,
@@ -64,7 +64,7 @@ const render = dir => {
   let body = readFileSync(join(lruDir, 'dist/esm/index.js'), 'utf8')
   if (/class ZeroArray extends Array/.test(body)) {
     throw new Error(
-      `${dir}: lru-cache@${version} is unpatched (F42 ZeroArray) — run scripts/perry/apply-patches.sh first`,
+      `${dir}: lru-cache@${version} is unpatched (ZeroArray still present) — run scripts/perry/apply-patches.sh first`,
     )
   }
   // ./perf.js + ./diagnostics-channel.js, inlined (dynamic import stripped)
@@ -101,7 +101,7 @@ const defaultPerf =
  *
  * lru-cache@${version} dist/esm/index.js (perry-patches applied), vendored
  * because the bare 'lru-cache' specifier is intercepted by a Perry
- * native binding whose class cannot be safely subclassed (notes F47).
+ * native binding whose class cannot be safely subclassed.
  * Types come from the sibling .d.ts, which re-exports the npm
  * package's. Regenerate after an lru-cache version bump:
  * node scripts/perry/gen/lru-cache-modules.mjs

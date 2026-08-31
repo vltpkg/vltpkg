@@ -92,7 +92,7 @@ const retrieveRemoteData = async (
  */
 export const main = async (
   // optional, `??`-defaulted inside readPayload: a `= process.stdin`
-  // parameter default breaks event delivery compiled (notes F48)
+  // parameter default breaks event delivery compiled
   input?: EventEmitter,
 ): Promise<boolean> => {
   const payload = JSON.parse(

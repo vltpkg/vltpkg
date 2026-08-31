@@ -47,7 +47,7 @@ export const retrieveRemoteDate = async (
   url.pathname = `/${node.name}`
 
   // spelled `key: value`: compiled, a shorthand property makes the
-  // whole init silently ignored (notes F51)
+  // whole init silently ignored
   const response = await fetch(String(url), {
     signal: signal,
   })

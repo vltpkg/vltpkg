@@ -1,4 +1,4 @@
-// Fixture registry for the 3a dark test. Node, always — a compiled binary
+// Fixture registry for the transport dark test. Node, always — a compiled binary
 // cannot host it: linking every ext archive by hand (the F9b workaround)
 // leaves node:http's server without its tokio reactor and it aborts.
 import { createServer } from 'node:http'

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Dark test for the ×4 detached workers (3b's deferred DoD item, unblocked
-# by the F47 cache fix). Compiles the daemon dispatch with all four worker
-# closures, drives each worker through VLT_INTERNAL_CMD + EOT-terminated
+# Dark test for the ×4 detached workers. Compiles the daemon dispatch
+# with all four worker closures, drives each worker through VLT_INTERNAL_CMD + EOT-terminated
 # stdin payloads — exactly how the compiled parent spawns them — and runs
 # the same scenarios under Node, then diffs.
 #

@@ -33,7 +33,7 @@ export const retrieveDistTags = async (
   // Corgi is safe here: raw fetch (never the RegistryClient disk cache),
   // and only dist-tags are read.
   // every init property spelled `key: value`: compiled, a shorthand
-  // property makes the whole init silently ignored (notes F51)
+  // property makes the whole init silently ignored
   const response = await fetch(String(url), {
     headers: {
       Accept: 'application/vnd.npm.install-v1+json',

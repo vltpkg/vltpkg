@@ -59,7 +59,7 @@
   },
   "homepage": "https://github.com/vltpkg/vltpkg/tree/main/.#readme",
   "perry": {
-    "$comment": "Third-party packages compiled into the binary. Every name here passed check -> compile -> run -> diff-against-Node in the Phase 2 dep loop. compilePackages is a build set, not an import filter, and it is not transitive.",
+    "$comment": "Third-party packages compiled into the binary. Every name here passed check -> compile -> run -> diff-against-Node before being added. compilePackages is a build set, not an import filter, and it is not transitive.",
     "compilePackages": [
       "@isaacs/cliui",
       "@isaacs/fs-minipass",

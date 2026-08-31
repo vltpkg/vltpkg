@@ -8,11 +8,11 @@
 //
 // perry/tui — native TUI engine for Perry (#358).
 //
-// v0.2 surface (Phase 2): adds reactive state, keypress input, and the
-// interactive `run()` render loop on top of Phase 1's Box / Text /
-// render. Flexbox layout via Taffy is Phase 3; the wider widget set
-// (Spacer, Input, TextArea, List, Select, Spinner, ProgressBar)
-// lands in Phase 4.
+// The surface at the pin: Box / Text / render, reactive state, keypress
+// input, the interactive `run()` render loop, flexbox layout via Taffy,
+// and the styling from upstream #358/#405. The wider widget set (Spacer,
+// Input, TextArea, List, Select, Spinner, ProgressBar) is not in the
+// pinned toolchain yet.
 
 declare module 'perry/tui' {
   /**
@@ -53,17 +53,16 @@ declare module 'perry/tui' {
 
   /**
    * A length expressed as integer cells (number) or as a percentage
-   * of the parent's equivalent dimension (string `"50%"`). Phase 3.5
-   * (#405) added the percentage form.
+   * of the parent's equivalent dimension (string `"50%"`). Upstream
+   * #405 added the percentage form.
    */
   export type Dim = number | string
 
   /**
-   * Style options for a Box. Maps to Taffy's flexbox solver — the
-   * Phase 3.5 (#405) surface adds 24-bit truecolor on Text, per-side
-   * padding, flex-shrink, flex-basis, and percentage units for
-   * width / height / flexBasis on top of the v1.0 (#358 Phase 3)
-   * surface.
+   * Style options for a Box. Maps to Taffy's flexbox solver — upstream
+   * #405 adds 24-bit truecolor on Text, per-side padding, flex-shrink,
+   * flex-basis, and percentage units for width / height / flexBasis on
+   * top of the v1.0 (#358) surface.
    */
   export interface BoxStyle {
     flexDirection?: 'row' | 'column'
@@ -93,7 +92,7 @@ declare module 'perry/tui' {
    * Style options for `Text(content, opts)`. Colors accept the named
    * 16-color palette (`"red"`, `"bright-blue"`, …), CSS hex
    * (`"#ff8800"` / `"#fa0"`), or empty string for the terminal
-   * default. (#405 Phase 3.5.)
+   * default. (Upstream #405.)
    */
   export interface TextStyle {
     fg?: string

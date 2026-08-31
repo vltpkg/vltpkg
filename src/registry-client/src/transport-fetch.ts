@@ -136,7 +136,7 @@ export const fetchTransport = (
           // the init MUST be an object literal at the call site with
           // every property spelled `key: value`: compiled, an options
           // VARIABLE or a shorthand property is silently ignored and
-          // the headers never hit the wire (notes F51)
+          // the headers never hit the wire
           res = await fetch(url, {
             method: method,
             headers: headers,

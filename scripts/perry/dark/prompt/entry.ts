@@ -1,4 +1,4 @@
-// 3g dark test harness: the shipped prompt module, driven from piped stdin.
+// Prompt dark-test harness: the shipped prompt module, driven from piped stdin.
 // Imported by relative path — this directory is not a workspace, and the
 // point is to exercise the module the CLI actually uses.
 import {
@@ -28,8 +28,7 @@ out.registry = await selectRegistry(
   { defaultAlias: 'b', output: sink },
 )
 // No end-of-input read here: compiled stdin never signals EOF, so a prompt
-// with nothing left to read hangs rather than returning ''. See perry-notes
-// F34 and the 3g gap in perry-port-wip.md.
+// with nothing left to read hangs rather than returning ''.
 out.prompts = captured
 out.stdinIsTTY = process.stdin.isTTY ?? null
 console.log(JSON.stringify(out))

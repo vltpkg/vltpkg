@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Dark test for @vltpkg/cache compiled (the F43/F47 blocker). Compiles the
-# real Cache class, runs it against a scratch cache dir, runs the same
+# Dark test for @vltpkg/cache compiled (the lru-cache-subclass blocker
+# the vendored modules fix). Compiles the real Cache class, runs it against a scratch cache dir, runs the same
 # source under Node against its own dir, and diffs the JSON records.
 # Exit 0 = the compiled cache stores, links, fetches, walks and deletes
 # the way Node's does.

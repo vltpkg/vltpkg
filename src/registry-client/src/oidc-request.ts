@@ -17,7 +17,6 @@ export const request = async (
 ): Promise<OidcResponse> => {
   // inline literal, not `fetch(url, options)`: compiled, an options
   // VARIABLE is silently ignored and the headers never hit the wire
-  // (notes F51)
   const res = await fetch(String(url), {
     method: options.method,
     headers: options.headers,

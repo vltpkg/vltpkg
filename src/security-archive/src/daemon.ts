@@ -93,7 +93,7 @@ export const readPayload = (
     // `?? process.stdin` here, NEVER `= process.stdin` in the parameter:
     // compiled, stdin routed through a parameter slot (default or
     // explicit argument) loses its event delivery and 'data' never
-    // fires. A fallback bound inside the body works. (notes F48)
+    // fires. A fallback bound inside the body works.
     const input = stdinOverride ?? process.stdin
     // the live handle is what makes 'data' fire at all when compiled
     const keepAlive = setInterval(() => {}, 50)

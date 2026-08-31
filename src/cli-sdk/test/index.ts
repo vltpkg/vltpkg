@@ -35,7 +35,7 @@ export const run = async (
     '../src/index.ts',
     {
       // spread the real module: command dispatch is a static table now
-      // (commands-map.ts, S2 fallback), so every command module is in the
+      // (commands-map.ts), so every command module is in the
       // graph and a partial mock breaks whichever one imports a name the
       // mock omits
       '../src/output.ts': {

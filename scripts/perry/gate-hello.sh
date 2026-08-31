@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Gate G0: pinned Perry compiles the hello-world probe to a runnable binary.
+# Compile gate: pinned Perry compiles the hello-world probe to a runnable binary.
 # Same script runs locally and in CI (.github/workflows/perry.yml).
 set -euo pipefail
 
@@ -15,7 +15,7 @@ if [ -z "${PERRY_LLVM_CLANG:-}" ] && ! command -v clang >/dev/null; then
   done
 fi
 if [ -z "${PERRY_LLVM_CLANG:-}" ] && ! command -v clang >/dev/null; then
-  echo "gate-g0: clang not found; install clang or set PERRY_LLVM_CLANG" >&2
+  echo "gate-hello: clang not found; install clang or set PERRY_LLVM_CLANG" >&2
   exit 1
 fi
 
@@ -29,9 +29,9 @@ echo "== perry $("$PERRY" --version | awk '{print $2}') @ $PERRY_DIR"
 ACTUAL="$("$OUT/perry-hello")"
 EXPECTED='hello from perry'
 [ "$ACTUAL" = "$EXPECTED" ] || {
-  echo "gate-g0: bad output: want '$EXPECTED', got '$ACTUAL'" >&2
+  echo "gate-hello: bad output: want '$EXPECTED', got '$ACTUAL'" >&2
   exit 1
 }
 
 SIZE="$(wc -c <"$OUT/perry-hello" | tr -d ' ')"
-echo "== G0 pass: binary ran, $((SIZE / 1024))KB"
+echo "== gate pass: binary ran, $((SIZE / 1024))KB"

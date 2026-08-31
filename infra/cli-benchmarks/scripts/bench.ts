@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Artifact-comparison harness for the Perry port (plan Phase 2).
+ * Artifact-comparison harness for the Perry port.
  *
  * hyperfine drives the existing suite but reports wall/user only and can
  * compare just one binary per run. This adds the four things the port needs:

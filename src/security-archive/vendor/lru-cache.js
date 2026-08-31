@@ -3,7 +3,7 @@
  *
  * lru-cache@11.5.2 dist/esm/index.js (perry-patches applied), vendored
  * because the bare 'lru-cache' specifier is intercepted by a Perry
- * native binding whose class cannot be safely subclassed (notes F47).
+ * native binding whose class cannot be safely subclassed.
  * Types come from the sibling .d.ts, which re-exports the npm
  * package's. Regenerate after an lru-cache version bump:
  * node scripts/perry/gen/lru-cache-modules.mjs

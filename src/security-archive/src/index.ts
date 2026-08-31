@@ -4,7 +4,7 @@ import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 // The vendored copy, not the npm specifier: a bare 'lru-cache' import
 // is intercepted by a Perry native binding in compiled builds, and its
-// class cannot be safely subclassed (notes F47). Same code, npm types.
+// class cannot be safely subclassed. Same code, npm types.
 // eslint-disable-next-line import/extensions -- plain-JS vendored file
 import { LRUCache } from '../vendor/lru-cache.js'
 import pRetry, { AbortError } from 'p-retry'

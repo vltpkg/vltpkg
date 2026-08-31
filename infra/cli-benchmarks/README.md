@@ -16,7 +16,7 @@ bash ./infra/cli-benchmarks/scripts/benchmark.sh abbrev clean
 
 ## `scripts/bench.ts` — several artifacts against each other
 
-Added for the Perry port (plan Phase 2). hyperfine measures one binary per
+Added for the Perry port. hyperfine measures one binary per
 run and reports no memory, and the port's central question is "how does the
 compiled binary compare to the Node build on the same fixture". This driver
 answers that.
@@ -77,7 +77,7 @@ visible.
 
 ### Comparing to a compiled binary
 
-The Perry build has no `install` yet — Phase 3f owns the real entry — so
+The Perry build has no `install` yet — the real CLI entry comes later — so
 today the useful comparisons are startup-shaped (`--args '--version'`) with
 the `cache-lockfile-node-modules` variation, which prepares nothing between
 runs. Use the bundled artifact (`.build-bundle/vlt.js`) as the Node

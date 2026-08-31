@@ -2,12 +2,12 @@ name: Perry
 
 # The vlt → Perry native-binary port.
 #
-#   gate-g0     the pinned toolchain compiles + runs a hello-world
-#   codegen     generated files are current, and no new `import()` appears
-#   gate-g2     patches reapply after a fresh install
-#   dark-tests  the five compiled-vs-Node subsystem suites
+#   compile-gate  the pinned toolchain compiles + runs a hello-world
+#   codegen       generated files are current, and no new `import()` appears
+#   patch-gate    patches reapply after a fresh install
+#   dark-tests    the five compiled-vs-Node subsystem suites
 #
-# Phase 6 adds the per-PR `perry check` gate over the workspaces and the
+# Still to come: a per-PR `perry check` gate over the workspaces and a
 # compiled smoke job.
 
 on:
@@ -35,8 +35,8 @@ permissions:
   contents: read
 
 jobs:
-  gate-g0:
-    name: Gate G0 (compile hello-world)
+  compile-gate:
+    name: Compile gate (hello-world)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -47,7 +47,7 @@ jobs:
         run: echo "version=$(jq -r .version perry-toolchain.json)" >> "$GITHUB_OUTPUT"
 
       # Extracted toolchain is ~1.7GB (525MB download). Cache hit skips both.
-      # Revisit if save/restore costs more than the download (G6 measures CI wall-time).
+      # Revisit if save/restore costs more than the download.
       - name: Cache Perry Toolchain
         uses: actions/cache@v4
         with:
@@ -60,19 +60,19 @@ jobs:
       - name: Install Perry
         run: ./scripts/perry/setup-toolchain.sh
 
-      # Diagnostics only — gate-g0.sh is the assertion.
+      # Diagnostics only — gate-hello.sh is the assertion.
       - name: Perry Doctor
         continue-on-error: true
         run: |
           PERRY_DIR="$(./scripts/perry/setup-toolchain.sh)"
           "$PERRY_DIR/perry" doctor
 
-      - name: Gate G0
-        run: ./scripts/perry/gate-g0.sh
+      - name: Compile gate
+        run: ./scripts/perry/gate-hello.sh
 
   # Cheap, no toolchain: everything that is a pure source-shape assertion.
   codegen:
-    name: Codegen + F4 gate
+    name: Codegen + dynamic-import gate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -98,8 +98,8 @@ jobs:
       - name: No unowned dynamic imports
         run: node scripts/perry/scan-dynamic-imports.mjs
 
-  gate-g2:
-    name: Gate G2 (patch reapply)
+  patch-gate:
+    name: Patch gate (reapply after install)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -114,8 +114,8 @@ jobs:
       - name: Setup vlt
         uses: vltpkg/setup-vlt@v1
 
-      # Fresh install, then reapply: this is the half of G2 that proves the
-      # patch ledger survives an install rewriting node_modules.
+      # Fresh install, then reapply: proves the patch ledger survives an
+      # install rewriting node_modules.
       - name: Install Dependencies
         run: vlt install
 
@@ -138,10 +138,10 @@ jobs:
       - name: Vendored lru-cache modules are current
         run: node scripts/perry/gen/lru-cache-modules.mjs --check
 
-  # The Phase 3/4 dark tests: each compiles a real subsystem and diffs its
-  # behaviour against Node (reporter is compiled-only). These fit in ~3GB;
-  # the full-binary build does NOT and stays out until an 8GB runner class
-  # is sorted (notes F46).
+  # Dark tests: each compiles a real subsystem and diffs its behaviour
+  # against Node (reporter is compiled-only). These fit in ~3GB; the
+  # full-binary build does NOT and stays out until an 8GB runner class
+  # is sorted.
   dark-tests:
     name: Dark tests (compiled vs Node)
     runs-on: ubuntu-latest

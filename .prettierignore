@@ -43,9 +43,9 @@
 /www/docs/src/content/docs/packages/
 /www/docs/tsconfig.typedoc-workspaces.json
 
-# perry port: research docs at the repo root, generated ledgers, and the
-# spike/probe scratch trees (which vendor third-party sources with their own
-# prettier configs)
+# perry port: local-only working files at the repo root and the
+# spike/probe scratch trees (which vendor third-party sources with their
+# own prettier configs); none of these are committed
 /perry-*.md
 /perry-deps*.json
 /perry-deferred.json

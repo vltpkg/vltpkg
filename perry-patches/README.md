@@ -15,8 +15,7 @@ Rules:
   comment in the patched code explaining why, plus the upstream
   issue/PR if filed.
 - Prefer vendoring over patching when a dep needs structural change.
-- G2 requires CI to prove reapply-after-install: fresh install → apply
-  → compile.
+- CI proves reapply-after-install: fresh install → apply → compile.
 
-Apply/reapply: `scripts/perry/apply-patches.sh` (idempotent;
-`--check` verifies).
+Apply/reapply: `scripts/perry/apply-patches.sh` (idempotent; `--check`
+verifies).

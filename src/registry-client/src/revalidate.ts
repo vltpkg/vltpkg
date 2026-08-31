@@ -39,7 +39,6 @@ const runPool = async (
         // compiled, awaiting this call expression directly never
         // resumes and the worker exits with an unsettled top-level
         // await; the extra .then() is what makes the await resume
-        // (notes F50)
         const p = fn(req[0], req[1])
         void p.then(
           () => {},
@@ -54,7 +53,7 @@ const runPool = async (
 export const main = async (
   cache?: string,
   // optional, `??`-defaulted inside readPayload: a `= process.stdin`
-  // parameter default breaks event delivery compiled (notes F48)
+  // parameter default breaks event delivery compiled
   input?: EventEmitter,
 ) => {
   if (!cache) {

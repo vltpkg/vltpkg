@@ -43,7 +43,7 @@ export type TransportOptions = {
  * ships no wasm host archive, so undici cannot link. The undici import is
  * therefore dynamic and below top level — which the compiler drops, keeping
  * undici out of the binary's module graph entirely. That is deliberate; see
- * the 3a entry in scripts/perry/scan-dynamic-imports.mjs.
+ * its entry in scripts/perry/scan-dynamic-imports.mjs.
  */
 export const loadTransport = async (
   options: TransportOptions,
