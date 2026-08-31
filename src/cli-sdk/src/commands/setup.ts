@@ -150,9 +150,7 @@ export const command: CommandFn<SetupResult> = async conf => {
     ...conf.layers.user?.registries,
     ...conf.layers.project?.registries,
   }
-  for (const [name, url] of Object.entries(
-    conf.options.registries,
-  )) {
+  for (const [name, url] of Object.entries(conf.options.registries)) {
     if (builtinRegistries[name] === url) continue
     if (fileRegistries[name] === url) continue
     registries[name] = normalizeRegistryURL(url)

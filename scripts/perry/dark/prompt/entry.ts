@@ -30,5 +30,7 @@ out.registry = await selectRegistry(
 // No end-of-input read here: compiled stdin never signals EOF, so a prompt
 // with nothing left to read hangs rather than returning ''.
 out.prompts = captured
-out.stdinIsTTY = process.stdin.isTTY ?? null
+// typed as always-present, but it is undefined on a piped (non-tty) stdin
+const { isTTY } = process.stdin as { isTTY?: boolean }
+out.stdinIsTTY = isTTY ?? null
 console.log(JSON.stringify(out))

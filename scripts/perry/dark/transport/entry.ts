@@ -6,8 +6,10 @@ import {
   cacheKey,
 } from '../../../../src/registry-client/src/index.ts'
 
-const base = process.argv[2]!
-const cache = process.argv[3]!
+const [base, cache] = process.argv.slice(2)
+if (!base || !cache) {
+  throw new Error('usage: entry <fixture-base-url> <cachedir>')
+}
 const out: Record<string, unknown> = {}
 // The transport checks run with `useCache: false` so they exercise the
 // wire, not the disk. The `cached*` checks at the end run with the cache

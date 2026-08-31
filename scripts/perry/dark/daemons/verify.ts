@@ -4,7 +4,10 @@ import { Cache } from '../../../../src/cache/src/index.ts'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const [work, base] = [process.argv[2]!, process.argv[3]!]
+const [work, base] = process.argv.slice(2)
+if (!work || !base) {
+  throw new Error('usage: verify <workdir> <fixture-base-url>')
+}
 const out: Record<string, unknown> = {}
 
 // cache-unzip: gz1's body must now be the inflated bytes

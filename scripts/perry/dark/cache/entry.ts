@@ -96,7 +96,7 @@ const main = async () => {
 
 void main().then(
   () => process.exit(0),
-  er => {
+  (er: unknown) => {
     process.stderr.write(String(er) + '\n')
     process.exit(1)
   },

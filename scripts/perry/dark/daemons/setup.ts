@@ -7,7 +7,10 @@ import { gzipSync } from 'node:zlib'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const [work, base] = [process.argv[2]!, process.argv[3]!]
+const [work, base] = process.argv.slice(2)
+if (!work || !base) {
+  throw new Error('usage: setup <workdir> <fixture-base-url>')
+}
 
 // cache-unzip: a gzip-bodied entry, same shape as the package's own tests
 const head10 = new Uint8Array(10)
