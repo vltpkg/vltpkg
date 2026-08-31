@@ -68,7 +68,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "vendor"
   ],
   "bugs": {
     "url": "https://github.com/vltpkg/vltpkg/issues"

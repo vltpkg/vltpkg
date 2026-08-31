@@ -27,6 +27,10 @@ tmp
 # them the next time someone touches one.
 !/src/cli-sdk/src/hosted-git-info.d.ts
 !/src/cli-sdk/src/perry-tui.d.ts
+# ...and the generated vendored modules, which ship in the packages
+# (scripts/perry/gen/lru-cache-modules.mjs — notes F47)
+!/src/*/vendor/*.js
+!/src/*/vendor/*.d.ts
 /src/**/*.d.ts.map
 /src/**/*.mjs
 /src/**/*.mjs.map

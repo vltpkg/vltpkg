@@ -3,7 +3,11 @@ import type {
   SpawnResultStderrString,
   SpawnResultStdoutString,
 } from '@vltpkg/promise-spawn'
-import { LRUCache } from 'lru-cache'
+// The vendored copy, not the npm specifier: a bare 'lru-cache' import
+// is intercepted by a Perry native binding in compiled builds (notes
+// F47). Same code, npm types.
+// eslint-disable-next-line import/extensions -- plain-JS vendored file
+import { LRUCache } from '../vendor/lru-cache.js'
 import { fileURLToPath } from 'node:url'
 import type { GitOptions } from './index.ts'
 import { linesToRevs } from './lines-to-revs.ts'

@@ -125,3 +125,9 @@ jobs:
 
       - name: Patches verify
         run: ./scripts/perry/apply-patches.sh --check
+
+      # Lives here, not in the codegen job: regenerating needs an
+      # installed node_modules with the patches applied (the vendored
+      # lru-cache is generated from the patched install).
+      - name: Vendored lru-cache modules are current
+        run: node scripts/perry/gen/lru-cache-modules.mjs --check

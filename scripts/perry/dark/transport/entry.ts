@@ -1,14 +1,18 @@
 // 3a dark test: the real RegistryClient, compiled, against the fixture above.
 // Imported by relative path — this directory is not a workspace, and the
 // point is to exercise the shipped module.
-import { RegistryClient } from '../../../../src/registry-client/src/index.ts'
+import {
+  RegistryClient,
+  cacheKey,
+} from '../../../../src/registry-client/src/index.ts'
 
 const base = process.argv[2]!
 const cache = process.argv[3]!
 const out: Record<string, unknown> = {}
-// Every request runs with `useCache: false`. The disk cache does not work in
-// the compiled binary yet (perry-notes F43) and that is Phase 4's to fix; this
-// test is about the transport.
+// The transport checks run with `useCache: false` so they exercise the
+// wire, not the disk. The `cached*` checks at the end run with the cache
+// on — that path works compiled since the F43/F47 fix (vendored
+// lru-cache).
 const rc = new RegistryClient({ cache, 'fetch-retries': 3 })
 const noCache = { useCache: false } as const
 
@@ -64,5 +68,22 @@ await safe('authHeader', async () => {
 await safe('404', async () => {
   const e = await rc.request(`${base}/missing`, noCache)
   return { status: e.statusCode }
+})
+// the cached path: response reaches disk through @vltpkg/cache, and a
+// second request is served from / revalidated against it
+await safe('cachedWrite', async () => {
+  const url = `${base}/abbrev`
+  const first = await rc.request(url)
+  await rc.cache.promise()
+  const onDisk = rc.cache.fetchSync(cacheKey('GET', url))
+  const again = await rc.request(url)
+  return {
+    status: first.statusCode,
+    onDisk: !!onDisk,
+    againStatus: again.statusCode,
+    sameName:
+      (again.json() as { name: string }).name ===
+      (first.json() as { name: string }).name,
+  }
 })
 console.log(JSON.stringify(out))
