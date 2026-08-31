@@ -11,7 +11,7 @@
  */
 import { loadPackageJson } from 'package-json-from-dist'
 
-const compiled = '1.0.5'
+const compiled = '1.0.7'
 
 export const version: string =
   'perry' in process.versions ?
