@@ -12,6 +12,7 @@ const mockUrlOpen = async (t: Test) => {
 }
 
 let RELEASE: string = release()
+let SPAWN_ERROR: Error | undefined = undefined
 const SPAWNS: [string, string[], PromiseSpawnOptions][] = []
 const mocks = {
   '@vltpkg/promise-spawn': {
@@ -21,6 +22,7 @@ const mocks = {
       opts: PromiseSpawnOptions,
     ) => {
       SPAWNS.push([cmd, args, opts])
+      if (SPAWN_ERROR) throw SPAWN_ERROR
     },
   },
   '@vltpkg/which': {
@@ -34,6 +36,7 @@ const mocks = {
 t.beforeEach(() => {
   SPAWNS.length = 0
   RELEASE = release()
+  SPAWN_ERROR = undefined
 })
 
 const runTests = (t: Test) => {
@@ -78,4 +81,31 @@ t.test('no spawn if which returns null', async t => {
   const { urlOpen } = await mockUrlOpen(t)
   await urlOpen('https://example.com/')
   t.strictSame(SPAWNS, [])
+})
+
+t.test('spawn failure does not throw', async t => {
+  t.intercept(process.stdin, 'isTTY', { value: true })
+  t.intercept(process.stderr, 'isTTY', { value: false })
+  SPAWN_ERROR = new Error('command failed')
+  const { urlOpen, logs } = await mockUrlOpen(t)
+  await urlOpen('https://example.com/')
+  t.strictSame(logs(), [
+    ['Opening a web browser to: https://example.com/'],
+    [
+      'Could not open a browser. Please open https://example.com/ manually.',
+    ],
+  ])
+})
+
+t.test('no failure message if signal was aborted', async t => {
+  t.intercept(process.stdin, 'isTTY', { value: true })
+  t.intercept(process.stderr, 'isTTY', { value: false })
+  SPAWN_ERROR = new Error('command failed')
+  const { urlOpen, logs } = await mockUrlOpen(t)
+  const ac = new AbortController()
+  ac.abort()
+  await urlOpen('https://example.com/', { signal: ac.signal })
+  t.strictSame(logs(), [
+    ['Opening a web browser to: https://example.com/'],
+  ])
 })

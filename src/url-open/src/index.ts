@@ -48,13 +48,23 @@ export const urlOpen = async (
 
   log(`Opening a web browser to: ${link}`)
 
-  return promiseSpawn(
-    platform === 'win32' ? `${cmd} ""` : cmd,
-    platform === 'win32' ? ['""', ...args] : args,
-    {
-      signal,
-      shell: true,
-      stdio: 'inherit',
-    },
-  )
+  try {
+    return await promiseSpawn(
+      platform === 'win32' ? `${cmd} ""` : cmd,
+      platform === 'win32' ? ['""', ...args] : args,
+      {
+        signal,
+        shell: true,
+        stdio: 'inherit',
+      },
+    )
+  } catch {
+    // an aborted spawn is not a failure, e.g: login completed
+    // before the browser process exited
+    if (signal?.aborted) return
+    // the opener command may exist but still fail to find a browser,
+    // e.g: xdg-open on a headless server. The URL was already printed
+    // so the user can open it manually.
+    log(`Could not open a browser. Please open ${link} manually.`)
+  }
 }
