@@ -1,5 +1,5 @@
 import { mermaidOutput } from '@vltpkg/graph'
-import { urlOpen } from '@vltpkg/url-open'
+import { openUrl } from './open-url.ts'
 import { stderr } from './output.ts'
 import { ViewClass } from './view.ts'
 import type { OutputFormat } from './render-mermaid.ts'
@@ -39,12 +39,12 @@ export class MermaidImageView extends ViewClass<MermaidOutputGraph> {
       stderr(`Generating PNG image...`)
       const filePath = await renderMermaidToPng(mermaidText)
       stderr(`Image saved to: ${filePath}`)
-      await urlOpen(filePath)
+      await openUrl(filePath)
     } else {
       stderr(`Generating SVG image...`)
       const filePath = await renderMermaidToFile(mermaidText)
       stderr(`Image saved to: ${filePath}`)
-      await urlOpen(filePath)
+      await openUrl(filePath)
     }
   }
 }

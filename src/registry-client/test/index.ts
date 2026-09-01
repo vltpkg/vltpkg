@@ -735,6 +735,32 @@ t.test('client.logout()', async t => {
   )
 })
 
+t.test('client.login() when the browser opener fails', async t => {
+  // login is actually not resilient to dropped connections, by design
+  dropConnection = false
+  const errs = t.capture(console, 'error').args
+  const { RegistryClient } = await mockIndex(t, {
+    '@vltpkg/url-open': {
+      urlOpen: async (url: string) => {
+        // xdg-open exists but cannot launch a browser. the user opens
+        // the printed url manually, so doneUrl still resolves.
+        const match = /npm_Yy[0-9]+$/.exec(url)
+        /* c8 ignore next */
+        if (!match) throw new Error('invalid login url')
+        opened[match[0]] = true
+        urlOpenEE.emit('login', match[0])
+        throw new Error('command failed')
+      },
+    },
+  })
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await rc.login(registryURL)
+  await rc.cache.promise()
+  t.match(errs(), [
+    [/^Could not open a browser\. Please open .* manually\.$/],
+  ])
+})
+
 t.test('client.login() with doneUrl invalid response', async t => {
   // login is actually not resilient to dropped connections, by design
   dropConnection = false

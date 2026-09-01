@@ -1,10 +1,10 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
-import { urlOpen } from '@vltpkg/url-open'
 import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import { openUrl } from '../open-url.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -172,7 +172,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       if (!result) {
         throw error('Unexpected empty result')
       }
-      await urlOpen(result.url)
+      await openUrl(result.url)
       return result
     }
 
@@ -198,7 +198,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   }
   /* c8 ignore stop */
   // Open the URL
-  await urlOpen(url)
+  await openUrl(url)
 
   return { url, name }
 }

@@ -79,7 +79,9 @@ export const otplease = async (
       const notice = String(npmNotice)
       const match = otpChallengeNotice.exec(notice)
       if (match?.[1]) {
-        await urlOpen(match[1])
+        // the opener may fail to launch a browser, e.g: xdg-open on a
+        // headless server. The url is printed in the notice below.
+        await urlOpen(match[1]).catch(() => {})
         log(notice)
         return {
           retry: {
