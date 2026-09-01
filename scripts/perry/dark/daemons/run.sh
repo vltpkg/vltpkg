@@ -17,7 +17,7 @@ trap '[ -n "${DARK_WORK:-}" ] || rm -rf "$WORK"; [ -z "${SERVER_PID:-}" ] || kil
 
 # The graph pulls four packages' closures; guard the compile so an OOM
 # kills it and not the shell around it (see Host limits in the WIP doc).
-choom() { bash -c 'echo 1000 > /proc/self/oom_score_adj 2>/dev/null || true; exec "$@"' -- "$@"; }
+choom() { bash -c 'if [ -w /proc/self/oom_score_adj ]; then echo 1000 >/proc/self/oom_score_adj; fi; exec "$@"' -- "$@"; }
 choom "$ROOT/scripts/perry/compile.sh" "$HERE/entry.ts" "$WORK/daemons"
 
 PORT_FILE="$WORK/port"

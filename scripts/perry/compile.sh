@@ -8,6 +8,9 @@
 # binary at <out>.
 set -euo pipefail
 
+[ $# -ge 2 ] || { echo "usage: compile.sh <entry> <out> [args...]" >&2; exit 2; }
+SRC="$1"; OUT="$2"; shift 2
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PERRY=( "$ROOT/scripts/bins/vlxl" -- perry )
 
@@ -38,8 +41,34 @@ if [ -z "${PERRY_OPENSSL_LIB:-}" ]; then
 fi
 [ -n "${PERRY_OPENSSL_LIB:-}" ] && export LIBRARY_PATH="${PERRY_OPENSSL_LIB}${LIBRARY_PATH:+:$LIBRARY_PATH}"
 
-[ $# -ge 2 ] || { echo "usage: compile.sh <entry> <out> [args...]" >&2; exit 2; }
-SRC="$1"; OUT="$2"; shift 2
+# The "with stdlib" link needs perry-ext-http, which the npm toolchain does
+# not ship (see ext-http-stub.c). Perry links through `cc` off PATH, so a shim
+# appends the stub archive to that one link line and leaves everything else --
+# lib order, frameworks, dead-strip, the runtime-only path -- to the driver.
+SHIM="$ROOT/node_modules/.cache/perry/link-shim"
+STUB="$SHIM/libperry_ext_http.a"
+CC_REAL="$(command -v cc)" || { echo "compile.sh: cc not found" >&2; exit 1; }
+mkdir -p "$SHIM"
+if [ ! -e "$STUB" ] || [ "$ROOT/scripts/perry/ext-http-stub.c" -nt "$STUB" ]; then
+  "$CC_REAL" -c -O2 -o "$SHIM/ext-http-stub.o" "$ROOT/scripts/perry/ext-http-stub.c"
+  rm -f "$STUB"
+  ar rcs "$STUB" "$SHIM/ext-http-stub.o"
+fi
+# The shim drops its own dir from PATH before handing off: a ccache/distcc `cc`
+# re-resolves `cc` from PATH and would otherwise recurse back in here.
+cat >"$SHIM/cc" <<SHIMEOF
+#!/usr/bin/env bash
+clean=; IFS=:
+for p in \$PATH; do [ "\$p" = "$SHIM" ] || clean="\${clean:+\$clean:}\$p"; done
+unset IFS
+export PATH="\$clean"
+for a in "\$@"; do
+  case "\$a" in *libperry_stdlib.a) exec "$CC_REAL" "\$@" "$STUB" ;; esac
+done
+exec "$CC_REAL" "\$@"
+SHIMEOF
+chmod +x "$SHIM/cc"
+export PATH="$SHIM:$PATH"
 
 LOG="${PERRY_COMPILE_LOG:-$(mktemp)}"
 cleanup() { [ -n "${PERRY_COMPILE_LOG:-}" ] || rm -f "$LOG"; }

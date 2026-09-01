@@ -37,7 +37,7 @@ if [ "$HAVE_MB" -lt "$NEED_MB" ] && [ -z "${PERRY_BUILD_ALLOW_LOW_MEM:-}" ]; the
 fi
 
 mkdir -p "$OUT"
-( echo 1000 >/proc/self/oom_score_adj 2>/dev/null
+( if [ -w /proc/self/oom_score_adj ]; then echo 1000 >/proc/self/oom_score_adj; fi
   exec "$ROOT/scripts/perry/compile.sh" "$ENTRY" "$OUT/vlt" )
 
 for b in "${BINS[@]:1}"; do
