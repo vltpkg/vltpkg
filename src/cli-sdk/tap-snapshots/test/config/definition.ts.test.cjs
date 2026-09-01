@@ -18,6 +18,7 @@ Object {
   "config": "config",
   "create": "create",
   "deprecate": "deprecate",
+  "diff": "diff",
   "dist-tag": "dist-tag",
   "docs": "docs",
   "exec": "exec",
@@ -98,6 +99,11 @@ Object {
     "short": "b",
     "type": "boolean",
   },
+  "base": Object {
+    "description": "The \\"before\\" side of \`vlt diff lockfile\`. A git ref, or a path ending in \`.json\`. Overrides the first positional argument.",
+    "hint": "commitish",
+    "type": "string",
+  },
   "before": Object {
     "description": "Do not install any packages published after this date",
     "hint": "date",
@@ -164,6 +170,10 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "exit-code": Object {
+    "description": "Exit with a status of 1 when \`vlt diff\` finds any changes, and 0 when it finds none. Without this, the exit status is always 0.",
+    "type": "boolean",
+  },
   "expect-lockfile": Object {
     "description": "Fail if lockfile is missing or out of date. Used by ci command to enforce lockfile integrity.",
     "type": "boolean",
@@ -203,6 +213,7 @@ Object {
       "config",
       "create",
       "deprecate",
+      "diff",
       "dist-tag",
       "docs",
       "exec",
@@ -296,6 +307,11 @@ Object {
     ),
     "type": "boolean",
   },
+  "head": Object {
+    "description": "The \\"after\\" side of \`vlt diff lockfile\`. A git ref, or a path ending in \`.json\`. Defaults to the working tree. Overrides the second positional argument.",
+    "hint": "commitish",
+    "type": "string",
+  },
   "help": Object {
     "description": "Print helpful information",
     "short": "h",
@@ -315,6 +331,10 @@ Object {
     "short": "i",
     "type": "string",
     "validate": Function validate(v),
+  },
+  "identity-only": Object {
+    "description": "Include identity-only changes in \`vlt diff lockfile\` output: packages whose id moved without the package itself changing, such as a different registry or peer set. Collapsed to a count by default.",
+    "type": "boolean",
   },
   "if-present": Object {
     "description": String(
@@ -538,6 +558,10 @@ Object {
     ),
     "type": "boolean",
   },
+  "tui": Object {
+    "description": "Open the navigable diff viewer when \`vlt diff\` is run in a terminal. On by default; \`--no-tui\` prints static text instead. Non-interactive output, including CI, is always static.",
+    "type": "boolean",
+  },
   "verbose": Object {
     "description": "Shorthand for \`--loglevel=verbose\`. Streams each registry request to stderr with its cache/fetch outcome and status code, useful for debugging request behavior.",
     "type": "boolean",
@@ -555,6 +579,7 @@ Object {
       
       - human: Maximally ergonomic output reporting for human consumption.
       - json: Parseable JSON output for machines.
+      - markdown: A comment-shaped report, for pasting into a pull request. (Only supported by some commands.)
       - inspect: Output results with \`util.inspect\`.
       - mermaid: Output mermaid diagramming syntax. (Only relevant for certain commands.)
       - svg: Render the dependency graph as an SVG image and open it. (Only relevant for certain commands.)
@@ -569,6 +594,7 @@ Object {
     "validOptions": Array [
       "human",
       "json",
+      "markdown",
       "mermaid",
       "svg",
       "png",
@@ -610,6 +636,7 @@ Array [
   "--allow-scripts=<query>",
   "--arch=<arch>",
   "--bail",
+  "--base=<commitish>",
   "--before=<date>",
   "--cache=<path>",
   "--call=<cmd>",
@@ -619,6 +646,7 @@ Array [
   "--default-registry-alias=<name>",
   "--dry-run",
   "--editor=<program>",
+  "--exit-code",
   "--expect-lockfile",
   "--expect-results=<value>",
   "--fallback-command=<command>",
@@ -631,8 +659,10 @@ Array [
   "--git-host-archives=<name=template>",
   "--git-hosts=<name=template>",
   "--git-shallow",
+  "--head=<commitish>",
   "--help",
   "--identity=<name>",
+  "--identity-only",
   "--if-present",
   "--jsr-registries=<name=url>",
   "--libc=<libc>",
@@ -661,6 +691,7 @@ Array [
   "--tag=<tag>",
   "--target=<query>",
   "--telemetry",
+  "--tui",
   "--verbose",
   "--version",
   "--view=<output>",
@@ -677,6 +708,7 @@ Array [
   "allow-scripts",
   "arch",
   "bail",
+  "base",
   "before",
   "cache",
   "call",
@@ -686,6 +718,7 @@ Array [
   "default-registry-alias",
   "dry-run",
   "editor",
+  "exit-code",
   "expect-lockfile",
   "expect-results",
   "fallback-command",
@@ -698,8 +731,10 @@ Array [
   "git-host-archives",
   "git-hosts",
   "git-shallow",
+  "head",
   "help",
   "identity",
+  "identity-only",
   "if-present",
   "jsr-registries",
   "libc",
@@ -728,6 +763,7 @@ Array [
   "tag",
   "target",
   "telemetry",
+  "tui",
   "verbose",
   "version",
   "view",

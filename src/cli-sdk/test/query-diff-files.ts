@@ -43,6 +43,27 @@ t.test('validateCommitish', async t => {
       message: 'Invalid commitish argument for :diff() selector',
     })
   })
+
+  t.test('rejects a leading dash', async t => {
+    // these pass VALID_COMMITISH, but git would read them as options
+    // rather than as refs
+    t.throws(() => validateCommitish('--upload-pack=evil'), {
+      message: 'Invalid commitish argument for :diff() selector',
+      cause: { found: '--upload-pack=evil' },
+    })
+    t.throws(() => validateCommitish('-main'), {
+      message: 'Invalid commitish argument for :diff() selector',
+    })
+  })
+
+  t.test('names the caller in its errors', async t => {
+    t.throws(() => validateCommitish('', '--base'), {
+      message: 'Missing commitish argument for --base',
+    })
+    t.throws(() => validateCommitish('$(whoami)', '--head'), {
+      message: 'Invalid commitish argument for --head',
+    })
+  })
 })
 
 t.test('createDiffFilesProvider', async t => {

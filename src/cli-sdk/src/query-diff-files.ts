@@ -6,19 +6,28 @@ import type { DiffFilesProvider } from '@vltpkg/query'
  * Pattern to validate commitish arguments.
  * Allows branch names, tags, SHAs, HEAD~N, HEAD^N, etc.
  * Rejects shell metacharacters to prevent command injection.
+ *
+ * A leading `-` is rejected separately: it passes this pattern but git
+ * would read the value as an option rather than a ref.
  */
 const VALID_COMMITISH = /^[a-zA-Z0-9_./@^~:#{}-]+$/
 
 /**
  * Validates that a commitish string is safe to use
  * in a git command.
+ * @param {string} commitish - the value to check
+ * @param {string} label - what to name in the error, for callers other
+ *   than the `:diff()` selector
  */
-export const validateCommitish = (commitish: string): string => {
+export const validateCommitish = (
+  commitish: string,
+  label = ':diff() selector',
+): string => {
   if (!commitish) {
-    throw error('Missing commitish argument for :diff() selector')
+    throw error(`Missing commitish argument for ${label}`)
   }
-  if (!VALID_COMMITISH.test(commitish)) {
-    throw error('Invalid commitish argument for :diff() selector', {
+  if (!VALID_COMMITISH.test(commitish) || commitish.startsWith('-')) {
+    throw error(`Invalid commitish argument for ${label}`, {
       found: commitish,
     })
   }

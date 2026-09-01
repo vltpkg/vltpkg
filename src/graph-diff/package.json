@@ -1,0 +1,71 @@
+{
+  "name": "@vltpkg/graph-diff",
+  "description": "portable, renderer-agnostic lockfile graph diff",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/graph-diff"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "dependencies": {
+    "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/fast-split": "workspace:*",
+    "@vltpkg/git": "workspace:*",
+    "@vltpkg/semver": "workspace:*"
+  },
+  "devDependencies": {
+    "@vltpkg/graph": "workspace:*",
+    "@vltpkg/types": "workspace:*",
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepack": "tsc -p tsconfig.publish.json && ../../scripts/update-dist-exports.ts",
+    "snap": "tap",
+    "test": "tap",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.js",
+  "module": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "default": "./src/index.ts"
+      }
+    },
+    "./sources": {
+      "import": {
+        "default": "./src/sources.ts"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/graph-diff#readme"
+}

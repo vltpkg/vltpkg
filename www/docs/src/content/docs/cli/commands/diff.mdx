@@ -1,0 +1,332 @@
+---
+title: vlt diff
+sidebar:
+  label: diff
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt diff lockfile
+$ vlt diff lockfile <ref> [<ref>]
+$ vlt diff lockfile --base=<commitish> --head=<commitish>
+"
+  title="Terminal"
+  lang="bash"
+/>
+
+Show what changed between two states of a project.
+
+## `vlt diff lockfile`
+
+A raw `git diff` of `vlt-lock.json` is unreadable. The lockfile is a flat
+map of dependency IDs, so a single transitive version bump — or a change
+of registry — rewrites thousands of lines without saying anything about
+what the dependency graph actually did.
+
+`vlt diff lockfile` reads the lockfile from both sides, reconstructs the
+dependency graph from each, and reports the changes as graph
+operations: packages added and removed, versions upgraded and downgraded,
+dependency edges retargeted.
+
+### Choosing the two sides
+
+With no arguments, the working tree is compared against `HEAD`:
+
+<Code code="$ vlt diff lockfile" title="Terminal" lang="bash" />
+
+With one argument, the working tree is compared against that ref:
+
+<Code code="$ vlt diff lockfile main" title="Terminal" lang="bash" />
+
+With two, they are compared to each other. `a..b` means the same as
+`a b`:
+
+<Code
+  code="$ vlt diff lockfile main feat/my-branch
+$ vlt diff lockfile main..feat/my-branch
+"
+  title="Terminal"
+  lang="bash"
+/>
+
+`--base` and `--head` do the same job as the positional arguments, and
+take precedence over them. Passing both a positional and its flag with
+different values is an error rather than a silent override.
+
+Either side may be a path to a lockfile on disk instead of a git ref.
+Anything ending in `.json` is read as a path:
+
+<Code
+  code="$ vlt diff lockfile --base=./old/vlt-lock.json"
+  title="Terminal"
+  lang="bash"
+/>
+
+A ref that has no lockfile at all compares as an empty one, so the commit
+that introduced the lockfile diffs cleanly rather than failing.
+
+### The viewer
+
+In a terminal, the human view takes over the window and narrows in four
+steps, so a review is a sequence of small trees rather than one long
+list:
+
+<Code
+  code="summary       the numbers, what is not routine, and the workspaces
+  ↓
+workspace     the dependency trees that changed inside it
+  ↓
+tree          one direct dependency and everything under it
+  ↓
+package       one change in full"
+  title="Screens"
+  lang="text"
+/>
+
+A tree lives in one workspace but its packages are usually shared, so
+each one reports how far it reaches. Press `w` on a tree to list the
+workspaces it actually lands on, and `⏎` on one of those to read the
+same tree from there — which is what "who else gets this" is really
+asking. `n` / `p` step between trees without going back up.
+
+The summary leads with the changes that are not a routine version bump,
+each under a heading that names exactly what it holds — a section that
+is empty is one you never have to read:
+
+<Code
+  code="LOCKFILE DIFF                                    263 changes
++50 packages    +304 edges    4 flagged    65 hidden
+
+3 SECURITY
+   !  shellAccess           medium    2 packages
+   !  copyleftLicense       low       2 packages
+
+4 MAJOR VERSIONS
+   ▲  c8                 10.1.3 → 12.0.0   41 workspaces
+   ▲  yargs              17.7.3 → 18.1.0   www/docs
+
+1 REMOVED
+   -  require-directory  2.1.1             www/docs
+
+9 ADDED
+   +  rehype-slug        6.0.0             www/docs
+   +  yargs-parser       22.0.0            www/docs
+   ▾  3 more
+
+149 UPGRADED
+   ↑  @babel/parser      7.29.7 → 7.29.8   www/docs
+   ▾  143 more
+
+12 EDGES
+   →  yaml               2.8.3 → 2.9.0     for @astrojs/yaml2ts
+
+43 WORKSPACES
+   www/docs              151
+   src/cli-sdk            51"
+  title="Summary"
+  lang="text"
+/>
+
+Counts read as deltas, the way a `git diff` stat does, and the
+workspaces are the real ones — a change that reaches forty of them is
+counted for all forty, because "does this affect me" is the question
+being asked.
+
+The sections run worst first: what could break, then what left, then
+what arrived, then routine bumps, then who points at what. `EDGES` is
+about wiring rather than contents — the same package, resolved somewhere
+else for one consumer — so those rows name the consumer instead of the
+workspace, since several parents can repoint the same dependency and the
+rows would otherwise read as duplicates.
+
+Every row on the page opens: an alert to the packages carrying it, a
+highlight or an edge to that change inside its tree, a workspace to its
+trees. An edge is a slot rather than a package, so it opens by the
+change rather than by the package it points at — the same `⏎` that gets
+you to a bump gets you to the wiring, and one more shows the slot, both
+specs, and both targets.
+
+A long section shows six and offers the rest as a `▾ N more` row; `⏎`
+opens it and folds it back. The six are the ones that land in the most
+workspaces, not the first six alphabetically — on one real commit that
+is the difference between six changes reaching every workspace in the
+repo and six reaching only `www/docs`. A hundred and forty-nine patch
+bumps under a heading is the noise this command exists to remove, but
+they are two keystrokes away when a bump is what you are chasing.
+
+Identity-only changes never appear in any of these. Same package, same
+version, different id is not an arrival, a departure or a bump — the
+header counts them as hidden and `i` shows them in the trees.
+
+A tree is drawn as one. Packages on the route that did not themselves
+change are dimmed and shown for context, so the shape has no holes:
+
+<Code
+  code="1/28 vite                                        www/docs
+ · vite
+ └─ ↑ rollup  4.62.2 → 4.62.4
+    ├─ + @napi-rs/lzma-linux-x64-gnu 1.5.1
+    ├─ ↑ @rollup/rollup-darwin-arm64  4.62.2 → 4.62.4
+    └─ ↑ @rollup/rollup-linux-x64-gnu  4.62.2 → 4.62.4"
+  title="Tree"
+  lang="text"
+/>
+
+Press `?` for a legend of every symbol.
+
+<Code
+  code="↑↓ / jk   move
+⏎  / →    narrow to what is under the cursor
+←  / esc  back a level
+/         find a package by name
+n / p     step to the next or previous tree
+w         which workspaces this tree reaches — and open it in one
+d         direct dependencies only
+i         show the hidden changes (see below)
+?         legend
+q         quit
+"
+  title="Keys"
+  lang="text"
+/>
+
+### Finding one package
+
+`/` searches by name, and answers the question behind looking one up:
+which workspaces it is in, and which direct dependency dragged it in.
+The box opens onto every package in the diff and narrows as you type,
+so it works when you are not sure how something is spelled.
+
+<Code
+  code="/ro                                                    47 found
+   ↑  rollup                          4.62.2 → 4.62.4   www/docs   vite
+   ↑  @rollup/rollup-android-arm64    4.62.2 → 4.62.4   www/docs   vite
+   ↑  @rollup/rollup-darwin-arm64     4.62.2 → 4.62.4   www/docs   vite"
+  title="Search"
+  lang="text"
+/>
+
+What you typed sorts first, then names that start with it, then names
+whose unscoped half does — a scope is not the part anyone types, so
+`@rollup/rollup-darwin-arm64` beats `@astrojs/check` on `ro` even though
+both contain it.
+
+Packages that appear only as context — an intermediate partway down
+someone else's tree, which no amount of scrolling will surface — are
+matched too. They are drawn dim and have nothing to open, since nothing
+about them changed. `⏎` on anything else goes to that package inside its
+tree, cursor already on it.
+
+The search follows the `d` and `i` filters, so a hit always describes a
+change that is actually on screen.
+
+The viewer runs in the terminal's alternate screen, so quitting restores
+your scrollback exactly as it was. In CI, when output is redirected, or
+with `--no-tui`, the same diff is printed as static text instead.
+
+### Severity
+
+A version bump carries how far it moved, so a major bump is never
+mistaken for a patch:
+
+<Code
+  code="^^ yargs   17.7.3 -> 18.1.0   major
+^  prettier  3.9.5 -> 3.9.6
+v  some-pkg  2.0.0 -> 1.9.0"
+  title="Terminal"
+  lang="text"
+/>
+
+In JSON this is `severity` on each `package-resolved` mutation:
+`major`, `minor`, `patch`, `prerelease`, or `unknown` when either side
+has no parseable version. It is independent of `direction` — a downgrade
+can be major.
+
+### Markdown, for a pull request
+
+A lockfile review happens in a PR, not in a terminal:
+
+<Code
+  code="$ vlt diff lockfile origin/main --view=markdown"
+  title="Terminal"
+  lang="bash"
+/>
+
+The report leads with what could break and folds the rest away behind
+`<details>`, so a 263-change diff does not bury the conversation it is
+attached to. Paste it into a comment, or pipe it there from CI.
+
+It carries the same sections as the summary bar one: there is no
+`Upgraded` table, because a hundred and forty-nine patch bumps would
+bury the conversation the comment is attached to, and every one of them
+is already in the folded trees below.
+
+### Security
+
+Advisories are part of a diff, not a mode. Every run looks up the
+packages it *introduces* — what arrived or moved, not the whole tree —
+and reports what it finds.
+
+In the viewer an alert is a column, not a place: `!` at the right-hand
+edge of every row that carries one, with a count when there are several,
+so a scan down that edge finds all of them at any level — workspace,
+tree, or package. The full record is on the package's own screen. Static
+output and the markdown report list them instead, since neither has
+anywhere to drill into.
+
+The summary also leads with a `SECURITY` section, grouped by kind rather
+than by package: "two packages shell out" is one row to act on, where
+the same fact said twice is a list to scroll past. Opening a row names
+the packages carrying that alert, with the version and the workspaces
+each reaches; opening one of those goes to its tree, so the path from a
+grade to the code that pulled it in is two keystrokes.
+
+This is the only part of the command that leaves your machine, so it is
+built never to be fatal and never to be slow. Results are cached for
+three hours, the request is a single batch, and if the advisory host is
+unreachable or slow the lookup is abandoned and the graph changes render
+without it. A diff of two local files does not fail because a remote
+service is down.
+
+What it reports is deliberately narrow. The advisory source is thorough
+rather than selective: on one real commit it returns 398 alerts across
+41 packages, almost all of them `envVars` and `networkAccess` on
+packages that have always had them. Listing that would rebuild the noise
+this command exists to remove, so it keeps the kinds that change a
+decision — code that runs at install, code that shells out, a licence
+that constrains, a known vulnerability — plus anything graded high or
+critical whatever its kind. The same commit then yields six rows.
+
+### JSON
+
+<Code
+  code="$ vlt diff lockfile origin/main --view=json"
+  title="Terminal"
+  lang="bash"
+/>
+
+The JSON view is the stable contract, carrying a `schemaVersion`, the
+summary, every mutation, the regions, and `alerts` when `--security` was
+asked for. Editors, CI annotations, and
+other viewers should build against it rather than parsing lockfiles
+themselves.
+
+### Exit status
+
+The exit status is always `0` unless `--exit-code` is given, in which
+case it is `1` when anything changed:
+
+<Code
+  code="$ vlt diff lockfile origin/main --exit-code"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Reserved
+
+Bare `vlt diff`, and the npm-compatible `--diff=<spec>` grammar for
+diffing package *contents*, are reserved and not yet implemented. In this
+release they print usage naming `vlt diff lockfile`.

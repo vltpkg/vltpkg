@@ -25,6 +25,7 @@ COMMANDS
                  create       <initializer>... Create a new project from a template
 
                  deprecate    <pkg>[@<versi... Deprecate a package or version range
+                 diff         lockfile [<re... Show what changed between two states of a project
                  dist-tag     [add|rm|ls] [... Manage package distribution tags
                  docs                          Open the docs of the current project
 

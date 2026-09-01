@@ -27,6 +27,7 @@ const canonicalCommands = {
   config: 'config',
   create: 'create',
   deprecate: 'deprecate',
+  diff: 'diff',
   'dist-tag': 'dist-tag',
   docs: 'docs',
   exec: 'exec',
@@ -474,9 +475,41 @@ export const definition = j
       description:
         'Set to select packages using a DSS Query selector.',
     },
+    base: {
+      hint: 'commitish',
+      description: `The "before" side of \`vlt diff lockfile\`. A git ref,
+                    or a path ending in \`.json\`. Overrides the first
+                    positional argument.`,
+    },
+    head: {
+      hint: 'commitish',
+      description: `The "after" side of \`vlt diff lockfile\`. A git ref, or
+                    a path ending in \`.json\`. Defaults to the working
+                    tree. Overrides the second positional argument.`,
+    },
   })
 
   .flag({
+    tui: {
+      description: `Open the navigable diff viewer when \`vlt diff\` is run
+                    in a terminal. On by default; \`--no-tui\` prints static
+                    text instead. Non-interactive output, including CI, is
+                    always static.`,
+    },
+
+    'identity-only': {
+      description: `Include identity-only changes in \`vlt diff lockfile\`
+                    output: packages whose id moved without the package
+                    itself changing, such as a different registry or peer
+                    set. Collapsed to a count by default.`,
+    },
+
+    'exit-code': {
+      description: `Exit with a status of 1 when \`vlt diff\` finds any
+                    changes, and 0 when it finds none. Without this, the
+                    exit status is always 0.`,
+    },
+
     'if-present': {
       description: `When running scripts across multiple packages,
                     only include packages that have the script.
@@ -616,6 +649,8 @@ export const definition = j
                     - human: Maximally ergonomic output reporting for human
                       consumption.
                     - json: Parseable JSON output for machines.
+                    - markdown: A comment-shaped report, for pasting into
+                      a pull request. (Only supported by some commands.)
                     - inspect: Output results with \`util.inspect\`.
                     - mermaid: Output mermaid diagramming syntax. (Only
                       relevant for certain commands.)
@@ -634,6 +669,7 @@ export const definition = j
       validOptions: [
         'human',
         'json',
+        'markdown',
         'mermaid',
         'svg',
         'png',
