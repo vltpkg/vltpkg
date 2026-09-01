@@ -13,8 +13,10 @@ const entry = [
 const workspaces = {
   '.': {
     entry,
-    // Used to download fixtures in a bash script
-    ignoreDependencies: ['@vltpkg/benchmark'],
+    // @vltpkg/benchmark is used to download fixtures in a bash script.
+    // @perryts/perry is the native compiler, invoked via `vlxl -- perry`
+    // from scripts/perry/*.sh.
+    ignoreDependencies: ['@vltpkg/benchmark', '@perryts/perry'],
     ignore: ['coverage-map.js'],
   },
   'src/cli-sdk': {

@@ -4,8 +4,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PERRY_DIR="$("$ROOT/scripts/perry/setup-toolchain.sh")"
-PERRY="$PERRY_DIR/perry"
+PERRY=( "$ROOT/scripts/bins/vlxl" -- perry )
+
+if [ ! -x "$ROOT/node_modules/.bin/perry" ]; then
+  echo "gate-hello: @perryts/perry is not installed. Run: vlt install" >&2
+  exit 1
+fi
 
 # Perry's LLVM backend shells out to clang; it is not bundled.
 if [ -z "${PERRY_LLVM_CLANG:-}" ] && ! command -v clang >/dev/null; then
@@ -22,9 +26,9 @@ fi
 OUT="$(mktemp -d)"
 trap 'rm -rf "$OUT"' EXIT
 
-echo "== perry $("$PERRY" --version | awk '{print $2}') @ $PERRY_DIR"
-"$PERRY" check "$ROOT/scripts/perry/hello.ts"
-"$PERRY" compile "$ROOT/scripts/perry/hello.ts" -o "$OUT/perry-hello"
+echo "== perry $("${PERRY[@]}" --version | awk '{print $2}') via vlxl"
+"${PERRY[@]}" check "$ROOT/scripts/perry/hello.ts"
+"${PERRY[@]}" compile "$ROOT/scripts/perry/hello.ts" -o "$OUT/perry-hello"
 
 ACTUAL="$("$OUT/perry-hello")"
 EXPECTED='hello from perry'

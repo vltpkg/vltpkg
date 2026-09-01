@@ -1,8 +1,8 @@
-// Vendored from `perry types` at the pinned toolchain (perry-toolchain.json).
-// Perry's built-in modules have no package on disk, so tsc cannot resolve
-// `perry/tui` without this. Regenerate on a pin bump:
+// Vendored from `vlxl -- perry types` at the @perryts/perry version in
+// package.json. Perry's built-in modules have no package on disk, so tsc
+// cannot resolve `perry/tui` without this. Regenerate on a pin bump:
 //
-//   "$(./scripts/perry/setup-toolchain.sh)/perry" types <tmpdir>
+//   vlxl -- perry types <tmpdir>
 //   cp <tmpdir>/.perry/types/perry/tui/index.d.ts \
 //      src/cli-sdk/src/perry-tui.d.ts   # keeping this header
 //

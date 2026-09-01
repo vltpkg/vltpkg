@@ -1,9 +1,7 @@
 # Perry project config for the vlt native-binary port.
-# The toolchain pin lives in perry-toolchain.json, not here.
+# The toolchain pin is the @perryts/perry version in package.json.
 #
-# `perry compile` alone will not link this entry — the pin's driver cannot
-# link anything that reaches the full stdlib. Build with
-# ./scripts/perry/build.sh, which owns that link step.
+# Build with ./scripts/perry/build.sh (`vlxl -- perry compile` plus bin symlinks).
 
 [project]
 name = "vlt"

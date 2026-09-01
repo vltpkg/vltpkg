@@ -9,6 +9,7 @@
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@perryts/perry": "0.5.1220",
     "@types/node": "catalog:",
     "@types/semver": "catalog:",
     "@types/ssri": "catalog:",

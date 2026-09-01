@@ -1,27 +1,20 @@
 #!/usr/bin/env bash
-# The port's compile+link step. `perry compile <entry> -o <out>`, plus the
-# workaround for the pin's broken "with stdlib" link path.
+# Compile with the @perryts/perry version pinned in package.json.
 #
 #   scripts/perry/compile.sh <entry.ts> <out> [perry compile args...]
 #
-# Prints the path it took (`driver` or `manual`) to stderr; PERRY_COMPILE_LOG
-# keeps the driver output. Exit 0 = a runnable binary at <out>.
-#
-# Why the fallback exists: libperry_stdlib.a has undefined js_ext_* references
-# to the per-extension archives, and the driver only puts an archive on the
-# link line when it detects the matching import. Anything reaching the full
-# stdlib without importing node:http -- fetch, node:sqlite, an inline
-# process.stdin.on() -- fails to link. It also asks for -lssl/-lcrypto with no
-# search path. Both are packaging bugs in the release tarball, and the pin is
-# the newest published release, so there is no version to bump to. We re-run
-# with --no-link and link the cached objects against every ext archive
-# ourselves. --allow-multiple-definition is required: each archive carries its
-# own copy of Rust core.
+# Runs `vlxl perry compile`. `--` keeps perry flags from being parsed as
+# vlt config. PERRY_COMPILE_LOG keeps the driver output. Exit 0 = a runnable
+# binary at <out>.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PERRY_DIR="${PERRY_DIR:-$("$ROOT/scripts/perry/setup-toolchain.sh")}"
-PERRY="$PERRY_DIR/perry"
+PERRY=( "$ROOT/scripts/bins/vlxl" -- perry )
+
+if [ ! -x "$ROOT/node_modules/.bin/perry" ]; then
+  echo "compile.sh: @perryts/perry is not installed. Run: vlt install" >&2
+  exit 1
+fi
 
 # The LLVM backend shells out to clang; it is not bundled.
 if [ -z "${PERRY_LLVM_CLANG:-}" ] && ! command -v clang >/dev/null; then
@@ -52,39 +45,10 @@ LOG="${PERRY_COMPILE_LOG:-$(mktemp)}"
 cleanup() { [ -n "${PERRY_COMPILE_LOG:-}" ] || rm -f "$LOG"; }
 trap cleanup EXIT
 
-if "$PERRY" compile "$SRC" -o "$OUT" "$@" >"$LOG" 2>&1; then
-  echo "compile.sh: driver" >&2
+if "${PERRY[@]}" compile "$SRC" -o "$OUT" "$@" >"$LOG" 2>&1; then
+  echo "compile.sh: perry" >&2
   exit 0
 fi
 
-if ! grep -q 'Linking (with stdlib)' "$LOG"; then
-  cat "$LOG" >&2
-  exit 1
-fi
-
-"$PERRY" compile --no-link "$SRC" -o "$OUT.o" "$@" >"$LOG" 2>&1 || {
-  cat "$LOG" >&2; exit 1
-}
-# no mapfile: macOS ships bash 3.2
-OBJS=()
-while IFS= read -r o; do OBJS+=("$o"); done \
-  < <(sed -n 's/.*cached object: //p; s/.*Wrote object file: //p' "$LOG")
-[ "${#OBJS[@]}" -gt 0 ] || { echo "compile.sh: --no-link reported no objects" >&2; exit 1; }
-
-if [ "$(uname -s)" = Darwin ]; then
-  # UNTESTED (written blind for the macOS bring-up): ld64 has no
-  # --start-group (it resolves archive cycles itself) and no
-  # --allow-multiple-definition (on-demand member loading may make the
-  # duplicate Rust cores moot). -ldl/-lpthread resolve via SDK stubs.
-  "${PERRY_LLVM_CLANG:-clang}" -o "$OUT" "${OBJS[@]}" \
-    "$PERRY_DIR"/libperry_stdlib.a "$PERRY_DIR"/libperry_runtime.a \
-    "$PERRY_DIR"/libperry_ext_*.a \
-    ${PERRY_OPENSSL_LIB:+-L"$PERRY_OPENSSL_LIB"} -lssl -lcrypto -lm -lpthread -ldl
-else
-  "${PERRY_LLVM_CLANG:-clang}" -o "$OUT" "${OBJS[@]}" \
-    -Wl,--allow-multiple-definition -Wl,--start-group \
-    "$PERRY_DIR"/libperry_stdlib.a "$PERRY_DIR"/libperry_runtime.a \
-    "$PERRY_DIR"/libperry_ext_*.a -Wl,--end-group \
-    ${PERRY_OPENSSL_LIB:+-L"$PERRY_OPENSSL_LIB"} -lssl -lcrypto -lm -lpthread -ldl
-fi
-echo "compile.sh: manual (${#OBJS[@]} objects)" >&2
+cat "$LOG" >&2
+exit 1
