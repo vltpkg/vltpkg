@@ -256,15 +256,16 @@ export class Spec implements SpecLike<Spec> {
     options?: SpecOptions,
   ): Spec {
     return typeof spec === 'object' ? spec : (
-        new this(spec, bareOrOptions, options)
+        new Spec(spec, bareOrOptions, options)
       )
   }
 
   static parseArgs(specOrBareSpec: string, opts?: SpecOptions): Spec {
     const options = getOptions(opts ?? {})
 
+    // compiled: `this.parse` from a static method is not Spec.parse
     if (startsWithSpecIdentifier(specOrBareSpec, options)) {
-      const parsed = this.parse('(unknown)', specOrBareSpec, options)
+      const parsed = Spec.parse('(unknown)', specOrBareSpec, options)
       // try to look into a potential parsed subspec for a name
       if (parsed.subspec) {
         const { namedJsrRegistry: jsrHost } = parsed
@@ -279,7 +280,7 @@ export class Spec implements SpecLike<Spec> {
       const hasScope = specOrBareSpec.startsWith('@')
       const at = findFirstAt(specOrBareSpec, hasScope)
       if (at > -1) {
-        return this.parse(
+        return Spec.parse(
           specOrBareSpec.substring(0, at),
           specOrBareSpec.substring(at + 1),
           options,
@@ -288,10 +289,10 @@ export class Spec implements SpecLike<Spec> {
         findGitIdentifier(specOrBareSpec) ||
         (!hasScope && findFileIdentifier(specOrBareSpec))
       ) {
-        return this.parse('(unknown)', specOrBareSpec, options)
+        return Spec.parse('(unknown)', specOrBareSpec, options)
       } else {
         // doesn't have an @, so it's just a name with no version
-        return this.parse(`${specOrBareSpec}@`, options)
+        return Spec.parse(`${specOrBareSpec}@`, options)
       }
     }
   }
@@ -635,7 +636,7 @@ export class Spec implements SpecLike<Spec> {
     if (this.bareSpec.startsWith('file:')) {
       this.type = 'file'
       const [path, uri] = getNormalizeFile(
-        this.constructor.nodejsDependencies,
+        Spec.nodejsDependencies,
       )(this.bareSpec, this)
       this.file = path
       this.bareSpec = uri.replace(/\/+$/, '')
@@ -677,7 +678,7 @@ export class Spec implements SpecLike<Spec> {
     ) {
       this.type = 'file'
       const [file, uri] = getNormalizeFile(
-        this.constructor.nodejsDependencies,
+        Spec.nodejsDependencies,
       )(`file:${this.bareSpec}`, this)
       this.bareSpec = uri
       this.spec = `${this.name}@${this.bareSpec}`
@@ -772,7 +773,7 @@ export class Spec implements SpecLike<Spec> {
 
   #guessRegistryTarball() {
     // only try to guess if it's a single comparator for a single version
-    const { name, registry, range } = this.final
+    const { name, registry, range, semver: ver } = this.final
     if (!registry || !range?.isSingle) return
     const stripScope = /^@[^/]+\//
     // resolve relative to the registry URL so that any path component
@@ -781,7 +782,7 @@ export class Spec implements SpecLike<Spec> {
     const base = registry.endsWith('/') ? registry : registry + '/'
     this.conventionalRegistryTarball = String(
       new URL(
-        `${name}/-/${name.replace(stripScope, '')}-${range}.tgz`,
+        `${name}/-/${name.replace(stripScope, '')}-${ver ?? range.raw}.tgz`,
         base,
       ),
     )
@@ -790,7 +791,7 @@ export class Spec implements SpecLike<Spec> {
   #parseRegistrySpec(s: string, url: string) {
     // note: this takes priority over the scoped registry, if set
     this.registry = url
-    this.subspec = this.constructor.parse(s, {
+    this.subspec = Spec.parse(s, {
       ...this.options,
       registry: url,
     })
@@ -807,7 +808,7 @@ export class Spec implements SpecLike<Spec> {
       s.startsWith('@jsr/') ? s : (
         `@jsr/${s.replace(/^@/, '').replace(/\//, '__')}`
       )
-    this.subspec = this.constructor.parse(name, {
+    this.subspec = Spec.parse(name, {
       ...this.options,
       'scoped-registries': {
         ...this.options['scoped-registries'],
@@ -865,7 +866,7 @@ export class Spec implements SpecLike<Spec> {
     this.gitRemote = s.substring(0, h)
     this.gitSelector = s.substring(h + 1)
     const [selectorParsed, committish, range] =
-      this.constructor.parseGitSelector(this.gitSelector, this)
+      Spec.parseGitSelector(this.gitSelector, this)
     this.range = range
     this.gitCommittish = committish
     this.gitSelectorParsed = selectorParsed

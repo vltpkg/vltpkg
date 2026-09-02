@@ -45,7 +45,7 @@ export const satisfiesTuple = (
   // packages, matching npm/pnpm/yarn behavior.
   if (spec.type === 'registry' && type === 'workspace') {
     if (!monorepo) return false
-    const ws = monorepo.get(first)
+    const ws = monorepo.getWorkspace(first)
     if (ws?.name !== spec.name) return false
     if (!spec.range) return true
     const v = parse(ws.manifest.version ?? '')
@@ -117,8 +117,8 @@ export const satisfiesTuple = (
       monorepo ??= Monorepo.load(projectRoot)
       /* c8 ignore next */
       if (!spec.workspace) return false
-      const fromID = monorepo.get(first)
-      const fromSpec = monorepo.get(spec.workspace)
+      const fromID = monorepo.getWorkspace(first)
+      const fromSpec = monorepo.getWorkspace(spec.workspace)
       if (fromID !== fromSpec || !fromSpec || !fromID) return false
       if (!spec.range) return true
       const v = parse(fromID.manifest.version ?? '')

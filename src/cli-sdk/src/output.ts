@@ -127,27 +127,41 @@ const startView = async <T>(
   onDone: OnDone<T>
   onError?: (err: unknown) => void
 }> => {
-  const View = await getView<T>(conf, views)
+  try {
+    const View = await getView<T>(conf, views)
 
-  if (isViewClass(View)) {
-    const view = new View(opts, conf)
-    view.start()
+    if (isViewClass(View)) {
+      const view = new View(opts, conf)
+      view.start()
+      return {
+        async onDone(r) {
+          return view.done(r, { time: Date.now() - start })
+        },
+        onError(err) {
+          view.error(err)
+        },
+      }
+    }
+
     return {
       async onDone(r) {
-        return view.done(r, { time: Date.now() - start })
+        if (r === undefined) return
+        /* c8 ignore next */
+        if (typeof View !== 'function') return
+        return View(r, opts, conf)
       },
-      onError(err) {
-        view.error(err)
+    }
+    /* c8 ignore start */
+  } catch (err) {
+    if (!('perry' in process.versions)) throw err
+    return {
+      async onDone() {
+        stdout(`Done in ${Date.now() - start}ms`)
+        return undefined
       },
     }
   }
-
-  return {
-    async onDone(r) {
-      if (r === undefined) return
-      return View(r, opts, conf)
-    },
-  }
+  /* c8 ignore stop */
 }
 
 /**
@@ -240,9 +254,11 @@ export const outputCommand = async <T>(
     )
 
     if (output !== undefined && conf.values.view !== 'silent') {
+      // compiled util.formatWithOptions inspects strings (JSON-quoted).
+      // print them as-is for human/inspect.
       stdout(
-        conf.values.view === 'json' ?
-          JSON.stringify(output, null, 2)
+        conf.values.view === 'json' ? JSON.stringify(output, null, 2)
+        : typeof output === 'string' ? output
         : formatWithOptions(
             {
               ...formatOptions,

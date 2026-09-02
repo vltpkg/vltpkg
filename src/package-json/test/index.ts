@@ -342,7 +342,7 @@ t.test('find method', async t => {
       'projects',
       'my-project',
     )
-    const found = pj.find(projectRoot, homePath)
+    const found = pj.findPath(projectRoot, homePath)
     t.equal(found, join(projectRoot, 'package.json'))
   })
 
@@ -357,7 +357,7 @@ t.test('find method', async t => {
         'packages',
         'my-workspace-a',
       )
-      const found = pj.find(workspaceA, homePath)
+      const found = pj.findPath(workspaceA, homePath)
       t.equal(found, join(workspaceA, 'package.json'))
     },
   )
@@ -382,7 +382,7 @@ t.test('find method', async t => {
         'packages',
         'my-workspace-a',
       )
-      const found = pj.find(srcDir, homePath)
+      const found = pj.findPath(srcDir, homePath)
       t.equal(found, join(workspaceA, 'package.json'))
     },
   )
@@ -391,14 +391,14 @@ t.test('find method', async t => {
     'returns undefined when no package.json found',
     async t => {
       const projectsDir = join(testDir, 'home', 'projects')
-      const found = pj.find(projectsDir, homePath)
+      const found = pj.findPath(projectsDir, homePath)
       t.equal(found, undefined)
     },
   )
 
   await t.test('stops at home directory', async t => {
     const otherStuff = join(testDir, 'home', 'other-stuff')
-    const found = pj.find(otherStuff, homePath)
+    const found = pj.findPath(otherStuff, homePath)
     t.equal(found, undefined)
   })
 
@@ -413,7 +413,7 @@ t.test('find method', async t => {
         'packages',
         'my-workspace-b',
       )
-      const found = pj.find(workspaceB, homePath)
+      const found = pj.findPath(workspaceB, homePath)
       t.equal(found, join(workspaceB, 'package.json'))
     },
   )
@@ -462,7 +462,7 @@ t.test('find method', async t => {
         'deep-project',
       )
 
-      const found = pj.find(deepPath, deepHome)
+      const found = pj.findPath(deepPath, deepHome)
       t.equal(found, join(projectRoot, 'package.json'))
     },
   )
@@ -481,7 +481,7 @@ t.test('find method', async t => {
       const emptyHome = join(emptyTestDir, 'home')
       const emptyDir = join(emptyTestDir, 'home', 'empty')
 
-      const found = pj.find(emptyDir, emptyHome)
+      const found = pj.findPath(emptyDir, emptyHome)
       t.equal(found, undefined)
     },
   )
@@ -495,7 +495,7 @@ t.test('find method', async t => {
       'my-project',
       'packages',
     )
-    const found = pj.find(customCwd, homePath)
+    const found = pj.findPath(customCwd, homePath)
     t.equal(
       found,
       join(testDir, 'home', 'projects', 'my-project', 'package.json'),
@@ -519,9 +519,43 @@ t.test('find method', async t => {
     const nestedDir = join(customTestDir, 'project', 'nested')
     const projectDir = join(customTestDir, 'project')
 
-    const found = pj.find(nestedDir, customHome)
+    const found = pj.findPath(nestedDir, customHome)
     t.equal(found, join(projectDir, 'package.json'))
   })
+
+  await t.test(
+    'compiled homedir / does not walk past $HOME',
+    async t => {
+      const dir = t.testdir({
+        home: {
+          projects: {
+            empty: {
+              'file.txt': 'x',
+            },
+          },
+        },
+        'package.json': JSON.stringify({ name: 'decoy' }),
+      })
+      t.intercept(process, 'env', {
+        value: { ...process.env, HOME: join(dir, 'home') },
+      })
+      const { PackageJson: PJ } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        'node:os': t.createMock(await import('node:os'), {
+          homedir: () => '/',
+        }),
+      })
+      const found = new PJ().findPath(
+        join(dir, 'home/projects/empty'),
+      )
+      t.equal(
+        found,
+        undefined,
+        'must not walk past $HOME to the decoy package.json',
+      )
+    },
+  )
 })
 
 t.test('maybeRead method', async t => {

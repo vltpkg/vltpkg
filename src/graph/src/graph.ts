@@ -18,7 +18,7 @@ import { Edge } from './edge.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
-import type { PeerContext } from './ideal/types.ts'
+import { PeerContext } from './ideal/types.ts'
 import { brand } from './brand.ts'
 
 // `inspect.custom`, not `Symbol.for('nodejs.util.inspect.custom')`: only
@@ -218,8 +218,8 @@ export class Graph implements GraphLike {
     // uses the monorepo instance in order to retrieve info on
     // workspaces and create importer nodes for each of them
     this.monorepo = monorepo
-    if (this.monorepo) {
-      for (const ws of this.monorepo) {
+    if (monorepo) {
+      for (const ws of monorepo.workspaceList()) {
         const wsNode = this.addNode(
           ws.id,
           ws.manifest,
@@ -249,9 +249,37 @@ export class Graph implements GraphLike {
     }
 
     // initializes the peer context set collection
-    const initialPeerContext: PeerContext = new Map()
+    const initialPeerContext = new PeerContext()
     initialPeerContext.index = this.currentPeerContextIndex
     this.peerContexts = [initialPeerContext]
+  }
+
+  /**
+   * True when the graph contains no dependency nodes, only importers.
+   * Compiled: `graph.nodes.size` from another module SIGBUS.
+   */
+  hasOnlyImporters() {
+    return this.importers.size === this.nodes.size
+  }
+
+  /** Compiled: `graph.importers.size` from another module SIGBUS. */
+  importersSize() {
+    return this.importers.size
+  }
+
+  /** Compiled: `graph.nodes.size` from another module SIGBUS. */
+  nodesSize() {
+    return this.nodes.size
+  }
+
+  /** Compiled: `graph.nodes.get` from another module dispatches to Map/Array. */
+  getNode(id: DepID) {
+    return this.nodes.get(id)
+  }
+
+  /** Compiled: reading `graph.nodesByName` from another module SIGBUS. */
+  nodesByNameEntries() {
+    return [...this.nodesByName]
   }
 
   /**

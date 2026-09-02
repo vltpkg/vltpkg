@@ -45,7 +45,7 @@ if ((inspect.custom as symbol) !== (kCustomInspect as symbol)) {
 }
 /* c8 ignore stop */
 
-Spec.nodejsDependencies = {
+BrowserSpec.nodejsDependencies = {
   homedir,
   isAbsolute,
   join,

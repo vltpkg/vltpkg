@@ -253,8 +253,9 @@ const unpackUnzipped = async (
     )
   }
   // make sure the last kb is all zeros
+  // compiled: `buffer[i]` with a computed index is undefined
   for (let i = buffer.length - 1024; i < buffer.length; i++) {
-    if (buffer[i] !== 0) {
+    if (buffer.readUInt8(i) !== 0) {
       throw error(
         'Invalid tarball: not terminated by 1024 null bytes',
         { found: buffer.subarray(i, i + 10) },

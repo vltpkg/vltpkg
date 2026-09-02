@@ -162,11 +162,11 @@ export const command: CommandFn<CommandResult> = async conf => {
   } else if (options.monorepo) {
     const cwd = process.cwd()
     if (cwd === projectRoot) {
-      for (const workspace of options.monorepo) {
+      for (const workspace of options.monorepo.workspaceList()) {
         locations.push(workspace.fullpath)
       }
     } else {
-      const ws = options.monorepo.get(cwd)
+      const ws = options.monorepo.getWorkspace(cwd)
       if (ws) {
         locations.push(ws.fullpath)
       } else {
@@ -177,7 +177,8 @@ export const command: CommandFn<CommandResult> = async conf => {
       }
     }
   } else {
-    single = options.packageJson.find(process.cwd()) ?? projectRoot
+    single =
+      options.packageJson.findPath(process.cwd()) ?? projectRoot
   }
 
   if (single) {
@@ -200,7 +201,7 @@ export const commandSingle = async (
   location: string,
   conf: LoadedConfig,
 ) => {
-  const manifestPath = conf.options.packageJson.find(location)
+  const manifestPath = conf.options.packageJson.findPath(location)
   assert(manifestPath, 'No package.json found')
   const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)

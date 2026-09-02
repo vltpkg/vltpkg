@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { XDG } from '@vltpkg/xdg'
+import { userHome, XDG } from '@vltpkg/xdg'
 import type { Stats } from 'node:fs'
 import {
   lstatSync,
@@ -7,7 +7,6 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs'
-import { homedir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { walkUp } from 'walk-up-path'
 
@@ -159,7 +158,7 @@ export const load = <T>(
 export const find = (
   which: WhichConfig = 'project',
   cwd = process.cwd(),
-  home = homedir(),
+  home = userHome(),
 ): string => {
   // always resolve the user config path to the XDG location
   // if caches were unloaded, reinitialize it instead of walking the project tree

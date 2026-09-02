@@ -1,6 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
-import type { RemoveImportersDependenciesMap } from '../src/dependencies.ts'
+import { RemoveImportersDependenciesMap } from '../src/dependencies.ts'
 import type { BuildIdealRemoveOptions } from '../src/ideal/types.ts'
 import type { UninstallOptions } from '../src/uninstall.ts'
 import { PackageJson } from '@vltpkg/package-json'
@@ -222,10 +222,10 @@ t.test(
     })
 
     const rootDepID = joinDepIDTuple(['file', '.'])
-    const removeMap = new Map([
+    const removeMap = new RemoveImportersDependenciesMap([
       [rootDepID, new Set(['abbrev'])],
-    ]) as RemoveImportersDependenciesMap
-    Object.assign(removeMap, { modifiedDependencies: true })
+    ])
+    removeMap.modifiedDependencies = true
 
     const result = await uninstall(options, removeMap)
 

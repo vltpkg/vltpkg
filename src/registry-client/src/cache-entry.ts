@@ -460,11 +460,8 @@ export class CacheEntry {
    * Return the body of the entry as a Buffer
    */
   buffer(): Buffer {
-    return Buffer.from(
-      this._body.buffer,
-      this._body.byteOffset,
-      this._body.byteLength,
-    )
+    // compiled: extra Buffer.from args are dropped; copy from the view
+    return Buffer.from(this._body)
   }
 
   // return the buffer if it's a tarball, or the parsed
@@ -540,7 +537,7 @@ export class CacheEntry {
           : er
       }
       this.setHeader('content-encoding', 'identity')
-      const u8 = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
+      const u8 = new Uint8Array(b)
       this.#body = u8
       this.#bodyLength = u8.byteLength
       this.#contentLength = u8.byteLength

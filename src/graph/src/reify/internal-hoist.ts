@@ -95,17 +95,23 @@ export const internalHoist = async (
   // and higher versions over lower ones. In the case of non-registry
   // deps, we just pick the first item by sorting the DepIDs.
   const links = new Map<string, { id: DepID; name: string }>()
-  for (const [name, nodes] of graph.nodesByName) {
+  const entries =
+    typeof graph.nodesByNameEntries === 'function' ?
+      graph.nodesByNameEntries()
+    : /* c8 ignore next */ [...graph.nodesByName]
+  for (const [name, nodes] of entries) {
     const pickNode = pickNodeToHoist(nodes)
     if (pickNode) {
       let picked = false
-      if (pickNode.edgesIn.size > 0) {
-        for (const edgeIn of pickNode.edgesIn) {
-          const otherName = edgeIn.name
-          if (otherName !== name && !links.has(otherName)) {
-            picked = true
-            links.set(otherName, pickNode)
-          }
+      const edgesIn =
+        typeof pickNode.edgesInList === 'function' ?
+          pickNode.edgesInList()
+        : /* c8 ignore next */ [...pickNode.edgesIn]
+      for (const edgeIn of edgesIn) {
+        const otherName = edgeIn.name
+        if (otherName !== name && !links.has(otherName)) {
+          picked = true
+          links.set(otherName, pickNode)
         }
       }
       if (!picked) {

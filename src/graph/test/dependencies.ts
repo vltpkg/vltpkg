@@ -2,6 +2,8 @@ import t from 'tap'
 import {
   asDependency,
   asDependencyTypeShort,
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
   getDependencies,
   getRawDependencies,
   isDependency,
@@ -763,4 +765,61 @@ t.test('getDependencies', async t => {
       t.notOk(result.has('jest'), 'should skip dev dependency')
     },
   )
+})
+
+t.test('delegating maps', async t => {
+  const id = joinDepIDTuple(['file', '.'])
+  const inner = new Map()
+  const add = new AddImportersDependenciesMap([[id, inner]], true)
+  t.equal(add.modifiedDependencies, true)
+  t.equal(add.size, 1)
+  t.equal(add.has(id), true)
+  t.equal(add.get(id), inner)
+  t.equal(add[Symbol.toStringTag], 'Map')
+  t.same([...add.keys()], [id])
+  t.same([...add.values()], [inner])
+  t.same([...add.entries()], [[id, inner]])
+  t.same([...add], [[id, inner]])
+  t.same(add.listPairs(), [[id, inner]])
+  let n = 0
+  add.forEach((v, k) => {
+    n++
+    t.equal(k, id)
+    t.equal(v, inner)
+  })
+  t.equal(n, 1)
+  t.equal(add.delete(id), true)
+  t.equal(add.size, 0)
+  add.set(id, inner)
+  add.clear()
+  t.equal(add.size, 0)
+  t.equal(new AddImportersDependenciesMap().size, 0)
+
+  const names = new Set(['foo'])
+  const remove = new RemoveImportersDependenciesMap(
+    [[id, names]],
+    true,
+  )
+  t.equal(remove.modifiedDependencies, true)
+  t.equal(remove.size, 1)
+  t.equal(remove.has(id), true)
+  t.equal(remove.get(id), names)
+  t.equal(remove[Symbol.toStringTag], 'Map')
+  t.same([...remove.keys()], [id])
+  t.same([...remove.values()], [names])
+  t.same([...remove.entries()], [[id, names]])
+  t.same([...remove], [[id, names]])
+  t.same(remove.listPairs(), [[id, names]])
+  n = 0
+  remove.forEach((v, k) => {
+    n++
+    t.equal(k, id)
+    t.equal(v, names)
+  })
+  t.equal(n, 1)
+  t.equal(remove.delete(id), true)
+  remove.set(id, names)
+  remove.clear()
+  t.equal(remove.size, 0)
+  t.equal(new RemoveImportersDependenciesMap().size, 0)
 })

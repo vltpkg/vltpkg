@@ -9,8 +9,8 @@ t.test('prettyPath', async t => {
   const { prettyPath } = await t.mockImport<
     typeof import('../../src/commands/create.ts')
   >('../../src/commands/create.ts', {
-    'node:os': t.createMock(await import('node:os'), {
-      homedir: () => '/a/b/c',
+    '@vltpkg/xdg': t.createMock(await import('@vltpkg/xdg'), {
+      userHome: () => '/a/b/c',
     }),
   })
   unload()

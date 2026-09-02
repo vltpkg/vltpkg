@@ -3,7 +3,7 @@ import { Version } from '@vltpkg/semver'
 import { assertPathSafeName } from '@vltpkg/spec/browser'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Spec, SpecLikeBase, SpecOptions } from '@vltpkg/spec'
-import { posix } from 'node:path'
+import { basename, join } from 'node:path/posix'
 import { debuglog } from 'node:util'
 
 const debug = debuglog('vlt')
@@ -780,9 +780,13 @@ const unixify = (ref: string) => ref.replace(/[\\:]/g, '/')
  * Clamp a manifest-supplied relative path into the package dir. The result
  * is always a `..`-free, non-absolute path, so resolving it under the
  * package dir cannot escape. Returns `''` for `.`, `..` and `''`.
+ *
+ * Use named `join`/`basename` from `node:path/posix`, not `posix.join`.
+ * Compiled, `posix.join(a, b)` passes the receiver as the first path and
+ * Node throws `The "path" argument must be of type string`.
  */
 const secure = (ref: string) => {
-  const s = unixify(posix.join('.', posix.join('/', unixify(ref))))
+  const s = unixify(join('.', join('/', unixify(ref))))
   return s === './' ? '' : s
 }
 
@@ -797,7 +801,7 @@ const secureBinPaths = (
   for (const [key, val] of Object.entries(bin)) {
     // types say string, but manifests are untrusted
     const v = typeof val === 'string' ? secure(val) : ''
-    const k = posix.basename(secure(key))
+    const k = basename(secure(key))
     if (!k || !v) {
       debug('dropped unusable bin entry', key, val)
       continue

@@ -44,6 +44,9 @@ t.test('load some workspaces', async t => {
   unload()
   const m = Monorepo.load(dir)
   t.equal(m.size, 3)
+  t.equal(m.getWorkspace('foo'), m.get('src/foo'))
+  t.ok(m.hasWorkspaces())
+  t.equal(m.workspaceList().length, 3)
   t.equal(m.get('foo'), m.get('src/foo'))
   t.equal(m.get('@company/bar'), m.get('src/bar'))
   t.strictSame(
@@ -369,6 +372,9 @@ t.test('iterating empty monorepo is no-op', async t => {
   unload()
 
   const m = new Monorepo(dir)
+  t.notOk(m.hasWorkspaces())
+  t.strictSame(m.workspaceList(), [])
+  t.equal(m.getWorkspace('nope'), undefined)
   for (const _ of m) {
     t.fail('should not iterate over anything')
   }

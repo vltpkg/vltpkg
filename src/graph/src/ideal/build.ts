@@ -6,18 +6,20 @@ import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.t
 import { isPathSecurityError } from '../path-security-error.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions as LoadActualOptions } from '../actual/load.ts'
-import type {
+import {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
-  Dependency,
 } from '../dependencies.ts'
+import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 
-const getMap = <T extends Map<any, any>>(m?: T) =>
-  m ?? (new Map() as T)
+const getAdd = (m?: AddImportersDependenciesMap) =>
+  m ?? new AddImportersDependenciesMap()
+const getRemove = (m?: RemoveImportersDependenciesMap) =>
+  m ?? new RemoveImportersDependenciesMap()
 
 export type BuildIdealOptions = LoadActualOptions & {
   /**
@@ -117,10 +119,10 @@ export const build = async (
   const res = await buildIdealFromStartingGraph({
     ...options,
     scurry,
-    add: getMap(options.add),
+    add: getAdd(options.add),
     graph,
     packageInfo,
-    remove: getMap(options.remove),
+    remove: getRemove(options.remove),
     actual: options.actual,
   })
   done()

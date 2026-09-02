@@ -42,12 +42,18 @@ export type View<T = unknown> = ViewFn<T> | typeof ViewClass<T>
 
 export const isViewClass = <T = unknown>(
   view: View<T>,
-): view is typeof ViewClass<T> =>
-  typeof view === 'function' &&
-  'prototype' in view &&
-  view.prototype instanceof ViewClass
+): view is typeof ViewClass<T> => {
+  if (typeof view !== 'function' || !('prototype' in view)) {
+    return false
+  }
+  if (view.prototype instanceof ViewClass) return true
+  return (
+    typeof (view.prototype as { start?: unknown }).start ===
+    'function'
+  )
+}
 
-const kLazyView: unique symbol = Symbol.for('vlt.lazyView')
+const kLazyView = '__vlt_lazyView__'
 
 export type LazyView<T = unknown> = {
   readonly [kLazyView]: () => Promise<View<T>>
@@ -63,6 +69,13 @@ export const isLazyView = <T = unknown>(
 
 export const loadLazyView = <T>(v: LazyView<T>): Promise<View<T>> =>
   v[kLazyView]()
+
+/* c8 ignore start */
+export const perryDoneView = (): ViewFn => {
+  const t0 = Date.now()
+  return () => `Done in ${Date.now() - t0}ms`
+}
+/* c8 ignore stop */
 
 export type Views<T = unknown> =
   View<T> | LazyView<T> | Record<string, View<T> | LazyView<T>>

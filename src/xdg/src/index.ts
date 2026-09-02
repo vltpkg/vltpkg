@@ -1,8 +1,18 @@
 import { homedir, tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
-const root = homedir()
+// `$HOME` first: compiled, `homedir()` answers `/`, which would put every
+// vlt config, cache and data dir at the filesystem root
+const root = process.env.HOME || homedir()
 const path = (p: string) => resolve(root, p)
+
+/**
+ * Directory to treat as the user's home for walk-up stops and project
+ * discovery. Compiled, `os.homedir()` is `/`; `$HOME` is the real home.
+ * When `homedir()` is not `/`, keep it so tests can mock `os.homedir`.
+ */
+export const userHome = (home = homedir()): string =>
+  home === '/' && process.env.HOME ? process.env.HOME : home
 
 export type PathType =
   'cache' | 'config' | 'data' | 'runtime' | 'state'

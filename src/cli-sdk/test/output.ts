@@ -145,6 +145,21 @@ t.test('outputCommand', async t => {
     t.strictSame(logs(), [['{ ohthehumanity: true }']])
   })
 
+  t.test('string output prints raw', async t => {
+    const logs = t.capture(console, 'log').args
+    await outputCommand(
+      {
+        async command() {
+          return 'hello\nworld'
+        },
+        usage: () => ({ usage: () => 'usage' }) as Jack,
+        views: { human: x => x },
+      },
+      { values: { view: 'human' } } as LoadedConfig,
+    )
+    t.strictSame(logs(), [['hello\nworld']])
+  })
+
   t.test('success output (silent)', async t => {
     const logs = t.capture(console, 'log').args
     const confSilent = {

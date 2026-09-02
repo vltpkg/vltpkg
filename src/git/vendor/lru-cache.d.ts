@@ -4,4 +4,4 @@
  * package's own (the vendored code is its dist/esm/index.js, so they
  * describe it exactly).
  */
-export { LRUCache } from 'lru-cache'
+export { LRUCache as LRUCacheGit } from 'lru-cache'

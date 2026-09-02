@@ -471,7 +471,10 @@ export class RegistryClient {
     const m = isCacheableMethod(method) ? method : undefined
     const { useCache = !!m } = options
 
-    ;(signal as AbortSignal | null)?.throwIfAborted()
+    // not `throwIfAborted()`: the compiled runtime's AbortSignal has no
+    // such method
+    const sig = signal as AbortSignal | null
+    if (sig?.aborted) throw sig.reason
 
     // Method + URL only. Headers (including accept) are not part of the
     // key and there is no Vary handling — callers must not vary the
@@ -582,17 +585,10 @@ export class RegistryClient {
     if (useCache) {
       // Get the encoded buffer from the cache entry
       const buffer = result.encode()
-      this.cache.set(
-        key,
-        Buffer.from(
-          buffer.buffer,
-          buffer.byteOffset,
-          buffer.byteLength,
-        ),
-        {
-          integrity: result.integrity,
-        },
-      )
+      this.cache.set(key, Buffer.from(buffer), {
+        integrity: result.integrity,
+      })
+      if ('perry' in process.versions) await this.cache.promise()
     }
     return result
   }

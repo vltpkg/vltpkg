@@ -131,7 +131,56 @@ export type PeerContextEntryInput = {
 
 /**
  * Represents resolved peer dependencies in a given append-nodes context.
+ *
+ * Delegates to a `Map` rather than being one: compiled, assigning `index`
+ * to a `Map` instance crashes the process.
  */
-export type PeerContext = Map<string, PeerContextEntry> & {
+export class PeerContext implements Map<string, PeerContextEntry> {
+  #map = new Map<string, PeerContextEntry>()
   index?: number
+  get size() {
+    return this.#map.size
+  }
+  get [Symbol.toStringTag]() {
+    return 'Map' as const
+  }
+  clear() {
+    this.#map.clear()
+  }
+  delete(name: string) {
+    return this.#map.delete(name)
+  }
+  forEach(
+    fn: (
+      value: PeerContextEntry,
+      key: string,
+      map: Map<string, PeerContextEntry>,
+    ) => void,
+    thisArg?: unknown,
+  ) {
+    for (const [name, entry] of this.#map)
+      fn.call(thisArg, entry, name, this)
+  }
+  get(name: string) {
+    return this.#map.get(name)
+  }
+  has(name: string) {
+    return this.#map.has(name)
+  }
+  set(name: string, entry: PeerContextEntry) {
+    this.#map.set(name, entry)
+    return this
+  }
+  entries() {
+    return this.#map.entries()
+  }
+  keys() {
+    return this.#map.keys()
+  }
+  values() {
+    return this.#map.values()
+  }
+  [Symbol.iterator]() {
+    return this.#map[Symbol.iterator]()
+  }
 }

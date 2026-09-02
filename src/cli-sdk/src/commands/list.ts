@@ -187,7 +187,7 @@ export const command: CommandFn<ListResult> = async conf => {
     // workspaces as top-level items
     if (monorepo && graph) {
       for (const workspace of monorepo.filter(conf.values)) {
-        const w: Node | undefined = graph.nodes.get(workspace.id)
+        const w: Node | undefined = graph.getNode(workspace.id)
         if (w) {
           importers.add(w)
           selectImporters.push(`[name="${w.name}"]`)
@@ -204,7 +204,7 @@ export const command: CommandFn<ListResult> = async conf => {
     (
       graph &&
       selectImporters.length &&
-      selectImporters.length < graph.importers.size
+      selectImporters.length < graph.importersSize()
     ) ?
       selectImportersQueryString
     : projectQueryString

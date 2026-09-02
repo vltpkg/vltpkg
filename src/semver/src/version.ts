@@ -23,13 +23,13 @@ const safeNumber = (
   return n
 }
 
-const re = {
-  prefix: /^[ v=]+/,
-  main: /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)/,
-  prerelease: /-([0-9a-zA-Z_.-]+)(?:$|\+)/,
-  build: /\+([0-9a-zA-Z_.-]+)$/,
-  full: /^[ v=]*(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9a-zA-Z_.-]+))?(?:\+([0-9a-zA-Z_.-]+))?$/,
-} as const
+// perry: a regexp only keeps its methods when the receiver is statically a
+// regexp. Reached through a property (`re.full.exec()`) `exec` is undefined,
+// so these stay module-level bindings rather than fields of one object.
+const rePrefix = /^[ v=]+/
+const reMain = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)/
+const reFull =
+  /^[ v=]*(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9a-zA-Z_.-]+))?(?:\+([0-9a-zA-Z_.-]+))?$/
 
 const invalidVersion = (
   version: string,
@@ -101,7 +101,7 @@ export class Version {
 
   /** Generate a `Version` object from a SemVer string */
   static parse(version: string) {
-    version = version.replace(re.prefix, '').trim()
+    version = version.replace(rePrefix, '').trim()
     if (version.length > 256) {
       throw invalidVersion(
         version,
@@ -109,9 +109,9 @@ export class Version {
       )
     }
 
-    const parsed = re.full.exec(version)
+    const parsed = reFull.exec(version)
     if (!parsed) {
-      const main = re.main.exec(version)
+      const main = reMain.exec(version)
       if (!main) {
         throw invalidVersion(
           version,

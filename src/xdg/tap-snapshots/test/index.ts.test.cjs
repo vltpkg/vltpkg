@@ -5,6 +5,29 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > $HOME wins over homedir() > must match snapshot 1`] = `
+Object {
+  "base": Object {
+    "cache": "/env-home/Library/Caches",
+    "config": "/env-home/Library/Preferences",
+    "data": "/env-home/Library/Application Support",
+    "runtime": "/tmp/501/.run",
+    "state": "/env-home/Library/State",
+  },
+  "cache": "/env-home/Library/Caches/app/test",
+  "cacheBase": "/env-home/Library/Caches/app",
+  "config": "/env-home/Library/Preferences/app/test",
+  "configBase": "/env-home/Library/Preferences/app",
+  "data": "/env-home/Library/Application Support/app/test",
+  "dataBase": "/env-home/Library/Application Support/app",
+  "name": "app",
+  "runtime": "/tmp/501/.run/app/test",
+  "runtimeBase": "/tmp/501/.run/app",
+  "state": "/env-home/Library/State/app/test",
+  "stateBase": "/env-home/Library/State/app",
+}
+`
+
 exports[`test/index.ts > TAP > darwin > defaults > must match snapshot 1`] = `
 Object {
   "base": Object {

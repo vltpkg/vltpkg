@@ -216,6 +216,8 @@ const { captureStackTrace } = Error as {
   captureStackTrace?: ErrorConstructor['captureStackTrace']
 }
 
+const compiled = 'perry' in process.versions
+
 export type ErrorCtor<T extends Error> = new (
   message: string,
   options?: { cause: Error | ErrorCauseOptions },
@@ -250,7 +252,15 @@ function create<T extends Error>(
   from: Function = defaultFrom,
 ) {
   const er = new cls(message, cause ? { cause } : undefined)
-  captureStackTrace?.(er, from)
+  /* c8 ignore start - only one of these branches runs per runtime */
+  if (compiled) {
+    // compiled: `new cls()` reached through a binding drops the options
+    // argument, and `captureStackTrace` overwrites `message` with garbage
+    if (cause) (er as { cause?: unknown }).cause = cause
+  } else {
+    captureStackTrace?.(er, from)
+  }
+  /* c8 ignore stop */
   return er
 }
 

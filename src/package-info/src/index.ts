@@ -433,7 +433,7 @@ export class PackageInfoClient {
         'Not in a monorepo, cannot resolve workspace spec',
       )
     }
-    const ws = this.monorepo.get(workspace)
+    const ws = this.monorepo.getWorkspace(workspace)
     if (!ws) {
       throw this.#resolveError(spec, options, 'workspace not found', {
         wanted: workspace,
@@ -758,10 +758,11 @@ export class PackageInfoClient {
         // and racing writers for the same path.
         if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
           this.#manifestWritePaths.add(cachePath)
-          void this.#writeManifestCache(
+          const write = this.#writeManifestCache(
             cachePath,
             JSON.stringify(mani),
           )
+          if ('perry' in process.versions) await write
         }
 
         return mani

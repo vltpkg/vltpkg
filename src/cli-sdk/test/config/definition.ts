@@ -4,6 +4,7 @@ const {
   commands,
   definition,
   getCommand,
+  commandAliasList,
   getSortedKeys,
   isRecordField,
   recordFields,
@@ -170,6 +171,11 @@ t.test('getCommand', async t => {
   t.equal(getCommand('__wut__'), undefined)
   t.equal(getCommand(), undefined)
   t.equal(getCommand('?'), 'help')
+})
+
+t.test('commandAliasList', async t => {
+  t.ok(commandAliasList('install').includes('i'))
+  t.strictSame(commandAliasList('__nope__'), [])
 })
 
 t.test('getSortedKeys', async t => {

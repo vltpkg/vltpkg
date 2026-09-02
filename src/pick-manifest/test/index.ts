@@ -29,7 +29,7 @@ const typechecks = () => {
   //@ts-expect-error
   mm.true = false
 }
-void typechecks
+typechecks
 
 t.test('basic carat range selection', t => {
   const metadata = {

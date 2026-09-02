@@ -13,5 +13,5 @@ export const reloadConfig = async (
     /* c8 ignore next */
   } catch {}
 
-  return Config.load(folder, process.argv, true)
+  return Config.load(folder, process.argv.slice(2), true)
 }

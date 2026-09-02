@@ -3,10 +3,12 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { Graph } from '../../src/graph.ts'
-import { asDependency } from '../../src/dependencies.ts'
+import {
+  asDependency,
+  AddImportersDependenciesMap,
+} from '../../src/dependencies.ts'
 import type {
   Dependency,
-  AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
@@ -86,7 +88,7 @@ t.test('updatePackageJson', async t => {
   )
   graph.addEdge('prod', becomeProdSpec, root, becomeProd)
 
-  const add = new Map<DepID, Map<string, Dependency>>([
+  const add = new AddImportersDependenciesMap([
     [
       rootID,
       new Map<string, Dependency>([
@@ -113,7 +115,7 @@ t.test('updatePackageJson', async t => {
         ],
       ]),
     ],
-  ]) as AddImportersDependenciesMap
+  ])
 
   // spies on packageJson.save method to assert behavior
   const retrieveManifestResult = t.capture(packageJson, 'save').args

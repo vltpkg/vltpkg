@@ -230,7 +230,7 @@ export const command: CommandFn<QueryResult> = async conf => {
     // workspaces as top-level items
     if (monorepo && graph) {
       for (const workspace of monorepo.filter(conf.values)) {
-        const w: Node | undefined = graph.nodes.get(workspace.id)
+        const w: Node | undefined = graph.getNode(workspace.id)
         if (w) {
           importers.add(w)
           scopeIDs.push(workspace.id)

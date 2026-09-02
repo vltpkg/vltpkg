@@ -9,6 +9,7 @@ import { globSync } from 'glob'
 import type { DepResults } from '@vltpkg/graph-run'
 import { graphRun, graphRunSync } from '@vltpkg/graph-run'
 import { minimatch } from 'minimatch'
+import { readdirSync, statSync } from 'node:fs'
 import { basename, posix, resolve } from 'node:path'
 import type { Path } from 'path-scurry'
 import { PathScurry } from 'path-scurry'
@@ -174,16 +175,31 @@ export type MonorepoOptions = {
  * running `Config.load()`, since it stops seeking the route when a
  * `vlt.json` file is encountered.
  */
+
+type MonoState = {
+  workspaces: Map<string, Workspace>
+  groups: Map<string, Set<Workspace>>
+  config?: WorkspaceConfigObject
+}
+
+// compiled: private fields on Monorepo fail when the method is called
+// from another module (class-copy brand). WeakMap is keyed by identity.
+const monoState = new WeakMap<object, MonoState>()
+const st = (m: object): MonoState => {
+  let s = monoState.get(m)
+  if (!s) {
+    s = { workspaces: new Map(), groups: new Map() }
+    monoState.set(m, s)
+  }
+  return s
+}
+
 export class Monorepo {
   /** The project root where vlt.json is found */
   projectRoot: string
   /** Scurry object to cache all filesystem calls (mostly globs) */
   scurry: PathScurry
 
-  // maps both name and path to the workspace objects
-  #workspaces = new Map<string, Workspace>()
-  #groups = new Map<string, Set<Workspace>>()
-  #config?: WorkspaceConfigObject
   packageJson: PackageJson
 
   /**
@@ -197,7 +213,7 @@ export class Monorepo {
     this.projectRoot = resolve(projectRoot)
     this.scurry = options.scurry ?? new PathScurry(projectRoot)
     this.packageJson = options.packageJson ?? new PackageJson()
-    this.#config = options.config
+    st(this).config = options.config
     if (options.load) this.load(options.load)
   }
 
@@ -211,11 +227,10 @@ export class Monorepo {
    * - `{"apps": "src/*"}` => `{apps: ["src/*"]}`
    */
   get config(): WorkspaceConfigObject {
-    if (this.#config) return this.#config
-    this.#config = asWSConfig(
-      load('workspaces', assertWSConfig) ?? {},
-    )
-    return this.#config
+    const s = st(this)
+    if (s.config) return s.config
+    s.config = asWSConfig(load('workspaces', assertWSConfig) ?? {})
+    return s.config
   }
 
   /**
@@ -223,6 +238,12 @@ export class Monorepo {
    * topological dependency order as possible.
    */
   *[Symbol.iterator](): Generator<Workspace, void, void> {
+    /* c8 ignore start */
+    if ('perry' in process.versions) {
+      yield* this.workspaceList()
+      return
+    }
+    /* c8 ignore stop */
     const [ws] = [...this.values()]
     if (!ws) return
     // leverage the fact that graphRun returns results in
@@ -278,9 +299,9 @@ export class Monorepo {
     const groupsExpanded: Record<string, Set<string>> = {}
     for (const [group, pattern] of Object.entries(this.config)) {
       if (groups.size && !groups.has(group)) continue
-      groupsExpanded[group] = this.#glob(pattern)
+      groupsExpanded[group] = this.glob(pattern)
     }
-    const filter = paths.size ? this.#glob([...paths]) : paths
+    const filter = paths.size ? this.glob([...paths]) : paths
 
     // if we specified paths, but none matched, nothing to do
     if (paths.size && !filter.size) return this
@@ -288,7 +309,7 @@ export class Monorepo {
     for (const [group, matches] of Object.entries(groupsExpanded)) {
       for (const path of matches) {
         if (filter.size && !filter.has(path)) continue
-        this.#loadWS(path, group)
+        this.loadWS(path, group)
       }
     }
 
@@ -297,9 +318,9 @@ export class Monorepo {
 
   // Either load a workspace from disk, or from our internal set,
   // and assign it to the named group
-  #loadWS(path: string, group?: string): Workspace {
+  loadWS(path: string, group?: string): Workspace {
     const fullpath = resolve(this.projectRoot, path)
-    const loaded = this.#workspaces.get(fullpath)
+    const loaded = st(this).workspaces.get(fullpath)
     if (loaded) return loaded
     const fromCache = workspaceCache.get(fullpath)
     const manifest =
@@ -308,7 +329,7 @@ export class Monorepo {
     if (group) ws.groups.push(group)
 
     // Check for duplicate workspace names
-    const existingWS = this.#workspaces.get(ws.name)
+    const existingWS = st(this).workspaces.get(ws.name)
     if (existingWS && existingWS.fullpath !== ws.fullpath) {
       throw error('Duplicate workspace name found', {
         name: ws.name,
@@ -318,20 +339,20 @@ export class Monorepo {
       })
     }
 
-    this.#workspaces.set(ws.fullpath, ws)
-    this.#workspaces.set(ws.path, ws)
-    this.#workspaces.set(ws.name, ws)
+    st(this).workspaces.set(ws.fullpath, ws)
+    st(this).workspaces.set(ws.path, ws)
+    st(this).workspaces.set(ws.name, ws)
     for (const name of ws.groups) {
-      const group = this.#groups.get(name) ?? new Set()
+      const group = st(this).groups.get(name) ?? new Set()
       group.add(ws)
-      this.#groups.set(name, group)
+      st(this).groups.set(name, group)
     }
     return ws
   }
 
   // can't be cached, because it's dependent on the matches set
   // but still worthwhile to have it defined in one place
-  #globOptions(
+  globOptions(
     matches: Set<string>,
     parseErrors?: Map<string, unknown>,
   ): GlobOptionsWithFileTypesFalse {
@@ -339,10 +360,10 @@ export class Monorepo {
     // then we should not explore further down that directory tree.
     // if we hit the projectRoot then stop searching.
     const inMatches = (p?: Path): boolean => {
-      return (
-        !!p?.relativePosix() &&
-        (matches.has(p.relativePosix()) || inMatches(p.parent))
-      )
+      /* c8 ignore next - compiled: p?.relativePosix() still invokes */
+      if (!p) return false
+      const rel = p.relativePosix()
+      return !!rel && (matches.has(rel) || inMatches(p.parent))
     }
 
     return {
@@ -369,6 +390,7 @@ export class Monorepo {
           }
           if (!p.isDirectory()) return true
           const pj = p.resolve('package.json').lstatSync()
+          // compiled: `pj?.isFile()` still invokes isFile when pj is missing
           if (!pj?.isFile()) return true
           try {
             this.packageJson.read(p.fullpath())
@@ -392,10 +414,130 @@ export class Monorepo {
     }
   }
 
-  #glob(pattern: string[] | string) {
+  // compiled: glob+path-scurry Path #fields throw from this module.
+  // Walk with node:fs. minimatch `.test` dispatches wrong compiled.
+  /* c8 ignore start */
+  globWalk(
+    pattern: string[] | string,
+    matches: Set<string>,
+    parseErrors: Map<string, unknown>,
+  ) {
+    const matchSeg = (pat: string, s: string): boolean => {
+      let star = -1
+      let ssi = 0
+      let i = 0
+      let j = 0
+      while (j < s.length) {
+        if (i < pat.length && (pat[i] === '?' || pat[i] === s[j])) {
+          i++
+          j++
+          continue
+        }
+        if (i < pat.length && pat[i] === '*') {
+          star = i
+          ssi = j
+          i++
+          continue
+        }
+        if (star !== -1) {
+          i = star + 1
+          ssi++
+          j = ssi
+          continue
+        }
+        return false
+      }
+      while (i < pat.length && pat[i] === '*') i++
+      return i === pat.length
+    }
+    const globMatch = (pat: string, s: string): boolean => {
+      const pp = pat.split('/')
+      const ss = s.split('/')
+      const segs = (pi: number, si: number): boolean => {
+        while (pi < pp.length && si < ss.length) {
+          const p = pp[pi]!
+          if (p === '**') {
+            if (pi === pp.length - 1) return true
+            for (let k = si; k <= ss.length; k++) {
+              if (segs(pi + 1, k)) return true
+            }
+            return false
+          }
+          if (!matchSeg(p, ss[si]!)) return false
+          pi++
+          si++
+        }
+        while (pi < pp.length && pp[pi] === '**') pi++
+        return pi === pp.length && si === ss.length
+      }
+      return segs(0, 0)
+    }
+    const patterns = typeof pattern === 'string' ? [pattern] : pattern
+    const walk = (abs: string, rel: string) => {
+      let names: string[]
+      try {
+        names = readdirSync(abs)
+      } catch {
+        return
+      }
+      for (const name of names) {
+        if (name === 'node_modules' || name === '.git') continue
+        const childRel = rel ? `${rel}/${name}` : name
+        const childAbs = resolve(abs, name)
+        let st
+        try {
+          st = statSync(childAbs)
+        } catch {
+          continue
+        }
+        if (!st.isDirectory()) continue
+        const matched = patterns.some(p => globMatch(p, childRel))
+        if (matched) {
+          let nested = false
+          const maybeDelete: string[] = []
+          for (const m of matches) {
+            if (childRel.startsWith(m + '/')) {
+              nested = true
+              break
+            }
+            if (m.startsWith(childRel + '/')) maybeDelete.push(m)
+          }
+          if (!nested) {
+            let pj
+            try {
+              pj = statSync(resolve(childAbs, 'package.json'))
+            } catch {
+              pj = undefined
+            }
+            if (pj && pj.isFile()) {
+              try {
+                this.packageJson.read(childAbs)
+                for (const m of maybeDelete) matches.delete(m)
+                matches.add(childRel)
+              } catch (err) {
+                if (isSyntaxError(err)) parseErrors.set(childRel, err)
+              }
+            }
+          }
+        }
+        if (matches.has(childRel)) continue
+        walk(childAbs, childRel)
+      }
+    }
+    walk(this.projectRoot, '')
+  }
+  /* c8 ignore stop */
+
+  glob(pattern: string[] | string) {
     const matches = new Set<string>()
     const parseErrors = new Map<string, unknown>()
-    globSync(pattern, this.#globOptions(matches, parseErrors))
+    /* c8 ignore start */
+    if ('perry' in process.versions) {
+      this.globWalk(pattern, matches, parseErrors)
+    } else {
+      /* c8 ignore stop */
+      globSync(pattern, this.globOptions(matches, parseErrors))
+    }
 
     // After the glob completes, check for JSON parse errors in paths
     // that are NOT nested inside an already-matched workspace.
@@ -451,13 +593,13 @@ export class Monorepo {
       if (!deps) continue
       for (const [dep, spec] of Object.entries(deps)) {
         if (spec.startsWith('workspace:')) {
-          let depWS = this.#workspaces.get(dep)
+          let depWS = st(this).workspaces.get(dep)
           if (!depWS) {
             if (!forceLoad) continue
             if (didForceLoad) continue
             didForceLoad = true
             this.load()
-            depWS = this.#workspaces.get(dep)
+            depWS = st(this).workspaces.get(dep)
             if (!depWS) continue
           }
           depWorkspaces.push(depWS)
@@ -486,7 +628,15 @@ export class Monorepo {
    * If the group is not one we know about, then undefined is returned.
    */
   group(group: string) {
-    return this.#groups.get(group)
+    return st(this).groups.get(group)
+  }
+
+  /**
+   * Lookup by name or path. Same as {@link Monorepo#get}; use this from
+   * another compiled module — `.get` dispatches to Map.
+   */
+  getWorkspace(nameOrPath: string) {
+    return st(this).workspaces.get(nameOrPath)
   }
 
   /**
@@ -496,14 +646,34 @@ export class Monorepo {
    * previous call to {@link Monorepo#load}.
    */
   get(nameOrPath: string) {
-    return this.#workspaces.get(nameOrPath)
+    return this.getWorkspace(nameOrPath)
+  }
+
+  /**
+   * Loaded workspaces, unique by fullpath. Prefer this over
+   * {@link Monorepo#values} from another compiled module.
+   */
+  workspaceList(): Workspace[] {
+    const seen = new Set<string>()
+    const list: Workspace[] = []
+    for (const ws of st(this).workspaces.values()) {
+      if (seen.has(ws.fullpath)) continue
+      seen.add(ws.fullpath)
+      list.push(ws)
+    }
+    return list
+  }
+
+  /** Whether any workspaces are loaded. */
+  hasWorkspaces(): boolean {
+    return st(this).workspaces.size !== 0
   }
 
   /**
    * get the list of all loaded workspace names used as keys
    */
   *names() {
-    for (const [key, ws] of this.#workspaces) {
+    for (const [key, ws] of st(this).workspaces) {
       if (key === ws.name) yield key
     }
   }
@@ -512,7 +682,7 @@ export class Monorepo {
    * get the list of all loaded workspace paths used as keys
    */
   *paths() {
-    for (const [key, ws] of this.#workspaces) {
+    for (const [key, ws] of st(this).workspaces) {
       if (key === ws.path) yield key
     }
   }
@@ -524,12 +694,7 @@ export class Monorepo {
    * and should be used instead when order doesn't matter.
    */
   *values() {
-    const seen = new Set<string>()
-    for (const ws of this.#workspaces.values()) {
-      if (seen.has(ws.fullpath)) continue
-      seen.add(ws.fullpath)
-      yield ws
-    }
+    yield* this.workspaceList()
   }
 
   /**
@@ -552,10 +717,15 @@ export class Monorepo {
     workspace: namesOrPaths,
     'workspace-group': groupName,
   }: WorkspacesLoadedConfig) {
-    const globPatternChecks = namesOrPaths?.map(glob =>
-      minimatch.filter(posix.join(glob)),
-    )
-    for (const ws of this) {
+    /* c8 ignore start */
+    const globPatternChecks =
+      'perry' in process.versions ?
+        undefined
+      : namesOrPaths?.map(glob => minimatch.filter(posix.join(glob)))
+    const iter =
+      'perry' in process.versions ? this.workspaceList() : this
+    /* c8 ignore stop */
+    for (const ws of iter) {
       // check if any group has any of the provided group names
       if (groupName?.some(i => ws.groups.includes(i))) {
         yield ws
@@ -599,7 +769,7 @@ export class Monorepo {
     ) => Promise<R> | R,
     forceLoad = false,
   ) {
-    const [ws, ...rest] = [...this.#workspaces.values()]
+    const [ws, ...rest] = [...st(this).workspaces.values()]
     if (!ws) {
       throw error('No workspaces loaded', undefined, this.run)
     }
@@ -632,7 +802,7 @@ export class Monorepo {
     ) => R,
     forceLoad = false,
   ) {
-    const [ws, ...rest] = [...this.#workspaces.values()]
+    const [ws, ...rest] = [...st(this).workspaces.values()]
     if (!ws) {
       throw error('No workspaces loaded', undefined, this.run)
     }

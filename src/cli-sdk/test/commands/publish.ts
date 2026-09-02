@@ -1604,7 +1604,7 @@ t.test('publish command with recursive', async t => {
 
 t.test('publish command fallback to projectRoot', async t => {
   t.test(
-    'uses projectRoot when package.json.find returns null',
+    'uses projectRoot when package.json.findPath returns null',
     async t => {
       // Store original request
       const tempRequest = RegistryClient.prototype.request
@@ -1642,8 +1642,8 @@ t.test('publish command fallback to projectRoot', async t => {
 
       const packageJson = new PackageJson()
       // Override find to return null for process.cwd(), projectRoot for dir
-      const originalFind = packageJson.find.bind(packageJson)
-      packageJson.find = (cwd?: string) => {
+      const originalFind = packageJson.findPath.bind(packageJson)
+      packageJson.findPath = (cwd?: string) => {
         if (cwd === '/fake/path') return undefined
         if (cwd === dir) return resolve(dir, 'package.json')
         return originalFind(cwd)

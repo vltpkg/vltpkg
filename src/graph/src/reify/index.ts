@@ -229,9 +229,10 @@ const reify_ = async (
   ).concat(deleteEdges(diff, scurry, remover))
 
   // need to wait, so that the nodes exist to link to
-  if (actions.length) await callLimit(actions, { limit })
+  if (actions.length) {
+    await callLimit(actions, { limit })
+  }
 
-  // create all node_modules symlinks, and link bins to nm/.bin
   const edgeActions = addEdges(diff, scurry, remover)
   if (edgeActions.length) await callLimit(edgeActions, { limit })
 

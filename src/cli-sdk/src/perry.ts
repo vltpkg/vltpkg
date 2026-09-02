@@ -8,7 +8,7 @@
  * of the Node-compatible SDK.
  */
 import { basename } from 'node:path'
-import { InstallReporter } from './commands/install/reporter-tui.ts'
+import { InstallReporterTui } from './commands/install/reporter-tui.ts'
 import { setInstallReporter } from './commands/install/reporter.ts'
 import { runDaemon } from './daemons.ts'
 import vlt from './index.ts'
@@ -16,7 +16,7 @@ import type { Commands } from './config/definition.ts'
 
 // only the compiled entry may import `perry/tui`, so this is where the TUI
 // reporter is handed to the install commands
-setInstallReporter(InstallReporter)
+setInstallReporter(InstallReporterTui)
 
 const binCommands: Record<string, keyof Commands> = {
   vlr: 'run',
@@ -37,6 +37,6 @@ if (daemon) {
     : process.argv[1]) ?? 'vlt',
   ).replace(/\.[cm]?[jt]s$|\.exe$/, '')
   const command = binCommands[bin]
-  if (command) process.argv.splice(2, 0, command)
-  await vlt()
+  const args = process.argv.slice(2)
+  await vlt(command ? [command, ...args] : args)
 }

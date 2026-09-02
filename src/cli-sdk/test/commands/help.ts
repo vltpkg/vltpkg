@@ -4,6 +4,16 @@ import type { LoadedConfig } from '../../src/config/index.ts'
 t.cleanSnapshot = (s: string) =>
   s.replaceAll(/v\d+\.\d+\.\d+(-[a-z0-9.-]+)?/g, '{{VERSION}}')
 
+t.test('colored default help', async t => {
+  const { generateDefaultHelp, generateFullHelp } =
+    await import('../../src/custom-help.ts')
+  const plain = generateDefaultHelp(false)
+  const colored = generateDefaultHelp(true)
+  t.match(colored, /vlt/)
+  t.not(colored, plain, 'ansi codes when colors on')
+  t.match(generateFullHelp(true), /COMMANDS/)
+})
+
 t.test('basic', async t => {
   const { usage, command } =
     await import('../../src/commands/help.ts')

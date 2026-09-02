@@ -3,8 +3,11 @@ import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
 
 export const defaultView =
-  // If stdout is a TTY, use human output
-  process.stdout.isTTY ? 'human'
+  // compiled: stdout.isTTY is always false, so default human (CLI users)
+  /* c8 ignore next */
+  'perry' in process.versions ? 'human'
+    // If stdout is a TTY, use human output
+  : process.stdout.isTTY ? 'human'
     // If its not a TTY but is a CI environment, use human output
     // TODO: make a better view option for CI environments
   : process.env.CI ? 'human'
@@ -104,6 +107,10 @@ export const commandAliases = Object.entries(aliases).reduce(
   },
   new Map<string, string[]>(),
 )
+
+/** same-module Map access: compiled `.get` from another file hits Array. */
+export const commandAliasList = (command: string): string[] =>
+  commandAliases.get(command) ?? []
 
 export type Commands = typeof commands
 

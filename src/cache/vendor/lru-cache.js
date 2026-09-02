@@ -3,7 +3,9 @@
  *
  * lru-cache@11.5.2 dist/esm/index.js (perry-patches applied), vendored
  * because the bare 'lru-cache' specifier is intercepted by a Perry
- * native binding whose class cannot be safely subclassed.
+ * native binding whose class cannot be safely subclassed. The class is
+ * renamed per copy: a shared name makes the copies share private-field
+ * slots.
  * Types come from the sibling .d.ts, which re-exports the npm
  * package's. Regenerate after an lru-cache version bump:
  * node scripts/perry/gen/lru-cache-modules.mjs
@@ -110,7 +112,7 @@ class Stack {
  *
  * Changing any of these will alter the defaults for subsequent method calls.
  */
-export class LRUCache {
+export class LRUCacheCache {
     // options that cannot be changed without disaster
     #max;
     #maxSize;
@@ -403,7 +405,7 @@ export class LRUCache {
                 warned.add(code);
                 const msg = 'TTL caching without ttlAutopurge, max, or maxSize can ' +
                     'result in unbounded memory consumption.';
-                emitWarning(msg, 'UnboundedCacheWarning', code, LRUCache);
+                emitWarning(msg, 'UnboundedCacheWarning', code, LRUCacheCache);
             }
         }
     }

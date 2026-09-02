@@ -6,9 +6,9 @@ import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
 import { getDependencies, shorten } from '../dependencies.ts'
 import { compareByType, getOrderedDependencies } from './sorting.ts'
+import { PeerContext } from './types.ts'
 import type {
   ProcessPlacementResultEntry,
-  PeerContext,
   PeerContextEntry,
   PeerContextEntryInput,
   ProcessPlacementResult,
@@ -327,26 +327,41 @@ export const checkPeerEdgesCompatible = (
     // CHECK 3: Does parent's manifest declare this peer, with a different
     // satisfying node already in the graph?
     const manifest = fromNode.manifest
-    let declared: string | undefined
+    // compiled: `let x` inside `for (const peerName in …)` is not
+    // re-initialized; leftover `declared` from a previous peer was
+    // reused. Always write a clear value.
+    let declared = ''
+    declared = ''
     let declaredType: DependencyTypeLong | undefined
+    declaredType = undefined
 
     if (manifest) {
       for (const depType of longDependencyTypes) {
         const deps = manifest[depType]
         if (
-          deps &&
-          typeof deps === 'object' &&
-          !Array.isArray(deps) &&
-          peerName in deps
+          !deps ||
+          typeof deps !== 'object' ||
+          Array.isArray(deps)
         ) {
-          declared = deps[peerName]
+          continue
+        }
+        let found = ''
+        found = ''
+        for (const pair of Object.entries(deps)) {
+          if (pair[0] === peerName) {
+            found = pair[1]
+            break
+          }
+        }
+        if (found !== '') {
+          declared = found
           declaredType = depType
           break
         }
       }
     }
 
-    if (declared && declaredType) {
+    if (declared !== '' && declaredType) {
       const parentSpec = Spec.parse(peerName, declared, parseOpts)
       // If existing edge target already satisfies parent's declared spec,
       // there's no conflict - the parent can use the same node as the existing
@@ -573,7 +588,7 @@ export const forkPeerContext = (
   }
 
   // create a new peer context set
-  const nextPeerContext: PeerContext = new Map()
+  const nextPeerContext = new PeerContext()
   nextPeerContext.index = graph.nextPeerContextIndex()
   // register it in the graph
   graph.peerContexts[nextPeerContext.index] = nextPeerContext
@@ -736,7 +751,7 @@ export const startPeerPlacement = (
 export const endPeerPlacement = (
   peerContext: PeerContext,
   nextDeps: Dependency[],
-  nextPeerDeps: Map<string, Dependency> & { id?: number },
+  nextPeerDeps: Map<string, Dependency>,
   graph: Graph,
   spec: Spec,
   fromNode: Node,

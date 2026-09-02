@@ -118,10 +118,10 @@ const visit = async (
   // "If there is a binding.gyp file in the root of your package and you
   // haven't defined your own install or preinstall scripts, npm will default
   // the install command to compile using node-gyp via node-gyp rebuild"
-  const hasBindingGyp =
-    scurry
-      .lstatSync(join(node.resolvedLocation(scurry), 'binding.gyp'))
-      ?.isFile() ?? false
+  const bindingGyp = scurry.lstatSync(
+    join(node.resolvedLocation(scurry), 'binding.gyp'),
+  )
+  const hasBindingGyp = !!bindingGyp && bindingGyp.isFile()
   const hasImplicitInstall = hasBindingGyp && !install && !preinstall
 
   // if it has install script or binding.gyp (implicit install), run it

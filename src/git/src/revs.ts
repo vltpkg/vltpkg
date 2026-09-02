@@ -7,7 +7,7 @@ import type {
 // is intercepted by a Perry native binding in compiled builds. Same
 // code, npm types.
 // eslint-disable-next-line import/extensions -- plain-JS vendored file
-import { LRUCache } from '../vendor/lru-cache.js'
+import { LRUCacheGit } from '../vendor/lru-cache.js'
 import { fileURLToPath } from 'node:url'
 import type { GitOptions } from './index.ts'
 import { linesToRevs } from './lines-to-revs.ts'
@@ -25,7 +25,7 @@ const fetchMethod = async (
   return revsDoc
 }
 
-const revsCache = new LRUCache<string, RevDoc, GitOptions>({
+const revsCache = new LRUCacheGit<string, RevDoc, GitOptions>({
   max: 100,
   ttl: 5 * 60 * 1000,
   allowStaleOnFetchAbort: true,

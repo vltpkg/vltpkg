@@ -254,7 +254,7 @@ t.test('pick', async t => {
         positionals: ['get'],
       })
 
-      config.options.packageJson.find = () => undefined
+      config.options.packageJson.findPath = () => undefined
 
       t.strictSame(
         await Command.command(
@@ -1838,7 +1838,7 @@ t.test('get with no arguments', async t => {
     positionals: ['get'],
   })
 
-  config.options.packageJson.find = () => dir
+  config.options.packageJson.findPath = () => dir
   config.options.packageJson.read = () => ({
     name: 'test',
     version: '1.0.0',
@@ -1866,7 +1866,7 @@ t.test('single package mode - fallback to projectRoot', async t => {
     positionals: ['get', 'name'],
   })
 
-  config.options.packageJson.find = () => undefined
+  config.options.packageJson.findPath = () => undefined
   config.options.packageJson.read = () => ({
     name: 'test-project',
     version: '1.0.0',
@@ -1876,12 +1876,12 @@ t.test('single package mode - fallback to projectRoot', async t => {
   t.strictSame(
     result,
     'test-project',
-    'should fallback to projectRoot when PackageJson.find returns undefined',
+    'should fallback to projectRoot when PackageJson.findPath returns undefined',
   )
 })
 
 t.test(
-  'single package mode - PackageJson.find returns current directory',
+  'single package mode - PackageJson.findPath returns current directory',
   async t => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -1896,7 +1896,7 @@ t.test(
       positionals: ['get', 'name'],
     })
 
-    config.options.packageJson.find = () => dir
+    config.options.packageJson.findPath = () => dir
     config.options.packageJson.read = () => ({
       name: 'test-project',
       version: '1.0.0',
@@ -1906,7 +1906,7 @@ t.test(
     t.strictSame(
       result,
       'test-project',
-      'should use PackageJson.find result when it returns a valid path',
+      'should use PackageJson.findPath result when it returns a valid path',
     )
   },
 )

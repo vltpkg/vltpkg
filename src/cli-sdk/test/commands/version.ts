@@ -60,7 +60,7 @@ class MockConfig {
     this.values.packageJson = {
       read: (_cwd: string) => ({ ...this.packageJsonContent }),
       maybeRead: (_cwd: string) => ({ ...this.packageJsonContent }),
-      find: (cwd: string) => {
+      findPath: (cwd: string) => {
         // If cwd is already a package.json path, check if it should exist
         if (basename(cwd) === 'package.json') {
           const dir = dirname(cwd)
@@ -666,8 +666,8 @@ t.test('version command with scope', async t => {
     conf.projectRoot = dir
     conf.writtenManifests = []
 
-    // Override packageJson.find to work with test directories
-    conf.values.packageJson.find = (cwd: string) => {
+    // Override packageJson.findPath to work with test directories
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
@@ -796,8 +796,8 @@ t.test('version command with workspace paths', async t => {
     conf.projectRoot = dir
     conf.writtenManifests = []
 
-    // Override packageJson.find to work with test directories
-    conf.values.packageJson.find = (cwd: string) => {
+    // Override packageJson.findPath to work with test directories
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
@@ -878,7 +878,7 @@ t.test('version command workspace filtering modes', async t => {
     })
     conf.projectRoot = dir
     conf.writtenManifests = []
-    conf.values.packageJson.find = (cwd: string) => {
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a')))
         return resolve(dir, 'packages/a/package.json')
       return null
@@ -943,7 +943,7 @@ t.test('version command workspace filtering modes', async t => {
     })
     conf.projectRoot = dir
     conf.writtenManifests = []
-    conf.values.packageJson.find = (cwd: string) => {
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a')))
         return resolve(dir, 'packages/a/package.json')
       return null
@@ -1007,7 +1007,7 @@ t.test('version command workspace filtering modes', async t => {
     })
     conf.projectRoot = dir
     conf.writtenManifests = []
-    conf.values.packageJson.find = (cwd: string) => {
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a')))
         return resolve(dir, 'packages/a/package.json')
       return null
@@ -1071,7 +1071,7 @@ t.test('version command workspace filtering modes', async t => {
     })
     conf.projectRoot = dir
     conf.writtenManifests = []
-    conf.values.packageJson.find = (cwd: string) => {
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a')))
         return resolve(dir, 'packages/a/package.json')
       if (cwd.includes(join('packages', 'b')))
@@ -1142,8 +1142,8 @@ t.test('version command with workspace-group', async t => {
     conf.projectRoot = dir
     conf.writtenManifests = []
 
-    // Override packageJson.find to work with test directories
-    conf.values.packageJson.find = (cwd: string) => {
+    // Override packageJson.findPath to work with test directories
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
@@ -1236,8 +1236,8 @@ t.test('version command with recursive', async t => {
     conf.projectRoot = dir
     conf.writtenManifests = []
 
-    // Override packageJson.find to work with test directories
-    conf.values.packageJson.find = (cwd: string) => {
+    // Override packageJson.findPath to work with test directories
+    conf.values.packageJson.findPath = (cwd: string) => {
       if (cwd.includes(join('packages', 'a'))) {
         return resolve(dir, 'packages/a/package.json')
       }
@@ -1308,7 +1308,7 @@ t.test('human view with arrays', async t => {
 
 t.test('version command fallback to projectRoot', async t => {
   t.test(
-    'uses projectRoot when package.json.find returns null',
+    'uses projectRoot when package.json.findPath returns null',
     async t => {
       const semverModule = await import('@vltpkg/semver')
 
@@ -1328,8 +1328,8 @@ t.test('version command fallback to projectRoot', async t => {
       conf.projectRoot = dir
       conf.writtenManifests = []
 
-      // Override packageJson.find to return null for process.cwd()
-      conf.values.packageJson.find = (cwd: string) => {
+      // Override packageJson.findPath to return null for process.cwd()
+      conf.values.packageJson.findPath = (cwd: string) => {
         if (cwd === dir) {
           return resolve(dir, 'package.json')
         }

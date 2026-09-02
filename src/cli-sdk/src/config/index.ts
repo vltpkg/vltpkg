@@ -392,8 +392,13 @@ export class Config {
 
   /**
    * Parse the arguments and set configuration and positionals accordingly.
+   *
+   * `args` is the CLI arguments alone — the runtime and the entry point are
+   * already dropped. jackspeak drops them itself only for an array that *is*
+   * `process.argv` (an identity check), and compiled `process.argv` hands
+   * back a fresh array on every read, so nothing can ever satisfy it.
    */
-  parse(args: string[] = process.argv): this & ParsedConfig {
+  parse(args: string[] = process.argv.slice(2)): this & ParsedConfig {
     if (isParsed(this)) return this
 
     // Store the original args for potential reload
@@ -788,7 +793,7 @@ export class Config {
    */
   static async load(
     projectRoot = process.cwd(),
-    argv = process.argv,
+    argv = process.argv.slice(2),
     /**
      * only used in tests, resets the memoization
      * @internal

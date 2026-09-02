@@ -12,10 +12,8 @@ type Reporter = new (
  * `import()` because the compiler does not follow a dynamic import, so the
  * TUI reporter would not be in the binary at all.
  */
-let registered: Reporter | undefined
-
 export const setInstallReporter = (reporter: Reporter): void => {
-  registered = reporter
+  ;(process as unknown as { __vltIR?: Reporter }).__vltIR = reporter
 }
 
 /**
@@ -24,4 +22,5 @@ export const setInstallReporter = (reporter: Reporter): void => {
  * cannot compile — never enters the binary's module graph.
  */
 export const installReporter = async (): Promise<Reporter> =>
-  registered ?? (await import('./reporter-ink.ts')).InstallReporter
+  (process as unknown as { __vltIR?: Reporter }).__vltIR ??
+  (await import('./reporter-ink.ts')).InstallReporter

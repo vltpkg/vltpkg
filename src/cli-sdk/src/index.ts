@@ -56,45 +56,56 @@ const loadVlt = async (cwd: string, argv: string[]) => {
   }
 }
 
-const run = async () => {
+const run = async (argv: string[] = process.argv.slice(2)) => {
   const start = Date.now()
   const cwd = process.cwd()
-  const vlt = await loadVlt(cwd, process.argv)
+  const vlt = await loadVlt(cwd, argv)
 
   if (vlt.get('version')) {
     return stdout(version)
   }
 
-  const { monorepo } = vlt.options
+  // compiled: Config.options → maybeLoad. Infer + `-w` still SIGBUS
+  // (Map size/get, minimatch.filter). Skip infer.
+  try {
+    const { monorepo } = vlt.options
 
-  // Infer the workspace by being in that directory.
-  if (vlt.get('workspace') === undefined) {
-    const ws = monorepo?.get(cwd)
-    if (ws) {
-      vlt.values.workspace = [ws.path]
-      vlt.options.workspace = [ws.path]
+    if (
+      /* c8 ignore next */
+      !('perry' in process.versions) &&
+      vlt.get('workspace') === undefined &&
+      monorepo
+    ) {
+      const ws = monorepo.getWorkspace(cwd)
+      if (ws) {
+        vlt.values.workspace = [ws.path]
+        vlt.options.workspace = [ws.path]
+      }
     }
-  }
 
-  if (
-    vlt.command !== 'init' &&
-    (vlt.get('workspace') || vlt.get('workspace-group')) &&
-    ![...(monorepo?.values() ?? [])].length
-  ) {
-    stderr(
-      `Error: No matching workspaces found. Make sure the vlt.json config contains the correct workspaces.`,
-    )
-    if (vlt.get('workspace')) {
-      stderr(indent(`Workspace: ${format(vlt.get('workspace'))}`))
-    }
-    if (vlt.get('workspace-group')) {
+    if (
+      vlt.command !== 'init' &&
+      (vlt.get('workspace') || vlt.get('workspace-group')) &&
+      !monorepo?.hasWorkspaces()
+    ) {
       stderr(
-        indent(
-          `Workspace Group: ${format(vlt.get('workspace-group'))}`,
-        ),
+        `Error: No matching workspaces found. Make sure the vlt.json config contains the correct workspaces.`,
       )
+      if (vlt.get('workspace')) {
+        stderr(indent(`Workspace: ${format(vlt.get('workspace'))}`))
+      }
+      if (vlt.get('workspace-group')) {
+        stderr(
+          indent(
+            `Workspace Group: ${format(vlt.get('workspace-group'))}`,
+          ),
+        )
+      }
+      return process.exit(process.exitCode || 1)
     }
-    return process.exit(process.exitCode || 1)
+  } catch (err) {
+    /* c8 ignore next */
+    if (!('perry' in process.versions)) throw err
   }
 
   if (vlt.command === 'registry') {

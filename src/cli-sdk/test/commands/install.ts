@@ -1,4 +1,8 @@
 import t from 'tap'
+import {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '@vltpkg/graph'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 const options = {}
@@ -353,6 +357,8 @@ t.test('frozen-lockfile flag', async t => {
         }
       },
       asDependency: (dep: any) => dep,
+      AddImportersDependenciesMap,
+      RemoveImportersDependenciesMap,
     },
   })
 
@@ -399,6 +405,8 @@ t.test('lockfile-only flag', async t => {
         }
       },
       asDependency: (dep: any) => dep,
+      AddImportersDependenciesMap,
+      RemoveImportersDependenciesMap,
     },
   })
 

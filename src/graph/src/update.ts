@@ -1,5 +1,9 @@
 import { load as actualLoad } from './actual/load.ts'
 import { buildIdealFromStartingGraph } from './ideal/build-ideal-from-starting-graph.ts'
+import {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from './dependencies.ts'
 import { reify } from './reify/index.ts'
 import { GraphModifier } from './modifiers.ts'
 import { init } from '@vltpkg/init'
@@ -40,10 +44,8 @@ export const update = async (options: UpdateOptions) => {
     const done = graphStep('build')
     const graph = await buildIdealFromStartingGraph({
       ...options,
-      add: Object.assign(new Map(), { modifiedDependencies: false }),
-      remove: Object.assign(new Map(), {
-        modifiedDependencies: false,
-      }),
+      add: new AddImportersDependenciesMap(),
+      remove: new RemoveImportersDependenciesMap(),
       graph: new Graph({ ...options, mainManifest }),
       modifiers,
       remover,

@@ -274,8 +274,14 @@ export const saveData = (
   fileName: string,
   saveManifests = false,
 ): void => {
-  const json = JSON.stringify(data, null, 2)
-  const content = saveManifests ? json : extraFormat(json)
+  // compiled: JSON.stringify(data, null, 2) dumps Array slots as binary
+  const compiled = 'perry' in process.versions
+  const json =
+    /* c8 ignore next */
+    compiled ? JSON.stringify(data) : JSON.stringify(data, null, 2)
+  const content =
+    /* c8 ignore next */
+    compiled || saveManifests ? json : extraFormat(json)
   writeFileSync(fileName, content)
 }
 

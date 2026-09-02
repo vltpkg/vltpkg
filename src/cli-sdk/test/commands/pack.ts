@@ -11,6 +11,15 @@ const makeTestConfig = (config: any) => ({
   get: (key: string) => config.values?.[key],
 })
 
+const mockMonorepo = (
+  workspaces: { name: string; fullpath: string }[],
+) => ({
+  [Symbol.iterator]: () => workspaces[Symbol.iterator](),
+  workspaceList: () => workspaces,
+  getWorkspace: (key: string) =>
+    workspaces.find(w => w.fullpath === key || w.name === key),
+})
+
 t.test('usage', async t => {
   t.matchSnapshot(usage().usage())
 })
@@ -861,20 +870,22 @@ t.test('pack command monorepo cwd inference', async t => {
 
     t.chdir(dir)
 
+    const workspaces = [
+      {
+        name: '@test/a',
+        fullpath: resolve(dir, 'packages/a'),
+      },
+      {
+        name: '@test/b',
+        fullpath: resolve(dir, 'packages/b'),
+      },
+    ]
+
     const config = makeTestConfig({
       projectRoot: dir,
       options: {
         packageJson: new PackageJson(),
-        monorepo: [
-          {
-            name: '@test/a',
-            fullpath: resolve(dir, 'packages/a'),
-          },
-          {
-            name: '@test/b',
-            fullpath: resolve(dir, 'packages/b'),
-          },
-        ],
+        monorepo: mockMonorepo(workspaces),
       },
       positionals: ['pack'],
     })
@@ -939,13 +950,7 @@ t.test('pack command monorepo cwd inference', async t => {
       projectRoot: dir,
       options: {
         packageJson: new PackageJson(),
-        monorepo: {
-          [Symbol.iterator]: () => workspaces[Symbol.iterator](),
-          get: (key: string) =>
-            workspaces.find(
-              w => w.fullpath === key || w.name === key,
-            ),
-        },
+        monorepo: mockMonorepo(workspaces),
       },
       positionals: ['pack'],
     })
@@ -994,7 +999,8 @@ t.test('pack command monorepo cwd inference', async t => {
           packageJson: new PackageJson(),
           monorepo: {
             [Symbol.iterator]: () => [][Symbol.iterator](),
-            get: () => undefined,
+            workspaceList: () => [],
+            getWorkspace: () => undefined,
           },
         },
         positionals: ['pack'],
@@ -1046,7 +1052,7 @@ t.test('pack command monorepo cwd inference', async t => {
 
 t.test('pack command fallback to projectRoot', async t => {
   t.test(
-    'uses projectRoot when package.json.find returns null',
+    'uses projectRoot when package.json.findPath returns null',
     async t => {
       const dir = t.testdir({
         'package.json': JSON.stringify({
@@ -1066,8 +1072,8 @@ t.test('pack command fallback to projectRoot', async t => {
 
       const packageJson = new PackageJson()
       // Override find to return null for process.cwd(), projectRoot for dir
-      const originalFind = packageJson.find.bind(packageJson)
-      packageJson.find = (cwd?: string) => {
+      const originalFind = packageJson.findPath.bind(packageJson)
+      packageJson.findPath = (cwd?: string) => {
         if (cwd === '/fake/path') return undefined
         if (cwd === dir) return resolve(dir, 'package.json')
         return originalFind(cwd)

@@ -123,7 +123,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
   #targetCount(): number {
     if (this.#nodes) return this.#nodes.length
-    return this.#monorepo?.size ?? 1
+    const mr = this.#monorepo
+    return mr ? mr.size : 1
   }
 
   hasArg0(): this is this & { arg0: string } {
@@ -202,8 +203,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         })
       } else {
         throw error('no matching workspaces found', {
-          /* c8 ignore next - already guarded */
-          validOptions: [...(this.#monorepo?.load().paths() ?? [])],
+          /* c8 ignore start - already guarded */
+          validOptions:
+            this.#monorepo ? [...this.#monorepo.load().paths()] : [],
+          /* c8 ignore stop */
         })
       }
     }
@@ -307,9 +310,12 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     // When no workspace/monorepo targeting is specified, use the current
     // working directory. This matches npx behavior and is required for
     // tools like node-gyp that must run in the correct directory.
-    return (
-      this.#monorepo?.values().next().value?.fullpath ?? process.cwd()
-    )
+    const mr = this.#monorepo
+    if (mr) {
+      const first = mr.workspaceList()[0]
+      if (first) return first.fullpath
+    }
+    return process.cwd()
   }
 
   fgArg(): RunnerOptions | undefined {

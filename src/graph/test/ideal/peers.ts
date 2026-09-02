@@ -15,10 +15,8 @@ import {
   retrievePeerContextHash,
   startPeerPlacement,
 } from '../../src/ideal/peers.ts'
-import type {
-  PeerContext,
-  PeerContextEntryInput,
-} from '../../src/ideal/types.ts'
+import { PeerContext } from '../../src/ideal/types.ts'
+import type { PeerContextEntryInput } from '../../src/ideal/types.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
@@ -64,7 +62,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       { name: 'foo', version: '1.0.0' },
     )!
 
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
 
     const result = checkPeerEdgesCompatible(
       node,
@@ -105,7 +103,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       const peerSpec = Spec.parse('react', '^18.0.0', configData)
       graph.addEdge('peer', peerSpec, node)
 
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
 
       const result = checkPeerEdgesCompatible(
         node,
@@ -162,7 +160,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       graph.addEdge('peer', peerSpec, node, react18)
 
       // Peer context has react19
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       peerContext.set('react', {
         active: true,
         specs: oneSpec(Spec.parse('react', '^19.0.0', configData)),
@@ -229,7 +227,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       graph.addEdge('peer', peerSpec, uiComponent, react182)
 
       // Peer context points to react@18.3.0 (different target)
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       peerContext.set('react', {
         active: true,
         specs: oneSpec(peerSpec),
@@ -310,7 +308,7 @@ t.test('checkPeerEdgesCompatible', async t => {
         react19,
       )
 
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
 
       const result = checkPeerEdgesCompatible(
         node,
@@ -383,7 +381,7 @@ t.test('checkPeerEdgesCompatible', async t => {
         react183,
       )
 
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
 
       const result = checkPeerEdgesCompatible(
         uiComponent,
@@ -455,7 +453,7 @@ t.test('checkPeerEdgesCompatible', async t => {
         },
       )!
 
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
 
       const result = checkPeerEdgesCompatible(
         node,
@@ -528,7 +526,7 @@ t.test('checkPeerEdgesCompatible', async t => {
         },
       )!
 
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
 
       const result = checkPeerEdgesCompatible(
         uiComponent,
@@ -583,7 +581,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       graph.addEdge('peer', peerSpec, node, react18)
 
       // Peer context also has react18
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       peerContext.set('react', {
         active: true,
         specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
@@ -646,7 +644,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       graph.addEdge('peer', peerSpec, node, react18)
 
       // Peer context has react17 which doesn't satisfy ^18.0.0
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       peerContext.set('react', {
         active: true,
         specs: oneSpec(Spec.parse('react', '^17.0.0', configData)),
@@ -718,7 +716,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       // peerContext says react18, which mismatches react19 but also does NOT satisfy parent react@^19,
       // so mismatch should be ignored and treated as compatible.
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       peerContext.set('react', {
         active: true,
         specs: oneSpec(Spec.parse('react', '^18.0.0', configData)),
@@ -748,7 +746,7 @@ t.test('retrievePeerContextHash', async t => {
   })
 
   t.test('returns peer context hash string', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     peerContext.index = 5
     t.equal(
       retrievePeerContextHash(peerContext),
@@ -758,7 +756,7 @@ t.test('retrievePeerContextHash', async t => {
   })
 
   t.test('returns undefined if no index', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     t.equal(
       retrievePeerContextHash(peerContext),
       undefined,
@@ -771,7 +769,7 @@ t.test('incompatibleSpecs', async t => {
   t.test(
     'returns false for non-registry specs with same bareSpec',
     async t => {
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const spec1 = Spec.parse(
         '@user/repo',
         'github:user/repo#v1.0.0',
@@ -824,7 +822,7 @@ t.test('incompatibleSpecs', async t => {
       // (like foo@catalog:) would be incorrectly
       // marked as incompatible because their range property is
       // on .final, not directly on the spec object.
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
 
       // Create an npm-aliased spec: my-foo@npm:foo@^1.0.0
       // This spec has:
@@ -879,7 +877,7 @@ t.test('incompatibleSpecs', async t => {
       )
 
       // Also test the reverse: add non-aliased first, then aliased
-      const peerContext2: PeerContext = new Map()
+      const peerContext2 = new PeerContext()
       const directSpec = Spec.parse('bar', '^2.0.0', configData)
       addEntriesToPeerContext(
         peerContext2,
@@ -910,7 +908,7 @@ t.test('incompatibleSpecs', async t => {
   t.test('correctly detects incompatible aliased specs', async t => {
     // Verify that truly incompatible ranges are still detected
     // even when using aliased specs
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const aliasSpec1 = Spec.parse(
       'my-foo',
       'npm:foo@^1.0.0',
@@ -958,7 +956,7 @@ t.test('incompatibleSpecs', async t => {
     async t => {
       // This specifically tests the checkEntriesToPeerContext function
       // which also needed the .final fix
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = {
         name: 'my-project',
         version: '1.0.0',
@@ -1130,7 +1128,7 @@ t.test('getOrderedPeerContextEntries', async t => {
 
 t.test('addEntriesToPeerContext', async t => {
   t.test('adds new entry to empty context', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const spec = Spec.parse('foo', '^1.0.0', configData)
     const mainManifest = {
       name: 'my-project',
@@ -1157,7 +1155,7 @@ t.test('addEntriesToPeerContext', async t => {
   })
 
   t.test('adds dependent to existing entry', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const spec = Spec.parse('foo', '^1.0.0', configData)
     const mainManifest = {
       name: 'my-project',
@@ -1202,7 +1200,7 @@ t.test('addEntriesToPeerContext', async t => {
   t.test(
     'needs fork when target conflicts with existing specs',
     async t => {
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const spec1 = Spec.parse('foo', '^1.0.0', configData)
       const spec2 = Spec.parse('foo', '^2.0.0', configData)
       const mainManifest = {
@@ -1246,7 +1244,7 @@ t.test('addEntriesToPeerContext', async t => {
       // This tests line 150 - when multiple entries are added in the same
       // call and a later entry conflicts with an earlier one that was just
       // created in this same iteration
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const spec1 = Spec.parse('foo', '^1.0.0', configData)
       const spec2 = Spec.parse('foo', '^2.0.0', configData)
       const mainManifest = {
@@ -1280,7 +1278,7 @@ t.test('addEntriesToPeerContext', async t => {
   )
 
   t.test('needs fork when specs do not intersect', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const spec1 = Spec.parse('foo', '^1.0.0', configData)
     const spec2 = Spec.parse('foo', '^2.0.0', configData)
     const mainManifest = {
@@ -1321,7 +1319,7 @@ t.test('addEntriesToPeerContext', async t => {
   })
 
   t.test('updates target and rewires edges', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const spec = Spec.parse('foo', '^1.0.0', configData)
     const mainManifest = {
       name: 'my-project',
@@ -1387,7 +1385,7 @@ t.test('addEntriesToPeerContext', async t => {
   t.test(
     'adds entry with no target then updates with target',
     async t => {
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const spec = Spec.parse('foo', '^1.0.0', configData)
       const mainManifest = {
         name: 'my-project',
@@ -1460,7 +1458,7 @@ t.test('addEntriesToPeerContext', async t => {
   )
 
   t.test('adds entry for git spec with name', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const spec = Spec.parse(
       '@user/repo',
       'github:user/repo',
@@ -1550,7 +1548,7 @@ t.test('forkPeerContext', async t => {
   t.test(
     'creates forked context with new entries and no dependent',
     async t => {
-      const originalContext: PeerContext = new Map()
+      const originalContext = new PeerContext()
       originalContext.index = 1
 
       const spec1 = Spec.parse('foo', '^1.0.0', configData)
@@ -1687,7 +1685,7 @@ t.test('forkPeerContext', async t => {
 
 t.test('startPeerPlacement', async t => {
   t.test('returns empty data when no peerDependencies', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const manifest: Manifest = {
       name: 'foo',
       version: '1.0.0',
@@ -1722,7 +1720,7 @@ t.test('startPeerPlacement', async t => {
   })
 
   t.test('collects sibling dependencies', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     peerContext.index = 1
 
     // manifest that is going to be placed
@@ -1767,7 +1765,7 @@ t.test('startPeerPlacement', async t => {
 
 t.test('endPeerPlacement', async t => {
   t.test('resolves peer dependencies from context', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     peerContext.index = 1
 
     const mainManifest = {
@@ -1851,7 +1849,7 @@ t.test('endPeerPlacement', async t => {
       // the resolved spec is textually different from every spec already
       // tracked on the entry, it must be added as a *new* key rather than
       // silently deduped away.
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = {
         name: 'my-project',
         version: '1.0.0',
@@ -1961,7 +1959,7 @@ t.test('endPeerPlacement', async t => {
   )
 
   t.test('handles unresolved peerOptional', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const mainManifest = {
       name: 'my-project',
       version: '1.0.0',
@@ -2021,7 +2019,7 @@ t.test('endPeerPlacement', async t => {
   })
 
   t.test('moves unresolved peer to nextDeps', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const mainManifest = {
       name: 'my-project',
       version: '1.0.0',
@@ -2083,7 +2081,7 @@ t.test('endPeerPlacement', async t => {
       // has a direct dep on the same package (e.g., zod@^3.25.76),
       // the peer should resolve to the sibling's version, not a version
       // from a different workspace or from the shared peer context elsewhere in the graph.
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = {
         name: 'my-project',
         version: '1.0.0',
@@ -2184,7 +2182,7 @@ t.test('endPeerPlacement', async t => {
     async t => {
       // When there's no resolved sibling target but the sibling has a more
       // specific spec, use that spec for resolution
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = {
         name: 'my-project',
         version: '1.0.0',
@@ -2293,7 +2291,7 @@ t.test('endPeerPlacement', async t => {
       )!
 
       // Set up peer context with the WRONG version (as if from docs workspace)
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       peerContext.set('zod', {
         active: true,
         specs: oneSpec(Spec.parse('zod', '>=4.0.0', configData)),
@@ -2378,7 +2376,7 @@ t.test('endPeerPlacement', async t => {
   t.test(
     'putEntries returns fork entries when conflicts detected',
     async t => {
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = { name: 'my-project', version: '1.0.0' }
       const graph = new Graph({
         projectRoot: t.testdirName,
@@ -2441,7 +2439,7 @@ t.test('endPeerPlacement', async t => {
   t.test(
     'resolves peer from queued peer closure when no sibling target/context target',
     async t => {
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = { name: 'my-project', version: '1.0.0' }
       const graph = new Graph({
         projectRoot: t.testdirName,
@@ -2531,7 +2529,7 @@ t.test('endPeerPlacement', async t => {
       // - edge exists but does NOT satisfy spec
       // - node has no edge for name (edge?.to falsy)
       // - enqueue via peer edges (q.push path)
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = { name: 'my-project', version: '1.0.0' }
       const graph = new Graph({
         projectRoot: t.testdirName,
@@ -2628,7 +2626,7 @@ t.test('endPeerPlacement', async t => {
   t.test(
     'peer closure skips already-seen nodes in queue',
     async t => {
-      const peerContext: PeerContext = new Map()
+      const peerContext = new PeerContext()
       const mainManifest = { name: 'my-project', version: '1.0.0' }
       const graph = new Graph({
         projectRoot: t.testdirName,
@@ -2700,7 +2698,7 @@ t.test('endPeerPlacement', async t => {
   )
 
   t.test('peer closure respects depth limit (>=3)', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const mainManifest = { name: 'my-project', version: '1.0.0' }
     const graph = new Graph({
       projectRoot: t.testdirName,
@@ -2825,7 +2823,7 @@ t.test('endPeerPlacement', async t => {
       }
 
       try {
-        const peerContext: PeerContext = new Map()
+        const peerContext = new PeerContext()
         const mainManifest = { name: 'my-project', version: '1.0.0' }
         const graph = new Graph({
           projectRoot: t.testdirName,
@@ -2889,7 +2887,7 @@ t.test('endPeerPlacement', async t => {
   )
 
   t.test('rewires existing peer edge to sibling target', async t => {
-    const peerContext: PeerContext = new Map()
+    const peerContext = new PeerContext()
     const mainManifest = { name: 'my-project', version: '1.0.0' }
     const graph = new Graph({
       projectRoot: t.testdirName,
@@ -3033,21 +3031,21 @@ t.test('postPlacementPeerCheck', async t => {
         configData,
       )
 
-      const peerContext1: PeerContext = new Map()
+      const peerContext1 = new PeerContext()
       addEntriesToPeerContext(
         peerContext1,
         [{ spec: incompatibleSpec, type: 'peer' }],
         graph.mainImporter,
       )
 
-      const peerContext2: PeerContext = new Map()
+      const peerContext2 = new PeerContext()
       addEntriesToPeerContext(
         peerContext2,
         [{ spec: incompatibleSpec, type: 'peer' }],
         graph.mainImporter,
       )
 
-      const peerContext3: PeerContext = new Map()
+      const peerContext3 = new PeerContext()
       addEntriesToPeerContext(
         peerContext3,
         [{ spec: incompatibleSpec, type: 'peer' }],
@@ -3201,8 +3199,8 @@ t.test('postPlacementPeerCheck', async t => {
       const peerSpec1 = Spec.parse('react', '^18.0.0', configData)
       const peerSpec2 = Spec.parse('react', '^19.0.0', configData)
 
-      const peerContext1: PeerContext = new Map()
-      const peerContext2: PeerContext = new Map()
+      const peerContext1 = new PeerContext()
+      const peerContext2 = new PeerContext()
 
       const entry1 = {
         node: node1,

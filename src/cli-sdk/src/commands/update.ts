@@ -2,9 +2,10 @@ import { update } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { lazyView } from '../view.ts'
+import { lazyView, perryDoneView } from '../view.ts'
 import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
+import { installReporter } from './install/reporter.ts'
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -35,7 +36,8 @@ export const views = {
     graph: i.graph.toJSON(),
   }),
   human: lazyView(async () =>
-    (await import('./install/reporter.ts')).installReporter(),
+    /* c8 ignore next */
+    'perry' in process.versions ? perryDoneView() : installReporter(),
   ),
 } as const satisfies Views<InstallResult>
 

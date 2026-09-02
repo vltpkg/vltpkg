@@ -9,7 +9,12 @@ import {
 import type { ViewOptions } from '../src/view.ts'
 import type { LoadedConfig } from '../src/config/index.ts'
 
-t.equal(isViewClass({} as typeof ViewClass<unknown>), false)
+t.equal(
+  isViewClass({} as unknown as typeof ViewClass<unknown>),
+  false,
+)
+function notAView() {}
+t.equal(isViewClass(notAView as unknown as typeof ViewClass), false)
 
 // just for coverage, really, you'd never instantiate one of these
 const options: ViewOptions = {}
@@ -27,6 +32,11 @@ t.equal(vc.error({}), undefined)
 
 class MyView extends ViewClass {}
 t.equal(isViewClass(MyView), true)
+
+class DuckView {
+  start() {}
+}
+t.equal(isViewClass(DuckView as unknown as typeof ViewClass), true)
 
 const loader = async () => MyView
 const lazy = lazyView(loader)

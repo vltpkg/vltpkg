@@ -3,12 +3,13 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
 import { mockPackageInfo as mockPackageInfoBase } from './fixtures/reify.ts'
-import { asDependency } from '../src/dependencies.ts'
-import { objectLikeOutput } from '../src/visualization/object-like-output.ts'
-import type {
+import {
+  asDependency,
   AddImportersDependenciesMap,
-  Dependency,
+  RemoveImportersDependenciesMap,
 } from '../src/dependencies.ts'
+import { objectLikeOutput } from '../src/visualization/object-like-output.ts'
+import type { Dependency } from '../src/dependencies.ts'
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
@@ -398,12 +399,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
-          remove: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
+          add: new AddImportersDependenciesMap(),
+          remove: new RemoveImportersDependenciesMap(),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -510,10 +507,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(addMap, { modifiedDependencies: true }),
-          remove: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
+          add: new AddImportersDependenciesMap(addMap, true),
+          remove: new RemoveImportersDependenciesMap(),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -589,12 +584,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
-          remove: Object.assign(removeMap, {
-            modifiedDependencies: true,
-          }),
+          add: new AddImportersDependenciesMap(),
+          remove: new RemoveImportersDependenciesMap(removeMap, true),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -663,12 +654,8 @@ t.test('install with frozenLockfile and spec changes', async t => {
     },
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
-        add: Object.assign(new Map(), {
-          modifiedDependencies: false,
-        }),
-        remove: Object.assign(new Map(), {
-          modifiedDependencies: false,
-        }),
+        add: new AddImportersDependenciesMap(),
+        remove: new RemoveImportersDependenciesMap(),
       }),
     },
     '../src/lockfile/load.ts': {
@@ -776,11 +763,12 @@ t.test(
       '',
       new Map([['new-dep', { spec: {}, type: 'prod' }]]),
     )
-    // Set the modifiedDependencies flag to match the new implementation check
-    Object.assign(addDeps, { modifiedDependencies: true })
 
     await t.rejects(
-      install(options, addDeps as AddImportersDependenciesMap),
+      install(
+        options,
+        new AddImportersDependenciesMap(addDeps, true),
+      ),
       /Cannot add dependencies when using --frozen-lockfile/,
       'should prevent adding new dependencies',
     )
@@ -830,10 +818,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(addMap, { modifiedDependencies: true }),
-          remove: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
+          add: new AddImportersDependenciesMap(addMap, true),
+          remove: new RemoveImportersDependenciesMap(),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -920,10 +906,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(addMap, { modifiedDependencies: true }),
-          remove: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
+          add: new AddImportersDependenciesMap(addMap, true),
+          remove: new RemoveImportersDependenciesMap(),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -1007,12 +991,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
-          remove: Object.assign(new Map(), {
-            modifiedDependencies: false,
-          }),
+          add: new AddImportersDependenciesMap(),
+          remove: new RemoveImportersDependenciesMap(),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -1151,10 +1131,8 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
-          add: Object.assign(addMap, { modifiedDependencies: true }),
-          remove: Object.assign(removeMap, {
-            modifiedDependencies: true,
-          }),
+          add: new AddImportersDependenciesMap(addMap, true),
+          remove: new RemoveImportersDependenciesMap(removeMap, true),
         }),
       },
       '../src/lockfile/load.ts': {
@@ -1511,10 +1489,11 @@ t.test(
           ],
         ]),
       ],
-    ]) as AddImportersDependenciesMap
-    Object.assign(addMap, { modifiedDependencies: true })
-
-    const result = await install(options, addMap)
+    ])
+    const result = await install(
+      options,
+      new AddImportersDependenciesMap(addMap, true),
+    )
 
     t.notOk(reifyCalled, 'should NOT call reify with lockfileOnly')
     t.ok(lockfileSaveCalled, 'should call lockfile.save')
@@ -1564,7 +1543,7 @@ t.test(
             joinDepIDTuple(['file', '.']),
             new Set(['old-dep']),
           )
-          Object.assign(remove, { modifiedDependencies: true })
+          remove.modifiedDependencies = true
           return {
             nodes: new Map(),
             importers: [],
@@ -1914,12 +1893,8 @@ t.test('install with frozenLockfile and changed options', async t => {
     },
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
-        add: Object.assign(new Map(), {
-          modifiedDependencies: false,
-        }),
-        remove: Object.assign(new Map(), {
-          modifiedDependencies: false,
-        }),
+        add: new AddImportersDependenciesMap(),
+        remove: new RemoveImportersDependenciesMap(),
       }),
     },
     '../src/lockfile/load.ts': {

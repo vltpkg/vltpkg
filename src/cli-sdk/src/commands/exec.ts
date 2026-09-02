@@ -1,7 +1,7 @@
 import { exec, execFG } from '@vltpkg/run'
 import type { PromptFn } from '@vltpkg/vlx'
 import * as vlx from '@vltpkg/vlx'
-import { homedir } from 'node:os'
+import { userHome } from '@vltpkg/xdg'
 import { env, platform } from 'node:process'
 import { question } from '../prompt.ts'
 import { commandUsage } from '../config/usage.ts'
@@ -121,7 +121,7 @@ export const usage: CommandUsage = () =>
     },
   })
 
-const HOME = homedir()
+const HOME = userHome()
 export const prettyPath = (path: string) =>
   path.startsWith(HOME) ? `~${path.substring(HOME.length)}` : path
 

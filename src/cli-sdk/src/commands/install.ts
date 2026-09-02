@@ -5,8 +5,9 @@ import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Diff, Graph } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { lazyView } from '../view.ts'
+import { lazyView, perryDoneView } from '../view.ts'
 import type { Views } from '../view.ts'
+import { installReporter } from './install/reporter.ts'
 
 /**
  * The resulting object of an install operation. To be used by the view impl.
@@ -158,7 +159,8 @@ export const views = {
     }
   },
   human: lazyView(async () =>
-    (await import('./install/reporter.ts')).installReporter(),
+    /* c8 ignore next */
+    'perry' in process.versions ? perryDoneView() : installReporter(),
   ),
 } as const satisfies Views<InstallResult>
 
@@ -196,7 +198,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   try {
     trackInstall(
       {
-        dependency_count: graph.nodes.size,
+        dependency_count: graph.nodesSize(),
         duration_ms: Date.now() - installStart,
       },
       conf.values.telemetry,

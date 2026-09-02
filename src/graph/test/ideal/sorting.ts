@@ -1,11 +1,11 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import type {
+import {
+  asDependency,
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
-import { asDependency } from '../../src/dependencies.ts'
 import { Edge } from '../../src/edge.ts'
 import { Graph } from '../../src/graph.ts'
 import {
@@ -321,26 +321,21 @@ t.test('getNodeOrderedDependencies', async t => {
       projectRoot,
       mainManifest: {},
     })
-    const addMap = Object.assign(
-      new Map([
-        [
-          graph.mainImporter.id,
-          new Map([
-            [
-              'new-dep',
-              asDependency({
-                spec: Spec.parse('new-dep', '^1.0.0'),
-                type: 'prod',
-              }),
-            ],
-          ]),
-        ],
-      ]),
-      { modifiedDependencies: false },
-    )
-    const removeMap = Object.assign(new Map(), {
-      modifiedDependencies: false,
-    }) as RemoveImportersDependenciesMap
+    const addMap = new AddImportersDependenciesMap([
+      [
+        graph.mainImporter.id,
+        new Map([
+          [
+            'new-dep',
+            asDependency({
+              spec: Spec.parse('new-dep', '^1.0.0'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ])
+    const removeMap = new RemoveImportersDependenciesMap()
     const result = getNodeOrderedDependencies(graph.mainImporter, {
       add: addMap,
       remove: removeMap,
@@ -380,13 +375,10 @@ t.test('getNodeOrderedDependencies', async t => {
         graph.mainImporter,
       ),
     )
-    const addMap = Object.assign(new Map(), {
-      modifiedDependencies: false,
-    }) as AddImportersDependenciesMap
-    const removeMap = Object.assign(
-      new Map([[graph.mainImporter.id, new Set(['to-remove'])]]),
-      { modifiedDependencies: false },
-    )
+    const addMap = new AddImportersDependenciesMap()
+    const removeMap = new RemoveImportersDependenciesMap([
+      [graph.mainImporter.id, new Set(['to-remove'])],
+    ])
     const result = getNodeOrderedDependencies(graph.mainImporter, {
       add: addMap,
       remove: removeMap,
@@ -426,27 +418,23 @@ t.test('getNodeOrderedDependencies', async t => {
         graph.mainImporter,
       ),
     )
-    const addMap = Object.assign(
-      new Map([
-        [
-          graph.mainImporter.id,
-          new Map([
-            [
-              'new-dep',
-              asDependency({
-                spec: Spec.parse('new-dep', '^1.0.0'),
-                type: 'dev',
-              }),
-            ],
-          ]),
-        ],
-      ]),
-      { modifiedDependencies: false },
-    )
-    const removeMap = Object.assign(
-      new Map([[graph.mainImporter.id, new Set(['to-remove'])]]),
-      { modifiedDependencies: false },
-    )
+    const addMap = new AddImportersDependenciesMap([
+      [
+        graph.mainImporter.id,
+        new Map([
+          [
+            'new-dep',
+            asDependency({
+              spec: Spec.parse('new-dep', '^1.0.0'),
+              type: 'dev',
+            }),
+          ],
+        ]),
+      ],
+    ])
+    const removeMap = new RemoveImportersDependenciesMap([
+      [graph.mainImporter.id, new Set(['to-remove'])],
+    ])
     const result = getNodeOrderedDependencies(graph.mainImporter, {
       add: addMap,
       remove: removeMap,
@@ -479,26 +467,21 @@ t.test('getNodeOrderedDependencies', async t => {
         graph.mainImporter,
       ),
     )
-    const addMap = Object.assign(
-      new Map([
-        [
-          graph.mainImporter.id,
-          new Map([
-            [
-              'dep',
-              asDependency({
-                spec: Spec.parse('dep', '^2.0.0'),
-                type: 'dev',
-              }),
-            ],
-          ]),
-        ],
-      ]),
-      { modifiedDependencies: false },
-    )
-    const removeMap = Object.assign(new Map(), {
-      modifiedDependencies: false,
-    }) as RemoveImportersDependenciesMap
+    const addMap = new AddImportersDependenciesMap([
+      [
+        graph.mainImporter.id,
+        new Map([
+          [
+            'dep',
+            asDependency({
+              spec: Spec.parse('dep', '^2.0.0'),
+              type: 'dev',
+            }),
+          ],
+        ]),
+      ],
+    ])
+    const removeMap = new RemoveImportersDependenciesMap()
     const result = getNodeOrderedDependencies(graph.mainImporter, {
       add: addMap,
       remove: removeMap,
@@ -557,27 +540,23 @@ t.test('getNodeOrderedDependencies', async t => {
           graph.mainImporter,
         ),
       )
-      const addMap = Object.assign(
-        new Map([
-          [
-            otherNodeId,
-            new Map([
-              [
-                'other-dep',
-                asDependency({
-                  spec: Spec.parse('other-dep', '^1.0.0'),
-                  type: 'prod',
-                }),
-              ],
-            ]),
-          ],
-        ]),
-        { modifiedDependencies: false },
-      )
-      const removeMap = Object.assign(
-        new Map([[otherNodeId, new Set(['other-dep'])]]),
-        { modifiedDependencies: false },
-      )
+      const addMap = new AddImportersDependenciesMap([
+        [
+          otherNodeId,
+          new Map([
+            [
+              'other-dep',
+              asDependency({
+                spec: Spec.parse('other-dep', '^1.0.0'),
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ])
+      const removeMap = new RemoveImportersDependenciesMap([
+        [otherNodeId, new Set(['other-dep'])],
+      ])
       const result = getNodeOrderedDependencies(graph.mainImporter, {
         add: addMap,
         remove: removeMap,

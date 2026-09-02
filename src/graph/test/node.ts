@@ -47,6 +47,7 @@ t.test('Node', async t => {
     0,
     'should have an empty list of edgesIn',
   )
+  t.strictSame(root.edgesInList(), [])
   t.strictSame(
     root.edgesOut.size,
     0,

@@ -1,10 +1,7 @@
-import chalk from 'chalk'
+import { styleText as utilStyleText } from 'node:util'
 import { version } from './version.ts'
-import { commandAliases } from './config/definition.ts'
+import { commandAliasList } from './config/definition.ts'
 import type { Commands } from './config/definition.ts'
-
-// Custom yellow color: #FFE15D
-const customYellow = chalk.hex('#FFE15D')
 
 type StylerFn = (style: string | string[], text: string) => string
 
@@ -24,50 +21,16 @@ type CommandHelp = CommandHelpMetadata & {
 
 const makeStyler = (colors: boolean): StylerFn => {
   if (!colors) return (_, s) => s
+  /* c8 ignore start - styleText private fields crash compiled */
+  if ('perry' in process.versions) return (_, s) => s
+  /* c8 ignore stop */
 
-  return (style: string | string[], text: string): string => {
-    const styles = Array.isArray(style) ? style : [style]
-    let styledText = text
-
-    for (const s of styles) {
-      switch (s) {
-        case 'yellow':
-        case 'yellowBright':
-          styledText = customYellow(styledText)
-          break
-        case 'bold':
-          styledText = chalk.bold(styledText)
-          break
-        case 'dim':
-          styledText = chalk.dim(styledText)
-          break
-        case 'dark':
-          styledText = chalk.gray(styledText)
-          break
-        case 'cyan':
-          styledText = chalk.cyan(styledText)
-          break
-        case 'green':
-          styledText = chalk.green(styledText)
-          break
-        default:
-          // Fallback to chalk's built-in colors
-          if (
-            s in chalk &&
-            typeof chalk[s as keyof typeof chalk] === 'function'
-          ) {
-            styledText = (
-              chalk[s as keyof typeof chalk] as (
-                text: string,
-              ) => string
-            )(styledText)
-          }
-          break
-      }
-    }
-
-    return styledText
-  }
+  return (style: string | string[], text: string): string =>
+    utilStyleText(
+      style as Parameters<typeof utilStyleText>[0],
+      text,
+      { validateStream: false },
+    )
 }
 
 /**
@@ -239,7 +202,7 @@ const commandHelp = {
 const allCommands: CommandHelp[] = Object.entries(commandHelp).map(
   ([name, metadata]) => ({
     name,
-    aliases: commandAliases.get(name) ?? [],
+    aliases: commandAliasList(name),
     ...metadata,
   }),
 )

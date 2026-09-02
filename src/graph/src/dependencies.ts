@@ -71,11 +71,75 @@ export type Dependency = {
  *
  * The `modifiedDependencies` property can be used to indicate that there
  * are added dependencies to any of the importer nodes.
+ *
+ * Delegates to a `Map` rather than extending one: compiled, a `Map`
+ * subclass inherits none of `Map`'s methods and assigning a property to a
+ * `Map` instance crashes the process. The class is not generic for the
+ * same reason — a generic class cannot reach its own private fields.
  */
-export type AddImportersDependenciesMap = Map<
+export class AddImportersDependenciesMap implements Map<
   DepID,
   Map<string, Dependency>
-> & { modifiedDependencies: boolean }
+> {
+  #map = new Map<DepID, Map<string, Dependency>>()
+  modifiedDependencies = false
+  constructor(
+    entries?: Iterable<readonly [DepID, Map<string, Dependency>]>,
+    modifiedDependencies = false,
+  ) {
+    if (entries) for (const [id, deps] of entries) this.set(id, deps)
+    this.modifiedDependencies = modifiedDependencies
+  }
+  get size() {
+    return this.#map.size
+  }
+  get [Symbol.toStringTag]() {
+    return 'Map' as const
+  }
+  clear() {
+    this.#map.clear()
+  }
+  delete(id: DepID) {
+    return this.#map.delete(id)
+  }
+  forEach(
+    fn: (
+      value: Map<string, Dependency>,
+      key: DepID,
+      map: Map<DepID, Map<string, Dependency>>,
+    ) => void,
+    thisArg?: unknown,
+  ) {
+    for (const [id, deps] of this.#map)
+      fn.call(thisArg, deps, id, this)
+  }
+  get(id: DepID) {
+    return this.#map.get(id)
+  }
+  has(id: DepID) {
+    return this.#map.has(id)
+  }
+  set(id: DepID, deps: Map<string, Dependency>) {
+    this.#map.set(id, deps)
+    return this
+  }
+  entries() {
+    return this.#map.entries()
+  }
+  keys() {
+    return this.#map.keys()
+  }
+  values() {
+    return this.#map.values()
+  }
+  [Symbol.iterator]() {
+    return this.#map[Symbol.iterator]()
+  }
+  /** Snapshot of entries. Do not use `.keys`/`.entries` through a union type. */
+  listPairs() {
+    return [...this.#map]
+  }
+}
 
 /**
  * A `Map` object representing nodes to be removed from the ideal graph.
@@ -84,11 +148,74 @@ export type AddImportersDependenciesMap = Map<
  *
  * The `modifiedDependencies` property can be used to indicate that there
  * are added dependencies to any of the importer nodes.
+ *
+ * Delegates to a `Map` for the same reasons as
+ * {@link AddImportersDependenciesMap}.
  */
-export type RemoveImportersDependenciesMap = Map<
+export class RemoveImportersDependenciesMap implements Map<
   DepID,
   Set<string>
-> & { modifiedDependencies: boolean }
+> {
+  #map = new Map<DepID, Set<string>>()
+  modifiedDependencies = false
+  constructor(
+    entries?: Iterable<readonly [DepID, Set<string>]>,
+    modifiedDependencies = false,
+  ) {
+    if (entries)
+      for (const [id, names] of entries) this.set(id, names)
+    this.modifiedDependencies = modifiedDependencies
+  }
+  get size() {
+    return this.#map.size
+  }
+  get [Symbol.toStringTag]() {
+    return 'Map' as const
+  }
+  clear() {
+    this.#map.clear()
+  }
+  delete(id: DepID) {
+    return this.#map.delete(id)
+  }
+  forEach(
+    fn: (
+      value: Set<string>,
+      key: DepID,
+      map: Map<DepID, Set<string>>,
+    ) => void,
+    thisArg?: unknown,
+  ) {
+    for (const [id, names] of this.#map)
+      fn.call(thisArg, names, id, this)
+  }
+  get(id: DepID) {
+    return this.#map.get(id)
+  }
+  has(id: DepID) {
+    return this.#map.has(id)
+  }
+  set(id: DepID, names: Set<string>) {
+    this.#map.set(id, names)
+    return this
+  }
+  entries() {
+    return this.#map.entries()
+  }
+  keys() {
+    return this.#map.keys()
+  }
+  values() {
+    return this.#map.values()
+  }
+  [Symbol.iterator]() {
+    return this.#map[Symbol.iterator]()
+  }
+  /** Snapshot of entries. Do not use `.keys`/`.entries` through a union type. */
+  listPairs() {
+    return [...this.#map]
+  }
+}
 
 const isObj = (o: unknown): o is Record<string, unknown> =>
   !!o && typeof o === 'object'

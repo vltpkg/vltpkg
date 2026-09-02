@@ -102,6 +102,11 @@ export class Node implements NodeLike {
    */
   edgesIn = new Set<Edge>()
 
+  /** Compiled: `node.edgesIn.size` from another module SIGBUS. */
+  edgesInList() {
+    return [...this.edgesIn]
+  }
+
   /**
    * List of edges from this node into other nodes. This usually represents
    * that the connected node is a direct dependency of this node.

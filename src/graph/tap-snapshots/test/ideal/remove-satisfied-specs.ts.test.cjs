@@ -11,7 +11,9 @@ Map {}
 
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > add a new spec item > should return the new item 1`] = `
 Map(1) {
-  'file~_d' => Map(1) { 'bar' => { spec: Spec {bar@^1.0.0}, type: 'prod' } }
+  'file~_d' => Map(1) {
+    'bar' => { spec: @vltpkg/spec.Spec bar@^1.0.0, type: 'prod' }
+  }
 }
 `
 
@@ -21,7 +23,9 @@ Map {}
 
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > catalog spec is not removed even if node satisfies > should keep the catalog spec in the add list 1`] = `
 Map(1) {
-  'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@catalog:}, type: 'prod' } }
+  'file~_d' => Map(1) {
+    'foo' => { spec: @vltpkg/spec.Spec foo@catalog:, type: 'prod' }
+  }
 }
 `
 
@@ -31,6 +35,8 @@ Map(0) {}
 
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > update existing spec > should return the update item 1`] = `
 Map(1) {
-  'file~_d' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } }
+  'file~_d' => Map(1) {
+    'foo' => { spec: @vltpkg/spec.Spec foo@^2.0.0, type: 'prod' }
+  }
 }
 `

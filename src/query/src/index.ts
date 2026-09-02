@@ -516,7 +516,9 @@ export class Query {
         await new Promise(resolve => {
           setTimeout(resolve, 0)
         })
-        signal.throwIfAborted()
+        // not `signal.throwIfAborted()`: the compiled runtime's AbortSignal
+        // has no such method
+        if (signal.aborted) throw signal.reason
       },
       current,
       initial: {

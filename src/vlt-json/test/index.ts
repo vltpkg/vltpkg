@@ -1,4 +1,4 @@
-import { XDG } from '@vltpkg/xdg'
+import { userHome, XDG } from '@vltpkg/xdg'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { lstat } from 'node:fs/promises'
 import { resolve } from 'node:path'
@@ -201,7 +201,7 @@ t.test('do not use user config as project config', async t => {
   t.chdir(resolve(dir, 'a/b/c'))
   const { load, save, find } = await t.mockImport<
     typeof import('../src/index.ts')
-  >('../src/index.ts', { '@vltpkg/xdg': { XDG: MockXDG } })
+  >('../src/index.ts', { '@vltpkg/xdg': { XDG: MockXDG, userHome } })
   t.equal(find(), resolve(dir, 'a/b/vlt.json'))
 
   function assertBoolean(b: unknown): asserts b is boolean {
@@ -236,7 +236,7 @@ t.test('missing vlt.json is no big deal', async t => {
   const { load } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
-    '@vltpkg/xdg': { XDG: MockXDG },
+    '@vltpkg/xdg': { XDG: MockXDG, userHome },
   })
   const data = load('foo', () => {}, 'user')
   t.equal(data, undefined)
@@ -252,7 +252,7 @@ t.test('fail to parse vlt.json file', async t => {
   const { load } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
-    '@vltpkg/xdg': { XDG: MockXDG },
+    '@vltpkg/xdg': { XDG: MockXDG, userHome },
   })
   t.throws(() => load('foo', () => {}, 'user'), {
     cause: {
@@ -360,7 +360,7 @@ t.test(
     const { load, save, find } = await t.mockImport<
       typeof import('../src/index.ts')
     >('../src/index.ts', {
-      '@vltpkg/xdg': { XDG: MockXDG },
+      '@vltpkg/xdg': { XDG: MockXDG, userHome },
       'node:os': t.createMock(await import('node:os'), {
         homedir: () => resolve(dir, 'a/d'),
       }),
@@ -394,3 +394,29 @@ t.test(
     )
   },
 )
+
+t.test('compiled homedir / does not walk past $HOME', async t => {
+  const dir = t.testdir({
+    home: {
+      projects: {
+        empty: {
+          'file.txt': 'x',
+        },
+      },
+    },
+    'package.json': JSON.stringify({ name: 'decoy' }),
+  })
+  t.chdir(resolve(dir, 'home/projects/empty'))
+  const { find } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '@vltpkg/xdg': t.createMock(await import('@vltpkg/xdg'), {
+      userHome: () => resolve(dir, 'home'),
+    }),
+  })
+  t.equal(
+    find(),
+    resolve(dir, 'home/projects/empty/vlt.json'),
+    'must not walk past $HOME to the decoy package.json',
+  )
+})

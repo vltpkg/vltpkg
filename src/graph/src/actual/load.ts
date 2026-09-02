@@ -592,9 +592,9 @@ export const load = (options: LoadOptions): Graph => {
     modifiers?.rollbackActiveEntries()
 
     // caches the load result to the hidden lockfile when enabled
-    if (
-      scurry.cwd.resolve('node_modules').lstatSync()?.isDirectory()
-    ) {
+    // compiled: `lstatSync()?.isDirectory()` on a missing path still
+    // invokes Path.isDirectory; `#type` SIGBUS
+    if (existsSync(resolve(projectRoot, 'node_modules'))) {
       saveHidden({
         ...options,
         graph,

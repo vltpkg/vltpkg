@@ -104,13 +104,10 @@ export const refreshIdealGraph = async ({
   const orderedImporters = getOrderedImporters(graph)
   const depsPerImporter = new Map<Node, Dependency[]>()
   for (const importer of orderedImporters) {
-    // gets an ordered list of dependencies for this importer
-    // while also taking into account additions and removals
     const deps = getNodeOrderedDependencies(importer, { add, remove })
     depsPerImporter.set(importer, deps)
   }
 
-  // removes all edges to start recalculating the graph
   if (
     add.modifiedDependencies ||
     remove.modifiedDependencies ||
@@ -124,19 +121,18 @@ export const refreshIdealGraph = async ({
   for (const importer of orderedImporters) {
     modifiers?.tryImporter(importer)
 
-    // gets a ref to the map of dependencies being added to this importer
     const addedDeps = add.get(importer.id)
 
     const deps = depsPerImporter.get(importer)
     /* c8 ignore next */
     if (!deps) continue
 
-    // gets a ref to the list of modifier functions for this set of deps
     const modifierRefs = modifiers?.tryDependencies(importer, deps)
 
-    // Add new nodes for packages defined in the dependencies list fetching
-    // metadata from the registry manifests and updating the graph
-    await appendNodes(
+    // compiled: `await appendNodes(...)` as a call expression never
+    // resumes; bind + .then() subscriber, then await. Same as
+    // registry-client/src/revalidate.ts.
+    const appendP = appendNodes(
       packageInfo,
       graph,
       importer,
@@ -154,9 +150,13 @@ export const refreshIdealGraph = async ({
       transientAdd,
       transientRemove,
     )
+    void appendP.then(
+      () => {},
+      () => {},
+    )
+    await appendP
   }
 
-  // set default node locations, if possible
   for (const node of graph.nodes.values()) {
     node.setDefaultLocation()
   }

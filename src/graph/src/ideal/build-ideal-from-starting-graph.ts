@@ -53,14 +53,9 @@ export const buildIdealFromStartingGraph = async (
       if (!options.add.get(nodeId)?.has(depName)) {
         options.add.get(nodeId)?.set(depName, dep)
       }
-
-      // update the save type for deps when using an implicit type
       dep.type = resolveSaveType(node, depName, dep.type)
     }
   }
-
-  // merge values found on node specs with
-  // user-provided values from `options.remove`
   for (const [nodeId, deps] of importerSpecs.remove) {
     if (!options.remove.has(nodeId)) {
       options.remove.set(nodeId, deps)

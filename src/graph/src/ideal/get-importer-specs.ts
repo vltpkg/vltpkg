@@ -1,10 +1,11 @@
 import { longDependencyTypes } from '@vltpkg/types'
-import { shorten, asDependency } from '../dependencies.ts'
-import type {
+import {
+  shorten,
+  asDependency,
   AddImportersDependenciesMap,
-  Dependency,
   RemoveImportersDependenciesMap,
 } from '../dependencies.ts'
+import type { Dependency } from '../dependencies.ts'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.ts'
 import type {
   BuildIdealAddOptions,
@@ -39,20 +40,6 @@ const hasDepName = (importer: Node, edge: Edge): boolean => {
   return false
 }
 
-class AddImportersDependenciesMapImpl
-  extends Map
-  implements AddImportersDependenciesMap
-{
-  modifiedDependencies = false
-}
-
-class RemoveImportersDependenciesMapImpl
-  extends Map
-  implements RemoveImportersDependenciesMap
-{
-  modifiedDependencies = false
-}
-
 /**
  * Given a {@link Graph} and a list of {@link Dependency}, merges the
  * dependencies info found in the graph importers and returns the add & remove
@@ -62,10 +49,8 @@ export const getImporterSpecs = (
   options: GetImporterSpecsOptions,
 ) => {
   const { add, graph, remove } = options
-  const addResult: AddImportersDependenciesMap =
-    new AddImportersDependenciesMapImpl()
-  const removeResult: RemoveImportersDependenciesMap =
-    new RemoveImportersDependenciesMapImpl()
+  const addResult = new AddImportersDependenciesMap()
+  const removeResult = new RemoveImportersDependenciesMap()
 
   // traverse the list of importers in the starting graph
   for (const importer of graph.importers) {
@@ -139,6 +124,7 @@ export const getImporterSpecs = (
     const nodePath = options.scurry.cwd.resolve(node.location)
     const stat = nodePath.lstatSync()
 
+    // compiled: `stat?.isDirectory()` still invokes when missing
     if (stat?.isDirectory()) {
       // load the manifest for this directory (throw if it does not exist)
       const manifest = options.packageJson.read(nodePath.fullpath())

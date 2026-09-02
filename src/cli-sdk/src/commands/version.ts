@@ -70,7 +70,7 @@ const version = async (
     }),
   )
 
-  const manifestPath = conf.options.packageJson.find(cwd)
+  const manifestPath = conf.options.packageJson.findPath(cwd)
   assert(
     manifestPath,
     error('No package.json found', {
@@ -338,7 +338,8 @@ export const command: CommandFn<CommandResult> = async conf => {
       locations.push(workspace.fullpath)
     }
   } else {
-    const cwd = options.packageJson.find(process.cwd()) ?? projectRoot
+    const cwd =
+      options.packageJson.findPath(process.cwd()) ?? projectRoot
     return version(conf, positionals[0], cwd)
   }
 

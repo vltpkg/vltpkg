@@ -16,7 +16,7 @@ import {
 // is intercepted by a Perry native binding in compiled builds, and its
 // class cannot be safely subclassed. Same code, npm types.
 // eslint-disable-next-line import/extensions -- plain-JS vendored file
-import { LRUCache } from '../vendor/lru-cache.js'
+import { LRUCacheCache } from '../vendor/lru-cache.js'
 import { resolve, dirname } from 'node:path'
 import { rimraf } from 'rimraf'
 
@@ -28,8 +28,12 @@ export type CacheFetchContext =
 
 export type CacheOptions = {
   [
-    k in keyof LRUCache.Options<string, Buffer, CacheFetchContext>
-  ]?: LRUCache.Options<string, Buffer, CacheFetchContext>[k]
+    k in keyof LRUCacheCache.Options<
+      string,
+      Buffer,
+      CacheFetchContext
+    >
+  ]?: LRUCacheCache.Options<string, Buffer, CacheFetchContext>[k]
 } & {
   /**
    * fetchMethod may not be provided, because this cache forces its own
@@ -64,7 +68,7 @@ const success = <T>(p: Promise<T>): Promise<T | typeof FAILURE> =>
     () => FAILURE,
   )
 
-export class Cache extends LRUCache<
+export class Cache extends LRUCacheCache<
   string,
   Buffer,
   CacheFetchContext
@@ -238,7 +242,7 @@ export class Cache extends LRUCache<
   set(
     key: string,
     val: Buffer,
-    options?: LRUCache.SetOptions<
+    options?: LRUCacheCache.SetOptions<
       string,
       Buffer,
       CacheFetchContext
@@ -312,7 +316,11 @@ export class Cache extends LRUCache<
    */
   fetchSync(
     key: string,
-    opts?: LRUCache.FetchOptions<string, Buffer, CacheFetchContext>,
+    opts?: LRUCacheCache.FetchOptions<
+      string,
+      Buffer,
+      CacheFetchContext
+    >,
   ) {
     const v = this.get(key)
     if (v) return v

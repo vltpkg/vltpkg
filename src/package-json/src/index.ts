@@ -21,6 +21,11 @@ const exists = (path: string): boolean => {
   }
 }
 
+// compiled, `homedir()` answers `/`. `$HOME` is the real home.
+const userHome = (home = homedir()): string =>
+  /* c8 ignore next - perry reports `/` for homedir() */
+  home === '/' && process.env.HOME ? process.env.HOME : home
+
 export class PackageJson {
   /**
    * cache of `package.json` loads
@@ -163,10 +168,15 @@ export class PackageJson {
    * Walks up the directory tree from the current working directory
    * and returns the path to the first `package.json` file found.
    * Returns undefined if no package.json is found.
+   *
+   * Not named `find`: reached through a property whose type is an object
+   * type rather than this class (`conf.options.packageJson`), the compiler
+   * dispatches a `find` call to the builtin `Array#find` and calls the
+   * first argument.
    */
-  find(
+  findPath(
     cwd: string = process.cwd(),
-    home: string = homedir(),
+    home: string = userHome(),
   ): string | undefined {
     for (const dir of walkUp(cwd)) {
       // don't look in home directory

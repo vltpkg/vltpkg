@@ -174,27 +174,33 @@ export const updatePackageJson = ({
   savePrefix,
 }: UpdatePackageJsonOptions) => {
   const manifestsToUpdate = new Set<NormalizedManifest>()
-  const operations = new Set([add, remove])
 
-  for (const operation of operations) {
-    if (operation) {
-      // These node ids are from either importer nodes or dependencies
-      // that are nested folders from which the user can also add new
-      // dependencies to
-      for (const nodeId of operation.keys()) {
-        const manifest = addOrRemoveDeps(
-          nodeId,
-          graph,
-          operation,
-          saveExact,
-          savePrefix,
-        )
-        if (manifest) {
-          manifestsToUpdate.add(manifest)
-        }
+  const apply = (
+    operation:
+      | AddImportersDependenciesMap
+      | RemoveImportersDependenciesMap
+      | undefined,
+  ) => {
+    if (!operation) return
+    const pairs =
+      'listPairs' in operation ?
+        operation.listPairs()
+      : [...operation]
+    for (const [nodeId] of pairs) {
+      const manifest = addOrRemoveDeps(
+        nodeId,
+        graph,
+        operation,
+        saveExact,
+        savePrefix,
+      )
+      if (manifest) {
+        manifestsToUpdate.add(manifest)
       }
     }
   }
+  apply(add)
+  apply(remove)
 
   const commit = () => {
     for (const manifest of manifestsToUpdate) {

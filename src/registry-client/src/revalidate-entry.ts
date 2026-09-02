@@ -30,7 +30,7 @@ const patchDateFallback = async (
   const buf = fullEntry.encode()
   rc.cache.set(
     key,
-    Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength),
+    Buffer.from(buf),
     { integrity: fullEntry.integrity },
   )
 }
@@ -127,7 +127,7 @@ export const revalidateEntry = async (
         const buf = result.encode()
         rc.cache.set(
           key,
-          Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength),
+          Buffer.from(buf),
           { integrity: result.integrity },
         )
         return

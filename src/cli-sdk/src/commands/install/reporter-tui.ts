@@ -17,6 +17,9 @@ import type { InstallResult } from '../install.ts'
  * Frames are painted with one-shot `render()` on a timer rather than through
  * `run()`: `run()` owns the loop and the keyboard, and an install reporter
  * needs neither.
+ *
+ * No `#private` fields: constructing a class with them from another compiled
+ * module throws.
  */
 
 type StepState = 'waiting' | 'in_progress' | 'completed'
@@ -35,34 +38,33 @@ const stepColors: Record<StepState, string> = {
 
 const FRAME_MS = 80
 
-export class InstallReporter extends ViewClass {
-  #requests = 0
-  #cacheHit = 0
-  #trailer?: string
-  #timer?: NodeJS.Timeout
-  #steps: Record<Events['graphStep']['step'], StepState> = {
+export class InstallReporterTui extends ViewClass {
+  requests = 0
+  cacheHit = 0
+  trailer?: string
+  timer?: NodeJS.Timeout
+  steps: Record<Events['graphStep']['step'], StepState> = {
     build: 'waiting',
     actual: 'waiting',
     reify: 'waiting',
   }
 
-  #onRequest = ({ state }: Events['request']) => {
-    if (state === 'start') this.#requests++
-    else if (state === 'cache' || state === 'stale') this.#cacheHit++
+  onRequest = ({ state }: Events['request']) => {
+    if (state === 'start') this.requests++
+    else if (state === 'cache' || state === 'stale') this.cacheHit++
   }
 
-  #onGraphStep = ({ step, state }: Events['graphStep']) => {
-    this.#steps[step] =
-      state === 'start' ? 'in_progress' : 'completed'
+  onGraphStep = ({ step, state }: Events['graphStep']) => {
+    this.steps[step] = state === 'start' ? 'in_progress' : 'completed'
   }
 
-  #frame(): Widget {
+  frame(): Widget {
     const steps: Widget[] = []
     const order = ['build', 'actual', 'reify'] as const
     for (const [idx, step] of order.entries()) {
       const label = labels[step]
       if (!label) continue
-      const state = this.#steps[step]
+      const state = this.steps[step]
       steps.push(
         Text(label, { fg: stepColors[state] }),
         ...(state === 'in_progress' ? [Text(' '), AnimatedSpinner()]
@@ -75,42 +77,45 @@ export class InstallReporter extends ViewClass {
     }
 
     const rows: Widget[] = [Box({ flexDirection: 'row' }, steps)]
-    if (this.#cacheHit > 0) {
+    if (this.cacheHit > 0) {
       rows.push(
         Text(
-          `${this.#cacheHit} cache hit${this.#cacheHit > 1 ? 's' : ''}`,
+          `${this.cacheHit} cache hit${this.cacheHit > 1 ? 's' : ''}`,
         ),
       )
     }
-    if (this.#requests > 0) {
+    if (this.requests > 0) {
       rows.push(
         Text(
-          `${this.#requests} request${this.#requests > 1 ? 's' : ''}`,
+          `${this.requests} request${this.requests > 1 ? 's' : ''}`,
         ),
       )
     }
-    if (this.#trailer) {
-      for (const line of this.#trailer.split('\n'))
+    if (this.trailer) {
+      for (const line of this.trailer.split('\n'))
         rows.push(Text(line))
     }
     return Box(rows)
   }
 
-  #paint = () => render(this.#frame())
+  paint = () => render(this.frame())
 
   start() {
-    emitter.on('request', this.#onRequest)
-    emitter.on('graphStep', this.#onGraphStep)
-    this.#timer = setInterval(this.#paint, FRAME_MS)
-    this.#timer.unref()
-    this.#paint()
+    emitter.on('request', this.onRequest)
+    emitter.on('graphStep', this.onGraphStep)
+    /* c8 ignore start - perry/tui render SIGBUS in this reporter */
+    if ('perry' in process.versions) return
+    /* c8 ignore stop */
+    this.timer = setInterval(this.paint, FRAME_MS)
+    this.timer.unref()
+    this.paint()
   }
 
-  #stop() {
-    if (this.#timer) clearInterval(this.#timer)
-    this.#timer = undefined
-    emitter.off('request', this.#onRequest)
-    emitter.off('graphStep', this.#onGraphStep)
+  stop() {
+    if (this.timer) clearInterval(this.timer)
+    this.timer = undefined
+    emitter.off('request', this.onRequest)
+    emitter.off('graphStep', this.onGraphStep)
   }
 
   async done(result: InstallResult, { time }: { time: number }) {
@@ -122,13 +127,20 @@ export class InstallReporter extends ViewClass {
       out +=
         '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
     }
-    this.#trailer = out
-    this.#stop()
-    this.#paint()
+    this.trailer = out
+    this.stop()
+    /* c8 ignore start */
+    if ('perry' in process.versions) {
+      // eslint-disable-next-line no-console
+      console.log(out)
+      return undefined
+    }
+    /* c8 ignore stop */
+    this.paint()
     return undefined
   }
 
   error(_err: unknown) {
-    this.#stop()
+    this.stop()
   }
 }

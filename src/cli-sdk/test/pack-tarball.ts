@@ -35,6 +35,11 @@ const createMockConfig = (
   } as unknown as LoadedConfig
 }
 
+const withGetWorkspace = <V>(m: Map<string, V>) =>
+  Object.assign(m, {
+    getWorkspace: (k: string) => m.get(k),
+  })
+
 t.test('packTarball', async t => {
   const testDir = t.testdir({
     'test-package': {
@@ -819,13 +824,15 @@ t.test('packTarball', async t => {
     }
 
     // Create mock monorepo Map
-    const mockMonorepo = new Map([
-      ['workspace-dep', workspaceDepWS],
-      ['workspace-dep-2', workspaceDep2WS],
-      ['workspace-dev', workspaceDevWS],
-      ['workspace-optional', workspaceOptionalWS],
-      ['workspace-peer', workspacePeerWS],
-    ])
+    const mockMonorepo = withGetWorkspace(
+      new Map([
+        ['workspace-dep', workspaceDepWS],
+        ['workspace-dep-2', workspaceDep2WS],
+        ['workspace-dev', workspaceDevWS],
+        ['workspace-optional', workspaceOptionalWS],
+        ['workspace-peer', workspacePeerWS],
+      ]),
+    )
 
     const workspaceConfig = createMockConfig(workspaceDir, {
       monorepo: mockMonorepo,
@@ -908,7 +915,7 @@ t.test('packTarball', async t => {
       )
       const mainManifest = JSON.parse(mainManifestContent)
 
-      const mockMonorepo = new Map()
+      const mockMonorepo = withGetWorkspace(new Map())
       const workspaceConfig = createMockConfig(errorDir, {
         monorepo: mockMonorepo,
       })
@@ -944,7 +951,7 @@ t.test('packTarball', async t => {
       )
       const mainManifest = JSON.parse(mainManifestContent)
 
-      const mockMonorepo = new Map()
+      const mockMonorepo = withGetWorkspace(new Map())
       const workspaceConfig = createMockConfig(errorDir, {
         monorepo: mockMonorepo,
       })
@@ -988,9 +995,9 @@ t.test('packTarball', async t => {
         name: 'no-version-workspace',
       }
 
-      const mockMonorepo = new Map([
-        ['no-version-workspace', workspaceWithoutVersion],
-      ])
+      const mockMonorepo = withGetWorkspace(
+        new Map([['no-version-workspace', workspaceWithoutVersion]]),
+      )
 
       const workspaceConfig = createMockConfig(errorDir, {
         monorepo: mockMonorepo,

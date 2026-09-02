@@ -82,7 +82,7 @@ const replaceWorkspaceAndCatalogSpecs = (
             }),
           )
 
-          const workspace = monorepo.get(workspaceName)
+          const workspace = monorepo.getWorkspace(workspaceName)
           assert(
             workspace,
             error(`Workspace '${workspaceName}' not found`, {

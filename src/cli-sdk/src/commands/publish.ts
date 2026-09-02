@@ -174,7 +174,8 @@ export const command: CommandFn<CommandResult> = async conf => {
       locations.push(workspace.fullpath)
     }
   } else {
-    single = options.packageJson.find(process.cwd()) ?? projectRoot
+    single =
+      options.packageJson.findPath(process.cwd()) ?? projectRoot
   }
 
   if (single) {
@@ -215,7 +216,7 @@ const commandSingle = async (
   location: string,
   conf: LoadedConfig,
 ) => {
-  const manifestPath = conf.options.packageJson.find(location)
+  const manifestPath = conf.options.packageJson.findPath(location)
   assert(manifestPath, 'No package.json found')
   const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)

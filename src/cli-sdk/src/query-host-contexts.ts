@@ -1,5 +1,5 @@
-import { homedir } from 'node:os'
 import { parse, posix } from 'node:path'
+import { userHome } from '@vltpkg/xdg'
 import { readProjectFolders } from './read-project-folders.ts'
 import { reloadConfig } from './reload-config.ts'
 import { actual, createVirtualRoot } from '@vltpkg/graph'
@@ -21,18 +21,21 @@ export type HostContextsMapResult = {
 // homedir() might fail. Fall back to parent directory.
 let foundHome
 try {
-  foundHome = posix.format(parse(homedir()))
+  foundHome = posix.format(parse(userHome()))
   /* c8 ignore next 3 */
 } catch {}
 const home =
   foundHome ?? posix.dirname(posix.format(parse(process.cwd())))
 
-const isVltInstalled = (folder: PathBase): boolean =>
-  !!folder.resolve('node_modules/.vlt').lstatSync()?.isDirectory() ||
-  !!folder
+const isVltInstalled = (folder: PathBase): boolean => {
+  const vltDir = folder.resolve('node_modules/.vlt').lstatSync()
+  // compiled: `vltDir?.isDirectory()` still invokes when missing
+  if (vltDir?.isDirectory()) return true
+  const lock = folder
     .resolve('node_modules/.vlt-lock.json')
     .lstatSync()
-    ?.isFile()
+  return !!lock && lock.isFile()
+}
 
 /**
  * Generates possible project keys for a given folder.

@@ -34,8 +34,8 @@ import {
   startPeerPlacement,
 } from './peers.ts'
 import { compareByHasPeerDeps } from './sorting.ts'
+import { PeerContext } from './types.ts'
 import type {
-  PeerContext,
   PeerContextEntryInput,
   AppendNodeEntry,
   ProcessPlacementResult,
@@ -104,10 +104,11 @@ const getFileTypeInfo = (
   const path = target.relativePosix()
   const id = joinDepIDTuple(['file', path])
 
+  const targetStat = target.lstatSync()
   return {
     path,
     id,
-    isDirectory: !!target.lstatSync()?.isDirectory(),
+    isDirectory: !!targetStat && targetStat.isDirectory(),
   }
 }
 
@@ -744,9 +745,6 @@ export const appendNodes = async (
   if (seen.has(fromNode.id)) return
   seen.add(fromNode.id)
 
-  // PEER CONTEXT ISOLATION: Each workspace importer needs its own context
-  // to prevent peer targets from one workspace affecting another.
-  // The main importer (index 0) uses the initial context; others get fresh ones.
   let initialPeerContext = graph.peerContexts[0]
   /* c8 ignore start - impossible */
   if (!initialPeerContext)
@@ -754,7 +752,7 @@ export const appendNodes = async (
   /* c8 ignore stop */
   if (fromNode.importer && fromNode !== graph.mainImporter) {
     // Create isolated peer context for this workspace importer
-    const nextPeerContext: PeerContext = new Map()
+    const nextPeerContext = new PeerContext()
     nextPeerContext.index = graph.nextPeerContextIndex()
     graph.peerContexts[nextPeerContext.index] = nextPeerContext
     initialPeerContext = nextPeerContext
@@ -778,7 +776,10 @@ export const appendNodes = async (
   ]
 
   // BFS MAIN LOOP: Process level by level until no more deps
-  while (currentLevelDeps.length > 0) {
+  // compiled: falling through a `while` in an async function never
+  // settles the returned promise; return from inside the loop.
+  for (;;) {
+    if (!currentLevelDeps.length) return
     const nextLevelDeps: AppendNodeEntry[] = []
 
     // ============================================================
@@ -795,10 +796,7 @@ export const appendNodes = async (
           peerContext,
           depth,
         }: AppendNodeEntry) => {
-          // Cycle prevention: mark as seen when starting to process
           seen.add(node.id)
-
-          // Fetch manifests and collect tasks (no graph mutations)
           const result = await fetchManifestsForDeps(
             packageInfo,
             graph,
@@ -904,7 +902,7 @@ export const appendNodes = async (
     for (const childDepsToProcess of levelResults) {
       for (const childDep of childDepsToProcess) {
         // Skip already-seen nodes (cycle prevention)
-        if (!seen.has(childDep.node.id)) {
+        if (!seen.has(childDep.node.id) && childDep.deps.length > 0) {
           /* c8 ignore next */
           const currentDepth = currentLevelDeps[0]?.depth ?? 0
           nextLevelDeps.push({
@@ -915,7 +913,6 @@ export const appendNodes = async (
       }
     }
 
-    // Advance to next BFS level
     currentLevelDeps = nextLevelDeps
   }
 }

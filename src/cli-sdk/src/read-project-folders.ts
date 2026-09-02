@@ -1,13 +1,14 @@
-import { availableParallelism, homedir } from 'node:os'
+import { availableParallelism } from 'node:os'
 import { dirname } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
+import { userHome } from '@vltpkg/xdg'
 
 import { callLimit } from 'promise-call-limit'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 let home: string
 try {
-  home = homedir()
+  home = userHome()
 } catch {
   home = dirname(process.cwd())
 }

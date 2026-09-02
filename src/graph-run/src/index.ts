@@ -202,7 +202,11 @@ export abstract class RunnerBase<
     const ac = new AbortController()
     this.from = from ?? this.constructor
     this.abortController = ac
-    setMaxListeners(Infinity, ac.signal)
+    /* c8 ignore start - compiled AbortSignal isn't a native EventTarget */
+    if (!('perry' in process.versions)) {
+      setMaxListeners(Infinity, ac.signal)
+    }
+    /* c8 ignore stop */
     this.options = options
     if (!options.graph.length) {
       const er = new Error('no nodes provided to graph traversal', {

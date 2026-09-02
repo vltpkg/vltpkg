@@ -8,13 +8,12 @@ import type { NormalizedManifest } from '@vltpkg/types'
 import { asError } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
-import { getDependencies } from './dependencies.ts'
-import type {
+import {
+  getDependencies,
   AddImportersDependenciesMap,
-  Dependency,
+  RemoveImportersDependenciesMap,
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import type { DepID } from '@vltpkg/dep-id'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual, loadData } from './lockfile/load.ts'
@@ -106,13 +105,8 @@ export const install = async (
       lockfileData,
     })
 
-    const emptyAdd = Object.assign(
-      new Map<DepID, Map<string, Dependency>>(),
-      { modifiedDependencies: false },
-    )
-    const emptyRemove = Object.assign(new Map<DepID, Set<string>>(), {
-      modifiedDependencies: false,
-    })
+    const emptyAdd = new AddImportersDependenciesMap()
+    const emptyRemove = new RemoveImportersDependenciesMap()
     const importerSpecs = getImporterSpecs({
       graph: lockfileGraph,
       add: emptyAdd,
@@ -212,9 +206,7 @@ export const install = async (
   }
 
   try {
-    const remove = Object.assign(new Map<DepID, Set<string>>(), {
-      modifiedDependencies: false,
-    })
+    const remove = new RemoveImportersDependenciesMap()
     const modifiers = GraphModifier.maybeLoad(options)
 
     let act: Graph | undefined = actualLoad({
@@ -228,7 +220,11 @@ export const install = async (
     // if the actual graph has no dependencies, it's simpler to ignore it
     // this allows us to check for its availability later on for properly
     // handling situations like resetting edges for refreshing the ideal graph
-    if (act.importers.size === act.nodes.size) {
+    if (
+      typeof act.hasOnlyImporters === 'function' ?
+        act.hasOnlyImporters()
+      : act.importers.size === act.nodes.size
+    ) {
       act = undefined
     }
     const graph = await idealBuild({

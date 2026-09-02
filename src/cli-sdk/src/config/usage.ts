@@ -1,6 +1,6 @@
 import { jack } from 'jackspeak'
 import type { CommandUsage } from '../index.ts'
-import { commandAliases } from './definition.ts'
+import { commandAliasList } from './definition.ts'
 
 const toArr = <T>(v: T | T[]): T[] => (Array.isArray(v) ? v : [v])
 
@@ -36,8 +36,8 @@ export const commandUsage = ({
 
   const j = jack({ usage: joinUsage(usage) }).description(description)
 
-  const aliases = commandAliases.get(command)
-  if (aliases) {
+  const aliases = commandAliasList(command)
+  if (aliases.length) {
     j.heading('Aliases', 2).description(aliases.join(', '), {
       pre: true,
     })

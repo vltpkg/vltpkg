@@ -80,6 +80,40 @@ t.test('darwin', t => {
   t.end()
 })
 
+t.test('$HOME wins over homedir()', async t => {
+  t.intercept(process, 'platform', { value: 'darwin' })
+  t.intercept(process, 'env', { value: { HOME: '/env-home' } })
+  const { XDG } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', mocks)
+  t.matchSnapshot(f(new XDG('app')))
+})
+
+t.test('userHome uses $HOME when os.homedir is /', async t => {
+  t.intercept(process, 'env', { value: { HOME: '/Users/me' } })
+  const { userHome } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    'node:os': { homedir: () => '/', tmpdir: () => '/tmp' },
+    'node:path': posix,
+  })
+  t.equal(userHome(), '/Users/me')
+})
+
+t.test('userHome keeps a non-root homedir for tests', async t => {
+  t.intercept(process, 'env', { value: { HOME: '/env-home' } })
+  const { userHome } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    'node:os': {
+      homedir: () => '/mocked-home',
+      tmpdir: () => '/tmp',
+    },
+    'node:path': posix,
+  })
+  t.equal(userHome(), '/mocked-home')
+})
+
 t.test('others', t => {
   const platforms: NodeJS.Platform[] = ['linux', 'aix', 'android']
   t.test('with xdg envs', t => {

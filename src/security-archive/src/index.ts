@@ -6,7 +6,7 @@ import { dirname } from 'node:path'
 // is intercepted by a Perry native binding in compiled builds, and its
 // class cannot be safely subclassed. Same code, npm types.
 // eslint-disable-next-line import/extensions -- plain-JS vendored file
-import { LRUCache } from '../vendor/lru-cache.js'
+import { LRUCacheSecurityArchive } from '../vendor/lru-cache.js'
 import pRetry, { AbortError } from 'p-retry'
 import { asDepID, splitDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
@@ -60,24 +60,25 @@ export type DBReadEntry = {
 
 export type DBWriteEntry = [string, string, number, number]
 
-export type SecurityArchiveOptions = LRUCache.OptionsBase<
-  DepID,
-  PackageReportData,
-  unknown
-> & {
-  /**
-   * Security archive does not supports a fetch-on-demand model.
-   */
-  fetchMethod?: undefined
-  /**
-   * An optional value for the path in which to store the sqlite db.
-   */
-  path?: string
-  /**
-   * Number of retries attempts to reach the remote security API.
-   */
-  retries?: number
-}
+export type SecurityArchiveOptions =
+  LRUCacheSecurityArchive.OptionsBase<
+    DepID,
+    PackageReportData,
+    unknown
+  > & {
+    /**
+     * Security archive does not supports a fetch-on-demand model.
+     */
+    fetchMethod?: undefined
+    /**
+     * An optional value for the path in which to store the sqlite db.
+     */
+    path?: string
+    /**
+     * Number of retries attempts to reach the remote security API.
+     */
+    retries?: number
+  }
 
 const normalizeRegistryURL = (url: string): string =>
   url.endsWith('/') ? url : `${url}/`
@@ -112,7 +113,7 @@ export const usesNpmRegistry = (node: NodeLike): boolean => {
  * using the SecurityArchive.get() method.
  */
 export class SecurityArchive
-  extends LRUCache<DepID, PackageReportData>
+  extends LRUCacheSecurityArchive<DepID, PackageReportData>
   implements SecurityArchiveLike
 {
   #expired = new Set<DepID>()

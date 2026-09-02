@@ -65,6 +65,21 @@ t.test('Graph', async t => {
     2,
     'should create and add the new node to the graph',
   )
+  t.equal(graph.hasOnlyImporters(), false)
+  t.equal(graph.importersSize(), graph.importers.size)
+  t.equal(graph.nodesSize(), graph.nodes.size)
+  t.equal(graph.getNode(newNode.id), newNode)
+  t.equal(
+    graph.getNode(joinDepIDTuple(['registry', '', 'nope'])),
+    undefined,
+  )
+  t.same(
+    graph
+      .nodesByNameEntries()
+      .map(([name]) => name)
+      .sort(),
+    ['foo', 'my-project'],
+  )
 
   // gutchecks
   t.strictSame(

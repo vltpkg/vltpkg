@@ -1,14 +1,14 @@
-import { asDependency } from '@vltpkg/graph'
+import {
+  asDependency,
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '@vltpkg/graph'
 import { joinDepIDTuple, splitDepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { isAbsolute, relative, resolve } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { DepID } from '@vltpkg/dep-id'
-import type {
-  AddImportersDependenciesMap,
-  Dependency,
-  RemoveImportersDependenciesMap,
-} from '@vltpkg/graph'
+import type { Dependency } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { DependencySaveType } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
@@ -82,20 +82,6 @@ const getType = (opts: SaveTypes): DependencySaveType =>
   : opts['save-optional'] ? 'optional'
   : 'implicit'
 
-class AddImportersDependenciesMapImpl
-  extends Map
-  implements AddImportersDependenciesMap
-{
-  modifiedDependencies = false
-}
-
-class RemoveImportersDependenciesMapImpl
-  extends Map
-  implements RemoveImportersDependenciesMap
-{
-  modifiedDependencies = false
-}
-
 /**
  * Rebase a file: spec's relative path from process.cwd() to the
  * importer's location. CLI positional args are relative to cwd,
@@ -120,7 +106,7 @@ const rebaseFileSpec = (
   const targetAbs = resolve(process.cwd(), spec.file)
 
   if (monorepo) {
-    for (const ws of monorepo.values()) {
+    for (const ws of monorepo.workspaceList()) {
       if (ws.fullpath === targetAbs) {
         return Spec.parse(ws.name, 'workspace:*', specOptions)
       }
@@ -145,8 +131,7 @@ export const parseAddArgs = (
   scurry: PathScurry,
   monorepo?: Monorepo,
 ): ParsedAddArgs => {
-  const add: AddImportersDependenciesMap =
-    new AddImportersDependenciesMapImpl()
+  const add = new AddImportersDependenciesMap()
   const items = config.positionals
   const type = getType(config.values)
   const importers = getWorkspaceImporters(config.values, monorepo)
@@ -227,8 +212,7 @@ export const parseRemoveArgs = (
   scurry: PathScurry,
   monorepo?: Monorepo,
 ): ParsedRemoveArgs => {
-  const remove: RemoveImportersDependenciesMap =
-    new RemoveImportersDependenciesMapImpl()
+  const remove = new RemoveImportersDependenciesMap()
   const importers = getWorkspaceImporters(config.values, monorepo)
 
   for (const importer of importers) {

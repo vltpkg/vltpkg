@@ -186,7 +186,8 @@ export const command: CommandFn = async conf => {
       locations.push(workspace.fullpath)
     }
   } else {
-    single = options.packageJson.find(process.cwd()) ?? projectRoot
+    single =
+      options.packageJson.findPath(process.cwd()) ?? projectRoot
   }
 
   if (single) {
