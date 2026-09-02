@@ -1000,8 +1000,6 @@ t.test('already-canonical node is a no-op rename', async t => {
   )
   canonicalizePeerIds(graph)
   const id = ui.id
-  ui.peerSetHash =
-    id.includes('peer.') ? ui.peerSetHash : ui.peerSetHash
   canonicalizePeerIds(graph)
   t.equal(ui.id, id)
 })
