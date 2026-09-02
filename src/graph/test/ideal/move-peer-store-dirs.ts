@@ -5,6 +5,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   writeFileSync,
 } from 'node:fs'
@@ -30,12 +31,30 @@ const toId = joinDepIDTuple([
   'peer.abcdabcdabcdabcd',
 ])
 
+const thirdId = joinDepIDTuple([
+  'registry',
+  '',
+  'ui@1.0.0',
+  'peer.0123012301230123',
+])
+
+const store = (root: string) => join(root, 'node_modules/.vlt')
+
 const writePkg = (root: string, id: DepID, body: string) => {
-  const dir = join(root, 'node_modules/.vlt', id, 'node_modules/ui')
+  const dir = join(store(root), id, 'node_modules/ui')
   mkdirSync(dir, { recursive: true })
   writeFileSync(join(dir, 'package.json'), body)
   return dir
 }
+
+const readPkg = (root: string, id: DepID) =>
+  readFileSync(
+    join(store(root), id, 'node_modules/ui/package.json'),
+    'utf8',
+  )
+
+const parked = (root: string) =>
+  readdirSync(store(root)).filter(n => n.startsWith('.VLT.MOVE.'))
 
 const makeNode = (t: { testdirName: string }, id: DepID): Node => {
   const graph = new Graph({
@@ -149,4 +168,90 @@ t.test('empty plan is a no-op', async t => {
     remover: new RollbackRemove(),
   })
   t.notOk(existsSync(join(root, 'node_modules/.vlt')))
+})
+
+t.test(
+  'chained moves land each source on its own destination',
+  async t => {
+    const root = t.testdir({})
+    const a = makeNode(t, toId)
+    const b = makeNode(t, thirdId)
+    writePkg(root, fromId, '{"who":"a"}')
+    writePkg(root, toId, '{"who":"b"}')
+    const scurry = new PathScurry(root)
+    await movePeerStoreDirs(
+      [
+        { node: a, from: fromId, to: toId },
+        { node: b, from: toId, to: thirdId },
+      ],
+      { scurry, remover: new RollbackRemove() },
+    )
+    t.equal(readPkg(root, toId), '{"who":"a"}')
+    t.equal(readPkg(root, thirdId), '{"who":"b"}')
+    t.notOk(existsSync(join(store(root), fromId)))
+    t.strictSame(parked(root), [])
+    t.equal(a.extracted, true)
+    t.equal(b.extracted, true)
+  },
+)
+
+t.test('swapped moves exchange directories', async t => {
+  const root = t.testdir({})
+  const a = makeNode(t, toId)
+  const b = makeNode(t, fromId)
+  writePkg(root, fromId, '{"who":"a"}')
+  writePkg(root, toId, '{"who":"b"}')
+  const scurry = new PathScurry(root)
+  await movePeerStoreDirs(
+    [
+      { node: a, from: fromId, to: toId },
+      { node: b, from: toId, to: fromId },
+    ],
+    { scurry, remover: new RollbackRemove() },
+  )
+  t.equal(readPkg(root, toId), '{"who":"a"}')
+  t.equal(readPkg(root, fromId), '{"who":"b"}')
+  t.strictSame(parked(root), [])
+  t.equal(a.extracted, true)
+  t.equal(b.extracted, true)
+})
+
+t.test(
+  'merged-away copy at a destination gives way to the mover',
+  async t => {
+    const root = t.testdir({})
+    const keep = makeNode(t, toId)
+    const loser = makeNode(t, toId)
+    writePkg(root, fromId, '{"who":"keep"}')
+    writePkg(root, toId, '{"who":"loser"}')
+    const scurry = new PathScurry(root)
+    await movePeerStoreDirs(
+      [
+        { node: keep, from: fromId, to: toId },
+        { node: loser, from: toId },
+      ],
+      { scurry, remover: new RollbackRemove() },
+    )
+    t.equal(readPkg(root, toId), '{"who":"keep"}')
+    t.notOk(existsSync(join(store(root), fromId)))
+    t.strictSame(parked(root), [])
+    t.equal(keep.extracted, true)
+  },
+)
+
+t.test('settle failure clears extracted', async t => {
+  const root = t.testdir({})
+  const node = makeNode(t, toId)
+  writePkg(root, fromId, '{"name":"ui"}')
+  const scurry = new PathScurry(root)
+  const remover = {
+    rm: async () => {
+      throw new Error('settle failed')
+    },
+  } as unknown as RollbackRemove
+  await movePeerStoreDirs([{ node, from: fromId, to: toId }], {
+    scurry,
+    remover,
+  })
+  t.equal(node.extracted, false)
 })
