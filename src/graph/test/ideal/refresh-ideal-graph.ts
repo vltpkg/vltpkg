@@ -816,6 +816,12 @@ t.test(
         'parents share the rebuilt dup node',
       )
     }
+    t.equal(
+      parents[0]?.edgesOut.get('dup')?.to?.edgesOut.get('x')?.to
+        ?.version,
+      '1.0.9',
+      'ambiguous base key was dropped, x re-resolved from the registry',
+    )
     t.ok(
       graph.mainImporter.edgesOut.get('new-dep')?.to,
       'new dependency was added',
