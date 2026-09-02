@@ -240,6 +240,25 @@ t.test('load graph without SecurityArchive class', async () => {
   t.notOk(result.securityArchive)
 })
 
+const report = (name: string) => ({
+  id: `${name}@1.0.0`,
+  author: [],
+  size: 0,
+  type: 'npm',
+  name,
+  version: '1.0.0',
+  license: 'MIT',
+  score: {
+    overall: 1,
+    license: 1,
+    maintenance: 1,
+    quality: 1,
+    supplyChain: 1,
+    vulnerability: 1,
+  },
+  alerts: [],
+})
+
 t.test(
   'load graph with peer-suffixed node looks up security data by base DepID',
   async () => {
@@ -251,24 +270,6 @@ t.test(
       'peer.0123456789abcdef',
     ])
     const barId = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
-    const report = (name: string) => ({
-      id: `${name}@1.0.0`,
-      author: [],
-      size: 0,
-      type: 'npm',
-      name,
-      version: '1.0.0',
-      license: 'MIT',
-      score: {
-        overall: 1,
-        license: 1,
-        maintenance: 1,
-        quality: 1,
-        supplyChain: 1,
-        vulnerability: 1,
-      },
-      alerts: [],
-    })
     const peerSuffixed: TransferData = {
       ...transferData,
       lockfile: {
@@ -305,6 +306,46 @@ t.test(
       result.securityArchive?.has(fooPeer),
       'archive has() matches the suffixed node id',
     )
+  },
+)
+
+t.test(
+  'archive validation covers default-registry nodes with raw lockfile options',
+  async t => {
+    const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+    const barId = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+    // saved lockfiles persist the npm alias from the cli config; the
+    // unmocked eligibility check resolves the default registry through it
+    const withNpm: TransferData = {
+      ...transferData,
+      lockfile: {
+        ...transferData.lockfile,
+        options: {
+          ...transferData.lockfile.options,
+          registries: {
+            ...transferData.lockfile.options.registries,
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+      },
+    }
+    const missing = load({
+      ...withNpm,
+      securityArchive: { [fooId]: report('foo') },
+    })
+    t.equal(
+      missing.securityArchive?.ok,
+      false,
+      'missing report for a default-registry node is detected',
+    )
+    const complete = load({
+      ...withNpm,
+      securityArchive: {
+        [fooId]: report('foo'),
+        [barId]: report('bar'),
+      },
+    })
+    t.equal(complete.securityArchive?.ok, true)
   },
 )
 
