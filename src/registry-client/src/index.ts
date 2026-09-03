@@ -181,6 +181,13 @@ export type RegistryClientRequestOptions = Omit<
    * @internal
    */
   staleWhileRevalidate?: false
+
+  /**
+   * Revalidate a cached response even when it is still within max-age.
+   * Conditional request headers are still sent when available.
+   * @internal
+   */
+  forceRevalidate?: boolean
 }
 
 const { version } = loadPackageJson(
@@ -495,6 +502,7 @@ export class RegistryClient {
       signal,
       otp = (process.env.VLT_OTP ?? '').trim(),
       staleWhileRevalidate = true,
+      forceRevalidate = false,
     } = options
     let { trustIntegrity } = options
 
@@ -513,12 +521,17 @@ export class RegistryClient {
       : undefined
 
     const entry = buffer ? this.#decodeCached(buffer) : undefined
-    if (entry?.valid) {
+    if (entry?.valid && !forceRevalidate) {
       logRequest(url, 'cache', { method })
       return entry
     }
 
-    if (staleWhileRevalidate && entry?.staleWhileRevalidate && m) {
+    if (
+      !forceRevalidate &&
+      staleWhileRevalidate &&
+      entry?.staleWhileRevalidate &&
+      m
+    ) {
       // revalidate while returning the stale entry
       register(dirname(this.cache.path()), m, url)
       logRequest(url, 'stale', { method })
