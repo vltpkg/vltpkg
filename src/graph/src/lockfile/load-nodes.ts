@@ -69,10 +69,12 @@ export const loadNodes = (
 
     // Optimize registry version extraction with caching for large graphs
     let version: string | undefined
+    // scoped names start with '@', so look for the version separator
+    // past the first character
     if (
       type === 'registry' &&
       registrySpec &&
-      registrySpec.indexOf('@') > 0
+      registrySpec.indexOf('@', 1) > 0
     ) {
       if (registryVersionCache) {
         const seenVersion = registryVersionCache.get(registrySpec)

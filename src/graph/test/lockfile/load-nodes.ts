@@ -490,6 +490,33 @@ t.test('load nodes with hydration from actual graph', async t => {
   )
 })
 
+t.test('parses the version of scoped registry nodes', async t => {
+  const graph = new Graph({
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot: t.testdirName,
+  })
+  const scoped = joinDepIDTuple(['registry', '', '@scope/a@1.2.3'])
+  const suffixed = joinDepIDTuple([
+    'registry',
+    'npm',
+    '@scope/b@2.0.0',
+    'peer.0123456789abcdef',
+  ])
+  const bare = joinDepIDTuple(['registry', '', '@scope/c'])
+  loadNodes(
+    graph,
+    {
+      [scoped]: [0, '@scope/a'],
+      [suffixed]: [0, '@scope/b'],
+      [bare]: [0, '@scope/c'],
+    } as LockfileData['nodes'],
+    {},
+  )
+  t.equal(graph.nodes.get(scoped)?.version, '1.2.3')
+  t.equal(graph.nodes.get(suffixed)?.version, '2.0.0')
+  t.equal(graph.nodes.get(bare)?.version, undefined)
+})
+
 t.test('load nodes with no actual graph provided', async t => {
   const graph = new Graph({
     mainManifest: {
