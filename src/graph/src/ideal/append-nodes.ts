@@ -1,6 +1,7 @@
 import {
   baseDepID,
   getTuple,
+  hydrate,
   joinDepIDTuple,
   joinExtra,
   splitDepID,
@@ -54,6 +55,15 @@ type FileTypeInfo = {
   id: DepID
   path: string
   isDirectory: boolean
+}
+
+/** A dependency with the spec it is placed with after modifiers. */
+type DepEntry = {
+  spec: Spec
+  type: DependencySaveType
+  fileTypeInfo?: FileTypeInfo
+  activeModifier?: ModifierActiveEntry
+  queryModifier?: string
 }
 
 /**
@@ -160,6 +170,70 @@ type NodePlacementTask = {
 }
 
 /**
+ * Can the lockfile target still serve this spec? Exact for sources
+ * satisfies() understands; loose fallback for sources it cannot verify
+ * (named jsr registries, dist-tags): only for a registry node stamped
+ * with the same type+registry segments a fresh node for this spec would
+ * get, so a locked node from another source is never reused.
+ */
+const lockedFits = (
+  n: Node,
+  spec: Spec,
+  fromNode: Node,
+  graph: Graph,
+): boolean => {
+  const final = spec.final
+  if (
+    satisfies(
+      n.id,
+      final,
+      fromNode.location,
+      graph.projectRoot,
+      graph.monorepo,
+    )
+  ) {
+    return true
+  }
+  if (final.type !== 'registry') return false
+  const [idType, idRegistry] = splitDepID(n.id)
+  if (idType !== 'registry') return false
+  const expected = getTuple(spec, {
+    name: n.name,
+    version: n.version,
+  })
+  if (idRegistry !== expected[1]) return false
+  if (n.name !== spec.name && n.name !== final.name) return false
+  if (!final.range) return true
+  /* c8 ignore next */
+  if (!n.version) return false
+  const version = parseVersion(n.version)
+  return !!version && final.range.test(version)
+}
+
+/**
+ * The lockfile target captured for `fromNode → name` before resetEdges().
+ * A peer-fork rebuild gives fromNode a provisional `peer.N` id that
+ * misses the canonical id key, so retry with the base id key, recorded
+ * only when unambiguous across peer copies.
+ */
+const findLockedNode = (
+  graph: Graph,
+  fromNode: Node,
+  name: string,
+): Node | undefined => {
+  const locked = graph.lockedResolutions
+  if (!locked) return
+  let id = locked.get(`${fromNode.id}\0${name}`)
+  if (id === undefined) {
+    const baseFrom = baseDepID(fromNode.id)
+    if (baseFrom !== fromNode.id) {
+      id = locked.get(`${baseFrom}\0${name}`)
+    }
+  }
+  return id ? graph.nodes.get(id) : undefined
+}
+
+/**
  * Try to find a compatible resolution for a dependency, checking peer context.
  * If the first resolution candidate is incompatible with the peer context,
  * try other candidates.
@@ -196,47 +270,12 @@ const findCompatibleResolution = (
     satisfiesCache.set(key, result)
     return result
   }
-  const lockedFits = (n: Node) => {
-    if (satisfiesFinal(n)) return true
-    // loose fallback for sources satisfies() cannot verify (named jsr
-    // registries, dist-tags): only for a registry node stamped with the
-    // same type+registry segments a fresh node for this spec would get,
-    // so a locked node from another source is never reused
-    if (final.type !== 'registry') return false
-    const [idType, idRegistry] = splitDepID(n.id)
-    if (idType !== 'registry') return false
-    const expected = getTuple(spec, {
-      name: n.name,
-      version: n.version,
-    })
-    if (idRegistry !== expected[1]) return false
-    if (n.name !== spec.name && n.name !== final.name) return false
-    if (!final.range) return true
-    /* c8 ignore next */
-    if (!n.version) return false
-    const version = parseVersion(n.version)
-    return !!version && final.range.test(version)
-  }
 
   // Prefer existing edge target if it satisfies the spec.
   // This ensures lockfile resolutions are preserved when still valid,
   // rather than potentially picking a different satisfying version.
   const existingEdge = fromNode.edgesOut.get(spec.name)
-  let lockedId = graph.lockedResolutions?.get(
-    `${fromNode.id}\0${spec.name}`,
-  )
-  if (lockedId === undefined && graph.lockedResolutions) {
-    // a peer-fork rebuild gives fromNode a provisional `peer.N` id that
-    // misses the canonical id key; retry with the base id key, recorded
-    // only when unambiguous across peer copies
-    const baseFrom = baseDepID(fromNode.id)
-    if (baseFrom !== fromNode.id) {
-      lockedId = graph.lockedResolutions.get(
-        `${baseFrom}\0${spec.name}`,
-      )
-    }
-  }
-  const lockedNode = lockedId ? graph.nodes.get(lockedId) : undefined
+  const lockedNode = findLockedNode(graph, fromNode, spec.name)
   let existingNode: Node | undefined
   if (
     existingEdge?.to &&
@@ -244,7 +283,10 @@ const findCompatibleResolution = (
     satisfiesFinal(existingEdge.to)
   ) {
     existingNode = existingEdge.to
-  } else if (lockedNode && lockedFits(lockedNode)) {
+  } else if (
+    lockedNode &&
+    lockedFits(lockedNode, spec, fromNode, graph)
+  ) {
     existingNode = lockedNode
   } else {
     existingNode = graph.findResolution(spec, fromNode, queryModifier)
@@ -289,6 +331,67 @@ const findCompatibleResolution = (
 }
 
 /**
+ * A detached lockfile node without a manifest still knows its exact
+ * version through its DepID. Rebuild the spec that produced it so the
+ * manifest fetch pins the locked version instead of re-resolving the
+ * range to the newest satisfying release. Only registry nodes carry a
+ * version; anything else keeps the range fetch.
+ */
+const lockedVersionFetch = (
+  node: Node,
+  spec: Spec,
+  options: SpecOptions,
+): { spec: Spec; version: string } | undefined => {
+  if (spec.final.type !== 'registry' || !node.version) return
+  // hydrate() reproduces alias / named / URL / jsr forms from the DepID
+  // but memoizes per (name, id) ignoring options, so re-parse its
+  // bareSpec with the current options
+  const bare = hydrate(node.id, spec.name, options).bareSpec
+  const exact = Spec.parse(spec.name, bare, options)
+  // lockedFits only compares the DepID registry name segment; never
+  // fetch a locked version from a source other than the one the edge
+  // resolves to right now
+  if (exact.final.registry !== spec.final.registry) return
+  return { spec: exact, version: node.version }
+}
+
+/**
+ * A rebuild without node_modules loads lockfile nodes with no manifest.
+ * Fetch the locked version up front and hydrate the node so the reuse
+ * and peer compatibility decisions see exactly what the hidden-lockfile
+ * path sees; on any miss the node stays bare and the range fetch runs as
+ * before. Hydrations are shared across the parallel fetches of one
+ * appendNodes run so each node is fetched once.
+ */
+const hydrateLockedNode = (
+  node: Node,
+  spec: Spec,
+  graph: Graph,
+  packageInfo: PackageInfoClient,
+  options: SpecOptions,
+  from: string,
+  hydrations: Map<DepID, Promise<void>>,
+): Promise<void> | undefined => {
+  const seen = hydrations.get(node.id)
+  if (seen) return seen
+  const locked = lockedVersionFetch(node, spec, options)
+  if (!locked) return
+  const hydration = packageInfo
+    .manifest(locked.spec, { from })
+    .then(
+      manifest => manifest as Manifest | undefined,
+      () => undefined,
+    )
+    .then(manifest => {
+      if (manifest?.version !== locked.version) return
+      node.manifest = normalizeManifest(manifest, String(locked.spec))
+      graph.manifests.set(node.id, node.manifest)
+    })
+  hydrations.set(node.id, hydration)
+  return hydration
+}
+
+/**
  * Fetch manifests for dependencies and create placement tasks.
  *
  * This is Phase 1 of the breadth-first graph building process. For each
@@ -310,6 +413,8 @@ const fetchManifestsForDeps = async (
   fromNode: Node,
   deps: Dependency[],
   scurry: PathScurry,
+  options: SpecOptions,
+  hydrations: Map<DepID, Promise<void>>,
   peerContext: PeerContext,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   depth = 0,
@@ -319,6 +424,8 @@ const fetchManifestsForDeps = async (
   const reuseTasks: ReuseTask[] = []
   const forkRequests: PeerContextEntryInput[] = []
 
+  // resolve the spec each dep is placed with before any lookup
+  const entries: DepEntry[] = []
   for (const { spec: originalSpec, type } of deps) {
     let spec = originalSpec
     const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
@@ -342,7 +449,45 @@ const fetchManifestsForDeps = async (
         continue
       }
     }
+    entries.push({
+      spec,
+      type,
+      fileTypeInfo,
+      activeModifier,
+      queryModifier,
+    })
+  }
 
+  const from = scurry.resolve(fromNode.location)
+  const pending: Promise<void>[] = []
+  for (const { spec } of entries) {
+    const locked = findLockedNode(graph, fromNode, spec.name)
+    if (
+      locked?.detached &&
+      !locked.manifest &&
+      lockedFits(locked, spec, fromNode, graph)
+    ) {
+      const hydration = hydrateLockedNode(
+        locked,
+        spec,
+        graph,
+        packageInfo,
+        options,
+        from,
+        hydrations,
+      )
+      if (hydration) pending.push(hydration)
+    }
+  }
+  await Promise.all(pending)
+
+  for (const {
+    spec,
+    type,
+    fileTypeInfo,
+    activeModifier,
+    queryModifier,
+  } of entries) {
     const peer = type === 'peer' || type === 'peerOptional'
 
     // NODE REUSE LOGIC with peer compatibility
@@ -415,14 +560,15 @@ const fetchManifestsForDeps = async (
     // Start manifest fetch immediately for parallel processing
     const manifestPromise =
       // the "detached" node state means that it has already been load as
-      // part of a graph (either lockfile or actual) and it has valid manifest
-      // data so we shortcut the package info manifest fetch here
+      // part of a graph (either lockfile or actual), or was hydrated with
+      // its locked version above, and it has valid manifest data so we
+      // shortcut the package info manifest fetch here
       existingNode?.detached && existingNode.manifest ?
         Promise.resolve(existingNode.manifest as Manifest | undefined)
         // this is the entry point to fetch calls to retrieve manifests
         // from the build ideal graph point of view
       : packageInfo
-          .manifest(spec, { from: scurry.resolve(fromNode.location) })
+          .manifest(spec, { from })
           .then(manifest => manifest as Manifest | undefined)
           .catch((er: unknown) => {
             // optional deps ignored if inaccessible, but a dep that tried
@@ -807,6 +953,10 @@ export const appendNodes = async (
   if (seen.has(fromNode.id)) return
   seen.add(fromNode.id)
 
+  // locked lockfile nodes hydrated with their exact manifest, at most
+  // once per node across the parallel fetches
+  const hydrations = new Map<DepID, Promise<void>>()
+
   // PEER CONTEXT ISOLATION: Each workspace importer needs its own context
   // to prevent peer targets from one workspace affecting another.
   // The main importer (index 0) uses the initial context; others get fresh ones.
@@ -871,6 +1021,8 @@ export const appendNodes = async (
               a.spec.name.localeCompare(b.spec.name, 'en'),
             ),
             scurry,
+            options,
+            hydrations,
             peerContext,
             nodeModifierRefs,
             depth,

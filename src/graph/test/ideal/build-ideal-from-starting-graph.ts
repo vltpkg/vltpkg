@@ -2,8 +2,10 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import { parse as parseVersion } from '@vltpkg/semver'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
+import type { Manifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import {
@@ -29,6 +31,7 @@ import type {
 } from '../../src/index.ts'
 import { Graph } from '../../src/graph.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
+import { lockfileData } from '../../src/lockfile/save.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 
@@ -899,3 +902,180 @@ t.test('early-extracts peer node and moves store dir', async t => {
     'no leftover provisional store dirs',
   )
 })
+
+t.test(
+  'rebuild without node_modules keeps locked versions',
+  async t => {
+    // fresh clone + `vlt install newpkg`: the lockfile-only rebuild must
+    // serialize exactly like the one backed by a hidden lockfile
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        cfoo: 'custom:foo@^1.0.0',
+        foo: '^1.0.0',
+        ui: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+
+    const manifests: Record<string, Record<string, Manifest>> = {
+      foo: {
+        '1.0.0': { name: 'foo', version: '1.0.0' },
+        '1.5.0': { name: 'foo', version: '1.5.0' },
+      },
+      ui: {
+        '1.0.0': {
+          name: 'ui',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        },
+        '1.5.0': {
+          name: 'ui',
+          version: '1.5.0',
+          peerDependencies: { react: '^18' },
+        },
+      },
+      react: {
+        '18.0.0': { name: 'react', version: '18.0.0' },
+        '18.3.0': { name: 'react', version: '18.3.0' },
+      },
+      newpkg: { '1.0.0': { name: 'newpkg', version: '1.0.0' } },
+    }
+    // exact specs answer their version; ranges answer the oldest while
+    // seeding the lockfile and the newest afterwards, so any range fetch
+    // that leaks through the locked path shows up as a diff
+    const mock = (pick: 'oldest' | 'newest') => {
+      const calls: string[] = []
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          calls.push(String(spec))
+          const versions = manifests[spec.final.name]
+          /* c8 ignore next */
+          if (!versions) return null
+          const exact = parseVersion(spec.final.semver ?? '')
+          const version =
+            exact ? String(exact)
+            : pick === 'oldest' ? Object.keys(versions)[0]
+            : Object.keys(versions).at(-1)
+          return versions[String(version)]
+        },
+      } as unknown as PackageInfoClient
+      return { calls, packageInfo }
+    }
+
+    const common = {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      remove: new Map() as RemoveImportersDependenciesMap,
+    }
+    const rootId = joinDepIDTuple(['file', '.'])
+    const addNewpkg = () =>
+      new Map([
+        [
+          rootId,
+          new Map([
+            [
+              'newpkg',
+              {
+                type: 'prod',
+                spec: Spec.parse('newpkg', '^1.0.0', configData),
+              },
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap
+
+    const seed = await buildIdealFromStartingGraph({
+      ...common,
+      packageInfo: mock('oldest').packageInfo,
+      graph: new Graph({ projectRoot, mainManifest, ...configData }),
+      add: new Map() as AddImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    const mainData = lockfileData({ ...configData, graph: seed })
+    const hiddenData = lockfileData({
+      ...configData,
+      graph: seed,
+      saveManifests: true,
+    })
+    t.match(
+      Object.keys(mainData.nodes).sort(),
+      [
+        joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']),
+        joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']),
+        joinDepIDTuple(['registry', 'npm', 'react@18.0.0']),
+        /^~npm~ui@1\.0\.0~peer\.[0-9a-f]{16}$/,
+      ],
+      'seeded lockfile holds the oldest satisfying versions',
+    )
+
+    const rebuild = async (withActual: boolean) => {
+      const actual =
+        withActual ?
+          loadVirtual({
+            ...common,
+            lockfileData: structuredClone(hiddenData),
+          })
+        : undefined
+      const graph = loadVirtual({
+        ...common,
+        lockfileData: structuredClone(mainData),
+        actual,
+      })
+      const { calls, packageInfo } = mock('newest')
+      const ideal = await buildIdealFromStartingGraph({
+        ...common,
+        packageInfo,
+        graph,
+        add: addNewpkg(),
+        remover: new RollbackRemove(),
+      })
+      return {
+        calls,
+        data: lockfileData({ ...configData, graph: ideal }),
+      }
+    }
+
+    const backed = await rebuild(true)
+    const lockOnly = await rebuild(false)
+
+    t.strictSame(
+      backed.calls,
+      ['newpkg@^1.0.0'],
+      'actual-backed reuses',
+    )
+    t.strictSame(
+      lockOnly.calls.sort(),
+      [
+        'cfoo@custom:foo@1.0.0',
+        'foo@1.0.0',
+        'newpkg@^1.0.0',
+        'react@18.0.0',
+        'ui@1.0.0',
+      ],
+      'lockfile-only pins every pre-existing node',
+    )
+    t.strictSame(
+      lockOnly.data,
+      backed.data,
+      'lockfile-only rebuild serializes identically',
+    )
+    t.strictSame(
+      Object.keys(lockOnly.data.nodes).sort(),
+      [
+        ...Object.keys(mainData.nodes),
+        joinDepIDTuple(['registry', '', 'newpkg@1.0.0']),
+      ].sort(),
+      'only the added package is new',
+    )
+  },
+)

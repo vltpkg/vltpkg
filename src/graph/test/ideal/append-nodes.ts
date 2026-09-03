@@ -1,14 +1,16 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { parse as parseVersion } from '@vltpkg/semver'
 import { asNormalizedManifest } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { asDependency } from '../../src/dependencies.ts'
 import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
@@ -4478,3 +4480,331 @@ t.test(
     )
   },
 )
+
+t.test('locked version fetch without node_modules', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const setup = (
+    t: Test,
+    {
+      id,
+      name = 'foo',
+      version = '1.1.0',
+      edgeName = 'foo',
+      options = configData,
+    }: {
+      id: DepID
+      name?: string
+      version?: string
+      edgeName?: string
+      options?: SpecOptions
+    },
+  ) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...options,
+      mainManifest,
+    })
+    // shaped like lockfile/load-nodes.ts with no actual graph: name,
+    // version, resolved and integrity, but no manifest
+    const locked = graph.addNode(
+      id,
+      undefined,
+      undefined,
+      name,
+      version,
+    )
+    locked.resolved = `https://old.example/${name}/-/${name}-1.1.0.tgz`
+    locked.integrity = 'sha512-deadbeef'
+    locked.resolvedFromLockfile = true
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${edgeName}`, locked.id],
+    ])
+    graph.resetEdges()
+    return { graph, locked }
+  }
+
+  const recorder = (
+    answer: (spec: Spec) => Manifest | Promise<Manifest>,
+  ) => {
+    const calls: { spec: string; registry?: string }[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        calls.push({
+          spec: String(spec),
+          registry: spec.final.registry,
+        })
+        return answer(spec)
+      },
+    } as unknown as PackageInfoClient
+    return { calls, packageInfo }
+  }
+
+  // exact specs answer their own version, ranges answer a newer one
+  const byVersion = (name: string) => (spec: Spec) => {
+    const v = parseVersion(spec.final.semver ?? '')
+    return { name, version: v ? String(v) : '1.2.0' }
+  }
+
+  const run = (
+    t: Test,
+    graph: Graph,
+    packageInfo: PackageInfoClient,
+    dep: Dependency,
+    options: SpecOptions = configData,
+  ) =>
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dep],
+      new PathScurry(t.testdirName),
+      options,
+      new Set<DepID>(),
+      new Map([[dep.spec.name, dep]]),
+    )
+
+  const fooId = joinDepIDTuple(['registry', '', 'foo@1.1.0'])
+  const foo12Id = joinDepIDTuple(['registry', '', 'foo@1.2.0'])
+  const fooDep = () =>
+    asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+  await t.test('pins the locked version', async t => {
+    const { graph, locked } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(calls, [
+      { spec: 'foo@1.1.0', registry: configData.registry },
+    ])
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+    t.equal(locked.detached, false)
+    t.equal(locked.manifest?.version, '1.1.0')
+    t.equal(locked.integrity, 'sha512-deadbeef')
+    t.equal(locked.resolvedFromLockfile, true)
+    t.notOk(graph.nodes.has(foo12Id), 'newest satisfying not placed')
+  })
+
+  await t.test('falls back when the exact fetch rejects', async t => {
+    const { graph, locked } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(spec => {
+      if (spec.final.semver === '1.1.0') throw new Error('gone')
+      return { name: 'foo', version: '1.2.0' }
+    })
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['foo@1.1.0', 'foo@^1.0.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo12Id)
+    t.equal(locked.detached, true, 'locked node left for gc')
+  })
+
+  await t.test('falls back on a version mismatch', async t => {
+    const { graph } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(() => ({
+      name: 'foo',
+      version: '1.2.0',
+    }))
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['foo@1.1.0', 'foo@^1.0.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo12Id)
+  })
+
+  await t.test('range fetch runs once after a mismatch', async t => {
+    const { graph } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(spec => {
+      if (spec.final.semver === '1.1.0') {
+        return { name: 'foo', version: '1.2.0' }
+      }
+      throw new Error('range boom')
+    })
+    await t.rejects(
+      run(t, graph, packageInfo, fooDep()),
+      /range boom/,
+    )
+    t.equal(calls.length, 2)
+  })
+
+  await t.test('preserves an alias', async t => {
+    const { graph, locked } = setup(t, { id: fooId, edgeName: 'bar' })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    const dep = asDependency({
+      spec: Spec.parse('bar', 'npm:foo@^1.0.0', configData),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep)
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['bar@npm:foo@1.1.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('bar')?.to, locked)
+  })
+
+  const customId = joinDepIDTuple(['registry', 'custom', 'foo@1.1.0'])
+  const withCustom = (url: string): SpecOptions => ({
+    ...configData,
+    registries: { ...configData.registries, custom: url },
+  })
+
+  await t.test('preserves a named registry', async t => {
+    const options = withCustom('https://registry.example.com/')
+    const { graph, locked } = setup(t, { id: customId, options })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    const dep = asDependency({
+      spec: Spec.parse('foo', 'custom:foo@^1.0.0', options),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep, options)
+    t.strictSame(calls, [
+      {
+        spec: 'foo@custom:foo@1.1.0',
+        registry: 'https://registry.example.com/',
+      },
+    ])
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+  })
+
+  await t.test('re-parses a remapped named registry', async t => {
+    const oldOptions = withCustom('https://old.example/')
+    const options = withCustom('https://new.example/')
+    // the dep-id memo ignores options, so a stale entry survives
+    hydrate(customId, 'foo', oldOptions)
+    t.not(
+      hydrate(customId, 'foo', options).final.registry,
+      'https://new.example/',
+      'memo returns the stale registry',
+    )
+    const { graph, locked } = setup(t, { id: customId, options })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    const dep = asDependency({
+      spec: Spec.parse('foo', 'custom:foo@^1.0.0', options),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep, options)
+    t.strictSame(calls, [
+      {
+        spec: 'foo@custom:foo@1.1.0',
+        registry: 'https://new.example/',
+      },
+    ])
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+    // known gap: the lockfile tarball from the old URL is kept, same
+    // as with node_modules present
+    t.equal(
+      locked.resolved,
+      'https://old.example/foo/-/foo-1.1.0.tgz',
+    )
+  })
+
+  await t.test('does not pin across a registry mismatch', async t => {
+    const oldOptions = withCustom('https://old.example/')
+    const options = withCustom('https://new.example/')
+    const { graph } = setup(t, { id: customId, options })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    // edge spec resolved against the old URL, install options moved on
+    const dep = asDependency({
+      spec: Spec.parse('foo', 'custom:foo@^1.0.0', oldOptions),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep, options)
+    t.strictSame(calls, [
+      {
+        spec: 'foo@custom:foo@^1.0.0',
+        registry: 'https://old.example/',
+      },
+    ])
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', 'custom', 'foo@1.2.0']),
+    )
+  })
+
+  await t.test('skips a git lock', async t => {
+    const gitId = joinDepIDTuple(['git', 'github:a/b', 'main'])
+    const { graph, locked } = setup(t, {
+      id: gitId,
+      name: 'b',
+      version: '',
+      edgeName: 'b',
+    })
+    const { calls, packageInfo } = recorder(() => ({
+      name: 'b',
+      version: '1.0.0',
+    }))
+    const dep = asDependency({
+      spec: Spec.parse('b', 'github:a/b#main', configData),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep)
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['b@github:a/b#main'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('b')?.to, locked)
+  })
+
+  await t.test('skips a registry lock without a version', async t => {
+    const { graph } = setup(t, { id: fooId, version: '' })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['foo@^1.0.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo12Id)
+  })
+
+  await t.test(
+    'hydrates a node shared by two edges once',
+    async t => {
+      const { graph, locked } = setup(t, { id: fooId })
+      graph.lockedResolutions?.set(
+        `${graph.mainImporter.id}\0foo2`,
+        locked.id,
+      )
+      const { calls, packageInfo } = recorder(byVersion('foo'))
+      const fooDep2 = asDependency({
+        spec: Spec.parse('foo2', 'npm:foo@^1.0.0', configData),
+        type: 'prod',
+      })
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [fooDep(), fooDep2],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([
+          ['foo', fooDep()],
+          ['foo2', fooDep2],
+        ]),
+      )
+      t.strictSame(
+        calls.map(c => c.spec),
+        ['foo@1.1.0'],
+      )
+      t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+      t.equal(graph.mainImporter.edgesOut.get('foo2')?.to, locked)
+    },
+  )
+
+  await t.test('optional dep swallows both failures', async t => {
+    const { graph } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(() => {
+      throw new Error('nope')
+    })
+    const dep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'optional',
+    })
+    await run(t, graph, packageInfo, dep)
+    t.equal(calls.length, 2)
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, undefined)
+  })
+})
