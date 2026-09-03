@@ -888,6 +888,39 @@ t.test('staleWhileRevalidate', async t => {
     'revalidated, got fresh response',
   )
   await cache.promise()
+  rc.cache = cache
+})
+
+t.test('forceRevalidate bypasses fresh cache entries', async t => {
+  const rc = t.context.rc as RegistryClient
+  const key = `${registryURL}/abbrev`
+  const entry = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/json',
+      date: new Date(Date.now() - 20 * 60 * 1000).toUTCString(),
+      'cache-control': 'max-age=3600',
+      etag: '"old-etag"',
+    }),
+  )
+  entry.addBody(Buffer.from('{"cached":true}'))
+  const encoded = entry.encode()
+  rc.cache.set(
+    key,
+    Buffer.from(
+      encoded.buffer,
+      encoded.byteOffset,
+      encoded.byteLength,
+    ),
+  )
+  await rc.cache.promise()
+
+  const result = await rc.request(key, { forceRevalidate: true })
+  t.strictSame(
+    result.json(),
+    { hello: 'world' },
+    'fresh cache entry was conditionally revalidated',
+  )
 })
 
 t.test('undecodable cache entry is a miss', async t => {

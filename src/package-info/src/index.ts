@@ -962,11 +962,14 @@ export class PackageInfoClient {
     // To revisit: put the requested representation on both the disk-cache
     // key and the in-flight coalescing key, and have the SWR child
     // (cache-revalidate / revalidate) re-request the same representation.
+    const f = spec.final
+    const movingSelector = f.distTag || f.range?.isAny
     const response = await (
       await this.getRegistryClient()
     ).request(pakuURL, {
       headers: { accept: 'application/json' },
       ...(useCache === false ? { useCache } : {}),
+      ...(movingSelector ? { forceRevalidate: true } : {}),
     })
     if (response.statusCode !== 200) {
       throw this.#resolveError(
