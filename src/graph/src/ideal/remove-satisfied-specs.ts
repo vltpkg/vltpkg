@@ -1,5 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
+import type { Spec } from '@vltpkg/spec'
+import type { Edge } from '../edge.ts'
 import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
@@ -11,11 +13,16 @@ export type RemoveSatisfiedSpecsOptions = BuildIdealAddOptions &
 /**
  * Traverse the objects defined in `add` and removes any references to specs
  * that are already satisfied by the contents of the actual `graph`.
+ *
+ * Returns the satisfied edges whose spec text differs from the one they
+ * were pruned against, e.g. a lockfile edge reading `latest` where
+ * `package.json` reads `^1.2.3`.
  */
 export const removeSatisfiedSpecs = ({
   add,
   graph,
 }: RemoveSatisfiedSpecsOptions) => {
+  const staleSpecs = new Map<Edge, Spec>()
   for (const [depID, dependencies] of add.entries()) {
     const importer = graph.nodes.get(depID)
     if (!importer) {
@@ -49,6 +56,9 @@ export const removeSatisfiedSpecs = ({
           graph.monorepo,
         )
       ) {
+        if (edge.spec.bareSpec !== dependency.spec.bareSpec) {
+          staleSpecs.set(edge, dependency.spec)
+        }
         dependencies.delete(name)
       }
     }
@@ -60,4 +70,6 @@ export const removeSatisfiedSpecs = ({
       add.delete(depID)
     }
   }
+
+  return staleSpecs
 }

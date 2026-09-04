@@ -237,10 +237,19 @@ export const getImporterSpecs = (
   }
 
   // removes already satisfied dependencies from the dependencies list
-  removeSatisfiedSpecs({
+  const staleSpecs = removeSatisfiedSpecs({
     add: addResult,
     graph,
   })
+
+  // a name the caller asked for is left to appendNodes and reify's
+  // package.json update: healing it here would put the request text in
+  // the lockfile without ever touching package.json
+  for (const edge of staleSpecs.keys()) {
+    if (add.get(edge.from.id)?.has(edge.name)) {
+      staleSpecs.delete(edge)
+    }
+  }
 
   // set the modifiedDependencies flag if any
   // of the importers have modified dependencies
@@ -254,6 +263,7 @@ export const getImporterSpecs = (
   return {
     add: addResult,
     remove: removeResult,
+    staleSpecs,
     transientAdd,
     transientRemove,
   }

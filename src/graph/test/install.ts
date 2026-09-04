@@ -400,6 +400,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
           }),
@@ -512,6 +513,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -591,6 +593,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
           }),
@@ -832,6 +835,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -922,6 +926,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -1009,6 +1014,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
           }),
@@ -1153,6 +1159,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(removeMap, {
             modifiedDependencies: true,

@@ -78,8 +78,16 @@ t.test('graph with an actual node', async t => {
         ),
       ],
     ]) as AddImportersDependenciesMap
-    removeSatisfiedSpecs({ add, graph })
+    const stale = removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(add, 'should return an empty map')
+    t.strictSame(
+      [...stale].map(([edge, spec]) => [
+        edge.spec.bareSpec,
+        spec.bareSpec,
+      ]),
+      [['npm:foo@1.0.0', '^1.0.0']],
+      'the actual-graph edge is healed to the requested text',
+    )
   })
 
   await t.test('add a new spec item', async t => {
@@ -102,11 +110,12 @@ t.test('graph with an actual node', async t => {
         ),
       ],
     ]) as AddImportersDependenciesMap
-    removeSatisfiedSpecs({ add, graph })
+    const stale = removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(
       inspect(add, { depth: Infinity }),
       'should return the new item',
     )
+    t.equal(stale.size, 0, 'an unsatisfied add is not stale')
   })
 
   await t.test('update existing spec', async t => {
@@ -156,10 +165,15 @@ t.test('graph with an actual node', async t => {
         ),
       ],
     ]) as AddImportersDependenciesMap
-    removeSatisfiedSpecs({ add, graph })
+    const stale = removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(
       inspect(add, { depth: Infinity }),
       'should not return registry tag item if something already satisfies it',
+    )
+    t.strictSame(
+      [...stale].map(([edge, spec]) => [edge.name, String(spec)]),
+      [['foo', 'foo@latest']],
+      'reports the satisfied edge whose spec text differs',
     )
   })
 

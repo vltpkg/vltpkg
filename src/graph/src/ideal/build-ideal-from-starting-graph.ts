@@ -84,6 +84,16 @@ export const buildIdealFromStartingGraph = async (
     }
   }
 
+  // an importer edge whose lockfile spec no longer matches package.json
+  // while its target still satisfies it: rewrite the text so the rebuild
+  // reads the manifest value and the lockfile is saved carrying it
+  for (const [edge, spec] of importerSpecs.staleSpecs) {
+    edge.spec = spec
+  }
+  if (importerSpecs.staleSpecs.size) {
+    options.graph.lockfileStale = true
+  }
+
   // refreshs the current graph adding the nodes marked for addition
   // and removing the ones marked for removal, while also recalculating
   // peer dependencies and default locations

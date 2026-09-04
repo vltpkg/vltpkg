@@ -1261,3 +1261,72 @@ t.test(
     )
   },
 )
+
+t.test('a satisfied lockfile edge with a stale spec', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const rootId = joinDepIDTuple(['file', '.'])
+  const build = () => {
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    // the lockfile edge reads a dist-tag, package.json a range
+    const spec = Spec.parse('foo', 'latest')
+    const foo = graph.addNode(
+      undefined,
+      { name: 'foo', version: '1.0.0' },
+      spec,
+      'foo',
+      '1.0.0',
+    )
+    graph.addEdge('prod', spec, graph.mainImporter, foo)
+    return graph
+  }
+  const call = (add: AddImportersDependenciesMap) =>
+    getImporterSpecs({
+      add,
+      graph: build(),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+    })
+
+  const specs = call(new Map() as AddImportersDependenciesMap)
+  t.equal(specs.staleSpecs.size, 1, 'the stale edge is reported')
+  t.equal(
+    [...specs.staleSpecs.values()][0]?.bareSpec,
+    '^1.0.0',
+    'reported with the package.json value',
+  )
+  t.equal(specs.add.modifiedDependencies, false, 'nothing to rebuild')
+
+  const withCaller = call(
+    new Map([
+      [
+        rootId,
+        new Map([
+          [
+            'foo',
+            asDependency({
+              spec: Spec.parse('foo', '1.x'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap,
+  )
+  t.equal(
+    withCaller.staleSpecs.size,
+    0,
+    'a name the caller asked for is left alone',
+  )
+})

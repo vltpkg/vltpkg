@@ -1531,3 +1531,84 @@ t.test('an explicit dist-tag add resolves and settles', async t => {
     'byte-identical lockfile',
   )
 })
+
+t.test(
+  'a stale importer edge spec is healed from package.json',
+  async t => {
+    // a lockfile written by a released vlt can carry `prod latest` next to
+    // a package.json range; the text is healed in place, without a rebuild
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0' },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+
+    const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+    const lockfileData: LockfileData = {
+      lockfileVersion: 1,
+      options: configData,
+      nodes: {
+        [fooId]: [
+          0,
+          'foo',
+          null,
+          null,
+          null,
+          { name: 'foo', version: '1.0.0' },
+        ],
+      } as unknown as Record<DepID, LockfileNode>,
+      edges: {
+        [edgeKey(['file', '.'], 'foo')]: `prod latest ${fooId}`,
+      } as LockfileEdges,
+    }
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error(`unexpected manifest fetch: ${spec}`)
+      },
+    } as unknown as PackageInfoClient
+
+    const common = {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      packageInfo,
+    }
+    const run = async (bareSpec: string) => {
+      const data = structuredClone(lockfileData)
+      data.edges[edgeKey(['file', '.'], 'foo')] =
+        `prod ${bareSpec} ${fooId}`
+      return buildIdealFromStartingGraph({
+        ...common,
+        graph: loadVirtual({ ...common, lockfileData: data }),
+        add: new Map() as AddImportersDependenciesMap,
+        remover: new RollbackRemove(),
+      })
+    }
+
+    const healed = await run('latest')
+    t.equal(
+      healed.mainImporter.edgesOut.get('foo')?.spec.bareSpec,
+      '^1.0.0',
+      'the edge carries the package.json value',
+    )
+    t.equal(healed.lockfileStale, true, 'flagged for saving')
+    t.equal(healed.nodes.size, 2, 'no node was added or removed')
+
+    const untouched = await run('^1.0.0')
+    t.equal(
+      untouched.lockfileStale,
+      false,
+      'equal specs are not stale',
+    )
+  },
+)
