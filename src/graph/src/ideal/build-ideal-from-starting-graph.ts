@@ -5,6 +5,7 @@ import { refreshIdealGraph } from './refresh-ideal-graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { RefreshIdealGraphOptions } from './refresh-ideal-graph.ts'
+import type { ExplicitAddMap } from './types.ts'
 import type { Graph } from '../graph.ts'
 
 export type BuildIdealFromStartingGraphOptions =
@@ -27,6 +28,13 @@ export const buildIdealFromStartingGraph = async (
   // Any dependencies that are already satisfied in the starting `graph`
   // are going to be pruned from the resulting object.
   const importerSpecs = getImporterSpecs(options)
+
+  // snapshot what the user actually asked for before the merge below
+  // folds manifest-derived deltas into `options.add`
+  const explicit: ExplicitAddMap = new Map()
+  for (const [id, deps] of options.add) {
+    explicit.set(id, new Set(deps.keys()))
+  }
 
   // merge modifiedDependencies flags
   options.add.modifiedDependencies =
@@ -81,6 +89,7 @@ export const buildIdealFromStartingGraph = async (
   // peer dependencies and default locations
   await refreshIdealGraph({
     ...options,
+    explicit,
     transientAdd: importerSpecs.transientAdd,
     transientRemove: importerSpecs.transientRemove,
   })

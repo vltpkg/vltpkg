@@ -39,6 +39,7 @@ import {
 } from './peers.ts'
 import { compareByHasPeerDeps } from './sorting.ts'
 import type {
+  ExplicitAddMap,
   PeerContext,
   PeerContextEntryInput,
   AppendNodeEntry,
@@ -60,6 +61,10 @@ type DepEntry = {
   fileTypeInfo?: FileTypeInfo
   activeModifier?: ModifierActiveEntry
   queryModifier?: string
+  /** the user named this dependency on the command line */
+  isExplicit: boolean
+  /** ... and asked for a dist-tag, so the tag must be resolved */
+  explicitTag: boolean
 }
 
 /**
@@ -402,6 +407,7 @@ const fetchManifestsForDeps = async (
   peerContext: PeerContext,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   depth = 0,
+  explicit?: ExplicitAddMap,
 ): Promise<FetchResult> => {
   const fetchTasks: ManifestFetchTask[] = []
   const placementTasks: NodePlacementTask[] = []
@@ -414,6 +420,9 @@ const fetchManifestsForDeps = async (
     let spec = originalSpec
     const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
     const activeModifier = modifierRefs?.get(spec.name)
+    const isExplicit = !!explicit
+      ?.get(fromNode.id)
+      ?.has(originalSpec.name)
 
     // MODIFIER HANDLING: Swap spec if an edge modifier is fully matched
     // Example: `vlt install --override "react:^19"` changes react's spec
@@ -439,12 +448,18 @@ const fetchManifestsForDeps = async (
       fileTypeInfo,
       activeModifier,
       queryModifier,
+      isExplicit,
+      // read after the modifier swap, so an --override that replaces the
+      // tag with a range keeps today's reuse
+      explicitTag: isExplicit && !!spec.final.distTag,
     })
   }
 
   const from = scurry.resolve(fromNode.location)
   const pending: Promise<void>[] = []
-  for (const { spec } of entries) {
+  for (const { spec, explicitTag } of entries) {
+    // the tag is fetched below anyway, the locked version is dead weight
+    if (explicitTag) continue
     const locked = findLockedNode(graph, fromNode, spec.name)
     if (
       locked?.detached &&
@@ -471,19 +486,33 @@ const fetchManifestsForDeps = async (
     fileTypeInfo,
     activeModifier,
     queryModifier,
+    isExplicit,
+    explicitTag,
   } of entries) {
     const peer = type === 'peer' || type === 'peerOptional'
 
     // NODE REUSE LOGIC with peer compatibility
-    const { existingNode, peerCompatResult } =
-      findCompatibleResolution(
-        spec,
-        fromNode,
-        graph,
-        peerContext,
-        queryModifier,
-        peer,
-      )
+    const resolved = findCompatibleResolution(
+      spec,
+      fromNode,
+      graph,
+      peerContext,
+      queryModifier,
+      peer,
+    )
+
+    // a dist-tag satisfies any node of that name, so reuse is what
+    // installs an arbitrary version for an explicit `pkg@tag` request.
+    // drop the candidate and fetch the tag instead; a registry spec
+    // naming a workspace still links that workspace.
+    const dropForTag =
+      explicitTag &&
+      !!resolved.existingNode &&
+      !resolved.existingNode.importer
+    const existingNode =
+      dropForTag ? undefined : resolved.existingNode
+    const peerCompatResult =
+      dropForTag ? { compatible: true } : resolved.peerCompatResult
 
     // Accumulate fork request if incompatible peer edges detected (defer actual fork)
     const effectivePeerContext = peerContext
@@ -558,7 +587,9 @@ const fetchManifestsForDeps = async (
             // optional deps ignored if inaccessible, but a dep that tried
             // to escape the project is never silently dropped
             if (isPathSecurityError(er)) throw er
-            if (edgeOptional || fromNode.optional) {
+            // an explicit request has no version to save if it never
+            // resolved, so it fails the install even when optional
+            if (!isExplicit && (edgeOptional || fromNode.optional)) {
               return undefined
             }
             throw er
@@ -931,6 +962,7 @@ export const appendNodes = async (
   remover?: RollbackRemove,
   transientAdd?: TransientAddMap,
   transientRemove?: TransientRemoveMap,
+  explicit?: ExplicitAddMap,
 ) => {
   // Cycle detection: skip if already processed
   /* c8 ignore next */
@@ -1010,6 +1042,7 @@ export const appendNodes = async (
             peerContext,
             nodeModifierRefs,
             depth,
+            explicit,
           )
 
           return {

@@ -3927,8 +3927,147 @@ t.test(
   },
 )
 
+/**
+ * Graph with a locked `foo@1.2.3` and a packageInfo that resolves the
+ * `latest` dist-tag to `foo@2.0.0`, recording every fetched spec.
+ */
+const distTagFixture = (t: Test) => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo', '^1.0.0', configData),
+    { name: 'foo', version: '1.2.3' },
+  )!
+
+  graph.lockedResolutions = new Map([
+    [`${graph.mainImporter.id}\0foo`, foo.id],
+  ])
+  graph.resetEdges()
+
+  const fetched: string[] = []
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      fetched.push(String(spec))
+      if (spec.final.distTag !== 'latest') {
+        throw new Error(`unexpected manifest fetch: ${spec}`)
+      }
+      return { name: 'foo', version: '2.0.0' }
+    },
+  } as unknown as PackageInfoClient
+
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', 'latest', configData),
+    type: 'prod',
+  })
+
+  return { graph, foo, fetched, packageInfo, fooDep }
+}
+
 t.test(
-  'lockedResolutions reuses a dist-tag lock when satisfies() cannot',
+  'a lockfile dist-tag edge reuses the lock without fetching',
+  async t => {
+    const { graph, foo, fetched, packageInfo, fooDep } =
+      distTagFixture(t)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+    )
+
+    t.strictSame(
+      fetched,
+      [],
+      'dist-tag lock reuses the snapshot node',
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'a manifest-derived dist-tag entry is not explicit',
+  async t => {
+    const { graph, foo, fetched, packageInfo, fooDep } =
+      distTagFixture(t)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      // the user asked for something else entirely
+      new Map([[graph.mainImporter.id, new Set(['bar'])]]),
+    )
+
+    t.strictSame(fetched, [], 'no fetch for a manifest-derived tag')
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'an explicit dist-tag add re-resolves the tag even when a lock fits',
+  async t => {
+    const { graph, foo, fetched, packageInfo, fooDep } =
+      distTagFixture(t)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+    )
+
+    t.strictSame(fetched, ['foo@latest'], 'the tag was resolved')
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.version,
+      '2.0.0',
+    )
+    graph.gc()
+    t.notOk(graph.nodes.get(foo.id), 'the locked copy is gone')
+  },
+)
+
+t.test(
+  'an explicit dist-tag add ignores attached same-name copies',
   async t => {
     const mainManifest = {
       name: 'my-project',
@@ -3939,24 +4078,22 @@ t.test(
       ...configData,
       mainManifest,
     })
-
-    const foo = graph.placePackage(
+    const bar = graph.placePackage(
       graph.mainImporter,
+      'prod',
+      Spec.parse('bar', '^1.0.0', configData),
+      { name: 'bar', version: '1.0.0', dependencies: { foo: '^1' } },
+    )!
+    const foo = graph.placePackage(
+      bar,
       'prod',
       Spec.parse('foo', '^1.0.0', configData),
       { name: 'foo', version: '1.2.3' },
     )!
 
-    graph.lockedResolutions = new Map([
-      [`${graph.mainImporter.id}\0foo`, foo.id],
-    ])
-    graph.resetEdges()
-
-    let manifestCalled = false
     const packageInfo = {
       async manifest() {
-        manifestCalled = true
-        throw new Error('unexpected manifest fetch')
+        return { name: 'foo', version: '2.0.0' }
       },
     } as unknown as PackageInfoClient
 
@@ -3973,10 +4110,265 @@ t.test(
       configData,
       new Set<DepID>(),
       new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
     )
 
-    t.notOk(manifestCalled, 'dist-tag lock reuses the snapshot node')
-    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo.id)
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.version,
+      '2.0.0',
+    )
+    t.equal(bar.edgesOut.get('foo')?.to?.id, foo.id, 'bar untouched')
+    t.equal(graph.nodesByName.get('foo')?.size, 2)
+  },
+)
+
+t.test(
+  'an explicit dist-tag add still links a workspace by name',
+  async t => {
+    const mainManifest = { name: 'my-monorepo', version: '1.0.0' }
+    const wsManifest = { name: 'ws', version: '1.0.0' }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        ws: { 'package.json': JSON.stringify(wsManifest) },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+    const scurry = new PathScurry(dir)
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson: new PackageJson(),
+      load: { paths: ['packages/ws'] },
+    })
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+    const wsNode = [...graph.importers].find(n => n.name === 'ws')!
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error(`unexpected manifest fetch: ${spec}`)
+      },
+    } as unknown as PackageInfoClient
+
+    const wsDep = asDependency({
+      spec: Spec.parse('ws', 'latest', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [wsDep],
+      scurry,
+      configData,
+      new Set<DepID>(),
+      new Map([['ws', wsDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['ws'])]]),
+    )
+
+    t.equal(graph.mainImporter.edgesOut.get('ws')?.to?.id, wsNode.id)
+  },
+)
+
+t.test(
+  'a transitive dist-tag dependency still reuses an existing copy',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.2.3' },
+    )!
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name !== 'baz') {
+          throw new Error(`unexpected manifest fetch: ${spec}`)
+        }
+        return {
+          name: 'baz',
+          version: '1.0.0',
+          dependencies: { foo: 'latest' },
+        }
+      },
+    } as unknown as PackageInfoClient
+
+    const bazDep = asDependency({
+      spec: Spec.parse('baz', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [bazDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['baz', bazDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['baz'])]]),
+    )
+
+    const baz = graph.mainImporter.edgesOut.get('baz')?.to
+    t.equal(baz?.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'an explicit dist-tag add skips locked-version hydration',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    // a lockfile node loaded without node_modules has no manifest
+    const lockedId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      undefined,
+      lockedId,
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo.id],
+    ])
+    graph.resetEdges()
+
+    const fetched: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        fetched.push(String(spec))
+        return { name: 'foo', version: '2.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', 'latest', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+    )
+
+    t.strictSame(fetched, ['foo@latest'], 'no hydration fetch')
+  },
+)
+
+t.test(
+  'an explicit optional add that fails to resolve throws',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const packageInfo = {
+      async manifest() {
+        throw error('Could not resolve')
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', 'latest', configData),
+      type: 'optional',
+    })
+    const call = (explicit?: Map<DepID, Set<string>>) =>
+      appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', fooDep]]),
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        explicit,
+      )
+
+    await t.rejects(
+      call(new Map([[graph.mainImporter.id, new Set(['foo'])]])),
+      { message: 'Could not resolve' },
+      'explicit optional add surfaces the resolution error',
+    )
+    await t.resolves(
+      call(),
+      'a manifest-derived optional dep is still swallowed',
+    )
+    t.notOk(graph.mainImporter.edgesOut.get('foo')?.to)
   },
 )
 

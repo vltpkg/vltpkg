@@ -13,6 +13,7 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
   BuildIdealRemoveOptions,
+  ExplicitAddMap,
   TransientAddMap,
   TransientRemoveMap,
 } from './types.ts'
@@ -49,6 +50,12 @@ export type RefreshIdealGraphOptions = BuildIdealAddOptions &
      * A {@link RollbackRemove} instance to handle extraction rollbacks
      */
     remover: RollbackRemove
+
+    /**
+     * Dependency names that came from an explicit user request, keyed by
+     * the id of the node receiving them.
+     */
+    explicit?: ExplicitAddMap
 
     /**
      * Dependencies to be added to non-importer nodes when they are placed.
@@ -91,6 +98,7 @@ export const refreshIdealGraph = async ({
   packageInfo,
   scurry,
   actual,
+  explicit,
   remove,
   remover,
   transientAdd,
@@ -180,6 +188,7 @@ export const refreshIdealGraph = async ({
       remover,
       transientAdd,
       transientRemove,
+      explicit,
     )
   }
 
