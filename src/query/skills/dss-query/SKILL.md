@@ -9,8 +9,7 @@ description:
   workspaces"), or wants to security-audit dependencies ("which
   packages have CVEs", "check for malware/typosquats", "what can run
   shell commands or hit the network").
-allowed-tools: [Read, Grep]
-context: fork
+allowed-tools: Read Grep
 ---
 
 # DSS Query Helper

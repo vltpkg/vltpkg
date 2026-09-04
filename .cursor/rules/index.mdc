@@ -40,4 +40,5 @@ vlt monorepo. Workspaces in `src/*`, `infra/*`, `www/*`. Workspaces published as
 - `@graph/index.mdc` — dependency graph architecture (has sub-rules)
 - `@query-pseudo-selector-creation.mdc` — adding DSS pseudo-selectors
 - `@config-reload-jackspeak-issues.mdc` — config caching bugs
+- `@agent-skills.mdc` — `src/*/skills/` and how they're published to docs
 - `@cursor-rules-location.mdc` — where to put new `.mdc` files
