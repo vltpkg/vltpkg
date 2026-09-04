@@ -170,6 +170,14 @@ export class Graph implements GraphLike {
   optionsChanged = false
 
   /**
+   * Whether the lockfile on disk no longer matches this graph even
+   * though no node changed, e.g. an importer edge spec was rewritten to
+   * the value saved to `package.json`. Reify saves the lockfiles from
+   * its no-diff early return when set.
+   */
+  lockfileStale = false
+
+  /**
    * Lockfile edge targets captured immediately before `resetEdges()`.
    * Used by the ideal builder to reuse locked resolutions across a rebuild.
    */

@@ -253,7 +253,8 @@ export const install = async (
       // through the lockfile - otherwise subsequent installs lose
       // the configured registry and rewrite node/edge DepIDs back
       // to the default npm registry. (See vltpkg/vltpkg#1580.)
-      lockfile.save({ ...options, graph, modifiers })
+      // normalise importer edge specs before saving, so the lockfile
+      // carries the same value package.json gets
       const saveImportersPackageJson =
         /* c8 ignore next */
         add?.modifiedDependencies || remove.modifiedDependencies ?
@@ -264,6 +265,7 @@ export const install = async (
             remove,
           })
         : undefined
+      lockfile.save({ ...options, graph, modifiers })
       saveImportersPackageJson?.()
       return { graph, diff: undefined }
     }

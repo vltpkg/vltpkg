@@ -1,4 +1,6 @@
 import t from 'tap'
+import type { Test } from 'tap'
+import { readFileSync } from 'node:fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
@@ -1947,4 +1949,104 @@ t.test('install with frozenLockfile and changed options', async t => {
     /Lockfile is out of sync with package\.json/,
     'should throw when config options changed with frozen lockfile',
   )
+})
+
+t.test('explicit adds carry the saved value everywhere', async t => {
+  const abbrevManifest = { name: 'abbrev', version: '2.0.0' }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'abbrev') return abbrevManifest
+      throw error('Could not resolve', { spec })
+    },
+    async extract(spec: Spec) {
+      return { resolved: '', spec }
+    },
+  } as unknown as PackageInfoClient
+
+  const setup = (t: Test, deps?: Record<string, string>) => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        ...(deps ? { dependencies: deps } : null),
+      }),
+    })
+    t.chdir(projectRoot)
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        allowScripts: ':not(*)',
+        ...extra,
+      }) as unknown as InstallOptions
+    const add = (bareSpec: string, name = 'abbrev') =>
+      Object.assign(
+        new Map([
+          [
+            rootDepID,
+            new Map<string, Dependency>([
+              [
+                name,
+                asDependency({
+                  spec: Spec.parse(name, bareSpec),
+                  type: 'prod',
+                }),
+              ],
+            ]),
+          ],
+        ]),
+        { modifiedDependencies: true },
+      )
+    const read = (f: string) =>
+      readFileSync(resolve(projectRoot, f), 'utf8')
+    return { projectRoot, opts, add, read }
+  }
+
+  await t.test(
+    'lockfileOnly saves the range, not the tag',
+    async t => {
+      const { opts, add, read } = setup(t)
+      const { install } = await import('../src/install.ts')
+      await install(opts({ lockfileOnly: true }), add('latest'))
+      t.match(read('vlt-lock.json'), 'prod ^2.0.0')
+      t.match(JSON.parse(read('package.json')), {
+        dependencies: { abbrev: '^2.0.0' },
+      })
+    },
+  )
+
+  await t.test('--save-exact on a same-target add', async t => {
+    const { opts, add, read } = setup(t, { abbrev: '^2.0.0' })
+    const { install } = await import('../src/install.ts')
+    await install(opts(), add('^2.0.0'))
+    t.match(read('vlt-lock.json'), 'prod ^2.0.0')
+
+    // nothing to reify, but the requested value still has to land
+    await install(opts({ saveExact: true }), add('latest'))
+    t.match(read('vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(read('node_modules/.vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(JSON.parse(read('package.json')), {
+      dependencies: { abbrev: '2.0.0' },
+    })
+  })
+
+  await t.test('an unresolvable explicit add rejects', async t => {
+    const { opts, add, read } = setup(t)
+    const { install } = await import('../src/install.ts')
+    const nope = add('latest', 'nonexistent')
+    nope
+      .get(joinDepIDTuple(['file', '.']))!
+      .get('nonexistent')!.type = 'optional'
+    await t.rejects(
+      install(opts({ lockfileOnly: true }), nope),
+      /Could not resolve/,
+      'an optional explicit add is not swallowed',
+    )
+    t.match(JSON.parse(read('package.json')), {
+      dependencies: undefined,
+    })
+  })
 })

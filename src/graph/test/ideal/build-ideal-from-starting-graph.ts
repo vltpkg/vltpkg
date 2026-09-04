@@ -35,6 +35,7 @@ import type {
 import { Graph } from '../../src/graph.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
 import { lockfileData } from '../../src/lockfile/save.ts'
+import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 
@@ -1398,4 +1399,135 @@ t.test('peer dep lands on the copy matching its parent', async t => {
     remover: new RollbackRemove(),
   })
   check(ideal, 'after an unrelated add')
+})
+
+t.test('an explicit dist-tag add resolves and settles', async t => {
+  // regression: `vlt i foo@latest` reused the locked foo@1.0.0 because a
+  // dist-tag satisfies any version, and then stored `latest` on the edge
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { bar: '^1.0.0', foo: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const versions: Record<string, Manifest> = {
+    '1.0.0': { name: 'foo', version: '1.0.0' },
+    '2.0.0': { name: 'foo', version: '2.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.final.name === 'bar') {
+        return {
+          name: 'bar',
+          version: '1.0.0',
+          dependencies: { foo: '^1.0.0' },
+        }
+      }
+      if (spec.final.distTag) return versions['2.0.0']
+      return versions[
+        String(
+          Object.keys(versions)
+            .filter(v =>
+              satisfiesVersion(v, spec.final.bareSpec || '*'),
+            )
+            .at(-1),
+        )
+      ]
+    },
+  } as unknown as PackageInfoClient
+
+  const packageJson = new PackageJson()
+  const common = {
+    ...configData,
+    projectRoot,
+    mainManifest,
+    packageJson,
+    scurry: new PathScurry(projectRoot),
+    remove: new Map() as RemoveImportersDependenciesMap,
+    packageInfo,
+  }
+  const rootId = joinDepIDTuple(['file', '.'])
+  const add = () =>
+    Object.assign(
+      new Map([
+        [
+          rootId,
+          new Map([
+            [
+              'foo',
+              {
+                type: 'prod',
+                spec: Spec.parse('foo', 'latest', configData),
+              },
+            ],
+          ]),
+        ],
+      ]),
+      { modifiedDependencies: true },
+    ) as AddImportersDependenciesMap
+
+  const seed = await buildIdealFromStartingGraph({
+    ...common,
+    graph: new Graph({ projectRoot, mainManifest, ...configData }),
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+  t.equal(
+    seed.mainImporter.edgesOut.get('foo')?.to?.version,
+    '1.0.0',
+    'seeded with the range resolution',
+  )
+
+  const upgraded = await buildIdealFromStartingGraph({
+    ...common,
+    graph: loadVirtual({
+      ...common,
+      lockfileData: structuredClone(
+        lockfileData({ ...configData, graph: seed }),
+      ),
+    }),
+    add: add(),
+    remover: new RollbackRemove(),
+  })
+  t.equal(
+    upgraded.mainImporter.edgesOut.get('foo')?.to?.version,
+    '2.0.0',
+    'the tag was resolved',
+  )
+  t.equal(
+    [...upgraded.nodes.values()]
+      .find(n => n.name === 'bar')
+      ?.edgesOut.get('foo')?.to?.version,
+    '1.0.0',
+    'the transitive range keeps its copy',
+  )
+
+  updatePackageJson({ add: add(), graph: upgraded, packageJson })
+  t.equal(mainManifest.dependencies.foo, '^2.0.0')
+  const data = lockfileData({ ...configData, graph: upgraded })
+  t.match(data.edges[edgeKey(['file', '.'], 'foo')], 'prod ^2.0.0')
+
+  // re-running the same add on the settled result is a fixpoint
+  const again = await buildIdealFromStartingGraph({
+    ...common,
+    graph: loadVirtual({
+      ...common,
+      lockfileData: structuredClone(data),
+    }),
+    add: add(),
+    remover: new RollbackRemove(),
+  })
+  t.equal(again.lockfileStale, false, 'a user entry is never healed')
+  updatePackageJson({ add: add(), graph: again, packageJson })
+  t.strictSame(
+    lockfileData({ ...configData, graph: again }),
+    data,
+    'byte-identical lockfile',
+  )
 })

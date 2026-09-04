@@ -2,6 +2,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageJson } from '@vltpkg/package-json'
+import { Spec } from '@vltpkg/spec'
 import type {
   DependencyTypeLong,
   DependencyTypeShort,
@@ -116,10 +117,11 @@ const addOrRemoveDeps = (
           found: dep.type,
         })
       }
-      const n = node.edgesOut.get(name)?.to
-      if (!n) {
+      const edge = node.edgesOut.get(name)
+      if (!edge?.to) {
         throw error('Dependency node could not be found')
       }
+      const n = edge.to
       const [nodeType] = splitDepID(n.id)
 
       for (const dtype of longDependencyTypes) {
@@ -156,6 +158,15 @@ const addOrRemoveDeps = (
       )
       dependencies[name] = saveValue
       manifestChanged = manifestChanged || saveValue !== existing
+
+      // the lockfile has to carry the value package.json carries, or a
+      // later install reads back `latest` where the manifest says
+      // `^1.2.3`. anything keyed by the old spec from here on must be
+      // invalidated at this point.
+      if (saveValue !== edge.spec.bareSpec) {
+        edge.spec = Spec.parse(name, saveValue, dep.spec.options)
+        graph.lockfileStale = true
+      }
     }
   }
   return manifestChanged ? manifest : undefined
