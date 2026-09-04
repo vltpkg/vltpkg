@@ -1263,3 +1263,139 @@ t.test('rebuilds do not flip a peer edge across forks', async t => {
     'the second rebuild only adds the new package',
   )
 })
+
+t.test('peer dep lands on the copy matching its parent', async t => {
+  // regression: `l` declares react in devDependencies, which a registry dep
+  // never installs. checkPeerEdgesCompatible used to read that declaration as
+  // "the parent resolves its own react", skip the context check and reuse
+  // `w1`'s copy of `u`, whose react (19.2.8) differs from `l`'s (19.2.5).
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const w1 = {
+    name: 'w1',
+    version: '1.0.0',
+    dependencies: { react: '19.2.8', s: '^1.0.0' },
+  }
+  const w2 = {
+    name: 'w2',
+    version: '1.0.0',
+    dependencies: { react: '19.2.5', l: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    packages: {
+      w1: { 'package.json': JSON.stringify(w1) },
+      w2: { 'package.json': JSON.stringify(w2) },
+    },
+    'vlt.json': JSON.stringify({
+      workspaces: { packages: ['./packages/*'] },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const manifests: Record<string, Record<string, Manifest>> = {
+    react: {
+      '19.2.5': { name: 'react', version: '19.2.5' },
+      '19.2.8': { name: 'react', version: '19.2.8' },
+    },
+    u: {
+      '1.0.0': {
+        name: 'u',
+        version: '1.0.0',
+        peerDependencies: { react: '^19' },
+      },
+    },
+    l: {
+      '1.0.0': {
+        name: 'l',
+        version: '1.0.0',
+        dependencies: { u: '^1.0.0' },
+        devDependencies: { react: '19.1.0' },
+        peerDependencies: { react: '^19' },
+      },
+    },
+    s: {
+      '1.0.0': {
+        name: 's',
+        version: '1.0.0',
+        dependencies: { u: '^1.0.0' },
+      },
+    },
+    x: { '1.0.0': { name: 'x', version: '1.0.0' } },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const versions = manifests[spec.final.name]
+      /* c8 ignore next */
+      if (!versions) return null
+      const bareSpec = spec.final.bareSpec || '*'
+      return versions[
+        String(
+          Object.keys(versions)
+            .filter(v => satisfiesVersion(v, bareSpec))
+            .at(-1),
+        )
+      ]
+    },
+  } as unknown as PackageInfoClient
+
+  const common = {
+    ...configData,
+    projectRoot,
+    mainManifest,
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    remove: new Map() as RemoveImportersDependenciesMap,
+  }
+
+  const check = (graph: Graph, label: string) => {
+    const l = [...graph.nodes.values()].find(n => n.name === 'l')
+    const u = l?.edgesOut.get('u')?.to
+    t.equal(
+      u?.edgesOut.get('react')?.to?.id,
+      l?.edgesOut.get('react')?.to?.id,
+      `${label}: l and its u share one react`,
+    )
+    t.equal(u?.edgesOut.get('react')?.to?.version, '19.2.5', label)
+  }
+
+  const seed = await buildIdealFromStartingGraph({
+    ...common,
+    packageInfo,
+    graph: new Graph({
+      projectRoot,
+      mainManifest,
+      ...configData,
+      monorepo: common.monorepo,
+    }),
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+  check(seed, 'from scratch')
+
+  const ideal = await buildIdealFromStartingGraph({
+    ...common,
+    packageInfo,
+    graph: loadVirtual({
+      ...common,
+      lockfileData: lockfileData({ ...configData, graph: seed }),
+    }),
+    add: new Map([
+      [
+        joinDepIDTuple(['workspace', 'packages/w2']),
+        new Map([
+          [
+            'x',
+            {
+              type: 'prod',
+              spec: Spec.parse('x', '^1.0.0', configData),
+            },
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+  check(ideal, 'after an unrelated add')
+})

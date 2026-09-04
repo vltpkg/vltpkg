@@ -14,14 +14,10 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/satisfies'
 import { parse as parseVersion } from '@vltpkg/semver'
 import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
-import type {
-  DependencyTypeLong,
-  DependencySaveType,
-  Manifest,
-} from '@vltpkg/types'
+import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
 import { fixupAddedNames } from '../fixup-added-names.ts'
-import { shorten } from '../dependencies.ts'
+import { shorten, shouldInstallDepType } from '../dependencies.ts'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
@@ -84,18 +80,6 @@ type FetchResult = {
   reuseTasks: ReuseTask[]
   forkRequests: PeerContextEntryInput[]
 }
-
-/**
- * Only install devDeps for git dependencies and importers
- * Everything else always gets installed
- */
-const shouldInstallDepType = (
-  node: Node,
-  depType: DependencyTypeLong,
-) =>
-  depType !== 'devDependencies' ||
-  node.importer ||
-  node.id.startsWith('git')
 
 /**
  * Retrieve the {@link DepID} and location for a `file:` type {@link Node}.

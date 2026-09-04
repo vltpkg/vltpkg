@@ -138,6 +138,18 @@ export const shorten = (
 const isStringArray = (a: unknown): a is string[] =>
   Array.isArray(a) && !a.some(b => typeof b !== 'string')
 
+/**
+ * Only install devDeps for git dependencies and importers
+ * Everything else always gets installed
+ */
+export const shouldInstallDepType = (
+  node: NodeLike,
+  depType: DependencyTypeLong,
+) =>
+  depType !== 'devDependencies' ||
+  node.importer ||
+  node.id.startsWith('git')
+
 /*
  * Retrieves a map of all dependencies, of all types, that can be iterated
  * on and consulted when parsing the directory contents of a given node.

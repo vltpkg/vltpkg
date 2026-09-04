@@ -4,7 +4,11 @@
 import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
-import { getDependencies, shorten } from '../dependencies.ts'
+import {
+  getDependencies,
+  shorten,
+  shouldInstallDepType,
+} from '../dependencies.ts'
 import { compareByType, getOrderedDependencies } from './sorting.ts'
 import type {
   ProcessPlacementResultEntry,
@@ -128,8 +132,11 @@ const shouldIgnoreContextMismatch = (
   /* c8 ignore next - edge case: fromNode always has manifest in practice */
   if (!parentManifest) return false
 
-  // Search all dependency types for a declaration of peerName
+  // Search all dependency types for a declaration of peerName. Only types
+  // the parent actually installs count: a registry parent's devDependencies
+  // are never placed, so they do not mean it resolves its own copy.
   for (const depType of longDependencyTypes) {
+    if (!shouldInstallDepType(fromNode, depType)) continue
     const declared = parentManifest[depType]?.[peerName]
     if (!declared) continue
 
@@ -332,6 +339,7 @@ export const checkPeerEdgesCompatible = (
 
     if (manifest) {
       for (const depType of longDependencyTypes) {
+        if (!shouldInstallDepType(fromNode, depType)) continue
         const deps = manifest[depType]
         if (
           deps &&

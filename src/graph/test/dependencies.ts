@@ -8,6 +8,7 @@ import {
   isDependencyTypeShort,
   isDependencySaveType,
   shorten,
+  shouldInstallDepType,
 } from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
@@ -173,6 +174,28 @@ const createMockNode = (
   setConfusedManifest: () => {},
   maybeSetConfusedManifest: () => {},
   ...overrides,
+})
+
+t.test('shouldInstallDepType', async t => {
+  const cases: [string, Partial<NodeLike>, boolean][] = [
+    ['importer', { importer: true }, true],
+    ['git', { id: joinDepIDTuple(['git', 'github:a/b', '']) }, true],
+    ['file', { id: joinDepIDTuple(['file', './lib']) }, false],
+    ['registry', {}, false],
+  ]
+  for (const [label, overrides, dev] of cases) {
+    const node = createMockNode(overrides)
+    t.equal(
+      shouldInstallDepType(node, 'devDependencies'),
+      dev,
+      `${label}: devDependencies`,
+    )
+    t.equal(
+      shouldInstallDepType(node, 'dependencies'),
+      true,
+      `${label}: dependencies`,
+    )
+  }
 })
 
 t.test('getRawDependencies', async t => {

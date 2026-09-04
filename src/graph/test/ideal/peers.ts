@@ -23,6 +23,7 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { build } from '../../src/ideal/build.ts'
 import { load as actualLoad } from '../../src/actual/load.ts'
 import { asDependency } from '../../src/dependencies.ts'
@@ -801,6 +802,158 @@ t.test('checkPeerEdgesCompatible', async t => {
         graph,
       )
       t.same(result, { compatible: true })
+    },
+  )
+
+  t.test('devDependencies of the parent', async t => {
+    // a parent only "resolves its own copy" through a dep type it installs,
+    // so devDependencies count for importers and git deps only
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { react: '18.0.0' },
+      peerDependencies: { react: '^18' },
+    }
+    const parentManifest = {
+      version: '1.0.0',
+      devDependencies: { react: '18.0.0' },
+      peerDependencies: { react: '^18' },
+    }
+    const parents: [string, DepID | undefined, boolean][] = [
+      ['registry', undefined, false],
+      ['file', joinDepIDTuple(['file', 'lib']), false],
+      ['git', joinDepIDTuple(['git', 'github:a/lib', '']), true],
+      ['importer', undefined, true],
+    ]
+    for (const [label, parentId, compatible] of parents) {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.3.1', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react182 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.2.0', configData),
+        { name: 'react', version: '18.2.0' },
+      )!
+      const parent =
+        label === 'importer' ?
+          graph.mainImporter
+        : graph.placePackage(
+            graph.mainImporter,
+            'prod',
+            Spec.parse('lib', '^1.0.0', configData),
+            { name: 'lib', ...parentManifest },
+            parentId,
+          )!
+      const node = graph.placePackage(
+        parent,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('react', '^18', configData),
+        node,
+        react182,
+      )
+
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: oneSpec(Spec.parse('react', '18.3.1', configData)),
+        target: react18,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        parent,
+        peerContext,
+        graph,
+      )
+      t.equal(
+        result.compatible,
+        compatible,
+        `${label} parent: compatible=${compatible}`,
+      )
+      if (!compatible) {
+        t.equal(
+          result.forkEntry?.target.id,
+          react18.id,
+          `${label} parent: forks onto the context target`,
+        )
+      }
+    }
+  })
+
+  t.test(
+    'a registry parent declaring the peer only in devDependencies',
+    async t => {
+      // CHECK 3 must not treat the declaration as installed
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('lib', '^1.0.0', configData),
+        {
+          name: 'lib',
+          version: '1.0.0',
+          devDependencies: { react: '^18.2.0' },
+        },
+      )!
+      const react180 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.0.0', configData),
+        { name: 'react', version: '18.0.0' },
+      )!
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.3.1', configData),
+        { name: 'react', version: '18.3.1' },
+      )
+      const node = graph.placePackage(
+        parent,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('react', '^18', configData),
+        node,
+        react180,
+      )
+
+      t.same(
+        checkPeerEdgesCompatible(node, parent, new Map(), graph),
+        { compatible: true },
+        'falls through instead of forking onto react@18.3.1',
+      )
     },
   )
 })
