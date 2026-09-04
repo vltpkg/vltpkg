@@ -1523,7 +1523,11 @@ t.test('an explicit dist-tag add resolves and settles', async t => {
     add: add(),
     remover: new RollbackRemove(),
   })
-  t.equal(again.lockfileStale, false, 'a user entry is never healed')
+  t.equal(
+    again.mainImporter.edgesOut.get('foo')?.spec.bareSpec,
+    'latest',
+    'a user entry is left to the reify update, not healed',
+  )
   updatePackageJson({ add: add(), graph: again, packageJson })
   t.strictSame(
     lockfileData({ ...configData, graph: again }),

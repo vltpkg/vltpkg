@@ -111,6 +111,18 @@ export const refreshIdealGraph = async ({
 
   // gets an ordered list of importers to ensure deterministic processing
   const orderedImporters = getOrderedImporters(graph)
+
+  // importer edge spec text as the starting graph had it. a rebuild that
+  // only changes the text (`vlt i foo@1.2.3` over a `foo@^1.2.3` edge)
+  // produces no node diff, so reify has to be told the lockfile on disk
+  // no longer describes the graph
+  const specTexts = new Map<string, string>()
+  for (const importer of graph.importers) {
+    for (const [name, edge] of importer.edgesOut) {
+      specTexts.set(`${importer.id}\0${name}`, edge.spec.bareSpec)
+    }
+  }
+
   const depsPerImporter = new Map<Node, Dependency[]>()
   for (const importer of orderedImporters) {
     // gets an ordered list of dependencies for this importer
@@ -194,6 +206,17 @@ export const refreshIdealGraph = async ({
 
   // locked resolutions only apply to the rebuild that captured them
   graph.lockedResolutions = undefined
+
+  for (const importer of graph.importers) {
+    for (const [name, edge] of importer.edgesOut) {
+      if (
+        specTexts.get(`${importer.id}\0${name}`) !==
+        edge.spec.bareSpec
+      ) {
+        graph.lockfileStale = true
+      }
+    }
+  }
 
   // set default node locations, if possible
   for (const node of graph.nodes.values()) {

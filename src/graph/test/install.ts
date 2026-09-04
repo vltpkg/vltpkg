@@ -2040,6 +2040,22 @@ t.test('explicit adds carry the saved value everywhere', async t => {
     })
   })
 
+  await t.test('an exact version over a range is saved', async t => {
+    const { opts, add, read } = setup(t, { abbrev: '^2.0.0' })
+    const { install } = await import('../src/install.ts')
+    await install(opts(), add('^2.0.0'))
+    t.match(read('vlt-lock.json'), 'prod ^2.0.0')
+
+    // the rebuild rewrites the edge, not updatePackageJson: the lockfile
+    // still has to follow package.json out of the no-diff early return
+    await install(opts(), add('2.0.0'))
+    t.match(read('vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(read('node_modules/.vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(JSON.parse(read('package.json')), {
+      dependencies: { abbrev: '2.0.0' },
+    })
+  })
+
   await t.test('an unresolvable explicit add rejects', async t => {
     const { opts, add, read } = setup(t)
     const { install } = await import('../src/install.ts')
