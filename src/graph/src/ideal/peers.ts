@@ -578,16 +578,17 @@ export const forkPeerContext = (
   graph.peerContexts[nextPeerContext.index] = nextPeerContext
   graph.peerContextForkCache.set(forkKey, nextPeerContext)
 
-  // copy existing entries marking them as inactive, it's also important
-  // to note that specs and contextDependents are new objects so that changes
-  // to those in the new context do not affect the previous one
+  // copy existing entries marking them as inactive. specs are copied into
+  // a new map so that changes here do not affect the previous context, but
+  // dependents are NOT inherited: they were placed in the parent context, so
+  // a target update in this fork must never re-point their edges.
   for (const [name, entry] of peerContext.entries()) {
     nextPeerContext.set(name, {
       active: false,
       specs: new Map(entry.specs),
       target: undefined,
       type: entry.type,
-      contextDependents: new Set(entry.contextDependents),
+      contextDependents: new Set(),
     })
   }
 

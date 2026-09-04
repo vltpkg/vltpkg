@@ -1576,10 +1576,22 @@ t.test('forkPeerContext', async t => {
     })
     const originalContext = graph.peerContexts[0]!
 
+    // a node placed in the original context, holding a peer edge to foo
+    const qux = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('qux', '^1.0.0', configData),
+      { name: 'qux', version: '1.0.0' },
+    )!
+    const foo1 = graph.placePackage(qux, 'peer', spec1, {
+      name: 'foo',
+      version: '1.0.0',
+    })!
+
     // Add entry to original
     addEntriesToPeerContext(
       originalContext,
-      [{ spec: spec1, type: 'peer' }],
+      [{ spec: spec1, type: 'peer', target: foo1, dependent: qux }],
       graph.mainImporter,
     )
 
@@ -1617,6 +1629,43 @@ t.test('forkPeerContext', async t => {
     t.ok(
       barEntry?.contextDependents.has(dependent),
       'should include dependent',
+    )
+
+    // inherited entries keep specs but never the parent's dependents
+    const fooEntry = forkedContext.get('foo')
+    t.equal(fooEntry?.active, false, 'inherited entry is inactive')
+    t.equal(
+      fooEntry?.target,
+      undefined,
+      'inherited target is cleared',
+    )
+    t.strictSame(
+      [...(fooEntry?.specs.values() ?? [])].map(String),
+      ['foo@^1.0.0'],
+      'inherited specs are copied',
+    )
+    t.equal(
+      fooEntry?.contextDependents.size,
+      0,
+      'inherited entry has no dependents',
+    )
+
+    // a fork-local target update must not re-point the parent context's edge
+    const foo101 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.1' },
+    )!
+    addEntriesToPeerContext(
+      forkedContext,
+      [{ spec: spec1, type: 'peer', target: foo101 }],
+      dependent,
+    )
+    t.equal(
+      qux.edgesOut.get('foo')?.to?.id,
+      foo1.id,
+      'parent context edge is left alone',
     )
   })
 

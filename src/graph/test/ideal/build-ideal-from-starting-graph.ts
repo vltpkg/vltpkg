@@ -2,7 +2,10 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
-import { parse as parseVersion } from '@vltpkg/semver'
+import {
+  parse as parseVersion,
+  satisfies as satisfiesVersion,
+} from '@vltpkg/semver'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { Manifest } from '@vltpkg/types'
@@ -1079,3 +1082,184 @@ t.test(
     )
   },
 )
+
+t.test('rebuilds do not flip a peer edge across forks', async t => {
+  // regression: a forked context used to inherit the parent context's
+  // dependents, so placing `p@^1.5` inside the fork re-pointed `r`'s peer
+  // edge, which lives in the parent context. Each rebuild then alternated
+  // between the two resolutions.
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      q: '^1.0.0',
+      r: '^1.0.0',
+      s: '^1.0.0',
+      w: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const manifests: Record<string, Record<string, Manifest>> = {
+    p: {
+      '1.5.0': { name: 'p', version: '1.5.0' },
+      '2.0.1': { name: 'p', version: '2.0.1' },
+    },
+    q: {
+      '1.0.0': { name: 'q', version: '1.0.0' },
+      '2.0.0': { name: 'q', version: '2.0.0' },
+    },
+    // the dependent whose peer edge lives in the root context
+    r: {
+      '1.0.0': {
+        name: 'r',
+        version: '1.0.0',
+        peerDependencies: { p: '^1 || ^2' },
+      },
+    },
+    // s -> f forks the root context (q@^2 vs the root's q@^1) without
+    // naming p, so the fork inherits the root's p entry
+    s: {
+      '1.0.0': {
+        name: 's',
+        version: '1.0.0',
+        dependencies: { f: '^1.0.0' },
+      },
+    },
+    f: {
+      '1.0.0': {
+        name: 'f',
+        version: '1.0.0',
+        dependencies: { h: '^1.0.0' },
+        peerDependencies: { q: '^2' },
+      },
+    },
+    // h places p@1.5.0 inside the fork, after the fork was created
+    h: {
+      '1.0.0': {
+        name: 'h',
+        version: '1.0.0',
+        dependencies: { p: '^1.5' },
+      },
+    },
+    // w -> v -> pp adds p@^2.0.1 to the root context, after the fork
+    w: {
+      '1.0.0': {
+        name: 'w',
+        version: '1.0.0',
+        dependencies: { v: '^1.0.0' },
+      },
+    },
+    v: {
+      '1.0.0': {
+        name: 'v',
+        version: '1.0.0',
+        dependencies: { pp: '^1.0.0' },
+      },
+    },
+    pp: {
+      '1.0.0': {
+        name: 'pp',
+        version: '1.0.0',
+        dependencies: { p: '^2.0.1' },
+      },
+    },
+    x: { '1.0.0': { name: 'x', version: '1.0.0' } },
+    y: { '1.0.0': { name: 'y', version: '1.0.0' } },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const versions = manifests[spec.final.name]
+      /* c8 ignore next */
+      if (!versions) return null
+      const bareSpec = spec.final.bareSpec || '*'
+      return versions[
+        String(
+          Object.keys(versions)
+            .filter(v => satisfiesVersion(v, bareSpec))
+            .at(-1),
+        )
+      ]
+    },
+  } as unknown as PackageInfoClient
+
+  const common = {
+    ...configData,
+    projectRoot,
+    mainManifest,
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    remove: new Map() as RemoveImportersDependenciesMap,
+  }
+  const rootId = joinDepIDTuple(['file', '.'])
+  const add = (name: string) =>
+    new Map([
+      [
+        rootId,
+        new Map([
+          [
+            name,
+            {
+              type: 'prod',
+              spec: Spec.parse(name, '^1.0.0', configData),
+            },
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap
+
+  const peerTarget = (graph: Graph) => {
+    const to = [...graph.nodes.values()]
+      .find(n => n.name === 'r')
+      ?.edgesOut.get('p')?.to
+    return `${to?.name}@${to?.version}`
+  }
+
+  const seed = await buildIdealFromStartingGraph({
+    ...common,
+    packageInfo,
+    graph: new Graph({ projectRoot, mainManifest, ...configData }),
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+  t.equal(
+    peerTarget(seed),
+    'p@2.0.1',
+    'from scratch: r resolves the newest p',
+  )
+
+  let data = lockfileData({ ...configData, graph: seed })
+  const lockfiles: Record<string, unknown>[] = []
+  for (const pkg of ['x', 'y']) {
+    const ideal = await buildIdealFromStartingGraph({
+      ...common,
+      packageInfo,
+      graph: loadVirtual({
+        ...common,
+        lockfileData: structuredClone(data),
+      }),
+      add: add(pkg),
+      remover: new RollbackRemove(),
+    })
+    t.equal(
+      peerTarget(ideal),
+      'p@2.0.1',
+      `after adding ${pkg}: r keeps p@2.0.1`,
+    )
+    data = lockfileData({ ...configData, graph: ideal })
+    lockfiles.push(data.nodes)
+  }
+
+  t.strictSame(
+    Object.keys(lockfiles[1]!).filter(
+      k => !Object.keys(lockfiles[0]!).includes(k),
+    ),
+    [joinDepIDTuple(['registry', '', 'y@1.0.0'])],
+    'the second rebuild only adds the new package',
+  )
+})
