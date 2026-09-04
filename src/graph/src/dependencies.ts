@@ -141,6 +141,10 @@ const isStringArray = (a: unknown): a is string[] =>
 /**
  * Only install devDeps for git dependencies and importers
  * Everything else always gets installed
+ *
+ * Deliberately stricter than {@link getRawDependencies}, which also keeps
+ * devDeps of `file:` nodes: this is the rule the ideal build places with, so
+ * peer checks use it to match what actually lands in the graph.
  */
 export const shouldInstallDepType = (
   node: NodeLike,

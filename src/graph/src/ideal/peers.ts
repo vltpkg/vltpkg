@@ -547,6 +547,11 @@ export const addEntriesToPeerContext = (
     // check for sibling dep conflicts
     if (incompatibleSpecs(spec.final, entry)) return true
 
+    // collect the incoming spec before anything reads the entry: it
+    // constrains both the new target and any dependent kept on an older one
+    const specKey = peerSpecKey(spec)
+    if (!entry.specs.has(specKey)) entry.specs.set(specKey, spec)
+
     // update target if compatible with all specs
     if (target && satisfiesEntrySpecs(target, entry, fromNode)) {
       // two peer copies of the same version are the same resolution here:
@@ -571,8 +576,6 @@ export const addEntriesToPeerContext = (
       entry.target ??= target
     }
 
-    const specKey = peerSpecKey(spec)
-    if (!entry.specs.has(specKey)) entry.specs.set(specKey, spec)
     if (dependent) entry.contextDependents.add(dependent)
   }
 

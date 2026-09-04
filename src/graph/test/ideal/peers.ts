@@ -1709,6 +1709,73 @@ t.test('addEntriesToPeerContext', async t => {
   )
 
   t.test(
+    'rewires a dependent that fails the incoming spec',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
+
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
+
+      // stricter spec: intersects ^1.0.0 so no fork, but 1.0.0 fails it
+      const nextSpec = Spec.parse('foo', '^1.0.1', configData)
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nextSpec,
+        { name: 'foo', version: '1.0.1' },
+      )!
+
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec: nextSpec, target: target2, type: 'peer' }],
+        dependent,
+      )
+
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target2.id,
+        'should update target',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target2.id,
+        'edge moves off the target failing the incoming spec',
+      )
+      const edge = dependent.edgesOut.get('foo')!
+      t.notOk(target1.edgesIn.has(edge), 'old target loses the edge')
+      t.ok(target2.edgesIn.has(edge), 'new target gains it')
+    },
+  )
+
+  t.test(
     'same version with a different peer id is not a new target',
     async t => {
       const peerContext: PeerContext = new Map()
