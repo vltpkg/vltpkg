@@ -1059,6 +1059,7 @@ t.test('registry tarball integrity verification', async t => {
         0x8b,
         'should be a gzip file (second magic byte)',
       )
+      await (await tb.getRegistryClient()).cache.promise()
     },
   )
 
