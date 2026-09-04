@@ -22,7 +22,7 @@ import type {
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { build } from '../../src/ideal/build.ts'
 import { load as actualLoad } from '../../src/actual/load.ts'
@@ -1546,70 +1546,242 @@ t.test('addEntriesToPeerContext', async t => {
     )
   })
 
-  t.test('updates target and rewires edges', async t => {
-    const peerContext: PeerContext = new Map()
-    const spec = Spec.parse('foo', '^1.0.0', configData)
-    const mainManifest = {
-      name: 'my-project',
-      version: '1.0.0',
-    }
-    const graph = new Graph({
-      projectRoot: t.testdirName,
-      ...configData,
-      mainManifest,
-    })
+  t.test(
+    'keeps a dependent whose target satisfies every spec',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
 
-    const target1 = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      { name: 'foo', version: '1.0.0' },
-    )!
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
 
-    const dependent = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      Spec.parse('bar', '^1.0.0', configData),
-      { name: 'bar', version: '1.0.0' },
-    )!
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
 
-    // Add peer edge from dependent to target1
-    graph.addEdge('peer', spec, dependent, target1)
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.1' },
+      )!
 
-    // Add first target
-    addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target1, type: 'peer', dependent }],
-      dependent,
-    )
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
 
-    // Create new target
-    const target2 = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      { name: 'foo', version: '1.0.1' },
-    )!
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target2.id,
+        'should update target',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target1.id,
+        'edge stays on its still-satisfying target',
+      )
+      const edge = dependent.edgesOut.get('foo')!
+      t.ok(target1.edgesIn.has(edge), 'edgesIn is untouched')
+      t.notOk(
+        target2.edgesIn.has(edge),
+        'new target gains no dependent',
+      )
+    },
+  )
 
-    // Add new target - should update edges
-    const needsFork = addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target2, type: 'peer' }],
-      dependent,
-    )
+  t.test(
+    'rewires a dependent whose target the context outgrew',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
 
-    t.equal(needsFork, false, 'should not need fork')
-    const entry = peerContext.get('foo')
-    t.equal(entry?.target?.id, target2.id, 'should update target')
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
 
-    // Check edge was rewired
-    const edge = dependent.edgesOut.get('foo')
-    t.equal(
-      edge?.to?.id,
-      target2.id,
-      'edge should point to new target',
-    )
-  })
+      // a dependent with no edge to foo at all
+      const noEdge = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('baz', '^1.0.0', configData),
+        { name: 'baz', version: '1.0.0' },
+      )!
+
+      addEntriesToPeerContext(
+        peerContext,
+        [
+          { spec, target: target1, type: 'peer', dependent },
+          { spec, type: 'peer', dependent: noEdge },
+        ],
+        dependent,
+      )
+
+      // the context outgrows 1.0.0
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.1' },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('foo', '^1.0.1', configData),
+        noEdge,
+        target2,
+      )
+      addEntriesToPeerContext(
+        peerContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.1', configData),
+            type: 'peer',
+            dependent: noEdge,
+          },
+        ],
+        noEdge,
+      )
+
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
+
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target2.id,
+        'should update target',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target2.id,
+        'edge moves to the only satisfying target',
+      )
+      const edge = dependent.edgesOut.get('foo')!
+      t.notOk(target1.edgesIn.has(edge), 'old target loses the edge')
+      t.ok(target2.edgesIn.has(edge), 'new target gains it')
+    },
+  )
+
+  t.test(
+    'same version with a different peer id is not a new target',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const manifest = {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+      }
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        manifest,
+        undefined,
+        joinExtra({ peerSetHash: 'peer.1' }),
+      )!
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        manifest,
+        undefined,
+        joinExtra({ peerSetHash: 'peer.2' }),
+      )!
+      t.not(target1.id, target2.id, 'two copies of one version')
+
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
+
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
+
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target1.id,
+        'entry target is unchanged',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target1.id,
+        'dependent edge is unchanged',
+      )
+      t.notOk(
+        target2.edgesIn.has(dependent.edgesOut.get('foo')!),
+        'no edge moved onto the copy',
+      )
+    },
+  )
+
   t.test(
     'adds entry with no target then updates with target',
     async t => {

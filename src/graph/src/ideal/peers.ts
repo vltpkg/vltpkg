@@ -494,6 +494,11 @@ export const checkEntriesToPeerContext = (
  * peer context set. Extra info such as a target or dependent nodes is
  * optional.
  *
+ * When an entry gains a target that satisfies every spec collected so far,
+ * dependents of that entry are re-pointed at it only if their current target
+ * no longer satisfies one of those specs, so two equally valid resolutions
+ * never swap back and forth across rebuilds.
+ *
  * Returns true if forking is needed, false otherwise.
  */
 export const addEntriesToPeerContext = (
@@ -504,6 +509,22 @@ export const addEntriesToPeerContext = (
 ): boolean => {
   // pre check for conflicts before processing
   if (checkEntriesToPeerContext(peerContext, entries)) return true
+
+  /** Does `node` satisfy every spec collected in `entry`? */
+  const satisfiesEntrySpecs = (
+    node: Node,
+    entry: PeerContextEntry,
+    from: Node,
+  ) =>
+    [...entry.specs.values()].every(s =>
+      satisfies(
+        node.id,
+        s,
+        from.location,
+        from.projectRoot,
+        monorepo,
+      ),
+    )
 
   for (const { dependent, spec, target, type } of entries) {
     const name = target?.name ?? spec.final.name
@@ -527,30 +548,23 @@ export const addEntriesToPeerContext = (
     if (incompatibleSpecs(spec.final, entry)) return true
 
     // update target if compatible with all specs
-    if (
-      target &&
-      [...entry.specs.values()].every(s =>
-        satisfies(
-          target.id,
-          s,
-          fromNode.location,
-          fromNode.projectRoot,
-          monorepo,
-        ),
-      )
-    ) {
+    if (target && satisfiesEntrySpecs(target, entry, fromNode)) {
+      // two peer copies of the same version are the same resolution here:
+      // moving a dependent between them would only change its peer set
       if (
         target.id !== entry.target?.id &&
         target.version !== entry.target?.version
       ) {
-        // update dependents to point to new target
+        // re-point only dependents whose target this context has outgrown;
+        // one that still satisfies every spec is as valid as the new target,
+        // so a rebuild never swaps between two valid resolutions
         for (const dep of entry.contextDependents) {
           const edge = dep.edgesOut.get(name)
-          if (edge?.to && edge.to !== target) {
-            edge.to.edgesIn.delete(edge)
-            edge.to = target
-            target.edgesIn.add(edge)
-          }
+          if (!edge?.to || edge.to === target) continue
+          if (satisfiesEntrySpecs(edge.to, entry, dep)) continue
+          edge.to.edgesIn.delete(edge)
+          edge.to = target
+          target.edgesIn.add(edge)
         }
         entry.target = target
       }
