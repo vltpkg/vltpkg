@@ -10,6 +10,8 @@ import { asDependency } from '../../src/dependencies.ts'
 import type { AddImportersDependenciesMap } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
+import { reload } from '@vltpkg/vlt-json'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -235,4 +237,77 @@ t.test('graph with an actual node', async t => {
       'should throw an missing importer id error',
     )
   })
+})
+
+t.test('a modifier-governed edge is not stale', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0' },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #foo': '1.0.0' },
+    }),
+    node_modules: {
+      '.vlt': {
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
+          node_modules: {
+            foo: {
+              'package.json': JSON.stringify({
+                name: 'foo',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+      foo: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+          '/node_modules/foo',
+      ),
+    },
+  })
+  t.chdir(projectRoot)
+  reload('modifiers', 'project')
+  const modifiers = GraphModifier.load({})
+
+  const newAdd = () =>
+    new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map(
+          Object.entries({
+            foo: asDependency({
+              spec: Spec.parse('foo@^1.0.0'),
+              type: 'prod',
+            }),
+          }),
+        ),
+      ],
+    ]) as AddImportersDependenciesMap
+  const newGraph = () =>
+    load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
+
+  t.equal(
+    removeSatisfiedSpecs({ add: newAdd(), graph: newGraph() }).size,
+    1,
+    'stale without a governing modifier',
+  )
+  t.equal(
+    removeSatisfiedSpecs({
+      add: newAdd(),
+      graph: newGraph(),
+      modifiers,
+    }).size,
+    0,
+    'the modifier value is left in place',
+  )
 })

@@ -21,6 +21,7 @@ import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { PathScurry } from 'path-scurry'
+import type { GraphModifier } from '../modifiers.ts'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
@@ -28,6 +29,7 @@ export type GetImporterSpecsOptions = BuildIdealAddOptions &
   SpecOptions & {
     scurry: PathScurry
     packageJson: PackageJson
+    modifiers?: GraphModifier
   }
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
@@ -248,6 +250,7 @@ export const getImporterSpecs = (
   const staleSpecs = removeSatisfiedSpecs({
     add: addResult,
     graph,
+    modifiers: options.modifiers,
   })
 
   // a name the caller asked for is left to appendNodes and reify's

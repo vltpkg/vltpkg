@@ -1,6 +1,6 @@
 import t from 'tap'
 import type { Test } from 'tap'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync, utimesSync } from 'node:fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
@@ -16,6 +16,7 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
 import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
+import { unload } from '@vltpkg/vlt-json'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -2181,4 +2182,68 @@ t.test('an options-only change is written', async t => {
     install(opts({ catalog, frozenLockfile: true })),
     'frozen install passes right after',
   )
+})
+
+t.test('a project with modifiers stays in sync', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #abbrev': '2.0.0' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(opts())
+  t.equal(
+    graph.mainImporter.edgesOut.get('abbrev')?.spec.bareSpec,
+    '2.0.0',
+    'the modifier is applied',
+  )
+  const lock = JSON.parse(read('vlt-lock.json')) as {
+    options: { modifiers?: Record<string, string> }
+  }
+  t.strictSame(
+    lock.options.modifiers,
+    { ':root > #abbrev': '2.0.0' },
+    'modifiers are stored',
+  )
+
+  await t.resolves(
+    install(opts({ frozenLockfile: true })),
+    'the frozen check sees the modifiers',
+  )
+
+  // a plain install must not rewrite either lockfile: the edge already
+  // carries the override, so it is neither a stale spec nor a diff
+  const stamp = new Date(0)
+  for (const f of lockfiles) {
+    utimesSync(resolve(projectRoot, f), stamp, stamp)
+  }
+  await install(opts())
+  for (const f of lockfiles) {
+    t.equal(
+      statSync(resolve(projectRoot, f)).mtimeMs,
+      0,
+      `${f} was left alone`,
+    )
+  }
 })

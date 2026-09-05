@@ -406,6 +406,21 @@ t.test('GraphModifier', async t => {
     )
   })
 
+  await t.test('targets', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: { ':root > #abbrev': '2.0.0', '#lodash': '4.0.0' },
+      }),
+    })
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    t.equal(modifier.targets('abbrev'), true, 'nested selector')
+    t.equal(modifier.targets('lodash'), true, 'single id selector')
+    t.equal(modifier.targets('foo'), false, 'unrelated name')
+  })
+
   await t.test('config getter', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({ modifiers: validStringConfig }),

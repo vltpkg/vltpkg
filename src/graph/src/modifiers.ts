@@ -174,6 +174,18 @@ export class GraphModifier {
   }
 
   /**
+   * Whether any modifier's last breadcrumb item names this dependency,
+   * i.e. whether the value of an edge to `name` is governed by config
+   * rather than by the manifest that declares it.
+   */
+  targets(name: string) {
+    for (const { breadcrumb } of this.#modifiers) {
+      if (breadcrumb.last.name === name) return true
+    }
+    return false
+  }
+
+  /**
    * Loads the modifiers defined in `vlt.json` into memory.
    */
   load(options: SpecOptions) {

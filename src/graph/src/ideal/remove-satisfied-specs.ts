@@ -6,9 +6,12 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
 } from './types.ts'
+import type { GraphModifier } from '../modifiers.ts'
 
 export type RemoveSatisfiedSpecsOptions = BuildIdealAddOptions &
-  BuildIdealFromGraphOptions
+  BuildIdealFromGraphOptions & {
+    modifiers?: GraphModifier
+  }
 
 /**
  * Traverse the objects defined in `add` and removes any references to specs
@@ -21,6 +24,7 @@ export type RemoveSatisfiedSpecsOptions = BuildIdealAddOptions &
 export const removeSatisfiedSpecs = ({
   add,
   graph,
+  modifiers,
 }: RemoveSatisfiedSpecsOptions) => {
   const staleSpecs = new Map<Edge, Spec>()
   for (const [depID, dependencies] of add.entries()) {
@@ -56,7 +60,13 @@ export const removeSatisfiedSpecs = ({
           graph.monorepo,
         )
       ) {
-        if (edge.spec.bareSpec !== dependency.spec.bareSpec) {
+        // a governed edge carries the modifier value by construction:
+        // healing it to the manifest text would only be undone by the
+        // rebuild that re-applies the override
+        if (
+          edge.spec.bareSpec !== dependency.spec.bareSpec &&
+          !modifiers?.targets(name)
+        ) {
           staleSpecs.set(edge, dependency.spec)
         }
         dependencies.delete(name)
