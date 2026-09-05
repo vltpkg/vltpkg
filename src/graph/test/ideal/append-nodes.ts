@@ -4729,6 +4729,66 @@ t.test(
 )
 
 t.test(
+  'lockedResolutions rejects a lock when an alias changes the target',
+  async t => {
+    // `foo@npm:bar@^1` resolves bar, so a locked `foo` must not be
+    // reused just because the edge is still named foo
+    for (const hydrated of [true, false]) {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const foo = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        { name: 'foo', version: '1.0.0' },
+      )!
+      if (!hydrated) {
+        foo.manifest = undefined
+        foo.detached = true
+        graph.manifests.delete(foo.id)
+      }
+      const alias = Spec.parse('foo', 'npm:bar@^1.0.0', configData)
+      graph.lockedResolutions = new Map([
+        [`${graph.mainImporter.id}\0${alias.name}`, foo.id],
+      ])
+      graph.resetEdges()
+
+      const barManifest = { name: 'bar', version: '1.2.3' }
+      let fetched = 0
+      const packageInfo = {
+        async manifest() {
+          fetched++
+          return barManifest
+        },
+      } as unknown as PackageInfoClient
+
+      const dep = asDependency({ spec: alias, type: 'prod' })
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [dep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([[alias.name, dep]]),
+      )
+
+      const to = graph.mainImporter.edgesOut.get('foo')?.to
+      t.equal(
+        to?.name,
+        'bar',
+        `alias target resolved (hydrated=${hydrated})`,
+      )
+      t.ok(fetched > 0, `manifest fetched (hydrated=${hydrated})`)
+    }
+  },
+)
+
+t.test(
   'lockedResolutions ignores a lock when the spec moved off the registry',
   async t => {
     const mainManifest = {

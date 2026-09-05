@@ -191,7 +191,11 @@ const lockedFits = (
     version: n.version,
   })
   if (idRegistry !== expected[1]) return false
-  if (n.name !== spec.name && n.name !== final.name) return false
+  // the package the final spec resolves, never the edge name: an alias
+  // (`foo@npm:bar@^1`, `semver@jsr:@std/semver@^1`) points the same edge
+  // at a different package, and `final.name` already carries the jsr
+  // registry form of the name
+  if (n.name !== final.name) return false
   if (!final.range) return true
   /* c8 ignore next */
   if (!n.version) return false
