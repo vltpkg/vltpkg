@@ -19,7 +19,7 @@ import {
 } from '@vltpkg/dss-parser'
 import { removeNode, removeQuotes } from './helpers.ts'
 import type { NodeLike, Packument } from '@vltpkg/types'
-import type { ParserState } from '../types.ts'
+import type { GetAuthHeader, ParserState } from '../types.ts'
 import type { PostcssNode } from '@vltpkg/dss-parser'
 
 /**
@@ -77,21 +77,31 @@ export const asOutdatedKind = (value: string): OutdatedKinds => {
 export const retrieveRemoteVersions = async (
   node: NodeLike,
   signal?: AbortSignal,
+  getAuthHeader?: GetAuthHeader,
 ): Promise<string[]> => {
   const spec = hydrate(node.id, String(node.name), node.options)
   if (!spec.registry || !node.name) {
     return []
   }
 
-  const url = new URL(spec.registry)
-  url.pathname = `/${node.name}`
+  // resolve against the registry as a base so that any path prefix
+  // (e.g: https://registry.vlt.io/vltpkg/npm/) is preserved
+  const base =
+    spec.registry.endsWith('/') ? spec.registry : `${spec.registry}/`
+  const url = new URL(node.name, base)
+
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.npm.install-v1+json',
+  }
+  const auth = await getAuthHeader?.(String(url))
+  if (auth) {
+    headers.authorization = auth
+  }
 
   // Corgi is safe here: raw fetch (never the RegistryClient disk cache),
   // and only versions keys are read.
   const response = await fetch(String(url), {
-    headers: {
-      Accept: 'application/vnd.npm.install-v1+json',
-    },
+    headers,
     signal,
   })
   // on missing valid auth or API, it should abort the retry logic
@@ -142,6 +152,7 @@ export const queueNode = async (
   state: ParserState,
   node: NodeLike,
   kind: OutdatedKinds,
+  onError?: (node: NodeLike, err: unknown) => void,
 ): Promise<NodeLike | undefined> => {
   if (!node.name || !node.version) {
     return node
@@ -151,20 +162,29 @@ export const queueNode = async (
   let versions: string[]
   try {
     versions = await pRetry(
-      () => retrieveRemoteVersions(node, state.signal),
+      () =>
+        retrieveRemoteVersions(
+          node,
+          state.signal,
+          state.getAuthHeader,
+        ),
       {
         retries: state.retries,
         signal: state.signal,
       },
     )
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      error('Could not retrieve registry versions', {
-        name: node.name,
-        cause: err,
-      }),
-    )
+    if (onError) {
+      onError(node, err)
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn(
+        error('Could not retrieve registry versions', {
+          name: node.name,
+          cause: err,
+        }),
+      )
+    }
     versions = []
   }
 
@@ -278,6 +298,7 @@ export const outdated = async (state: ParserState) => {
 
   const { kind } = internals
   const queue = []
+  const failures: { node: NodeLike; err: unknown }[] = []
 
   for (const node of state.partial.nodes) {
     // filter out nodes that are always ignored by the outdated selector
@@ -292,7 +313,11 @@ export const outdated = async (state: ParserState) => {
 
     // fetchs outdated info and performs checks to define
     // whether or not a node should be filtered out
-    queue.push(queueNode(state, node, kind))
+    queue.push(
+      queueNode(state, node, kind, (node, err) =>
+        failures.push({ node, err }),
+      ),
+    )
   }
 
   // nodes queued for removal are then finally removed
@@ -301,6 +326,17 @@ export const outdated = async (state: ParserState) => {
     if (node) {
       removeNode(state, node)
     }
+  }
+
+  // collapse per-node failures into a single warning
+  if (failures.length) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      error('Could not retrieve registry versions', {
+        found: failures.map(({ node }) => String(node.name)).sort(),
+        cause: failures[0]?.err,
+      }),
+    )
   }
 
   return state

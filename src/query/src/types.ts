@@ -36,12 +36,23 @@ export type GraphSelectionState = {
  */
 export type DiffFilesProvider = (commitish: string) => Set<string>
 
+/**
+ * Callback that returns the `authorization` header value to use when
+ * fetching data from a registry URL, e.g. by the :outdated() pseudo
+ * selector. Keeps the browser-safe query package free of any direct
+ * keychain / registry-client dependency.
+ */
+export type GetAuthHeader = (
+  url: string,
+) => Promise<string | undefined>
+
 export type ParserState = {
   cancellable: () => Promise<void>
   collect: GraphSelectionState
   comment: string
   current: PostcssNode
   diffFiles?: DiffFilesProvider
+  getAuthHeader?: GetAuthHeader
   hostContexts?: HostContextsMap
   importers: Set<NodeLike>
   initial: GraphSelectionState

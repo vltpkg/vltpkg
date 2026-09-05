@@ -22,7 +22,30 @@ const npmSpecOptions: SpecOptions = {
   registries: { npm: 'https://registry.npmjs.org/' },
 }
 
-global.fetch = (async (url: string) => {
+const fetchedUrls: string[] = []
+
+global.fetch = (async (
+  url: string,
+  init?: { headers?: Record<string, string> },
+) => {
+  fetchedUrls.push(url)
+  if (url.startsWith('http://example.com/private/registry/')) {
+    if (init?.headers?.authorization !== 'Bearer test-token') {
+      return {
+        status: 401,
+        ok: false,
+      }
+    }
+    return {
+      ok: true,
+      json: async () => ({
+        versions: {
+          '1.0.0': {},
+          '2.0.0': {},
+        },
+      }),
+    }
+  }
   if (url === 'https://registry.npmjs.org/h') {
     return {
       ok: false,
@@ -317,6 +340,58 @@ t.test('retrieveRemoveVersions', async t => {
       'should throw the original error that will be retried',
     )
   })
+
+  await t.test('authenticated path-prefixed registry', async t => {
+    const privateSpecOptions: SpecOptions = {
+      registries: { private: 'http://example.com/private/registry' },
+    }
+    const node = {
+      name: 'p',
+      id: joinDepIDTuple(['registry', 'private', 'p@1.0.0']),
+      options: privateSpecOptions,
+    } as NodeLike
+
+    t.strictSame(
+      await retrieveRemoteVersions(
+        node,
+        undefined,
+        async () => 'Bearer test-token',
+      ),
+      ['1.0.0', '2.0.0'],
+      'should retrieve versions using auth header',
+    )
+    t.strictSame(
+      fetchedUrls.at(-1),
+      'http://example.com/private/registry/p',
+      'should preserve the registry path prefix',
+    )
+
+    const scoped = {
+      name: '@scope/s',
+      id: joinDepIDTuple(['registry', 'private', '@scope/s@1.0.0']),
+      options: privateSpecOptions,
+    } as NodeLike
+    t.strictSame(
+      await retrieveRemoteVersions(
+        scoped,
+        undefined,
+        async () => 'Bearer test-token',
+      ),
+      ['1.0.0', '2.0.0'],
+      'should retrieve versions for scoped package',
+    )
+    t.strictSame(
+      fetchedUrls.at(-1),
+      'http://example.com/private/registry/@scope/s',
+      'should preserve prefix with scoped name',
+    )
+
+    await t.rejects(
+      retrieveRemoteVersions(node),
+      /Failed to fetch packument/,
+      'should fail when no auth header is available',
+    )
+  })
 })
 
 t.test('queueNode', async t => {
@@ -328,4 +403,43 @@ t.test('queueNode', async t => {
     missingName,
     'should return an empty array if missing essential info',
   )
+
+  await t.test('collects errors via onError', async t => {
+    const log = t.capture(console, 'warn').args
+    const failing = {
+      name: 'h',
+      version: '1.0.0',
+      id: joinDepIDTuple(['registry', '', 'h@1.0.0']),
+      options: npmSpecOptions,
+    } as NodeLike
+    const failures: unknown[] = []
+    t.strictSame(
+      await queueNode(
+        getState(':outdated(any)'),
+        failing,
+        'any',
+        (node, err) => failures.push([node.name, err]),
+      ),
+      failing,
+      'should keep node when versions cannot be retrieved',
+    )
+    t.strictSame(failures.length, 1, 'should collect the failure')
+    t.strictSame(log().length, 0, 'should not warn directly')
+  })
+
+  await t.test('warns directly without onError', async t => {
+    const log = t.capture(console, 'warn').args
+    const failing = {
+      name: 'h',
+      version: '1.0.0',
+      id: joinDepIDTuple(['registry', '', 'h@1.0.0']),
+      options: npmSpecOptions,
+    } as NodeLike
+    t.strictSame(
+      await queueNode(getState(':outdated(any)'), failing, 'any'),
+      failing,
+      'should keep node when versions cannot be retrieved',
+    )
+    t.strictSame(log().length, 1, 'should warn once')
+  })
 })
