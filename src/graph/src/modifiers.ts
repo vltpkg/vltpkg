@@ -112,6 +112,16 @@ const matchesImporter = (
     (item.value === ':workspace' && importer.importer))
 
 /**
+ * Does this item's qualifier (e.g. `:semver(^1)`, `:v(^1)`) accept the
+ * given spec? Shared by traversal matching and by the frozen / healing
+ * exemption, so both agree on what a modifier actually governs.
+ */
+const matchesQualifier = (
+  item: ModifierBreadcrumbItem | undefined,
+  spec: Spec,
+): boolean => !!item?.comparator({ semver: spec.semver })
+
+/**
  * Class representing loaded modifiers configuration for a project.
  *
  * Instances of this class can be used as a helper to modify the graph
@@ -187,16 +197,21 @@ export class GraphModifier {
   }
 
   /**
-   * Whether a modifier governs the direct `importer -> name` edge, i.e.
-   * whether its value comes from config rather than from the manifest
-   * that declares it. Only a breadcrumb whose whole scope is that edge
-   * counts: `:root > #a > #b` names b, but governs an edge under a, so
-   * the root's own b edge is still the manifest's to validate and heal.
+   * Whether a modifier governs the direct `importer -> spec.name` edge,
+   * i.e. whether its value comes from config rather than from the
+   * manifest that declares it. Only a breadcrumb whose whole scope is
+   * that edge counts, and only if its qualifier accepts the spec:
+   * `:root > #a > #b` names b but governs an edge under a, and
+   * `#b:semver(^1)` leaves a `^2` edge alone, so in both cases the
+   * root's own b edge is still the manifest's to validate and heal.
    */
-  targetsImporterEdge(importer: Node, name: string) {
+  targetsImporterEdge(importer: Node, spec: Spec) {
     for (const { breadcrumb } of this.#modifiers) {
       const { last } = breadcrumb
-      if (last.name !== name) continue
+      if (last.name !== spec.name) continue
+      // a qualifier that rejects the spec means the modifier never
+      // applies to this edge, so it stays the manifest's to validate
+      if (!matchesQualifier(last, spec)) continue
       const { prev } = last
       // a lone `#b` matches an edge to b anywhere, importers included
       if (!prev) return true
@@ -301,7 +316,7 @@ export class GraphModifier {
     from: Node,
     spec: Spec,
   ): ModifierActiveEntry | undefined {
-    const { name, semver } = spec
+    const { name } = spec
     // here we use a map instead of a set so that we can associate each
     // modifier active entry with its breadcrumb so that it's easier to
     // pick the correct entry when we sort breadcrbumbs by specificity
@@ -356,9 +371,7 @@ export class GraphModifier {
           // here we filter out any entries that do not match the
           // pseudo selector comparators used in the breadcrumb item
           .filter(i =>
-            i.interactiveBreadcrumb.current?.comparator({
-              semver,
-            }),
+            matchesQualifier(i.interactiveBreadcrumb.current, spec),
           )
           .map(i => i.modifier.breadcrumb),
       )[0],

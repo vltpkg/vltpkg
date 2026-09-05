@@ -2272,51 +2272,59 @@ t.test('a project with modifiers stays in sync', async t => {
   }
 })
 
-t.test(
-  'a modifier scoped deeper does not exempt the root edge',
-  async t => {
-    const projectRoot = t.testdir({
-      'package.json': JSON.stringify({
-        name: 'my-project',
-        version: '1.0.0',
-        dependencies: { abbrev: '2.0.0' },
-      }),
-      'vlt.json': JSON.stringify({
-        modifiers: { ':root > #unused > #abbrev': '2.0.0' },
-      }),
-    })
-    t.chdir(projectRoot)
-    unload('project')
-    const opts = (extra?: Record<string, unknown>) =>
-      ({
-        projectRoot,
-        scurry: new PathScurry(projectRoot),
-        packageJson: new PackageJson(),
-        packageInfo: mockPackageInfo,
-        allowScripts: ':not(*)',
-        registries: { npm: 'https://registry.npmjs.org/' },
-        ...extra,
-      }) as unknown as InstallOptions
-    const { install } = await import('../src/install.ts')
-    await install(opts())
+// a modifier that does not govern the root's own abbrev edge leaves the
+// frozen check owning it, so editing package.json alone must be caught
+const ungovernedFrozenCase = async (
+  t: Test,
+  modifiers: Record<string, string>,
+) => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '2.0.0' },
+    }),
+    'vlt.json': JSON.stringify({ modifiers }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const { install } = await import('../src/install.ts')
+  await install(opts())
 
-    // only package.json changes: no modifier governs this edge, so the
-    // frozen check still owns it
-    const pj = resolve(projectRoot, 'package.json')
-    writeFileSync(
-      pj,
-      JSON.stringify({
-        name: 'my-project',
-        version: '1.0.0',
-        dependencies: { abbrev: '^2.0.0' },
-      }),
-    )
-    await t.rejects(
-      install(opts({ frozenLockfile: true })),
-      /abbrev spec changed from "abbrev@2.0.0" to "abbrev@\^2.0.0"/,
-      'the frozen check sees the edited spec',
-    )
-  },
+  const pj = resolve(projectRoot, 'package.json')
+  writeFileSync(
+    pj,
+    JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+    }),
+  )
+  await t.rejects(
+    install(opts({ frozenLockfile: true })),
+    /abbrev spec changed from "abbrev@2.0.0" to "abbrev@\^2.0.0"/,
+    'the frozen check sees the edited spec',
+  )
+}
+
+t.test('a modifier scoped deeper does not exempt the root edge', t =>
+  ungovernedFrozenCase(t, { ':root > #unused > #abbrev': '2.0.0' }),
+)
+
+t.test('a rejecting qualifier does not exempt the root edge', t =>
+  ungovernedFrozenCase(t, {
+    ':root > #abbrev:semver(^1.0.0)': '1.1.1',
+  }),
 )
 
 t.test('the frozen error names the changed option', async t => {

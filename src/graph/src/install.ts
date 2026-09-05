@@ -134,7 +134,7 @@ export const install = async (
       for (const [depName, dep] of deps) {
         // the edge text of a governed dependency is the modifier value,
         // never the manifest range; a change to it is an options change
-        if (modifiers?.targetsImporterEdge(importer, depName))
+        if (modifiers?.targetsImporterEdge(importer, dep.spec))
           continue
         const edge = importer.edgesOut.get(depName)
         if (edge?.spec) {

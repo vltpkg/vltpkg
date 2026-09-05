@@ -333,3 +333,23 @@ t.test('a modifier scoped deeper still heals the edge', async t =>
     'no modifier governs the root edge',
   ),
 )
+
+t.test(
+  'a qualifier that accepts the spec governs the edge',
+  async t =>
+    modifierStaleCase(
+      t,
+      ':root > #foo:semver(^1.0.0)',
+      0,
+      'the modifier value is left in place',
+    ),
+)
+
+t.test('a qualifier that rejects the spec heals the edge', async t =>
+  modifierStaleCase(
+    t,
+    '#foo:v(^2.0.0)',
+    1,
+    'no modifier governs the root edge',
+  ),
+)

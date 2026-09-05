@@ -414,6 +414,8 @@ t.test('GraphModifier', async t => {
           '#lodash': '4.0.0',
           ':root > #unused > #deep': '1.0.0',
           ':workspace > #ws-only': '1.0.0',
+          ':root > #qualified:semver(^1.0.0)': '1.1.1',
+          '#lone:v(^1.0.0)': '1.1.1',
         },
       }),
     })
@@ -423,35 +425,62 @@ t.test('GraphModifier', async t => {
     const modifier = new GraphModifier({ ...mockSpecOptions })
     const root = { mainImporter: true, importer: true } as Node
     const ws = { mainImporter: false, importer: true } as Node
+    const spec = (name: string, bareSpec = '*') =>
+      Spec.parse(name, bareSpec, mockSpecOptions)
     t.equal(
-      modifier.targetsImporterEdge(root, 'abbrev'),
+      modifier.targetsImporterEdge(root, spec('abbrev')),
       true,
       'direct root edge',
     )
     t.equal(
-      modifier.targetsImporterEdge(ws, 'abbrev'),
+      modifier.targetsImporterEdge(ws, spec('abbrev')),
       false,
       ':root does not select a workspace',
     )
     t.equal(
-      modifier.targetsImporterEdge(ws, 'ws-only'),
+      modifier.targetsImporterEdge(ws, spec('ws-only')),
       true,
       ':workspace selects a workspace',
     )
     t.equal(
-      modifier.targetsImporterEdge(root, 'lodash'),
+      modifier.targetsImporterEdge(root, spec('lodash')),
       true,
       'single id selector matches anywhere',
     )
     t.equal(
-      modifier.targetsImporterEdge(root, 'deep'),
+      modifier.targetsImporterEdge(root, spec('deep')),
       false,
       'a deeper scope leaves the importer edge alone',
     )
     t.equal(
-      modifier.targetsImporterEdge(root, 'foo'),
+      modifier.targetsImporterEdge(root, spec('foo')),
       false,
       'unrelated name',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, spec('qualified', '^1.2.0')),
+      true,
+      ':semver qualifier accepts the spec',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, spec('qualified', '^2.0.0')),
+      false,
+      ':semver qualifier rejects the spec',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, spec('lone', '1.0.0')),
+      true,
+      ':v qualifier accepts the spec on a lone selector',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, spec('lone', '2.0.0')),
+      false,
+      ':v qualifier rejects the spec on a lone selector',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, spec('lone', 'github:a/b')),
+      false,
+      'a non-semver spec cannot satisfy a qualifier',
     )
   })
 

@@ -65,7 +65,7 @@ export const removeSatisfiedSpecs = ({
         // rebuild that re-applies the override
         if (
           edge.spec.bareSpec !== dependency.spec.bareSpec &&
-          !modifiers?.targetsImporterEdge(importer, name)
+          !modifiers?.targetsImporterEdge(importer, dependency.spec)
         ) {
           staleSpecs.set(edge, dependency.spec)
         }
