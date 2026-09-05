@@ -1937,6 +1937,14 @@ t.test('install with frozenLockfile and changed options', async t => {
         nodes: new Map(),
         importers: [],
         optionsChanged: true,
+        optionsChanges: [
+          {
+            section: 'catalog',
+            key: 'abbrev',
+            from: '^1.0.0',
+            to: '^2.0.0',
+          },
+        ],
         gc: () => {},
       }),
       loadHidden: () => ({
@@ -1954,7 +1962,7 @@ t.test('install with frozenLockfile and changed options', async t => {
 
   await t.rejects(
     install(options, new Map() as AddImportersDependenciesMap),
-    /Lockfile is out of sync with package\.json/,
+    /Configuration options have changed:\n {4}catalog: abbrev "\^1\.0\.0" -> "\^2\.0\.0"/,
     'should throw when config options changed with frozen lockfile',
   )
 })
@@ -2246,4 +2254,26 @@ t.test('a project with modifiers stays in sync', async t => {
       `${f} was left alone`,
     )
   }
+})
+
+t.test('the frozen error names the changed option', async t => {
+  const { opts } = catalogSetup(t)
+  const { install } = await import('../src/install.ts')
+  await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
+
+  await t.rejects(
+    install(
+      opts({
+        catalog: { 'ansi-regex': '^6.0.1' },
+        frozenLockfile: true,
+      }),
+    ),
+    {
+      message:
+        'Lockfile is out of sync with package.json. Run "vlt install" to update.\n' +
+        '  Configuration options have changed:\n' +
+        '    catalog: ansi-regex "^5.0.1" -> "^6.0.1"',
+    },
+    'the only detail line is the catalog entry',
+  )
 })

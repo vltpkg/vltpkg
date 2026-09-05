@@ -19,7 +19,11 @@ import { LOCKFILE_VERSION } from './types.ts'
 import type { PathScurry } from 'path-scurry'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { LockfileData, SpecCache } from './types.ts'
+import type {
+  LockfileData,
+  OptionsChange,
+  SpecCache,
+} from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
 
 export type LoadOptions = SpecOptions & {
@@ -203,6 +207,88 @@ const buildCurrentOptions = (
   }
 }
 
+type OptionsValue =
+  | string
+  | Record<string, string>
+  | Record<string, Record<string, string>>
+  | undefined
+
+const asRecord = (o: LockfileData['options']) =>
+  o as Record<string, OptionsValue>
+
+const unionKeys = (
+  a: Record<string, unknown> = {},
+  b: Record<string, unknown> = {},
+) => [...new Set([...Object.keys(a), ...Object.keys(b)])].sort()
+
+const diffRecords = (
+  section: string,
+  from: Record<string, string> = {},
+  to: Record<string, string> = {},
+  changes: OptionsChange[],
+  prefix?: string,
+) => {
+  for (const key of unionKeys(from, to)) {
+    if (from[key] !== to[key]) {
+      changes.push({
+        section,
+        key: prefix === undefined ? key : `${prefix} ${key}`,
+        from: from[key],
+        to: to[key],
+      })
+    }
+  }
+}
+
+/**
+ * Compares the current config against the `options` block of a lockfile
+ * and returns the entries that differ. The comparison is per entry, so
+ * reordering keys in `vlt.json` is not a change.
+ */
+export const diffLockfileOptions = (
+  options: LoadOptions,
+  lockfileOptions: LockfileData['options'] = {},
+): OptionsChange[] => {
+  const current = asRecord(buildCurrentOptions(options))
+  const stored = asRecord(lockfileOptions)
+  const changes: OptionsChange[] = []
+  for (const section of unionKeys(stored, current)) {
+    const from = stored[section]
+    const to = current[section]
+    if (typeof from === 'string' || typeof to === 'string') {
+      if (from !== to) {
+        changes.push({
+          section,
+          from: from as string | undefined,
+          to: to as string | undefined,
+        })
+      }
+    } else if (section === 'catalogs') {
+      for (const name of unionKeys(from, to)) {
+        diffRecords(
+          section,
+          (
+            from as Record<string, Record<string, string>> | undefined
+          )?.[name],
+          (
+            to as Record<string, Record<string, string>> | undefined
+          )?.[name],
+          changes,
+          name,
+        )
+      }
+    } else {
+      diffRecords(
+        section,
+        from as Record<string, string>,
+        to as Record<string, string>,
+        changes,
+      )
+    }
+  }
+  return changes
+}
+
 export const loadObject = (
   options: LoadOptions,
   lockfileData: Omit<LockfileData, 'options' | 'lockfileVersion'> &
@@ -259,11 +345,9 @@ export const loadObject = (
   // Detect whether the current config options differ from those
   // stored in the lockfile.  When they do the ideal builder must
   // reset edges and rebuild the graph.
-  const currentOptions = buildCurrentOptions(options)
   /* c8 ignore next */
   const lockfileOptions = lockfileData.options ?? {}
-  const optionsChanged =
-    JSON.stringify(currentOptions) !== JSON.stringify(lockfileOptions)
+  const optionsChanges = diffLockfileOptions(options, lockfileOptions)
 
   // Optimize options merging - only create new objects when needed
   const mergedOptions = {
@@ -301,7 +385,8 @@ export const loadObject = (
     mainManifest,
     monorepo,
   })
-  graph.optionsChanged = optionsChanged
+  graph.optionsChanges = optionsChanges
+  graph.optionsChanged = optionsChanges.length > 0
   loadNodes(
     graph,
     lockfileData.nodes,

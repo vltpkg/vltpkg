@@ -2,11 +2,13 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
+import { defaultGitHosts } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
 import t from 'tap'
 import type { LockfileNode } from '../../src/index.ts'
 import { Graph } from '../../src/graph.ts'
 import {
+  diffLockfileOptions,
   load,
   loadData,
   loadHidden,
@@ -1851,4 +1853,187 @@ t.test('catalog specs resolve against current config', async t => {
       )
     },
   )
+})
+
+t.test('diffLockfileOptions', async t => {
+  const abbrevId = joinDepIDTuple(['registry', '', 'abbrev@2.0.0'])
+  const baseLockfileData = {
+    lockfileVersion: 1,
+    options: {},
+    nodes: { [abbrevId]: [0, 'abbrev', 'sha512-abc=='] },
+    edges: {
+      [edgeKey(['file', '.'], 'abbrev')]: `prod ^2.0.0 ${abbrevId}`,
+    },
+  } as unknown as LockfileData
+  // what buildCurrentOptions() makes of configData
+  const baseOptions = {
+    registry: 'https://registry.npmjs.org/',
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      custom: 'http://example.com',
+    },
+  }
+  const diff = (
+    current: SpecOptions,
+    stored: LockfileData['options'] = {},
+  ) =>
+    diffLockfileOptions(
+      {
+        ...configData,
+        ...current,
+        mainManifest,
+        projectRoot: t.testdirName,
+      },
+      { ...baseOptions, ...stored },
+    )
+
+  t.strictSame(diff({}), [], 'identical options')
+
+  t.strictSame(
+    diff({
+      registries: {
+        custom: 'http://example.com',
+        npm: 'https://registry.npmjs.org/',
+      },
+    }),
+    [],
+    'reordered keys are not a change',
+  )
+
+  t.strictSame(
+    diff(
+      { catalog: { abbrev: '^2.0.0' } },
+      { catalog: { abbrev: '^1.0.0' } },
+    ),
+    [
+      {
+        section: 'catalog',
+        key: 'abbrev',
+        from: '^1.0.0',
+        to: '^2.0.0',
+      },
+    ],
+    'a changed value',
+  )
+
+  t.strictSame(
+    diff({ catalog: { abbrev: '^2.0.0' } }),
+    [
+      {
+        section: 'catalog',
+        key: 'abbrev',
+        from: undefined,
+        to: '^2.0.0',
+      },
+    ],
+    'an added key',
+  )
+
+  t.strictSame(
+    diff({}, { catalog: { abbrev: '^1.0.0' } }),
+    [
+      {
+        section: 'catalog',
+        key: 'abbrev',
+        from: '^1.0.0',
+        to: undefined,
+      },
+    ],
+    'a removed key',
+  )
+
+  t.strictSame(
+    diff(
+      { catalogs: { node24: { '@types/node': '^25' } } },
+      { catalogs: { node24: { '@types/node': '^24' } } },
+    ),
+    [
+      {
+        section: 'catalogs',
+        key: 'node24 @types/node',
+        from: '^24',
+        to: '^25',
+      },
+    ],
+    'a nested catalogs entry',
+  )
+
+  t.strictSame(
+    diff({
+      registries: { ...baseOptions.registries, gh: 'http://gh/' },
+    }),
+    [
+      {
+        section: 'registries',
+        key: 'gh',
+        from: undefined,
+        to: 'http://gh/',
+      },
+    ],
+    'a registries entry',
+  )
+
+  t.strictSame(
+    diff({ registry: 'http://other/' }),
+    [
+      {
+        section: 'registry',
+        from: 'https://registry.npmjs.org/',
+        to: 'http://other/',
+      },
+    ],
+    'a scalar section has no key',
+  )
+
+  t.strictSame(
+    diff({ 'git-hosts': defaultGitHosts }),
+    [],
+    'default entries are not reported',
+  )
+
+  t.test('modifiers and the optionsChanged parity', async t => {
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(baseLockfileData),
+      'vlt.json': JSON.stringify({
+        modifiers: { '#abbrev': '^3.0.0' },
+      }),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const { GraphModifier } = await import('../../src/modifiers.ts')
+    const modifiers = new GraphModifier(configData)
+
+    for (const [options, stored] of [
+      [{ ...configData, modifiers }, {}],
+      [configData, { modifiers: { '#abbrev': '^2.0.0' } }],
+      [configData, {}],
+    ] as [SpecOptions, LockfileData['options']][]) {
+      const loadOptions = { ...options, mainManifest, projectRoot }
+      const lockfileData = { ...baseLockfileData, options: stored }
+      const changes = diffLockfileOptions(loadOptions, stored)
+      const graph = loadObject(loadOptions, lockfileData)
+      t.strictSame(graph.optionsChanges, changes, 'same list')
+      t.equal(
+        graph.optionsChanged,
+        changes.length > 0,
+        'the boolean follows the list',
+      )
+    }
+
+    t.strictSame(
+      diffLockfileOptions(
+        { ...configData, modifiers, mainManifest, projectRoot },
+        { ...baseOptions, modifiers: { '#abbrev': '^2.0.0' } },
+      ),
+      [
+        {
+          section: 'modifiers',
+          key: '#abbrev',
+          from: '^2.0.0',
+          to: '^3.0.0',
+        },
+      ],
+      'a changed modifier',
+    )
+  })
 })

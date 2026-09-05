@@ -18,6 +18,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual, loadData } from './lockfile/load.ts'
+import { formatOptionsChange } from './lockfile/format-options-change.ts'
 import type { SpecCache } from './lockfile/types.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
 import { lockfile } from './index.ts'
@@ -157,9 +158,10 @@ export const install = async (
       const details: string[] = []
 
       if (lockfileGraph.optionsChanged) {
-        details.push(
-          '  Configuration options have changed (e.g. modifiers, registries, catalogs)',
-        )
+        details.push('  Configuration options have changed:')
+        for (const change of lockfileGraph.optionsChanges) {
+          details.push(`    ${formatOptionsChange(change)}`)
+        }
       }
 
       if (specChanges.length > 0) {

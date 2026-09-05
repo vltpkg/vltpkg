@@ -19,6 +19,7 @@ import type { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
 import { lockfileData } from './lockfile/save.ts'
+import type { OptionsChange } from './lockfile/types.ts'
 import { Edge } from './edge.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
@@ -168,6 +169,12 @@ export class Graph implements GraphLike {
    * the ideal builder must reset edges and rebuild the graph.
    */
   optionsChanged = false
+
+  /**
+   * The individual differences behind `optionsChanged`, in the order
+   * they are reported to the user. Empty when nothing changed.
+   */
+  optionsChanges: OptionsChange[] = []
 
   /**
    * Whether the lockfile on disk no longer matches this graph even
