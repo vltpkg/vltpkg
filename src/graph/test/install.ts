@@ -17,6 +17,7 @@ import { PathScurry } from 'path-scurry'
 import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
 import { unload } from '@vltpkg/vlt-json'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -2104,7 +2105,7 @@ const catalogPackageInfo = createMockPackageInfo({
     ),
 })
 
-const catalogSetup = (t: Test) => {
+const catalogSetup = async (t: Test) => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({
       name: 'my-project',
@@ -2113,6 +2114,18 @@ const catalogSetup = (t: Test) => {
     }),
   })
   t.chdir(projectRoot)
+  // reify hands each removed store dir to a detached process, which
+  // races the fixture teardown on windows (EBUSY); keep the moved-aside
+  // dir instead and let tap sweep it with the rest of the testdir
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class extends RollbackRemove {
+        confirm() {}
+      },
+    },
+  })
   const opts = (extra?: Record<string, unknown>) =>
     ({
       projectRoot,
@@ -2130,14 +2143,13 @@ const catalogSetup = (t: Test) => {
       options: { catalog?: Record<string, string> }
       nodes: Record<string, unknown>
     }
-  return { projectRoot, opts, lock }
+  return { projectRoot, opts, lock, install }
 }
 
 t.test(
   'a catalog value change re-resolves in one install',
   async t => {
-    const { opts, lock } = catalogSetup(t)
-    const { install } = await import('../src/install.ts')
+    const { opts, lock, install } = await catalogSetup(t)
 
     await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
     t.strictSame(
@@ -2170,8 +2182,7 @@ t.test(
 )
 
 t.test('an options-only change is written', async t => {
-  const { opts, lock } = catalogSetup(t)
-  const { install } = await import('../src/install.ts')
+  const { opts, lock, install } = await catalogSetup(t)
 
   // run once so both lockfiles exist: reify writes regardless when
   // they do not, which would hide the regression
@@ -2257,8 +2268,7 @@ t.test('a project with modifiers stays in sync', async t => {
 })
 
 t.test('the frozen error names the changed option', async t => {
-  const { opts } = catalogSetup(t)
-  const { install } = await import('../src/install.ts')
+  const { opts, install } = await catalogSetup(t)
   await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
 
   await t.rejects(
