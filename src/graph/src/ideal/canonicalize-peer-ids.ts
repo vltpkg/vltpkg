@@ -1,9 +1,4 @@
-import {
-  baseDepID,
-  joinDepIDTuple,
-  joinExtra,
-  splitDepID,
-} from '@vltpkg/dep-id'
+import { joinDepIDTuple, joinExtra, splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { createHash } from 'node:crypto'
 import type { Graph } from '../graph.ts'
@@ -109,6 +104,28 @@ const withPeerSuffix = (node: Node, peerSetHash: string): DepID => {
       return node.id
   }
 }
+
+/**
+ * The node's identity minus only its peer component. `baseDepID()` also
+ * drops the modifier, and intra-SCC targets serialize positionally, so
+ * with a bare base a cycle member's modifier would leave no trace in the
+ * cycle's identity and two cycles differing only by it would merge.
+ */
+const peerlessDepID = (node: Node): DepID => withPeerSuffix(node, '')
+
+/**
+ * One member's contribution to an SCC's identity. A singleton and a
+ * one-class SCC must produce the same string, or collapsing a cycle
+ * renames the survivor on the next pass.
+ */
+const unitEntry = (
+  node: Node,
+  opts: {
+    resolvedIds?: Map<Node, DepID>
+    intraSccIndex?: Map<Node, number>
+  },
+): string =>
+  `${peerlessDepID(node)}${NL}${serializeNodeEnv(node, opts)}`
 
 const tarjan = (nodes: Node[], adj: Map<Node, Node[]>): Node[][] => {
   let index = 0
@@ -217,12 +234,10 @@ const refineSccOrder = (
   resolvedIds: Map<Node, DepID>,
 ): { order: Node[]; colors: Map<Node, string> } => {
   const sccSet = new Set(scc)
-  const bases = [...new Set(scc.map(n => baseDepID(n.id)))].sort(
-    byteCompare,
-  )
+  const bases = [...new Set(scc.map(peerlessDepID))].sort(byteCompare)
   const initRank = new Map(bases.map((b, i) => [b, String(i)]))
   let color = new Map<Node, string>(
-    scc.map(n => [n, mapGet(initRank, baseDepID(n.id))]),
+    scc.map(n => [n, mapGet(initRank, peerlessDepID(n))]),
   )
 
   // classic WL: each signature includes the node's own current color so
@@ -234,7 +249,7 @@ const refineSccOrder = (
   for (;;) {
     const rows = scc.map(n => ({
       n,
-      key: `${baseDepID(n.id)}${NUL}${mapGet(color, n)}${NUL}${serializeWithColors(n, sccSet, color, resolvedIds)}`,
+      key: `${peerlessDepID(n)}${NUL}${mapGet(color, n)}${NUL}${serializeWithColors(n, sccSet, color, resolvedIds)}`,
     }))
     const uniq = [...new Set(rows.map(r => r.key))].sort(byteCompare)
     const rank = new Map(uniq.map((k, i) => [k, String(i)]))
@@ -247,7 +262,7 @@ const refineSccOrder = (
 
   const order = [...scc].sort(
     (a, b) =>
-      byteCompare(baseDepID(a.id), baseDepID(b.id)) ||
+      byteCompare(peerlessDepID(a), peerlessDepID(b)) ||
       byteCompare(mapGet(color, a), mapGet(color, b)) ||
       byteCompare(a.id, b.id),
   )
@@ -255,7 +270,7 @@ const refineSccOrder = (
 }
 
 const colorClassKey = (node: Node, colors: Map<Node, string>) =>
-  `${baseDepID(node.id)}${NUL}${mapGet(colors, node)}`
+  `${peerlessDepID(node)}${NUL}${mapGet(colors, node)}`
 
 type Assignment = {
   node: Node
@@ -450,10 +465,7 @@ export const canonicalizePeerIds = (
       const node = scc[0]
       const intraSccIndex =
         hasSelfEdge(node) ? new Map([[node, 0]]) : undefined
-      const ser = serializeNodeEnv(node, {
-        resolvedIds,
-        intraSccIndex,
-      })
+      const ser = unitEntry(node, { resolvedIds, intraSccIndex })
       takeSuffix(node, ser, digest(ser, 16), 0, 1)
       continue
     }
@@ -481,17 +493,14 @@ export const canonicalizePeerIds = (
     }
 
     const unit = reps
-      .map(
-        n =>
-          `${baseDepID(n.id)}${NL}${serializeNodeEnv(n, { resolvedIds, intraSccIndex })}`,
-      )
+      .map(n => unitEntry(n, { resolvedIds, intraSccIndex }))
       .join(NL)
     const hex = digest(unit, 16)
 
     const roleIdx = new Map<string, number>()
     const rolesPerBase = new Map<string, number>()
     for (const n of reps) {
-      const base = baseDepID(n.id)
+      const base = peerlessDepID(n)
       const key = colorClassKey(n, colors)
       if (!roleIdx.has(key)) {
         const next = rolesPerBase.get(base) ?? 0
@@ -505,7 +514,7 @@ export const canonicalizePeerIds = (
       /* c8 ignore next */
       const idx = roleIdx.get(key) ?? 0
       /* c8 ignore next */
-      const count = rolesPerBase.get(baseDepID(n.id)) ?? 1
+      const count = rolesPerBase.get(peerlessDepID(n)) ?? 1
       takeSuffix(n, unit, hex, idx, count)
     }
   }

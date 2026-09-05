@@ -375,7 +375,9 @@ t.test('self-peer-edge hashes with #0', async t => {
   )
   canonicalizePeerIds(graph)
   t.match(foo.peerSetHash, hex16)
-  const expected = peerEnvDigest(`foo\0peer\0#0`)
+  // same shape a one-class SCC hashes: identity, then the env
+  const base = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const expected = peerEnvDigest(`${base}\nfoo\0peer\0#0`)
   t.equal(foo.peerSetHash, `peer.${expected}`)
 })
 
@@ -472,17 +474,84 @@ t.test(
     )
     t.equal(foos.length, 1, 'automorphic twins merged')
     t.match(foos[0]?.peerSetHash, hex16)
+    // snapshot the string: the survivor is renamed in place, so
+    // comparing the node object to itself would prove nothing
+    const afterFirst = String(foos[0]?.id)
     canonicalizePeerIds(graph)
     t.equal(
       [...graph.nodes.values()].filter(n => n.name === 'foo').length,
       1,
     )
     t.equal(
-      foos[0]?.id,
       [...graph.nodes.values()].find(n => n.name === 'foo')?.id,
+      afterFirst,
+      'collapsed cycle keeps its id on a second pass',
     )
   },
 )
+
+t.test('cycle members keep their modifier identity', async t => {
+  // two rooted cycles that differ only by the modifier on their `b`
+  // copy: intra-SCC refs are positional, so the modifier is the only
+  // thing telling the two units apart
+  const graph = makeGraph(t)
+  const aManifest = {
+    name: 'a',
+    version: '1.0.0',
+    peerDependencies: { b: '1' },
+  } as NormalizedManifest
+  const bManifest = {
+    name: 'b',
+    version: '1.0.0',
+    peerDependencies: { a: '1' },
+  } as NormalizedManifest
+
+  const cycle = (n: number, modifier: string) => {
+    const a = graph.addNode(
+      joinDepIDTuple(['registry', '', 'a@1.0.0', `peer.${n}`]),
+      aManifest,
+    )
+    a.peerSetHash = `peer.${n}`
+    graph.addEdge(
+      'prod',
+      Spec.parse(`alias${n}`, 'npm:a@1.0.0', configData),
+      graph.mainImporter,
+      a,
+    )
+    const extra = joinExtra({
+      modifier,
+      peerSetHash: `peer.${n + 10}`,
+    })
+    const b = graph.addNode(
+      joinDepIDTuple(['registry', '', 'b@1.0.0', extra]),
+      bManifest,
+    )
+    b.modifier = modifier
+    b.peerSetHash = `peer.${n + 10}`
+    graph.addEdge('peer', Spec.parse('b', '1', configData), a, b)
+    graph.addEdge('peer', Spec.parse('a', '1', configData), b, a)
+    return { a, b }
+  }
+  const one = cycle(1, ':root > #alias1 > #b')
+  const two = cycle(2, ':root > #alias2 > #b')
+
+  canonicalizePeerIds(graph)
+  t.equal(
+    [...graph.nodes.values()].filter(n => n.name === 'a').length,
+    2,
+    'the two a copies are not merged',
+  )
+  t.equal(
+    one.a.edgesOut.get('b')?.to?.modifier,
+    ':root > #alias1 > #b',
+    'first cycle keeps its own b',
+  )
+  t.equal(
+    two.a.edgesOut.get('b')?.to?.modifier,
+    ':root > #alias2 > #b',
+    'second cycle keeps its own b',
+  )
+})
 
 t.test('same-base different roles get .idx suffix', async t => {
   const graph = makeGraph(t)
