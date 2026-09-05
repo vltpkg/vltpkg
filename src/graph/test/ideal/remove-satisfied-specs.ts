@@ -5,6 +5,7 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { load } from '../../src/actual/load.ts'
 import { asDependency } from '../../src/dependencies.ts'
 import type { AddImportersDependenciesMap } from '../../src/dependencies.ts'
@@ -239,16 +240,19 @@ t.test('graph with an actual node', async t => {
   })
 })
 
-t.test('a modifier-governed edge is not stale', async t => {
+const modifierStaleCase = async (
+  t: Test,
+  query: string,
+  expected: number,
+  msg: string,
+) => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({
       name: 'my-project',
       version: '1.0.0',
       dependencies: { foo: '^1.0.0' },
     }),
-    'vlt.json': JSON.stringify({
-      modifiers: { ':root > #foo': '1.0.0' },
-    }),
+    'vlt.json': JSON.stringify({ modifiers: { [query]: '1.0.0' } }),
     node_modules: {
       '.vlt': {
         [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
@@ -299,7 +303,7 @@ t.test('a modifier-governed edge is not stale', async t => {
   t.equal(
     removeSatisfiedSpecs({ add: newAdd(), graph: newGraph() }).size,
     1,
-    'stale without a governing modifier',
+    'stale without any modifier',
   )
   t.equal(
     removeSatisfiedSpecs({
@@ -307,7 +311,25 @@ t.test('a modifier-governed edge is not stale', async t => {
       graph: newGraph(),
       modifiers,
     }).size,
+    expected,
+    msg,
+  )
+}
+
+t.test('a modifier-governed edge is not stale', async t =>
+  modifierStaleCase(
+    t,
+    ':root > #foo',
     0,
     'the modifier value is left in place',
-  )
-})
+  ),
+)
+
+t.test('a modifier scoped deeper still heals the edge', async t =>
+  modifierStaleCase(
+    t,
+    ':root > #unused > #foo',
+    1,
+    'no modifier governs the root edge',
+  ),
+)

@@ -1,6 +1,11 @@
 import t from 'tap'
 import type { Test } from 'tap'
-import { readFileSync, statSync, utimesSync } from 'node:fs'
+import {
+  readFileSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
@@ -2266,6 +2271,53 @@ t.test('a project with modifiers stays in sync', async t => {
     )
   }
 })
+
+t.test(
+  'a modifier scoped deeper does not exempt the root edge',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { abbrev: '2.0.0' },
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: { ':root > #unused > #abbrev': '2.0.0' },
+      }),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        registries: { npm: 'https://registry.npmjs.org/' },
+        ...extra,
+      }) as unknown as InstallOptions
+    const { install } = await import('../src/install.ts')
+    await install(opts())
+
+    // only package.json changes: no modifier governs this edge, so the
+    // frozen check still owns it
+    const pj = resolve(projectRoot, 'package.json')
+    writeFileSync(
+      pj,
+      JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { abbrev: '^2.0.0' },
+      }),
+    )
+    await t.rejects(
+      install(opts({ frozenLockfile: true })),
+      /abbrev spec changed from "abbrev@2.0.0" to "abbrev@\^2.0.0"/,
+      'the frozen check sees the edited spec',
+    )
+  },
+)
 
 t.test('the frozen error names the changed option', async t => {
   const { opts, install } = await catalogSetup(t)
