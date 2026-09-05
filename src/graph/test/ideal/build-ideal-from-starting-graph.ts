@@ -1616,3 +1616,147 @@ t.test(
     )
   },
 )
+
+t.test(
+  'a forked context keeps the inherited peer target',
+  async t => {
+    // regression: forks used to clear the inherited targets, so which fork a
+    // subtree landed in decided whether its optional peers resolved
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+        q: '^2.0.0',
+        u: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+
+    const manifests: Record<string, Record<string, Manifest>> = {
+      u: { '1.0.0': { name: 'u', version: '1.0.0' } },
+      q: {
+        '1.0.0': { name: 'q', version: '1.0.0' },
+        '2.0.0': { name: 'q', version: '2.0.0' },
+      },
+      a: {
+        '1.0.0': {
+          name: 'a',
+          version: '1.0.0',
+          dependencies: { b: '^1.0.0' },
+        },
+      },
+      // b's q@^1 conflicts with the root context's q@2, forking it without
+      // naming u, so the fork only inherits the root's u entry
+      b: {
+        '1.0.0': {
+          name: 'b',
+          version: '1.0.0',
+          dependencies: { s: '^1.0.0' },
+          peerDependencies: { q: '^1.0.0' },
+        },
+      },
+      // s is placed inside the fork and only the inherited entry can
+      // resolve its optional peer
+      s: {
+        '1.0.0': {
+          name: 's',
+          version: '1.0.0',
+          peerDependencies: { u: '^1.0.0' },
+          peerDependenciesMeta: { u: { optional: true } },
+        },
+      },
+      x: { '1.0.0': { name: 'x', version: '1.0.0' } },
+    }
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const versions = manifests[spec.final.name]
+        /* c8 ignore next */
+        if (!versions) return null
+        const bareSpec = spec.final.bareSpec || '*'
+        return versions[
+          String(
+            Object.keys(versions)
+              .filter(v => satisfiesVersion(v, bareSpec))
+              .at(-1),
+          )
+        ]
+      },
+    } as unknown as PackageInfoClient
+
+    const common = {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      packageInfo,
+    }
+
+    const peerOf = (graph: Graph, name: string, dep: string) => {
+      const to = [...graph.nodes.values()]
+        .find(n => n.name === name)
+        ?.edgesOut.get(dep)?.to
+      return to ? `${to.name}@${to.version}` : 'MISSING'
+    }
+
+    const seed = await buildIdealFromStartingGraph({
+      ...common,
+      graph: new Graph({ projectRoot, mainManifest, ...configData }),
+      add: new Map() as AddImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    t.equal(
+      peerOf(seed, 'b', 'q'),
+      'q@1.0.0',
+      'b forked on its own q',
+    )
+    t.equal(
+      peerOf(seed, 's', 'u'),
+      'u@1.0.0',
+      's resolves the optional peer inherited by the fork',
+    )
+
+    const data = lockfileData({ ...configData, graph: seed })
+    const rebuilt = await buildIdealFromStartingGraph({
+      ...common,
+      graph: loadVirtual({
+        ...common,
+        lockfileData: structuredClone(data),
+      }),
+      add: new Map([
+        [
+          joinDepIDTuple(['file', '.']),
+          new Map([
+            [
+              'x',
+              {
+                type: 'prod',
+                spec: Spec.parse('x', '^1.0.0', configData),
+              },
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    t.equal(
+      peerOf(rebuilt, 's', 'u'),
+      'u@1.0.0',
+      'an unrelated add does not move it',
+    )
+    t.strictSame(
+      Object.keys(
+        lockfileData({ ...configData, graph: rebuilt }).nodes,
+      ).filter(k => !Object.keys(data.nodes).includes(k)),
+      [joinDepIDTuple(['registry', '', 'x@1.0.0'])],
+      'the rebuild only adds the new package',
+    )
+  },
+)

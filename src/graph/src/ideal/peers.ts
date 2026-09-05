@@ -87,12 +87,16 @@ const parseSpec = (
 /**
  * Generate a unique cache key for a peer context fork operation.
  *
- * Format: `{baseIndex}::{sortedEntrySignatures}`
+ * Format: `{baseIndex}::{sortedEntrySignatures}::{inheritedTargets}`
  * - `baseIndex`: The parent context's index (0 for initial context)
  * - Entry signature: `{name}|{type}|{targetId}|{spec}` sorted alphabetically
+ * - Inherited: `{name}={targetId}` for every entry of the base context
  *
  * This enables caching identical fork operations to avoid creating duplicate
  * peer contexts when the same entries would be added to the same base context.
+ * Forks snapshot the base's targets, so the base index alone is not enough:
+ * once a base target moves, an identical request must get a fresh fork
+ * instead of the snapshot taken before the move.
  */
 const getForkKey = (
   peerContext: PeerContext,
@@ -106,7 +110,11 @@ const getForkKey = (
     )
     .sort()
     .join(';')
-  return `${base}::${sig}`
+  const inherited = [...peerContext.entries()]
+    .map(([name, e]) => `${name}=${e.target?.id ?? '∅'}`)
+    .sort()
+    .join(',')
+  return `${base}::${sig}::${inherited}`
 }
 
 /**
@@ -607,11 +615,15 @@ export const forkPeerContext = (
   // a new map so that changes here do not affect the previous context, but
   // dependents are NOT inherited: they were placed in the parent context, so
   // a target update in this fork must never re-point their edges.
+  // the target IS inherited: what a context resolves a name to must not
+  // depend on which fork a subtree happened to land in. it stays a
+  // snapshot (`getForkKey` invalidates it when the base moves) and is
+  // still guarded by `nodeSatisfiesSpec` at resolution time.
   for (const [name, entry] of peerContext.entries()) {
     nextPeerContext.set(name, {
       active: false,
       specs: new Map(entry.specs),
-      target: undefined,
+      target: entry.target,
       type: entry.type,
       contextDependents: new Set(),
     })

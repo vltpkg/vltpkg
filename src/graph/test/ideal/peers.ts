@@ -2023,14 +2023,11 @@ t.test('forkPeerContext', async t => {
       'should include dependent',
     )
 
-    // inherited entries keep specs but never the parent's dependents
+    // inherited entries keep specs and target but never the parent's
+    // dependents
     const fooEntry = forkedContext.get('foo')
     t.equal(fooEntry?.active, false, 'inherited entry is inactive')
-    t.equal(
-      fooEntry?.target,
-      undefined,
-      'inherited target is cleared',
-    )
+    t.equal(fooEntry?.target, foo1, 'inherited target is kept')
     t.strictSame(
       [...(fooEntry?.specs.values() ?? [])].map(String),
       ['foo@^1.0.0'],
@@ -2195,6 +2192,191 @@ t.test('forkPeerContext', async t => {
         2,
         'cache should have two entries now',
       )
+    },
+  )
+
+  t.test('fork entry replaces the inherited target', async t => {
+    const spec1 = Spec.parse('foo', '^1.0.0', configData)
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const originalContext = graph.peerContexts[0]!
+    const foo1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.0' },
+    )!
+    addEntriesToPeerContext(
+      originalContext,
+      [{ spec: spec1, type: 'peer', target: foo1 }],
+      graph.mainImporter,
+    )
+
+    const spec2 = Spec.parse('foo', '^2.0.0', configData)
+    const foo2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec2,
+      { name: 'foo', version: '2.0.0' },
+    )!
+    const withTarget = forkPeerContext(graph, originalContext, [
+      { spec: spec2, type: 'peer', target: foo2 },
+    ])
+    t.equal(
+      withTarget.get('foo')?.target,
+      foo2,
+      'fork entry target wins over the inherited one',
+    )
+    t.equal(withTarget.get('foo')?.active, true, 'and is active')
+
+    const spec3 = Spec.parse('foo', '^3.0.0', configData)
+    const withoutTarget = forkPeerContext(graph, originalContext, [
+      { spec: spec3, type: 'peer' },
+    ])
+    t.equal(
+      withoutTarget.get('foo')?.target,
+      undefined,
+      'a target-less fork entry clears the inherited target',
+    )
+  })
+
+  t.test(
+    'a moved base target invalidates the cached fork',
+    async t => {
+      const spec1 = Spec.parse('foo', '^1.0.0', configData)
+      const barSpec = Spec.parse('bar', '^2.0.0', configData)
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const originalContext = graph.peerContexts[0]!
+      const foo1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec1,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      addEntriesToPeerContext(
+        originalContext,
+        [{ spec: spec1, type: 'peer', target: foo1 }],
+        graph.mainImporter,
+      )
+
+      const entries: PeerContextEntryInput[] = [
+        { spec: barSpec, type: 'peer' },
+      ]
+      const first = forkPeerContext(graph, originalContext, entries)
+      t.equal(
+        first.get('foo')?.target,
+        foo1,
+        'fork sees the base target at fork time',
+      )
+
+      // the base context outgrows foo@1.0.0
+      const foo101 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.1', configData),
+        { name: 'foo', version: '1.0.1' },
+      )!
+      addEntriesToPeerContext(
+        originalContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.1', configData),
+            type: 'peer',
+            target: foo101,
+          },
+        ],
+        graph.mainImporter,
+      )
+      t.equal(
+        originalContext.get('foo')?.target,
+        foo101,
+        'base target moved',
+      )
+
+      const second = forkPeerContext(graph, originalContext, entries)
+      t.not(second, first, 'the stale fork is not reused')
+      t.equal(
+        second.get('foo')?.target,
+        foo101,
+        'the new fork sees the current target',
+      )
+    },
+  )
+
+  t.test(
+    'inherited target that fails a fork-local spec is not used',
+    async t => {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const originalContext = graph.peerContexts[0]!
+      const foo1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        { name: 'foo', version: '1.0.0' },
+      )!
+      addEntriesToPeerContext(
+        originalContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.0', configData),
+            type: 'peer',
+            target: foo1,
+          },
+        ],
+        graph.mainImporter,
+      )
+      const forked = forkPeerContext(graph, originalContext, [
+        {
+          spec: Spec.parse('bar', '^2.0.0', configData),
+          type: 'peer',
+        },
+      ])
+
+      // a node placed in the fork whose optional peer wants foo@^2
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+      const nextDeps: Dependency[] = []
+      const end = endPeerPlacement(
+        forked,
+        nextDeps,
+        new Map([
+          [
+            'foo',
+            {
+              spec: Spec.parse('foo', '^2.0.0', configData),
+              type: 'peerOptional' as const,
+            },
+          ],
+        ]),
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        [{ spec: nodeSpec, target: node, type: 'prod' }],
+      )
+      end.putEntries()
+      end.resolvePeerDeps()
+
+      const edge = node.edgesOut.get('foo')
+      t.equal(edge?.type, 'peerOptional', 'peer edge was created')
+      t.notOk(edge?.to, 'inherited foo@1.0.0 does not satisfy ^2.0.0')
     },
   )
 })
