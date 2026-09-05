@@ -1760,3 +1760,86 @@ t.test(
     )
   },
 )
+
+t.test(
+  'a dual declaration keeps its type across rebuilds',
+  async t => {
+    // regression: `d` declares `c` in both dependencies and peerDependencies,
+    // so the edge type used to depend on whether the peer resolved before or
+    // after the regular placement
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { c: '^1.0.0', d: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+
+    const manifests: Record<string, Manifest> = {
+      c: { name: 'c', version: '1.0.0' },
+      d: {
+        name: 'd',
+        version: '1.0.0',
+        dependencies: { c: '^1.0.0' },
+        peerDependencies: { c: '*' },
+      },
+    }
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        /* c8 ignore next */
+        return manifests[spec.final.name] ?? null
+      },
+    } as unknown as PackageInfoClient
+
+    const common = {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      packageInfo,
+    }
+
+    const types = (graph: Graph) => [
+      graph.mainImporter.edgesOut.get('c')?.type,
+      [...graph.nodes.values()]
+        .find(n => n.name === 'd')
+        ?.edgesOut.get('c')?.type,
+    ]
+
+    const seed = await buildIdealFromStartingGraph({
+      ...common,
+      graph: new Graph({ projectRoot, mainManifest, ...configData }),
+      add: new Map() as AddImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    t.strictSame(
+      types(seed),
+      ['prod', 'prod'],
+      'placed as regular deps',
+    )
+
+    const rebuilt = await buildIdealFromStartingGraph({
+      ...common,
+      graph: loadVirtual({
+        ...common,
+        lockfileData: structuredClone(
+          lockfileData({ ...configData, graph: seed }),
+        ),
+      }),
+      add: new Map() as AddImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    t.strictSame(
+      types(rebuilt),
+      ['prod', 'prod'],
+      'and stays that way',
+    )
+  },
+)

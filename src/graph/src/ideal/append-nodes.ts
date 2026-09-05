@@ -899,6 +899,12 @@ const processPlacementTasks = async (
       }
     }
 
+    // a name declared both as a regular dependency (manifest or
+    // transient) and as a peer is the package's own dependency: placing
+    // it once, as the regular type, keeps the edge type independent of
+    // when the peer would have resolved
+    for (const dep of nextDeps) nextPeerDeps.delete(dep.spec.name)
+
     // finish peer placement for this node, resolving satisfied peers
     // to seen nodes from the peer context and adding unsatisfied peers
     // to `nextDeps` so they get processed along regular dependencies

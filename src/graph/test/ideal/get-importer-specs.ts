@@ -142,6 +142,37 @@ t.test('empty graph and something to add', async t => {
   )
 })
 
+t.test(
+  'an importer dual declaration keeps the regular type',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const specs = getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph: load({ projectRoot, scurry, packageJson }),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry,
+      packageJson,
+    })
+    const deps = specs.add.get(joinDepIDTuple(['file', '.']))
+    t.strictSame([...(deps?.keys() ?? [])], ['c'], 'queued once')
+    t.strictSame(deps?.get('c')?.type, 'dev', 'as the regular type')
+    t.strictSame(String(deps?.get('c')?.spec), 'c@^1.0.0')
+  },
+)
+
 t.test('graph specs and nothing to add', async t => {
   const mainManifest = {
     name: 'my-project',

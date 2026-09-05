@@ -189,6 +189,14 @@ export const getRawDependencies = (node: NodeLike) => {
       for (const [name, bareSpec] of Object.entries(obj)) {
         // if it's a bundled dependency, we just ignore it entirely.
         if (bundled.has(name)) continue
+        // a name already collected from a regular dependency type is the
+        // package's own dependency; the peer entry only constrains it
+        if (
+          depType === 'peerDependencies' &&
+          dependencies.has(name)
+        ) {
+          continue
+        }
         dependencies.set(name, {
           name,
           type: depType,

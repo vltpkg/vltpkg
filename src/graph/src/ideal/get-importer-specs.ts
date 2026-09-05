@@ -86,9 +86,17 @@ export const getImporterSpecs = (
     }
     // if a dependency is listed in the manifest but not in the graph,
     // add that dependency to the list of dependencies to be added
+    // names collected from a regular dependency type: a peer entry for
+    // one of them only constrains the dependency, it is not its own
+    // dependency to place
+    const regular = new Set<string>()
     for (const depType of longDependencyTypes) {
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
+        if (depType === 'peerDependencies' && regular.has(depName)) {
+          continue
+        }
+        regular.add(depName)
         const edge = importer.edgesOut.get(depName)
         const spec = Spec.parse(depName, depSpec, options)
 

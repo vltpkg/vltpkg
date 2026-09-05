@@ -1597,6 +1597,129 @@ t.test('early extraction during appendNodes', async t => {
   })
 })
 
+t.test('a dual declaration is placed once', async t => {
+  const manifests: Record<string, Manifest> = {
+    d: {
+      name: 'd',
+      version: '1.0.0',
+      dependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    },
+    o: {
+      name: 'o',
+      version: '1.0.0',
+      optionalDependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    },
+    m: {
+      name: 'm',
+      version: '1.0.0',
+      dependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+      peerDependenciesMeta: { c: { optional: true } },
+    },
+    c: { name: 'c', version: '1.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      /* c8 ignore next */
+      return manifests[spec.name] ?? null
+    },
+  } as PackageInfoClient
+
+  for (const [dep, expected] of [
+    ['d', 'prod'],
+    ['o', 'optional'],
+    ['m', 'prod'],
+  ] as const) {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { [dep]: '^1.0.0' },
+      }),
+    })
+    const graph = await build({
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      remover: new RollbackRemove(),
+    })
+    const node = graph.nodesByName.get(dep)!.values().next().value!
+    const edges = [...node.edgesOut.values()].filter(
+      e => e.name === 'c',
+    )
+    t.equal(edges.length, 1, `${dep}: one edge to c`)
+    t.equal(edges[0]?.type, expected, `${dep}: type is ${expected}`)
+    t.ok(edges[0]?.to, `${dep}: c is placed`)
+  }
+})
+
+t.test('a dual declaration with a transient add', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+  const manifests: Record<string, Manifest> = {
+    foo: {
+      name: 'foo',
+      version: '1.0.0',
+      peerDependencies: { c: '*' },
+    },
+    c: { name: 'c', version: '1.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      /* c8 ignore next */
+      return manifests[spec.name] ?? null
+    },
+  } as PackageInfoClient
+
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', 'file:foo'),
+    type: 'prod',
+  })
+  const transientAdd = new Map() as TransientAddMap
+  transientAdd.set(
+    joinDepIDTuple(['file', 'foo']),
+    new Map([
+      [
+        'c',
+        asDependency({
+          spec: Spec.parse('c', '^1.0.0'),
+          type: 'prod',
+        }),
+      ],
+    ]),
+  )
+
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [fooDep],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set<DepID>(),
+    new Map([['foo', fooDep]]),
+    undefined, // modifiers
+    undefined, // modifierRefs
+    undefined, // extractPromises
+    undefined, // actual
+    undefined, // seenExtracted
+    undefined, // remover
+    transientAdd,
+  )
+
+  const foo = graph.nodesByName.get('foo')!.values().next().value!
+  const edges = [...foo.edgesOut.values()].filter(e => e.name === 'c')
+  t.equal(edges.length, 1, 'one edge to c')
+  t.equal(edges[0]?.type, 'prod', 'the transient type wins')
+})
+
 t.test('inject transient dependencies from transientAdd', async t => {
   const fooManifest = {
     name: 'foo',
