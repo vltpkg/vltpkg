@@ -172,8 +172,9 @@ export class Graph implements GraphLike {
   /**
    * Whether the lockfile on disk no longer matches this graph even
    * though no node changed, e.g. an importer edge spec was rewritten to
-   * the value saved to `package.json`. Reify saves the lockfiles from
-   * its no-diff early return when set.
+   * the value saved to `package.json`, or the config options the graph
+   * was built with differ from the ones stored in the lockfile. Reify
+   * saves the lockfiles from its no-diff early return when set.
    */
   lockfileStale = false
 

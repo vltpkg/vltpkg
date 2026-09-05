@@ -164,6 +164,10 @@ export const refreshIdealGraph = async ({
     }
     graph.lockedResolutions = locked
     graph.resetEdges()
+    // the options block on disk no longer matches the config this graph
+    // was built with, so the lockfile has to be written even when the
+    // rebuild lands on the same nodes and edges
+    if (graph.optionsChanged) graph.lockfileStale = true
   }
 
   // iterates on the list of dependencies per importer updating

@@ -2073,3 +2073,112 @@ t.test('explicit adds carry the saved value everywhere', async t => {
     })
   })
 })
+
+// the reify fixture mock re-parses `String(spec)` without a catalog
+// config, so hand it the resolved subspec the real client uses
+const catalogPackageInfo = createMockPackageInfo({
+  manifest: (spec, options) =>
+    mockPackageInfoBase.manifest(
+      typeof spec === 'string' ? spec : spec.final,
+      options,
+    ),
+  extract: (spec, target, options) =>
+    mockPackageInfoBase.extract(
+      typeof spec === 'string' ? spec : spec.final,
+      target,
+      options,
+    ),
+  resolve: (spec, options) =>
+    mockPackageInfoBase.resolve(
+      typeof spec === 'string' ? spec : spec.final,
+      options,
+    ),
+})
+
+const catalogSetup = (t: Test) => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { 'ansi-regex': 'catalog:' },
+    }),
+  })
+  t.chdir(projectRoot)
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: catalogPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const lock = () =>
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    ) as {
+      options: { catalog?: Record<string, string> }
+      nodes: Record<string, unknown>
+    }
+  return { projectRoot, opts, lock }
+}
+
+t.test(
+  'a catalog value change re-resolves in one install',
+  async t => {
+    const { opts, lock } = catalogSetup(t)
+    const { install } = await import('../src/install.ts')
+
+    await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
+    t.strictSame(
+      lock().options.catalog,
+      { 'ansi-regex': '^5.0.1' },
+      'catalog value is stored',
+    )
+
+    await install(opts({ catalog: { 'ansi-regex': '^6.0.1' } }))
+    const after = lock()
+    t.strictSame(
+      after.options.catalog,
+      { 'ansi-regex': '^6.0.1' },
+      'new catalog value is stored',
+    )
+    const ids = Object.keys(after.nodes).join(' ')
+    t.match(ids, 'ansi-regex@6.0.1', 're-resolved in one install')
+    t.notMatch(ids, 'ansi-regex@5.0.1', 'old version is gone')
+
+    await t.resolves(
+      install(
+        opts({
+          catalog: { 'ansi-regex': '^6.0.1' },
+          frozenLockfile: true,
+        }),
+      ),
+      'frozen install passes right after',
+    )
+  },
+)
+
+t.test('an options-only change is written', async t => {
+  const { opts, lock } = catalogSetup(t)
+  const { install } = await import('../src/install.ts')
+
+  // run once so both lockfiles exist: reify writes regardless when
+  // they do not, which would hide the regression
+  await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
+
+  const catalog = { 'ansi-regex': '^5.0.1', abbrev: '^2.0.0' }
+  const { diff } = await install(opts({ catalog }))
+  t.equal(diff?.hasChanges(), false, 'nothing to reify')
+  t.strictSame(
+    lock().options.catalog,
+    catalog,
+    'the unused entry is persisted anyway',
+  )
+
+  await t.resolves(
+    install(opts({ catalog, frozenLockfile: true })),
+    'frozen install passes right after',
+  )
+})

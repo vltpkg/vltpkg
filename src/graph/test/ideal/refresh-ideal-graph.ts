@@ -833,3 +833,53 @@ t.test(
     )
   },
 )
+
+t.test('an options change makes the lockfile stale', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const fooManifest = { name: 'foo', version: '1.0.0' }
+  const packageInfo = {
+    async manifest(_spec: Spec) {
+      return fooManifest
+    },
+  } as unknown as PackageInfoClient
+
+  const build = async (optionsChanged: boolean) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest,
+    )
+    graph.optionsChanged = optionsChanged
+    await refreshIdealGraph({
+      add: new Map() as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      graph,
+      packageInfo,
+      scurry: new PathScurry(t.testdirName),
+      remover: new RollbackRemove(),
+      ...configData,
+    })
+    return graph
+  }
+
+  const changed = await build(true)
+  t.equal(changed.lockfileStale, true, 'flagged for saving')
+  t.equal(
+    changed.mainImporter.edgesOut.get('foo')?.to?.id,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    'edge target is unchanged',
+  )
+
+  const unchanged = await build(false)
+  t.equal(unchanged.lockfileStale, false, 'not flagged')
+})
