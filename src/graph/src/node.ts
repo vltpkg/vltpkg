@@ -509,6 +509,20 @@ export class Node implements NodeLike {
   }
 }
 
+/**
+ * Copy the tarball metadata `to` is missing from another node for the
+ * same package version. Lockfile provenance only carries over once both
+ * `integrity` and `resolved` are set, since that pair is what makes it
+ * usable without refetching.
+ */
+export const copyPackageMetadata = (to: Node, from: Node) => {
+  to.integrity ??= from.integrity
+  to.resolved ??= from.resolved
+  if (from.resolvedFromLockfile && to.integrity && to.resolved) {
+    to.resolvedFromLockfile = true
+  }
+}
+
 export const isNode = (value: unknown): value is Node => {
   return (
     typeof value === 'object' &&

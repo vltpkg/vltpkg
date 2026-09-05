@@ -4,7 +4,12 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
-import { asNode, isNode, Node } from '../src/node.ts'
+import {
+  asNode,
+  copyPackageMetadata,
+  isNode,
+  Node,
+} from '../src/node.ts'
 import type { GraphLike } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 
@@ -694,3 +699,42 @@ t.test(
     t.ok(nodesByName.get(next)?.has(preexisting))
   },
 )
+
+t.test('copyPackageMetadata', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const id = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const mk = (extra: Partial<Node> = {}) =>
+    Object.assign(new Node(opts, id), extra)
+
+  const to = mk()
+  copyPackageMetadata(
+    to,
+    mk({
+      integrity: 'sha512-x',
+      resolved: 'https://x/foo.tgz',
+      resolvedFromLockfile: true,
+    }),
+  )
+  t.equal(to.integrity, 'sha512-x', 'fills in a missing integrity')
+  t.equal(to.resolved, 'https://x/foo.tgz', 'fills in a missing url')
+  t.ok(to.resolvedFromLockfile, 'provenance carries over')
+
+  const kept = mk({ integrity: 'sha512-mine' })
+  copyPackageMetadata(kept, mk({ integrity: 'sha512-other' }))
+  t.equal(kept.integrity, 'sha512-mine', 'existing values win')
+  t.notOk(kept.resolvedFromLockfile, 'no provenance without a source')
+
+  const partial = mk()
+  copyPackageMetadata(
+    partial,
+    mk({ integrity: 'sha512-x', resolvedFromLockfile: true }),
+  )
+  t.notOk(
+    partial.resolvedFromLockfile,
+    'provenance needs integrity and resolved',
+  )
+})

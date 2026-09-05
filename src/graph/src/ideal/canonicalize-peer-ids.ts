@@ -2,6 +2,7 @@ import { joinDepIDTuple, joinExtra, splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { createHash } from 'node:crypto'
 import type { Graph } from '../graph.ts'
+import { copyPackageMetadata } from '../node.ts'
 import type { Node } from '../node.ts'
 
 const NUL = '\0'
@@ -60,6 +61,26 @@ export const isPeerScoped = (node: Node, graph: Graph): boolean => {
   )
 }
 
+/**
+ * The dependency environment of a node: its out edges as
+ * `name NUL type NUL ref`, byte-sorted and NL-joined. Only how a target
+ * is referenced varies, so callers pass that policy in; the field set,
+ * delimiters, missing-target marker and ordering stay one definition.
+ */
+const serializeEdges = (
+  node: Node,
+  ref: (to: Node) => string,
+): string => {
+  const entries: string[] = []
+  for (const edge of node.edgesOut.values()) {
+    entries.push(
+      `${edge.name}${NUL}${edge.type}${NUL}${edge.to ? ref(edge.to) : MISSING}`,
+    )
+  }
+  entries.sort(byteCompare)
+  return entries.join(NL)
+}
+
 export const serializeNodeEnv = (
   node: Node,
   opts: {
@@ -68,22 +89,12 @@ export const serializeNodeEnv = (
   } = {},
 ): string => {
   const { resolvedIds, intraSccIndex } = opts
-  const entries: string[] = []
-  for (const edge of node.edgesOut.values()) {
-    let ref: string
-    if (!edge.to) {
-      ref = MISSING
-    } else if (intraSccIndex?.has(edge.to)) {
-      const idx = intraSccIndex.get(edge.to)
-      /* c8 ignore next */
-      ref = idx === undefined ? MISSING : `#${idx}`
-    } else {
-      ref = resolvedIds?.get(edge.to) ?? edge.to.id
-    }
-    entries.push(`${edge.name}${NUL}${edge.type}${NUL}${ref}`)
-  }
-  entries.sort(byteCompare)
-  return entries.join(NL)
+  return serializeEdges(node, to => {
+    const idx = intraSccIndex?.get(to)
+    return idx === undefined ?
+        (resolvedIds?.get(to) ?? to.id)
+      : `#${idx}`
+  })
 }
 
 const withPeerSuffix = (node: Node, peerSetHash: string): DepID => {
@@ -188,35 +199,18 @@ const hasSelfEdge = (node: Node): boolean => {
   return false
 }
 
-const sccEdgeRef = (
-  edgeTo: Node | undefined,
-  sccSet: Set<Node>,
-  color: Map<Node, string>,
-  resolvedIds: Map<Node, DepID>,
-): string => {
-  if (!edgeTo) return MISSING
-  if (sccSet.has(edgeTo)) {
-    /* c8 ignore next */
-    return color.get(edgeTo) ?? MISSING
-  }
-  return resolvedIds.get(edgeTo) ?? edgeTo.id
-}
-
 const serializeWithColors = (
   node: Node,
   sccSet: Set<Node>,
   color: Map<Node, string>,
   resolvedIds: Map<Node, DepID>,
-): string => {
-  const entries: string[] = []
-  for (const edge of node.edgesOut.values()) {
-    entries.push(
-      `${edge.name}${NUL}${edge.type}${NUL}${sccEdgeRef(edge.to, sccSet, color, resolvedIds)}`,
-    )
-  }
-  entries.sort(byteCompare)
-  return entries.join(NL)
-}
+): string =>
+  serializeEdges(node, to =>
+    sccSet.has(to) ?
+      /* c8 ignore next */
+      (color.get(to) ?? MISSING)
+    : (resolvedIds.get(to) ?? to.id),
+  )
 
 const mapGet = <K>(m: Map<K, string>, key: K): string => {
   const v = m.get(key)
@@ -285,15 +279,7 @@ const mergeNode = (graph: Graph, winner: Node, loser: Node) => {
 
   // the loser may be the copy carrying lockfile/registry metadata or the
   // manifest; preserve anything the winner is missing before deletion
-  winner.integrity ??= loser.integrity
-  winner.resolved ??= loser.resolved
-  if (
-    loser.resolvedFromLockfile &&
-    winner.integrity &&
-    winner.resolved
-  ) {
-    winner.resolvedFromLockfile = true
-  }
+  copyPackageMetadata(winner, loser)
   if (!winner.manifest && loser.manifest) {
     winner.manifest = loser.manifest
     graph.manifests.set(winner.id, loser.manifest)
@@ -316,12 +302,8 @@ const mergeNode = (graph: Graph, winner: Node, loser: Node) => {
     nbn.delete(loser)
     if (nbn.size === 0) graph.nodesByName.delete(loser.name)
   }
-
-  const revs = graph.resolutionsReverse.get(loser)
-  if (revs) {
-    for (const r of revs) graph.resolutions.delete(r)
-    graph.resolutionsReverse.delete(loser)
-  }
+  // the resolution caches are not read again before applyAssignments()
+  // clears both of them, so there is nothing to invalidate per loser
 }
 
 const applyAssignments = (

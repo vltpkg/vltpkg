@@ -21,7 +21,7 @@ import type { InspectOptions } from 'node:util'
 import { lockfileData } from './lockfile/save.ts'
 import type { OptionsChange } from './lockfile/types.ts'
 import { Edge } from './edge.ts'
-import { Node } from './node.ts'
+import { copyPackageMetadata, Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
 import type { PeerContext } from './ideal/types.ts'
@@ -543,17 +543,7 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
-    if (samePackage) {
-      toNode.integrity ??= samePackage.integrity
-      toNode.resolved ??= samePackage.resolved
-      if (
-        samePackage.resolvedFromLockfile &&
-        toNode.integrity &&
-        toNode.resolved
-      ) {
-        toNode.resolvedFromLockfile = true
-      }
-    }
+    if (samePackage) copyPackageMetadata(toNode, samePackage)
     toNode.integrity ??= manifest?.dist?.integrity
     // split extra into modifier and peerSetHash
     if (extra) {
