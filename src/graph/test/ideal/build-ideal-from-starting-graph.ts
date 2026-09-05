@@ -20,6 +20,7 @@ import {
 import { join } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { load as loadActual } from '../../src/actual/load.ts'
 import type {
   AddImportersDependenciesMap,
@@ -38,6 +39,7 @@ import { lockfileData } from '../../src/lockfile/save.ts'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { assertOptionalPeerProvisions } from '../fixtures/peer-provisions.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -1841,5 +1843,217 @@ t.test(
       ['prod', 'prod'],
       'and stays that way',
     )
+  },
+)
+
+t.test(
+  'a dangling optional peer is not shared with a provider',
+  async t => {
+    // `a-ws` places `v` with `j` MISSING; `b-ws` provides `j`, so it must
+    // get its own copy with the peer linked instead of reusing that one
+    const run = async (
+      t: Test,
+      opts: {
+        bWsDeps: Record<string, string>
+        add?: Record<string, string>
+        remove?: string[]
+        names?: [string, string]
+      },
+    ) => {
+      const [aName, bName] = opts.names ?? ['a-ws', 'b-ws']
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { j: '^1.0.0' },
+      }
+      const aWs = {
+        name: aName,
+        version: '1.0.0',
+        dependencies: { v: '^1.0.0' },
+      }
+      const bWs = {
+        name: bName,
+        version: '1.0.0',
+        dependencies: opts.bWsDeps,
+      }
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify(mainManifest),
+        packages: {
+          [aName]: { 'package.json': JSON.stringify(aWs) },
+          [bName]: { 'package.json': JSON.stringify(bWs) },
+        },
+        'vlt.json': JSON.stringify({
+          workspaces: { packages: ['./packages/*'] },
+        }),
+      })
+      t.chdir(projectRoot)
+      unload('project')
+
+      const manifests: Record<string, Record<string, Manifest>> = {
+        j: {
+          '1.0.0': { name: 'j', version: '1.0.0' },
+          '2.0.0': { name: 'j', version: '2.0.0' },
+        },
+        v: {
+          '1.0.0': {
+            name: 'v',
+            version: '1.0.0',
+            peerDependencies: { j: '^1.0.0' },
+            peerDependenciesMeta: { j: { optional: true } },
+          },
+        },
+      }
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          const versions = manifests[spec.final.name]
+          /* c8 ignore next */
+          if (!versions) return null
+          const bareSpec = spec.final.bareSpec || '*'
+          return versions[
+            String(
+              Object.keys(versions)
+                .filter(v => satisfiesVersion(v, bareSpec))
+                .at(-1),
+            )
+          ]
+        },
+      } as unknown as PackageInfoClient
+
+      const bId = joinDepIDTuple(['workspace', `packages/${bName}`])
+      const common = {
+        ...configData,
+        projectRoot,
+        mainManifest,
+        packageJson: new PackageJson(),
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageInfo,
+        remove: (opts.remove ?
+          new Map([[bId, new Set(opts.remove)]])
+        : new Map()) as RemoveImportersDependenciesMap,
+      }
+      const graph = await buildIdealFromStartingGraph({
+        ...common,
+        graph: new Graph({
+          projectRoot,
+          mainManifest,
+          ...configData,
+          monorepo: common.monorepo,
+        }),
+        add: (opts.add ?
+          new Map([
+            [
+              bId,
+              new Map(
+                Object.entries(opts.add).map(([name, bareSpec]) => [
+                  name,
+                  {
+                    type: 'prod',
+                    spec: Spec.parse(name, bareSpec, configData),
+                  },
+                ]),
+              ),
+            ],
+          ])
+        : new Map()) as AddImportersDependenciesMap,
+        remover: new RollbackRemove(),
+      })
+      const copyOf = (ws: string) =>
+        [...graph.nodes.values()]
+          .find(n => n.name === ws)
+          ?.edgesOut.get('v')?.to
+      return { graph, copyOf, aName, bName }
+    }
+
+    await t.test('provider in the manifest', async t => {
+      const { graph, copyOf } = await run(t, {
+        bWsDeps: { j: '^1.0.0', v: '^1.0.0' },
+      })
+      const a = copyOf('a-ws')
+      const b = copyOf('b-ws')
+      t.not(a?.id, b?.id, 'two copies')
+      t.equal(a?.version, b?.version, 'same version')
+      t.equal(
+        a?.edgesOut.get('j')?.to,
+        undefined,
+        'a-ws copy dangles',
+      )
+      t.equal(
+        b?.edgesOut.get('j')?.to?.version,
+        '1.0.0',
+        'b-ws copy links j',
+      )
+      assertOptionalPeerProvisions(t, graph)
+    })
+
+    await t.test('provider added in the same run', async t => {
+      // the explicit add only reaches package.json in reify, so the
+      // provision has to come from the level's pending dependency list
+      const { copyOf } = await run(t, {
+        bWsDeps: { v: '^1.0.0' },
+        add: { j: '^1.0.0' },
+      })
+      t.not(copyOf('a-ws')?.id, copyOf('b-ws')?.id, 'two copies')
+      t.equal(
+        copyOf('b-ws')?.edgesOut.get('j')?.to?.version,
+        '1.0.0',
+        'b-ws copy links the added j',
+      )
+    })
+
+    await t.test('provider removed in the same run', async t => {
+      const { copyOf } = await run(t, {
+        bWsDeps: { j: '^1.0.0', v: '^1.0.0' },
+        remove: ['j'],
+      })
+      t.equal(
+        copyOf('a-ws')?.id,
+        copyOf('b-ws')?.id,
+        'back to one copy',
+      )
+      t.equal(
+        copyOf('b-ws')?.edgesOut.get('j')?.to,
+        undefined,
+        'j MISSING',
+      )
+    })
+
+    await t.test(
+      "the parent's j cannot satisfy the peer",
+      async t => {
+        const { graph, copyOf } = await run(t, {
+          bWsDeps: { j: '^2.0.0', v: '^1.0.0' },
+        })
+        t.equal(
+          copyOf('a-ws')?.id,
+          copyOf('b-ws')?.id,
+          'one shared copy',
+        )
+        t.equal(
+          copyOf('b-ws')?.edgesOut.get('j')?.to,
+          undefined,
+          'the peer stays MISSING, never linked to another j',
+        )
+        assertOptionalPeerProvisions(t, graph)
+      },
+    )
+
+    await t.test('the providing importer sorts first', async t => {
+      // §0.7: a resolved copy is shared with a non-providing parent
+      const { copyOf } = await run(t, {
+        bWsDeps: { j: '^1.0.0', v: '^1.0.0' },
+        names: ['z-ws', 'a-ws'],
+      })
+      t.equal(
+        copyOf('z-ws')?.id,
+        copyOf('a-ws')?.id,
+        'one shared copy',
+      )
+      t.equal(
+        copyOf('z-ws')?.edgesOut.get('j')?.to?.version,
+        '1.0.0',
+        'with the peer linked for both',
+      )
+    })
   },
 )

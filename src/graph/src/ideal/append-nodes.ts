@@ -234,6 +234,7 @@ const findCompatibleResolution = (
   peerContext: PeerContext,
   queryModifier?: string,
   _peer?: boolean,
+  pending?: Map<string, Dependency>,
 ) => {
   // Hoist invariants once
   const fromLoc = fromNode.location
@@ -288,6 +289,7 @@ const findCompatibleResolution = (
         fromNode,
         peerContext,
         graph,
+        pending,
       )
     : { compatible: true }
 
@@ -306,6 +308,7 @@ const findCompatibleResolution = (
           fromNode,
           peerContext,
           graph,
+          pending,
         )
         if (compat.compatible) {
           existingNode = candidate
@@ -455,6 +458,11 @@ const fetchManifestsForDeps = async (
     })
   }
 
+  // everything this parent places at this level, by name: the provision
+  // source for optional peers of reuse candidates, explicit adds included
+  const pendingDeps = new Map<string, Dependency>()
+  for (const e of entries) pendingDeps.set(e.spec.name, e)
+
   const from = scurry.resolve(fromNode.location)
   const pending: Promise<void>[] = []
   for (const { spec, explicitTag } of entries) {
@@ -499,6 +507,7 @@ const fetchManifestsForDeps = async (
       peerContext,
       queryModifier,
       peer,
+      pendingDeps,
     )
 
     // a dist-tag satisfies any node of that name, so reuse is what
@@ -516,12 +525,10 @@ const fetchManifestsForDeps = async (
 
     // Accumulate fork request if incompatible peer edges detected (defer actual fork)
     const effectivePeerContext = peerContext
-    /* c8 ignore start */
     if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
       forkRequests.push(peerCompatResult.forkEntry)
       // All fork entries from this fromNode will be applied together in Phase B
     }
-    /* c8 ignore stop */
 
     // Locked detached nodes still go through placePackage so
     // their child edges are rebuilt after resetEdges().
@@ -576,7 +583,13 @@ const fetchManifestsForDeps = async (
       // part of a graph (either lockfile or actual), or was hydrated with
       // its locked version above, and it has valid manifest data so we
       // shortcut the package info manifest fetch here
-      existingNode?.detached && existingNode.manifest ?
+      // `keepVersion` marks a fork that only differs by an optional peer
+      // link, so the copy keeps the version it forked from instead of
+      // re-resolving the range to the newest satisfying release
+      (
+        existingNode?.manifest &&
+        (existingNode.detached || peerCompatResult.keepVersion)
+      ) ?
         Promise.resolve(existingNode.manifest as Manifest | undefined)
         // this is the entry point to fetch calls to retrieve manifests
         // from the build ideal graph point of view

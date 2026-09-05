@@ -1597,6 +1597,167 @@ t.test('early extraction during appendNodes', async t => {
   })
 })
 
+t.test('a dangling optional peer forks the shared copy', async t => {
+  // `a`'s copy of `v` has a dangling optional peer `p`; the main importer
+  // places `p` at this level (an explicit add, absent from its manifest),
+  // so it cannot share that copy
+  const setup = (peerRange: string, resolved?: boolean) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const a = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('a', '^1.0.0', configData),
+      { name: 'a', version: '1.0.0', dependencies: { v: '^1.0.0' } },
+    )!
+    const v = graph.placePackage(
+      a,
+      'prod',
+      Spec.parse('v', '^1.0.0', configData),
+      {
+        name: 'v',
+        version: '1.0.0',
+        peerDependencies: { p: peerRange },
+        peerDependenciesMeta: { p: { optional: true } },
+      },
+    )!
+    const pSpec = Spec.parse('p', peerRange, configData)
+    graph.addEdge(
+      'peerOptional',
+      pSpec,
+      v,
+      resolved ?
+        graph.placePackage(
+          a,
+          'prod',
+          Spec.parse('p', '^1.0.0', configData),
+          {
+            name: 'p',
+            version: '1.0.0',
+          },
+        )!
+      : undefined,
+    )
+    const fetched: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        fetched.push(spec.name)
+        switch (spec.name) {
+          case 'v':
+            return {
+              name: 'v',
+              version: '1.5.0',
+              peerDependencies: { p: peerRange },
+              peerDependenciesMeta: { p: { optional: true } },
+            }
+          case 'p':
+            return { name: 'p', version: '1.0.0' }
+          /* c8 ignore next 2 */
+          default:
+            return null
+        }
+      },
+    } as unknown as PackageInfoClient
+    const deps = [
+      asDependency({
+        spec: Spec.parse('v', '^1.0.0', configData),
+        type: 'prod',
+      }),
+      asDependency({
+        spec: Spec.parse('p', '^1.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+    return { graph, v, fetched, packageInfo, deps }
+  }
+
+  await t.test(
+    'the fork keeps the version it forked from',
+    async t => {
+      const { graph, v, fetched, packageInfo, deps } = setup('^1.0.0')
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        deps,
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map(deps.map(d => [d.spec.name, d])),
+      )
+      const copy = graph.mainImporter.edgesOut.get('v')?.to
+      t.not(copy, v, 'the shared copy was not reused')
+      t.equal(
+        copy?.version,
+        '1.0.0',
+        'the fork keeps 1.0.0, not 1.5.0',
+      )
+      t.equal(
+        copy?.edgesOut.get('p')?.to?.name,
+        'p',
+        'and the optional peer is linked',
+      )
+      t.equal(
+        v.edgesOut.get('p')?.to,
+        undefined,
+        "a's copy still dangles",
+      )
+      t.strictSame(
+        fetched,
+        ['p'],
+        'the fork reused the existing manifest',
+      )
+    },
+  )
+
+  await t.test(
+    'a resolved peer conflict still re-fetches',
+    async t => {
+      // pins today's behaviour: only the dangling-peer fork keeps the
+      // version, a CHECK 1 conflict re-resolves the range
+      const { graph, fetched, packageInfo, deps } = setup('*', true)
+      const p2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('p', '^2.0.0', configData),
+        { name: 'p', version: '2.0.0' },
+      )!
+      const peerContext = graph.peerContexts[0]!
+      peerContext.set('p', {
+        active: true,
+        specs: new Map([
+          [
+            peerSpecKey(Spec.parse('p', '^2.0.0', configData)),
+            Spec.parse('p', '^2.0.0', configData),
+          ],
+        ]),
+        target: p2,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [deps[0]!],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['v', deps[0]!]]),
+      )
+      t.equal(
+        graph.mainImporter.edgesOut.get('v')?.to?.version,
+        '1.5.0',
+        'the range was re-resolved',
+      )
+      t.strictSame(fetched, ['v'])
+    },
+  )
+})
+
 t.test('a dual declaration is placed once', async t => {
   const manifests: Record<string, Manifest> = {
     d: {

@@ -1,6 +1,6 @@
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
+import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import t from 'tap'
 import { Graph } from '../../src/graph.ts'
 import {
@@ -34,6 +34,8 @@ import type {
 } from '../../src/dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
+import { assertOptionalPeerProvisions } from '../fixtures/peer-provisions.ts'
+import type { Node } from '../../src/node.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -119,6 +121,299 @@ t.test('checkPeerEdgesCompatible', async t => {
     },
   )
 
+  t.test('a dangling optional peer the parent provides', async t => {
+    // build: a `foo` copy with a dangling `peerOptional p` edge, a parent
+    // to check it against, and optionally a `p@1.0.0` already in the graph
+    type DepMaps = Pick<
+      Manifest,
+      | 'dependencies'
+      | 'devDependencies'
+      | 'optionalDependencies'
+      | 'peerDependencies'
+      | 'peerDependenciesMeta'
+    >
+    const setup = (
+      parentManifest?: DepMaps,
+      opts: { importerParent?: boolean; peerRange?: string } = {},
+    ) => {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: {
+          name: 'my-project',
+          version: '1.0.0',
+          ...(opts.importerParent ? parentManifest : {}),
+        },
+      })
+      const peerRange = opts.peerRange ?? '^1.0.0'
+      const foo = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { p: peerRange },
+          peerDependenciesMeta: { p: { optional: true } },
+        },
+      )!
+      graph.addEdge(
+        'peerOptional',
+        Spec.parse('p', peerRange, configData),
+        foo,
+      )
+      const parent =
+        opts.importerParent ?
+          graph.mainImporter
+        : graph.placePackage(
+            graph.mainImporter,
+            'prod',
+            Spec.parse('parent', '^1.0.0', configData),
+            { name: 'parent', version: '1.0.0', ...parentManifest },
+          )!
+      return { graph, foo, parent }
+    }
+    const p1 = (graph: Graph, from: Node) =>
+      graph.placePackage(
+        from,
+        'prod',
+        Spec.parse('p', '^1.0.0', configData),
+        {
+          name: 'p',
+          version: '1.0.0',
+        },
+      )!
+    const pending = (
+      bareSpec: string,
+      type: DependencySaveType = 'prod',
+    ) =>
+      new Map([
+        [
+          'p',
+          asDependency({
+            spec: Spec.parse('p', bareSpec, configData),
+            type,
+          }),
+        ],
+      ])
+
+    await t.test("parent's own edge", async t => {
+      const { graph, foo, parent } = setup()
+      const target = p1(graph, parent)
+      const result = checkPeerEdgesCompatible(
+        foo,
+        parent,
+        new Map(),
+        graph,
+        new Map(),
+      )
+      t.equal(result.compatible, false)
+      t.equal(
+        result.forkEntry?.target,
+        target,
+        'forks onto the edge target',
+      )
+      t.equal(result.forkEntry?.type, 'prod')
+      t.equal(result.keepVersion, true, 'the copy keeps its version')
+    })
+
+    await t.test('pending dependency of the level', async t => {
+      const { graph, foo, parent } = setup()
+      const result = checkPeerEdgesCompatible(
+        foo,
+        parent,
+        new Map(),
+        graph,
+        pending('^1.0.0'),
+      )
+      t.equal(result.compatible, false)
+      t.equal(
+        result.forkEntry?.target,
+        undefined,
+        'no node is predicted for the parent',
+      )
+      t.equal(String(result.forkEntry?.spec), 'p@^1.0.0')
+      t.equal(result.forkEntry?.type, 'prod')
+    })
+
+    await t.test('the pending list is authoritative', async t => {
+      // `vlt rm p` in the same run: declared, but not being placed
+      const { graph, foo, parent } = setup({
+        dependencies: { p: '^1.0.0' },
+      })
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          new Map(),
+        ).compatible,
+        true,
+      )
+    })
+
+    await t.test(
+      'parent manifest, without a pending list',
+      async t => {
+        for (const [label, manifest, compatible] of [
+          ['dependencies', { dependencies: { p: '^1.0.0' } }, false],
+          [
+            'required peer',
+            { peerDependencies: { p: '^1.0.0' } },
+            false,
+          ],
+          [
+            'optional peer',
+            {
+              peerDependencies: { p: '^1.0.0' },
+              peerDependenciesMeta: { p: { optional: true } },
+            },
+            true,
+          ],
+          [
+            'devDependencies',
+            { devDependencies: { p: '^1.0.0' } },
+            true,
+          ],
+          ['nothing', {}, true],
+        ] as [string, DepMaps, boolean][]) {
+          const { graph, foo, parent } = setup(manifest)
+          const result = checkPeerEdgesCompatible(
+            foo,
+            parent,
+            new Map(),
+            graph,
+          )
+          t.equal(result.compatible, compatible, label)
+          if (!compatible) {
+            t.equal(
+              result.forkEntry?.target,
+              undefined,
+              `${label}: target-less`,
+            )
+          }
+        }
+
+        // an importer does install its devDependencies
+        const { graph, foo, parent } = setup(
+          { devDependencies: { p: '^1.0.0' } },
+          { importerParent: true },
+        )
+        t.equal(
+          checkPeerEdgesCompatible(foo, parent, new Map(), graph)
+            .compatible,
+          false,
+          'devDependencies of an importer',
+        )
+      },
+    )
+
+    await t.test('disjoint ranges do not fork', async t => {
+      const { graph, foo, parent } = setup()
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          pending('^2.0.0'),
+        ).compatible,
+        true,
+        'the parent installs a p the copy cannot use',
+      )
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          pending('^1.5.0'),
+        ).compatible,
+        false,
+        'intersecting ranges fork',
+      )
+    })
+
+    await t.test('context entry target', async t => {
+      const { graph, foo, parent } = setup()
+      const target = p1(graph, graph.mainImporter)
+      const peerSpec = Spec.parse('p', '^1.0.0', configData)
+      const peerContext: PeerContext = new Map([
+        [
+          'p',
+          {
+            active: true,
+            specs: oneSpec(peerSpec),
+            target,
+            type: 'peer' as const,
+            contextDependents: new Set<Node>(),
+          },
+        ],
+      ])
+      const result = checkPeerEdgesCompatible(
+        foo,
+        parent,
+        peerContext,
+        graph,
+        new Map(),
+      )
+      t.equal(result.compatible, false)
+      t.equal(result.forkEntry?.target, target)
+      t.equal(result.forkEntry?.type, 'peer')
+
+      // a target that does not satisfy the peer spec is not a provision
+      const {
+        graph: g2,
+        foo: foo2,
+        parent: parent2,
+      } = setup(undefined, {
+        peerRange: '^2.0.0',
+      })
+      const other = p1(g2, g2.mainImporter)
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo2,
+          parent2,
+          new Map([
+            [
+              'p',
+              {
+                active: true,
+                specs: oneSpec(peerSpec),
+                target: other,
+                type: 'peer' as const,
+                contextDependents: new Set<Node>(),
+              },
+            ],
+          ]),
+          g2,
+          new Map(),
+        ).compatible,
+        true,
+      )
+    })
+
+    await t.test('a resolved optional peer is shared', async t => {
+      // §0.7: reuse by a parent that provides nothing is allowed, the
+      // shared copy only ever carries an extra satisfying link
+      const { graph, foo, parent } = setup()
+      const target = p1(graph, graph.mainImporter)
+      foo.edgesOut.get('p')!.to = target
+      target.edgesIn.add(foo.edgesOut.get('p')!)
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          new Map(),
+        ).compatible,
+        true,
+      )
+    })
+  })
+
   t.test(
     'returns incompatible when peer context has different target',
     async t => {
@@ -181,7 +476,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
-      t.equal(result.forkEntry?.target.id, react19.id)
+      t.equal(result.forkEntry?.target?.id, react19.id)
     },
   )
 
@@ -322,7 +617,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
-      t.equal(result.forkEntry?.target.id, react19.id)
+      t.equal(result.forkEntry?.target?.id, react19.id)
     },
   )
 
@@ -467,7 +762,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
-      t.equal(result.forkEntry?.target.id, react19.id)
+      t.equal(result.forkEntry?.target?.id, react19.id)
     },
   )
 
@@ -892,7 +1187,7 @@ t.test('checkPeerEdgesCompatible', async t => {
       )
       if (!compatible) {
         t.equal(
-          result.forkEntry?.target.id,
+          result.forkEntry?.target?.id,
           react18.id,
           `${label} parent: forks onto the context target`,
         )
@@ -4251,6 +4546,8 @@ t.test('integration tests', async t => {
       }),
       'should build a peer dependency aware graph',
     )
+
+    assertOptionalPeerProvisions(t, graph)
   })
 
   await t.test(
@@ -4341,6 +4638,8 @@ t.test('integration tests', async t => {
         }),
         'should build graph with multiple conflicting peer dependency contexts',
       )
+
+      assertOptionalPeerProvisions(t, graph)
     },
   )
 
@@ -4448,6 +4747,8 @@ t.test('integration tests', async t => {
         'should build graph with outlier peer context handling',
       )
 
+      assertOptionalPeerProvisions(t, graph)
+
       // Verify flexible peer deps in parent-2 context points to react@19
       const parent2 = [
         ...graph.nodesByName.get('@ruyadorno/package-peer-parent-2')!,
@@ -4551,6 +4852,8 @@ t.test('integration tests', async t => {
         }),
         'should build a valid graph with complex peer interdependencies',
       )
+
+      assertOptionalPeerProvisions(t, graph)
     },
   )
 
@@ -4656,6 +4959,8 @@ t.test('integration tests', async t => {
         }),
         'should build graph with 4 workspaces having isolated peer contexts',
       )
+
+      assertOptionalPeerProvisions(t, graph)
 
       // Verify workspaces a and c share context (both have react@18)
       const wsA = [...graph.importers].find(

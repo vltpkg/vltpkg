@@ -36,8 +36,16 @@ import type { Node } from '../node.ts'
  */
 type PeerEdgeCompatResult = {
   compatible: boolean
-  /** When incompatible, entry to add to forked context (target always present) */
-  forkEntry?: PeerContextEntryInput & { target: Node }
+  /**
+   * When incompatible, entry to add to forked context. The target is
+   * absent only when the parent declares the peer but has not placed it
+   * yet: the fork still has to be minted so the re-placed copy gets a
+   * distinct id, and the parent's own edge resolves the peer at the end
+   * of the level.
+   */
+  forkEntry?: PeerContextEntryInput
+  /** the existing version is fine, only an optional peer link differs */
+  keepVersion?: boolean
 }
 
 /**
@@ -192,6 +200,78 @@ const buildIncompatibleResult = (
 }
 
 /**
+ * Which node does `fromNode` (or its placement context) offer for
+ * `peerName`? Checked in the order `resolvePeerDeps` will use: the
+ * parent's own edge, then a dependency the parent declares but has not
+ * placed yet, then the context entry. Only targets satisfying `peerSpec`
+ * count.
+ */
+const findProvidedPeer = (
+  peerName: string,
+  peerSpec: Spec,
+  fromNode: Node,
+  peerContext: PeerContext,
+  parseOpts: SpecOptions,
+  satisfiesNodeSpec: (node: Node, spec: Spec) => boolean,
+  pending?: Map<string, Dependency>,
+):
+  | { target?: Node; spec: Spec; type: DependencySaveType }
+  | undefined => {
+  const sibling = fromNode.edgesOut.get(peerName)
+  if (sibling?.to && satisfiesNodeSpec(sibling.to, peerSpec)) {
+    return { target: sibling.to, spec: peerSpec, type: sibling.type }
+  }
+
+  // what the parent is about to place at this level: it already reflects
+  // explicit adds and removes, transient deps and modifier swaps, none of
+  // which reach the manifest before reify. when given it is
+  // authoritative; the manifest is only consulted without it
+  let declared: { spec: Spec; type: DependencySaveType } | undefined
+  const pendingDep = pending?.get(peerName)
+  if (pendingDep) {
+    declared = { spec: pendingDep.spec, type: pendingDep.type }
+  } else if (!pending && fromNode.manifest) {
+    const manifest = fromNode.manifest
+    for (const depType of longDependencyTypes) {
+      if (!shouldInstallDepType(fromNode, depType)) continue
+      const bare = manifest[depType]?.[peerName]
+      if (!bare) continue
+      const type = shorten(depType, peerName, manifest)
+      // the parent's own optional peer may never resolve; a required one
+      // is placed or resolved, so it does become the parent's edge
+      if (type === 'peerOptional') continue
+      declared = { spec: Spec.parse(peerName, bare, parseOpts), type }
+      break
+    }
+  }
+  if (declared) {
+    // what the parent installs is decided by its own placement (existing
+    // edge, then lock, then findResolution), so no node is predicted
+    // here: a target-less fork entry lets the parent's live edge resolve
+    // the peer at the end of the level. disjoint ranges cannot both be
+    // satisfied, so there is nothing to fork for
+    const pf = declared.spec.final
+    const sf = peerSpec.final
+    if (
+      pf.type === 'registry' &&
+      sf.type === 'registry' &&
+      pf.range &&
+      sf.range &&
+      !intersects(pf.range, sf.range)
+    ) {
+      return undefined
+    }
+    return { spec: declared.spec, type: declared.type }
+  }
+
+  const entry = peerContext.get(peerName)
+  if (entry?.target && satisfiesNodeSpec(entry.target, peerSpec)) {
+    return { target: entry.target, spec: peerSpec, type: entry.type }
+  }
+  return undefined
+}
+
+/**
  * Check if an existing node's peer edges would still resolve to the same
  * targets from a new parent's context. Returns incompatible info if any
  * peer would resolve differently, meaning the node should NOT be reused.
@@ -214,6 +294,7 @@ export const checkPeerEdgesCompatible = (
   fromNode: Node,
   peerContext: PeerContext,
   graph: Graph,
+  pending?: Map<string, Dependency>,
 ): PeerEdgeCompatResult => {
   const peerDeps = existingNode.manifest?.peerDependencies
   // No peer deps = always compatible
@@ -271,8 +352,35 @@ export const checkPeerEdgesCompatible = (
       return { compatible: false }
     }
 
-    // Dangling peer edge (edge exists but unresolved) - skip, nothing to conflict with
-    if (!existingEdge.to) continue
+    // Dangling peer edge (edge exists but unresolved). An optional one
+    // means the copy was placed where nothing provided the peer: a parent
+    // that does provide it cannot share that copy, it has to fork so the
+    // peer gets linked. A dangling required peer is skipped as before.
+    if (!existingEdge.to) {
+      if (existingEdge.type === 'peerOptional') {
+        const provided = findProvidedPeer(
+          peerName,
+          Spec.parse(peerName, peerBareSpec, parseOpts),
+          fromNode,
+          peerContext,
+          parseOpts,
+          satisfiesNodeSpec,
+          pending,
+        )
+        if (provided) {
+          return {
+            compatible: false,
+            forkEntry: {
+              spec: provided.spec,
+              target: provided.target,
+              type: provided.type,
+            },
+            keepVersion: true,
+          }
+        }
+      }
+      continue
+    }
 
     const peerSpec = Spec.parse(peerName, peerBareSpec, parseOpts)
 
