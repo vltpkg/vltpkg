@@ -12,6 +12,7 @@ import {
 import { load } from '@vltpkg/vlt-json'
 import type {
   ModifierBreadcrumb,
+  ModifierBreadcrumbItem,
   ModifierInteractiveBreadcrumb,
 } from '@vltpkg/dss-breadcrumb'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -99,6 +100,18 @@ export type ModifierActiveEntry = {
 }
 
 /**
+ * Does this breadcrumb item select the given importer?
+ */
+const matchesImporter = (
+  item: ModifierBreadcrumbItem,
+  importer: Node,
+): boolean =>
+  item.importer &&
+  (item.value === ':project' ||
+    (item.value === ':root' && importer.mainImporter) ||
+    (item.value === ':workspace' && importer.importer))
+
+/**
  * Class representing loaded modifiers configuration for a project.
  *
  * Instances of this class can be used as a helper to modify the graph
@@ -174,6 +187,26 @@ export class GraphModifier {
   }
 
   /**
+   * Whether a modifier governs the direct `importer -> name` edge, i.e.
+   * whether its value comes from config rather than from the manifest
+   * that declares it. Only a breadcrumb whose whole scope is that edge
+   * counts: `:root > #a > #b` names b, but governs an edge under a, so
+   * the root's own b edge is still the manifest's to validate and heal.
+   */
+  targetsImporterEdge(importer: Node, name: string) {
+    for (const { breadcrumb } of this.#modifiers) {
+      const { last } = breadcrumb
+      if (last.name !== name) continue
+      const { prev } = last
+      // a lone `#b` matches an edge to b anywhere, importers included
+      if (!prev) return true
+      if (prev.prev) continue
+      if (matchesImporter(prev, importer)) return true
+    }
+    return false
+  }
+
+  /**
    * Loads the modifiers defined in `vlt.json` into memory.
    */
   load(options: SpecOptions) {
@@ -235,14 +268,7 @@ export class GraphModifier {
     for (const modifier of this.#modifiers) {
       // if the first item in the breadcrumb is an importer and it matches
       // any of the valid top-level selectors, then register the modifier
-      const { first } = modifier.breadcrumb
-      const matchRoot =
-        first.value === ':root' && importer.mainImporter
-      const matchWorkspace =
-        first.value === ':workspace' && importer.importer
-      const matchAny =
-        first.value === ':project' || matchRoot || matchWorkspace
-      if (first.importer && matchAny) {
+      if (matchesImporter(modifier.breadcrumb.first, importer)) {
         const active = this.newModifier(importer, modifier)
         const single = active.modifier.breadcrumb.single
         // only the importers will update the active entry right after

@@ -32,6 +32,14 @@ export type TransientRemoveMap = Omit<
   'modifiedDependencies'
 >
 
+/**
+ * Dependency names the user asked for on the command line, keyed by the
+ * {@link DepID} of the node receiving them. Snapshotted before
+ * manifest-derived deltas are merged into `add`, so it is the only
+ * reliable signal that a spec came from an explicit request.
+ */
+export type ExplicitAddMap = Map<DepID, Set<string>>
+
 export type BuildIdealAddOptions = {
   /**
    * A {@link AddImportersDependenciesMap} in which keys are {@link DepID}

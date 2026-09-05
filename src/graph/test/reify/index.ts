@@ -28,6 +28,8 @@ import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
+import { asDependency } from '../../src/dependencies.ts'
+import { Graph } from '../../src/graph.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type {
   LockfileData,
@@ -561,6 +563,50 @@ t.test('failure of optional node just deletes it', async t => {
     hiddenMtime,
     'hidden lockfile mtime unchanged',
   )
+
+  // a stale edge spec still has to reach vlt-lock.json, but the hidden
+  // lockfile must keep describing what is actually on disk
+  writeFileSync(
+    lockfile,
+    JSON.stringify({
+      lockfileVersion: 1,
+      options: {},
+      nodes: {},
+      edges: {},
+    }),
+  )
+  const hiddenBefore = readFileSync(hiddenLockfile, 'utf8')
+  graph2.lockfileStale = true
+  await reify({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: createMockPackageInfo({
+      async extract(): Promise<Resolution> {
+        extractCalled = true
+        throw new Error('extract should not be called')
+      },
+    }),
+    graph: graph2,
+    actual: actual2,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+  const rewritten = JSON.parse(
+    readFileSync(lockfile, 'utf8'),
+  ) as LockfileData
+  t.ok(
+    Object.keys(rewritten.edges).length > 0,
+    'stale lockfile rewritten from the early return',
+  )
+  t.equal(
+    readFileSync(hiddenLockfile, 'utf8'),
+    hiddenBefore,
+    'hidden lockfile untouched by a skipped optional diff',
+  )
+  t.equal(extractCalled, false, 'still no extraction')
 })
 
 t.test('early termination when no changes are needed', async t => {
@@ -1204,3 +1250,164 @@ t.test('reify with workspace bin script', async t => {
     'workspace bin was created',
   )
 })
+
+t.test(
+  'a same-target add still persists the saved value',
+  async t => {
+    const setup = (saveExact?: boolean) => {
+      const dir = t.testdir({
+        cache: {},
+        project: {
+          'vlt.json': JSON.stringify({
+            cache: resolve(t.testdirName, 'cache'),
+          }),
+          'package.json': JSON.stringify({
+            name: 'x',
+            version: '1.0.0',
+            dependencies: { foo: '^1.0.0' },
+          }),
+        },
+      })
+      const projectRoot = resolve(dir, 'project')
+      // both graphs hold the same foo@1.0.0, so the diff is empty and
+      // only the edge spec text differs
+      const makeGraph = (
+        bareSpec: string,
+        packageJson: PackageJson,
+      ) => {
+        const graph = new Graph({
+          projectRoot,
+          registries,
+          mainManifest: packageJson.read(projectRoot),
+          monorepo: Monorepo.maybeLoad(projectRoot),
+        })
+        const spec = Spec.parse('foo', bareSpec, { registries })
+        const foo = graph.addNode(
+          undefined,
+          fixtureManifest('abbrev-2.0.0'),
+          spec,
+          'foo',
+          '1.0.0',
+        )
+        graph.addEdge('prod', spec, graph.mainImporter, foo)
+        for (const node of graph.nodes.values()) {
+          node.setDefaultLocation()
+        }
+        return graph
+      }
+      const packageJson = new PackageJson()
+      const actualGraph = makeGraph('^1.0.0', new PackageJson())
+      const graph = makeGraph('latest', packageJson)
+      const add = Object.assign(
+        new Map([
+          [
+            graph.mainImporter.id,
+            new Map([
+              [
+                'foo',
+                asDependency({
+                  spec: Spec.parse('foo', 'latest', { registries }),
+                  type: 'prod',
+                }),
+              ],
+            ]),
+          ],
+        ]),
+        { modifiedDependencies: true },
+      )
+      let extractCalled = false
+      const opts = {
+        projectRoot,
+        registries,
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        scurry: new PathScurry(projectRoot),
+        packageJson,
+        packageInfo: createMockPackageInfo({
+          async extract(): Promise<Resolution> {
+            extractCalled = true
+            throw new Error('extract should not be called')
+          },
+        }),
+        allowScripts: ':not(*)',
+        remover: new RollbackRemove(),
+        saveExact,
+      }
+      return {
+        projectRoot,
+        graph,
+        actualGraph,
+        add,
+        opts,
+        extracted: () => extractCalled,
+      }
+    }
+
+    await t.test(
+      'heals the lockfile edge, leaves package.json',
+      async t => {
+        const {
+          projectRoot,
+          graph,
+          actualGraph,
+          add,
+          opts,
+          extracted,
+        } = setup()
+        // first install writes both lockfiles with the unchanged spec
+        await reify({
+          ...opts,
+          graph: actualGraph,
+          actual: actualGraph,
+        })
+        const lockfile = resolve(projectRoot, 'vlt-lock.json')
+        const hidden = resolve(
+          projectRoot,
+          'node_modules/.vlt-lock.json',
+        )
+        t.match(readFileSync(lockfile, 'utf8'), 'prod ^1.0.0')
+
+        const res = await reify({
+          ...opts,
+          graph,
+          actual: actualGraph,
+          add,
+        })
+        t.equal(res.diff.hasChanges(), false, 'no node diff')
+        t.equal(extracted(), false, 'nothing extracted')
+        t.match(readFileSync(lockfile, 'utf8'), 'prod ^1.0.0')
+        t.match(readFileSync(hidden, 'utf8'), 'prod ^1.0.0')
+        t.match(
+          JSON.parse(
+            readFileSync(
+              resolve(projectRoot, 'package.json'),
+              'utf8',
+            ),
+          ),
+          { dependencies: { foo: '^1.0.0' } },
+        )
+      },
+    )
+
+    await t.test(
+      '--save-exact applies with no node diff',
+      async t => {
+        const { projectRoot, graph, actualGraph, add, opts } =
+          setup(true)
+        await reify({ ...opts, graph, actual: actualGraph, add })
+        t.match(
+          readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+          'prod 1.0.0',
+        )
+        t.match(
+          JSON.parse(
+            readFileSync(
+              resolve(projectRoot, 'package.json'),
+              'utf8',
+            ),
+          ),
+          { dependencies: { foo: '1.0.0' } },
+        )
+      },
+    )
+  },
+)

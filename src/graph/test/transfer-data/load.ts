@@ -168,6 +168,7 @@ t.test('load graph with SecurityArchive', async () => {
     typeof import('../../src/transfer-data/load.ts')
   >('../../src/transfer-data/load.ts', {
     '@vltpkg/security-archive/browser': {
+      usesNpmRegistry: () => true,
       SecurityArchive: {
         load: (_data: any) => ({
           has: (id: string) => id.includes('foo'),
@@ -198,6 +199,7 @@ t.test(
       typeof import('../../src/transfer-data/load.ts')
     >('../../src/transfer-data/load.ts', {
       '@vltpkg/security-archive/browser': {
+        usesNpmRegistry: () => true,
         SecurityArchive: {
           load: (_data: any) => ({
             has: () => true, // All nodes are valid
@@ -227,6 +229,7 @@ t.test('load graph without SecurityArchive class', async () => {
     typeof import('../../src/transfer-data/load.ts')
   >('../../src/transfer-data/load.ts', {
     '@vltpkg/security-archive/browser': {
+      usesNpmRegistry: () => true,
       SecurityArchive: {
         load: (_data: any) => undefined, // Simulate SecurityArchive.load returning undefined
       },
@@ -236,6 +239,115 @@ t.test('load graph without SecurityArchive class', async () => {
   const result = load(transferDataWithSecurity)
   t.notOk(result.securityArchive)
 })
+
+const report = (name: string) => ({
+  id: `${name}@1.0.0`,
+  author: [],
+  size: 0,
+  type: 'npm',
+  name,
+  version: '1.0.0',
+  license: 'MIT',
+  score: {
+    overall: 1,
+    license: 1,
+    maintenance: 1,
+    quality: 1,
+    supplyChain: 1,
+    vulnerability: 1,
+  },
+  alerts: [],
+})
+
+t.test(
+  'load graph with peer-suffixed node looks up security data by base DepID',
+  async () => {
+    const fooBase = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+    const fooPeer = joinDepIDTuple([
+      'registry',
+      '',
+      'foo@1.0.0',
+      'peer.0123456789abcdef',
+    ])
+    const barId = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+    const peerSuffixed: TransferData = {
+      ...transferData,
+      lockfile: {
+        ...transferData.lockfile,
+        options: {
+          ...transferData.lockfile.options,
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            custom: 'http://example.com',
+          },
+        },
+        nodes: {
+          [fooPeer]: transferData.lockfile.nodes['~~foo@1.0.0']!,
+          [barId]: transferData.lockfile.nodes['~~bar@1.0.0']!,
+        },
+        edges: {
+          [`${joinDepIDTuple(['file', '.'])} foo`]: `prod ^1.0.0 ${fooPeer}`,
+        } as LockfileEdges,
+      },
+      securityArchive: {
+        [fooBase]: report('foo'),
+        [barId]: report('bar'),
+      },
+    }
+
+    const result = load(peerSuffixed)
+    t.ok(result.graph.nodes.get(fooPeer), 'peer-suffixed node loaded')
+    t.equal(
+      result.securityArchive?.ok,
+      true,
+      'ok is true when npm nodes are present even if DepIDs carry extra',
+    )
+    t.ok(
+      result.securityArchive?.has(fooPeer),
+      'archive has() matches the suffixed node id',
+    )
+  },
+)
+
+t.test(
+  'archive validation covers default-registry nodes with raw lockfile options',
+  async t => {
+    const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+    const barId = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+    // saved lockfiles persist the npm alias from the cli config; the
+    // unmocked eligibility check resolves the default registry through it
+    const withNpm: TransferData = {
+      ...transferData,
+      lockfile: {
+        ...transferData.lockfile,
+        options: {
+          ...transferData.lockfile.options,
+          registries: {
+            ...transferData.lockfile.options.registries,
+            npm: 'https://registry.npmjs.org/',
+          },
+        },
+      },
+    }
+    const missing = load({
+      ...withNpm,
+      securityArchive: { [fooId]: report('foo') },
+    })
+    t.equal(
+      missing.securityArchive?.ok,
+      false,
+      'missing report for a default-registry node is detected',
+    )
+    const complete = load({
+      ...withNpm,
+      securityArchive: {
+        [fooId]: report('foo'),
+        [barId]: report('bar'),
+      },
+    })
+    t.equal(complete.securityArchive?.ok, true)
+  },
+)
 
 t.test('load graph with multiple importers', async () => {
   const multiImporterData: TransferData = {

@@ -406,6 +406,55 @@ t.test('GraphModifier', async t => {
     )
   })
 
+  await t.test('targetsImporterEdge', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #abbrev': '2.0.0',
+          '#lodash': '4.0.0',
+          ':root > #unused > #deep': '1.0.0',
+          ':workspace > #ws-only': '1.0.0',
+        },
+      }),
+    })
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    const root = { mainImporter: true, importer: true } as Node
+    const ws = { mainImporter: false, importer: true } as Node
+    t.equal(
+      modifier.targetsImporterEdge(root, 'abbrev'),
+      true,
+      'direct root edge',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(ws, 'abbrev'),
+      false,
+      ':root does not select a workspace',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(ws, 'ws-only'),
+      true,
+      ':workspace selects a workspace',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, 'lodash'),
+      true,
+      'single id selector matches anywhere',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, 'deep'),
+      false,
+      'a deeper scope leaves the importer edge alone',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(root, 'foo'),
+      false,
+      'unrelated name',
+    )
+  })
+
   await t.test('config getter', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({ modifiers: validStringConfig }),

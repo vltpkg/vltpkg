@@ -4,7 +4,11 @@
 import { intersects } from '@vltpkg/semver'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
-import { getDependencies, shorten } from '../dependencies.ts'
+import {
+  getDependencies,
+  shorten,
+  shouldInstallDepType,
+} from '../dependencies.ts'
 import { compareByType, getOrderedDependencies } from './sorting.ts'
 import type {
   ProcessPlacementResultEntry,
@@ -32,8 +36,16 @@ import type { Node } from '../node.ts'
  */
 type PeerEdgeCompatResult = {
   compatible: boolean
-  /** When incompatible, entry to add to forked context (target always present) */
-  forkEntry?: PeerContextEntryInput & { target: Node }
+  /**
+   * When incompatible, entry to add to forked context. The target is
+   * absent only when the parent declares the peer but has not placed it
+   * yet: the fork still has to be minted so the re-placed copy gets a
+   * distinct id, and the parent's own edge resolves the peer at the end
+   * of the level.
+   */
+  forkEntry?: PeerContextEntryInput
+  /** the existing version is fine, only an optional peer link differs */
+  keepVersion?: boolean
 }
 
 /**
@@ -83,12 +95,16 @@ const parseSpec = (
 /**
  * Generate a unique cache key for a peer context fork operation.
  *
- * Format: `{baseIndex}::{sortedEntrySignatures}`
+ * Format: `{baseIndex}::{sortedEntrySignatures}::{inheritedTargets}`
  * - `baseIndex`: The parent context's index (0 for initial context)
  * - Entry signature: `{name}|{type}|{targetId}|{spec}` sorted alphabetically
+ * - Inherited: `{name}={targetId}` for every entry of the base context
  *
  * This enables caching identical fork operations to avoid creating duplicate
  * peer contexts when the same entries would be added to the same base context.
+ * Forks snapshot the base's targets, so the base index alone is not enough:
+ * once a base target moves, an identical request must get a fresh fork
+ * instead of the snapshot taken before the move.
  */
 const getForkKey = (
   peerContext: PeerContext,
@@ -102,7 +118,11 @@ const getForkKey = (
     )
     .sort()
     .join(';')
-  return `${base}::${sig}`
+  const inherited = [...peerContext.entries()]
+    .map(([name, e]) => `${name}=${e.target?.id ?? '∅'}`)
+    .sort()
+    .join(',')
+  return `${base}::${sig}::${inherited}`
 }
 
 /**
@@ -128,8 +148,11 @@ const shouldIgnoreContextMismatch = (
   /* c8 ignore next - edge case: fromNode always has manifest in practice */
   if (!parentManifest) return false
 
-  // Search all dependency types for a declaration of peerName
+  // Search all dependency types for a declaration of peerName. Only types
+  // the parent actually installs count: a registry parent's devDependencies
+  // are never placed, so they do not mean it resolves its own copy.
   for (const depType of longDependencyTypes) {
+    if (!shouldInstallDepType(fromNode, depType)) continue
     const declared = parentManifest[depType]?.[peerName]
     if (!declared) continue
 
@@ -177,6 +200,78 @@ const buildIncompatibleResult = (
 }
 
 /**
+ * Which node does `fromNode` (or its placement context) offer for
+ * `peerName`? Checked in the order `resolvePeerDeps` will use: the
+ * parent's own edge, then a dependency the parent declares but has not
+ * placed yet, then the context entry. Only targets satisfying `peerSpec`
+ * count.
+ */
+const findProvidedPeer = (
+  peerName: string,
+  peerSpec: Spec,
+  fromNode: Node,
+  peerContext: PeerContext,
+  parseOpts: SpecOptions,
+  satisfiesNodeSpec: (node: Node, spec: Spec) => boolean,
+  pending?: Map<string, Dependency>,
+):
+  | { target?: Node; spec: Spec; type: DependencySaveType }
+  | undefined => {
+  const sibling = fromNode.edgesOut.get(peerName)
+  if (sibling?.to && satisfiesNodeSpec(sibling.to, peerSpec)) {
+    return { target: sibling.to, spec: peerSpec, type: sibling.type }
+  }
+
+  // what the parent is about to place at this level: it already reflects
+  // explicit adds and removes, transient deps and modifier swaps, none of
+  // which reach the manifest before reify. when given it is
+  // authoritative; the manifest is only consulted without it
+  let declared: { spec: Spec; type: DependencySaveType } | undefined
+  const pendingDep = pending?.get(peerName)
+  if (pendingDep) {
+    declared = { spec: pendingDep.spec, type: pendingDep.type }
+  } else if (!pending && fromNode.manifest) {
+    const manifest = fromNode.manifest
+    for (const depType of longDependencyTypes) {
+      if (!shouldInstallDepType(fromNode, depType)) continue
+      const bare = manifest[depType]?.[peerName]
+      if (!bare) continue
+      const type = shorten(depType, peerName, manifest)
+      // the parent's own optional peer may never resolve; a required one
+      // is placed or resolved, so it does become the parent's edge
+      if (type === 'peerOptional') continue
+      declared = { spec: Spec.parse(peerName, bare, parseOpts), type }
+      break
+    }
+  }
+  if (declared) {
+    // what the parent installs is decided by its own placement (existing
+    // edge, then lock, then findResolution), so no node is predicted
+    // here: a target-less fork entry lets the parent's live edge resolve
+    // the peer at the end of the level. disjoint ranges cannot both be
+    // satisfied, so there is nothing to fork for
+    const pf = declared.spec.final
+    const sf = peerSpec.final
+    if (
+      pf.type === 'registry' &&
+      sf.type === 'registry' &&
+      pf.range &&
+      sf.range &&
+      !intersects(pf.range, sf.range)
+    ) {
+      return undefined
+    }
+    return { spec: declared.spec, type: declared.type }
+  }
+
+  const entry = peerContext.get(peerName)
+  if (entry?.target && satisfiesNodeSpec(entry.target, peerSpec)) {
+    return { target: entry.target, spec: peerSpec, type: entry.type }
+  }
+  return undefined
+}
+
+/**
  * Check if an existing node's peer edges would still resolve to the same
  * targets from a new parent's context. Returns incompatible info if any
  * peer would resolve differently, meaning the node should NOT be reused.
@@ -199,6 +294,7 @@ export const checkPeerEdgesCompatible = (
   fromNode: Node,
   peerContext: PeerContext,
   graph: Graph,
+  pending?: Map<string, Dependency>,
 ): PeerEdgeCompatResult => {
   const peerDeps = existingNode.manifest?.peerDependencies
   // No peer deps = always compatible
@@ -256,8 +352,35 @@ export const checkPeerEdgesCompatible = (
       return { compatible: false }
     }
 
-    // Dangling peer edge (edge exists but unresolved) - skip, nothing to conflict with
-    if (!existingEdge.to) continue
+    // Dangling peer edge (edge exists but unresolved). An optional one
+    // means the copy was placed where nothing provided the peer: a parent
+    // that does provide it cannot share that copy, it has to fork so the
+    // peer gets linked. A dangling required peer is skipped as before.
+    if (!existingEdge.to) {
+      if (existingEdge.type === 'peerOptional') {
+        const provided = findProvidedPeer(
+          peerName,
+          Spec.parse(peerName, peerBareSpec, parseOpts),
+          fromNode,
+          peerContext,
+          parseOpts,
+          satisfiesNodeSpec,
+          pending,
+        )
+        if (provided) {
+          return {
+            compatible: false,
+            forkEntry: {
+              spec: provided.spec,
+              target: provided.target,
+              type: provided.type,
+            },
+            keepVersion: true,
+          }
+        }
+      }
+      continue
+    }
 
     const peerSpec = Spec.parse(peerName, peerBareSpec, parseOpts)
 
@@ -332,6 +455,7 @@ export const checkPeerEdgesCompatible = (
 
     if (manifest) {
       for (const depType of longDependencyTypes) {
+        if (!shouldInstallDepType(fromNode, depType)) continue
         const deps = manifest[depType]
         if (
           deps &&
@@ -358,6 +482,7 @@ export const checkPeerEdgesCompatible = (
       const candidates = graph.nodesByName.get(peerName)
       if (candidates) {
         for (const candidateNode of candidates) {
+          if (candidateNode.detached) continue
           if (
             candidateNode.id !== existingEdge.to.id &&
             satisfiesNodeSpec(candidateNode, parentSpec) &&
@@ -387,10 +512,8 @@ export const checkPeerEdgesCompatible = (
 export const retrievePeerContextHash = (
   peerContext: PeerContext | undefined,
 ): string | undefined => {
-  // skips creating the initial peer context ref
-  if (!peerContext?.index) return undefined
-
-  return `peer.${peerContext.index}`
+  if (!peerContext) return undefined
+  return `peer.${peerContext.index ?? 0}`
 }
 
 /**
@@ -487,6 +610,11 @@ export const checkEntriesToPeerContext = (
  * peer context set. Extra info such as a target or dependent nodes is
  * optional.
  *
+ * When an entry gains a target that satisfies every spec collected so far,
+ * dependents of that entry are re-pointed at it only if their current target
+ * no longer satisfies one of those specs, so two equally valid resolutions
+ * never swap back and forth across rebuilds.
+ *
  * Returns true if forking is needed, false otherwise.
  */
 export const addEntriesToPeerContext = (
@@ -497,6 +625,22 @@ export const addEntriesToPeerContext = (
 ): boolean => {
   // pre check for conflicts before processing
   if (checkEntriesToPeerContext(peerContext, entries)) return true
+
+  /** Does `node` satisfy every spec collected in `entry`? */
+  const satisfiesEntrySpecs = (
+    node: Node,
+    entry: PeerContextEntry,
+    from: Node,
+  ) =>
+    [...entry.specs.values()].every(s =>
+      satisfies(
+        node.id,
+        s,
+        from.location,
+        from.projectRoot,
+        monorepo,
+      ),
+    )
 
   for (const { dependent, spec, target, type } of entries) {
     const name = target?.name ?? spec.final.name
@@ -519,39 +663,35 @@ export const addEntriesToPeerContext = (
     // check for sibling dep conflicts
     if (incompatibleSpecs(spec.final, entry)) return true
 
+    // collect the incoming spec before anything reads the entry: it
+    // constrains both the new target and any dependent kept on an older one
+    const specKey = peerSpecKey(spec)
+    if (!entry.specs.has(specKey)) entry.specs.set(specKey, spec)
+
     // update target if compatible with all specs
-    if (
-      target &&
-      [...entry.specs.values()].every(s =>
-        satisfies(
-          target.id,
-          s,
-          fromNode.location,
-          fromNode.projectRoot,
-          monorepo,
-        ),
-      )
-    ) {
+    if (target && satisfiesEntrySpecs(target, entry, fromNode)) {
+      // two peer copies of the same version are the same resolution here:
+      // moving a dependent between them would only change its peer set
       if (
         target.id !== entry.target?.id &&
         target.version !== entry.target?.version
       ) {
-        // update dependents to point to new target
+        // re-point only dependents whose target this context has outgrown;
+        // one that still satisfies every spec is as valid as the new target,
+        // so a rebuild never swaps between two valid resolutions
         for (const dep of entry.contextDependents) {
           const edge = dep.edgesOut.get(name)
-          if (edge?.to && edge.to !== target) {
-            edge.to.edgesIn.delete(edge)
-            edge.to = target
-            target.edgesIn.add(edge)
-          }
+          if (!edge?.to || edge.to === target) continue
+          if (satisfiesEntrySpecs(edge.to, entry, dep)) continue
+          edge.to.edgesIn.delete(edge)
+          edge.to = target
+          target.edgesIn.add(edge)
         }
         entry.target = target
       }
       entry.target ??= target
     }
 
-    const specKey = peerSpecKey(spec)
-    if (!entry.specs.has(specKey)) entry.specs.set(specKey, spec)
     if (dependent) entry.contextDependents.add(dependent)
   }
 
@@ -579,16 +719,21 @@ export const forkPeerContext = (
   graph.peerContexts[nextPeerContext.index] = nextPeerContext
   graph.peerContextForkCache.set(forkKey, nextPeerContext)
 
-  // copy existing entries marking them as inactive, it's also important
-  // to note that specs and contextDependents are new objects so that changes
-  // to those in the new context do not affect the previous one
+  // copy existing entries marking them as inactive. specs are copied into
+  // a new map so that changes here do not affect the previous context, but
+  // dependents are NOT inherited: they were placed in the parent context, so
+  // a target update in this fork must never re-point their edges.
+  // the target IS inherited: what a context resolves a name to must not
+  // depend on which fork a subtree happened to land in. it stays a
+  // snapshot (`getForkKey` invalidates it when the base moves) and is
+  // still guarded by `nodeSatisfiesSpec` at resolution time.
   for (const [name, entry] of peerContext.entries()) {
     nextPeerContext.set(name, {
       active: false,
       specs: new Map(entry.specs),
-      target: undefined,
+      target: entry.target,
       type: entry.type,
-      contextDependents: new Set(entry.contextDependents),
+      contextDependents: new Set(),
     })
   }
 
@@ -833,8 +978,11 @@ export const endPeerPlacement = (
       const siblingEntry = queuedEntries.find(
         e => (e.target?.name ?? e.spec.final.name) === name,
       )
+      // prefer the parent's live edge target over the queued snapshot:
+      // the snapshot is captured at placement time and may be stale if a
+      // peer context target update has since re-pointed the parent's edge
       const siblingTarget =
-        siblingEntry?.target ?? fromNode.edgesOut.get(name)?.to
+        fromNode.edgesOut.get(name)?.to ?? siblingEntry?.target
 
       if (
         siblingTarget &&

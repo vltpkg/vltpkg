@@ -103,11 +103,24 @@ const englishDaysReport = {
 t.test('map-like', async t => {
   const archive = new SecurityArchive()
   const id = joinDepIDTuple(['registry', 'npm', 'bar'])
-  archive.set(id, { name: 'bar' } as PackageReportData)
+  const idWithExtra = joinDepIDTuple([
+    'registry',
+    'npm',
+    'bar',
+    'peer.0123456789abcdef',
+  ])
+  archive.set(idWithExtra, { name: 'bar' } as PackageReportData, {
+    noDisposeOnSet: true,
+  })
   t.strictSame(archive.has(id), true)
-  t.strictSame(archive.get(id), { name: 'bar' })
-  archive.delete(id)
+  t.strictSame(archive.has(idWithExtra), true)
+  t.strictSame(archive.get(id, { updateAgeOnGet: false }), {
+    name: 'bar',
+  })
+  t.strictSame(archive.get(idWithExtra), { name: 'bar' })
+  archive.delete(idWithExtra)
   t.strictSame(archive.get(id), undefined)
+  t.strictSame(archive.has(idWithExtra), false)
 })
 
 const nodeWith = (id: DepID, options: SpecOptions = {}): NodeLike =>
@@ -681,8 +694,8 @@ t.test('DepID normalization', async t => {
 
     t.strictSame(
       archive.has(depIDWithExtra),
-      false,
-      'should not find the non-normalized DepID in cache',
+      true,
+      'should find a DepID with extra via baseDepID normalization',
     )
 
     t.strictSame(
@@ -693,8 +706,8 @@ t.test('DepID normalization', async t => {
 
     t.strictSame(
       archive.get(depIDWithExtra),
-      undefined,
-      'should not retrieve data using non-normalized DepID',
+      fooReport,
+      'should retrieve data using a DepID with extra',
     )
   })
 

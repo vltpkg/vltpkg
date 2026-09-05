@@ -1,14 +1,16 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { parse as parseVersion } from '@vltpkg/semver'
 import { asNormalizedManifest } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { asDependency } from '../../src/dependencies.ts'
 import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
@@ -26,6 +28,7 @@ import type {
   TransientAddMap,
   TransientRemoveMap,
 } from '../../src/ideal/types.ts'
+import type { ExtractResult } from '../../src/reify/extract-node.ts'
 import { mermaidOutput } from '../../src/visualization/mermaid-output.ts'
 
 Object.assign(Spec.prototype, {
@@ -1068,6 +1071,171 @@ t.test('early extraction during appendNodes', async t => {
   )
 
   t.test(
+    'extract peer-suffixed node when actual has no matching base',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const extractedNodes: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          if (spec.name === 'foo') return fooManifest
+          if (spec.name === 'react') {
+            return { name: 'react', version: '18.0.0' }
+          }
+          return null
+        },
+        async extract(spec: Spec) {
+          extractedNodes.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      const extractPromises: Promise<ExtractResult>[] = []
+      const seenExtracted = new Set<DepID>()
+
+      await appendNodes(
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', fooDep]]),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      const foo = [...idealGraph.nodes.values()].find(
+        n => n.name === 'foo',
+      )
+      t.ok(foo?.peerSetHash, 'foo carries a provisional peer suffix')
+      t.ok(extractedNodes.includes('foo'), 'foo was extracted')
+    },
+  )
+
+  t.test(
+    'skip extraction for peer-suffixed node whose base is in actual',
+    async t => {
+      const fooManifest = {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+      }
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+
+      const idealGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const actualGraph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      actualGraph.placePackage(
+        actualGraph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0'),
+        fooManifest,
+      )
+
+      const extractedNodes: string[] = []
+
+      const packageInfo = {
+        async manifest(spec: Spec) {
+          if (spec.name === 'foo') return fooManifest
+          if (spec.name === 'react') {
+            return { name: 'react', version: '18.0.0' }
+          }
+          return null
+        },
+        async extract(spec: Spec) {
+          extractedNodes.push(spec.name)
+          return { extracted: true }
+        },
+      } as unknown as PackageInfoClient
+
+      const fooDep = asDependency({
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'prod',
+      })
+
+      const extractPromises: Promise<ExtractResult>[] = []
+      const seenExtracted = new Set<DepID>()
+
+      await appendNodes(
+        packageInfo,
+        idealGraph,
+        idealGraph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', fooDep]]),
+        undefined,
+        undefined,
+        extractPromises,
+        actualGraph,
+        seenExtracted,
+        new RollbackRemove(),
+      )
+
+      if (extractPromises.length > 0) {
+        await Promise.all(extractPromises)
+      }
+
+      const foo = [...idealGraph.nodes.values()].find(
+        n => n.name === 'foo',
+      )
+      t.ok(foo?.peerSetHash, 'foo carries a provisional peer suffix')
+      t.notOk(
+        extractedNodes.includes('foo'),
+        'foo was not extracted: same base already in actual',
+      )
+    },
+  )
+
+  t.test(
     'skip extraction for nodes that exist in actual graph',
     async t => {
       const fooManifest = {
@@ -1427,6 +1595,290 @@ t.test('early extraction during appendNodes', async t => {
       'optional dep should NOT be extracted',
     )
   })
+})
+
+t.test('a dangling optional peer forks the shared copy', async t => {
+  // `a`'s copy of `v` has a dangling optional peer `p`; the main importer
+  // places `p` at this level (an explicit add, absent from its manifest),
+  // so it cannot share that copy
+  const setup = (peerRange: string, resolved?: boolean) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const a = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('a', '^1.0.0', configData),
+      { name: 'a', version: '1.0.0', dependencies: { v: '^1.0.0' } },
+    )!
+    const v = graph.placePackage(
+      a,
+      'prod',
+      Spec.parse('v', '^1.0.0', configData),
+      {
+        name: 'v',
+        version: '1.0.0',
+        peerDependencies: { p: peerRange },
+        peerDependenciesMeta: { p: { optional: true } },
+      },
+    )!
+    const pSpec = Spec.parse('p', peerRange, configData)
+    graph.addEdge(
+      'peerOptional',
+      pSpec,
+      v,
+      resolved ?
+        graph.placePackage(
+          a,
+          'prod',
+          Spec.parse('p', '^1.0.0', configData),
+          {
+            name: 'p',
+            version: '1.0.0',
+          },
+        )!
+      : undefined,
+    )
+    const fetched: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        fetched.push(spec.name)
+        switch (spec.name) {
+          case 'v':
+            return {
+              name: 'v',
+              version: '1.5.0',
+              peerDependencies: { p: peerRange },
+              peerDependenciesMeta: { p: { optional: true } },
+            }
+          case 'p':
+            return { name: 'p', version: '1.0.0' }
+          /* c8 ignore next 2 */
+          default:
+            return null
+        }
+      },
+    } as unknown as PackageInfoClient
+    const deps = [
+      asDependency({
+        spec: Spec.parse('v', '^1.0.0', configData),
+        type: 'prod',
+      }),
+      asDependency({
+        spec: Spec.parse('p', '^1.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+    return { graph, v, fetched, packageInfo, deps }
+  }
+
+  await t.test(
+    'the fork keeps the version it forked from',
+    async t => {
+      const { graph, v, fetched, packageInfo, deps } = setup('^1.0.0')
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        deps,
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map(deps.map(d => [d.spec.name, d])),
+      )
+      const copy = graph.mainImporter.edgesOut.get('v')?.to
+      t.not(copy, v, 'the shared copy was not reused')
+      t.equal(
+        copy?.version,
+        '1.0.0',
+        'the fork keeps 1.0.0, not 1.5.0',
+      )
+      t.equal(
+        copy?.edgesOut.get('p')?.to?.name,
+        'p',
+        'and the optional peer is linked',
+      )
+      t.equal(
+        v.edgesOut.get('p')?.to,
+        undefined,
+        "a's copy still dangles",
+      )
+      t.strictSame(
+        fetched,
+        ['p'],
+        'the fork reused the existing manifest',
+      )
+    },
+  )
+
+  await t.test(
+    'a resolved peer conflict still re-fetches',
+    async t => {
+      // pins today's behaviour: only the dangling-peer fork keeps the
+      // version, a CHECK 1 conflict re-resolves the range
+      const { graph, fetched, packageInfo, deps } = setup('*', true)
+      const p2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('p', '^2.0.0', configData),
+        { name: 'p', version: '2.0.0' },
+      )!
+      const peerContext = graph.peerContexts[0]!
+      peerContext.set('p', {
+        active: true,
+        specs: new Map([
+          [
+            peerSpecKey(Spec.parse('p', '^2.0.0', configData)),
+            Spec.parse('p', '^2.0.0', configData),
+          ],
+        ]),
+        target: p2,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [deps[0]!],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['v', deps[0]!]]),
+      )
+      t.equal(
+        graph.mainImporter.edgesOut.get('v')?.to?.version,
+        '1.5.0',
+        'the range was re-resolved',
+      )
+      t.strictSame(fetched, ['v'])
+    },
+  )
+})
+
+t.test('a dual declaration is placed once', async t => {
+  const manifests: Record<string, Manifest> = {
+    d: {
+      name: 'd',
+      version: '1.0.0',
+      dependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    },
+    o: {
+      name: 'o',
+      version: '1.0.0',
+      optionalDependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    },
+    m: {
+      name: 'm',
+      version: '1.0.0',
+      dependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+      peerDependenciesMeta: { c: { optional: true } },
+    },
+    c: { name: 'c', version: '1.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      /* c8 ignore next */
+      return manifests[spec.name] ?? null
+    },
+  } as PackageInfoClient
+
+  for (const [dep, expected] of [
+    ['d', 'prod'],
+    ['o', 'optional'],
+    ['m', 'prod'],
+  ] as const) {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { [dep]: '^1.0.0' },
+      }),
+    })
+    const graph = await build({
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      remover: new RollbackRemove(),
+    })
+    const node = graph.nodesByName.get(dep)!.values().next().value!
+    const edges = [...node.edgesOut.values()].filter(
+      e => e.name === 'c',
+    )
+    t.equal(edges.length, 1, `${dep}: one edge to c`)
+    t.equal(edges[0]?.type, expected, `${dep}: type is ${expected}`)
+    t.ok(edges[0]?.to, `${dep}: c is placed`)
+  }
+})
+
+t.test('a dual declaration with a transient add', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+  const manifests: Record<string, Manifest> = {
+    foo: {
+      name: 'foo',
+      version: '1.0.0',
+      peerDependencies: { c: '*' },
+    },
+    c: { name: 'c', version: '1.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      /* c8 ignore next */
+      return manifests[spec.name] ?? null
+    },
+  } as PackageInfoClient
+
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', 'file:foo'),
+    type: 'prod',
+  })
+  const transientAdd = new Map() as TransientAddMap
+  transientAdd.set(
+    joinDepIDTuple(['file', 'foo']),
+    new Map([
+      [
+        'c',
+        asDependency({
+          spec: Spec.parse('c', '^1.0.0'),
+          type: 'prod',
+        }),
+      ],
+    ]),
+  )
+
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [fooDep],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set<DepID>(),
+    new Map([['foo', fooDep]]),
+    undefined, // modifiers
+    undefined, // modifierRefs
+    undefined, // extractPromises
+    undefined, // actual
+    undefined, // seenExtracted
+    undefined, // remover
+    transientAdd,
+  )
+
+  const foo = graph.nodesByName.get('foo')!.values().next().value!
+  const edges = [...foo.edgesOut.values()].filter(e => e.name === 'c')
+  t.equal(edges.length, 1, 'one edge to c')
+  t.equal(edges[0]?.type, 'prod', 'the transient type wins')
 })
 
 t.test('inject transient dependencies from transientAdd', async t => {
@@ -1842,6 +2294,10 @@ t.test('skip peerOptional dependencies', async t => {
     t.ok(fooNode, 'foo node should exist')
     fooNode.detached = true
 
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, fooNode.id],
+    ])
+
     // Remove the edge from mainImporter to foo so we can re-add it
     const fooEdge = graph.mainImporter.edgesOut.get('foo')
     if (fooEdge) {
@@ -1928,6 +2384,14 @@ t.test('skip peerOptional dependencies', async t => {
       // Simulate lockfile state
       jsrNode.detached = true
       jsrNode.resolved = expectedTarballURL
+      const jsrSpec = Spec.parse(
+        '@jsr/std__semver',
+        'jsr:^1.0.8',
+        jsrConfig,
+      )
+      graph.lockedResolutions = new Map([
+        [`${graph.mainImporter.id}\0${jsrSpec.name}`, jsrNode.id],
+      ])
 
       // Remove the edge so we can re-add it via appendNodes
       const jsrEdge = graph.mainImporter.edgesOut.get(
@@ -3619,3 +4083,1464 @@ t.test(
     t.ok(node?.dev, 'deep-platform-dep is also marked as dev')
   },
 )
+
+t.test(
+  'lockedResolutions reuses the lockfile target after resetEdges',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    )!
+    const foo11 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.1.0' },
+    )!
+
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo11.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch: ' + spec.name)
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.notOk(manifestCalled, 'locked target reuse skips manifest()')
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      foo11.id,
+      'rebuild keeps the locked 1.1.0 instead of the first satisfying 1.0.0',
+    )
+    t.equal(
+      foo11.detached,
+      false,
+      'reusing a locked target reattaches the node',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions ignores a snapshot whose name does not match the spec',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const bar = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('bar', '^1.0.0', configData),
+      { name: 'bar', version: '1.0.0' },
+    )!
+
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, bar.id],
+    ])
+    graph.resetEdges()
+
+    const fooManifest = { name: 'foo', version: '1.0.0' }
+    const packageInfo = {
+      async manifest() {
+        return fooManifest
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.name,
+      'foo',
+      'mismatched locked name is not reused',
+    )
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    )
+  },
+)
+
+/**
+ * Graph with a locked `foo@1.2.3` and a packageInfo that resolves the
+ * `latest` dist-tag to `foo@2.0.0`, recording every fetched spec.
+ */
+const distTagFixture = (t: Test) => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo', '^1.0.0', configData),
+    { name: 'foo', version: '1.2.3' },
+  )!
+
+  graph.lockedResolutions = new Map([
+    [`${graph.mainImporter.id}\0foo`, foo.id],
+  ])
+  graph.resetEdges()
+
+  const fetched: string[] = []
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      fetched.push(String(spec))
+      if (spec.final.distTag !== 'latest') {
+        throw new Error(`unexpected manifest fetch: ${spec}`)
+      }
+      return { name: 'foo', version: '2.0.0' }
+    },
+  } as unknown as PackageInfoClient
+
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', 'latest', configData),
+    type: 'prod',
+  })
+
+  return { graph, foo, fetched, packageInfo, fooDep }
+}
+
+t.test(
+  'a lockfile dist-tag edge reuses the lock without fetching',
+  async t => {
+    const { graph, foo, fetched, packageInfo, fooDep } =
+      distTagFixture(t)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+    )
+
+    t.strictSame(
+      fetched,
+      [],
+      'dist-tag lock reuses the snapshot node',
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'a manifest-derived dist-tag entry is not explicit',
+  async t => {
+    const { graph, foo, fetched, packageInfo, fooDep } =
+      distTagFixture(t)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      // the user asked for something else entirely
+      new Map([[graph.mainImporter.id, new Set(['bar'])]]),
+    )
+
+    t.strictSame(fetched, [], 'no fetch for a manifest-derived tag')
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'an explicit dist-tag add re-resolves the tag even when a lock fits',
+  async t => {
+    const { graph, foo, fetched, packageInfo, fooDep } =
+      distTagFixture(t)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+    )
+
+    t.strictSame(fetched, ['foo@latest'], 'the tag was resolved')
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.version,
+      '2.0.0',
+    )
+    graph.gc()
+    t.notOk(graph.nodes.get(foo.id), 'the locked copy is gone')
+  },
+)
+
+t.test(
+  'an explicit dist-tag add ignores attached same-name copies',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const bar = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('bar', '^1.0.0', configData),
+      { name: 'bar', version: '1.0.0', dependencies: { foo: '^1' } },
+    )!
+    const foo = graph.placePackage(
+      bar,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.2.3' },
+    )!
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '2.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', 'latest', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.version,
+      '2.0.0',
+    )
+    t.equal(bar.edgesOut.get('foo')?.to?.id, foo.id, 'bar untouched')
+    t.equal(graph.nodesByName.get('foo')?.size, 2)
+  },
+)
+
+t.test(
+  'an explicit dist-tag add still links a workspace by name',
+  async t => {
+    const mainManifest = { name: 'my-monorepo', version: '1.0.0' }
+    const wsManifest = { name: 'ws', version: '1.0.0' }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        ws: { 'package.json': JSON.stringify(wsManifest) },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+    const scurry = new PathScurry(dir)
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson: new PackageJson(),
+      load: { paths: ['packages/ws'] },
+    })
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+    const wsNode = [...graph.importers].find(n => n.name === 'ws')!
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw new Error(`unexpected manifest fetch: ${spec}`)
+      },
+    } as unknown as PackageInfoClient
+
+    const wsDep = asDependency({
+      spec: Spec.parse('ws', 'latest', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [wsDep],
+      scurry,
+      configData,
+      new Set<DepID>(),
+      new Map([['ws', wsDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['ws'])]]),
+    )
+
+    t.equal(graph.mainImporter.edgesOut.get('ws')?.to?.id, wsNode.id)
+  },
+)
+
+t.test(
+  'a transitive dist-tag dependency still reuses an existing copy',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.2.3' },
+    )!
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name !== 'baz') {
+          throw new Error(`unexpected manifest fetch: ${spec}`)
+        }
+        return {
+          name: 'baz',
+          version: '1.0.0',
+          dependencies: { foo: 'latest' },
+        }
+      },
+    } as unknown as PackageInfoClient
+
+    const bazDep = asDependency({
+      spec: Spec.parse('baz', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [bazDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['baz', bazDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['baz'])]]),
+    )
+
+    const baz = graph.mainImporter.edgesOut.get('baz')?.to
+    t.equal(baz?.edgesOut.get('foo')?.to?.id, foo.id)
+  },
+)
+
+t.test(
+  'an explicit dist-tag add skips locked-version hydration',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    // a lockfile node loaded without node_modules has no manifest
+    const lockedId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      undefined,
+      lockedId,
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo.id],
+    ])
+    graph.resetEdges()
+
+    const fetched: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        fetched.push(String(spec))
+        return { name: 'foo', version: '2.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', 'latest', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+    )
+
+    t.strictSame(fetched, ['foo@latest'], 'no hydration fetch')
+  },
+)
+
+t.test(
+  'an explicit optional add that fails to resolve throws',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const packageInfo = {
+      async manifest() {
+        throw error('Could not resolve')
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', 'latest', configData),
+      type: 'optional',
+    })
+    const call = (explicit?: Map<DepID, Set<string>>) =>
+      appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [fooDep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', fooDep]]),
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        explicit,
+      )
+
+    await t.rejects(
+      call(new Map([[graph.mainImporter.id, new Set(['foo'])]])),
+      { message: 'Could not resolve' },
+      'explicit optional add surfaces the resolution error',
+    )
+    await t.resolves(
+      call(),
+      'a manifest-derived optional dep is still swallowed',
+    )
+    t.notOk(graph.mainImporter.edgesOut.get('foo')?.to)
+  },
+)
+
+t.test(
+  'lockedResolutions matches a lockfile node by spec.final.name',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const jsrConfig: SpecOptions = {
+      ...configData,
+      'jsr-registries': {
+        jsr: 'https://npm.jsr.io/',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...jsrConfig,
+      mainManifest,
+    })
+    const jsrId = joinDepIDTuple([
+      'registry',
+      'jsr',
+      '@jsr/std__semver@1.0.8',
+    ])
+    const jsrNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+      { name: '@jsr/std__semver', version: '1.0.8' },
+      jsrId,
+    )!
+
+    const alias = Spec.parse(
+      'semver',
+      'jsr:@std/semver@^1.0.8',
+      jsrConfig,
+    )
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${alias.name}`, jsrNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch')
+      },
+    } as unknown as PackageInfoClient
+
+    const semverDep = asDependency({
+      spec: alias,
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [semverDep],
+      new PathScurry(t.testdirName),
+      jsrConfig,
+      new Set<DepID>(),
+      new Map([[alias.name, semverDep]]),
+    )
+
+    t.notOk(manifestCalled, 'JSR alias lock skips manifest()')
+    t.equal(
+      graph.mainImporter.edgesOut.get(alias.name)?.to?.id,
+      jsrNode.id,
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock when an alias changes the target',
+  async t => {
+    // `foo@npm:bar@^1` resolves bar, so a locked `foo` must not be
+    // reused just because the edge is still named foo
+    for (const hydrated of [true, false]) {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const foo = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        { name: 'foo', version: '1.0.0' },
+      )!
+      if (!hydrated) {
+        foo.manifest = undefined
+        foo.detached = true
+        graph.manifests.delete(foo.id)
+      }
+      const alias = Spec.parse('foo', 'npm:bar@^1.0.0', configData)
+      graph.lockedResolutions = new Map([
+        [`${graph.mainImporter.id}\0${alias.name}`, foo.id],
+      ])
+      graph.resetEdges()
+
+      const barManifest = { name: 'bar', version: '1.2.3' }
+      let fetched = 0
+      const packageInfo = {
+        async manifest() {
+          fetched++
+          return barManifest
+        },
+      } as unknown as PackageInfoClient
+
+      const dep = asDependency({ spec: alias, type: 'prod' })
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [dep],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([[alias.name, dep]]),
+      )
+
+      const to = graph.mainImporter.edgesOut.get('foo')?.to
+      t.equal(
+        to?.name,
+        'bar',
+        `alias target resolved (hydrated=${hydrated})`,
+      )
+      t.ok(fetched > 0, `manifest fetched (hydrated=${hydrated})`)
+    }
+  },
+)
+
+t.test(
+  'lockedResolutions ignores a lock when the spec moved off the registry',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const regNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, regNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const gitSpec = Spec.parse('foo', 'github:a/b', configData)
+    const fooDep = asDependency({ spec: gitSpec, type: 'prod' })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.ok(manifestCalled, 'git spec fetches instead of reusing lock')
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['git', 'github:a/b', '']),
+      'resolves to a fresh git node, not the locked registry node',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions never reuses a git lock for a registry spec',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const gitNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', 'github:a/b', configData),
+      { name: 'foo', version: '9.9.9' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, gitNode.id],
+    ])
+    graph.resetEdges()
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      'resolves fresh from the registry, not the locked git node',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock from a different registry',
+  async t => {
+    const customConfig: SpecOptions = {
+      ...configData,
+      registries: {
+        ...configData.registries,
+        custom: 'http://example.com/',
+      },
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...customConfig,
+      mainManifest,
+    })
+
+    const customNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', 'custom:foo@^1.0.0', customConfig),
+      { name: 'foo', version: '1.0.0' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, customNode.id],
+    ])
+    graph.resetEdges()
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', customConfig),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      customConfig,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      'default-registry spec never reuses the custom-registry lock',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock outside the requested range',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    const foo2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^2.0.0', configData),
+      { name: 'foo', version: '2.0.0' },
+    )!
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0foo`, foo2.id],
+    ])
+    graph.resetEdges()
+
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+    )
+
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      'out-of-range lock is not reused',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions rejects a lock with an unparseable version',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const jsrConfig: SpecOptions = {
+      ...configData,
+      'jsr-registries': {
+        jsr: 'https://npm.jsr.io/',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...jsrConfig,
+      mainManifest,
+    })
+    const weirdId = joinDepIDTuple([
+      'registry',
+      'jsr',
+      '@jsr/std__semver@not-a-version',
+    ])
+    const weirdNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+      { name: '@jsr/std__semver', version: 'not-a-version' },
+      weirdId,
+    )!
+    const alias = Spec.parse(
+      'semver',
+      'jsr:@std/semver@^1.0.8',
+      jsrConfig,
+    )
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${alias.name}`, weirdNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        return { name: '@jsr/std__semver', version: '1.0.8' }
+      },
+    } as unknown as PackageInfoClient
+
+    const semverDep = asDependency({ spec: alias, type: 'prod' })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [semverDep],
+      new PathScurry(t.testdirName),
+      jsrConfig,
+      new Set<DepID>(),
+      new Map([[alias.name, semverDep]]),
+    )
+
+    t.ok(manifestCalled, 'unparseable locked version forces a fetch')
+    t.equal(
+      graph.mainImporter.edgesOut.get(alias.name)?.to?.version,
+      '1.0.8',
+      'resolves a fresh node instead of the unparseable lock',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions falls back to the base id for provisional peer parents',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+
+    // two satisfying candidates; findResolution would pick 1.0.2 first
+    graph.addNode(joinDepIDTuple(['registry', '', 'x@1.0.2']), {
+      name: 'x',
+      version: '1.0.2',
+    })
+    const x103 = graph.addNode(
+      joinDepIDTuple(['registry', '', 'x@1.0.3']),
+      { name: 'x', version: '1.0.3' },
+    )
+
+    // the lockfile captured dup's x target under dup's base id; the
+    // rebuild will mint a provisional peer.0 id for dup, missing the
+    // exact-id key
+    graph.lockedResolutions = new Map([
+      [
+        `${joinDepIDTuple(['registry', '', 'dup@1.0.0'])}\0x`,
+        x103.id,
+      ],
+    ])
+
+    const dupManifest = {
+      name: 'dup',
+      version: '1.0.0',
+      peerDependencies: { x: '^1.0.0' },
+    }
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'dup') return dupManifest
+        return { name: 'x', version: '1.0.3' }
+      },
+    } as unknown as PackageInfoClient
+
+    const dupDep = asDependency({
+      spec: Spec.parse('dup', '^1.0.0', configData),
+      type: 'prod',
+    })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dupDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['dup', dupDep]]),
+    )
+
+    const dupNode = graph.mainImporter.edgesOut.get('dup')?.to
+    t.ok(dupNode, 'dup was placed')
+    t.match(dupNode?.id, /peer\.0/, 'dup got a provisional peer id')
+    t.equal(
+      dupNode?.edgesOut.get('x')?.to,
+      x103,
+      'base-id lock keeps the captured x@1.0.3 over first-satisfying',
+    )
+  },
+)
+
+t.test(
+  'lockedResolutions reuses a jsr dist-tag lock via the loose fallback',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const jsrConfig: SpecOptions = {
+      ...configData,
+      'jsr-registries': {
+        jsr: 'https://npm.jsr.io/',
+      },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...jsrConfig,
+      mainManifest,
+    })
+    const jsrId = joinDepIDTuple([
+      'registry',
+      'jsr',
+      '@jsr/std__semver@1.0.8',
+    ])
+    const jsrNode = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('@jsr/std__semver', 'jsr:^1.0.8', jsrConfig),
+      { name: '@jsr/std__semver', version: '1.0.8' },
+      jsrId,
+    )!
+    const alias = Spec.parse(
+      'semver',
+      'jsr:@std/semver@latest',
+      jsrConfig,
+    )
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${alias.name}`, jsrNode.id],
+    ])
+    graph.resetEdges()
+
+    let manifestCalled = false
+    const packageInfo = {
+      async manifest() {
+        manifestCalled = true
+        throw new Error('unexpected manifest fetch')
+      },
+    } as unknown as PackageInfoClient
+
+    const semverDep = asDependency({ spec: alias, type: 'prod' })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [semverDep],
+      new PathScurry(t.testdirName),
+      jsrConfig,
+      new Set<DepID>(),
+      new Map([[alias.name, semverDep]]),
+    )
+
+    t.notOk(manifestCalled, 'dist-tag jsr lock skips manifest()')
+    t.equal(
+      graph.mainImporter.edgesOut.get(alias.name)?.to?.id,
+      jsrNode.id,
+      'source-compatible dist-tag lock is reused',
+    )
+  },
+)
+
+t.test('locked version fetch without node_modules', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const setup = (
+    t: Test,
+    {
+      id,
+      name = 'foo',
+      version = '1.1.0',
+      edgeName = 'foo',
+      options = configData,
+    }: {
+      id: DepID
+      name?: string
+      version?: string
+      edgeName?: string
+      options?: SpecOptions
+    },
+  ) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...options,
+      mainManifest,
+    })
+    // shaped like lockfile/load-nodes.ts with no actual graph: name,
+    // version, resolved and integrity, but no manifest
+    const locked = graph.addNode(
+      id,
+      undefined,
+      undefined,
+      name,
+      version,
+    )
+    locked.resolved = `https://old.example/${name}/-/${name}-1.1.0.tgz`
+    locked.integrity = 'sha512-deadbeef'
+    locked.resolvedFromLockfile = true
+    graph.lockedResolutions = new Map([
+      [`${graph.mainImporter.id}\0${edgeName}`, locked.id],
+    ])
+    graph.resetEdges()
+    return { graph, locked }
+  }
+
+  const recorder = (
+    answer: (spec: Spec) => Manifest | Promise<Manifest>,
+  ) => {
+    const calls: { spec: string; registry?: string }[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        calls.push({
+          spec: String(spec),
+          registry: spec.final.registry,
+        })
+        return answer(spec)
+      },
+    } as unknown as PackageInfoClient
+    return { calls, packageInfo }
+  }
+
+  // exact specs answer their own version, ranges answer a newer one
+  const byVersion = (name: string) => (spec: Spec) => {
+    const v = parseVersion(spec.final.semver ?? '')
+    return { name, version: v ? String(v) : '1.2.0' }
+  }
+
+  const run = (
+    t: Test,
+    graph: Graph,
+    packageInfo: PackageInfoClient,
+    dep: Dependency,
+    options: SpecOptions = configData,
+  ) =>
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dep],
+      new PathScurry(t.testdirName),
+      options,
+      new Set<DepID>(),
+      new Map([[dep.spec.name, dep]]),
+    )
+
+  const fooId = joinDepIDTuple(['registry', '', 'foo@1.1.0'])
+  const foo12Id = joinDepIDTuple(['registry', '', 'foo@1.2.0'])
+  const fooDep = () =>
+    asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'prod',
+    })
+
+  await t.test('pins the locked version', async t => {
+    const { graph, locked } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(calls, [
+      { spec: 'foo@1.1.0', registry: configData.registry },
+    ])
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+    t.equal(locked.detached, false)
+    t.equal(locked.manifest?.version, '1.1.0')
+    t.equal(locked.integrity, 'sha512-deadbeef')
+    t.equal(locked.resolvedFromLockfile, true)
+    t.notOk(graph.nodes.has(foo12Id), 'newest satisfying not placed')
+  })
+
+  await t.test('falls back when the exact fetch rejects', async t => {
+    const { graph, locked } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(spec => {
+      if (spec.final.semver === '1.1.0') throw new Error('gone')
+      return { name: 'foo', version: '1.2.0' }
+    })
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['foo@1.1.0', 'foo@^1.0.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo12Id)
+    t.equal(locked.detached, true, 'locked node left for gc')
+  })
+
+  await t.test('falls back on a version mismatch', async t => {
+    const { graph } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(() => ({
+      name: 'foo',
+      version: '1.2.0',
+    }))
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['foo@1.1.0', 'foo@^1.0.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo12Id)
+  })
+
+  await t.test('range fetch runs once after a mismatch', async t => {
+    const { graph } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(spec => {
+      if (spec.final.semver === '1.1.0') {
+        return { name: 'foo', version: '1.2.0' }
+      }
+      throw new Error('range boom')
+    })
+    await t.rejects(
+      run(t, graph, packageInfo, fooDep()),
+      /range boom/,
+    )
+    t.equal(calls.length, 2)
+  })
+
+  await t.test('preserves an alias', async t => {
+    const { graph, locked } = setup(t, { id: fooId, edgeName: 'bar' })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    const dep = asDependency({
+      spec: Spec.parse('bar', 'npm:foo@^1.0.0', configData),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep)
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['bar@npm:foo@1.1.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('bar')?.to, locked)
+  })
+
+  const customId = joinDepIDTuple(['registry', 'custom', 'foo@1.1.0'])
+  const withCustom = (url: string): SpecOptions => ({
+    ...configData,
+    registries: { ...configData.registries, custom: url },
+  })
+
+  await t.test('preserves a named registry', async t => {
+    const options = withCustom('https://registry.example.com/')
+    const { graph, locked } = setup(t, { id: customId, options })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    const dep = asDependency({
+      spec: Spec.parse('foo', 'custom:foo@^1.0.0', options),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep, options)
+    t.strictSame(calls, [
+      {
+        spec: 'foo@custom:foo@1.1.0',
+        registry: 'https://registry.example.com/',
+      },
+    ])
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+  })
+
+  await t.test('re-parses a remapped named registry', async t => {
+    const oldOptions = withCustom('https://old.example/')
+    const options = withCustom('https://new.example/')
+    // the dep-id memo ignores options, so a stale entry survives
+    hydrate(customId, 'foo', oldOptions)
+    t.not(
+      hydrate(customId, 'foo', options).final.registry,
+      'https://new.example/',
+      'memo returns the stale registry',
+    )
+    const { graph, locked } = setup(t, { id: customId, options })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    const dep = asDependency({
+      spec: Spec.parse('foo', 'custom:foo@^1.0.0', options),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep, options)
+    t.strictSame(calls, [
+      {
+        spec: 'foo@custom:foo@1.1.0',
+        registry: 'https://new.example/',
+      },
+    ])
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+    // known gap: the lockfile tarball from the old URL is kept, same
+    // as with node_modules present
+    t.equal(
+      locked.resolved,
+      'https://old.example/foo/-/foo-1.1.0.tgz',
+    )
+  })
+
+  await t.test('does not pin across a registry mismatch', async t => {
+    const oldOptions = withCustom('https://old.example/')
+    const options = withCustom('https://new.example/')
+    const { graph } = setup(t, { id: customId, options })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    // edge spec resolved against the old URL, install options moved on
+    const dep = asDependency({
+      spec: Spec.parse('foo', 'custom:foo@^1.0.0', oldOptions),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep, options)
+    t.strictSame(calls, [
+      {
+        spec: 'foo@custom:foo@^1.0.0',
+        registry: 'https://old.example/',
+      },
+    ])
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.id,
+      joinDepIDTuple(['registry', 'custom', 'foo@1.2.0']),
+    )
+  })
+
+  await t.test('skips a git lock', async t => {
+    const gitId = joinDepIDTuple(['git', 'github:a/b', 'main'])
+    const { graph, locked } = setup(t, {
+      id: gitId,
+      name: 'b',
+      version: '',
+      edgeName: 'b',
+    })
+    const { calls, packageInfo } = recorder(() => ({
+      name: 'b',
+      version: '1.0.0',
+    }))
+    const dep = asDependency({
+      spec: Spec.parse('b', 'github:a/b#main', configData),
+      type: 'prod',
+    })
+    await run(t, graph, packageInfo, dep)
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['b@github:a/b#main'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('b')?.to, locked)
+  })
+
+  await t.test('skips a registry lock without a version', async t => {
+    const { graph } = setup(t, { id: fooId, version: '' })
+    const { calls, packageInfo } = recorder(byVersion('foo'))
+    await run(t, graph, packageInfo, fooDep())
+    t.strictSame(
+      calls.map(c => c.spec),
+      ['foo@^1.0.0'],
+    )
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to?.id, foo12Id)
+  })
+
+  await t.test(
+    'hydrates a node shared by two edges once',
+    async t => {
+      const { graph, locked } = setup(t, { id: fooId })
+      graph.lockedResolutions?.set(
+        `${graph.mainImporter.id}\0foo2`,
+        locked.id,
+      )
+      const { calls, packageInfo } = recorder(byVersion('foo'))
+      const fooDep2 = asDependency({
+        spec: Spec.parse('foo2', 'npm:foo@^1.0.0', configData),
+        type: 'prod',
+      })
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [fooDep(), fooDep2],
+        new PathScurry(t.testdirName),
+        configData,
+        new Set<DepID>(),
+        new Map([
+          ['foo', fooDep()],
+          ['foo2', fooDep2],
+        ]),
+      )
+      t.strictSame(
+        calls.map(c => c.spec),
+        ['foo@1.1.0'],
+      )
+      t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+      t.equal(graph.mainImporter.edgesOut.get('foo2')?.to, locked)
+    },
+  )
+
+  await t.test('optional dep swallows both failures', async t => {
+    const { graph } = setup(t, { id: fooId })
+    const { calls, packageInfo } = recorder(() => {
+      throw new Error('nope')
+    })
+    const dep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', configData),
+      type: 'optional',
+    })
+    await run(t, graph, packageInfo, dep)
+    t.equal(calls.length, 2)
+    t.equal(graph.mainImporter.edgesOut.get('foo')?.to, undefined)
+  })
+})

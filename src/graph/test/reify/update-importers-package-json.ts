@@ -545,6 +545,11 @@ t.test('updatePackageJson', async t => {
       mani,
       'should use resolved version in package json save',
     )
+    t.equal(
+      root.edgesOut.get('b')?.spec.bareSpec,
+      'npm:a@^1.0.0',
+      'edge carries the saved alias',
+    )
   })
 
   await t.test('custom aliased install', async t => {
@@ -588,6 +593,11 @@ t.test('updatePackageJson', async t => {
     t.matchSnapshot(
       mani,
       'should use custom aliased registry in package json save',
+    )
+    t.equal(
+      root.edgesOut.get('b')?.spec.bareSpec,
+      'custom:a@^1.0.0',
+      'edge carries the saved alias',
     )
   })
 
@@ -954,5 +964,115 @@ t.test('updatePackageJson', async t => {
       '4.0.0',
       'should save exact version without caret prefix',
     )
+  })
+})
+
+t.test('stores the saved value on importer edges', async t => {
+  /**
+   * Root with a single `foo` edge placed with `edgeSpec`, updated from
+   * an add of `depSpec`. Returns the edge so the saved value can be read.
+   */
+  const run = (
+    edgeSpec: Spec,
+    depSpec: Spec,
+    rootDeps?: Record<string, string>,
+    opts?: { saveExact?: boolean; savePrefix?: string },
+  ) => {
+    const rootMani = {
+      name: 'root',
+      version: '1.0.0',
+      ...(rootDeps ? { dependencies: rootDeps } : null),
+    }
+    const graph = new Graph({
+      mainManifest: rootMani,
+      projectRoot: t.testdirName,
+      ...specOptions,
+    })
+    const root = graph.mainImporter
+    const fooMani = { name: 'foo', version: '1.0.0' }
+    const foo = graph.addNode(
+      undefined,
+      fooMani,
+      edgeSpec,
+      fooMani.name,
+      fooMani.version,
+    )
+    graph.addEdge('prod', edgeSpec, root, foo)
+    const edge = root.edgesOut.get('foo')!
+    updatePackageJson({
+      packageJson: new PackageJson(),
+      graph,
+      add: new Map([
+        [
+          root.id,
+          new Map([
+            ['foo', asDependency({ spec: depSpec, type: 'prod' })],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+      ...opts,
+    })
+    return { graph, edge, manifest: root.manifest }
+  }
+
+  await t.test('dist-tag add', async t => {
+    const spec = Spec.parse('foo', 'latest', specOptions)
+    const { graph, edge, manifest } = run(spec, spec)
+    t.equal(edge.spec.bareSpec, '^1.0.0')
+    t.equal(String(edge.spec), 'foo@^1.0.0')
+    t.equal(manifest?.dependencies?.foo, '^1.0.0')
+    t.equal(graph.lockfileStale, true)
+  })
+
+  await t.test('--save-exact reaches the edge', async t => {
+    const spec = Spec.parse('foo', 'latest', specOptions)
+    const { edge } = run(spec, spec, undefined, { saveExact: true })
+    t.equal(edge.spec.bareSpec, '1.0.0')
+  })
+
+  await t.test('--save-prefix reaches the edge', async t => {
+    const spec = Spec.parse('foo', 'latest', specOptions)
+    const { edge } = run(spec, spec, undefined, { savePrefix: '~' })
+    t.equal(edge.spec.bareSpec, '~1.0.0')
+  })
+
+  await t.test(
+    'existing single version keeps the exact edge',
+    async t => {
+      const { edge, graph } = run(
+        Spec.parse('foo', '^1', specOptions),
+        Spec.parse('foo', '^1', specOptions),
+        { foo: '1.0.0' },
+      )
+      t.equal(edge.spec.bareSpec, '1.0.0')
+      t.equal(graph.lockfileStale, true)
+    },
+  )
+
+  await t.test('matching spec leaves the edge alone', async t => {
+    const spec = Spec.parse('foo', '^1.0.0', specOptions)
+    const { edge, graph } = run(spec, spec, { foo: '^1.0.0' })
+    t.equal(edge.spec, spec, 'same Spec instance')
+    t.equal(graph.lockfileStale, false)
+  })
+
+  await t.test('catalog and git edges are untouched', async t => {
+    const catalogOptions = {
+      ...specOptions,
+      catalog: { foo: '^1.0.0' },
+    }
+    const catalogSpec = Spec.parse('foo', 'catalog:', catalogOptions)
+    const catalog = run(catalogSpec, catalogSpec)
+    t.equal(catalog.edge.spec, catalogSpec)
+    t.equal(catalog.graph.lockfileStale, false)
+
+    const gitSpec = Spec.parse(
+      'foo',
+      'github:a/b#semver:^1.0.0',
+      specOptions,
+    )
+    const git = run(gitSpec, gitSpec)
+    t.equal(git.edge.spec, gitSpec)
+    t.equal(git.graph.lockfileStale, false)
   })
 })

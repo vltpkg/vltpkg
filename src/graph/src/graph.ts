@@ -1,4 +1,9 @@
-import { getId, joinDepIDTuple, splitExtra } from '@vltpkg/dep-id'
+import {
+  baseDepID,
+  getId,
+  joinDepIDTuple,
+  splitExtra,
+} from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -14,6 +19,7 @@ import type { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
 import { lockfileData } from './lockfile/save.ts'
+import type { OptionsChange } from './lockfile/types.ts'
 import { Edge } from './edge.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
@@ -165,6 +171,27 @@ export class Graph implements GraphLike {
   optionsChanged = false
 
   /**
+   * The individual differences behind `optionsChanged`, in the order
+   * they are reported to the user. Empty when nothing changed.
+   */
+  optionsChanges: OptionsChange[] = []
+
+  /**
+   * Whether the lockfile on disk no longer matches this graph even
+   * though no node changed, e.g. an importer edge spec was rewritten to
+   * the value saved to `package.json`, or the config options the graph
+   * was built with differ from the ones stored in the lockfile. Reify
+   * saves the lockfiles from its no-diff early return when set.
+   */
+  lockfileStale = false
+
+  /**
+   * Lockfile edge targets captured immediately before `resetEdges()`.
+   * Used by the ideal builder to reuse locked resolutions across a rebuild.
+   */
+  lockedResolutions?: Map<string, DepID>
+
+  /**
    * Tracks the current peer context index.
    */
   currentPeerContextIndex = 0
@@ -285,7 +312,25 @@ export class Graph implements GraphLike {
     for (const node of nodes.values()) {
       this.removeNode(node)
     }
+    this.sortNodes()
     return nodes
+  }
+
+  /**
+   * Rebuild `nodes` so importers come first, then remaining nodes in
+   * DepID order. Matches lockfile save so a built graph and a
+   * save→load round-trip iterate the same way.
+   */
+  sortNodes() {
+    const rest: Node[] = []
+    for (const node of this.nodes.values()) {
+      if (!this.importers.has(node)) rest.push(node)
+    }
+    rest.sort((a, b) => a.id.localeCompare(b.id, 'en'))
+    const nodes = new Map<DepID, Node>()
+    for (const node of this.importers) nodes.set(node.id, node)
+    for (const node of rest) nodes.set(node.id, node)
+    this.nodes = nodes
   }
 
   /**
@@ -299,6 +344,10 @@ export class Graph implements GraphLike {
     from: NodeLike,
     to?: NodeLike,
   ) {
+    if (to) {
+      const toNode = to as Node
+      toNode.detached = false
+    }
     // fix any nameless spec
     if (spec.name === '(unknown)') {
       if (to) {
@@ -348,10 +397,11 @@ export class Graph implements GraphLike {
     const f = spec.final
     const sf = getResolutionCacheKey(f, fromNode.location, extra)
     const cached = this.resolutions.get(sf)
-    if (cached) return cached
+    if (cached && !cached.detached) return cached
     const nbn = this.nodesByName.get(f.name)
     if (!nbn) return undefined
     for (const node of nbn) {
+      if (node.detached) continue
       if (
         satisfies(
           node.id,
@@ -475,10 +525,36 @@ export class Graph implements GraphLike {
     }
 
     // creates a new node and edges to its parent
+    // Peer-fork rebuilds mint a provisional `peer.N` DepID that does not
+    // match the lockfile's content-hash ID, so exact-ID reuse misses.
+    // Copy integrity/resolved from the same package version (same tarball).
+    let samePackage: Node | undefined
+    const base = baseDepID(depId)
+    const nbn = this.nodesByName.get(manifest?.name ?? spec.name)
+    if (nbn) {
+      for (const n of nbn) {
+        if (baseDepID(n.id) !== base) continue
+        if (!n.integrity && !n.resolved) continue
+        samePackage = n
+        if (n.integrity) break
+      }
+    }
     const toNode = this.addNode(depId, manifest, spec)
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
+    if (samePackage) {
+      toNode.integrity ??= samePackage.integrity
+      toNode.resolved ??= samePackage.resolved
+      if (
+        samePackage.resolvedFromLockfile &&
+        toNode.integrity &&
+        toNode.resolved
+      ) {
+        toNode.resolvedFromLockfile = true
+      }
+    }
+    toNode.integrity ??= manifest?.dist?.integrity
     // split extra into modifier and peerSetHash
     if (extra) {
       const { modifier, peerSetHash } = splitExtra(extra)
@@ -601,8 +677,9 @@ export class Graph implements GraphLike {
       // Mark nodes as detached so ideal rebuild treats them as candidates
       // that must be (re)placed during traversal. Detached nodes with a
       // manifest can skip refetch; detached nodes without a manifest must
-      // fetch from package-info during ideal rebuild.
-      node.detached = true
+      // fetch from package-info during ideal rebuild. Importers are the
+      // traversal roots and are never re-placed, so they stay attached.
+      node.detached = !node.importer
 
       // detaches all edges from this node
       node.edgesOut.clear()

@@ -4,6 +4,7 @@ import {
   getNodeOrderedDependencies,
 } from './sorting.ts'
 import type { PathScurry } from 'path-scurry'
+import { baseDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -12,6 +13,7 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
   BuildIdealRemoveOptions,
+  ExplicitAddMap,
   TransientAddMap,
   TransientRemoveMap,
 } from './types.ts'
@@ -48,6 +50,12 @@ export type RefreshIdealGraphOptions = BuildIdealAddOptions &
      * A {@link RollbackRemove} instance to handle extraction rollbacks
      */
     remover: RollbackRemove
+
+    /**
+     * Dependency names that came from an explicit user request, keyed by
+     * the id of the node receiving them.
+     */
+    explicit?: ExplicitAddMap
 
     /**
      * Dependencies to be added to non-importer nodes when they are placed.
@@ -90,6 +98,7 @@ export const refreshIdealGraph = async ({
   packageInfo,
   scurry,
   actual,
+  explicit,
   remove,
   remover,
   transientAdd,
@@ -102,6 +111,18 @@ export const refreshIdealGraph = async ({
 
   // gets an ordered list of importers to ensure deterministic processing
   const orderedImporters = getOrderedImporters(graph)
+
+  // importer edge spec text as the starting graph had it. a rebuild that
+  // only changes the text (`vlt i foo@1.2.3` over a `foo@^1.2.3` edge)
+  // produces no node diff, so reify has to be told the lockfile on disk
+  // no longer describes the graph
+  const specTexts = new Map<string, string>()
+  for (const importer of graph.importers) {
+    for (const [name, edge] of importer.edgesOut) {
+      specTexts.set(`${importer.id}\0${name}`, edge.spec.bareSpec)
+    }
+  }
+
   const depsPerImporter = new Map<Node, Dependency[]>()
   for (const importer of orderedImporters) {
     // gets an ordered list of dependencies for this importer
@@ -116,7 +137,37 @@ export const refreshIdealGraph = async ({
     remove.modifiedDependencies ||
     graph.optionsChanged
   ) {
+    const locked = new Map<string, DepID>()
+    const ambiguous = new Set<string>()
+    const record = (key: string, id: DepID) => {
+      if (ambiguous.has(key)) return
+      const prev = locked.get(key)
+      if (prev === undefined) {
+        locked.set(key, id)
+      } else if (prev !== id) {
+        // two peer copies of the same base resolve the name differently;
+        // a base-keyed lookup would be a guess, so drop the key
+        locked.delete(key)
+        ambiguous.add(key)
+      }
+    }
+    for (const edge of graph.edges) {
+      if (!edge.to) continue
+      record(`${edge.from.id}\0${edge.spec.name}`, edge.to.id)
+      // peer-fork rebuilds mint provisional `peer.N` parent ids that miss
+      // the canonical `peer.<hash>` keys captured here, so also key by
+      // the base id when that is unambiguous across peer copies
+      const base = baseDepID(edge.from.id)
+      if (base !== edge.from.id) {
+        record(`${base}\0${edge.spec.name}`, edge.to.id)
+      }
+    }
+    graph.lockedResolutions = locked
     graph.resetEdges()
+    // the options block on disk no longer matches the config this graph
+    // was built with, so the lockfile has to be written even when the
+    // rebuild lands on the same nodes and edges
+    if (graph.optionsChanged) graph.lockfileStale = true
   }
 
   // iterates on the list of dependencies per importer updating
@@ -153,7 +204,22 @@ export const refreshIdealGraph = async ({
       remover,
       transientAdd,
       transientRemove,
+      explicit,
     )
+  }
+
+  // locked resolutions only apply to the rebuild that captured them
+  graph.lockedResolutions = undefined
+
+  for (const importer of graph.importers) {
+    for (const [name, edge] of importer.edgesOut) {
+      if (
+        specTexts.get(`${importer.id}\0${name}`) !==
+        edge.spec.bareSpec
+      ) {
+        graph.lockfileStale = true
+      }
+    }
   }
 
   // set default node locations, if possible

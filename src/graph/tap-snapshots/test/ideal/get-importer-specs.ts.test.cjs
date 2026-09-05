@@ -13,6 +13,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > adding to a non existing impor
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  staleSpecs: Map(0) {},
   transientAdd: Map(1) {
     'file~nested+folder' => Map(1) {
       'baz' => {
@@ -92,6 +93,14 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to r
     },
     modifiedDependencies: true
   },
+  staleSpecs: Map(1) {
+    @vltpkg/graph.Edge {
+      from: 'file~_d',
+      type: 'prod',
+      spec: 'bar@npm:bar@1.0.0',
+      to: '~npm~bar@1.0.0'
+    } => Spec {bar@^1.0.0}
+  },
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}
 }
@@ -159,6 +168,14 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
     },
     modifiedDependencies: true
   },
+  staleSpecs: Map(1) {
+    @vltpkg/graph.Edge {
+      from: 'file~_d',
+      type: 'prod',
+      spec: 'foo@npm:foo@1.0.0',
+      to: '~npm~foo@1.0.0'
+    } => Spec {foo@^1.0.0}
+  },
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}
 }
@@ -178,6 +195,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > installing over a dangling edg
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  staleSpecs: Map(0) {},
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}
 }
@@ -191,6 +209,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > removing from a non existing i
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  staleSpecs: Map(0) {},
   transientAdd: Map(0) {},
   transientRemove: Map(1) {
     'file~nested+folder' => Set(1) {
@@ -208,6 +227,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd and transientRemo
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  staleSpecs: Map(0) {},
   transientAdd: Map(1) {
     'file~nested+folder' => Map(1) {
       'foo' => {
@@ -232,6 +252,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd from file-type di
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  staleSpecs: Map(0) {},
   transientAdd: Map(1) {
     'file~nested' => Map(2) {
       'bar' => {
@@ -262,6 +283,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientRemove from file-type
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  staleSpecs: Map(0) {},
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}
 }

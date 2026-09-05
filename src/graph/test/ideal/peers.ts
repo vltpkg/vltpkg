@@ -1,6 +1,6 @@
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
+import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import t from 'tap'
 import { Graph } from '../../src/graph.ts'
 import {
@@ -22,7 +22,8 @@ import type {
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { build } from '../../src/ideal/build.ts'
 import { load as actualLoad } from '../../src/actual/load.ts'
 import { asDependency } from '../../src/dependencies.ts'
@@ -33,6 +34,8 @@ import type {
 } from '../../src/dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
+import { assertOptionalPeerProvisions } from '../fixtures/peer-provisions.ts'
+import type { Node } from '../../src/node.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -118,6 +121,299 @@ t.test('checkPeerEdgesCompatible', async t => {
     },
   )
 
+  t.test('a dangling optional peer the parent provides', async t => {
+    // build: a `foo` copy with a dangling `peerOptional p` edge, a parent
+    // to check it against, and optionally a `p@1.0.0` already in the graph
+    type DepMaps = Pick<
+      Manifest,
+      | 'dependencies'
+      | 'devDependencies'
+      | 'optionalDependencies'
+      | 'peerDependencies'
+      | 'peerDependenciesMeta'
+    >
+    const setup = (
+      parentManifest?: DepMaps,
+      opts: { importerParent?: boolean; peerRange?: string } = {},
+    ) => {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: {
+          name: 'my-project',
+          version: '1.0.0',
+          ...(opts.importerParent ? parentManifest : {}),
+        },
+      })
+      const peerRange = opts.peerRange ?? '^1.0.0'
+      const foo = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { p: peerRange },
+          peerDependenciesMeta: { p: { optional: true } },
+        },
+      )!
+      graph.addEdge(
+        'peerOptional',
+        Spec.parse('p', peerRange, configData),
+        foo,
+      )
+      const parent =
+        opts.importerParent ?
+          graph.mainImporter
+        : graph.placePackage(
+            graph.mainImporter,
+            'prod',
+            Spec.parse('parent', '^1.0.0', configData),
+            { name: 'parent', version: '1.0.0', ...parentManifest },
+          )!
+      return { graph, foo, parent }
+    }
+    const p1 = (graph: Graph, from: Node) =>
+      graph.placePackage(
+        from,
+        'prod',
+        Spec.parse('p', '^1.0.0', configData),
+        {
+          name: 'p',
+          version: '1.0.0',
+        },
+      )!
+    const pending = (
+      bareSpec: string,
+      type: DependencySaveType = 'prod',
+    ) =>
+      new Map([
+        [
+          'p',
+          asDependency({
+            spec: Spec.parse('p', bareSpec, configData),
+            type,
+          }),
+        ],
+      ])
+
+    await t.test("parent's own edge", async t => {
+      const { graph, foo, parent } = setup()
+      const target = p1(graph, parent)
+      const result = checkPeerEdgesCompatible(
+        foo,
+        parent,
+        new Map(),
+        graph,
+        new Map(),
+      )
+      t.equal(result.compatible, false)
+      t.equal(
+        result.forkEntry?.target,
+        target,
+        'forks onto the edge target',
+      )
+      t.equal(result.forkEntry?.type, 'prod')
+      t.equal(result.keepVersion, true, 'the copy keeps its version')
+    })
+
+    await t.test('pending dependency of the level', async t => {
+      const { graph, foo, parent } = setup()
+      const result = checkPeerEdgesCompatible(
+        foo,
+        parent,
+        new Map(),
+        graph,
+        pending('^1.0.0'),
+      )
+      t.equal(result.compatible, false)
+      t.equal(
+        result.forkEntry?.target,
+        undefined,
+        'no node is predicted for the parent',
+      )
+      t.equal(String(result.forkEntry?.spec), 'p@^1.0.0')
+      t.equal(result.forkEntry?.type, 'prod')
+    })
+
+    await t.test('the pending list is authoritative', async t => {
+      // `vlt rm p` in the same run: declared, but not being placed
+      const { graph, foo, parent } = setup({
+        dependencies: { p: '^1.0.0' },
+      })
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          new Map(),
+        ).compatible,
+        true,
+      )
+    })
+
+    await t.test(
+      'parent manifest, without a pending list',
+      async t => {
+        for (const [label, manifest, compatible] of [
+          ['dependencies', { dependencies: { p: '^1.0.0' } }, false],
+          [
+            'required peer',
+            { peerDependencies: { p: '^1.0.0' } },
+            false,
+          ],
+          [
+            'optional peer',
+            {
+              peerDependencies: { p: '^1.0.0' },
+              peerDependenciesMeta: { p: { optional: true } },
+            },
+            true,
+          ],
+          [
+            'devDependencies',
+            { devDependencies: { p: '^1.0.0' } },
+            true,
+          ],
+          ['nothing', {}, true],
+        ] as [string, DepMaps, boolean][]) {
+          const { graph, foo, parent } = setup(manifest)
+          const result = checkPeerEdgesCompatible(
+            foo,
+            parent,
+            new Map(),
+            graph,
+          )
+          t.equal(result.compatible, compatible, label)
+          if (!compatible) {
+            t.equal(
+              result.forkEntry?.target,
+              undefined,
+              `${label}: target-less`,
+            )
+          }
+        }
+
+        // an importer does install its devDependencies
+        const { graph, foo, parent } = setup(
+          { devDependencies: { p: '^1.0.0' } },
+          { importerParent: true },
+        )
+        t.equal(
+          checkPeerEdgesCompatible(foo, parent, new Map(), graph)
+            .compatible,
+          false,
+          'devDependencies of an importer',
+        )
+      },
+    )
+
+    await t.test('disjoint ranges do not fork', async t => {
+      const { graph, foo, parent } = setup()
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          pending('^2.0.0'),
+        ).compatible,
+        true,
+        'the parent installs a p the copy cannot use',
+      )
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          pending('^1.5.0'),
+        ).compatible,
+        false,
+        'intersecting ranges fork',
+      )
+    })
+
+    await t.test('context entry target', async t => {
+      const { graph, foo, parent } = setup()
+      const target = p1(graph, graph.mainImporter)
+      const peerSpec = Spec.parse('p', '^1.0.0', configData)
+      const peerContext: PeerContext = new Map([
+        [
+          'p',
+          {
+            active: true,
+            specs: oneSpec(peerSpec),
+            target,
+            type: 'peer' as const,
+            contextDependents: new Set<Node>(),
+          },
+        ],
+      ])
+      const result = checkPeerEdgesCompatible(
+        foo,
+        parent,
+        peerContext,
+        graph,
+        new Map(),
+      )
+      t.equal(result.compatible, false)
+      t.equal(result.forkEntry?.target, target)
+      t.equal(result.forkEntry?.type, 'peer')
+
+      // a target that does not satisfy the peer spec is not a provision
+      const {
+        graph: g2,
+        foo: foo2,
+        parent: parent2,
+      } = setup(undefined, {
+        peerRange: '^2.0.0',
+      })
+      const other = p1(g2, g2.mainImporter)
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo2,
+          parent2,
+          new Map([
+            [
+              'p',
+              {
+                active: true,
+                specs: oneSpec(peerSpec),
+                target: other,
+                type: 'peer' as const,
+                contextDependents: new Set<Node>(),
+              },
+            ],
+          ]),
+          g2,
+          new Map(),
+        ).compatible,
+        true,
+      )
+    })
+
+    await t.test('a resolved optional peer is shared', async t => {
+      // §0.7: reuse by a parent that provides nothing is allowed, the
+      // shared copy only ever carries an extra satisfying link
+      const { graph, foo, parent } = setup()
+      const target = p1(graph, graph.mainImporter)
+      foo.edgesOut.get('p')!.to = target
+      target.edgesIn.add(foo.edgesOut.get('p')!)
+      t.equal(
+        checkPeerEdgesCompatible(
+          foo,
+          parent,
+          new Map(),
+          graph,
+          new Map(),
+        ).compatible,
+        true,
+      )
+    })
+  })
+
   t.test(
     'returns incompatible when peer context has different target',
     async t => {
@@ -180,7 +476,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
-      t.equal(result.forkEntry?.target.id, react19.id)
+      t.equal(result.forkEntry?.target?.id, react19.id)
     },
   )
 
@@ -321,7 +617,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
-      t.equal(result.forkEntry?.target.id, react19.id)
+      t.equal(result.forkEntry?.target?.id, react19.id)
     },
   )
 
@@ -466,7 +762,7 @@ t.test('checkPeerEdgesCompatible', async t => {
 
       t.equal(result.compatible, false)
       t.ok(result.forkEntry)
-      t.equal(result.forkEntry?.target.id, react19.id)
+      t.equal(result.forkEntry?.target?.id, react19.id)
     },
   )
 
@@ -541,6 +837,73 @@ t.test('checkPeerEdgesCompatible', async t => {
         result,
         { compatible: true },
         'should be compatible - existing edge target satisfies parent spec',
+      )
+    },
+  )
+
+  t.test(
+    'CHECK3: returns compatible when the only alternative candidate is detached',
+    async t => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^18.0.0', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react19 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '^19.0.0', configData),
+        { name: 'react', version: '19.2.0' },
+      )!
+      react19.detached = true
+
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '>=18.0.0' },
+        },
+      )!
+
+      const peerSpec = Spec.parse('react', '>=18.0.0', configData)
+      graph.addEdge('peer', peerSpec, node, react18)
+
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('parent', '^1.0.0', configData),
+        {
+          name: 'parent',
+          version: '1.0.0',
+          dependencies: { react: '^19.0.0' },
+        },
+      )!
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        parent,
+        new Map(),
+        graph,
+      )
+
+      t.same(
+        result,
+        { compatible: true },
+        'detached alternative must not trigger a CHECK 3 fork',
       )
     },
   )
@@ -736,6 +1099,158 @@ t.test('checkPeerEdgesCompatible', async t => {
       t.same(result, { compatible: true })
     },
   )
+
+  t.test('devDependencies of the parent', async t => {
+    // a parent only "resolves its own copy" through a dep type it installs,
+    // so devDependencies count for importers and git deps only
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { react: '18.0.0' },
+      peerDependencies: { react: '^18' },
+    }
+    const parentManifest = {
+      version: '1.0.0',
+      devDependencies: { react: '18.0.0' },
+      peerDependencies: { react: '^18' },
+    }
+    const parents: [string, DepID | undefined, boolean][] = [
+      ['registry', undefined, false],
+      ['file', joinDepIDTuple(['file', 'lib']), false],
+      ['git', joinDepIDTuple(['git', 'github:a/lib', '']), true],
+      ['importer', undefined, true],
+    ]
+    for (const [label, parentId, compatible] of parents) {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      const react18 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.3.1', configData),
+        { name: 'react', version: '18.3.1' },
+      )!
+      const react182 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.2.0', configData),
+        { name: 'react', version: '18.2.0' },
+      )!
+      const parent =
+        label === 'importer' ?
+          graph.mainImporter
+        : graph.placePackage(
+            graph.mainImporter,
+            'prod',
+            Spec.parse('lib', '^1.0.0', configData),
+            { name: 'lib', ...parentManifest },
+            parentId,
+          )!
+      const node = graph.placePackage(
+        parent,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('react', '^18', configData),
+        node,
+        react182,
+      )
+
+      const peerContext: PeerContext = new Map()
+      peerContext.set('react', {
+        active: true,
+        specs: oneSpec(Spec.parse('react', '18.3.1', configData)),
+        target: react18,
+        type: 'prod',
+        contextDependents: new Set(),
+      })
+
+      const result = checkPeerEdgesCompatible(
+        node,
+        parent,
+        peerContext,
+        graph,
+      )
+      t.equal(
+        result.compatible,
+        compatible,
+        `${label} parent: compatible=${compatible}`,
+      )
+      if (!compatible) {
+        t.equal(
+          result.forkEntry?.target?.id,
+          react18.id,
+          `${label} parent: forks onto the context target`,
+        )
+      }
+    }
+  })
+
+  t.test(
+    'a registry parent declaring the peer only in devDependencies',
+    async t => {
+      // CHECK 3 must not treat the declaration as installed
+      const mainManifest = { name: 'my-project', version: '1.0.0' }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+      const parent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('lib', '^1.0.0', configData),
+        {
+          name: 'lib',
+          version: '1.0.0',
+          devDependencies: { react: '^18.2.0' },
+        },
+      )!
+      const react180 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.0.0', configData),
+        { name: 'react', version: '18.0.0' },
+      )!
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('react', '18.3.1', configData),
+        { name: 'react', version: '18.3.1' },
+      )
+      const node = graph.placePackage(
+        parent,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        {
+          name: 'foo',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('react', '^18', configData),
+        node,
+        react180,
+      )
+
+      t.same(
+        checkPeerEdgesCompatible(node, parent, new Map(), graph),
+        { compatible: true },
+        'falls through instead of forking onto react@18.3.1',
+      )
+    },
+  )
 })
 
 t.test('retrievePeerContextHash', async t => {
@@ -757,13 +1272,19 @@ t.test('retrievePeerContextHash', async t => {
     )
   })
 
-  t.test('returns undefined if no index', async t => {
+  t.test('returns peer.0 if no index', async t => {
     const peerContext: PeerContext = new Map()
     t.equal(
       retrievePeerContextHash(peerContext),
-      undefined,
-      'should return undefined when index not set',
+      'peer.0',
+      'should default missing index to 0',
     )
+  })
+
+  t.test('returns peer.0 for index 0', async t => {
+    const peerContext: PeerContext = new Map()
+    peerContext.index = 0
+    t.equal(retrievePeerContextHash(peerContext), 'peer.0')
   })
 })
 
@@ -1320,70 +1841,309 @@ t.test('addEntriesToPeerContext', async t => {
     )
   })
 
-  t.test('updates target and rewires edges', async t => {
-    const peerContext: PeerContext = new Map()
-    const spec = Spec.parse('foo', '^1.0.0', configData)
-    const mainManifest = {
-      name: 'my-project',
-      version: '1.0.0',
-    }
-    const graph = new Graph({
-      projectRoot: t.testdirName,
-      ...configData,
-      mainManifest,
-    })
+  t.test(
+    'keeps a dependent whose target satisfies every spec',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
 
-    const target1 = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      { name: 'foo', version: '1.0.0' },
-    )!
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
 
-    const dependent = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      Spec.parse('bar', '^1.0.0', configData),
-      { name: 'bar', version: '1.0.0' },
-    )!
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
 
-    // Add peer edge from dependent to target1
-    graph.addEdge('peer', spec, dependent, target1)
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.1' },
+      )!
 
-    // Add first target
-    addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target1, type: 'peer', dependent }],
-      dependent,
-    )
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
 
-    // Create new target
-    const target2 = graph.placePackage(
-      graph.mainImporter,
-      'prod',
-      spec,
-      { name: 'foo', version: '1.0.1' },
-    )!
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target2.id,
+        'should update target',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target1.id,
+        'edge stays on its still-satisfying target',
+      )
+      const edge = dependent.edgesOut.get('foo')!
+      t.ok(target1.edgesIn.has(edge), 'edgesIn is untouched')
+      t.notOk(
+        target2.edgesIn.has(edge),
+        'new target gains no dependent',
+      )
+    },
+  )
 
-    // Add new target - should update edges
-    const needsFork = addEntriesToPeerContext(
-      peerContext,
-      [{ spec, target: target2, type: 'peer' }],
-      dependent,
-    )
+  t.test(
+    'rewires a dependent whose target the context outgrew',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
 
-    t.equal(needsFork, false, 'should not need fork')
-    const entry = peerContext.get('foo')
-    t.equal(entry?.target?.id, target2.id, 'should update target')
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
 
-    // Check edge was rewired
-    const edge = dependent.edgesOut.get('foo')
-    t.equal(
-      edge?.to?.id,
-      target2.id,
-      'edge should point to new target',
-    )
-  })
+      // a dependent with no edge to foo at all
+      const noEdge = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('baz', '^1.0.0', configData),
+        { name: 'baz', version: '1.0.0' },
+      )!
+
+      addEntriesToPeerContext(
+        peerContext,
+        [
+          { spec, target: target1, type: 'peer', dependent },
+          { spec, type: 'peer', dependent: noEdge },
+        ],
+        dependent,
+      )
+
+      // the context outgrows 1.0.0
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.1' },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('foo', '^1.0.1', configData),
+        noEdge,
+        target2,
+      )
+      addEntriesToPeerContext(
+        peerContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.1', configData),
+            type: 'peer',
+            dependent: noEdge,
+          },
+        ],
+        noEdge,
+      )
+
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
+
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target2.id,
+        'should update target',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target2.id,
+        'edge moves to the only satisfying target',
+      )
+      const edge = dependent.edgesOut.get('foo')!
+      t.notOk(target1.edgesIn.has(edge), 'old target loses the edge')
+      t.ok(target2.edgesIn.has(edge), 'new target gains it')
+    },
+  )
+
+  t.test(
+    'rewires a dependent that fails the incoming spec',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
+
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
+
+      // stricter spec: intersects ^1.0.0 so no fork, but 1.0.0 fails it
+      const nextSpec = Spec.parse('foo', '^1.0.1', configData)
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nextSpec,
+        { name: 'foo', version: '1.0.1' },
+      )!
+
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec: nextSpec, target: target2, type: 'peer' }],
+        dependent,
+      )
+
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target2.id,
+        'should update target',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target2.id,
+        'edge moves off the target failing the incoming spec',
+      )
+      const edge = dependent.edgesOut.get('foo')!
+      t.notOk(target1.edgesIn.has(edge), 'old target loses the edge')
+      t.ok(target2.edgesIn.has(edge), 'new target gains it')
+    },
+  )
+
+  t.test(
+    'same version with a different peer id is not a new target',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '^1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const manifest = {
+        name: 'foo',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+      }
+      const target1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        manifest,
+        undefined,
+        joinExtra({ peerSetHash: 'peer.1' }),
+      )!
+      const target2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        manifest,
+        undefined,
+        joinExtra({ peerSetHash: 'peer.2' }),
+      )!
+      t.not(target1.id, target2.id, 'two copies of one version')
+
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      graph.addEdge('peer', spec, dependent, target1)
+
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target1, type: 'peer', dependent }],
+        dependent,
+      )
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target: target2, type: 'peer' }],
+        dependent,
+      )
+
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target1.id,
+        'entry target is unchanged',
+      )
+      t.equal(
+        dependent.edgesOut.get('foo')?.to?.id,
+        target1.id,
+        'dependent edge is unchanged',
+      )
+      t.notOk(
+        target2.edgesIn.has(dependent.edgesOut.get('foo')!),
+        'no edge moved onto the copy',
+      )
+    },
+  )
+
   t.test(
     'adds entry with no target then updates with target',
     async t => {
@@ -1503,10 +2263,22 @@ t.test('forkPeerContext', async t => {
     })
     const originalContext = graph.peerContexts[0]!
 
+    // a node placed in the original context, holding a peer edge to foo
+    const qux = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('qux', '^1.0.0', configData),
+      { name: 'qux', version: '1.0.0' },
+    )!
+    const foo1 = graph.placePackage(qux, 'peer', spec1, {
+      name: 'foo',
+      version: '1.0.0',
+    })!
+
     // Add entry to original
     addEntriesToPeerContext(
       originalContext,
-      [{ spec: spec1, type: 'peer' }],
+      [{ spec: spec1, type: 'peer', target: foo1, dependent: qux }],
       graph.mainImporter,
     )
 
@@ -1544,6 +2316,40 @@ t.test('forkPeerContext', async t => {
     t.ok(
       barEntry?.contextDependents.has(dependent),
       'should include dependent',
+    )
+
+    // inherited entries keep specs and target but never the parent's
+    // dependents
+    const fooEntry = forkedContext.get('foo')
+    t.equal(fooEntry?.active, false, 'inherited entry is inactive')
+    t.equal(fooEntry?.target, foo1, 'inherited target is kept')
+    t.strictSame(
+      [...(fooEntry?.specs.values() ?? [])].map(String),
+      ['foo@^1.0.0'],
+      'inherited specs are copied',
+    )
+    t.equal(
+      fooEntry?.contextDependents.size,
+      0,
+      'inherited entry has no dependents',
+    )
+
+    // a fork-local target update must not re-point the parent context's edge
+    const foo101 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.1' },
+    )!
+    addEntriesToPeerContext(
+      forkedContext,
+      [{ spec: spec1, type: 'peer', target: foo101 }],
+      dependent,
+    )
+    t.equal(
+      qux.edgesOut.get('foo')?.to?.id,
+      foo1.id,
+      'parent context edge is left alone',
     )
   })
 
@@ -1681,6 +2487,191 @@ t.test('forkPeerContext', async t => {
         2,
         'cache should have two entries now',
       )
+    },
+  )
+
+  t.test('fork entry replaces the inherited target', async t => {
+    const spec1 = Spec.parse('foo', '^1.0.0', configData)
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const originalContext = graph.peerContexts[0]!
+    const foo1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.0' },
+    )!
+    addEntriesToPeerContext(
+      originalContext,
+      [{ spec: spec1, type: 'peer', target: foo1 }],
+      graph.mainImporter,
+    )
+
+    const spec2 = Spec.parse('foo', '^2.0.0', configData)
+    const foo2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec2,
+      { name: 'foo', version: '2.0.0' },
+    )!
+    const withTarget = forkPeerContext(graph, originalContext, [
+      { spec: spec2, type: 'peer', target: foo2 },
+    ])
+    t.equal(
+      withTarget.get('foo')?.target,
+      foo2,
+      'fork entry target wins over the inherited one',
+    )
+    t.equal(withTarget.get('foo')?.active, true, 'and is active')
+
+    const spec3 = Spec.parse('foo', '^3.0.0', configData)
+    const withoutTarget = forkPeerContext(graph, originalContext, [
+      { spec: spec3, type: 'peer' },
+    ])
+    t.equal(
+      withoutTarget.get('foo')?.target,
+      undefined,
+      'a target-less fork entry clears the inherited target',
+    )
+  })
+
+  t.test(
+    'a moved base target invalidates the cached fork',
+    async t => {
+      const spec1 = Spec.parse('foo', '^1.0.0', configData)
+      const barSpec = Spec.parse('bar', '^2.0.0', configData)
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const originalContext = graph.peerContexts[0]!
+      const foo1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec1,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      addEntriesToPeerContext(
+        originalContext,
+        [{ spec: spec1, type: 'peer', target: foo1 }],
+        graph.mainImporter,
+      )
+
+      const entries: PeerContextEntryInput[] = [
+        { spec: barSpec, type: 'peer' },
+      ]
+      const first = forkPeerContext(graph, originalContext, entries)
+      t.equal(
+        first.get('foo')?.target,
+        foo1,
+        'fork sees the base target at fork time',
+      )
+
+      // the base context outgrows foo@1.0.0
+      const foo101 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.1', configData),
+        { name: 'foo', version: '1.0.1' },
+      )!
+      addEntriesToPeerContext(
+        originalContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.1', configData),
+            type: 'peer',
+            target: foo101,
+          },
+        ],
+        graph.mainImporter,
+      )
+      t.equal(
+        originalContext.get('foo')?.target,
+        foo101,
+        'base target moved',
+      )
+
+      const second = forkPeerContext(graph, originalContext, entries)
+      t.not(second, first, 'the stale fork is not reused')
+      t.equal(
+        second.get('foo')?.target,
+        foo101,
+        'the new fork sees the current target',
+      )
+    },
+  )
+
+  t.test(
+    'inherited target that fails a fork-local spec is not used',
+    async t => {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const originalContext = graph.peerContexts[0]!
+      const foo1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('foo', '^1.0.0', configData),
+        { name: 'foo', version: '1.0.0' },
+      )!
+      addEntriesToPeerContext(
+        originalContext,
+        [
+          {
+            spec: Spec.parse('foo', '^1.0.0', configData),
+            type: 'peer',
+            target: foo1,
+          },
+        ],
+        graph.mainImporter,
+      )
+      const forked = forkPeerContext(graph, originalContext, [
+        {
+          spec: Spec.parse('bar', '^2.0.0', configData),
+          type: 'peer',
+        },
+      ])
+
+      // a node placed in the fork whose optional peer wants foo@^2
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+      const nextDeps: Dependency[] = []
+      const end = endPeerPlacement(
+        forked,
+        nextDeps,
+        new Map([
+          [
+            'foo',
+            {
+              spec: Spec.parse('foo', '^2.0.0', configData),
+              type: 'peerOptional' as const,
+            },
+          ],
+        ]),
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        [{ spec: nodeSpec, target: node, type: 'prod' }],
+      )
+      end.putEntries()
+      end.resolvePeerDeps()
+
+      const edge = node.edgesOut.get('foo')
+      t.equal(edge?.type, 'peerOptional', 'peer edge was created')
+      t.notOk(edge?.to, 'inherited foo@1.0.0 does not satisfy ^2.0.0')
     },
   )
 })
@@ -3555,6 +4546,8 @@ t.test('integration tests', async t => {
       }),
       'should build a peer dependency aware graph',
     )
+
+    assertOptionalPeerProvisions(t, graph)
   })
 
   await t.test(
@@ -3645,6 +4638,8 @@ t.test('integration tests', async t => {
         }),
         'should build graph with multiple conflicting peer dependency contexts',
       )
+
+      assertOptionalPeerProvisions(t, graph)
     },
   )
 
@@ -3752,6 +4747,8 @@ t.test('integration tests', async t => {
         'should build graph with outlier peer context handling',
       )
 
+      assertOptionalPeerProvisions(t, graph)
+
       // Verify flexible peer deps in parent-2 context points to react@19
       const parent2 = [
         ...graph.nodesByName.get('@ruyadorno/package-peer-parent-2')!,
@@ -3855,6 +4852,8 @@ t.test('integration tests', async t => {
         }),
         'should build a valid graph with complex peer interdependencies',
       )
+
+      assertOptionalPeerProvisions(t, graph)
     },
   )
 
@@ -3960,6 +4959,8 @@ t.test('integration tests', async t => {
         }),
         'should build graph with 4 workspaces having isolated peer contexts',
       )
+
+      assertOptionalPeerProvisions(t, graph)
 
       // Verify workspaces a and c share context (both have react@18)
       const wsA = [...graph.importers].find(

@@ -142,6 +142,37 @@ t.test('empty graph and something to add', async t => {
   )
 })
 
+t.test(
+  'an importer dual declaration keeps the regular type',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const specs = getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph: load({ projectRoot, scurry, packageJson }),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry,
+      packageJson,
+    })
+    const deps = specs.add.get(joinDepIDTuple(['file', '.']))
+    t.strictSame([...(deps?.keys() ?? [])], ['c'], 'queued once')
+    t.strictSame(deps?.get('c')?.type, 'dev', 'as the regular type')
+    t.strictSame(String(deps?.get('c')?.spec), 'c@^1.0.0')
+  },
+)
+
 t.test('graph specs and nothing to add', async t => {
   const mainManifest = {
     name: 'my-project',
@@ -1212,3 +1243,121 @@ t.test(
     )
   },
 )
+
+t.test(
+  'dangling importer edge with matching spec is still queued',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        abbrev: '^3.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    graph.addEdge(
+      'prod',
+      Spec.parse('abbrev', '^3.0.0'),
+      graph.mainImporter,
+    )
+
+    const specs = getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry,
+      packageJson,
+    })
+
+    t.equal(
+      specs.add.modifiedDependencies,
+      true,
+      'MISSING target still counts as a modification so the rebuild can place it',
+    )
+    t.ok(
+      specs.add.get(joinDepIDTuple(['file', '.']))?.has('abbrev'),
+      'dangling matching-spec edge is queued as an add',
+    )
+  },
+)
+
+t.test('a satisfied lockfile edge with a stale spec', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const rootId = joinDepIDTuple(['file', '.'])
+  const build = () => {
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    // the lockfile edge reads a dist-tag, package.json a range
+    const spec = Spec.parse('foo', 'latest')
+    const foo = graph.addNode(
+      undefined,
+      { name: 'foo', version: '1.0.0' },
+      spec,
+      'foo',
+      '1.0.0',
+    )
+    graph.addEdge('prod', spec, graph.mainImporter, foo)
+    return graph
+  }
+  const call = (add: AddImportersDependenciesMap) =>
+    getImporterSpecs({
+      add,
+      graph: build(),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+    })
+
+  const specs = call(new Map() as AddImportersDependenciesMap)
+  t.equal(specs.staleSpecs.size, 1, 'the stale edge is reported')
+  t.equal(
+    [...specs.staleSpecs.values()][0]?.bareSpec,
+    '^1.0.0',
+    'reported with the package.json value',
+  )
+  t.equal(specs.add.modifiedDependencies, false, 'nothing to rebuild')
+
+  const withCaller = call(
+    new Map([
+      [
+        rootId,
+        new Map([
+          [
+            'foo',
+            asDependency({
+              spec: Spec.parse('foo', '1.x'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap,
+  )
+  t.equal(
+    withCaller.staleSpecs.size,
+    0,
+    'a name the caller asked for is left alone',
+  )
+})

@@ -1,8 +1,11 @@
 import { getImporterSpecs } from './get-importer-specs.ts'
+import { canonicalizePeerIds } from './canonicalize-peer-ids.ts'
+import { movePeerStoreDirs } from './move-peer-store-dirs.ts'
 import { refreshIdealGraph } from './refresh-ideal-graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { RefreshIdealGraphOptions } from './refresh-ideal-graph.ts'
+import type { ExplicitAddMap } from './types.ts'
 import type { Graph } from '../graph.ts'
 
 export type BuildIdealFromStartingGraphOptions =
@@ -25,6 +28,13 @@ export const buildIdealFromStartingGraph = async (
   // Any dependencies that are already satisfied in the starting `graph`
   // are going to be pruned from the resulting object.
   const importerSpecs = getImporterSpecs(options)
+
+  // snapshot what the user actually asked for before the merge below
+  // folds manifest-derived deltas into `options.add`
+  const explicit: ExplicitAddMap = new Map()
+  for (const [id, deps] of options.add) {
+    explicit.set(id, new Set(deps.keys()))
+  }
 
   // merge modifiedDependencies flags
   options.add.modifiedDependencies =
@@ -74,16 +84,28 @@ export const buildIdealFromStartingGraph = async (
     }
   }
 
+  // an importer edge whose lockfile spec no longer matches package.json
+  // while its target still satisfies it: rewrite the text so the rebuild
+  // reads the manifest value and the lockfile is saved carrying it
+  for (const [edge, spec] of importerSpecs.staleSpecs) {
+    edge.spec = spec
+  }
+  if (importerSpecs.staleSpecs.size) {
+    options.graph.lockfileStale = true
+  }
+
   // refreshs the current graph adding the nodes marked for addition
   // and removing the ones marked for removal, while also recalculating
   // peer dependencies and default locations
   await refreshIdealGraph({
     ...options,
+    explicit,
     transientAdd: importerSpecs.transientAdd,
     transientRemove: importerSpecs.transientRemove,
   })
 
   options.graph.gc()
+  await movePeerStoreDirs(canonicalizePeerIds(options.graph), options)
 
   return options.graph
 }

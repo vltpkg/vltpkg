@@ -8,6 +8,7 @@ import {
   isDependencyTypeShort,
   isDependencySaveType,
   shorten,
+  shouldInstallDepType,
 } from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
@@ -173,6 +174,28 @@ const createMockNode = (
   setConfusedManifest: () => {},
   maybeSetConfusedManifest: () => {},
   ...overrides,
+})
+
+t.test('shouldInstallDepType', async t => {
+  const cases: [string, Partial<NodeLike>, boolean][] = [
+    ['importer', { importer: true }, true],
+    ['git', { id: joinDepIDTuple(['git', 'github:a/b', '']) }, true],
+    ['file', { id: joinDepIDTuple(['file', './lib']) }, false],
+    ['registry', {}, false],
+  ]
+  for (const [label, overrides, dev] of cases) {
+    const node = createMockNode(overrides)
+    t.equal(
+      shouldInstallDepType(node, 'devDependencies'),
+      dev,
+      `${label}: devDependencies`,
+    )
+    t.equal(
+      shouldInstallDepType(node, 'dependencies'),
+      true,
+      `${label}: dependencies`,
+    )
+  }
 })
 
 t.test('getRawDependencies', async t => {
@@ -355,6 +378,42 @@ t.test('getRawDependencies', async t => {
       )
     },
   )
+
+  t.test('a dual declaration keeps the regular type', async t => {
+    const importerManifest: Manifest = {
+      dependencies: { c: '^1.0.0' },
+      devDependencies: { d: '^1.0.0' },
+      optionalDependencies: { o: '^1.0.0' },
+      peerDependencies: { c: '*', d: '*', o: '*', p: '^1.0.0' },
+    }
+    const importer = createMockNode(
+      { importer: true },
+      importerManifest,
+    )
+    const result = getRawDependencies(importer)
+    t.strictSame(result.get('c')?.bareSpec, '^1.0.0')
+    t.strictSame(result.get('c')?.type, 'dependencies')
+    t.strictSame(result.get('d')?.type, 'devDependencies')
+    // optionalDependencies is collected after peerDependencies, so it
+    // still overrides it
+    t.strictSame(result.get('o')?.type, 'optionalDependencies')
+    t.strictSame(result.get('p')?.type, 'peerDependencies')
+
+    // a registry node does not install devDependencies, so there is no
+    // regular entry for the peer to lose to
+    const depManifest: Manifest = {
+      devDependencies: { d: '^1.0.0' },
+      peerDependencies: { d: '*' },
+    }
+    const dep = createMockNode(
+      { id: joinDepIDTuple(['registry', '', 'some-pkg@1.0.0']) },
+      depManifest,
+    )
+    t.strictSame(
+      getRawDependencies(dep).get('d')?.type,
+      'peerDependencies',
+    )
+  })
 
   t.test(
     'should handle bundleDependencies for non-importer, non-git nodes',

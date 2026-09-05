@@ -21,6 +21,7 @@ import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { PathScurry } from 'path-scurry'
+import type { GraphModifier } from '../modifiers.ts'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
@@ -28,6 +29,7 @@ export type GetImporterSpecsOptions = BuildIdealAddOptions &
   SpecOptions & {
     scurry: PathScurry
     packageJson: PackageJson
+    modifiers?: GraphModifier
   }
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
@@ -86,14 +88,18 @@ export const getImporterSpecs = (
     }
     // if a dependency is listed in the manifest but not in the graph,
     // add that dependency to the list of dependencies to be added
+    // names collected from a regular dependency type: a peer entry for
+    // one of them only constrains the dependency, it is not its own
+    // dependency to place
+    const regular = new Set<string>()
     for (const depType of longDependencyTypes) {
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
+        if (depType === 'peerDependencies' && regular.has(depName)) {
+          continue
+        }
+        regular.add(depName)
         const edge = importer.edgesOut.get(depName)
-
-        // skip if the edge exists and already uses the same spec
-        if (edge?.to && depSpec === edge.spec.bareSpec) continue
-
         const spec = Spec.parse(depName, depSpec, options)
 
         // if a workspace dep references a workspace that no longer exists
@@ -109,6 +115,11 @@ export const getImporterSpecs = (
             continue
           }
         }
+
+        // skip if the edge exists and already uses the same spec.
+        // dangling (MISSING) targets still need to be queued so the
+        // ideal rebuild runs resetEdges() and places in traversal order.
+        if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
         const dependency = asDependency({
           spec,
@@ -167,8 +178,9 @@ export const getImporterSpecs = (
         for (const [depName, depSpec] of deps) {
           const edge = node.edgesOut.get(depName)
 
-          // skip if the edge exists and already uses the same spec
-          if (edge?.to && depSpec === edge.spec.bareSpec) continue
+          // skip if the edge exists and already uses the same spec.
+          // dangling targets still need to be queued for the ideal rebuild.
+          if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
           // add the dependency to the addDeps map
           const dependency = asDependency({
@@ -235,10 +247,20 @@ export const getImporterSpecs = (
   }
 
   // removes already satisfied dependencies from the dependencies list
-  removeSatisfiedSpecs({
+  const staleSpecs = removeSatisfiedSpecs({
     add: addResult,
     graph,
+    modifiers: options.modifiers,
   })
+
+  // a name the caller asked for is left to appendNodes and reify's
+  // package.json update: healing it here would put the request text in
+  // the lockfile without ever touching package.json
+  for (const edge of staleSpecs.keys()) {
+    if (add.get(edge.from.id)?.has(edge.name)) {
+      staleSpecs.delete(edge)
+    }
+  }
 
   // set the modifiedDependencies flag if any
   // of the importers have modified dependencies
@@ -252,6 +274,7 @@ export const getImporterSpecs = (
   return {
     add: addResult,
     remove: removeResult,
+    staleSpecs,
     transientAdd,
     transientRemove,
   }

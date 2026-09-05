@@ -18,6 +18,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load as loadVirtual, loadData } from './lockfile/load.ts'
+import { formatOptionsChange } from './lockfile/format-options-change.ts'
 import type { SpecCache } from './lockfile/types.ts'
 import { getImporterSpecs } from './ideal/get-importer-specs.ts'
 import { lockfile } from './index.ts'
@@ -82,6 +83,10 @@ export const install = async (
   const specCache: SpecCache = new Map()
   const lockfileData =
     options.frozenLockfile ? loadData(options.projectRoot) : undefined
+  // loaded before the frozen check so that the lockfile options compare
+  // against a config that includes them, and so that the check knows
+  // which dependency specs the modifiers govern
+  const modifiers = GraphModifier.maybeLoad(options)
 
   if (options.frozenLockfile) {
     // validates no add/remove operations are requested
@@ -101,6 +106,7 @@ export const install = async (
     const lockfileGraph = loadVirtual({
       ...options,
       mainManifest,
+      modifiers,
       monorepo: fullMonorepo,
       specCache,
       lockfileData,
@@ -118,6 +124,7 @@ export const install = async (
       add: emptyAdd,
       remove: emptyRemove,
       ...options,
+      modifiers,
     })
 
     // Check for spec changes by comparing package.json specs with lockfile edges
@@ -125,6 +132,10 @@ export const install = async (
     for (const importer of lockfileGraph.importers) {
       const deps = getDependencies(importer, options)
       for (const [depName, dep] of deps) {
+        // the edge text of a governed dependency is the modifier value,
+        // never the manifest range; a change to it is an options change
+        if (modifiers?.targetsImporterEdge(importer, depName))
+          continue
         const edge = importer.edgesOut.get(depName)
         if (edge?.spec) {
           if (edge.spec.toString() !== dep.spec.toString()) {
@@ -148,9 +159,10 @@ export const install = async (
       const details: string[] = []
 
       if (lockfileGraph.optionsChanged) {
-        details.push(
-          '  Configuration options have changed (e.g. modifiers, registries, catalogs)',
-        )
+        details.push('  Configuration options have changed:')
+        for (const change of lockfileGraph.optionsChanges) {
+          details.push(`    ${formatOptionsChange(change)}`)
+        }
       }
 
       if (specChanges.length > 0) {
@@ -215,8 +227,6 @@ export const install = async (
     const remove = Object.assign(new Map<DepID, Set<string>>(), {
       modifiedDependencies: false,
     })
-    const modifiers = GraphModifier.maybeLoad(options)
-
     let act: Graph | undefined = actualLoad({
       ...options,
       mainManifest,
@@ -253,7 +263,8 @@ export const install = async (
       // through the lockfile - otherwise subsequent installs lose
       // the configured registry and rewrite node/edge DepIDs back
       // to the default npm registry. (See vltpkg/vltpkg#1580.)
-      lockfile.save({ ...options, graph, modifiers })
+      // normalise importer edge specs before saving, so the lockfile
+      // carries the same value package.json gets
       const saveImportersPackageJson =
         /* c8 ignore next */
         add?.modifiedDependencies || remove.modifiedDependencies ?
@@ -264,6 +275,7 @@ export const install = async (
             remove,
           })
         : undefined
+      lockfile.save({ ...options, graph, modifiers })
       saveImportersPackageJson?.()
       return { graph, diff: undefined }
     }
