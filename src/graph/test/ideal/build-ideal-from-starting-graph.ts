@@ -15,6 +15,7 @@ import {
   existsSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
@@ -2057,3 +2058,204 @@ t.test(
     })
   },
 )
+
+t.test('canonicalization only runs after a write', async t => {
+  const manifests: Record<string, Manifest> = {
+    foo: {
+      name: 'foo',
+      version: '1.0.0',
+      peerDependencies: { react: '^18' },
+    },
+    react: { name: 'react', version: '18.3.0' },
+    bar: { name: 'bar', version: '1.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return manifests[spec.final.name]
+    },
+  } as unknown as PackageInfoClient
+
+  // one spy shared by every subtest: reset before each build
+  let calls = 0
+  const canon =
+    await import('../../src/ideal/canonicalize-peer-ids.ts')
+  const { buildIdealFromStartingGraph: build } = await t.mockImport<
+    typeof import('../../src/ideal/build-ideal-from-starting-graph.ts')
+  >('../../src/ideal/build-ideal-from-starting-graph.ts', {
+    '../../src/ideal/canonicalize-peer-ids.ts': {
+      ...canon,
+      canonicalizePeerIds: (
+        ...args: Parameters<typeof canon.canonicalizePeerIds>
+      ) => {
+        calls++
+        return canon.canonicalizePeerIds(...args)
+      },
+    },
+  })
+
+  const projectDeps = (deps: Record<string, string>) => ({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: deps,
+    }),
+    'vlt.json': '{}',
+  })
+  // one fixture, one subdir per scenario: a second t.testdir() would
+  // rmdir the fixture while it is the cwd (EBUSY on Windows)
+  const root = t.testdir({
+    noop: projectDeps({ foo: '^1.0.0' }),
+    provisional: projectDeps({ foo: '^1.0.0' }),
+    add: projectDeps({ foo: '^1.0.0' }),
+    options: projectDeps({ foo: '^1.0.0' }),
+    healed: projectDeps({ foo: '^1.0.0' }),
+  })
+
+  const seed = async (dir: string) => {
+    const projectRoot = `${root}/${dir}`
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = await build({
+      ...configData,
+      packageInfo,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      graph: new Graph({
+        projectRoot,
+        mainManifest: JSON.parse(
+          readFileSync(`${projectRoot}/package.json`, 'utf8'),
+        ),
+        ...configData,
+      }),
+      add: new Map() as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    writeFileSync(
+      `${projectRoot}/vlt-lock.json`,
+      JSON.stringify(lockfileData({ ...configData, graph }), null, 2),
+    )
+    return projectRoot
+  }
+
+  const rebuild = async (
+    projectRoot: string,
+    opts: {
+      add?: AddImportersDependenciesMap
+      registries?: Record<string, string>
+    } = {},
+  ) => {
+    const { add, ...specOpts } = opts
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const graph = loadVirtual({
+      ...configData,
+      ...specOpts,
+      projectRoot,
+      scurry,
+      packageJson,
+      mainManifest: packageJson.read(projectRoot),
+    })
+    calls = 0
+    return build({
+      ...configData,
+      ...specOpts,
+      packageInfo,
+      packageJson,
+      scurry,
+      graph,
+      add: add ?? (new Map() as AddImportersDependenciesMap),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+  }
+
+  await t.test('no-op build skips canonicalization', async t => {
+    const projectRoot = await seed('noop')
+    const before = readFileSync(
+      `${projectRoot}/vlt-lock.json`,
+      'utf8',
+    )
+    const graph = await rebuild(projectRoot)
+    t.equal(calls, 0, 'the pass did not run')
+    t.notOk(graph.lockfileStale, 'lockfile is not stale')
+    t.equal(
+      JSON.stringify(lockfileData({ ...configData, graph }), null, 2),
+      before,
+      'byte-identical lockfile',
+    )
+  })
+
+  await t.test('provisional ids force the pass', async t => {
+    const projectRoot = await seed('provisional')
+    const lock = `${projectRoot}/vlt-lock.json`
+    const foo = [
+      ...JSON.stringify(readFileSync(lock, 'utf8')).matchAll(
+        /peer\.[0-9a-f]{16}/g,
+      ),
+    ][0]?.[0]
+    t.ok(foo, 'the seeded lockfile has a hashed id')
+    writeFileSync(
+      lock,
+      readFileSync(lock, 'utf8').replaceAll(foo!, 'peer.3'),
+    )
+    const graph = await rebuild(projectRoot)
+    t.equal(calls, 1, 'the pass ran')
+    const node = [...graph.nodes.values()].find(n => n.name === 'foo')
+    t.match(node?.peerSetHash, /^peer\.[0-9a-f]{16}$/, 'rehashed')
+  })
+
+  await t.test('an add runs the pass', async t => {
+    const projectRoot = await seed('add')
+    await rebuild(projectRoot, {
+      add: Object.assign(
+        new Map([
+          [
+            joinDepIDTuple(['file', '.']),
+            new Map([
+              [
+                'bar',
+                {
+                  spec: Spec.parse('bar', '^1.0.0', configData),
+                  type: 'prod' as const,
+                },
+              ],
+            ]),
+          ],
+        ]),
+        { modifiedDependencies: true },
+      ) as unknown as AddImportersDependenciesMap,
+    })
+    t.equal(calls, 1, 'the pass ran')
+  })
+
+  await t.test('an options change runs the pass', async t => {
+    const projectRoot = await seed('options')
+    const graph = await rebuild(projectRoot, {
+      registries: {
+        npm: 'https://registry.npmjs.org/',
+        custom: 'http://example.com/other',
+      },
+    })
+    t.ok(graph.optionsChanges.length, 'options differ')
+    t.equal(calls, 1, 'the pass ran')
+  })
+
+  await t.test('a healed importer spec does not', async t => {
+    const projectRoot = await seed('healed')
+    const pj = `${projectRoot}/package.json`
+    writeFileSync(
+      pj,
+      JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { foo: '1.x' },
+      }),
+    )
+    const graph = await rebuild(projectRoot)
+    t.equal(calls, 0, 'the pass did not run')
+    t.ok(graph.lockfileStale, 'but the lockfile is stale')
+  })
+})

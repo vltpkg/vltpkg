@@ -2928,3 +2928,77 @@ t.test('sortNodes restores importer-set order', async t => {
     'set order restored',
   )
 })
+
+t.test('mutations counts structural writes', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+  })
+  const at = () => graph.mutations
+  const bumped = (name: string, fn: () => unknown) => {
+    const before = at()
+    fn()
+    t.ok(at() > before, name)
+  }
+  const quiet = (name: string, fn: () => unknown) => {
+    const before = at()
+    fn()
+    t.equal(at() - before, 0, name)
+  }
+
+  const fooSpec = Spec.parse('foo@1.0.0', configData)
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    fooSpec,
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+  )
+  if (!foo) throw new Error('failed to place')
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar@1.0.0', configData),
+    { name: 'bar', version: '1.0.0' },
+  )
+  if (!bar) throw new Error('failed to place')
+
+  quiet('re-adding the same edge is not a mutation', () =>
+    graph.addEdge('prod', fooSpec, graph.mainImporter, foo),
+  )
+  bumped('re-pointing an edge', () =>
+    graph.addEdge('prod', fooSpec, graph.mainImporter, bar),
+  )
+  bumped('a new edge', () =>
+    graph.addEdge(
+      'prod',
+      Spec.parse('bar@1.0.0', configData),
+      foo,
+      bar,
+    ),
+  )
+  bumped('placing an existing node', () =>
+    graph.placePackage(
+      bar,
+      'prod',
+      Spec.parse('foo@1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    ),
+  )
+  bumped('a dangling placement', () =>
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('missing@1.0.0', configData),
+    ),
+  )
+  quiet('gc with nothing unreachable', () => graph.gc())
+  bumped('removeNode', () => graph.removeNode(bar))
+  bumped('resetEdges', () => graph.resetEdges())
+})

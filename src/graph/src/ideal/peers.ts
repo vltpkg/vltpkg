@@ -991,6 +991,7 @@ export const endPeerPlacement = (
         // Override existing edge if pointing elsewhere (sibling must win)
         const existingEdge = node.edgesOut.get(name)
         if (existingEdge?.to && existingEdge.to !== siblingTarget) {
+          graph.mutations++
           existingEdge.to.edgesIn.delete(existingEdge)
           existingEdge.to = siblingTarget
           siblingTarget.edgesIn.add(existingEdge)

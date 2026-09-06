@@ -16,7 +16,9 @@ import { build } from '../../src/ideal/build.ts'
 import {
   byteCompare,
   canonicalizePeerIds,
+  hasProvisionalPeerIds,
   isPeerScoped,
+  isProvisionalPeerSuffix,
   peerEnvDigest,
   serializeNodeEnv,
 } from '../../src/ideal/canonicalize-peer-ids.ts'
@@ -257,6 +259,53 @@ t.test('rename legacy ordinal to content hash', async t => {
   t.equal(graph.nodes.get(ui.id), ui)
   t.equal(graph.manifests.get(ui.id)?.name, 'ui')
   t.equal(ui.location, `./node_modules/.vlt/${ui.id}/node_modules/ui`)
+})
+
+t.test('isProvisionalPeerSuffix', async t => {
+  for (const s of ['peer.0', 'peer.7', 'peer.123456']) {
+    t.ok(isProvisionalPeerSuffix(s), s)
+  }
+  for (const s of [
+    '',
+    'peer.',
+    'peer.0123456789abcdef',
+    // a 16-digit hash is canonical, not an ordinal
+    'peer.1234567890123456',
+    'peer.0123456789abcdef0123456789abcdef',
+    'peer.0123456789abcdef.1',
+    'peer.0123456789abcdef.x',
+  ]) {
+    t.notOk(isProvisionalPeerSuffix(s), s || '(empty)')
+  }
+})
+
+t.test('hasProvisionalPeerIds', async t => {
+  const graph = makeGraph(t)
+  const react = place(graph, graph.mainImporter, 'react', '18.0.0', {
+    name: 'react',
+    version: '18.0.0',
+  })
+  const ui = place(
+    graph,
+    graph.mainImporter,
+    'ui',
+    '1.0.0',
+    {
+      name: 'ui',
+      version: '1.0.0',
+      peerDependencies: { react: '^18' },
+    },
+    'peer.7',
+  )
+  graph.addEdge(
+    'peer',
+    Spec.parse('react', '^18', configData),
+    ui,
+    react,
+  )
+  t.ok(hasProvisionalPeerIds(graph), 'ordinal id found')
+  canonicalizePeerIds(graph)
+  t.notOk(hasProvisionalPeerIds(graph), 'canonical after the pass')
 })
 
 t.test('idempotent on second pass', async t => {

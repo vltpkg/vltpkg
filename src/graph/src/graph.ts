@@ -196,6 +196,14 @@ export class Graph implements GraphLike {
    */
   currentPeerContextIndex = 0
 
+  /**
+   * Count of structural writes: nodes placed or removed, edges reset,
+   * created or re-pointed. Never reset; callers snapshot it and compare,
+   * so the ideal builder can tell whether a rebuild touched anything the
+   * peer identities depend on.
+   */
+  mutations = 0
+
   constructor(options: GraphOptions) {
     const { mainManifest, monorepo } = options
     this.#options = options
@@ -400,6 +408,7 @@ export class Graph implements GraphLike {
         edge.spec.bareSpec === spec.bareSpec
       ) {
         if (to && to !== edge.to) {
+          this.mutations++
           // removes this edge from its destination edgesIn ref
           edge.to?.edgesIn.delete(edge)
           // now swap the destination to the new one
@@ -410,6 +419,7 @@ export class Graph implements GraphLike {
       }
       this.edges.delete(edge)
     }
+    this.mutations++
     const f = from as Node
     const edgeOut = f.addEdgesTo(
       resolveSaveType(from, spec.name, type),
@@ -500,6 +510,7 @@ export class Graph implements GraphLike {
     id?: DepID,
     extra?: string,
   ): Node | undefined {
+    this.mutations++
     // if no manifest is available, then create an edge that has no
     // reference to any other node, representing a missing dependency
     if (!manifest && !id) {
@@ -628,6 +639,7 @@ export class Graph implements GraphLike {
    * if it is valid to do so.
    */
   removeNode(node: Node, replacement?: Node, keepEdges?: boolean) {
+    this.mutations++
     this.nodes.delete(node.id)
     const nbn = this.nodesByName.get(node.name)
     // if it's the last one, just remove the set
@@ -666,6 +678,7 @@ export class Graph implements GraphLike {
    * Removes the resolved node of a given edge.
    */
   removeEdgeResolution(edge: Edge, extra = '') {
+    this.mutations++
     const node = edge.to
     const resolutionKey = getResolutionCacheKey(
       edge.spec,
@@ -689,6 +702,7 @@ export class Graph implements GraphLike {
    * This allows the graph to be reconstructed efficiently using the existing nodes.
    */
   resetEdges() {
+    this.mutations++
     // Clear the global edges set
     this.edges.clear()
 

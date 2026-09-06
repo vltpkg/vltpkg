@@ -1,5 +1,8 @@
 import { getImporterSpecs } from './get-importer-specs.ts'
-import { canonicalizePeerIds } from './canonicalize-peer-ids.ts'
+import {
+  canonicalizePeerIds,
+  hasProvisionalPeerIds,
+} from './canonicalize-peer-ids.ts'
 import { movePeerStoreDirs } from './move-peer-store-dirs.ts'
 import { refreshIdealGraph } from './refresh-ideal-graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
@@ -23,6 +26,11 @@ export type BuildIdealFromStartingGraphOptions =
 export const buildIdealFromStartingGraph = async (
   options: BuildIdealFromStartingGraphOptions,
 ): Promise<Graph> => {
+  // a graph loaded from a lockfile written by this code is canonical by
+  // construction; only a structural write during this build, or
+  // provisional ids left by an older lockfile, can change that
+  const mutationsBefore = options.graph.mutations
+
   // Gets a map of dependencies that are keyed to its importer node ids,
   // merging values already found in the graph with user specified values.
   // Any dependencies that are already satisfied in the starting `graph`
@@ -105,7 +113,16 @@ export const buildIdealFromStartingGraph = async (
   })
 
   options.graph.gc()
-  await movePeerStoreDirs(canonicalizePeerIds(options.graph), options)
+
+  if (
+    options.graph.mutations !== mutationsBefore ||
+    hasProvisionalPeerIds(options.graph)
+  ) {
+    await movePeerStoreDirs(
+      canonicalizePeerIds(options.graph),
+      options,
+    )
+  }
 
   return options.graph
 }

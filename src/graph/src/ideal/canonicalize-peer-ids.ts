@@ -21,8 +21,41 @@ export type PeerStoreMove = {
   to?: DepID
 }
 
+/**
+ * Any change to this digest, to `serializeNodeEnv`, to `unitEntry` or to
+ * the suffix format changes every peer id in the lockfile, and the ideal
+ * builder no longer re-hashes a graph it did not otherwise touch. Bump
+ * `LOCKFILE_VERSION` alongside it so old lockfiles hard-fail instead of
+ * lingering with stale ids.
+ */
 export const peerEnvDigest = (input: string, length = 16): string =>
   createHash('sha256').update(input).digest('hex').slice(0, length)
+
+/**
+ * `peer.<ordinal>` as minted by retrievePeerContextHash() during a
+ * rebuild, or written by lockfiles from before the hash format.
+ * Canonical suffixes are 16 or 32 hex chars, optionally followed by
+ * `.<role>` or `.x`; an all-digit hash is possible, hence the length
+ * bound rather than a plain `\d+`.
+ */
+export const isProvisionalPeerSuffix = (suffix: string): boolean =>
+  /^peer\.\d{1,15}$/.test(suffix)
+
+/**
+ * True when any node still carries a provisional id, so the graph needs
+ * a canonicalization pass even if this build did not write to it.
+ */
+export const hasProvisionalPeerIds = (graph: Graph): boolean => {
+  for (const node of graph.nodes.values()) {
+    if (
+      node.peerSetHash &&
+      isProvisionalPeerSuffix(node.peerSetHash)
+    ) {
+      return true
+    }
+  }
+  return false
+}
 
 export const byteCompare = (a: string, b: string): number =>
   a < b ? -1
