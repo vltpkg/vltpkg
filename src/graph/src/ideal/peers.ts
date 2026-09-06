@@ -93,6 +93,20 @@ const parseSpec = (
   })
 
 /**
+ * Take private ownership of an entry's `specs` before writing to it: a
+ * fork shares the base's map until either side writes. Any other holder
+ * keeps `sharedSpecs` and clones on its own first write, so no refcount
+ * is needed.
+ */
+const ownSpecs = (entry: PeerContextEntry): Map<string, Spec> => {
+  if (entry.sharedSpecs) {
+    entry.specs = new Map(entry.specs)
+    entry.sharedSpecs = false
+  }
+  return entry.specs
+}
+
+/**
  * Bump the base's revision: an entry was added, or an entry's target
  * moved. Invalidates every fork key taken from it.
  */
@@ -672,7 +686,7 @@ export const addEntriesToPeerContext = (
     // collect the incoming spec before anything reads the entry: it
     // constrains both the new target and any dependent kept on an older one
     const specKey = peerSpecKey(spec)
-    if (!entry.specs.has(specKey)) entry.specs.set(specKey, spec)
+    if (!entry.specs.has(specKey)) ownSpecs(entry).set(specKey, spec)
 
     // update target if compatible with all specs
     if (target && satisfiesEntrySpecs(target, entry, fromNode)) {
@@ -730,18 +744,21 @@ export const forkPeerContext = (
   graph.peerContexts[nextPeerContext.index] = nextPeerContext
   graph.peerContextForkCache.set(forkKey, nextPeerContext)
 
-  // copy existing entries marking them as inactive. specs are copied into
-  // a new map so that changes here do not affect the previous context, but
-  // dependents are NOT inherited: they were placed in the parent context, so
-  // a target update in this fork must never re-point their edges.
+  // copy existing entries marking them as inactive. specs are shared with
+  // the base until either side writes (both are flagged, so a base write
+  // after the fork cannot leak into it), but dependents are NOT inherited:
+  // they were placed in the parent context, so a target update in this
+  // fork must never re-point their edges.
   // the target IS inherited: what a context resolves a name to must not
   // depend on which fork a subtree happened to land in. it stays a
   // snapshot (`getForkKey` invalidates it when the base moves) and is
   // still guarded by `nodeSatisfiesSpec` at resolution time.
   for (const [name, entry] of peerContext.entries()) {
+    entry.sharedSpecs = true
     nextPeerContext.set(name, {
       active: false,
-      specs: new Map(entry.specs),
+      sharedSpecs: true,
+      specs: entry.specs,
       target: entry.target,
       type: entry.type,
       contextDependents: new Set(),
@@ -1036,7 +1053,7 @@ export const endPeerPlacement = (
         graph.addEdge(type, spec, node, entry.target)
         const finalKey = peerSpecKey(spec.final)
         if (!entry.specs.has(finalKey)) {
-          entry.specs.set(finalKey, spec.final)
+          ownSpecs(entry).set(finalKey, spec.final)
         }
         continue
       }

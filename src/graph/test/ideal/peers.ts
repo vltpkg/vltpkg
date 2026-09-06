@@ -2326,7 +2326,7 @@ t.test('forkPeerContext', async t => {
     t.strictSame(
       [...(fooEntry?.specs.values() ?? [])].map(String),
       ['foo@^1.0.0'],
-      'inherited specs are copied',
+      'inherited specs are visible',
     )
     t.equal(
       fooEntry?.contextDependents.size,
@@ -2602,6 +2602,169 @@ t.test('forkPeerContext', async t => {
         foo101,
         'the new fork sees the current target',
       )
+    },
+  )
+
+  t.test('inherited specs are shared until written', async t => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const base = graph.peerContexts[0]!
+    const spec1 = Spec.parse('foo', '^1.0.0', configData)
+    const foo1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.0' },
+    )!
+    addEntriesToPeerContext(
+      base,
+      [{ spec: spec1, type: 'peer', target: foo1 }],
+      graph.mainImporter,
+    )
+    const baseEntry = base.get('foo')!
+    const shared = baseEntry.specs
+
+    const fork = (bare: string) =>
+      forkPeerContext(graph, base, [
+        { spec: Spec.parse('bar', bare, configData), type: 'peer' },
+      ])
+    const a = fork('^2.0.0')
+    const b = fork('^3.0.0')
+    t.equal(a.get('foo')!.specs, shared, 'fork A shares the map')
+    t.equal(b.get('foo')!.specs, shared, 'fork B shares the map')
+    t.ok(baseEntry.sharedSpecs, 'the base is flagged too')
+
+    // writing into fork A clones only A
+    addEntriesToPeerContext(
+      a,
+      [
+        {
+          spec: Spec.parse('foo', '^1.0.1', configData),
+          type: 'peer',
+        },
+      ],
+      graph.mainImporter,
+    )
+    t.equal(a.get('foo')!.specs.size, 2, 'A has both specs')
+    t.notOk(a.get('foo')!.sharedSpecs, 'A owns its map')
+    t.equal(baseEntry.specs, shared, 'the base is untouched')
+    t.equal(b.get('foo')!.specs, shared, 'so is fork B')
+
+    // writing into fork B clones B off the still-shared base map
+    addEntriesToPeerContext(
+      b,
+      [
+        {
+          spec: Spec.parse('foo', '^1.0.2', configData),
+          type: 'peer',
+        },
+      ],
+      graph.mainImporter,
+    )
+    t.equal(b.get('foo')!.specs.size, 2, 'B has its own two specs')
+    t.equal(baseEntry.specs, shared, 'the base is still untouched')
+
+    // and a later base write clones the base, leaving the forks alone
+    addEntriesToPeerContext(
+      base,
+      [
+        {
+          spec: Spec.parse('foo', '^1.0.3', configData),
+          type: 'peer',
+        },
+      ],
+      graph.mainImporter,
+    )
+    t.equal(baseEntry.specs.size, 2, 'the base cloned on write')
+    t.equal(shared.size, 1, 'the snapshot the forks read is intact')
+    t.notOk(baseEntry.sharedSpecs, 'the base owns its map')
+
+    // an unshared entry keeps its map instance
+    const before = baseEntry.specs
+    addEntriesToPeerContext(
+      base,
+      [
+        {
+          spec: Spec.parse('foo', '^1.0.4', configData),
+          type: 'peer',
+        },
+      ],
+      graph.mainImporter,
+    )
+    t.equal(baseEntry.specs, before, 'no second clone')
+  })
+
+  t.test(
+    'a peer resolved from a shared inherited entry clones',
+    async t => {
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const base = graph.peerContexts[0]!
+      const reactSpec = Spec.parse('react', '^18.0.0', configData)
+      const react = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        reactSpec,
+        { name: 'react', version: '18.0.0' },
+      )!
+      addEntriesToPeerContext(
+        base,
+        [{ spec: reactSpec, type: 'peer', target: react }],
+        graph.mainImporter,
+      )
+      const shared = base.get('react')!.specs
+      const forked = forkPeerContext(graph, base, [
+        {
+          spec: Spec.parse('bar', '^2.0.0', configData),
+          type: 'peer',
+        },
+      ])
+      t.equal(
+        forked.get('react')!.specs,
+        shared,
+        'shared at fork time',
+      )
+
+      // a node placed in the fork whose peer resolves off the inherited
+      // react entry: PRIORITY 3 records spec.final on it
+      const nodeSpec = Spec.parse('my-pkg', '^1.0.0', configData)
+      const node = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        nodeSpec,
+        { name: 'my-pkg', version: '1.0.0' },
+      )!
+      const end = endPeerPlacement(
+        forked,
+        [],
+        new Map([
+          [
+            'react',
+            {
+              spec: Spec.parse('react', '^18.0.0 || ^19', configData),
+              type: 'peer' as const,
+            },
+          ],
+        ]),
+        graph,
+        nodeSpec,
+        graph.mainImporter,
+        node,
+        'prod',
+        [{ spec: nodeSpec, target: node, type: 'prod' }],
+      )
+      end.putEntries()
+      end.resolvePeerDeps()
+
+      t.equal(node.edgesOut.get('react')?.to, react, 'peer resolved')
+      t.equal(shared.size, 1, 'the base snapshot is intact')
+      t.equal(forked.get('react')!.specs.size, 2, 'the fork cloned')
     },
   )
 

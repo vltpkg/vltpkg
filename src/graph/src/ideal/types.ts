@@ -119,6 +119,11 @@ export type PeerContextEntry = {
    * instead of piling up per dependent.
    */
   specs: Map<string, Spec>
+  /**
+   * `specs` is shared with the entry this one was forked from or into.
+   * Write through `ownSpecs()` so the other side keeps its snapshot.
+   */
+  sharedSpecs?: boolean
   /** The target Node that satisfies all specs for this peer context entry */
   target: Node | undefined
   /** The type of dependency this entry represents */
