@@ -100,6 +100,14 @@ export const getImporterSpecs = (
         }
         regular.add(depName)
         const edge = importer.edgesOut.get(depName)
+
+        // skip if the edge exists and already uses the same spec.
+        // dangling (MISSING) targets still need to be queued so the
+        // ideal rebuild runs resetEdges() and places in traversal order.
+        // checked before parsing: the text parsed fine when the edge was
+        // loaded, and the workspace check below only fires on !edge?.to
+        if (edge?.to && edge.spec.bareSpec === depSpec) continue
+
         const spec = Spec.parse(depName, depSpec, options)
 
         // if a workspace dep references a workspace that no longer exists
@@ -115,11 +123,6 @@ export const getImporterSpecs = (
             continue
           }
         }
-
-        // skip if the edge exists and already uses the same spec.
-        // dangling (MISSING) targets still need to be queued so the
-        // ideal rebuild runs resetEdges() and places in traversal order.
-        if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
         const dependency = asDependency({
           spec,

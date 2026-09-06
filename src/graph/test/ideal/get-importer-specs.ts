@@ -1361,3 +1361,83 @@ t.test('a satisfied lockfile edge with a stale spec', async t => {
     'a name the caller asked for is left alone',
   )
 })
+
+t.test('unchanged importer edges are not re-parsed', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      // matching lockfile edges: never parsed
+      a: '^1.0.0',
+      b: '^1.0.0',
+      c: '^1.0.0',
+      // text changed since the lockfile was written
+      d: '^2.0.0',
+      // dangling: the edge has no target
+      e: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const scurry = new PathScurry(projectRoot)
+  const packageJson = new PackageJson()
+  const graph = new Graph({
+    projectRoot,
+    mainManifest,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  for (const [name, bareSpec] of Object.entries({
+    a: '^1.0.0',
+    b: '^1.0.0',
+    c: '^1.0.0',
+    d: '^1.0.0',
+  })) {
+    const spec = Spec.parse(name, bareSpec)
+    const node = graph.addNode(
+      undefined,
+      { name, version: '1.0.0' },
+      spec,
+      name,
+      '1.0.0',
+    )
+    graph.addEdge('prod', spec, graph.mainImporter, node)
+  }
+  graph.mainImporter.edgesOut.set(
+    'e',
+    new Edge('prod', Spec.parse('e', '^1.0.0'), graph.mainImporter),
+  )
+
+  const specModule = await import('@vltpkg/spec')
+  let parses = 0
+  const { getImporterSpecs: mocked } = await t.mockImport<
+    typeof import('../../src/ideal/get-importer-specs.ts')
+  >('../../src/ideal/get-importer-specs.ts', {
+    '@vltpkg/spec': {
+      ...specModule,
+      Spec: {
+        parse: (...args: Parameters<typeof Spec.parse>) => {
+          parses++
+          return Spec.parse(...args)
+        },
+      },
+    },
+  })
+
+  const specs = mocked({
+    add: new Map() as AddImportersDependenciesMap,
+    graph,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    scurry,
+    packageJson,
+  })
+  t.equal(parses, 2, 'only the changed and dangling specs are parsed')
+  t.strictSame(
+    [...(specs.add.get(joinDepIDTuple(['file', '.'])) ?? []).keys()],
+    ['d', 'e'],
+    'the changed and dangling deps are queued',
+  )
+})
