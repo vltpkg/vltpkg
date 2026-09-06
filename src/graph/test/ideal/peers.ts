@@ -2605,6 +2605,130 @@ t.test('forkPeerContext', async t => {
     },
   )
 
+  t.test('the base revision keys the fork cache', async t => {
+    const spec1 = Spec.parse('foo', '^1.0.0', configData)
+    const barSpec = Spec.parse('bar', '^2.0.0', configData)
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const base = graph.peerContexts[0]!
+    const foo1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.0' },
+    )!
+    const rev = () => base.rev ?? 0
+
+    const r0 = rev()
+    addEntriesToPeerContext(
+      base,
+      [{ spec: spec1, type: 'peer', target: foo1 }],
+      graph.mainImporter,
+    )
+    t.equal(rev(), r0 + 1, 'a new entry bumps')
+
+    const r1 = rev()
+    addEntriesToPeerContext(
+      base,
+      [
+        {
+          spec: Spec.parse('foo', '^1.0.0 || ^2', configData),
+          type: 'peer',
+          target: foo1,
+        },
+      ],
+      graph.mainImporter,
+    )
+    t.equal(rev(), r1, 'a spec-only change does not bump')
+
+    const entries: PeerContextEntryInput[] = [
+      { spec: barSpec, type: 'peer' },
+    ]
+    const forked = forkPeerContext(graph, base, entries)
+    t.equal(
+      forkPeerContext(graph, base, entries),
+      forked,
+      'the fork is cached while the base holds still',
+    )
+
+    // an unrelated new entry moves the base's mapping
+    const r2 = rev()
+    const zed = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('zed', '^1.0.0', configData),
+      { name: 'zed', version: '1.0.0' },
+    )!
+    addEntriesToPeerContext(
+      base,
+      [
+        {
+          spec: Spec.parse('zed', '^1.0.0', configData),
+          type: 'peer',
+          target: zed,
+        },
+      ],
+      graph.mainImporter,
+    )
+    t.equal(rev(), r2 + 1, 'a new base entry bumps')
+    t.not(
+      forkPeerContext(graph, base, entries),
+      forked,
+      'and invalidates the cached fork',
+    )
+
+    // an incompatible spec bails out before touching the mapping
+    const r3 = rev()
+    t.ok(
+      addEntriesToPeerContext(
+        base,
+        [
+          {
+            spec: Spec.parse('foo', '^9.0.0', configData),
+            type: 'peer',
+          },
+        ],
+        graph.mainImporter,
+      ),
+      'incompatible spec requests a fork',
+    )
+    t.equal(rev(), r3, 'and does not bump')
+  })
+
+  t.test('a version-less target bumps the revision', async t => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const base = graph.peerContexts[0]!
+    const spec = Spec.parse('foo', 'file:./foo', configData)
+    // an entry with no target yet
+    addEntriesToPeerContext(
+      base,
+      [{ spec, type: 'peer' }],
+      graph.mainImporter,
+    )
+    const rev = base.rev ?? 0
+    // a node with no version: the target/version comparison above the
+    // fallback is false, so only the `!entry.target` arm can assign
+    const versionless = graph.addNode(
+      joinDepIDTuple(['file', 'foo']),
+      { name: 'foo' },
+    )
+    t.equal(versionless.version, undefined, 'no version')
+    addEntriesToPeerContext(
+      base,
+      [{ spec, type: 'peer', target: versionless }],
+      graph.mainImporter,
+    )
+    t.equal(base.get('foo')?.target, versionless, 'target assigned')
+    t.equal(base.rev, rev + 1, 'the fallback bumps')
+  })
+
   t.test(
     'inherited target that fails a fork-local spec is not used',
     async t => {

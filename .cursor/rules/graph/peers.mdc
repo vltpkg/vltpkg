@@ -42,7 +42,7 @@ Uses per-call memoization (`satisfiesMemo` Map) for `satisfies()` calls.
 
 - `nodeSatisfiesSpec(node, spec, fromNode, graph)` — wraps `satisfies()`
 - `parseSpec(name, bareSpec, fromNode, graph)` — wraps `Spec.parse` with registry options
-- `getForkKey(peerContext, entries)` — cache key: `{baseIndex}::{signatures}`
+- `getForkKey(peerContext, entries)` — cache key: `{baseIndex}::{signatures}::r{baseRev}`
 - `shouldIgnoreContextMismatch()` — prevents cross-importer peer leakage
 - `findFromPeerClosure()` — BFS through peer edges (depth limit: 3)
 

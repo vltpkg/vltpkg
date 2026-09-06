@@ -142,4 +142,11 @@ export type PeerContextEntryInput = {
  */
 export type PeerContext = Map<string, PeerContextEntry> & {
   index?: number
+  /**
+   * Bumped whenever an entry is added or an entry's target changes, i.e.
+   * whenever the name -> target mapping a fork snapshots moves. Part of
+   * the fork cache key so a base that moved cannot hand out the fork
+   * taken before the move.
+   */
+  rev?: number
 }

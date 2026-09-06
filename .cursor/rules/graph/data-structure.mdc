@@ -40,7 +40,7 @@ alwaysApply: false
 
 **Platform/bins**: `platform?: { engines?, os?, cpu? }`, `bins?: Record<string, string>`
 
-**Peer**: `peerSetHash?: string` (format: `peer.N`, appended to DepID as `extra`)
+**Peer**: `peerSetHash?: string` (format: `peer.<hash>[.role]`, appended to DepID as `extra`)
 
 **Workspace**: `workspaces: Map<string, Edge>` (only on `mainImporter`)
 

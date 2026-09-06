@@ -93,18 +93,27 @@ const parseSpec = (
   })
 
 /**
+ * Bump the base's revision: an entry was added, or an entry's target
+ * moved. Invalidates every fork key taken from it.
+ */
+const bumpRev = (peerContext: PeerContext) => {
+  peerContext.rev = (peerContext.rev ?? 0) + 1
+}
+
+/**
  * Generate a unique cache key for a peer context fork operation.
  *
- * Format: `{baseIndex}::{sortedEntrySignatures}::{inheritedTargets}`
+ * Format: `{baseIndex}::{sortedEntrySignatures}::r{baseRev}`
  * - `baseIndex`: The parent context's index (0 for initial context)
  * - Entry signature: `{name}|{type}|{targetId}|{spec}` sorted alphabetically
- * - Inherited: `{name}={targetId}` for every entry of the base context
+ * - `baseRev`: the base's revision, bumped on every mapping change
  *
  * This enables caching identical fork operations to avoid creating duplicate
  * peer contexts when the same entries would be added to the same base context.
  * Forks snapshot the base's targets, so the base index alone is not enough:
  * once a base target moves, an identical request must get a fresh fork
- * instead of the snapshot taken before the move.
+ * instead of the snapshot taken before the move. The revision stands in for
+ * serialising the whole inherited mapping, which was O(context) per fork.
  */
 const getForkKey = (
   peerContext: PeerContext,
@@ -118,11 +127,7 @@ const getForkKey = (
     )
     .sort()
     .join(';')
-  const inherited = [...peerContext.entries()]
-    .map(([name, e]) => `${name}=${e.target?.id ?? '∅'}`)
-    .sort()
-    .join(',')
-  return `${base}::${sig}::${inherited}`
+  return `${base}::${sig}::r${peerContext.rev ?? 0}`
 }
 
 /**
@@ -656,6 +661,7 @@ export const addEntriesToPeerContext = (
         contextDependents: new Set(),
       }
       peerContext.set(name, entry)
+      bumpRev(peerContext)
       if (dependent) entry.contextDependents.add(dependent)
       continue
     }
@@ -688,8 +694,13 @@ export const addEntriesToPeerContext = (
           target.edgesIn.add(edge)
         }
         entry.target = target
+        bumpRev(peerContext)
+      } else if (!entry.target) {
+        // only reachable when the branch above was skipped because
+        // target.version is undefined
+        entry.target = target
+        bumpRev(peerContext)
       }
-      entry.target ??= target
     }
 
     if (dependent) entry.contextDependents.add(dependent)
