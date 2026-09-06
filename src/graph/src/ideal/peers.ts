@@ -703,6 +703,7 @@ export const addEntriesToPeerContext = (
           const edge = dep.edgesOut.get(name)
           if (!edge?.to || edge.to === target) continue
           if (satisfiesEntrySpecs(edge.to, entry, dep)) continue
+          dep.graph.mutations++
           edge.to.edgesIn.delete(edge)
           edge.to = target
           target.edgesIn.add(edge)

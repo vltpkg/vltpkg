@@ -1883,6 +1883,7 @@ t.test('addEntriesToPeerContext', async t => {
         { name: 'foo', version: '1.0.1' },
       )!
 
+      const mutations = graph.mutations
       const needsFork = addEntriesToPeerContext(
         peerContext,
         [{ spec, target: target2, type: 'peer' }],
@@ -1902,6 +1903,7 @@ t.test('addEntriesToPeerContext', async t => {
       )
       const edge = dependent.edgesOut.get('foo')!
       t.ok(target1.edgesIn.has(edge), 'edgesIn is untouched')
+      t.equal(graph.mutations, mutations, 'no structural write')
       t.notOk(
         target2.edgesIn.has(edge),
         'new target gains no dependent',
@@ -1980,6 +1982,7 @@ t.test('addEntriesToPeerContext', async t => {
         noEdge,
       )
 
+      const mutations = graph.mutations
       const needsFork = addEntriesToPeerContext(
         peerContext,
         [{ spec, target: target2, type: 'peer' }],
@@ -2000,6 +2003,11 @@ t.test('addEntriesToPeerContext', async t => {
       const edge = dependent.edgesOut.get('foo')!
       t.notOk(target1.edgesIn.has(edge), 'old target loses the edge')
       t.ok(target2.edgesIn.has(edge), 'new target gains it')
+      t.equal(
+        graph.mutations,
+        mutations + 1,
+        'the re-point is a structural write',
+      )
     },
   )
 
