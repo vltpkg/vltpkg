@@ -2831,6 +2831,46 @@ t.test('sortNodes puts importers first then DepID order', async t => {
   graph.sortNodes()
   t.strictSame([...graph.nodes.keys()], expected, 'idempotent')
 
+  const before = graph.nodes
+  graph.sortNodes()
+  t.equal(graph.nodes, before, 'already sorted: same map instance')
+
+  // an importer after a non-importer forces the rebuild
+  graph.nodes = new Map([
+    [foo.id, foo],
+    [graph.mainImporter.id, graph.mainImporter],
+    [bar.id, bar],
+    [zed.id, zed],
+  ])
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected, 'importers first')
+
+  // a missing importer is re-registered
+  graph.nodes.delete(graph.mainImporter.id)
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected, 'importer restored')
+
+  // gc keeps an intact map
+  const intact = graph.nodes
+  const collected = graph.gc()
+  t.equal(collected.size, 0, 'nothing collected')
+  t.equal(graph.nodes, intact, 'gc keeps an intact map')
+  t.equal(graph.edges.size, 3, 'edges still rebuilt')
+
+  // a reachable node missing from the map forces the rebuild, even
+  // when an unreachable one keeps the size the same
+  graph.addNode(joinDepIDTuple(['registry', '', 'orphan@1.0.0']), {
+    name: 'orphan',
+    version: '1.0.0',
+  })
+  graph.nodes.delete(foo.id)
+  t.equal(graph.gc().size, 1, 'the orphan is collected')
+  t.strictSame(
+    [...graph.nodes.keys()],
+    expected,
+    'gc re-registers a reachable node',
+  )
+
   graph.addNode(joinDepIDTuple(['registry', '', 'orphan@1.0.0']), {
     name: 'orphan',
     version: '1.0.0',
@@ -2840,5 +2880,51 @@ t.test('sortNodes puts importers first then DepID order', async t => {
     [...graph.nodes.keys()],
     expected,
     'gc leaves a sorted map',
+  )
+})
+
+t.test('sortNodes restores importer-set order', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: 'packages/*' }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  const expected = [...graph.nodes.keys()]
+  t.equal(expected.length, 3, 'main importer and two workspaces')
+  const [main, a, b] = [...graph.importers]
+  graph.nodes = new Map([
+    [main!.id, main!],
+    [b!.id, b!],
+    [a!.id, a!],
+  ])
+  graph.sortNodes()
+  t.strictSame(
+    [...graph.nodes.keys()],
+    expected,
+    'set order restored',
   )
 })

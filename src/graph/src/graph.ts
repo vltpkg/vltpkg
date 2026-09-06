@@ -286,28 +286,39 @@ export class Graph implements GraphLike {
    * Delete all nodes and edges that are unreachable from the importers.
    * The collection of deleted nodes is returned.
    *
-   * NOTE: This can be extremely slow for large graphs, and is almost always
-   * unnecessary! Only call when it is known that some unreachable nodes may
-   * have been created, for example when deleting the unneeded subgraph when an
+   * Marking is O(N+E) and always runs, but when nothing is unreachable
+   * and every reachable node is registered under its own id, `nodes` is
+   * left alone — no rebuild, no sort, and an empty map is returned.
+   * Only call when it is known that some unreachable nodes may have been
+   * created, for example when deleting the unneeded subgraph when an
    * optional node fails to resolve/install.
    */
   gc() {
     const { nodes } = this
     this.edges.clear()
-    this.nodes = new Map()
     const marked = new Set(this.importers)
-    for (const imp of marked) {
-      // don't delete the importer!
-      nodes.delete(imp.id)
-      this.nodes.set(imp.id, imp)
-      for (const edge of imp.edgesOut.values()) {
+    for (const node of marked) {
+      for (const edge of node.edgesOut.values()) {
         this.edges.add(edge)
         const { to } = edge
-        if (!to || marked.has(to)) continue
-        marked.add(to)
-        nodes.delete(to.id)
-        this.nodes.set(to.id, to)
+        if (to) marked.add(to)
       }
+    }
+    let intact = marked.size === nodes.size
+    if (intact) {
+      for (const node of marked) {
+        if (nodes.get(node.id) !== node) {
+          intact = false
+          break
+        }
+      }
+    }
+    if (intact) return new Map<DepID, Node>()
+    this.nodes = new Map()
+    for (const node of marked) {
+      // don't delete the reachable ones!
+      nodes.delete(node.id)
+      this.nodes.set(node.id, node)
     }
     for (const node of nodes.values()) {
       this.removeNode(node)
@@ -320,13 +331,32 @@ export class Graph implements GraphLike {
    * Rebuild `nodes` so importers come first, then remaining nodes in
    * DepID order. Matches lockfile save so a built graph and a
    * save→load round-trip iterate the same way.
+   *
+   * A graph coming from the lockfile loader is already in that order, so
+   * the pass below detects it and keeps the map as-is.
    */
   sortNodes() {
+    const cmp = (a: Node, b: Node) => a.id.localeCompare(b.id, 'en')
     const rest: Node[] = []
+    const importers = this.importers.values()
+    let seenImporters = 0
+    let sorted = true
+    let prev: Node | undefined
     for (const node of this.nodes.values()) {
-      if (!this.importers.has(node)) rest.push(node)
+      if (this.importers.has(node)) {
+        // importers must come first, in importer-set order
+        if (rest.length || importers.next().value !== node) {
+          sorted = false
+        }
+        seenImporters++
+        continue
+      }
+      if (sorted && prev && cmp(prev, node) > 0) sorted = false
+      prev = node
+      rest.push(node)
     }
-    rest.sort((a, b) => a.id.localeCompare(b.id, 'en'))
+    if (sorted && seenImporters === this.importers.size) return
+    rest.sort(cmp)
     const nodes = new Map<DepID, Node>()
     for (const node of this.importers) nodes.set(node.id, node)
     for (const node of rest) nodes.set(node.id, node)
