@@ -18,16 +18,18 @@ import * as view from '../src/view.ts'
 import * as printErr from '../src/print-err.ts'
 
 // make sure these are loaded after the isTTY intercept
-const { outputCommand, getView, stderr, stdout } = await t.mockImport<
-  typeof import('../src/output.ts')
->('../src/output.ts', {
-  '../src/print-err.ts': t.createMock(printErr, {
-    printErr(err: unknown) {
-      errsPrinted.push(err)
+const { outputCommand, flushStream, getView, stderr, stdout } =
+  await t.mockImport<typeof import('../src/output.ts')>(
+    '../src/output.ts',
+    {
+      '../src/print-err.ts': t.createMock(printErr, {
+        printErr(err: unknown) {
+          errsPrinted.push(err)
+        },
+      }),
+      '../src/view.ts': view,
     },
-  }),
-  '../src/view.ts': view,
-})
+  )
 
 const errsPrinted: unknown[] = []
 
@@ -39,6 +41,22 @@ t.test('stdout, stderr', t => {
   t.strictSame(logs(), [['standard', 'out']])
   t.strictSame(errs(), [['std', 'err']])
   t.end()
+})
+
+t.test('flushStream', async t => {
+  const written: string[] = []
+  const stream = (writableLength: number) => ({
+    writableLength,
+    write: (chunk: string, cb: () => void) => {
+      written.push(chunk)
+      cb()
+      return true
+    },
+  })
+  await flushStream(stream(0))
+  t.strictSame(written, [], 'an empty stream is not written to')
+  await flushStream(stream(100))
+  t.strictSame(written, [''], 'a queued stream is waited on')
 })
 
 t.test('getView', async t => {

@@ -6,7 +6,12 @@ import {
   getSortedKeys,
 } from './config/definition.ts'
 import { Config } from './config/index.ts'
-import { outputCommand, stderr, stdout } from './output.ts'
+import {
+  flushAndExit,
+  outputCommand,
+  stderr,
+  stdout,
+} from './output.ts'
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
 
@@ -58,7 +63,7 @@ const loadVlt = async (cwd: string, argv: string[]) => {
         `Run 'vlt help' for more information about available options.`,
       ),
     )
-    return process.exit(process.exitCode || 1)
+    return flushAndExit(process.exitCode || 1)
   }
 }
 
@@ -100,7 +105,7 @@ const run = async () => {
         ),
       )
     }
-    return process.exit(process.exitCode || 1)
+    return flushAndExit(process.exitCode || 1)
   }
 
   if (vlt.command === 'registry') {

@@ -52,6 +52,41 @@ export const stdout = (...args: unknown[]) => console.log(...args)
 // eslint-disable-next-line no-console
 export const stderr = (...args: unknown[]) => console.error(...args)
 
+/** the part of a stdio stream that {@link flushStream} waits on */
+export type FlushableStream = {
+  writableLength: number
+  write: (chunk: string, cb: () => void) => boolean
+}
+
+/**
+ * Resolve once everything already handed to `stream` has reached the
+ * other end. A zero length write is enough: writes complete in order,
+ * so its callback cannot run ahead of the ones already queued.
+ */
+export const flushStream = (stream: FlushableStream) =>
+  new Promise<void>(res => {
+    if (!stream.writableLength) return res()
+    stream.write('', () => res())
+  })
+
+/**
+ * Exit, but only once stdout and stderr have drained.
+ *
+ * Writes to a pipe are async, and `process.exit()` throws away whatever
+ * is still queued for one. Piped output is exactly what CI gives us, so
+ * exiting right after printing crops the output at the 64k pipe buffer,
+ * and since the error is printed last, the error is what gets lost.
+ */
+export const flushAndExit = async (
+  code?: Parameters<typeof process.exit>[0],
+): Promise<never> => {
+  await Promise.all([
+    flushStream(process.stdout),
+    flushStream(process.stderr),
+  ])
+  return process.exit(code)
+}
+
 type StyleTextFn = (
   format: Parameters<typeof utilStyleText>[0],
   s: string,
@@ -304,6 +339,6 @@ export const outputCommand = async <T>(
       colors: stderrColor,
     })
 
-    process.exit(process.exitCode)
+    await flushAndExit(process.exitCode)
   }
 }
