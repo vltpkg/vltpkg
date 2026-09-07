@@ -27,7 +27,6 @@ const submodsRemote = `git://localhost:${port}/submodule-repo`
 const repo = resolve(me, 'repo')
 const repoUrl = String(pathToFileURL(repo))
 
-t.setTimeout(120000)
 t.test('create repo', { bail: true }, async () => {
   const git = (...cmd: string[]) => spawnGit(cmd, { cwd: repo })
   const write = (f: string, c: string) =>
