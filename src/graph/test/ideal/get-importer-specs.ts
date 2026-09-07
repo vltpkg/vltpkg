@@ -1333,7 +1333,7 @@ t.test('a satisfied lockfile edge with a stale spec', async t => {
   const specs = call(new Map() as AddImportersDependenciesMap)
   t.equal(specs.staleSpecs.size, 1, 'the stale edge is reported')
   t.equal(
-    [...specs.staleSpecs.values()][0]?.bareSpec,
+    [...specs.staleSpecs.values()][0]?.spec.bareSpec,
     '^1.0.0',
     'reported with the package.json value',
   )
@@ -1362,6 +1362,51 @@ t.test('a satisfied lockfile edge with a stale spec', async t => {
   )
 })
 
+t.test('the last declaration of a name wins', async t => {
+  // getRawDependencies places the last type listing a name, so a dep in
+  // both devDependencies and optionalDependencies is optional, and an
+  // edge already reading `optional` is not stale
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    devDependencies: { a: '^1.0.0' },
+    optionalDependencies: { a: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    mainManifest,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  const spec = Spec.parse('a', '^1.0.0')
+  const node = graph.addNode(
+    undefined,
+    { name: 'a', version: '1.0.0' },
+    spec,
+    'a',
+    '1.0.0',
+  )
+  graph.addEdge('optional', spec, graph.mainImporter, node)
+
+  const specs = getImporterSpecs({
+    add: new Map() as AddImportersDependenciesMap,
+    graph,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+  t.equal(specs.staleSpecs.size, 0, 'the optional edge is not stale')
+  t.notOk(
+    specs.add.get(joinDepIDTuple(['file', '.']))?.size,
+    'and nothing is queued',
+  )
+})
+
 t.test('unchanged importer edges are not re-parsed', async t => {
   const mainManifest = {
     name: 'my-project',
@@ -1376,6 +1421,8 @@ t.test('unchanged importer edges are not re-parsed', async t => {
       // dangling: the edge has no target
       e: '^1.0.0',
     },
+    // same text as its lockfile edge, but the type moved
+    devDependencies: { f: '^1.0.0' },
   }
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
@@ -1395,6 +1442,7 @@ t.test('unchanged importer edges are not re-parsed', async t => {
     b: '^1.0.0',
     c: '^1.0.0',
     d: '^1.0.0',
+    f: '^1.0.0',
   })) {
     const spec = Spec.parse(name, bareSpec)
     const node = graph.addNode(
@@ -1434,10 +1482,23 @@ t.test('unchanged importer edges are not re-parsed', async t => {
     scurry,
     packageJson,
   })
-  t.equal(parses, 2, 'only the changed and dangling specs are parsed')
+  t.equal(
+    parses,
+    3,
+    'only the changed, dangling and retyped specs are parsed',
+  )
   t.strictSame(
     [...(specs.add.get(joinDepIDTuple(['file', '.'])) ?? []).keys()],
     ['d', 'e'],
     'the changed and dangling deps are queued',
+  )
+  t.strictSame(
+    [...specs.staleSpecs].map(([edge, dep]) => [
+      edge.name,
+      edge.type,
+      dep.type,
+    ]),
+    [['f', 'prod', 'dev']],
+    'the retyped dep is satisfied, so it heals instead',
   )
 })

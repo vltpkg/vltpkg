@@ -277,6 +277,10 @@ export const install = async (
         : undefined
       lockfile.save({ ...options, graph, modifiers })
       saveImportersPackageJson?.()
+      // nothing is extracted or moved on this path, so nothing should be
+      // parked; confirm anyway so an early return can never leave
+      // `.VLT.DELETE.*` behind
+      remover.confirm()
       return { graph, diff: undefined }
     }
 

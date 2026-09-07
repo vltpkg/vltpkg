@@ -92,11 +92,13 @@ export const buildIdealFromStartingGraph = async (
     }
   }
 
-  // an importer edge whose lockfile spec no longer matches package.json
-  // while its target still satisfies it: rewrite the text so the rebuild
-  // reads the manifest value and the lockfile is saved carrying it
-  for (const [edge, spec] of importerSpecs.staleSpecs) {
-    edge.spec = spec
+  // an importer edge whose lockfile spec or type no longer matches
+  // package.json while its target still satisfies it: rewrite both so
+  // the rebuild reads the manifest values and the lockfile is saved
+  // carrying them
+  for (const [edge, dep] of importerSpecs.staleSpecs) {
+    edge.spec = dep.spec
+    edge.type = resolveSaveType(edge.from, edge.name, dep.type)
   }
   if (importerSpecs.staleSpecs.size) {
     options.graph.lockfileStale = true

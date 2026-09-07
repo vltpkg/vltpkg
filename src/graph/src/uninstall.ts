@@ -63,6 +63,8 @@ export const uninstall = async (
           })
         : undefined
       saveImportersPackageJson?.()
+      // see install.ts: never leave `.VLT.DELETE.*` behind
+      remover.confirm()
       return { graph, diff: undefined }
     }
 

@@ -440,23 +440,33 @@ export class Graph implements GraphLike {
     if (cached && !cached.detached) return cached
     const nbn = this.nodesByName.get(f.name)
     if (!nbn) return undefined
+    const sat = (n: Node) =>
+      satisfies(
+        n.id,
+        f,
+        fromNode.location,
+        this.projectRoot,
+        this.monorepo,
+      )
+    // a live node always wins; a detached one is only a fallback, and is
+    // never cached, placePackage caches it again when it reattaches. a
+    // detached cached entry is what this location resolved to last time,
+    // so it wins over nodesByName (sorted id) order - but the cache is
+    // written at placement, not by satisfies(), so re-check it here.
+    let detached: Node | undefined =
+      cached?.detached && sat(cached) ? cached : undefined
     for (const node of nbn) {
-      if (node.detached) continue
-      if (
-        satisfies(
-          node.id,
-          f,
-          fromNode.location,
-          this.projectRoot,
-          this.monorepo,
-        )
-      ) {
-        this.resolutions.set(sf, node)
-        // always set by now, because the node was added at some point
-        this.resolutionsReverse.get(node)?.add(sf)
-        return node
+      if (!sat(node)) continue
+      if (node.detached) {
+        detached ??= node
+        continue
       }
+      this.resolutions.set(sf, node)
+      // always set by now, because the node was added at some point
+      this.resolutionsReverse.get(node)?.add(sf)
+      return node
     }
+    return detached
   }
 
   /**

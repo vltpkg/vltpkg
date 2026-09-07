@@ -4656,6 +4656,56 @@ t.test(
   },
 )
 
+t.test('a nameless explicit optional add throws too', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+  const packageInfo = {
+    async manifest() {
+      throw error('Could not resolve')
+    },
+  } as unknown as PackageInfoClient
+
+  // the CLI keys a nameless add by its stringified spec
+  const spec = Spec.parseArgs('github:u/r', configData)
+  const dep = asDependency({ spec, type: 'optional' })
+  const key = spec.spec
+  t.equal(spec.name, '(unknown)', 'the spec has no name')
+  const call = (explicit?: Map<DepID, Set<string>>) =>
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([[key, dep]]),
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      explicit,
+    )
+
+  await t.rejects(
+    call(new Map([[graph.mainImporter.id, new Set([key])]])),
+    { message: 'Could not resolve' },
+    'the spec-string key is recognized as explicit',
+  )
+  await t.resolves(
+    call(),
+    'without it the optional miss is swallowed',
+  )
+})
+
 t.test(
   'lockedResolutions matches a lockfile node by spec.final.name',
   async t => {
@@ -5527,6 +5577,104 @@ t.test('locked version fetch without node_modules', async t => {
       )
       t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
       t.equal(graph.mainImporter.edgesOut.get('foo2')?.to, locked)
+    },
+  )
+
+  await t.test(
+    'hydrates and reuses a detached copy for an edge without a lock key',
+    async t => {
+      const { graph, locked } = setup(t, {
+        id: fooId,
+        edgeName: 'other',
+      })
+      const { calls, packageInfo } = recorder(byVersion('foo'))
+      await run(t, graph, packageInfo, fooDep())
+      t.strictSame(
+        calls.map(c => c.spec),
+        ['foo@1.1.0'],
+      )
+      t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+      t.equal(locked.detached, false)
+      t.notOk(
+        graph.nodes.has(foo12Id),
+        'newest satisfying not placed',
+      )
+    },
+  )
+
+  await t.test(
+    'reuses a detached copy that already has a manifest',
+    async t => {
+      const { graph, locked } = setup(t, {
+        id: fooId,
+        edgeName: 'other',
+      })
+      locked.manifest = { name: 'foo', version: '1.1.0' }
+      const { calls, packageInfo } = recorder(byVersion('foo'))
+      await run(t, graph, packageInfo, fooDep())
+      t.strictSame(calls, [], 'no fetch at all')
+      t.equal(graph.mainImporter.edgesOut.get('foo')?.to, locked)
+      t.equal(locked.detached, false)
+    },
+  )
+
+  await t.test(
+    'still fetches the range when the detached copy does not satisfy',
+    async t => {
+      const { graph, locked } = setup(t, {
+        id: fooId,
+        edgeName: 'other',
+      })
+      const { calls, packageInfo } = recorder(() => ({
+        name: 'foo',
+        version: '2.0.0',
+      }))
+      await run(
+        t,
+        graph,
+        packageInfo,
+        asDependency({
+          spec: Spec.parse('foo', '^2.0.0', configData),
+          type: 'prod',
+        }),
+      )
+      t.strictSame(
+        calls.map(c => c.spec),
+        ['foo@^2.0.0'],
+      )
+      t.equal(locked.detached, true, 'locked node left for gc')
+    },
+  )
+
+  await t.test(
+    'hydrates the by-name copy when the lock target no longer fits',
+    async t => {
+      const foo10Id = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+      const { graph } = setup(t, { id: foo10Id, version: '1.0.0' })
+      // a second bare lockfile copy, not the lock target for this edge
+      const other = graph.addNode(
+        fooId,
+        undefined,
+        undefined,
+        'foo',
+        '1.1.0',
+      )
+      other.detached = true
+      const { calls, packageInfo } = recorder(byVersion('foo'))
+      await run(
+        t,
+        graph,
+        packageInfo,
+        asDependency({
+          spec: Spec.parse('foo', '^1.1.0', configData),
+          type: 'prod',
+        }),
+      )
+      t.strictSame(
+        calls.map(c => c.spec),
+        ['foo@1.1.0'],
+      )
+      t.equal(graph.mainImporter.edgesOut.get('foo')?.to, other)
     },
   )
 

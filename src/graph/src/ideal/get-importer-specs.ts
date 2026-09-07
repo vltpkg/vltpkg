@@ -1,4 +1,5 @@
 import { longDependencyTypes } from '@vltpkg/types'
+import type { DependencyTypeLong } from '@vltpkg/types'
 import { shorten, asDependency } from '../dependencies.ts'
 import type {
   AddImportersDependenciesMap,
@@ -86,50 +87,58 @@ export const getImporterSpecs = (
         removeResult.modifiedDependencies = true
       }
     }
-    // if a dependency is listed in the manifest but not in the graph,
-    // add that dependency to the list of dependencies to be added
-    // names collected from a regular dependency type: a peer entry for
-    // one of them only constrains the dependency, it is not its own
-    // dependency to place
-    const regular = new Set<string>()
+    // which declaration each name is placed with, same rule as
+    // getRawDependencies: the last type listing it wins, except that a
+    // peer entry for a name already listed elsewhere only constrains
+    // the dependency, it is not its own dependency to place
+    const declared = new Map<string, [DependencyTypeLong, string]>()
     for (const depType of longDependencyTypes) {
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
-        if (depType === 'peerDependencies' && regular.has(depName)) {
+        if (depType === 'peerDependencies' && declared.has(depName)) {
           continue
         }
-        regular.add(depName)
-        const edge = importer.edgesOut.get(depName)
-
-        // skip if the edge exists and already uses the same spec.
-        // dangling (MISSING) targets still need to be queued so the
-        // ideal rebuild runs resetEdges() and places in traversal order.
-        // checked before parsing: the text parsed fine when the edge was
-        // loaded, and the workspace check below only fires on !edge?.to
-        if (edge?.to && edge.spec.bareSpec === depSpec) continue
-
-        const spec = Spec.parse(depName, depSpec, options)
-
-        // if a workspace dep references a workspace that no longer exists
-        // (folder was removed), mark it for removal instead of trying to
-        // resolve it — the workspace can't be satisfied
-        if (spec.type === 'workspace' && !edge?.to) {
-          const wsExists = [...graph.importers].some(
-            n => n.name === depName,
-          )
-          if (!wsExists) {
-            removeDeps.add(depName)
-            removeResult.modifiedDependencies = true
-            continue
-          }
-        }
-
-        const dependency = asDependency({
-          spec,
-          type: shorten(depType, depName, importer.manifest),
-        })
-        addDeps.set(depName, dependency)
+        declared.set(depName, [depType, depSpec])
       }
+    }
+
+    // if a dependency is listed in the manifest but not in the graph,
+    // add that dependency to the list of dependencies to be added
+    for (const [depName, [depType, depSpec]] of declared) {
+      const edge = importer.edgesOut.get(depName)
+
+      // skip if the edge exists and already uses the same spec and
+      // type. dangling (MISSING) targets still need to be queued so
+      // the ideal rebuild runs resetEdges() and places in traversal
+      // order. checked before parsing: the text parsed fine when the
+      // edge was loaded, and the workspace check below only fires on
+      // !edge?.to
+      const type = shorten(depType, depName, importer.manifest)
+      if (
+        edge?.to &&
+        edge.spec.bareSpec === depSpec &&
+        edge.type === type
+      ) {
+        continue
+      }
+
+      const spec = Spec.parse(depName, depSpec, options)
+
+      // if a workspace dep references a workspace that no longer exists
+      // (folder was removed), mark it for removal instead of trying to
+      // resolve it — the workspace can't be satisfied
+      if (spec.type === 'workspace' && !edge?.to) {
+        const wsExists = [...graph.importers].some(
+          n => n.name === depName,
+        )
+        if (!wsExists) {
+          removeDeps.add(depName)
+          removeResult.modifiedDependencies = true
+          continue
+        }
+      }
+
+      addDeps.set(depName, asDependency({ spec, type }))
     }
     addResult.set(importer.id, addDeps)
     removeResult.set(importer.id, removeDeps)

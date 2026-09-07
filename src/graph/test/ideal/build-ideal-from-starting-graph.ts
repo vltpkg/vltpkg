@@ -910,6 +910,66 @@ t.test('early-extracts peer node and moves store dir', async t => {
   )
 })
 
+t.test('lockfileOnly does not early-extract', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { ui: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  let extracts = 0
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'ui') {
+        return {
+          name: 'ui',
+          version: '1.0.0',
+          peerDependencies: { react: '^18' },
+        }
+      }
+      /* c8 ignore next */
+      if (spec.name === 'react')
+        return { name: 'react', version: '18.0.0' }
+      /* c8 ignore next */
+      return null
+    },
+    async extract() {
+      /* c8 ignore next 2 */
+      extracts++
+      return { integrity: 'sha512-abc==', resolved: 'x' }
+    },
+  } as unknown as PackageInfoClient
+
+  const graph = await buildIdealFromStartingGraph({
+    ...configData,
+    packageInfo,
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    actual: new Graph({ projectRoot, mainManifest, ...configData }),
+    graph: new Graph({ projectRoot, mainManifest, ...configData }),
+    add: new Map() as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    remover: new RollbackRemove(),
+    lockfileOnly: true,
+  })
+
+  t.equal(extracts, 0, 'nothing was extracted')
+  t.notOk(
+    [...graph.nodes.values()].some(n => n.extracted),
+    'no node is marked extracted',
+  )
+  t.notOk(
+    existsSync(join(projectRoot, 'node_modules/.vlt')),
+    'the store was not touched',
+  )
+})
+
 t.test(
   'rebuild without node_modules keeps locked versions',
   async t => {
@@ -1086,6 +1146,173 @@ t.test(
     )
   },
 )
+
+t.test('new and upgraded parents reuse locked copies', async t => {
+  // a parent the lockfile has no edge key for (fresh add, bumped range)
+  // must still land on the copy the lockfile already resolved
+  const seedManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { b: '^1.0.0', react: '^18', ui: '^1.0.0' },
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      a: '^1.0.0',
+      b: '^2.0.0',
+      c: '^1.0.0',
+      react: '^18',
+      ui: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(seedManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const dist = (name: string, version: string) => ({
+    integrity: `sha512-${name}${version}` as const,
+    tarball: `https://registry.npmjs.org/${name}/-/${name}-${version}.tgz`,
+  })
+  const fooDep = { foo: '^1.0.0' }
+  const manifests: Record<string, Record<string, Manifest>> = {
+    a: {
+      '1.0.0': { name: 'a', version: '1.0.0', dependencies: fooDep },
+    },
+    b: {
+      '1.0.0': { name: 'b', version: '1.0.0', dependencies: fooDep },
+      '2.0.0': { name: 'b', version: '2.0.0', dependencies: fooDep },
+    },
+    c: {
+      '1.0.0': {
+        name: 'c',
+        version: '1.0.0',
+        dependencies: { ui: '^1.0.0' },
+      },
+    },
+    foo: {
+      '1.0.0': {
+        name: 'foo',
+        version: '1.0.0',
+        dist: dist('foo', '1.0.0'),
+      },
+      '1.5.0': { name: 'foo', version: '1.5.0' },
+    },
+    ui: {
+      '1.0.0': {
+        name: 'ui',
+        version: '1.0.0',
+        peerDependencies: { react: '^18' },
+        dist: dist('ui', '1.0.0'),
+      },
+      '1.5.0': {
+        name: 'ui',
+        version: '1.5.0',
+        peerDependencies: { react: '^18' },
+      },
+    },
+    react: { '18.0.0': { name: 'react', version: '18.0.0' } },
+  }
+  // exact specs answer their version, ranges the oldest while seeding and
+  // the newest afterwards: a range fetch that leaks through the reuse
+  // path shows up as a different node
+  const mock = (pick: 'oldest' | 'newest') => {
+    const calls: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        calls.push(String(spec))
+        const versions = manifests[spec.final.name]
+        /* c8 ignore next */
+        if (!versions) return null
+        const exact = parseVersion(spec.final.semver ?? '')
+        const version =
+          exact ? String(exact)
+          : pick === 'oldest' ? Object.keys(versions)[0]
+          : Object.keys(versions).at(-1)
+        return versions[String(version)]
+      },
+    } as unknown as PackageInfoClient
+    return { calls, packageInfo }
+  }
+
+  const common = {
+    ...configData,
+    projectRoot,
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    remove: new Map() as RemoveImportersDependenciesMap,
+  }
+  const seed = await buildIdealFromStartingGraph({
+    ...common,
+    packageInfo: mock('oldest').packageInfo,
+    graph: new Graph({
+      projectRoot,
+      mainManifest: seedManifest,
+      ...configData,
+    }),
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+  const uiId = [...seed.nodes.keys()].find(id =>
+    id.startsWith('~npm~ui@'),
+  )
+  t.match(
+    uiId,
+    /^~npm~ui@1\.0\.0~peer\.[0-9a-f]{16}$/,
+    'seeded peer copy',
+  )
+
+  const { calls, packageInfo } = mock('newest')
+  const ideal = await buildIdealFromStartingGraph({
+    ...common,
+    packageInfo,
+    graph: loadVirtual({
+      ...common,
+      mainManifest,
+      lockfileData: lockfileData({ ...configData, graph: seed }),
+      actual: loadVirtual({
+        ...common,
+        mainManifest,
+        lockfileData: lockfileData({
+          ...configData,
+          graph: seed,
+          saveManifests: true,
+        }),
+      }),
+    }),
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+
+  t.strictSame(
+    calls.sort(),
+    ['a@^1.0.0', 'b@^2.0.0', 'c@^1.0.0'],
+    'only the new parents are fetched',
+  )
+  const byName = (name: string) =>
+    [...ideal.nodes.values()].filter(n => n.name === name)
+  t.equal(byName('foo').length, 1, 'one foo copy')
+  t.equal(byName('ui').length, 1, 'one ui copy')
+  const foo = byName('foo')[0]!
+  const ui = byName('ui')[0]!
+  t.equal(foo.version, '1.0.0', 'the locked foo is kept')
+  t.equal(ui.id, uiId, 'the peer copy keeps its id')
+  t.equal(ui.integrity, 'sha512-ui1.0.0', 'and its integrity')
+  t.ok(ui.resolved, 'and its resolved')
+  const edgeTo = (from: string, name: string) =>
+    byName(from)[0]?.edgesOut.get(name)?.to
+  t.equal(edgeTo('a', 'foo'), foo, 'the added parent reuses foo')
+  t.equal(edgeTo('b', 'foo'), foo, 'the upgraded parent reuses foo')
+  t.equal(byName('b')[0]?.version, '2.0.0', 'b was upgraded')
+  t.equal(
+    edgeTo('c', 'ui'),
+    ui,
+    'the added parent reuses the peer copy',
+  )
+})
 
 t.test('rebuilds do not flip a peer edge across forks', async t => {
   // regression: a forked context used to inherit the parent context's
@@ -1619,6 +1846,120 @@ t.test(
     )
   },
 )
+
+t.test(
+  'a nameless explicit optional add is not swallowed',
+  async t => {
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+
+    const spec = Spec.parseArgs('github:u/r', configData)
+    const packageInfo = {
+      async manifest() {
+        throw new Error('Could not resolve')
+      },
+    } as unknown as PackageInfoClient
+
+    await t.rejects(
+      buildIdealFromStartingGraph({
+        ...configData,
+        packageInfo,
+        packageJson: new PackageJson(),
+        scurry: new PathScurry(projectRoot),
+        graph: new Graph({
+          projectRoot,
+          mainManifest,
+          ...configData,
+        }),
+        // shaped like parseAddArgs: a nameless spec keys by its string
+        add: Object.assign(
+          new Map([
+            [
+              joinDepIDTuple(['file', '.']),
+              new Map([[spec.spec, { spec, type: 'optional' }]]),
+            ],
+          ]),
+          { modifiedDependencies: true },
+        ) as unknown as AddImportersDependenciesMap,
+        remove: new Map() as RemoveImportersDependenciesMap,
+        remover: new RollbackRemove(),
+      }),
+      /Could not resolve/,
+      'the explicit request fails the install',
+    )
+  },
+)
+
+t.test('a stale importer edge type is healed too', async t => {
+  // a legacy lockfile can carry `peer >=2 <3` for a dep package.json
+  // now lists in devDependencies: both the text and the type heal
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    devDependencies: { abbrev: '^2.0.0' },
+    peerDependencies: { abbrev: '>=2 <3' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const abbrevId = joinDepIDTuple(['registry', '', 'abbrev@2.0.0'])
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      throw new Error(`unexpected manifest fetch: ${spec}`)
+    },
+  } as unknown as PackageInfoClient
+  const common = {
+    ...configData,
+    projectRoot,
+    mainManifest,
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    remove: new Map() as RemoveImportersDependenciesMap,
+    packageInfo,
+  }
+  const graph = await buildIdealFromStartingGraph({
+    ...common,
+    graph: loadVirtual({
+      ...common,
+      lockfileData: {
+        lockfileVersion: 1,
+        options: configData,
+        nodes: {
+          [abbrevId]: [
+            0,
+            'abbrev',
+            null,
+            null,
+            null,
+            { name: 'abbrev', version: '2.0.0' },
+          ],
+        } as unknown as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'abbrev')]:
+            `peer >=2 <3 ${abbrevId}`,
+        } as LockfileEdges,
+      },
+    }),
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+
+  const edge = graph.mainImporter.edgesOut.get('abbrev')
+  t.equal(edge?.type, 'dev', 'the edge carries the package.json type')
+  t.equal(edge?.spec.bareSpec, '^2.0.0', 'and its text')
+  t.equal(edge?.to?.id, abbrevId, 'the target is untouched')
+  t.equal(graph.lockfileStale, true, 'flagged for saving')
+  t.equal(graph.nodes.size, 2, 'no node was added or removed')
+})
 
 t.test(
   'a forked context keeps the inherited peer target',

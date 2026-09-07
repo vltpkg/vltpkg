@@ -9,6 +9,7 @@ import type { Test } from 'tap'
 import { load } from '../../src/actual/load.ts'
 import { asDependency } from '../../src/dependencies.ts'
 import type { AddImportersDependenciesMap } from '../../src/dependencies.ts'
+import type { DependencySaveType } from '@vltpkg/types'
 import { Graph } from '../../src/graph.ts'
 import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
@@ -84,9 +85,9 @@ t.test('graph with an actual node', async t => {
     const stale = removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(add, 'should return an empty map')
     t.strictSame(
-      [...stale].map(([edge, spec]) => [
+      [...stale].map(([edge, dep]) => [
         edge.spec.bareSpec,
-        spec.bareSpec,
+        dep.spec.bareSpec,
       ]),
       [['npm:foo@1.0.0', '^1.0.0']],
       'the actual-graph edge is healed to the requested text',
@@ -174,9 +175,52 @@ t.test('graph with an actual node', async t => {
       'should not return registry tag item if something already satisfies it',
     )
     t.strictSame(
-      [...stale].map(([edge, spec]) => [edge.name, String(spec)]),
+      [...stale].map(([edge, dep]) => [edge.name, String(dep.spec)]),
       [['foo', 'foo@latest']],
       'reports the satisfied edge whose spec text differs',
+    )
+  })
+
+  await t.test('a type-only change is stale', async t => {
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
+    // the actual graph resolves the edge text, so reuse it verbatim to
+    // isolate the type from the spec comparison
+    const bareSpec =
+      graph.mainImporter.edgesOut.get('foo')!.spec.bareSpec
+    const addFoo = (type: DependencySaveType) =>
+      new Map([
+        [
+          joinDepIDTuple(['file', '.']),
+          new Map(
+            Object.entries({
+              foo: asDependency({
+                spec: Spec.parse('foo', bareSpec),
+                type,
+              }),
+            }),
+          ),
+        ],
+      ]) as AddImportersDependenciesMap
+    const dev = removeSatisfiedSpecs({ add: addFoo('dev'), graph })
+    t.strictSame(
+      [...dev].map(([edge, dep]) => [edge.type, dep.type]),
+      [['prod', 'dev']],
+      'the type moved, so the edge is stale',
+    )
+    t.equal(
+      removeSatisfiedSpecs({ add: addFoo('prod'), graph }).size,
+      0,
+      'same text and type is not stale',
+    )
+    t.equal(
+      removeSatisfiedSpecs({ add: addFoo('implicit'), graph }).size,
+      0,
+      'an implicit type keeps the edge as it is',
     )
   })
 

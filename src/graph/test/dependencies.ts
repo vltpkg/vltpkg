@@ -1,5 +1,6 @@
 import t from 'tap'
 import {
+  addKey,
   asDependency,
   asDependencyTypeShort,
   getDependencies,
@@ -58,6 +59,24 @@ t.test('shorten', async t => {
     /Invalid dependency type name/,
     'should throw if trying to retrieve from an unkown type',
   )
+})
+
+t.test('addKey', async t => {
+  t.equal(addKey(Spec.parse('foo', '^1.0.0')), 'foo', 'named')
+  for (const arg of [
+    'github:u/r',
+    'https://example.com/x.tgz',
+    'file:../x',
+  ]) {
+    const spec = Spec.parseArgs(arg)
+    t.equal(spec.name, '(unknown)', `${arg} has no name`)
+    t.equal(addKey(spec), spec.spec, `${arg} keys by its spec string`)
+    t.equal(
+      addKey(spec),
+      String(spec),
+      'which is what String() gives',
+    )
+  }
 })
 
 t.test('isDependency', async t => {

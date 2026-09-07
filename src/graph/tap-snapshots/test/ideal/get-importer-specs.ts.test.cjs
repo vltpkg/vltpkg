@@ -99,7 +99,10 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to r
       type: 'prod',
       spec: 'bar@npm:bar@1.0.0',
       to: '~npm~bar@1.0.0'
-    } => Spec {bar@^1.0.0}
+    } => {
+      spec: Spec {bar@^1.0.0},
+      type: 'prod'
+    }
   },
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}
@@ -174,7 +177,10 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
       type: 'prod',
       spec: 'foo@npm:foo@1.0.0',
       to: '~npm~foo@1.0.0'
-    } => Spec {foo@^1.0.0}
+    } => {
+      spec: Spec {foo@^1.0.0},
+      type: 'prod'
+    }
   },
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}

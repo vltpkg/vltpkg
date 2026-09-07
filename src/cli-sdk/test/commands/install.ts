@@ -353,6 +353,8 @@ t.test('frozen-lockfile flag', async t => {
         }
       },
       asDependency: (dep: any) => dep,
+      addKey: (spec: any) =>
+        spec.name === '(unknown)' ? spec.spec : spec.name,
     },
   })
 
@@ -399,6 +401,8 @@ t.test('lockfile-only flag', async t => {
         }
       },
       asDependency: (dep: any) => dep,
+      addKey: (spec: any) =>
+        spec.name === '(unknown)' ? spec.spec : spec.name,
     },
   })
 

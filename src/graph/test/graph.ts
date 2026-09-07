@@ -1946,8 +1946,8 @@ t.test('resetEdges method', async t => {
     )
     t.equal(
       foundAfter,
-      undefined,
-      'detached nodes are not resolution candidates after reset',
+      alphaNode,
+      'a detached node is the fallback candidate after reset',
     )
   })
 
@@ -2119,7 +2119,7 @@ t.test('resetEdges method', async t => {
       'modifier preserved',
     )
 
-    // Verify resolution skips the detached node after reset
+    // Verify resolution falls back to the detached node after reset
     const found = graph.findResolution(
       Spec.parse('epsilon@^1.0.0', configData),
       graph.mainImporter,
@@ -2127,8 +2127,8 @@ t.test('resetEdges method', async t => {
     )
     t.equal(
       found,
-      undefined,
-      'detached nodes are not resolution candidates after reset',
+      epsilonNode,
+      'a detached node is the fallback candidate after reset',
     )
   })
 
@@ -2164,7 +2164,7 @@ t.test('resetEdges method', async t => {
       'peerSetHash preserved',
     )
 
-    // Verify resolution skips the detached node after reset
+    // Verify resolution falls back to the detached node after reset
     const found = graph.findResolution(
       Spec.parse('zeta@^1.0.0', configData),
       graph.mainImporter,
@@ -2172,8 +2172,8 @@ t.test('resetEdges method', async t => {
     )
     t.equal(
       found,
-      undefined,
-      'detached nodes are not resolution candidates after reset',
+      zetaNode,
+      'a detached node is the fallback candidate after reset',
     )
   })
 
@@ -2238,6 +2238,117 @@ t.test('resetEdges method', async t => {
         found,
         v1,
         'should skip a cached detached node and return a live candidate',
+      )
+    },
+  )
+})
+
+t.test('findResolution detached fallback', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const newGraph = () =>
+    new Graph({ ...configData, mainManifest, projectRoot })
+
+  t.test(
+    'returns a detached node when no live one exists',
+    async t => {
+      const graph = newGraph()
+      const theta = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.0.0' },
+      )!
+      graph.resetEdges()
+      t.equal(
+        graph.findResolution(
+          Spec.parse('theta@^1.0.0', configData),
+          graph.mainImporter,
+        ),
+        theta,
+        'a detached node is the fallback candidate after reset',
+      )
+    },
+  )
+
+  t.test('does not cache a detached hit', async t => {
+    const graph = newGraph()
+    const node = graph.addNode(
+      joinDepIDTuple(['registry', '', 'theta@1.0.0']),
+      undefined,
+      undefined,
+      'theta',
+      '1.0.0',
+    )
+    node.detached = true
+    t.equal(
+      graph.findResolution(
+        Spec.parse('theta@^1.0.0', configData),
+        graph.mainImporter,
+      ),
+      node,
+      'the detached node is returned',
+    )
+    t.equal(graph.resolutions.size, 0, 'nothing was cached')
+  })
+
+  t.test(
+    'prefers a live cached node over an earlier detached id',
+    async t => {
+      const graph = newGraph()
+      const live = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.2.0' },
+      )!
+      // sorts before the live node in nodesByName, and would be the
+      // fallback if the scan ran
+      const earlier = graph.addNode(
+        joinDepIDTuple(['registry', '', 'theta@1.0.0']),
+        undefined,
+        undefined,
+        'theta',
+        '1.0.0',
+      )
+      earlier.detached = true
+      t.equal(
+        graph.findResolution(
+          Spec.parse('theta@^1.0.0', configData),
+          graph.mainImporter,
+        ),
+        live,
+        'the live cached entry is returned without a scan',
+      )
+    },
+  )
+
+  t.test(
+    'prefers the detached cached entry over an earlier id',
+    async t => {
+      const graph = newGraph()
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.0.0' },
+      )
+      const v12 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.2.0' },
+      )!
+      graph.resetEdges()
+      t.equal(
+        graph.findResolution(
+          Spec.parse('theta@^1.0.0', configData),
+          graph.mainImporter,
+        ),
+        v12,
+        'the last resolution wins over id order',
       )
     },
   )

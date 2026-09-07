@@ -68,6 +68,11 @@ export type RefreshIdealGraphOptions = BuildIdealAddOptions &
      * Used for nested folder dependencies that are not importers.
      */
     transientRemove?: TransientRemoveMap
+
+    /**
+     * Only the lockfile is being written, so nothing is extracted.
+     */
+    lockfileOnly?: boolean
   }
 
 /**
@@ -103,10 +108,15 @@ export const refreshIdealGraph = async ({
   remover,
   transientAdd,
   transientRemove,
+  lockfileOnly,
   ...specOptions
 }: RefreshIdealGraphOptions) => {
   const seen = new Set<DepID>()
-  const extractPromises: Promise<ExtractResult>[] = []
+  // early extraction only warms the store for the reify that follows;
+  // a lockfile-only run has none, and the next install re-extracts
+  // everything anyway since it never wrote a hidden lockfile
+  const extractPromises: Promise<ExtractResult>[] | undefined =
+    lockfileOnly ? undefined : []
   const seenExtracted = new Set<DepID>()
 
   // gets an ordered list of importers to ensure deterministic processing
@@ -228,7 +238,7 @@ export const refreshIdealGraph = async ({
   }
 
   // Wait for all extraction promises to complete
-  if (extractPromises.length > 0) {
+  if (extractPromises?.length) {
     await Promise.all(extractPromises)
   }
 }

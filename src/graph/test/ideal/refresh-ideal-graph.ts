@@ -242,6 +242,62 @@ t.test('refreshIdealGraph waits for extraction promises', async t => {
   )
 })
 
+t.test('lockfileOnly skips early extraction', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+  let extracts = 0
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      /* c8 ignore next */
+      if (spec.name !== 'foo') return null
+      return { name: 'foo', version: '1.0.0' }
+    },
+    async extract() {
+      /* c8 ignore next 2 */
+      extracts++
+      return { extracted: true }
+    },
+  } as unknown as PackageInfoClient
+
+  await refreshIdealGraph({
+    add: new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map(
+          Object.entries({
+            foo: {
+              spec: Spec.parse('foo', '^1.0.0'),
+              type: 'prod' as DependencySaveType,
+            } satisfies Dependency,
+          }),
+        ),
+      ],
+    ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    graph,
+    packageInfo,
+    scurry: new PathScurry(t.testdirName),
+    // an actual graph is what makes a node eligible for extraction
+    actual: new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    }),
+    remover: new RollbackRemove(),
+    lockfileOnly: true,
+  })
+
+  t.equal(extracts, 0, 'nothing was extracted')
+  t.notOk(
+    [...graph.nodes.values()].some(n => n.extracted),
+    'no node is marked extracted',
+  )
+})
+
 t.test(
   'refreshIdealGraph handles multiple extraction promises concurrently',
   async t => {
@@ -819,8 +875,8 @@ t.test(
     t.equal(
       parents[0]?.edgesOut.get('dup')?.to?.edgesOut.get('x')?.to
         ?.version,
-      '1.0.9',
-      'ambiguous base key was dropped, x re-resolved from the registry',
+      '1.0.1',
+      'ambiguous base key dropped, x falls back to the first copy',
     )
     t.ok(
       graph.mainImporter.edgesOut.get('new-dep')?.to,

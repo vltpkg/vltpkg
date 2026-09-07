@@ -17,7 +17,11 @@ import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
 import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
 import { fixupAddedNames } from '../fixup-added-names.ts'
-import { shorten, shouldInstallDepType } from '../dependencies.ts'
+import {
+  addKey,
+  shorten,
+  shouldInstallDepType,
+} from '../dependencies.ts'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
@@ -65,6 +69,12 @@ type DepEntry = {
   isExplicit: boolean
   /** ... and asked for a dist-tag, so the tag must be resolved */
   explicitTag: boolean
+  /**
+   * the node the resolution step lands on: the live edge target when it
+   * still satisfies, else the lock target when it still fits, else the
+   * first satisfying node by name
+   */
+  candidate?: Node
 }
 
 /**
@@ -236,55 +246,13 @@ const findCompatibleResolution = (
   fromNode: Node,
   graph: Graph,
   peerContext: PeerContext,
-  queryModifier?: string,
-  _peer?: boolean,
+  candidate?: Node,
   pending?: Map<string, Dependency>,
 ) => {
-  // Hoist invariants once
-  const fromLoc = fromNode.location
-  const projectRoot = graph.projectRoot
-  const monorepo = graph.monorepo
   const final = spec.final
-  // Memoize satisfies() results per-node within this resolution attempt
-  const satisfiesCache = new Map<string, boolean>()
-  const satisfiesFinal = (n: Node) => {
-    const key = n.id
-    const cached = satisfiesCache.get(key)
-    /* c8 ignore next 3 - optimization: cache hit when same node checked multiple times */
-    if (cached !== undefined) {
-      return cached
-    }
-    const result = satisfies(
-      key,
-      final,
-      fromLoc,
-      projectRoot,
-      monorepo,
-    )
-    satisfiesCache.set(key, result)
-    return result
-  }
 
-  // Prefer existing edge target if it satisfies the spec.
-  // This ensures lockfile resolutions are preserved when still valid,
-  // rather than potentially picking a different satisfying version.
-  const existingEdge = fromNode.edgesOut.get(spec.name)
-  const lockedNode = findLockedNode(graph, fromNode, spec.name)
-  let existingNode: Node | undefined
-  if (
-    existingEdge?.to &&
-    !existingEdge.to.detached &&
-    satisfiesFinal(existingEdge.to)
-  ) {
-    existingNode = existingEdge.to
-  } else if (
-    lockedNode &&
-    lockedFits(lockedNode, spec, fromNode, graph)
-  ) {
-    existingNode = lockedNode
-  } else {
-    existingNode = graph.findResolution(spec, fromNode, queryModifier)
-  }
+  // the candidate was picked in the pass before the hydrations
+  let existingNode: Node | undefined = candidate
 
   let peerCompatResult =
     existingNode ?
@@ -302,20 +270,30 @@ const findCompatibleResolution = (
   if (existingNode && !peerCompatResult.compatible) {
     const candidates = graph.nodesByName.get(final.name)
     if (candidates && candidates.size > 1) {
-      for (const candidate of candidates) {
-        if (candidate === existingNode) continue
-        if (candidate.detached) continue
-        if (!satisfiesFinal(candidate)) continue
+      for (const alt of candidates) {
+        if (alt === existingNode) continue
+        if (alt.detached) continue
+        if (
+          !satisfies(
+            alt.id,
+            final,
+            fromNode.location,
+            graph.projectRoot,
+            graph.monorepo,
+          )
+        ) {
+          continue
+        }
 
         const compat = checkPeerEdgesCompatible(
-          candidate,
+          alt,
           fromNode,
           peerContext,
           graph,
           pending,
         )
         if (compat.compatible) {
-          existingNode = candidate
+          existingNode = alt
           peerCompatResult = compat
           break
         }
@@ -429,7 +407,7 @@ const fetchManifestsForDeps = async (
     const activeModifier = modifierRefs?.get(spec.name)
     const isExplicit = !!explicit
       ?.get(fromNode.id)
-      ?.has(originalSpec.name)
+      ?.has(addKey(originalSpec))
 
     // MODIFIER HANDLING: Swap spec if an edge modifier is fully matched
     // Example: `vlt install --override "react:^19"` changes react's spec
@@ -467,20 +445,41 @@ const fetchManifestsForDeps = async (
   const pendingDeps = new Map<string, Dependency>()
   for (const e of entries) pendingDeps.set(e.spec.name, e)
 
+  // pick the reuse candidate once, here, so the placement loop below
+  // does not repeat the lookup, and hydrate it when it is a bare
+  // detached copy from a lockfile loaded without node_modules
   const from = scurry.resolve(fromNode.location)
   const pending: Promise<void>[] = []
-  for (const { spec, explicitTag } of entries) {
-    // the tag is fetched below anyway, the locked version is dead weight
-    if (explicitTag) continue
-    const locked = findLockedNode(graph, fromNode, spec.name)
+  for (const e of entries) {
+    // prefer the existing edge target when it still satisfies: lockfile
+    // resolutions are preserved rather than re-picked. a rebuild reset
+    // every edge, so this only fires when there was no reset, where no
+    // node is detached and there is nothing to hydrate either
+    const existing = fromNode.edgesOut.get(e.spec.name)?.to
     if (
-      locked?.detached &&
-      !locked.manifest &&
-      lockedFits(locked, spec, fromNode, graph)
+      existing &&
+      !existing.detached &&
+      satisfies(
+        existing.id,
+        e.spec.final,
+        fromNode.location,
+        graph.projectRoot,
+        graph.monorepo,
+      )
     ) {
+      e.candidate = existing
+      continue
+    }
+    const locked = findLockedNode(graph, fromNode, e.spec.name)
+    e.candidate =
+      locked && lockedFits(locked, e.spec, fromNode, graph) ? locked
+      : graph.findResolution(e.spec, fromNode, e.queryModifier)
+    // the tag is fetched below anyway, the locked version is dead weight
+    if (e.explicitTag) continue
+    if (e.candidate?.detached && !e.candidate.manifest) {
       const hydration = hydrateLockedNode(
-        locked,
-        spec,
+        e.candidate,
+        e.spec,
         graph,
         packageInfo,
         options,
@@ -500,6 +499,7 @@ const fetchManifestsForDeps = async (
     queryModifier,
     isExplicit,
     explicitTag,
+    candidate,
   } of entries) {
     const peer = type === 'peer' || type === 'peerOptional'
 
@@ -509,8 +509,7 @@ const fetchManifestsForDeps = async (
       fromNode,
       graph,
       peerContext,
-      queryModifier,
-      peer,
+      candidate,
       pendingDeps,
     )
 

@@ -109,6 +109,15 @@ export const asDependency = (obj: unknown): Dependency => {
 }
 
 /**
+ * The key an added dependency is filed under. A nameless spec
+ * (`github:u/r`, `file:../x`, a tarball url) has no name to key by, so
+ * the CLI uses its stringified form; every reader of an `add` map has to
+ * derive the key the same way.
+ */
+export const addKey = (spec: Spec): string =>
+  spec.name === '(unknown)' ? spec.spec : spec.name
+
+/**
  * Get the {@link DependencyTypeShort} from a {@link DependencyTypeLong}.
  */
 export const shorten = (
