@@ -33,7 +33,14 @@ export const movePeerStoreDirs = async (
   const staged = await Promise.all(
     moves.map(async ({ node, from, to }): Promise<Staged | void> => {
       const src = scurry.resolve(store, from)
-      if (!to) return remover.rm(src)
+      if (!to) {
+        // nothing links to a merged-away copy any more, so one that
+        // cannot be discarded is a stale dir, not a broken install
+        try {
+          await remover.rm(src)
+        } catch {}
+        return
+      }
       const tmp = scurry.resolve(store, `.VLT.MOVE.${key}.${to}`)
       try {
         await rename(src, tmp)
@@ -57,6 +64,11 @@ export const movePeerStoreDirs = async (
         await rename(tmp, dest)
       } catch {
         node.extracted = false
+        // the node is re-extracted on its canonical id, so the parked
+        // copy would only linger as a `.VLT.MOVE` orphan in the store
+        try {
+          await remover.rm(tmp)
+        } catch {}
         return
       }
       if (!existsSync(node.resolvedLocation(scurry))) {

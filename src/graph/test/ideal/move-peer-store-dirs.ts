@@ -9,7 +9,7 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { Graph } from '../../src/graph.ts'
@@ -254,4 +254,44 @@ t.test('settle failure clears extracted', async t => {
     remover,
   })
   t.equal(node.extracted, false)
+})
+
+t.test('settle failure discards the parked copy', async t => {
+  const root = t.testdir({})
+  const node = makeNode(t, toId)
+  writePkg(root, fromId, '{"name":"ui"}')
+  const scurry = new PathScurry(root)
+  const real = new RollbackRemove()
+  // only freeing the destination fails, so the parked copy can still
+  // be handed to the remover instead of lingering in the store
+  const remover = {
+    rm: async (path: string) => {
+      if (basename(path) === toId) throw new Error('settle failed')
+      return real.rm(path)
+    },
+  } as unknown as RollbackRemove
+  await movePeerStoreDirs([{ node, from: fromId, to: toId }], {
+    scurry,
+    remover,
+  })
+  t.equal(node.extracted, false)
+  t.strictSame(parked(root), [])
+  t.notOk(existsSync(join(store(root), fromId)))
+  t.notOk(existsSync(join(store(root), toId)))
+})
+
+t.test('discard failure does not abort the build', async t => {
+  const root = t.testdir({})
+  const node = makeNode(t, fromId)
+  writePkg(root, fromId, '{"name":"ui"}')
+  const scurry = new PathScurry(root)
+  const remover = {
+    rm: async () => {
+      throw new Error('discard failed')
+    },
+  } as unknown as RollbackRemove
+  await t.resolves(
+    movePeerStoreDirs([{ node, from: fromId }], { scurry, remover }),
+  )
+  t.ok(existsSync(join(store(root), fromId)), 'stale copy is left')
 })

@@ -392,7 +392,9 @@ const applyAssignments = (
     if (!nbn) continue
     graph.nodesByName.set(
       name,
-      new Set([...nbn].sort((a, b) => a.id.localeCompare(b.id))),
+      new Set(
+        [...nbn].sort((a, b) => a.id.localeCompare(b.id, 'en')),
+      ),
     )
   }
 

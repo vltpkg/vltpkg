@@ -2223,18 +2223,20 @@ t.test('resetEdges method', async t => {
         Spec.parse('theta@^1.0.0', configData),
         { name: 'theta', version: '1.1.0' },
       )!
-      graph.findResolution(
+      const cached = graph.findResolution(
         Spec.parse('theta@^1.0.0', configData),
         graph.mainImporter,
       )
-      v1.detached = true
+      t.equal(cached, v2, 'the cache points at the last placed node')
+      // detach the cached node so the lookup has to rescan by name
+      v2.detached = true
       const found = graph.findResolution(
         Spec.parse('theta@^1.0.0', configData),
         graph.mainImporter,
       )
       t.equal(
         found,
-        v2,
+        v1,
         'should skip a cached detached node and return a live candidate',
       )
     },
