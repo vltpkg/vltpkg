@@ -484,7 +484,7 @@ export class Graph implements GraphLike {
     // ensure the nodes by name set is always sorted, this will help
     // keeping a deterministic graph resolution when reusing nodes
     const newByNameSet = new Set(
-      [...nbn].sort((a, b) => a.id.localeCompare(b.id)),
+      [...nbn].sort((a, b) => a.id.localeCompare(b.id, 'en')),
     )
     this.nodesByName.set(node.name, newByNameSet)
 
