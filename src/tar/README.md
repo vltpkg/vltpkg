@@ -24,7 +24,7 @@ Pass your gzip-compressed or raw uncompressed JavaScript package
 tarball in a Buffer (or Uint8Array, or ArrayBuffer slice) into the
 function, along with the folder you want to drop it in.
 
-It will unpack as fast as possible, using synchronous I/O.
+It will unpack as fast as possible.
 
 ```js
 import { unpack } from '@vltpkg/tar'
@@ -37,40 +37,33 @@ const unzipped = gunzipSync(gzipped)
 unpack(unzipped, 'node_modules/target')
 ```
 
+### unpackSync(tarData, targetFolder)
+
+Same as `unpack`, but blocking. Faster: the async writers pay a libuv
+round trip per file, which costs more than the IO itself.
+
+### unpackFileSync(file, targetFolder, offset = 0)
+
+Read the tarball from a file on disk, skipping `offset` leading bytes,
+and unpack it synchronously. The offset lets a tarball be extracted
+straight out of a cache entry whose file starts with a header block.
+
 ### `class Pool`
 
-Create a pool of worker threads which will service unpack requests in
-parallel.
+The interface the vlt CLI extracts through. Both methods are `async`
+for the caller's convenience; the work itself is synchronous and runs
+on the main thread.
 
-New requests that get added will be assigned to workers as those
-workers become available. When a worker completes its task, and there
-are no more tasks to assign, it is terminated. If not enough workers
-are available to service requests, then new ones will be spawned.
-
-#### `pool.jobs`
-
-The number of worker threads that will be created.
-
-#### `pool.workers`
-
-Set of currently active worker threads.
-
-#### `pool.queue`
-
-Queue of requests awaiting an available worker.
-
-#### `pool.pending`
-
-All unpack requests that have not yet completed, both those currently
-assigned to a worker and those still waiting in the queue. Entries are
-removed once the request resolves or rejects.
+The pool holds no queue and imposes no limit -- callers are expected
+to cap their own concurrency. (`@vltpkg/graph`'s reify does.)
 
 #### `pool.unpack(tarData: Buffer, target: string) => Promise<void>`
 
-Unpack the supplied Buffer of data into the target folder, using
-synchronous I/O in a worker thread.
+Unpack the supplied Buffer of data into the target folder.
 
-Promise resolves when this unpack request has been completed.
+#### `pool.unpackFile(file: string, target: string, offset = 0) => Promise<void>`
+
+Unpack a tarball read from `file`, skipping `offset` leading bytes.
 
 ## Caveats
 
@@ -96,6 +89,8 @@ It does not do any of the binary linking or other stuff that a package
 manager will need to do. It _just_ does the unpack, as ruthlessly fast
 as possible, and that's all.
 
-Synchronous IO is used because that's faster and requires less CPU
-utilization. The `Pool` class manages multiple worker threads doing
-this work, so faster sync IO for the whole thing is much more optimal.
+Synchronous IO is used because it is faster and costs less CPU than
+the async writers, which pay a libuv round trip per file. The cost is
+that extraction blocks the event loop while it runs. Set
+`VLT_TAR_SYNC=0` to make `Pool` use the async writers instead -- a
+kill switch, not a supported mode.

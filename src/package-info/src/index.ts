@@ -1,6 +1,7 @@
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
+import { logRequest } from '@vltpkg/output'
 import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
@@ -33,8 +34,11 @@ import {
   resolve as pathResolve,
   relative,
 } from 'node:path'
+import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
 import { rename } from './rename.ts'
+
+const debug = debuglog('vlt')
 
 const xdg = new XDG('vlt')
 export const delimiter = '~'
@@ -230,10 +234,11 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
-        // if the tarball is already on disk, unpack it in place: it
-        // never has to be read into memory or held in the client's
-        // cache. anything unexpected falls through to the fetch path,
-        // which throws its own error if the body is genuinely bad.
+        // if the tarball is already on disk, unpack it straight from
+        // the cache file: it never has to be held in the client's
+        // in-memory cache. anything unexpected falls through to the
+        // fetch path, which throws its own error if the body is
+        // genuinely bad.
         const cached = (await this.getRegistryClient()).cachedBody(
           r.resolved,
           { integrity: r.integrity },
@@ -242,9 +247,19 @@ export class PackageInfoClient {
           try {
             await (
               await this.getTarPool()
-            ).unpackFile(cached.path, target, cached.offset)
+            ).unpack(cached.body, target)
+            logRequest(r.resolved, 'cache')
             return r
-          } catch {}
+          } catch (er) {
+            // a systematically failing fast path (every entry still
+            // gzipped, EACCES, ENOSPC...) doubles the IO of the fetch
+            // path, so leave a trace behind. NODE_DEBUG=vlt to see it.
+            debug(
+              'cached tarball unpack failed: %s: %s',
+              cached.path,
+              er,
+            )
+          }
         }
 
         const fetchTarball = async (useCache?: false) => {

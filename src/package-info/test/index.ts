@@ -1209,11 +1209,23 @@ t.test('registry tarball integrity verification', async t => {
   )
 })
 
+const tarballURL = `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`
+
+// only the tarball's request events; the packument logs its own
+const tarballLog = (states: string[]) => ({
+  '@vltpkg/output': {
+    logRequest: (u: URL | string, state: string) => {
+      if (String(u) === tarballURL) states.push(state)
+    },
+  },
+})
+
 t.test('registry tarballs unpack from the cache file', async t => {
   const dir = t.testdir({ 'vlt.json': '{}' })
   t.chdir(dir)
   unload()
   const calls: string[] = []
+  const states: string[] = []
   const { PackageInfoClient } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
@@ -1223,12 +1235,9 @@ t.test('registry tarballs unpack from the cache file', async t => {
           calls.push('unpack')
           return super.unpack(tarData, target)
         }
-        async unpackFile(file: string, target: string, offset = 0) {
-          calls.push('unpackFile')
-          return super.unpackFile(file, target, offset)
-        }
       },
     },
+    ...tarballLog(states),
   })
   const opts = { ...options, cache: dir + '/cache' }
 
@@ -1236,12 +1245,20 @@ t.test('registry tarballs unpack from the cache file', async t => {
   await cold.extract('abbrev@2', dir + '/cold')
   await (await cold.getRegistryClient()).cache.promise()
   t.strictSame(calls, ['unpack'], 'cold install fetches the bytes')
+  t.equal(states[0], 'start', 'cold install went to the network')
 
   // a fresh client has an empty memory cache, so the probe hits disk
   calls.length = 0
+  states.length = 0
   const warm = new PackageInfoClient(opts)
   await warm.extract('abbrev@2', dir + '/warm')
-  t.strictSame(calls, ['unpackFile'], 'warm install unpacks in place')
+  t.strictSame(calls, ['unpack'], 'warm install unpacked once')
+  t.strictSame(states, ['cache'], 'logged the hit exactly once')
+  t.equal(
+    (await warm.getRegistryClient()).cache.peek(tarballURL),
+    undefined,
+    'the body never entered the memory cache',
+  )
   t.match(
     JSON.parse(readFileSync(dir + '/warm/package.json', 'utf8')),
     { name: 'abbrev', version: '2.0.0' },
@@ -1258,6 +1275,7 @@ t.test('falls back when the cache file will not unpack', async t => {
   await (await prime.getRegistryClient()).cache.promise()
 
   const calls: string[] = []
+  const states: string[] = []
   const { PackageInfoClient: PIC } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
@@ -1265,17 +1283,17 @@ t.test('falls back when the cache file will not unpack', async t => {
       Pool: class BadFilePool extends Pool {
         async unpack(tarData: Buffer, target: string) {
           calls.push('unpack')
+          // the first unpack is the cache-file fast path
+          if (calls.length === 1) throw new Error('bad cache file')
           return super.unpack(tarData, target)
-        }
-        async unpackFile() {
-          calls.push('unpackFile')
-          throw new Error('bad cache file')
         }
       },
     },
+    ...tarballLog(states),
   })
   await new PIC(opts).extract('abbrev@2', dir + '/fallback')
-  t.strictSame(calls, ['unpackFile', 'unpack'], 'refetched')
+  t.strictSame(calls, ['unpack', 'unpack'], 'refetched')
+  t.strictSame(states, ['cache'], 'the hit is not double-counted')
   t.match(
     JSON.parse(readFileSync(dir + '/fallback/package.json', 'utf8')),
     { name: 'abbrev', version: '2.0.0' },

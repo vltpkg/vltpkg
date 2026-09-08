@@ -9,8 +9,12 @@ const syncUnpack = process.env.VLT_TAR_SYNC !== '0'
  *
  * Unpacking runs synchronously on the main thread, which is measurably
  * faster than the async writers (the libuv round trip per file costs
- * more than the IO). No queue: reify already caps extraction at
- * `8 * (cpus - 1)` in flight.
+ * more than the IO).
+ *
+ * There is no queue here. The only limiter is the caller's: reify caps
+ * extraction at `Math.max(availableParallelism() - 1, 1) * 8` in flight
+ * (`@vltpkg/graph`, `src/reify/index.ts`). A consumer that is not reify
+ * is unbounded -- add your own cap.
  */
 export class Pool {
   /**

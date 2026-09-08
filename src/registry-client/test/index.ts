@@ -1148,9 +1148,6 @@ t.test('cachedBody', async t => {
     rc.cache.delete(key)
   }
 
-  const bodyOf = (found: { path: string; offset: number }) =>
-    readFileSync(found.path).subarray(found.offset)
-
   t.test('hit by key', async t => {
     const requests: [string, string][] = []
     const { RegistryClient } = await mockIndex(t, {
@@ -1163,9 +1160,29 @@ t.test('cachedBody', async t => {
     await write(rc, entry(tarHeaders))
     const found = rc.cachedBody(url)
     if (!found) return t.fail('expected a cache hit')
-    t.strictSame(bodyOf(found), tarball)
-    t.strictSame(requests, [[url, 'cache']])
+    t.strictSame(found.body, tarball)
+    t.strictSame(requests, [], 'the caller logs, not us')
     t.equal(found.path, rc.cache.path(url), 'found by key path')
+  })
+
+  t.test('normalizes the url like request() does', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const canonical =
+      'https://registry.example.com/abbrev/-/abbrev-2.0.0.tgz'
+    await write(rc, entry(tarHeaders), canonical)
+    const found = rc.cachedBody(
+      'https://registry.example.com:443/abbrev/-/abbrev-2.0.0.tgz',
+    )
+    t.strictSame(
+      found?.body,
+      tarball,
+      'hit despite the explicit port',
+    )
+    t.strictSame(
+      rc.cachedBody(new URL(canonical))?.body,
+      tarball,
+      'a URL object works too',
+    )
   })
 
   t.test('hit by integrity path', async t => {
@@ -1176,7 +1193,7 @@ t.test('cachedBody', async t => {
     linkSync(rc.cache.path(url), intPath)
     const found = rc.cachedBody(url, { integrity })
     t.equal(found?.path, intPath, 'preferred the integrity path')
-    t.strictSame(found && bodyOf(found), tarball)
+    t.strictSame(found?.body, tarball)
   })
 
   t.test('malformed integrity falls back to the key', async t => {
@@ -1208,14 +1225,6 @@ t.test('cachedBody', async t => {
     await write(rc, Buffer.from([0, 0]))
     t.equal(rc.cachedBody(url), undefined, 'truncated head')
 
-    // a head longer than the 4k probe: unparseable, so a miss
-    const fat = entry({
-      ...tarHeaders,
-      'x-pad': 'x'.repeat(5000),
-    })
-    await write(rc, fat)
-    t.equal(rc.cachedBody(url), undefined, 'head over 4k')
-
     // valid is date-based only when there is no content-type: a
     // non-json content-type is treated as an immutable tarball
     await write(
@@ -1226,6 +1235,15 @@ t.test('cachedBody', async t => {
       }),
     )
     t.equal(rc.cachedBody(url), undefined, 'stale entry')
+  })
+
+  t.test('a head of any size is fine', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    await write(
+      rc,
+      entry({ ...tarHeaders, 'x-pad': 'x'.repeat(5000) }),
+    )
+    t.strictSame(rc.cachedBody(url)?.body, tarball)
   })
 
   t.test('in-memory entries are left to request()', async t => {

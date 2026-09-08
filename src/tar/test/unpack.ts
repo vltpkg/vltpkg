@@ -609,6 +609,13 @@ t.test('unpackFileSync', async t => {
     () => unpackFileSync(resolve(d, 'nope.tgz'), resolve(d, 'out2')),
     { code: 'ENOENT' },
   )
+  // an offset past EOF yields an empty buffer: 0 % 512 passes, the
+  // trailing-null check is what rejects it
+  t.throws(
+    () =>
+      unpackFileSync(resolve(d, 'pkg.tgz'), resolve(d, 'out3'), 1e9),
+    { message: 'Invalid tarball: not terminated by 1024 null bytes' },
+  )
 })
 
 t.test('sync errors do not leave garbage lying around', async t => {

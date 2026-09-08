@@ -7,7 +7,7 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
-import { closeSync, openSync, readSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { STATUS_CODES } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
@@ -73,12 +73,12 @@ export {
   type WebAuthChallenge,
 }
 
-/** Where a cached response body lives on disk. */
+/** A response body read straight out of the cache file. */
 export type CachedBody = {
-  /** the cache file, head included */
+  /** the cache file it came from */
   path: string
-  /** byte offset where the body starts */
-  offset: number
+  /** the body, a view into the file's bytes */
+  body: Buffer
 }
 
 export type CacheableMethod = 'GET' | 'HEAD'
@@ -514,9 +514,15 @@ export class RegistryClient {
   }
 
   /**
-   * Locate a valid cached non-JSON body on disk, without reading it.
-   * Lets a tarball be unpacked straight from the cache file instead of
-   * being read into memory and held in the cache LRU.
+   * Read a valid cached non-JSON body straight off disk, bypassing the
+   * in-memory cache LRU so that a tarball is never held in it.
+   *
+   * One read: the head is decoded from the same bytes the body comes
+   * from, so `cache-unzip` rewriting the head cannot land between the
+   * two and hand back a body at a stale offset.
+   *
+   * Does not log a cache hit -- the caller may still reject the body
+   * and fall back to {@link request}, which logs its own.
    *
    * Returns undefined on anything unexpected; callers fall back to
    * {@link request}.
@@ -530,11 +536,19 @@ export class RegistryClient {
   ): CachedBody | undefined {
     const { integrity, method = 'GET' } = options
     try {
+      // normalize like request() does, or a url that is not already in
+      // canonical form (an explicit :443, say) keys a different file
+      // and the fast path silently never hits.
+      const key = cacheKey(
+        method,
+        typeof url === 'string' ? new URL(url) : url,
+      )
+
       // an in-memory value can be newer than disk, since cache.set
       // writes to disk asynchronously. let request() serve those.
       // (an in-flight fetch() peeks as undefined, so the probe reads
       // disk underneath it -- benign, tarball urls are immutable.)
-      if (this.cache.peek(cacheKey(method, url))) return undefined
+      if (this.cache.peek(key)) return undefined
 
       // same order as the cache's own disk read
       const paths = new Set<string>()
@@ -542,37 +556,28 @@ export class RegistryClient {
         const i = this.cache.integrityPath(integrity)
         if (i) paths.add(i)
       } catch {}
-      paths.add(this.cache.path(cacheKey(method, url)))
+      paths.add(this.cache.path(key))
 
       for (const path of paths) {
-        const buf = Buffer.allocUnsafe(4096)
-        let bytes: number
-        let fd: number | undefined
+        let buf: Buffer
         try {
-          fd = openSync(path, 'r')
-          bytes = readSync(fd, buf, 0, buf.length, 0)
+          buf = readFileSync(path)
         } catch {
           continue
-        } finally {
-          if (fd !== undefined) closeSync(fd)
         }
-
-        const entry = CacheEntry.decodeHead(buf.subarray(0, bytes))
-        // a head longer than the probe fails to parse and comes back
-        // as statusCode 0, so it degrades to a miss rather than a bad
-        // offset. the isJSON guard is load-bearing: decodeHead skips
-        // the JSON check decode() does, and a packument must never
-        // reach the tar unpacker.
+        const entry = CacheEntry.decode(buf)
+        // statusCode must stay first: an unparseable buffer decodes to
+        // the module-level emptyCacheEntry singleton, and valid/isJSON
+        // memoize onto `this`, so reading them off it would poison the
+        // singleton process-wide.
         if (
           entry.statusCode !== 200 ||
           !entry.valid ||
-          entry.isJSON ||
-          entry.headSize === undefined
+          entry.isJSON
         ) {
           continue
         }
-        logRequest(url, 'cache', { method })
-        return { path, offset: entry.headSize }
+        return { path, body: entry.buffer() }
       }
       /* c8 ignore next */
     } catch {}
