@@ -1209,6 +1209,79 @@ t.test('registry tarball integrity verification', async t => {
   )
 })
 
+t.test('registry tarballs unpack from the cache file', async t => {
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  const calls: string[] = []
+  const { PackageInfoClient } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '@vltpkg/tar': {
+      Pool: class TrackedPool extends Pool {
+        async unpack(tarData: Buffer, target: string) {
+          calls.push('unpack')
+          return super.unpack(tarData, target)
+        }
+        async unpackFile(file: string, target: string, offset = 0) {
+          calls.push('unpackFile')
+          return super.unpackFile(file, target, offset)
+        }
+      },
+    },
+  })
+  const opts = { ...options, cache: dir + '/cache' }
+
+  const cold = new PackageInfoClient(opts)
+  await cold.extract('abbrev@2', dir + '/cold')
+  await (await cold.getRegistryClient()).cache.promise()
+  t.strictSame(calls, ['unpack'], 'cold install fetches the bytes')
+
+  // a fresh client has an empty memory cache, so the probe hits disk
+  calls.length = 0
+  const warm = new PackageInfoClient(opts)
+  await warm.extract('abbrev@2', dir + '/warm')
+  t.strictSame(calls, ['unpackFile'], 'warm install unpacks in place')
+  t.match(
+    JSON.parse(readFileSync(dir + '/warm/package.json', 'utf8')),
+    { name: 'abbrev', version: '2.0.0' },
+  )
+})
+
+t.test('falls back when the cache file will not unpack', async t => {
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  const opts = { ...options, cache: dir + '/cache' }
+  const prime = new PackageInfoClient(opts)
+  await prime.extract('abbrev@2', dir + '/prime')
+  await (await prime.getRegistryClient()).cache.promise()
+
+  const calls: string[] = []
+  const { PackageInfoClient: PIC } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '@vltpkg/tar': {
+      Pool: class BadFilePool extends Pool {
+        async unpack(tarData: Buffer, target: string) {
+          calls.push('unpack')
+          return super.unpack(tarData, target)
+        }
+        async unpackFile() {
+          calls.push('unpackFile')
+          throw new Error('bad cache file')
+        }
+      },
+    },
+  })
+  await new PIC(opts).extract('abbrev@2', dir + '/fallback')
+  t.strictSame(calls, ['unpackFile', 'unpack'], 'refetched')
+  t.match(
+    JSON.parse(readFileSync(dir + '/fallback/package.json', 'utf8')),
+    { name: 'abbrev', version: '2.0.0' },
+  )
+})
+
 t.test('extraction failures', async t => {
   const dir = t.testdir()
   const { PackageInfoClient } = await t.mockImport<
@@ -1217,6 +1290,9 @@ t.test('extraction failures', async t => {
     '@vltpkg/tar': {
       Pool: class Pool {
         async unpack() {
+          throw new Error('no tar for you')
+        }
+        async unpackFile() {
           throw new Error('no tar for you')
         }
       },

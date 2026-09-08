@@ -230,6 +230,23 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
+        // if the tarball is already on disk, unpack it in place: it
+        // never has to be read into memory or held in the client's
+        // cache. anything unexpected falls through to the fetch path,
+        // which throws its own error if the body is genuinely bad.
+        const cached = (await this.getRegistryClient()).cachedBody(
+          r.resolved,
+          { integrity: r.integrity },
+        )
+        if (cached) {
+          try {
+            await (
+              await this.getTarPool()
+            ).unpackFile(cached.path, target, cached.offset)
+            return r
+          } catch {}
+        }
+
         const fetchTarball = async (useCache?: false) => {
           const trustIntegrity =
             this.#trustedIntegrities.get(r.resolved) === r.integrity
@@ -385,9 +402,7 @@ export class PackageInfoClient {
         const st = await stat(path)
         if (st.isFile()) {
           try {
-            await (
-              await this.getTarPool()
-            ).unpack(await this.tarball(spec, options), target)
+            await (await this.getTarPool()).unpackFile(path, target)
           } catch (er) {
             throw this.#resolveError(
               spec,
@@ -847,9 +862,7 @@ export class PackageInfoClient {
         const s = spec
         return await this.#tmpdir(async dir => {
           try {
-            await (
-              await this.getTarPool()
-            ).unpack(await readFile(path), dir)
+            await (await this.getTarPool()).unpackFile(path, dir)
           } catch (er) {
             throw this.#resolveError(
               s,
