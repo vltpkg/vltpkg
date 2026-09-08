@@ -4,7 +4,12 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { Pax } from 'tar'
 import { gzipSync } from 'node:zlib'
-import { checkFs, unpack } from '../src/unpack.ts'
+import {
+  checkFs,
+  unpack as unpackAsync,
+  unpackFileSync,
+  unpackSync,
+} from '../src/unpack.ts'
 import { findTarDir } from '../src/find-tar-dir.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
@@ -81,221 +86,15 @@ const tarball = makeTar([
 
 const gzipped = gzipSync(tarball)
 
-t.test('unpack into a dir', t => {
-  const check = async (t: Test) => {
-    t.throws(() => lstatSync(resolve('ignore/absolute/paths')))
-    const d = t.testdirName
-    t.equal(lstatSync(d + '/package.json').isFile(), true)
-    const f = lstatSync(d + '/dir/some-file')
-    t.equal(f.isFile(), true)
-    t.not(f.mtime.toISOString(), '2024-01-01T00:00:00.000Z')
-    t.not(f.mode & 0o777, 0o123)
-    t.throws(() => lstatSync(d + '/slinky'))
-    t.throws(() => lstatSync(d + '/../dots'))
-    t.throws(() => lstatSync(d + '/ignoreme'))
-    t.throws(() => lstatSync(d + '/a'))
-    t.throws(() => lstatSync(d + '/directory'))
-    t.throws(() => lstatSync(d + '/../outside/directory'))
-    t.equal(readFileSync(d + '/asdfasdfasdfasdf', 'utf8'), 'a')
-
-    await t.rejects(
-      () => unpack(tarball.subarray(0, tarball.length - 1024), d),
-      {
-        message: 'Invalid tarball: not terminated by 1024 null bytes',
-      },
-    )
-    await t.rejects(() => unpack(Buffer.alloc(512), d), {
-      message: 'Invalid tarball: not terminated by 1024 null bytes',
-    })
-    await t.rejects(() => unpack(Buffer.alloc(5), d), {
-      message: 'Invalid tarball: length not divisible by 512',
-    })
-    // got path overridden with pax header
-    t.throws(() => lstatSync(d + '/some/e'))
-    const dir = lstatSync(d + '/some/empty/dir')
-    t.equal(dir.isDirectory(), true)
-    if (process.platform !== 'win32') {
-      t.equal(dir.mode & 0o700, 0o700, 'dir is mode 0o7xx')
-    }
-    t.end()
-  }
-
-  t.test('buffer', async t => {
-    await unpack(tarball, t.testdir())
-    await check(t)
-  })
-
-  t.test('buffer, folder does not exist yet', async t => {
-    await unpack(tarball, t.testdirName)
-    await check(t)
-  })
-
-  t.test('gzipped', async t => {
-    await unpack(gzipped, t.testdir())
-    await check(t)
-  })
-
-  t.test('errors do not leave garbage lying around', async t => {
-    const dir = t.testdir({ still: 'here' })
-    const FSP = await import('node:fs/promises')
-    const poop = new Error('poop')
-    const { unpack } = await t.mockImport<
-      typeof import('../src/unpack.ts')
-    >('../src/unpack.ts', {
-      'node:fs/promises': t.createMock(FSP, {
-        writeFile: async () => {
-          throw poop
-        },
-      }),
-    })
-    await t.rejects(() => unpack(tarball, dir), poop)
-    t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
-    t.end()
-  })
-
-  t.end()
-})
-
-t.test('validate unpack path sanitization', async t => {
-  // Test: Multiple absolute path prefixes should be denied
-  t.test('strips multiple absolute path prefixes', async t => {
-    const maliciousTar = makeTar([
-      { path: '////package/safe.txt', size: 4 },
-      'safe',
-    ])
-    const dir = t.testdir()
-    await t.rejects(
-      unpack(maliciousTar, dir),
-      'throws an error when no file is extracted',
-    )
-  })
-
-  // Test: Path traversal with .. should be blocked
-  t.test('blocks path traversal with ..', async t => {
-    const traversalPaths = [
-      '../etc/passwd',
-      'package/../../../etc/passwd',
-      'package/foo/../../../../../../tmp/evil',
-      '..\\windows\\system32\\config',
-    ]
-    for (const path of traversalPaths) {
-      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
-      const dir = t.testdir()
-      const FSP = await import('node:fs/promises')
-      const mkdirCalls: string[] = []
-      const writeFileCalls: string[] = []
-      const { unpack } = await t.mockImport<
-        typeof import('../src/unpack.ts')
-      >('../src/unpack.ts', {
-        'node:fs/promises': t.createMock(FSP, {
-          mkdir: async (path: string, ...args: any[]) => {
-            mkdirCalls.push(path)
-            return FSP.mkdir(path, ...args)
-          },
-          writeFile: async (
-            path: string,
-            data: Parameters<typeof FSP.writeFile>[1],
-            options?: Parameters<typeof FSP.writeFile>[2],
-          ) => {
-            writeFileCalls.push(path)
-            return FSP.writeFile(path, data, options)
-          },
-        }),
-      })
-      await t.rejects(
-        unpack(maliciousTar, dir),
-        'throws an error when no file is extracted',
-      )
-    }
-  })
-
-  // a prefix comparison would let an entry escape into a sibling dir
-  // whose name merely extends the target's
-  t.test('blocks escapes into name-extending siblings', async t => {
-    for (const path of [
-      'package/../foobar/forbidden',
-      'package/../foo.bar',
-    ]) {
-      const brokenTar = makeTar([{ path, size: 4 }, 'broken'])
-      const dir = t.testdir()
-      await t.rejects(
-        unpack(brokenTar, resolve(dir, 'foo')),
-        'throws an error when no file is extracted',
-      )
-    }
-  })
-
-  // Test: Windows drive-relative paths should be blocked
-  t.test('blocks Windows drive-relative path escapes', async t => {
-    const driveRelativePaths = [
-      'c:../../../windows/system32/evil.dll',
-      'd:..\\..\\important\\file.txt',
-      'c:foo/../../../escape.txt',
-    ]
-    for (const path of driveRelativePaths) {
-      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
-      const dir = t.testdir()
-      await t.rejects(
-        unpack(maliciousTar, dir),
-        'throws an error when no file is extracted',
-      )
-    }
-  })
-
-  t.test('blocks Windows drive-relative path escapes', async t => {
-    const driveRelativePaths = [
-      'c:../../../windows/system32/evil.dll',
-      'd:..\\..\\important\\file.txt',
-      'c:foo/../../../escape.txt',
-    ]
-    for (const path of driveRelativePaths) {
-      const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
-      const dir = t.testdir()
-      await t.rejects(
-        unpack(maliciousTar, dir),
-        'throws an error when no file is extracted',
-      )
-    }
-  })
-
-  // Test: Chained Windows roots should be blocked
-  t.test('strips chained Windows roots', async t => {
-    const maliciousTar = makeTar([
-      { path: 'c:\\c:\\d:\\package/safe.txt', size: 4 },
-      'safe',
-    ])
-    const dir = t.testdir()
-    await t.rejects(
-      unpack(maliciousTar, dir),
-      'throws an error when no file is extracted',
-    )
-  })
-
-  // Test: Directory traversal via symlink-like paths (though symlinks are already filtered)
-  t.test('blocks directory entries with traversal', async t => {
-    const maliciousTar = makeTar([
-      { path: '../../../tmp/evil-dir', type: 'Directory' },
-    ])
-    const dir = t.testdir()
-    await t.rejects(
-      unpack(maliciousTar, dir),
-      'throws an error when no file is extracted',
-    )
-  })
-
-  t.test('blocks directory entries with traversal', async t => {
-    const maliciousTar = makeTar([
-      { path: 'package/../../escape-dir', type: 'Directory' },
-    ])
-    const dir = t.testdir()
-    await t.rejects(
-      unpack(maliciousTar, dir),
-      'throws an error when no file is extracted',
-    )
-  })
-
-  t.end()
-})
+// every case that is pure unpack behavior runs through both writers, so
+// the sync path cannot drift from the async one.
+type Unpacker = (tarData: Buffer, target: string) => Promise<void>
+type UnpackModule = typeof import('../src/unpack.ts')
+const writers: [string, (m: UnpackModule) => Unpacker][] = [
+  ['async', m => m.unpack],
+  ['sync', m => async (b, target) => m.unpackSync(b, target)],
+]
+const real = { unpack: unpackAsync, unpackSync } as UnpackModule
 
 const makeFilesTar = (files: Record<string, string>) => {
   const chunks: (string | { path: string; size: number })[] = []
@@ -308,98 +107,368 @@ const makeFilesTar = (files: Record<string, string>) => {
   return makeTar(chunks)
 }
 
-t.test('last-wins under parallelism', async t => {
-  const tar = makeTar([
-    { path: 'package/x', size: 1 },
-    'a',
-    { path: 'package/x', size: 1 },
-    'b',
-    { path: 'package/x', size: 1 },
-    'c',
-  ])
-  const dir = t.testdirName
-  await unpack(tar, dir)
-  t.equal(readFileSync(dir + '/x', 'utf8'), 'c')
-})
+for (const [writer, get] of writers) {
+  const unpack = get(real)
+  t.test(writer, t => {
+    t.test('unpack into a dir', t => {
+      const check = async (t: Test) => {
+        t.throws(() => lstatSync(resolve('ignore/absolute/paths')))
+        const d = t.testdirName
+        t.equal(lstatSync(d + '/package.json').isFile(), true)
+        const f = lstatSync(d + '/dir/some-file')
+        t.equal(f.isFile(), true)
+        t.not(f.mtime.toISOString(), '2024-01-01T00:00:00.000Z')
+        t.not(f.mode & 0o777, 0o123)
+        t.throws(() => lstatSync(d + '/slinky'))
+        t.throws(() => lstatSync(d + '/../dots'))
+        t.throws(() => lstatSync(d + '/ignoreme'))
+        t.throws(() => lstatSync(d + '/a'))
+        t.throws(() => lstatSync(d + '/directory'))
+        t.throws(() => lstatSync(d + '/../outside/directory'))
+        t.equal(readFileSync(d + '/asdfasdfasdfasdf', 'utf8'), 'a')
 
-t.test('last-wins collapsed . and .. segments', async t => {
-  const tar = makeTar([
-    { path: 'package/a/b', size: 1 },
-    '1',
-    { path: 'package/a/./b', size: 1 },
-    '2',
-    { path: 'package/bar', size: 1 },
-    '3',
-    { path: 'package/foo/../bar', size: 1 },
-    '4',
-  ])
-  const dir = t.testdirName
-  await unpack(tar, dir)
-  t.equal(readFileSync(dir + '/a/b', 'utf8'), '2')
-  t.equal(readFileSync(dir + '/bar', 'utf8'), '4')
-})
+        await t.rejects(
+          () => unpack(tarball.subarray(0, tarball.length - 1024), d),
+          {
+            message:
+              'Invalid tarball: not terminated by 1024 null bytes',
+          },
+        )
+        await t.rejects(() => unpack(Buffer.alloc(512), d), {
+          message:
+            'Invalid tarball: not terminated by 1024 null bytes',
+        })
+        await t.rejects(() => unpack(Buffer.alloc(5), d), {
+          message: 'Invalid tarball: length not divisible by 512',
+        })
+        // got path overridden with pax header
+        t.throws(() => lstatSync(d + '/some/e'))
+        const dir = lstatSync(d + '/some/empty/dir')
+        t.equal(dir.isDirectory(), true)
+        if (process.platform !== 'win32') {
+          t.equal(dir.mode & 0o700, 0o700, 'dir is mode 0o7xx')
+        }
+        t.end()
+      }
 
-t.test('file/dir collision at same path rejects', async t => {
-  const dir = t.testdir()
-  const fileThenDir = makeTar([
-    { path: 'package/a', size: 1 },
-    'x',
-    { path: 'package/a/', type: 'Directory' },
-  ])
-  await t.rejects(
-    unpack(fileThenDir, resolve(dir, 'out')),
-    { message: 'file/directory collision in tarball' },
-    'file then directory',
-  )
-  const dirThenFile = makeTar([
-    { path: 'package/a/', type: 'Directory' },
-    { path: 'package/a', size: 1 },
-    'x',
-  ])
-  await t.rejects(
-    unpack(dirThenFile, resolve(dir, 'out2')),
-    { message: 'file/directory collision in tarball' },
-    'directory then file',
-  )
-})
+      t.test('buffer', async t => {
+        await unpack(tarball, t.testdir())
+        await check(t)
+      })
 
-t.test(
-  'A/a last-wins on case-insensitive fs',
-  {
-    skip:
-      process.platform !== 'darwin' &&
-      process.platform !== 'win32' &&
-      'case-sensitive file system',
-  },
-  async t => {
-    const tar = makeTar([
-      { path: 'package/A', size: 1 },
-      '1',
-      { path: 'package/a', size: 1 },
-      '2',
-    ])
-    const dir = t.testdirName
-    await unpack(tar, dir)
-    t.equal(readdirSync(dir).length, 1)
-    t.equal(readFileSync(dir + '/A', 'utf8'), '2')
-    t.equal(readFileSync(dir + '/a', 'utf8'), '2')
-  },
-)
+      t.test('buffer, folder does not exist yet', async t => {
+        await unpack(tarball, t.testdirName)
+        await check(t)
+      })
 
-t.test('empty-after-filter still rejects', async t => {
-  const tar = makeTar([
-    {
-      path: 'package/slinky',
-      linkpath: 'package/target',
-      type: 'SymbolicLink',
-    },
-    { path: '../outside/x', size: 1 },
-    'x',
-  ])
-  await t.rejects(
-    unpack(tar, t.testdir()),
-    'throws an error when no file is extracted',
-  )
+      t.test('gzipped', async t => {
+        await unpack(gzipped, t.testdir())
+        await check(t)
+      })
+
+      t.end()
+    })
+
+    t.test('validate unpack path sanitization', async t => {
+      // Test: Multiple absolute path prefixes should be denied
+      t.test('strips multiple absolute path prefixes', async t => {
+        const maliciousTar = makeTar([
+          { path: '////package/safe.txt', size: 4 },
+          'safe',
+        ])
+        const dir = t.testdir()
+        await t.rejects(
+          unpack(maliciousTar, dir),
+          'throws an error when no file is extracted',
+        )
+      })
+
+      // Test: Path traversal with .. should be blocked
+      t.test('blocks path traversal with ..', async t => {
+        const traversalPaths = [
+          '../etc/passwd',
+          'package/../../../etc/passwd',
+          'package/foo/../../../../../../tmp/evil',
+          '..\\windows\\system32\\config',
+        ]
+        for (const path of traversalPaths) {
+          const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+          const dir = t.testdir()
+          await t.rejects(
+            unpack(maliciousTar, dir),
+            'throws an error when no file is extracted',
+          )
+        }
+      })
+
+      // a prefix comparison would let an entry escape into a sibling dir
+      // whose name merely extends the target's
+      t.test(
+        'blocks escapes into name-extending siblings',
+        async t => {
+          for (const path of [
+            'package/../foobar/forbidden',
+            'package/../foo.bar',
+          ]) {
+            const brokenTar = makeTar([{ path, size: 4 }, 'broken'])
+            const dir = t.testdir()
+            await t.rejects(
+              unpack(brokenTar, resolve(dir, 'foo')),
+              'throws an error when no file is extracted',
+            )
+          }
+        },
+      )
+
+      // Test: Windows drive-relative paths should be blocked
+      t.test(
+        'blocks Windows drive-relative path escapes',
+        async t => {
+          const driveRelativePaths = [
+            'c:../../../windows/system32/evil.dll',
+            'd:..\\..\\important\\file.txt',
+            'c:foo/../../../escape.txt',
+          ]
+          for (const path of driveRelativePaths) {
+            const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+            const dir = t.testdir()
+            await t.rejects(
+              unpack(maliciousTar, dir),
+              'throws an error when no file is extracted',
+            )
+          }
+        },
+      )
+
+      t.test(
+        'blocks Windows drive-relative path escapes',
+        async t => {
+          const driveRelativePaths = [
+            'c:../../../windows/system32/evil.dll',
+            'd:..\\..\\important\\file.txt',
+            'c:foo/../../../escape.txt',
+          ]
+          for (const path of driveRelativePaths) {
+            const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
+            const dir = t.testdir()
+            await t.rejects(
+              unpack(maliciousTar, dir),
+              'throws an error when no file is extracted',
+            )
+          }
+        },
+      )
+
+      // Test: Chained Windows roots should be blocked
+      t.test('strips chained Windows roots', async t => {
+        const maliciousTar = makeTar([
+          { path: 'c:\\c:\\d:\\package/safe.txt', size: 4 },
+          'safe',
+        ])
+        const dir = t.testdir()
+        await t.rejects(
+          unpack(maliciousTar, dir),
+          'throws an error when no file is extracted',
+        )
+      })
+
+      // Test: Directory traversal via symlink-like paths (though symlinks are already filtered)
+      t.test('blocks directory entries with traversal', async t => {
+        const maliciousTar = makeTar([
+          { path: '../../../tmp/evil-dir', type: 'Directory' },
+        ])
+        const dir = t.testdir()
+        await t.rejects(
+          unpack(maliciousTar, dir),
+          'throws an error when no file is extracted',
+        )
+      })
+
+      t.test('blocks directory entries with traversal', async t => {
+        const maliciousTar = makeTar([
+          { path: 'package/../../escape-dir', type: 'Directory' },
+        ])
+        const dir = t.testdir()
+        await t.rejects(
+          unpack(maliciousTar, dir),
+          'throws an error when no file is extracted',
+        )
+      })
+
+      t.end()
+    })
+
+    t.test('last-wins under parallelism', async t => {
+      const tar = makeTar([
+        { path: 'package/x', size: 1 },
+        'a',
+        { path: 'package/x', size: 1 },
+        'b',
+        { path: 'package/x', size: 1 },
+        'c',
+      ])
+      const dir = t.testdirName
+      await unpack(tar, dir)
+      t.equal(readFileSync(dir + '/x', 'utf8'), 'c')
+    })
+
+    t.test('last-wins collapsed . and .. segments', async t => {
+      const tar = makeTar([
+        { path: 'package/a/b', size: 1 },
+        '1',
+        { path: 'package/a/./b', size: 1 },
+        '2',
+        { path: 'package/bar', size: 1 },
+        '3',
+        { path: 'package/foo/../bar', size: 1 },
+        '4',
+      ])
+      const dir = t.testdirName
+      await unpack(tar, dir)
+      t.equal(readFileSync(dir + '/a/b', 'utf8'), '2')
+      t.equal(readFileSync(dir + '/bar', 'utf8'), '4')
+    })
+
+    t.test('file/dir collision at same path rejects', async t => {
+      const dir = t.testdir()
+      const fileThenDir = makeTar([
+        { path: 'package/a', size: 1 },
+        'x',
+        { path: 'package/a/', type: 'Directory' },
+      ])
+      await t.rejects(
+        unpack(fileThenDir, resolve(dir, 'out')),
+        { message: 'file/directory collision in tarball' },
+        'file then directory',
+      )
+      const dirThenFile = makeTar([
+        { path: 'package/a/', type: 'Directory' },
+        { path: 'package/a', size: 1 },
+        'x',
+      ])
+      await t.rejects(
+        unpack(dirThenFile, resolve(dir, 'out2')),
+        { message: 'file/directory collision in tarball' },
+        'directory then file',
+      )
+    })
+
+    t.test(
+      'A/a last-wins on case-insensitive fs',
+      {
+        skip:
+          process.platform !== 'darwin' &&
+          process.platform !== 'win32' &&
+          'case-sensitive file system',
+      },
+      async t => {
+        const tar = makeTar([
+          { path: 'package/A', size: 1 },
+          '1',
+          { path: 'package/a', size: 1 },
+          '2',
+        ])
+        const dir = t.testdirName
+        await unpack(tar, dir)
+        t.equal(readdirSync(dir).length, 1)
+        t.equal(readFileSync(dir + '/A', 'utf8'), '2')
+        t.equal(readFileSync(dir + '/a', 'utf8'), '2')
+      },
+    )
+
+    t.test('empty-after-filter still rejects', async t => {
+      const tar = makeTar([
+        {
+          path: 'package/slinky',
+          linkpath: 'package/target',
+          type: 'SymbolicLink',
+        },
+        { path: '../outside/x', size: 1 },
+        'x',
+      ])
+      await t.rejects(
+        unpack(tar, t.testdir()),
+        'throws an error when no file is extracted',
+      )
+    })
+
+    t.test('gzip decompression ratio cap', async t => {
+      const bomb = gzipSync(Buffer.alloc(2 * 1024 * 1024))
+      await t.rejects(() => unpack(bomb, t.testdir()), {
+        message: 'tarball exceeds maximum unpacked size',
+      })
+    })
+
+    t.test('gzip absolute unpacked size ceiling', async t => {
+      const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
+      process.env.VLT_TAR_MAX_UNPACKED_BYTES = '4096'
+      t.teardown(() => {
+        if (prev === undefined) {
+          delete process.env.VLT_TAR_MAX_UNPACKED_BYTES
+        } else {
+          process.env.VLT_TAR_MAX_UNPACKED_BYTES = prev
+        }
+      })
+      const unpack = get(
+        await t.mockImport<UnpackModule>('../src/unpack.ts'),
+      )
+      await t.rejects(() => unpack(gzipped, t.testdir()), {
+        message: 'tarball exceeds maximum unpacked size',
+      })
+    })
+
+    t.test(
+      'invalid VLT_TAR_MAX_UNPACKED_BYTES falls back',
+      async t => {
+        const gzippedFiles = gzipSync(makeFilesTar({ z: 'z' }))
+        for (const raw of ['nope', '0', '-1']) {
+          const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
+          process.env.VLT_TAR_MAX_UNPACKED_BYTES = raw
+          t.teardown(() => {
+            if (prev === undefined) {
+              delete process.env.VLT_TAR_MAX_UNPACKED_BYTES
+            } else {
+              process.env.VLT_TAR_MAX_UNPACKED_BYTES = prev
+            }
+          })
+          const unpack = get(
+            await t.mockImport<UnpackModule>('../src/unpack.ts'),
+          )
+          const dir = t.testdirName
+          await unpack(gzippedFiles, dir)
+          t.equal(readFileSync(dir + '/z', 'utf8'), 'z', raw)
+        }
+      },
+    )
+
+    t.test('non-bomb zlib errors pass through', async t => {
+      const garbage = Buffer.from([
+        0x1f, 0x8b, 0xff, 0xff, 0xff, 0xff,
+      ])
+      await t.rejects(() => unpack(garbage, t.testdir()), {
+        message: 'unknown compression method',
+      })
+    })
+    t.end()
+  })
+}
+
+t.test('errors do not leave garbage lying around', async t => {
+  const dir = t.testdir({ still: 'here' })
+  const FSP = await import('node:fs/promises')
+  const poop = new Error('poop')
+  const { unpack } = await t.mockImport<
+    typeof import('../src/unpack.ts')
+  >('../src/unpack.ts', {
+    'node:fs/promises': t.createMock(FSP, {
+      writeFile: async () => {
+        throw poop
+      },
+    }),
+  })
+  await t.rejects(() => unpack(tarball, dir), poop)
+  t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
+  t.end()
 })
 
 t.test('no preclean on successful unpack', async t => {
@@ -417,6 +486,9 @@ t.test('no preclean on successful unpack', async t => {
     }),
     rimraf: {
       rimraf: async (path: string) => {
+        rimrafCalls.push(path)
+      },
+      rimrafSync: (path: string) => {
         rimrafCalls.push(path)
       },
     },
@@ -505,57 +577,56 @@ t.test('invalid VLT_TAR_WRITE_LANES falls back', async t => {
   }
 })
 
-t.test('gzip decompression ratio cap', async t => {
-  const bomb = gzipSync(Buffer.alloc(2 * 1024 * 1024))
-  await t.rejects(() => unpack(bomb, t.testdir()), {
-    message: 'tarball exceeds maximum unpacked size',
-  })
+t.test('both writers produce identical trees', async t => {
+  const d = t.testdir()
+  const tree = (dir: string) =>
+    readdirSync(dir, { recursive: true })
+      .map(
+        f =>
+          `${f} ${(lstatSync(resolve(dir, String(f))).mode & 0o777).toString(8)}`,
+      )
+      .sort()
+  await unpackAsync(tarball, resolve(d, 'a'))
+  unpackSync(tarball, resolve(d, 's'))
+  t.strictSame(tree(resolve(d, 's')), tree(resolve(d, 'a')))
 })
 
-t.test('gzip absolute unpacked size ceiling', async t => {
-  const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
-  process.env.VLT_TAR_MAX_UNPACKED_BYTES = '4096'
-  t.teardown(() => {
-    if (prev === undefined) {
-      delete process.env.VLT_TAR_MAX_UNPACKED_BYTES
-    } else {
-      process.env.VLT_TAR_MAX_UNPACKED_BYTES = prev
-    }
+t.test('unpackFileSync', async t => {
+  const head = Buffer.from('cache head bytes')
+  const d = t.testdir({
+    'pkg.tgz': gzipped,
+    'entry.bin': Buffer.concat([head, gzipped]),
   })
-  const { unpack } = await t.mockImport<
-    typeof import('../src/unpack.ts')
-  >('../src/unpack.ts')
-  await t.rejects(() => unpack(gzipped, t.testdir()), {
-    message: 'tarball exceeds maximum unpacked size',
-  })
+  unpackFileSync(resolve(d, 'pkg.tgz'), resolve(d, 'out'))
+  t.equal(readFileSync(resolve(d, 'out/package.json'), 'utf8'), pj)
+  unpackFileSync(
+    resolve(d, 'entry.bin'),
+    resolve(d, 'offset'),
+    head.length,
+  )
+  t.equal(readFileSync(resolve(d, 'offset/package.json'), 'utf8'), pj)
+  t.throws(
+    () => unpackFileSync(resolve(d, 'nope.tgz'), resolve(d, 'out2')),
+    { code: 'ENOENT' },
+  )
 })
 
-t.test('invalid VLT_TAR_MAX_UNPACKED_BYTES falls back', async t => {
-  const gzippedFiles = gzipSync(makeFilesTar({ z: 'z' }))
-  for (const raw of ['nope', '0', '-1']) {
-    const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
-    process.env.VLT_TAR_MAX_UNPACKED_BYTES = raw
-    t.teardown(() => {
-      if (prev === undefined) {
-        delete process.env.VLT_TAR_MAX_UNPACKED_BYTES
-      } else {
-        process.env.VLT_TAR_MAX_UNPACKED_BYTES = prev
-      }
-    })
-    const { unpack } = await t.mockImport<
-      typeof import('../src/unpack.ts')
-    >('../src/unpack.ts')
-    const dir = t.testdirName
-    await unpack(gzippedFiles, dir)
-    t.equal(readFileSync(dir + '/z', 'utf8'), 'z', raw)
-  }
-})
-
-t.test('non-bomb zlib errors pass through', async t => {
-  const garbage = Buffer.from([0x1f, 0x8b, 0xff, 0xff, 0xff, 0xff])
-  await t.rejects(() => unpack(garbage, t.testdir()), {
-    message: 'unknown compression method',
-  })
+t.test('sync errors do not leave garbage lying around', async t => {
+  const dir = t.testdir({ still: 'here' })
+  const FS = await import('node:fs')
+  const poop = new Error('poop')
+  const { unpackSync } = await t.mockImport<UnpackModule>(
+    '../src/unpack.ts',
+    {
+      'node:fs': t.createMock(FS, {
+        writeFileSync: () => {
+          throw poop
+        },
+      }),
+    },
+  )
+  t.throws(() => unpackSync(tarball, dir), poop)
+  t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
 })
 
 t.test('checkFs differential vs relative() impl', t => {

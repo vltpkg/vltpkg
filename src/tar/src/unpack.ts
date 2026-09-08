@@ -1,5 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
+import {
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from 'node:fs'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
 import {
   basename,
@@ -9,11 +16,11 @@ import {
   resolve,
   sep,
 } from 'node:path'
-import { rimraf } from 'rimraf'
+import { rimraf, rimrafSync } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
-import { unzip as unzipCB } from 'node:zlib'
+import { unzip as unzipCB, unzipSync as unzipSyncCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
 
 // Matches node-tar's MAX_DECOMPRESSION_RATIO, which npm uses via pacote.
@@ -34,28 +41,34 @@ const maxUnpackedBytes = parseMaxUnpackedBytes(
   process.env.VLT_TAR_MAX_UNPACKED_BYTES,
 )
 
+const unzipMax = (len: number) =>
+  Math.min(maxUnpackedBytes, len * MAX_DECOMPRESSION_RATIO)
+
+const unzipError = (er: unknown, found: number, max: number) =>
+  (er as NodeJS.ErrnoException).code === 'ERR_BUFFER_TOO_LARGE' ?
+    error('tarball exceeds maximum unpacked size', {
+      found,
+      max,
+      cause: er,
+    })
+  : er
+
 const unzip = async (input: Buffer) => {
-  const max = Math.min(
-    maxUnpackedBytes,
-    input.length * MAX_DECOMPRESSION_RATIO,
-  )
+  const max = unzipMax(input.length)
   return new Promise<Buffer>((res, rej) =>
-    unzipCB(input, { maxOutputLength: max }, (er, result) => {
-      if (!er) return res(result)
-      return rej(
-        (
-          (er as NodeJS.ErrnoException).code ===
-            'ERR_BUFFER_TOO_LARGE'
-        ) ?
-          error('tarball exceeds maximum unpacked size', {
-            found: input.length,
-            max,
-            cause: er,
-          })
-        : er,
-      )
-    }),
+    unzipCB(input, { maxOutputLength: max }, (er, result) =>
+      er ? rej(unzipError(er, input.length, max)) : res(result),
+    ),
   )
+}
+
+const unzipSync = (input: Buffer): Buffer => {
+  const max = unzipMax(input.length)
+  try {
+    return unzipSyncCB(input, { maxOutputLength: max })
+  } catch (er) {
+    throw unzipError(er, input.length, max)
+  }
 }
 
 const exists = async (path: string): Promise<boolean> => {
@@ -226,10 +239,37 @@ export const unpack = async (
   )
 }
 
-const unpackUnzipped = async (
-  buffer: Buffer,
+/**
+ * Same as {@link unpack}, but blocking. Faster: the async writers pay a
+ * libuv round trip per file, which costs more than the IO itself.
+ */
+export const unpackSync = (tarData: Buffer, target: string): void => {
+  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
+  unpackUnzippedSync(isGzip ? unzipSync(tarData) : tarData, target)
+}
+
+/**
+ * Unpack a tarball straight from a file on disk, skipping `offset`
+ * leading bytes. Used to extract from a cache entry in place, so the
+ * tarball never lands in the registry client's in-memory cache.
+ */
+export const unpackFileSync = (
+  file: string,
   target: string,
-): Promise<void> => {
+  offset = 0,
+): void => unpackSync(readFileSync(file).subarray(offset), target)
+
+const tmpName = (target: string) =>
+  dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()
+
+/**
+ * Walk the tar headers and collect what has to be written. No IO, so
+ * both writers share it and cannot drift on path sanitization.
+ */
+const parseTarball = (
+  buffer: Buffer,
+  tmp: string,
+): { dirs: Set<string>; files: FileEntry[] } => {
   /* c8 ignore start */
   const isGzip = buffer[0] === 0x1f && buffer[1] === 0x8b
   if (isGzip) {
@@ -249,7 +289,9 @@ const unpackUnzipped = async (
   if (buffer.length < 1024) {
     throw error(
       'Invalid tarball: not terminated by 1024 null bytes',
-      { found: buffer.length },
+      {
+        found: buffer.length,
+      },
     )
   }
   // make sure the last kb is all zeros
@@ -262,107 +304,114 @@ const unpackUnzipped = async (
     }
   }
 
-  const tmp =
-    dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()
+  const entries = new Map<string, Entry>()
+  let tarDir: string | undefined = undefined
+  let offset = 0
+  let h: Header
+  let ex: HeaderData | undefined = undefined
+  let gex: HeaderData | undefined = undefined
+  while (
+    offset < buffer.length &&
+    !(h = new Header(buffer, offset, ex, gex)).nullBlock
+  ) {
+    offset += 512
+    ex = undefined
+    gex = undefined
+    const size = h.size ?? 0
+    const body = buffer.subarray(offset, offset + size)
+    // skip invalid headers
+    if (!h.cksumValid) continue
+    offset += 512 * Math.ceil(size / 512)
+
+    // TODO: tarDir might not be named "package/"
+    // find the first tarDir in the first entry, and use that.
+    switch (h.type) {
+      case 'File':
+        if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+        /* c8 ignore next */
+        if (!tarDir) continue
+        if (!checkFs(h, tarDir, tmp)) continue
+        {
+          const dest = resolve(tmp, h.path.substring(tarDir.length))
+          const key = entryKey(dest)
+          // a repeated path is fine (last wins), but flipping between
+          // file and directory would silently discard data.
+          if (entries.get(key)?.dir === true) {
+            throw error('file/directory collision in tarball', {
+              path: dest,
+            })
+          }
+          entries.set(key, {
+            path: dest,
+            body,
+            executable: 1 === ((h.mode ?? 0x666) & 1),
+            dir: false,
+          })
+        }
+        break
+
+      case 'Directory':
+        /* c8 ignore next 2 */
+        if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+        if (!tarDir) continue
+        if (!checkFs(h, tarDir, tmp)) continue
+        {
+          const dest = resolve(tmp, h.path.substring(tarDir.length))
+          const key = entryKey(dest)
+          if (entries.get(key)?.dir === false) {
+            throw error('file/directory collision in tarball', {
+              path: dest,
+            })
+          }
+          entries.set(key, {
+            path: dest,
+            dir: true,
+          })
+        }
+        break
+
+      case 'GlobalExtendedHeader':
+        gex = Pax.parse(body.toString(), gex, true)
+        break
+
+      case 'ExtendedHeader':
+      case 'OldExtendedHeader':
+        ex = Pax.parse(body.toString(), ex, false)
+        break
+
+      case 'NextFileHasLongPath':
+      case 'OldGnuLongPath':
+        ex ??= Object.create(null) as HeaderData
+        ex.path = body.toString().replace(/\0.*/, '')
+        break
+    }
+  }
+
+  // Per-unpack memo: paths are tmp-scoped and never reused across
+  // unpacks. The unique dir set is the memo; making/made globals
+  // previously leaked ~18k strings per install.
+  const dirs = new Set<string>()
+  const files: FileEntry[] = []
+  for (const e of entries.values()) {
+    if (e.dir) dirs.add(e.path)
+    else {
+      dirs.add(dirname(e.path))
+      files.push(e)
+    }
+  }
+  return { dirs, files }
+}
+
+const unpackUnzipped = async (
+  buffer: Buffer,
+  target: string,
+): Promise<void> => {
+  const tmp = tmpName(target)
   const og = tmp + '.ORIGINAL'
 
   let succeeded = false
   try {
-    const entries = new Map<string, Entry>()
-    let tarDir: string | undefined = undefined
-    let offset = 0
-    let h: Header
-    let ex: HeaderData | undefined = undefined
-    let gex: HeaderData | undefined = undefined
-    while (
-      offset < buffer.length &&
-      !(h = new Header(buffer, offset, ex, gex)).nullBlock
-    ) {
-      offset += 512
-      ex = undefined
-      gex = undefined
-      const size = h.size ?? 0
-      const body = buffer.subarray(offset, offset + size)
-      // skip invalid headers
-      if (!h.cksumValid) continue
-      offset += 512 * Math.ceil(size / 512)
-
-      // TODO: tarDir might not be named "package/"
-      // find the first tarDir in the first entry, and use that.
-      switch (h.type) {
-        case 'File':
-          if (!tarDir) tarDir = findTarDir(h.path, tarDir)
-          /* c8 ignore next */
-          if (!tarDir) continue
-          if (!checkFs(h, tarDir, tmp)) continue
-          {
-            const dest = resolve(tmp, h.path.substring(tarDir.length))
-            const key = entryKey(dest)
-            // a repeated path is fine (last wins), but flipping between
-            // file and directory would silently discard data.
-            if (entries.get(key)?.dir === true) {
-              throw error('file/directory collision in tarball', {
-                path: dest,
-              })
-            }
-            entries.set(key, {
-              path: dest,
-              body,
-              executable: 1 === ((h.mode ?? 0x666) & 1),
-              dir: false,
-            })
-          }
-          break
-
-        case 'Directory':
-          /* c8 ignore next 2 */
-          if (!tarDir) tarDir = findTarDir(h.path, tarDir)
-          if (!tarDir) continue
-          if (!checkFs(h, tarDir, tmp)) continue
-          {
-            const dest = resolve(tmp, h.path.substring(tarDir.length))
-            const key = entryKey(dest)
-            if (entries.get(key)?.dir === false) {
-              throw error('file/directory collision in tarball', {
-                path: dest,
-              })
-            }
-            entries.set(key, {
-              path: dest,
-              dir: true,
-            })
-          }
-          break
-
-        case 'GlobalExtendedHeader':
-          gex = Pax.parse(body.toString(), gex, true)
-          break
-
-        case 'ExtendedHeader':
-        case 'OldExtendedHeader':
-          ex = Pax.parse(body.toString(), ex, false)
-          break
-
-        case 'NextFileHasLongPath':
-        case 'OldGnuLongPath':
-          ex ??= Object.create(null) as HeaderData
-          ex.path = body.toString().replace(/\0.*/, '')
-          break
-      }
-    }
-
-    // Per-unpack memo: paths are tmp-scoped and never reused across
-    // unpacks. The unique dir set is the memo; making/made globals
-    // previously leaked ~18k strings per install.
-    const dirs = new Set<string>()
-    const files: FileEntry[] = []
-    for (const e of entries.values()) {
-      if (e.dir) dirs.add(e.path)
-      else {
-        dirs.add(dirname(e.path))
-        files.push(e)
-      }
-    }
+    const { dirs, files } = parseTarball(buffer, tmp)
 
     rethrowFirst(
       await Promise.allSettled(
@@ -395,6 +444,46 @@ const unpackUnzipped = async (
       }
       /* c8 ignore stop */
       await rimraf(tmp)
+    }
+  }
+}
+
+const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
+  const tmp = tmpName(target)
+  const og = tmp + '.ORIGINAL'
+
+  let succeeded = false
+  try {
+    const { dirs, files } = parseTarball(buffer, tmp)
+
+    for (const d of dirs) {
+      mkdirSync(d, { recursive: true, mode: 0o777 })
+    }
+    for (const f of files) {
+      // if the mode is world-executable, then make it executable
+      // this is needed for some packages that have a file that is
+      // not a declared bin, but still used as a cli executable.
+      writeFileSync(f.path, f.body, {
+        mode: f.executable ? 0o777 : 0o666,
+      })
+    }
+
+    const targetExists = !!lstatSync(target, {
+      throwIfNoEntry: false,
+    })
+    if (targetExists) renameSync(target, og)
+    renameSync(tmp, target)
+    if (targetExists) rimrafSync(og)
+    succeeded = true
+  } finally {
+    if (!succeeded) {
+      /* c8 ignore start */
+      if (lstatSync(og, { throwIfNoEntry: false })) {
+        rimrafSync(target)
+        renameSync(og, target)
+      }
+      /* c8 ignore stop */
+      rimrafSync(tmp)
     }
   }
 }
