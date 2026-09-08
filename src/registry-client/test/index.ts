@@ -1,7 +1,7 @@
 import type { Cache } from '@vltpkg/cache'
 import { createServer } from 'http'
 import EventEmitter from 'node:events'
-import { readFileSync } from 'node:fs'
+import { linkSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
@@ -1116,4 +1116,125 @@ t.test('per-request options omit agent knobs', async t => {
   }
   t.equal(second.headersTimeout, 12_345)
   t.equal(second.bodyTimeout, 54_321)
+})
+
+t.test('cachedBody', async t => {
+  const tarball = Buffer.from('this is definitely a tarball')
+  const url = `${registryURL}/cached/tarball`
+  const integrity =
+    'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000=='
+  const entry = (
+    headers: Record<string, string>,
+    statusCode = 200,
+    body = tarball,
+  ) =>
+    new CacheEntry(statusCode, toRawHeaders(headers), {
+      body,
+    }).encode()
+  const tarHeaders = {
+    'content-type': 'application/octet-stream',
+    'cache-control': 'public, immutable',
+    date: new Date().toUTCString(),
+  }
+
+  const write = async (
+    rc: RegistryClient,
+    buf: Buffer,
+    key = url,
+  ) => {
+    rc.cache.set(key, buf)
+    await rc.cache.promise()
+    // drop the memory copy: cachedBody defers to request() for those
+    rc.cache.delete(key)
+  }
+
+  const bodyOf = (found: { path: string; offset: number }) =>
+    readFileSync(found.path).subarray(found.offset)
+
+  t.test('hit by key', async t => {
+    const requests: [string, string][] = []
+    const { RegistryClient } = await mockIndex(t, {
+      '@vltpkg/output': {
+        logRequest: (u: string, state: string) =>
+          requests.push([u, state]),
+      },
+    })
+    const rc = new RegistryClient({ cache: t.testdir() })
+    await write(rc, entry(tarHeaders))
+    const found = rc.cachedBody(url)
+    if (!found) return t.fail('expected a cache hit')
+    t.strictSame(bodyOf(found), tarball)
+    t.strictSame(requests, [[url, 'cache']])
+    t.equal(found.path, rc.cache.path(url), 'found by key path')
+  })
+
+  t.test('hit by integrity path', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    await write(rc, entry(tarHeaders))
+    const intPath = rc.cache.integrityPath(integrity)
+    if (!intPath) return t.fail('expected an integrity path')
+    linkSync(rc.cache.path(url), intPath)
+    const found = rc.cachedBody(url, { integrity })
+    t.equal(found?.path, intPath, 'preferred the integrity path')
+    t.strictSame(found && bodyOf(found), tarball)
+  })
+
+  t.test('malformed integrity falls back to the key', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    await write(rc, entry(tarHeaders))
+    const found = rc.cachedBody(url, {
+      integrity: 'sha512-nope',
+    })
+    t.equal(found?.path, rc.cache.path(url))
+  })
+
+  t.test('misses', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    t.equal(rc.cachedBody(url), undefined, 'no file at all')
+
+    await write(rc, entry(tarHeaders, 404))
+    t.equal(rc.cachedBody(url), undefined, 'not a 200')
+
+    await write(
+      rc,
+      entry(
+        { ...tarHeaders, 'content-type': 'application/json' },
+        200,
+        Buffer.from('{"hello":"world"}'),
+      ),
+    )
+    t.equal(rc.cachedBody(url), undefined, 'json body')
+
+    await write(rc, Buffer.from([0, 0]))
+    t.equal(rc.cachedBody(url), undefined, 'truncated head')
+
+    // a head longer than the 4k probe: unparseable, so a miss
+    const fat = entry({
+      ...tarHeaders,
+      'x-pad': 'x'.repeat(5000),
+    })
+    await write(rc, fat)
+    t.equal(rc.cachedBody(url), undefined, 'head over 4k')
+
+    // valid is date-based only when there is no content-type: a
+    // non-json content-type is treated as an immutable tarball
+    await write(
+      rc,
+      entry({
+        'cache-control': 'public, max-age=1',
+        date: new Date('2020-01-01').toUTCString(),
+      }),
+    )
+    t.equal(rc.cachedBody(url), undefined, 'stale entry')
+  })
+
+  t.test('in-memory entries are left to request()', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const buf = entry(tarHeaders)
+    rc.cache.set(url, buf)
+    await rc.cache.promise()
+    t.equal(rc.cachedBody(url), undefined, 'still in memory')
+    rc.cache.delete(url)
+    t.ok(rc.cachedBody(url), 'found once dropped from memory')
+  })
 })

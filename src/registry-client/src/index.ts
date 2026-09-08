@@ -7,6 +7,7 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
+import { closeSync, openSync, readSync } from 'node:fs'
 import { STATUS_CODES } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
@@ -70,6 +71,14 @@ export {
   type Token,
   type TokenResponse,
   type WebAuthChallenge,
+}
+
+/** Where a cached response body lives on disk. */
+export type CachedBody = {
+  /** the cache file, head included */
+  path: string
+  /** byte offset where the body starts */
+  offset: number
 }
 
 export type CacheableMethod = 'GET' | 'HEAD'
@@ -502,6 +511,72 @@ export class RegistryClient {
     throw error('Invalid response from web login endpoint', {
       response,
     })
+  }
+
+  /**
+   * Locate a valid cached non-JSON body on disk, without reading it.
+   * Lets a tarball be unpacked straight from the cache file instead of
+   * being read into memory and held in the cache LRU.
+   *
+   * Returns undefined on anything unexpected; callers fall back to
+   * {@link request}.
+   */
+  cachedBody(
+    url: URL | string,
+    options: {
+      integrity?: Integrity
+      method?: CacheableMethod
+    } = {},
+  ): CachedBody | undefined {
+    const { integrity, method = 'GET' } = options
+    try {
+      // an in-memory value can be newer than disk, since cache.set
+      // writes to disk asynchronously. let request() serve those.
+      // (an in-flight fetch() peeks as undefined, so the probe reads
+      // disk underneath it -- benign, tarball urls are immutable.)
+      if (this.cache.peek(cacheKey(method, url))) return undefined
+
+      // same order as the cache's own disk read
+      const paths = new Set<string>()
+      try {
+        const i = this.cache.integrityPath(integrity)
+        if (i) paths.add(i)
+      } catch {}
+      paths.add(this.cache.path(cacheKey(method, url)))
+
+      for (const path of paths) {
+        const buf = Buffer.allocUnsafe(4096)
+        let bytes: number
+        let fd: number | undefined
+        try {
+          fd = openSync(path, 'r')
+          bytes = readSync(fd, buf, 0, buf.length, 0)
+        } catch {
+          continue
+        } finally {
+          if (fd !== undefined) closeSync(fd)
+        }
+
+        const entry = CacheEntry.decodeHead(buf.subarray(0, bytes))
+        // a head longer than the probe fails to parse and comes back
+        // as statusCode 0, so it degrades to a miss rather than a bad
+        // offset. the isJSON guard is load-bearing: decodeHead skips
+        // the JSON check decode() does, and a packument must never
+        // reach the tar unpacker.
+        if (
+          entry.statusCode !== 200 ||
+          !entry.valid ||
+          entry.isJSON ||
+          entry.headSize === undefined
+        ) {
+          continue
+        }
+        logRequest(url, 'cache', { method })
+        return { path, offset: entry.headSize }
+      }
+      /* c8 ignore next */
+    } catch {}
+    return undefined
   }
 
   async request(
