@@ -34,6 +34,11 @@ package.json appropriately.
 
       ​--workspace-group=<name>
 
+    lockfile-only
+      Only update lockfile and package.json files; skip node_modules operations.
+
+      ​--lockfile-only
+
     allow-scripts
       Filter which packages are allowed to run lifecycle scripts using DSS query
       syntax.

@@ -771,9 +771,21 @@ export const forkPeerContext = (
   for (const entry of entries) {
     const { dependent, spec, target, type } = entry
     const name = target?.name /* c8 ignore next */ ?? spec.final.name
+    // a fork entry pointing the name at the node the base already
+    // resolved it to is the same resolution, so keep the constraints the
+    // base collected. dropping them leaves only this entry's (often wide)
+    // peer range, and CHECK 1's leniency then reads that as "any copy
+    // whose peer satisfies the range is fine", sharing a copy that is
+    // linked to a different node
+    const inherited = peerContext.get(name)
+    const specs =
+      inherited?.target && inherited.target === target ?
+        new Map(inherited.specs)
+      : new Map<string, Spec>()
+    specs.set(peerSpecKey(spec), spec)
     const newEntry = {
       active: true,
-      specs: new Map([[peerSpecKey(spec), spec]]),
+      specs,
       target,
       type,
       contextDependents:

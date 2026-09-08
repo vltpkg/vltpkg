@@ -2546,6 +2546,58 @@ t.test('forkPeerContext', async t => {
     )
   })
 
+  t.test('fork entry on the same target keeps its specs', async t => {
+    const spec1 = Spec.parse('foo', '1.0.0', configData)
+    const spec2 = Spec.parse('foo', '^1.0.0', configData)
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const originalContext = graph.peerContexts[0]!
+    const foo1 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      spec1,
+      { name: 'foo', version: '1.0.0' },
+    )!
+    addEntriesToPeerContext(
+      originalContext,
+      [
+        { spec: spec1, type: 'peer', target: foo1 },
+        { spec: spec2, type: 'peer', target: foo1 },
+      ],
+      graph.mainImporter,
+    )
+
+    const wide = Spec.parse('foo', '^1.0.0 || ^2.0.0', configData)
+    const sameTarget = forkPeerContext(graph, originalContext, [
+      { spec: wide, type: 'peer', target: foo1 },
+    ])
+    t.strictSame(
+      [...(sameTarget.get('foo')?.specs.values() ?? [])]
+        .map(String)
+        .sort(),
+      ['foo@1.0.0', 'foo@^1.0.0', 'foo@^1.0.0 || ^2.0.0'],
+      'the base constraints survive a fork that re-points to the same node',
+    )
+
+    const foo2 = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^2.0.0', configData),
+      { name: 'foo', version: '2.0.0' },
+    )!
+    const newTarget = forkPeerContext(graph, originalContext, [
+      { spec: wide, type: 'peer', target: foo2 },
+    ])
+    t.strictSame(
+      [...(newTarget.get('foo')?.specs.values() ?? [])].map(String),
+      ['foo@^1.0.0 || ^2.0.0'],
+      'a fork to a different node starts from its own spec',
+    )
+  })
+
   t.test(
     'a moved base target invalidates the cached fork',
     async t => {
