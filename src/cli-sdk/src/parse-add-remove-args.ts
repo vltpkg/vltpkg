@@ -1,4 +1,4 @@
-import { asDependency } from '@vltpkg/graph'
+import { addKey, asDependency } from '@vltpkg/graph'
 import { joinDepIDTuple, splitDepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { isAbsolute, relative, resolve } from 'node:path'
@@ -152,12 +152,6 @@ export const parseAddArgs = (
   const importers = getWorkspaceImporters(config.values, monorepo)
   const specOptions: SpecOptions = config.options
 
-  // nameless spec definitions will need to use their full
-  // stringified spec result instead of their name in order
-  // to have an unique key name in the resulting Map
-  const getName = (s: Spec): string =>
-    s.name === '(unknown)' ? s.spec : s.name
-
   // parses each positional argument into a Spec and
   // adds it to the new dependencies Map
   const parsedItems: { spec: Spec; type: DependencySaveType }[] = []
@@ -186,7 +180,7 @@ export const parseAddArgs = (
           monorepo,
         )
         importerDeps.set(
-          getName(rebased),
+          addKey(rebased),
           asDependency({ spec: rebased, type: depType }),
         )
       }
@@ -196,7 +190,7 @@ export const parseAddArgs = (
     const newDependencies = new Map<string, Dependency>()
     for (const { spec, type: depType } of parsedItems) {
       newDependencies.set(
-        getName(spec),
+        addKey(spec),
         asDependency({ spec, type: depType }),
       )
     }

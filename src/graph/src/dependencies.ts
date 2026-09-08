@@ -109,6 +109,15 @@ export const asDependency = (obj: unknown): Dependency => {
 }
 
 /**
+ * The key an added dependency is filed under. A nameless spec
+ * (`github:u/r`, `file:../x`, a tarball url) has no name to key by, so
+ * the CLI uses its stringified form; every reader of an `add` map has to
+ * derive the key the same way.
+ */
+export const addKey = (spec: Spec): string =>
+  spec.name === '(unknown)' ? spec.spec : spec.name
+
+/**
  * Get the {@link DependencyTypeShort} from a {@link DependencyTypeLong}.
  */
 export const shorten = (
@@ -137,6 +146,22 @@ export const shorten = (
 
 const isStringArray = (a: unknown): a is string[] =>
   Array.isArray(a) && !a.some(b => typeof b !== 'string')
+
+/**
+ * Only install devDeps for git dependencies and importers
+ * Everything else always gets installed
+ *
+ * Deliberately stricter than {@link getRawDependencies}, which also keeps
+ * devDeps of `file:` nodes: this is the rule the ideal build places with, so
+ * peer checks use it to match what actually lands in the graph.
+ */
+export const shouldInstallDepType = (
+  node: NodeLike,
+  depType: DependencyTypeLong,
+) =>
+  depType !== 'devDependencies' ||
+  node.importer ||
+  node.id.startsWith('git')
 
 /*
  * Retrieves a map of all dependencies, of all types, that can be iterated
@@ -173,6 +198,14 @@ export const getRawDependencies = (node: NodeLike) => {
       for (const [name, bareSpec] of Object.entries(obj)) {
         // if it's a bundled dependency, we just ignore it entirely.
         if (bundled.has(name)) continue
+        // a name already collected from a regular dependency type is the
+        // package's own dependency; the peer entry only constrains it
+        if (
+          depType === 'peerDependencies' &&
+          dependencies.has(name)
+        ) {
+          continue
+        }
         dependencies.set(name, {
           name,
           type: depType,

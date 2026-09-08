@@ -34,6 +34,24 @@ export type LockfileData = {
 }
 
 /**
+ * A single difference between the config a graph was built with and the
+ * `options` block stored in the lockfile it was loaded from.
+ */
+export type OptionsChange = {
+  /** the `options` key the difference was found in, e.g. `catalog` */
+  section: string
+  /**
+   * the entry inside that section, e.g. the catalog name. Absent for
+   * scalar sections; `<catalog> <dep>` for `catalogs`.
+   */
+  key?: string
+  /** the value stored in the lockfile, absent when the entry is new */
+  from?: string
+  /** the current value, absent when the entry is gone */
+  to?: string
+}
+
+/**
  * Per-install intern cache for parsed lockfile specs. Shared across
  * hidden + main lockfile loads so identical (name, bareSpec) pairs
  * reuse one Spec instance.

@@ -1,4 +1,5 @@
 import { longDependencyTypes } from '@vltpkg/types'
+import type { DependencyTypeLong } from '@vltpkg/types'
 import { shorten, asDependency } from '../dependencies.ts'
 import type {
   AddImportersDependenciesMap,
@@ -21,6 +22,7 @@ import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { PathScurry } from 'path-scurry'
+import type { GraphModifier } from '../modifiers.ts'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
@@ -28,6 +30,7 @@ export type GetImporterSpecsOptions = BuildIdealAddOptions &
   SpecOptions & {
     scurry: PathScurry
     packageJson: PackageJson
+    modifiers?: GraphModifier
   }
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
@@ -84,38 +87,58 @@ export const getImporterSpecs = (
         removeResult.modifiedDependencies = true
       }
     }
-    // if a dependency is listed in the manifest but not in the graph,
-    // add that dependency to the list of dependencies to be added
+    // which declaration each name is placed with, same rule as
+    // getRawDependencies: the last type listing it wins, except that a
+    // peer entry for a name already listed elsewhere only constrains
+    // the dependency, it is not its own dependency to place
+    const declared = new Map<string, [DependencyTypeLong, string]>()
     for (const depType of longDependencyTypes) {
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
-        const edge = importer.edgesOut.get(depName)
-
-        // skip if the edge exists and already uses the same spec
-        if (edge?.to && depSpec === edge.spec.bareSpec) continue
-
-        const spec = Spec.parse(depName, depSpec, options)
-
-        // if a workspace dep references a workspace that no longer exists
-        // (folder was removed), mark it for removal instead of trying to
-        // resolve it — the workspace can't be satisfied
-        if (spec.type === 'workspace' && !edge?.to) {
-          const wsExists = [...graph.importers].some(
-            n => n.name === depName,
-          )
-          if (!wsExists) {
-            removeDeps.add(depName)
-            removeResult.modifiedDependencies = true
-            continue
-          }
+        if (depType === 'peerDependencies' && declared.has(depName)) {
+          continue
         }
-
-        const dependency = asDependency({
-          spec,
-          type: shorten(depType, depName, importer.manifest),
-        })
-        addDeps.set(depName, dependency)
+        declared.set(depName, [depType, depSpec])
       }
+    }
+
+    // if a dependency is listed in the manifest but not in the graph,
+    // add that dependency to the list of dependencies to be added
+    for (const [depName, [depType, depSpec]] of declared) {
+      const edge = importer.edgesOut.get(depName)
+
+      // skip if the edge exists and already uses the same spec and
+      // type. dangling (MISSING) targets still need to be queued so
+      // the ideal rebuild runs resetEdges() and places in traversal
+      // order. checked before parsing: the text parsed fine when the
+      // edge was loaded, and the workspace check below only fires on
+      // !edge?.to
+      const type = shorten(depType, depName, importer.manifest)
+      if (
+        edge?.to &&
+        edge.spec.bareSpec === depSpec &&
+        edge.type === type
+      ) {
+        continue
+      }
+
+      const spec = Spec.parse(depName, depSpec, options)
+
+      // if a workspace dep references a workspace that no longer exists
+      // (folder was removed), mark it for removal instead of trying to
+      // resolve it — the workspace can't be satisfied
+      if (spec.type === 'workspace' && !edge?.to) {
+        const wsExists = [...graph.importers].some(
+          n => n.name === depName,
+        )
+        if (!wsExists) {
+          removeDeps.add(depName)
+          removeResult.modifiedDependencies = true
+          continue
+        }
+      }
+
+      addDeps.set(depName, asDependency({ spec, type }))
     }
     addResult.set(importer.id, addDeps)
     removeResult.set(importer.id, removeDeps)
@@ -167,8 +190,9 @@ export const getImporterSpecs = (
         for (const [depName, depSpec] of deps) {
           const edge = node.edgesOut.get(depName)
 
-          // skip if the edge exists and already uses the same spec
-          if (edge?.to && depSpec === edge.spec.bareSpec) continue
+          // skip if the edge exists and already uses the same spec.
+          // dangling targets still need to be queued for the ideal rebuild.
+          if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
           // add the dependency to the addDeps map
           const dependency = asDependency({
@@ -235,10 +259,20 @@ export const getImporterSpecs = (
   }
 
   // removes already satisfied dependencies from the dependencies list
-  removeSatisfiedSpecs({
+  const staleSpecs = removeSatisfiedSpecs({
     add: addResult,
     graph,
+    modifiers: options.modifiers,
   })
+
+  // a name the caller asked for is left to appendNodes and reify's
+  // package.json update: healing it here would put the request text in
+  // the lockfile without ever touching package.json
+  for (const edge of staleSpecs.keys()) {
+    if (add.get(edge.from.id)?.has(edge.name)) {
+      staleSpecs.delete(edge)
+    }
+  }
 
   // set the modifiedDependencies flag if any
   // of the importers have modified dependencies
@@ -252,6 +286,7 @@ export const getImporterSpecs = (
   return {
     add: addResult,
     remove: removeResult,
+    staleSpecs,
     transientAdd,
     transientRemove,
   }

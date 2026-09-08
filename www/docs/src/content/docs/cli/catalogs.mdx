@@ -266,6 +266,23 @@ And how it's used in workspace packages:
   lang="json"
 />
 
+## Updating a Catalog Entry
+
+Editing a catalog value in `vlt.json` is applied by the next
+`vlt install`: every dependency that reads the entry is re-resolved
+and the new value is recorded in `vlt-lock.json`, even when no
+resolution changes. Until that install runs,
+`vlt install --frozen-lockfile` and `vlt ci` fail and name the entry
+that differs:
+
+<Code
+  code={`Lockfile is out of sync with package.json. Run "vlt install" to update.
+  Configuration options have changed:
+    catalog: typescript "^5.0.0" -> "^5.9.0"`}
+  title="Terminal"
+  lang="bash"
+/>
+
 ## Advanced Usage
 
 You can even chain catalog references with other protocols. For

@@ -39,6 +39,7 @@ export const run = async (
         stderr: (v: string) => state.logs.push(v),
         outputCommand: (_: unknown, conf: LoadedConfig) =>
           (state.config = conf),
+        flushAndExit: (code?: number) => process.exit(code),
       },
     },
   )

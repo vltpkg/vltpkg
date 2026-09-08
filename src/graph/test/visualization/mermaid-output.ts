@@ -1,8 +1,11 @@
 import t from 'tap'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.ts'
+import { save } from '../../src/lockfile/save.ts'
+import { load } from '../../src/lockfile/load.ts'
 import {
   mermaidOutput,
   generateShortId,
@@ -310,6 +313,67 @@ t.test('cycle', async t => {
     'should print cycle mermaid output',
   )
 })
+
+t.test(
+  'built graph and lockfile load render the same mermaid',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { zed: '^1.0.0', foo: '^1.0.0', bar: '^1.0.0' },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      projectRoot,
+      ...configData,
+      mainManifest,
+    })
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('zed', '^1.0.0'),
+      { name: 'zed', version: '1.0.0' },
+    )
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0'),
+      { name: 'foo', version: '1.0.0' },
+    )
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('bar', '^1.0.0'),
+      { name: 'bar', version: '1.0.0' },
+    )
+    graph.sortNodes()
+    save({ ...configData, graph })
+    const loaded = load({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    t.strictSame(
+      [...graph.nodes.keys()],
+      [...loaded.nodes.keys()],
+      'node iteration order matches after save→load',
+    )
+    const letters = (g: Graph) =>
+      [...g.nodes.keys()].map(
+        (id, i) => `${generateShortId(i)}:${id}`,
+      )
+    t.strictSame(
+      letters(graph),
+      letters(loaded),
+      'mermaid letter aliases match',
+    )
+  },
+)
 
 t.test('large scale identifier generation', async t => {
   // Test basic single character cases

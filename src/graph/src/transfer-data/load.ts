@@ -1,5 +1,8 @@
 import { error } from '@vltpkg/error-cause'
-import { SecurityArchive } from '@vltpkg/security-archive/browser'
+import {
+  SecurityArchive,
+  usesNpmRegistry,
+} from '@vltpkg/security-archive/browser'
 import {
   defaultGitHostArchives,
   defaultGitHosts,
@@ -266,11 +269,11 @@ export const load = (transfered: TransferData): LoadResult => {
     transfered.securityArchive,
   )
 
-  // validates that all nodes have a security archive entry
+  // validates that all npm-ecosystem nodes have a security archive entry
   if (securityArchive) {
     securityArchive.ok = true
     for (const node of graph.nodes.values()) {
-      if (!securityArchive.has(node.id)) {
+      if (usesNpmRegistry(node) && !securityArchive.has(node.id)) {
         securityArchive.ok = false
         break
       }

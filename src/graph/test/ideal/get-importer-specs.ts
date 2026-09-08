@@ -142,6 +142,37 @@ t.test('empty graph and something to add', async t => {
   )
 })
 
+t.test(
+  'an importer dual declaration keeps the regular type',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { c: '^1.0.0' },
+      peerDependencies: { c: '*' },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const specs = getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph: load({ projectRoot, scurry, packageJson }),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry,
+      packageJson,
+    })
+    const deps = specs.add.get(joinDepIDTuple(['file', '.']))
+    t.strictSame([...(deps?.keys() ?? [])], ['c'], 'queued once')
+    t.strictSame(deps?.get('c')?.type, 'dev', 'as the regular type')
+    t.strictSame(String(deps?.get('c')?.spec), 'c@^1.0.0')
+  },
+)
+
 t.test('graph specs and nothing to add', async t => {
   const mainManifest = {
     name: 'my-project',
@@ -1212,3 +1243,262 @@ t.test(
     )
   },
 )
+
+t.test(
+  'dangling importer edge with matching spec is still queued',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        abbrev: '^3.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    graph.addEdge(
+      'prod',
+      Spec.parse('abbrev', '^3.0.0'),
+      graph.mainImporter,
+    )
+
+    const specs = getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry,
+      packageJson,
+    })
+
+    t.equal(
+      specs.add.modifiedDependencies,
+      true,
+      'MISSING target still counts as a modification so the rebuild can place it',
+    )
+    t.ok(
+      specs.add.get(joinDepIDTuple(['file', '.']))?.has('abbrev'),
+      'dangling matching-spec edge is queued as an add',
+    )
+  },
+)
+
+t.test('a satisfied lockfile edge with a stale spec', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const rootId = joinDepIDTuple(['file', '.'])
+  const build = () => {
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    // the lockfile edge reads a dist-tag, package.json a range
+    const spec = Spec.parse('foo', 'latest')
+    const foo = graph.addNode(
+      undefined,
+      { name: 'foo', version: '1.0.0' },
+      spec,
+      'foo',
+      '1.0.0',
+    )
+    graph.addEdge('prod', spec, graph.mainImporter, foo)
+    return graph
+  }
+  const call = (add: AddImportersDependenciesMap) =>
+    getImporterSpecs({
+      add,
+      graph: build(),
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+    })
+
+  const specs = call(new Map() as AddImportersDependenciesMap)
+  t.equal(specs.staleSpecs.size, 1, 'the stale edge is reported')
+  t.equal(
+    [...specs.staleSpecs.values()][0]?.spec.bareSpec,
+    '^1.0.0',
+    'reported with the package.json value',
+  )
+  t.equal(specs.add.modifiedDependencies, false, 'nothing to rebuild')
+
+  const withCaller = call(
+    new Map([
+      [
+        rootId,
+        new Map([
+          [
+            'foo',
+            asDependency({
+              spec: Spec.parse('foo', '1.x'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap,
+  )
+  t.equal(
+    withCaller.staleSpecs.size,
+    0,
+    'a name the caller asked for is left alone',
+  )
+})
+
+t.test('the last declaration of a name wins', async t => {
+  // getRawDependencies places the last type listing a name, so a dep in
+  // both devDependencies and optionalDependencies is optional, and an
+  // edge already reading `optional` is not stale
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    devDependencies: { a: '^1.0.0' },
+    optionalDependencies: { a: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    mainManifest,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  const spec = Spec.parse('a', '^1.0.0')
+  const node = graph.addNode(
+    undefined,
+    { name: 'a', version: '1.0.0' },
+    spec,
+    'a',
+    '1.0.0',
+  )
+  graph.addEdge('optional', spec, graph.mainImporter, node)
+
+  const specs = getImporterSpecs({
+    add: new Map() as AddImportersDependenciesMap,
+    graph,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+  t.equal(specs.staleSpecs.size, 0, 'the optional edge is not stale')
+  t.notOk(
+    specs.add.get(joinDepIDTuple(['file', '.']))?.size,
+    'and nothing is queued',
+  )
+})
+
+t.test('unchanged importer edges are not re-parsed', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      // matching lockfile edges: never parsed
+      a: '^1.0.0',
+      b: '^1.0.0',
+      c: '^1.0.0',
+      // text changed since the lockfile was written
+      d: '^2.0.0',
+      // dangling: the edge has no target
+      e: '^1.0.0',
+    },
+    // same text as its lockfile edge, but the type moved
+    devDependencies: { f: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const scurry = new PathScurry(projectRoot)
+  const packageJson = new PackageJson()
+  const graph = new Graph({
+    projectRoot,
+    mainManifest,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  for (const [name, bareSpec] of Object.entries({
+    a: '^1.0.0',
+    b: '^1.0.0',
+    c: '^1.0.0',
+    d: '^1.0.0',
+    f: '^1.0.0',
+  })) {
+    const spec = Spec.parse(name, bareSpec)
+    const node = graph.addNode(
+      undefined,
+      { name, version: '1.0.0' },
+      spec,
+      name,
+      '1.0.0',
+    )
+    graph.addEdge('prod', spec, graph.mainImporter, node)
+  }
+  graph.mainImporter.edgesOut.set(
+    'e',
+    new Edge('prod', Spec.parse('e', '^1.0.0'), graph.mainImporter),
+  )
+
+  const specModule = await import('@vltpkg/spec')
+  let parses = 0
+  const { getImporterSpecs: mocked } = await t.mockImport<
+    typeof import('../../src/ideal/get-importer-specs.ts')
+  >('../../src/ideal/get-importer-specs.ts', {
+    '@vltpkg/spec': {
+      ...specModule,
+      Spec: {
+        parse: (...args: Parameters<typeof Spec.parse>) => {
+          parses++
+          return Spec.parse(...args)
+        },
+      },
+    },
+  })
+
+  const specs = mocked({
+    add: new Map() as AddImportersDependenciesMap,
+    graph,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    scurry,
+    packageJson,
+  })
+  t.equal(
+    parses,
+    3,
+    'only the changed, dangling and retyped specs are parsed',
+  )
+  t.strictSame(
+    [...(specs.add.get(joinDepIDTuple(['file', '.'])) ?? []).keys()],
+    ['d', 'e'],
+    'the changed and dangling deps are queued',
+  )
+  t.strictSame(
+    [...specs.staleSpecs].map(([edge, dep]) => [
+      edge.name,
+      edge.type,
+      dep.type,
+    ]),
+    [['f', 'prod', 'dev']],
+    'the retyped dep is satisfied, so it heals instead',
+  )
+})

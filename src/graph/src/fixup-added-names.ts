@@ -1,4 +1,5 @@
 import { Spec } from '@vltpkg/spec'
+import { addKey } from './dependencies.ts'
 import type { Dependency } from './dependencies.ts'
 import type { Manifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -25,10 +26,11 @@ export const fixupAddedNames = (
 ): Spec => {
   // Handle nameless dependencies
   if (add && manifest?.name && spec.name === '(unknown)') {
-    const s: Dependency | undefined = add.get(String(spec))
+    const key = addKey(spec)
+    const s: Dependency | undefined = add.get(key)
     if (s) {
       // removes the previous, placeholder entry key
-      add.delete(String(spec))
+      add.delete(key)
       // replaces spec with a version with the correct name
       spec = Spec.parse(manifest.name, spec.bareSpec, options)
       // updates the add map with the fixed up spec

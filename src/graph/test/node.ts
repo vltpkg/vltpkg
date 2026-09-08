@@ -4,7 +4,12 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
-import { asNode, isNode, Node } from '../src/node.ts'
+import {
+  asNode,
+  copyPackageMetadata,
+  isNode,
+  Node,
+} from '../src/node.ts'
 import type { GraphLike } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 
@@ -593,5 +598,143 @@ t.test('node with peerSetHash', async t => {
   t.matchSnapshot(
     nodeWithPeer.toJSON(),
     'should serialize node with peerSetHash',
+  )
+})
+
+t.test('setPeerIdentity updates id and default location', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const node = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0', 'peer.1']),
+    { name: 'foo', version: '1.0.0' },
+  )
+  node.peerSetHash = 'peer.1'
+  t.match(
+    node.location,
+    /peer\.1/,
+    'default location uses the old id',
+  )
+  const next = joinDepIDTuple([
+    'registry',
+    '',
+    'foo@1.0.0',
+    'peer.aaaaaaaaaaaaaaaa',
+  ])
+  node.setPeerIdentity(next, 'peer.aaaaaaaaaaaaaaaa')
+  t.equal(node.id, next)
+  t.equal(node.peerSetHash, 'peer.aaaaaaaaaaaaaaaa')
+  t.equal(node.name, 'foo')
+  t.equal(
+    node.location,
+    `./node_modules/.vlt/${next}/node_modules/foo`,
+  )
+})
+
+t.test(
+  'setPeerIdentity rekeys nodesByName when name was id',
+  async t => {
+    const nodesByName = new Map<string, Set<Node>>()
+    const opts = {
+      ...options,
+      projectRoot: t.testdirName,
+      graph: { nodesByName } as unknown as GraphLike,
+    }
+    const oldId = joinDepIDTuple([
+      'registry',
+      '',
+      'anon@1.0.0',
+      'peer.1',
+    ])
+    const node = new Node(opts, oldId)
+    t.equal(node.name, oldId)
+    nodesByName.set(oldId, new Set([node]))
+    const next = joinDepIDTuple([
+      'registry',
+      '',
+      'anon@1.0.0',
+      'peer.aaaaaaaaaaaaaaaa',
+    ])
+    node.setPeerIdentity(next, 'peer.aaaaaaaaaaaaaaaa')
+    t.notOk(nodesByName.has(oldId))
+    t.ok(nodesByName.get(next)?.has(node))
+    t.equal(node.name, next)
+  },
+)
+
+t.test(
+  'setPeerIdentity handles missing nodesByName entry',
+  async t => {
+    const nodesByName = new Map<string, Set<Node>>()
+    const opts = {
+      ...options,
+      projectRoot: t.testdirName,
+      graph: { nodesByName } as unknown as GraphLike,
+    }
+    const oldId = joinDepIDTuple([
+      'registry',
+      '',
+      'anon@1.0.0',
+      'peer.1',
+    ])
+    const node = new Node(opts, oldId)
+    t.equal(node.name, oldId)
+    const next = joinDepIDTuple([
+      'registry',
+      '',
+      'anon@1.0.0',
+      'peer.bbbbbbbbbbbbbbbb',
+    ])
+    const preexisting = new Node(
+      opts,
+      joinDepIDTuple(['registry', '', 'other@1.0.0']),
+      { name: 'other', version: '1.0.0' },
+    )
+    nodesByName.set(next, new Set([preexisting]))
+    node.setPeerIdentity(next, 'peer.bbbbbbbbbbbbbbbb')
+    t.ok(nodesByName.get(next)?.has(node))
+    t.ok(nodesByName.get(next)?.has(preexisting))
+  },
+)
+
+t.test('copyPackageMetadata', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const id = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const mk = (extra: Partial<Node> = {}) =>
+    Object.assign(new Node(opts, id), extra)
+
+  const to = mk()
+  copyPackageMetadata(
+    to,
+    mk({
+      integrity: 'sha512-x',
+      resolved: 'https://x/foo.tgz',
+      resolvedFromLockfile: true,
+    }),
+  )
+  t.equal(to.integrity, 'sha512-x', 'fills in a missing integrity')
+  t.equal(to.resolved, 'https://x/foo.tgz', 'fills in a missing url')
+  t.ok(to.resolvedFromLockfile, 'provenance carries over')
+
+  const kept = mk({ integrity: 'sha512-mine' })
+  copyPackageMetadata(kept, mk({ integrity: 'sha512-other' }))
+  t.equal(kept.integrity, 'sha512-mine', 'existing values win')
+  t.notOk(kept.resolvedFromLockfile, 'no provenance without a source')
+
+  const partial = mk()
+  copyPackageMetadata(
+    partial,
+    mk({ integrity: 'sha512-x', resolvedFromLockfile: true }),
+  )
+  t.notOk(
+    partial.resolvedFromLockfile,
+    'provenance needs integrity and resolved',
   )
 })

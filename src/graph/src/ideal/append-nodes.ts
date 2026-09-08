@@ -1,19 +1,27 @@
-import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
+import {
+  baseDepID,
+  getTuple,
+  hydrate,
+  joinDepIDTuple,
+  joinExtra,
+  splitDepID,
+} from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/satisfies'
+import { parse as parseVersion } from '@vltpkg/semver'
 import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
-import type {
-  DependencyTypeLong,
-  DependencySaveType,
-  Manifest,
-} from '@vltpkg/types'
+import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
 import { fixupAddedNames } from '../fixup-added-names.ts'
-import { shorten } from '../dependencies.ts'
+import {
+  addKey,
+  shorten,
+  shouldInstallDepType,
+} from '../dependencies.ts'
 import type { Dependency } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
@@ -35,6 +43,7 @@ import {
 } from './peers.ts'
 import { compareByHasPeerDeps } from './sorting.ts'
 import type {
+  ExplicitAddMap,
   PeerContext,
   PeerContextEntryInput,
   AppendNodeEntry,
@@ -47,6 +56,25 @@ type FileTypeInfo = {
   id: DepID
   path: string
   isDirectory: boolean
+}
+
+/** A dependency with the spec it is placed with after modifiers. */
+type DepEntry = {
+  spec: Spec
+  type: DependencySaveType
+  fileTypeInfo?: FileTypeInfo
+  activeModifier?: ModifierActiveEntry
+  queryModifier?: string
+  /** the user named this dependency on the command line */
+  isExplicit: boolean
+  /** ... and asked for a dist-tag, so the tag must be resolved */
+  explicitTag: boolean
+  /**
+   * the node the resolution step lands on: the live edge target when it
+   * still satisfies, else the lock target when it still fits, else the
+   * first satisfying node by name
+   */
+  candidate?: Node
 }
 
 /**
@@ -67,18 +95,6 @@ type FetchResult = {
   reuseTasks: ReuseTask[]
   forkRequests: PeerContextEntryInput[]
 }
-
-/**
- * Only install devDeps for git dependencies and importers
- * Everything else always gets installed
- */
-const shouldInstallDepType = (
-  node: Node,
-  depType: DependencyTypeLong,
-) =>
-  depType !== 'devDependencies' ||
-  node.importer ||
-  node.id.startsWith('git')
 
 /**
  * Retrieve the {@link DepID} and location for a `file:` type {@link Node}.
@@ -114,6 +130,16 @@ const getFileTypeInfo = (
 const isStringArray = (a: unknown): a is string[] =>
   Array.isArray(a) && !a.some(b => typeof b !== 'string')
 
+const actualBases = new WeakMap<Graph, Set<DepID>>()
+const hasActualBase = (actual: Graph, id: DepID): boolean => {
+  let bases = actualBases.get(actual)
+  if (!bases) {
+    bases = new Set([...actual.nodes.keys()].map(baseDepID))
+    actualBases.set(actual, bases)
+  }
+  return bases.has(baseDepID(id))
+}
+
 /**
  * Represents a manifest fetch operation with all the context needed.
  */
@@ -143,6 +169,74 @@ type NodePlacementTask = {
 }
 
 /**
+ * Can the lockfile target still serve this spec? Exact for sources
+ * satisfies() understands; loose fallback for sources it cannot verify
+ * (named jsr registries, dist-tags): only for a registry node stamped
+ * with the same type+registry segments a fresh node for this spec would
+ * get, so a locked node from another source is never reused.
+ */
+const lockedFits = (
+  n: Node,
+  spec: Spec,
+  fromNode: Node,
+  graph: Graph,
+): boolean => {
+  const final = spec.final
+  if (
+    satisfies(
+      n.id,
+      final,
+      fromNode.location,
+      graph.projectRoot,
+      graph.monorepo,
+    )
+  ) {
+    return true
+  }
+  if (final.type !== 'registry') return false
+  const [idType, idRegistry] = splitDepID(n.id)
+  if (idType !== 'registry') return false
+  const expected = getTuple(spec, {
+    name: n.name,
+    version: n.version,
+  })
+  if (idRegistry !== expected[1]) return false
+  // the package the final spec resolves, never the edge name: an alias
+  // (`foo@npm:bar@^1`, `semver@jsr:@std/semver@^1`) points the same edge
+  // at a different package, and `final.name` already carries the jsr
+  // registry form of the name
+  if (n.name !== final.name) return false
+  if (!final.range) return true
+  /* c8 ignore next */
+  if (!n.version) return false
+  const version = parseVersion(n.version)
+  return !!version && final.range.test(version)
+}
+
+/**
+ * The lockfile target captured for `fromNode → name` before resetEdges().
+ * A peer-fork rebuild gives fromNode a provisional `peer.N` id that
+ * misses the canonical id key, so retry with the base id key, recorded
+ * only when unambiguous across peer copies.
+ */
+const findLockedNode = (
+  graph: Graph,
+  fromNode: Node,
+  name: string,
+): Node | undefined => {
+  const locked = graph.lockedResolutions
+  if (!locked) return
+  let id = locked.get(`${fromNode.id}\0${name}`)
+  if (id === undefined) {
+    const baseFrom = baseDepID(fromNode.id)
+    if (baseFrom !== fromNode.id) {
+      id = locked.get(`${baseFrom}\0${name}`)
+    }
+  }
+  return id ? graph.nodes.get(id) : undefined
+}
+
+/**
  * Try to find a compatible resolution for a dependency, checking peer context.
  * If the first resolution candidate is incompatible with the peer context,
  * try other candidates.
@@ -152,48 +246,13 @@ const findCompatibleResolution = (
   fromNode: Node,
   graph: Graph,
   peerContext: PeerContext,
-  queryModifier?: string,
-  _peer?: boolean,
+  candidate?: Node,
+  pending?: Map<string, Dependency>,
 ) => {
-  // Hoist invariants once
-  const fromLoc = fromNode.location
-  const projectRoot = graph.projectRoot
-  const monorepo = graph.monorepo
   const final = spec.final
-  // Memoize satisfies() results per-node within this resolution attempt
-  const satisfiesCache = new Map<string, boolean>()
-  const satisfiesFinal = (n: Node) => {
-    const key = n.id
-    const cached = satisfiesCache.get(key)
-    /* c8 ignore next 3 - optimization: cache hit when same node checked multiple times */
-    if (cached !== undefined) {
-      return cached
-    }
-    const result = satisfies(
-      key,
-      final,
-      fromLoc,
-      projectRoot,
-      monorepo,
-    )
-    satisfiesCache.set(key, result)
-    return result
-  }
 
-  // Prefer existing edge target if it satisfies the spec.
-  // This ensures lockfile resolutions are preserved when still valid,
-  // rather than potentially picking a different satisfying version.
-  const existingEdge = fromNode.edgesOut.get(spec.name)
-  let existingNode: Node | undefined
-  if (
-    existingEdge?.to &&
-    !existingEdge.to.detached &&
-    satisfiesFinal(existingEdge.to)
-  ) {
-    existingNode = existingEdge.to
-  } else {
-    existingNode = graph.findResolution(spec, fromNode, queryModifier)
-  }
+  // the candidate was picked in the pass before the hydrations
+  let existingNode: Node | undefined = candidate
 
   let peerCompatResult =
     existingNode ?
@@ -202,6 +261,7 @@ const findCompatibleResolution = (
         fromNode,
         peerContext,
         graph,
+        pending,
       )
     : { compatible: true }
 
@@ -210,19 +270,30 @@ const findCompatibleResolution = (
   if (existingNode && !peerCompatResult.compatible) {
     const candidates = graph.nodesByName.get(final.name)
     if (candidates && candidates.size > 1) {
-      for (const candidate of candidates) {
-        if (candidate === existingNode) continue
-        if (candidate.detached) continue
-        if (!satisfiesFinal(candidate)) continue
+      for (const alt of candidates) {
+        if (alt === existingNode) continue
+        if (alt.detached) continue
+        if (
+          !satisfies(
+            alt.id,
+            final,
+            fromNode.location,
+            graph.projectRoot,
+            graph.monorepo,
+          )
+        ) {
+          continue
+        }
 
         const compat = checkPeerEdgesCompatible(
-          candidate,
+          alt,
           fromNode,
           peerContext,
           graph,
+          pending,
         )
         if (compat.compatible) {
-          existingNode = candidate
+          existingNode = alt
           peerCompatResult = compat
           break
         }
@@ -231,6 +302,67 @@ const findCompatibleResolution = (
   }
 
   return { existingNode, peerCompatResult }
+}
+
+/**
+ * A detached lockfile node without a manifest still knows its exact
+ * version through its DepID. Rebuild the spec that produced it so the
+ * manifest fetch pins the locked version instead of re-resolving the
+ * range to the newest satisfying release. Only registry nodes carry a
+ * version; anything else keeps the range fetch.
+ */
+const lockedVersionFetch = (
+  node: Node,
+  spec: Spec,
+  options: SpecOptions,
+): { spec: Spec; version: string } | undefined => {
+  if (spec.final.type !== 'registry' || !node.version) return
+  // hydrate() reproduces alias / named / URL / jsr forms from the DepID
+  // but memoizes per (name, id) ignoring options, so re-parse its
+  // bareSpec with the current options
+  const bare = hydrate(node.id, spec.name, options).bareSpec
+  const exact = Spec.parse(spec.name, bare, options)
+  // lockedFits only compares the DepID registry name segment; never
+  // fetch a locked version from a source other than the one the edge
+  // resolves to right now
+  if (exact.final.registry !== spec.final.registry) return
+  return { spec: exact, version: node.version }
+}
+
+/**
+ * A rebuild without node_modules loads lockfile nodes with no manifest.
+ * Fetch the locked version up front and hydrate the node so the reuse
+ * and peer compatibility decisions see exactly what the hidden-lockfile
+ * path sees; on any miss the node stays bare and the range fetch runs as
+ * before. Hydrations are shared across the parallel fetches of one
+ * appendNodes run so each node is fetched once.
+ */
+const hydrateLockedNode = (
+  node: Node,
+  spec: Spec,
+  graph: Graph,
+  packageInfo: PackageInfoClient,
+  options: SpecOptions,
+  from: string,
+  hydrations: Map<DepID, Promise<void>>,
+): Promise<void> | undefined => {
+  const seen = hydrations.get(node.id)
+  if (seen) return seen
+  const locked = lockedVersionFetch(node, spec, options)
+  if (!locked) return
+  const hydration = packageInfo
+    .manifest(locked.spec, { from })
+    .then(
+      manifest => manifest as Manifest | undefined,
+      () => undefined,
+    )
+    .then(manifest => {
+      if (manifest?.version !== locked.version) return
+      node.manifest = normalizeManifest(manifest, String(locked.spec))
+      graph.manifests.set(node.id, node.manifest)
+    })
+  hydrations.set(node.id, hydration)
+  return hydration
 }
 
 /**
@@ -255,19 +387,27 @@ const fetchManifestsForDeps = async (
   fromNode: Node,
   deps: Dependency[],
   scurry: PathScurry,
+  options: SpecOptions,
+  hydrations: Map<DepID, Promise<void>>,
   peerContext: PeerContext,
   modifierRefs?: Map<string, ModifierActiveEntry>,
   depth = 0,
+  explicit?: ExplicitAddMap,
 ): Promise<FetchResult> => {
   const fetchTasks: ManifestFetchTask[] = []
   const placementTasks: NodePlacementTask[] = []
   const reuseTasks: ReuseTask[] = []
   const forkRequests: PeerContextEntryInput[] = []
 
+  // resolve the spec each dep is placed with before any lookup
+  const entries: DepEntry[] = []
   for (const { spec: originalSpec, type } of deps) {
     let spec = originalSpec
     const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
     const activeModifier = modifierRefs?.get(spec.name)
+    const isExplicit = !!explicit
+      ?.get(fromNode.id)
+      ?.has(addKey(originalSpec))
 
     // MODIFIER HANDLING: Swap spec if an edge modifier is fully matched
     // Example: `vlt install --override "react:^19"` changes react's spec
@@ -287,30 +427,114 @@ const fetchManifestsForDeps = async (
         continue
       }
     }
+    entries.push({
+      spec,
+      type,
+      fileTypeInfo,
+      activeModifier,
+      queryModifier,
+      isExplicit,
+      // read after the modifier swap, so an --override that replaces the
+      // tag with a range keeps today's reuse
+      explicitTag: isExplicit && !!spec.final.distTag,
+    })
+  }
 
+  // everything this parent places at this level, by name: the provision
+  // source for optional peers of reuse candidates, explicit adds included
+  const pendingDeps = new Map<string, Dependency>()
+  for (const e of entries) pendingDeps.set(e.spec.name, e)
+
+  // pick the reuse candidate once, here, so the placement loop below
+  // does not repeat the lookup, and hydrate it when it is a bare
+  // detached copy from a lockfile loaded without node_modules
+  const from = scurry.resolve(fromNode.location)
+  const pending: Promise<void>[] = []
+  for (const e of entries) {
+    // prefer the existing edge target when it still satisfies: lockfile
+    // resolutions are preserved rather than re-picked. a rebuild reset
+    // every edge, so this only fires when there was no reset, where no
+    // node is detached and there is nothing to hydrate either
+    const existing = fromNode.edgesOut.get(e.spec.name)?.to
+    if (
+      existing &&
+      !existing.detached &&
+      satisfies(
+        existing.id,
+        e.spec.final,
+        fromNode.location,
+        graph.projectRoot,
+        graph.monorepo,
+      )
+    ) {
+      e.candidate = existing
+      continue
+    }
+    const locked = findLockedNode(graph, fromNode, e.spec.name)
+    e.candidate =
+      locked && lockedFits(locked, e.spec, fromNode, graph) ? locked
+      : graph.findResolution(e.spec, fromNode, e.queryModifier)
+    // the tag is fetched below anyway, the locked version is dead weight
+    if (e.explicitTag) continue
+    if (e.candidate?.detached && !e.candidate.manifest) {
+      const hydration = hydrateLockedNode(
+        e.candidate,
+        e.spec,
+        graph,
+        packageInfo,
+        options,
+        from,
+        hydrations,
+      )
+      if (hydration) pending.push(hydration)
+    }
+  }
+  await Promise.all(pending)
+
+  for (const {
+    spec,
+    type,
+    fileTypeInfo,
+    activeModifier,
+    queryModifier,
+    isExplicit,
+    explicitTag,
+    candidate,
+  } of entries) {
     const peer = type === 'peer' || type === 'peerOptional'
 
     // NODE REUSE LOGIC with peer compatibility
-    const { existingNode, peerCompatResult } =
-      findCompatibleResolution(
-        spec,
-        fromNode,
-        graph,
-        peerContext,
-        queryModifier,
-        peer,
-      )
+    const resolved = findCompatibleResolution(
+      spec,
+      fromNode,
+      graph,
+      peerContext,
+      candidate,
+      pendingDeps,
+    )
+
+    // a dist-tag satisfies any node of that name, so reuse is what
+    // installs an arbitrary version for an explicit `pkg@tag` request.
+    // drop the candidate and fetch the tag instead; a registry spec
+    // naming a workspace still links that workspace.
+    const dropForTag =
+      explicitTag &&
+      !!resolved.existingNode &&
+      !resolved.existingNode.importer
+    const existingNode =
+      dropForTag ? undefined : resolved.existingNode
+    const peerCompatResult =
+      dropForTag ? { compatible: true } : resolved.peerCompatResult
 
     // Accumulate fork request if incompatible peer edges detected (defer actual fork)
     const effectivePeerContext = peerContext
-    /* c8 ignore start */
     if (!peerCompatResult.compatible && peerCompatResult.forkEntry) {
       forkRequests.push(peerCompatResult.forkEntry)
       // All fork entries from this fromNode will be applied together in Phase B
     }
-    /* c8 ignore stop */
 
-    // defines what nodes are eligible to be reused
+    // Locked detached nodes still go through placePackage so
+    // their child edges are rebuilt after resetEdges().
     const validExistingNode =
       existingNode &&
       !existingNode.detached &&
@@ -359,20 +583,29 @@ const fetchManifestsForDeps = async (
     // Start manifest fetch immediately for parallel processing
     const manifestPromise =
       // the "detached" node state means that it has already been load as
-      // part of a graph (either lockfile or actual) and it has valid manifest
-      // data so we shortcut the package info manifest fetch here
-      existingNode?.detached && existingNode.manifest ?
+      // part of a graph (either lockfile or actual), or was hydrated with
+      // its locked version above, and it has valid manifest data so we
+      // shortcut the package info manifest fetch here
+      // `keepVersion` marks a fork that only differs by an optional peer
+      // link, so the copy keeps the version it forked from instead of
+      // re-resolving the range to the newest satisfying release
+      (
+        existingNode?.manifest &&
+        (existingNode.detached || peerCompatResult.keepVersion)
+      ) ?
         Promise.resolve(existingNode.manifest as Manifest | undefined)
         // this is the entry point to fetch calls to retrieve manifests
         // from the build ideal graph point of view
       : packageInfo
-          .manifest(spec, { from: scurry.resolve(fromNode.location) })
+          .manifest(spec, { from })
           .then(manifest => manifest as Manifest | undefined)
           .catch((er: unknown) => {
             // optional deps ignored if inaccessible, but a dep that tried
             // to escape the project is never silently dropped
             if (isPathSecurityError(er)) throw er
-            if (edgeOptional || fromNode.optional) {
+            // an explicit request has no version to save if it never
+            // resolved, so it fails the install even when optional
+            if (!isExplicit && (edgeOptional || fromNode.optional)) {
               return undefined
             }
             throw er
@@ -538,7 +771,14 @@ const processPlacementTasks = async (
       !node.isOptional() &&
       // this fixes an issue with installing `file:pathname` specs
       /* c8 ignore next */ !fileTypeInfo?.isDirectory &&
-      !node.importer
+      !node.importer &&
+      // provisional peer suffixes are rewritten by canonicalizePeerIds,
+      // which moves the store dir into place. Skip when a dir for this
+      // package version already exists: the rewrite most likely lands
+      // back on it, and re-extracting would be pure waste.
+      (!node.peerSetHash ||
+        !!fileTypeInfo ||
+        !hasActualBase(actual, node.id))
 
     // extract the node if it meets the criteria for early extraction
     if (eligibleForExtraction) {
@@ -675,6 +915,12 @@ const processPlacementTasks = async (
       }
     }
 
+    // a name declared both as a regular dependency (manifest or
+    // transient) and as a peer is the package's own dependency: placing
+    // it once, as the regular type, keeps the edge type independent of
+    // when the peer would have resolved
+    for (const dep of nextDeps) nextPeerDeps.delete(dep.spec.name)
+
     // finish peer placement for this node, resolving satisfied peers
     // to seen nodes from the peer context and adding unsatisfied peers
     // to `nextDeps` so they get processed along regular dependencies
@@ -738,11 +984,16 @@ export const appendNodes = async (
   remover?: RollbackRemove,
   transientAdd?: TransientAddMap,
   transientRemove?: TransientRemoveMap,
+  explicit?: ExplicitAddMap,
 ) => {
   // Cycle detection: skip if already processed
   /* c8 ignore next */
   if (seen.has(fromNode.id)) return
   seen.add(fromNode.id)
+
+  // locked lockfile nodes hydrated with their exact manifest, at most
+  // once per node across the parallel fetches
+  const hydrations = new Map<DepID, Promise<void>>()
 
   // PEER CONTEXT ISOLATION: Each workspace importer needs its own context
   // to prevent peer targets from one workspace affecting another.
@@ -808,9 +1059,12 @@ export const appendNodes = async (
               a.spec.name.localeCompare(b.spec.name, 'en'),
             ),
             scurry,
+            options,
+            hydrations,
             peerContext,
             nodeModifierRefs,
             depth,
+            explicit,
           )
 
           return {

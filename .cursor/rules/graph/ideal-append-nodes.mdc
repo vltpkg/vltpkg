@@ -47,10 +47,16 @@ if (fromNode.importer && fromNode !== graph.mainImporter) {
 const existingEdge = fromNode.edgesOut.get(spec.name)
 if (existingEdge?.to && !existingEdge.to.detached && satisfiesFinal(existingEdge.to)) {
   existingNode = existingEdge.to  // Preserve lockfile resolution
+} else if (lockedNode && lockedFits(lockedNode)) {
+  existingNode = lockedNode  // graph.lockedResolutions target, detached after resetEdges()
 } else {
   existingNode = graph.findResolution(spec, fromNode, queryModifier)
 }
 ```
+
+## Locked Version Hydration (no `node_modules`)
+
+A detached `existingNode` is always the lockfile target. With a manifest (hidden lockfile / actual graph) it is reused as-is. Without one (plain `vlt-lock.json`, no `node_modules`), `fetchManifestsForDeps` first hydrates every fitting locked node: `lockedVersionFetch()` rebuilds the exact spec from the DepID via `hydrate()` + `Spec.parse()` with current options (the dep-id memo ignores options), `hydrateLockedNode()` fetches it once per node (shared `hydrations` map) and sets `node.manifest`. The rest of the pipeline, including `checkPeerEdgesCompatible()`, then sees the same nodes the hidden-lockfile path sees, so a rebuild never drifts to the newest satisfying version. Guards: registry specs only, `exact.final.registry === spec.final.registry`, fetched `manifest.version === node.version`. Any miss leaves the node bare and the range fetch runs as before.
 
 ## Candidate Fallback (Peer-Incompatible)
 

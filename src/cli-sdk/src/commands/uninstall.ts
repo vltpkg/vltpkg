@@ -32,6 +32,10 @@ export const usage: CommandUsage = () =>
         value: '<name>',
         description: 'Limit uninstall targets to workspace groups.',
       },
+      'lockfile-only': {
+        description:
+          'Only update lockfile and package.json files; skip node_modules operations.',
+      },
       'allow-scripts': {
         value: '<query>',
         description:
@@ -58,7 +62,11 @@ export const command: CommandFn<UninstallResult> = async conf => {
     : ':not(*)'
   /* c8 ignore stop */
   const { graph } = await uninstall(
-    { ...conf.options, allowScripts },
+    {
+      ...conf.options,
+      allowScripts,
+      lockfileOnly: conf.options['lockfile-only'],
+    },
     remove,
   )
   return { graph }

@@ -130,6 +130,28 @@ export const reify = async (
     })
 
   const diff = new Diff(actual, graph)
+
+  // normalise importer edge specs and compute the package.json changes
+  // before deciding whether anything needs reifying: an add whose target
+  // is already in place has no node diff but still has a saved value to
+  // persist. `Diff` compares edge targets only, so the rewrite is safe
+  // after it was built.
+  const saveImportersPackageJson =
+    /* c8 ignore next */
+    (
+      options.add?.modifiedDependencies ||
+      options.remove?.modifiedDependencies
+    ) ?
+      updatePackageJson({
+        add: options.add,
+        remove: options.remove,
+        graph,
+        packageJson: options.packageJson,
+        saveExact: options.saveExact,
+        savePrefix: options.savePrefix,
+      })
+    : undefined
+
   const noModifiedDependencies =
     !options.add?.modifiedDependencies &&
     !options.remove?.modifiedDependencies
@@ -146,12 +168,17 @@ export const reify = async (
     // Even when there are no changes to reify, ensure lockfiles
     // exist on disk. This handles the case where a project has no
     // dependencies (or only workspace importers) but still needs
-    // lockfiles written on the first install.
-    if (!hasLockfiles) {
-      saveHidden(options)
+    // lockfiles written on the first install. A stale flag means an
+    // edge spec was rewritten above, which the lockfiles have to carry.
+    if (!hasLockfiles || graph.lockfileStale) {
+      // with no diff at all the ideal graph is the actual graph, so the
+      // hidden lockfile can be written from it; an optional-only diff
+      // being skipped may only refresh the main lockfile
+      if (!hasLockfiles || !diff.hasChanges()) saveHidden(options)
       const lfData = lockfileData(options)
       saveData(lfData, scurry.resolve('vlt-lock.json'), false)
     }
+    saveImportersPackageJson?.()
     // Even with no reify changes, report nodes that still need building.
     // Build state is persisted in the hidden lockfile and loaded into the
     // actual graph, so check there for pending builds.
@@ -168,7 +195,12 @@ export const reify = async (
 
   let success = false
   try {
-    const { buildQueue } = await reify_(options, diff, remover)
+    const { buildQueue } = await reify_(
+      options,
+      diff,
+      remover,
+      saveImportersPackageJson,
+    )
     remover.confirm()
     success = true
     res.buildQueue = buildQueue
@@ -189,30 +221,10 @@ const reify_ = async (
   options: ReifyOptions,
   diff: Diff,
   remover: RollbackRemove,
+  saveImportersPackageJson?: () => void,
 ): Promise<Omit<ReifyResult, 'diff'>> => {
   const res: Omit<ReifyResult, 'diff'> = {}
-  const {
-    add,
-    remove,
-    packageInfo,
-    packageJson,
-    scurry,
-    allowScripts,
-    saveExact,
-    savePrefix,
-  } = options
-  const saveImportersPackageJson =
-    /* c8 ignore next */
-    add?.modifiedDependencies || remove?.modifiedDependencies ?
-      updatePackageJson({
-        add,
-        remove,
-        graph: options.graph,
-        packageJson,
-        saveExact,
-        savePrefix,
-      })
-    : undefined
+  const { packageInfo, packageJson, scurry, allowScripts } = options
 
   // before anything else happens, grab the ideal tree as it was resolved
   // so that we can store it in the lockfile. We do this here so that

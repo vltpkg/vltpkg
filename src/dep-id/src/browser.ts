@@ -322,19 +322,21 @@ export const splitDepID = (id: string): DepIDTuple => {
   return res
 }
 
+const seenBaseDepIDs = new Map<string, DepID>()
 /**
  * Retrieves the base {@link DepID} for a given depID,
  * ignoring any extra information that may be present.
  */
 export const baseDepID = (id: string): DepID => {
+  const seen = seenBaseDepIDs.get(id)
+  if (seen) return seen
   const [type, first, second] = splitDepID(id)
-  switch (type) {
-    case 'git':
-    case 'registry':
-      return joinDepIDTuple([type, first, second])
-    default:
-      return joinDepIDTuple([type, first])
-  }
+  const res: DepID =
+    type === 'git' || type === 'registry' ?
+      joinDepIDTuple([type, first, second])
+    : joinDepIDTuple([type, first])
+  seenBaseDepIDs.set(id, res)
+  return res
 }
 
 const seenHydrated = new Map<string, Spec>()
@@ -679,4 +681,5 @@ export const resetCaches = () => {
   seenHydratedTuples.clear()
   seenSplitDepIDs.clear()
   seenTuples.clear()
+  seenBaseDepIDs.clear()
 }

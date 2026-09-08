@@ -14,6 +14,7 @@ import {
   save,
   saveHidden,
 } from '../../src/lockfile/save.ts'
+import { load } from '../../src/lockfile/load.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
 
 const configData = {
@@ -1117,5 +1118,56 @@ t.test('saveHidden skips when graph has no manifest', async t => {
   t.notOk(
     existsSync(hiddenLockfilePath),
     'hidden lockfile should not be created when manifest is missing',
+  )
+})
+
+t.test('round-trip a peer-suffixed node', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { ui: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  const extra = 'peer.aaaaaaaaaaaaaaaa'
+  const ui = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('ui@^1.0.0'),
+    {
+      name: 'ui',
+      version: '1.0.0',
+      peerDependencies: { react: '^18' },
+    },
+    undefined,
+    extra,
+  )
+  if (!ui) throw new Error('missing ui')
+  ui.setResolved()
+  save({ ...configData, graph })
+
+  const loaded = load({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  const loadedUi = [...loaded.nodes.values()].find(
+    n => n.name === 'ui',
+  )
+  t.equal(loadedUi?.peerSetHash, extra)
+  t.equal(loadedUi?.id, ui.id)
+  t.ok(
+    Object.keys(
+      JSON.parse(
+        readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+      ).nodes,
+    ).some(id => id.includes(extra)),
+    'lockfile stores the peer suffix',
   )
 })

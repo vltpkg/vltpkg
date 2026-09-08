@@ -1947,7 +1947,7 @@ t.test('resetEdges method', async t => {
     t.equal(
       foundAfter,
       alphaNode,
-      'resolution still works after reset',
+      'a detached node is the fallback candidate after reset',
     )
   })
 
@@ -2119,13 +2119,17 @@ t.test('resetEdges method', async t => {
       'modifier preserved',
     )
 
-    // Verify resolution still works with modifier
+    // Verify resolution falls back to the detached node after reset
     const found = graph.findResolution(
       Spec.parse('epsilon@^1.0.0', configData),
       graph.mainImporter,
       ':root > #epsilon',
     )
-    t.equal(found, epsilonNode, 'resolution with modifier works')
+    t.equal(
+      found,
+      epsilonNode,
+      'a detached node is the fallback candidate after reset',
+    )
   })
 
   t.test('should work with nodes having peerSetHash', async t => {
@@ -2160,13 +2164,17 @@ t.test('resetEdges method', async t => {
       'peerSetHash preserved',
     )
 
-    // Verify resolution still works with peerSetHash
+    // Verify resolution falls back to the detached node after reset
     const found = graph.findResolution(
       Spec.parse('zeta@^1.0.0', configData),
       graph.mainImporter,
       'peer.peer123',
     )
-    t.equal(found, zetaNode, 'resolution with peerSetHash works')
+    t.equal(
+      found,
+      zetaNode,
+      'a detached node is the fallback candidate after reset',
+    )
   })
 
   t.test('should preserve manifest inventory', async t => {
@@ -2199,6 +2207,151 @@ t.test('resetEdges method', async t => {
       'same manifest instance preserved',
     )
   })
+
+  t.test(
+    'findResolution skips detached nodes in favor of live ones',
+    async t => {
+      const v1 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.0.0' },
+      )!
+      const v2 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.1.0' },
+      )!
+      const cached = graph.findResolution(
+        Spec.parse('theta@^1.0.0', configData),
+        graph.mainImporter,
+      )
+      t.equal(cached, v2, 'the cache points at the last placed node')
+      // detach the cached node so the lookup has to rescan by name
+      v2.detached = true
+      const found = graph.findResolution(
+        Spec.parse('theta@^1.0.0', configData),
+        graph.mainImporter,
+      )
+      t.equal(
+        found,
+        v1,
+        'should skip a cached detached node and return a live candidate',
+      )
+    },
+  )
+})
+
+t.test('findResolution detached fallback', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const newGraph = () =>
+    new Graph({ ...configData, mainManifest, projectRoot })
+
+  t.test(
+    'returns a detached node when no live one exists',
+    async t => {
+      const graph = newGraph()
+      const theta = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.0.0' },
+      )!
+      graph.resetEdges()
+      t.equal(
+        graph.findResolution(
+          Spec.parse('theta@^1.0.0', configData),
+          graph.mainImporter,
+        ),
+        theta,
+        'a detached node is the fallback candidate after reset',
+      )
+    },
+  )
+
+  t.test('does not cache a detached hit', async t => {
+    const graph = newGraph()
+    const node = graph.addNode(
+      joinDepIDTuple(['registry', '', 'theta@1.0.0']),
+      undefined,
+      undefined,
+      'theta',
+      '1.0.0',
+    )
+    node.detached = true
+    t.equal(
+      graph.findResolution(
+        Spec.parse('theta@^1.0.0', configData),
+        graph.mainImporter,
+      ),
+      node,
+      'the detached node is returned',
+    )
+    t.equal(graph.resolutions.size, 0, 'nothing was cached')
+  })
+
+  t.test(
+    'prefers a live cached node over an earlier detached id',
+    async t => {
+      const graph = newGraph()
+      const live = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.2.0' },
+      )!
+      // sorts before the live node in nodesByName, and would be the
+      // fallback if the scan ran
+      const earlier = graph.addNode(
+        joinDepIDTuple(['registry', '', 'theta@1.0.0']),
+        undefined,
+        undefined,
+        'theta',
+        '1.0.0',
+      )
+      earlier.detached = true
+      t.equal(
+        graph.findResolution(
+          Spec.parse('theta@^1.0.0', configData),
+          graph.mainImporter,
+        ),
+        live,
+        'the live cached entry is returned without a scan',
+      )
+    },
+  )
+
+  t.test(
+    'prefers the detached cached entry over an earlier id',
+    async t => {
+      const graph = newGraph()
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.0.0' },
+      )
+      const v12 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('theta@^1.0.0', configData),
+        { name: 'theta', version: '1.2.0' },
+      )!
+      graph.resetEdges()
+      t.equal(
+        graph.findResolution(
+          Spec.parse('theta@^1.0.0', configData),
+          graph.mainImporter,
+        ),
+        v12,
+        'the last resolution wins over id order',
+      )
+    },
+  )
 })
 
 t.test('removeNode with keepEdges parameter', async t => {
@@ -2579,6 +2732,129 @@ t.test(
   },
 )
 
+t.test(
+  'placePackage copies integrity from same-package lockfile sibling',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+
+    const integrity = 'sha512-LOCKFILE-SIBLING=='
+    const resolved =
+      'https://registry.npmjs.org/oxlint/-/oxlint-1.77.0.tgz'
+
+    // same-name node with a different base id: iterated first and skipped
+    const otherBase = graph.addNode(
+      joinDepIDTuple(['registry', '', 'oxlint@1.0.0']),
+      undefined,
+      undefined,
+      'oxlint',
+      '1.0.0',
+    )
+    otherBase.integrity = 'sha512-OTHER-BASE=='
+
+    // same-base sibling with no metadata at all: skipped
+    const bareSibling = graph.addNode(
+      joinDepIDTuple([
+        'registry',
+        '',
+        'oxlint@1.77.0',
+        'peer.000000000000000a',
+      ]),
+      undefined,
+      undefined,
+      'oxlint',
+      '1.77.0',
+    )
+    bareSibling.peerSetHash = 'peer.000000000000000a'
+
+    // same-base sibling carrying only a resolved value: remembered as a
+    // candidate but scanning continues looking for one with integrity
+    const resolvedOnly = graph.addNode(
+      joinDepIDTuple([
+        'registry',
+        '',
+        'oxlint@1.77.0',
+        'peer.0123456789abcdef',
+      ]),
+      undefined,
+      undefined,
+      'oxlint',
+      '1.77.0',
+    )
+    resolvedOnly.resolved = resolved
+    resolvedOnly.peerSetHash = 'peer.0123456789abcdef'
+
+    const lockfileId = joinDepIDTuple([
+      'registry',
+      '',
+      'oxlint@1.77.0',
+      'peer.05a16166f9c1f9ef',
+    ])
+    const lockfileNode = graph.addNode(
+      lockfileId,
+      undefined,
+      undefined,
+      'oxlint',
+      '1.77.0',
+    )
+    lockfileNode.integrity = integrity
+    lockfileNode.resolved = resolved
+    lockfileNode.resolvedFromLockfile = true
+    lockfileNode.peerSetHash = 'peer.05a16166f9c1f9ef'
+
+    const placed = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('oxlint', '^1.77.0', configData),
+      normalizeManifest({
+        name: 'oxlint',
+        version: '1.77.0',
+        peerDependencies: { vitest: '*' },
+      }),
+      undefined,
+      'peer.0',
+    )
+
+    t.not(placed, lockfileNode, 'new node for provisional peer extra')
+    t.equal(
+      placed?.integrity,
+      integrity,
+      'integrity copied from lockfile sibling',
+    )
+    t.equal(
+      placed?.resolved,
+      resolved,
+      'resolved copied from lockfile sibling',
+    )
+    t.equal(
+      placed?.resolvedFromLockfile,
+      true,
+      'lockfile verification flag preserved',
+    )
+
+    // id-only placement (no manifest) falls back to the spec name for
+    // the same-package lookup
+    const idOnly = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('no-mani', '^1.0.0', configData),
+      undefined,
+      joinDepIDTuple(['registry', '', 'no-mani@1.0.0']),
+    )
+    t.equal(idOnly?.name, 'no-mani', 'node placed from id alone')
+  },
+)
+
 t.test('workspace with no name in its manifest', async t => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({ name: 'root' }),
@@ -2626,4 +2902,216 @@ t.test('addEdge rejects a traversing node name', async t => {
       ),
     { cause: { code: 'EINVALIDNAME' } },
   )
+})
+
+t.test('sortNodes puts importers first then DepID order', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+  })
+  const zed = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('zed@1.0.0', configData),
+    { name: 'zed', version: '1.0.0' },
+  )
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@1.0.0', configData),
+    { name: 'foo', version: '1.0.0' },
+  )
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar@1.0.0', configData),
+    { name: 'bar', version: '1.0.0' },
+  )
+  if (!zed || !foo || !bar) throw new Error('failed to place')
+
+  const expected = [
+    joinDepIDTuple(['file', '.']),
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    joinDepIDTuple(['registry', '', 'zed@1.0.0']),
+  ]
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected)
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected, 'idempotent')
+
+  const before = graph.nodes
+  graph.sortNodes()
+  t.equal(graph.nodes, before, 'already sorted: same map instance')
+
+  // an importer after a non-importer forces the rebuild
+  graph.nodes = new Map([
+    [foo.id, foo],
+    [graph.mainImporter.id, graph.mainImporter],
+    [bar.id, bar],
+    [zed.id, zed],
+  ])
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected, 'importers first')
+
+  // a missing importer is re-registered
+  graph.nodes.delete(graph.mainImporter.id)
+  graph.sortNodes()
+  t.strictSame([...graph.nodes.keys()], expected, 'importer restored')
+
+  // gc keeps an intact map
+  const intact = graph.nodes
+  const collected = graph.gc()
+  t.equal(collected.size, 0, 'nothing collected')
+  t.equal(graph.nodes, intact, 'gc keeps an intact map')
+  t.equal(graph.edges.size, 3, 'edges still rebuilt')
+
+  // a reachable node missing from the map forces the rebuild, even
+  // when an unreachable one keeps the size the same
+  graph.addNode(joinDepIDTuple(['registry', '', 'orphan@1.0.0']), {
+    name: 'orphan',
+    version: '1.0.0',
+  })
+  graph.nodes.delete(foo.id)
+  t.equal(graph.gc().size, 1, 'the orphan is collected')
+  t.strictSame(
+    [...graph.nodes.keys()],
+    expected,
+    'gc re-registers a reachable node',
+  )
+
+  graph.addNode(joinDepIDTuple(['registry', '', 'orphan@1.0.0']), {
+    name: 'orphan',
+    version: '1.0.0',
+  })
+  graph.gc()
+  t.strictSame(
+    [...graph.nodes.keys()],
+    expected,
+    'gc leaves a sorted map',
+  )
+})
+
+t.test('sortNodes restores importer-set order', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: 'packages/*' }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+  })
+  const expected = [...graph.nodes.keys()]
+  t.equal(expected.length, 3, 'main importer and two workspaces')
+  const [main, a, b] = [...graph.importers]
+  graph.nodes = new Map([
+    [main!.id, main!],
+    [b!.id, b!],
+    [a!.id, a!],
+  ])
+  graph.sortNodes()
+  t.strictSame(
+    [...graph.nodes.keys()],
+    expected,
+    'set order restored',
+  )
+})
+
+t.test('mutations counts structural writes', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+  })
+  const at = () => graph.mutations
+  const bumped = (name: string, fn: () => unknown) => {
+    const before = at()
+    fn()
+    t.ok(at() > before, name)
+  }
+  const quiet = (name: string, fn: () => unknown) => {
+    const before = at()
+    fn()
+    t.equal(at() - before, 0, name)
+  }
+
+  const fooSpec = Spec.parse('foo@1.0.0', configData)
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    fooSpec,
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+  )
+  if (!foo) throw new Error('failed to place')
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar@1.0.0', configData),
+    { name: 'bar', version: '1.0.0' },
+  )
+  if (!bar) throw new Error('failed to place')
+
+  quiet('re-adding the same edge is not a mutation', () =>
+    graph.addEdge('prod', fooSpec, graph.mainImporter, foo),
+  )
+  bumped('re-pointing an edge', () =>
+    graph.addEdge('prod', fooSpec, graph.mainImporter, bar),
+  )
+  bumped('a new edge', () =>
+    graph.addEdge(
+      'prod',
+      Spec.parse('bar@1.0.0', configData),
+      foo,
+      bar,
+    ),
+  )
+  bumped('placing an existing node', () =>
+    graph.placePackage(
+      bar,
+      'prod',
+      Spec.parse('foo@1.0.0', configData),
+      { name: 'foo', version: '1.0.0' },
+    ),
+  )
+  bumped('a dangling placement', () =>
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('missing@1.0.0', configData),
+    ),
+  )
+  quiet('gc with nothing unreachable', () => graph.gc())
+  bumped('removeNode', () => graph.removeNode(bar))
+  bumped('resetEdges', () => graph.resetEdges())
 })

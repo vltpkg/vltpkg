@@ -32,6 +32,14 @@ export type TransientRemoveMap = Omit<
   'modifiedDependencies'
 >
 
+/**
+ * Dependency names the user asked for on the command line, keyed by the
+ * {@link DepID} of the node receiving them. Snapshotted before
+ * manifest-derived deltas are merged into `add`, so it is the only
+ * reliable signal that a spec came from an explicit request.
+ */
+export type ExplicitAddMap = Map<DepID, Set<string>>
+
 export type BuildIdealAddOptions = {
   /**
    * A {@link AddImportersDependenciesMap} in which keys are {@link DepID}
@@ -111,6 +119,11 @@ export type PeerContextEntry = {
    * instead of piling up per dependent.
    */
   specs: Map<string, Spec>
+  /**
+   * `specs` is shared with the entry this one was forked from or into.
+   * Write through `ownSpecs()` so the other side keeps its snapshot.
+   */
+  sharedSpecs?: boolean
   /** The target Node that satisfies all specs for this peer context entry */
   target: Node | undefined
   /** The type of dependency this entry represents */
@@ -134,4 +147,11 @@ export type PeerContextEntryInput = {
  */
 export type PeerContext = Map<string, PeerContextEntry> & {
   index?: number
+  /**
+   * Bumped whenever an entry is added or an entry's target changes, i.e.
+   * whenever the name -> target mapping a fork snapshots moves. Part of
+   * the fork cache key so a base that moved cannot hand out the fork
+   * taken before the move.
+   */
+  rev?: number
 }

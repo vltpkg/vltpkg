@@ -5,12 +5,14 @@ import type { UninstallResult } from '../../src/commands/uninstall.ts'
 
 const options = { scurry: new PathScurry() }
 let log = ''
+let uninstallOptions: Record<string, unknown> | undefined
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/uninstall.ts')
 >('../../src/commands/uninstall.ts', {
   '@vltpkg/graph': {
-    async uninstall() {
+    async uninstall(opts: Record<string, unknown>) {
+      uninstallOptions = opts
       log += 'uninstall\n'
       return {
         graph: {},
@@ -43,6 +45,16 @@ await Command.command({
   get: (_key: string) => undefined,
 } as LoadedConfig)
 t.matchSnapshot(log, 'should uninstall a dependency')
+
+// forwards --lockfile-only to the graph as `lockfileOnly`
+log = ''
+await Command.command({
+  positionals: ['abbrev@2'],
+  values: {},
+  options: { ...options, 'lockfile-only': true },
+  get: (_key: string) => undefined,
+} as unknown as LoadedConfig)
+t.equal(uninstallOptions?.lockfileOnly, true)
 
 t.strictSame(
   Command.views.json({

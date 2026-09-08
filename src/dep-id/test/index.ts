@@ -65,6 +65,7 @@ t.test('valid specs', t => {
       const id = getId(spec, mani)
       const idWithExtra = getId(spec, mani, ':root > #extra')
       const base = baseDepID(idWithExtra)
+      t.equal(baseDepID(idWithExtra), base, 'baseDepID is memoized')
       t.matchSnapshot([id, tuple, idWithExtra, base])
       t.equal(joinDepIDTuple(tuple), id)
       t.strictSame(splitDepID(id), tuple)
@@ -753,6 +754,7 @@ t.test('resetCaches', t => {
   const hydrated1 = hydrate(id1, 'test-package', options)
   const hydratedTuple1 = hydrateTuple(tuple1, 'test-package', options)
   const split1 = splitDepID(id1)
+  const base1 = baseDepID(id1)
 
   // Call resetCaches - should not throw
   t.doesNotThrow(() => resetCaches(), 'resetCaches should not throw')
@@ -763,6 +765,7 @@ t.test('resetCaches', t => {
   const hydrated2 = hydrate(id1, 'test-package', options)
   const hydratedTuple2 = hydrateTuple(tuple1, 'test-package', options)
   const split2 = splitDepID(id1)
+  const base2 = baseDepID(id1)
 
   // Results should be the same even after cache reset
   t.equal(
@@ -789,6 +792,11 @@ t.test('resetCaches', t => {
     split1,
     split2,
     'splitDepID should return same result after resetCaches',
+  )
+  t.equal(
+    base1,
+    base2,
+    'baseDepID should return same result after resetCaches',
   )
 
   // Test calling resetCaches multiple times doesn't cause issues

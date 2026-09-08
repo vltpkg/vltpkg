@@ -8,37 +8,37 @@
 exports[`test/visualization/mermaid-output.ts > TAP > actual graph > highlight selection > should print selected packages with highlight 1`] = `
 flowchart TD
 a("root:my-project")
-a -->|"bar#64;^1.0.0 (optional)"| g("npm:bar#64;1.0.0")
-g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0"):::a
+a -->|"bar#64;^1.0.0 (optional)"| i("npm:bar#64;1.0.0")
+i -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0"):::a
 classDef a fill:gold,color:#242424
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > actual graph > selected packages > should print selected packages 1`] = `
 flowchart TD
 a("root:my-project")
-a -->|"bar#64;^1.0.0 (optional)"| g("npm:bar#64;1.0.0")
-g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0")
+a -->|"bar#64;^1.0.0 (optional)"| i("npm:bar#64;1.0.0")
+i -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > actual graph > should print from an actual loaded graph 1`] = `
 flowchart TD
 a("root:my-project")
-a -->|"link#64;file:./linked"| d("file(linked):linked#64;1.0.0")
-a -->|"foo#64;^1.0.0"| e("npm:foo#64;1.0.0")
-a -->|"extraneous#64;*"| f("npm:extraneous#64;1.0.0")
-a -->|"bar#64;^1.0.0 (optional)"| g("npm:bar#64;1.0.0")
-g -->|"blooo#64;1"| l("npm:blooo#64;1.0.0")
-g -->|"baz#64;custom:baz#64;^1.0.0"| m("custom:baz#64;1.0.0")
-a -->|"aliased#64;custom:foo#64;^1.0.0 (dev)"| h("custom:foo#64;1.0.0")
-a -->|"#64;scoped/b#64;^1.0.0"| i("npm:#64;scoped/b#64;1.0.0")
-i -->|"#64;scoped/c#64;^1.0.0"| n("npm:#64;scoped/c#64;1.0.0")
-a -->|"#64;scoped/a#64;^1.0.0"| j("npm:#64;scoped/a#64;1.0.0")
+a -->|"link#64;file:./linked"| n("file(linked):linked#64;1.0.0")
+a -->|"foo#64;^1.0.0"| l("npm:foo#64;1.0.0")
+a -->|"extraneous#64;*"| k("npm:extraneous#64;1.0.0")
+a -->|"bar#64;^1.0.0 (optional)"| i("npm:bar#64;1.0.0")
+i -->|"blooo#64;1"| j("npm:blooo#64;1.0.0")
+i -->|"baz#64;custom:baz#64;^1.0.0"| d("custom:baz#64;1.0.0")
+a -->|"aliased#64;custom:foo#64;^1.0.0 (dev)"| e("custom:foo#64;1.0.0")
+a -->|"#64;scoped/b#64;^1.0.0"| g("npm:#64;scoped/b#64;1.0.0")
+g -->|"#64;scoped/c#64;^1.0.0"| h("npm:#64;scoped/c#64;1.0.0")
+a -->|"#64;scoped/a#64;^1.0.0"| f("npm:#64;scoped/a#64;1.0.0")
 a -->|"missing#64;^1.0.0"| missing-1(Missing)
 a -->|"workspace-b#64;workspace:*"| b("workspace:workspace-b")
 a -->|"workspace-a#64;workspace:*"| c("workspace:workspace-a")
 c -->|"workspace-b#64;workspace:* (dev)"| b
-c -->|"ipsum#64;^1.0.0 (dev)"| k("npm:ipsum#64;1.0.0")
-c -->|"foo#64;^1.0.0 (dev)"| e
+c -->|"ipsum#64;^1.0.0 (dev)"| m("npm:ipsum#64;1.0.0")
+c -->|"foo#64;^1.0.0 (dev)"| l
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > cycle > should print cycle mermaid output 1`] = `

@@ -1,4 +1,11 @@
 import t from 'tap'
+import type { Test } from 'tap'
+import {
+  readFileSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
@@ -14,6 +21,8 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
 import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
+import { unload } from '@vltpkg/vlt-json'
+import { RollbackRemove } from '@vltpkg/rollback-remove'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -398,6 +407,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
           }),
@@ -510,6 +520,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -589,6 +600,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
           }),
@@ -830,6 +842,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -920,6 +933,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -1007,6 +1021,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
           }),
@@ -1151,6 +1166,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(removeMap, {
             modifiedDependencies: true,
@@ -1365,16 +1381,20 @@ t.test('install with lockfileOnly option', async t => {
   let reifyCalled = false
   let lockfileSaveCalled = false
   let lockfileSaveOptions: any = null
+  let confirmed = 0
+  let rolledBack = false
+  const removedPaths: string[] = []
 
   const { install } = await t.mockImport<
     typeof import('../src/install.ts')
   >('../src/install.ts', {
     '../src/ideal/build.ts': {
-      build: async () => ({
-        nodes: new Map(),
-        importers: [],
-        projectRoot: dir,
-      }),
+      build: async (opts: any) => {
+        // a failed peer store move is the one thing that can still park
+        // a directory on this path
+        await opts.remover.rm('parked')
+        return { nodes: new Map(), importers: [], projectRoot: dir }
+      },
     },
     '../src/reify/index.ts': {
       reify: async () => {
@@ -1388,6 +1408,19 @@ t.test('install with lockfileOnly option', async t => {
           lockfileSaveCalled = true
           lockfileSaveOptions = opts
         },
+      },
+    },
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class MockRollbackRemove {
+        async rm(path: string) {
+          removedPaths.push(path)
+        }
+        confirm() {
+          confirmed++
+        }
+        async rollback() {
+          rolledBack = true
+        }
       },
     },
   })
@@ -1412,6 +1445,64 @@ t.test('install with lockfileOnly option', async t => {
     undefined,
     'should return undefined for diff when lockfileOnly is true',
   )
+  t.strictSame(removedPaths, ['parked'], 'a directory was parked')
+  t.equal(confirmed, 1, 'the remover is confirmed before returning')
+  t.notOk(rolledBack, 'and not rolled back')
+})
+
+t.test('lockfileOnly rolls back when the save fails', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+  })
+  let confirmed = false
+  let rolledBack = false
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/ideal/build.ts': {
+      build: async () => ({
+        nodes: new Map(),
+        importers: [],
+        projectRoot: dir,
+      }),
+    },
+    '../src/index.ts': {
+      lockfile: {
+        save: () => {
+          throw error('save failed', {})
+        },
+      },
+    },
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class MockRollbackRemove {
+        async rm() {}
+        confirm() {
+          confirmed = true
+        }
+        async rollback() {
+          rolledBack = true
+        }
+      },
+    },
+  })
+  await t.rejects(
+    install(
+      {
+        projectRoot: dir,
+        scurry: new PathScurry(dir),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        lockfileOnly: true,
+      } as unknown as InstallOptions,
+      new Map() as AddImportersDependenciesMap,
+    ),
+    /save failed/,
+  )
+  t.notOk(confirmed, 'never confirmed')
+  t.ok(rolledBack, 'rolled back instead')
 })
 
 t.test('lockfileOnly incompatible with cleanInstall', async t => {
@@ -1927,6 +2018,14 @@ t.test('install with frozenLockfile and changed options', async t => {
         nodes: new Map(),
         importers: [],
         optionsChanged: true,
+        optionsChanges: [
+          {
+            section: 'catalog',
+            key: 'abbrev',
+            from: '^1.0.0',
+            to: '^2.0.0',
+          },
+        ],
         gc: () => {},
       }),
       loadHidden: () => ({
@@ -1944,7 +2043,440 @@ t.test('install with frozenLockfile and changed options', async t => {
 
   await t.rejects(
     install(options, new Map() as AddImportersDependenciesMap),
-    /Lockfile is out of sync with package\.json/,
+    /Configuration options have changed:\n {4}catalog: abbrev "\^1\.0\.0" -> "\^2\.0\.0"/,
     'should throw when config options changed with frozen lockfile',
+  )
+})
+
+t.test('a legacy importer edge heals its type', async t => {
+  const packageInfo = createMockPackageInfo()
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      peerDependencies: { abbrev: '>=2 <3' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = () =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      allowScripts: ':not(*)',
+    }) as unknown as InstallOptions
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  await install(opts())
+  t.match(read('vlt-lock.json'), 'peer >=2 <3', 'the legacy edge')
+
+  // package.json now lists it as a dev dep, same target, same range
+  writeFileSync(
+    resolve(projectRoot, 'package.json'),
+    JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { abbrev: '^2.0.0' },
+      peerDependencies: { abbrev: '>=2 <3' },
+    }),
+  )
+  await install(opts())
+  const healed = `dev ^2.0.0 ${joinDepIDTuple([
+    'registry',
+    '',
+    'abbrev@2.0.0',
+  ])}`
+  t.match(read('vlt-lock.json'), healed, 'both text and type healed')
+  t.match(read('node_modules/.vlt-lock.json'), healed, 'hidden too')
+
+  const before = statSync(
+    resolve(projectRoot, 'vlt-lock.json'),
+  ).mtimeMs
+  utimesSync(resolve(projectRoot, 'vlt-lock.json'), 0, 0)
+  await install(opts())
+  t.equal(
+    statSync(resolve(projectRoot, 'vlt-lock.json')).mtimeMs,
+    0,
+    'a second install writes nothing',
+  )
+  t.ok(before, 'the first heal did write')
+})
+
+t.test('explicit adds carry the saved value everywhere', async t => {
+  const abbrevManifest = { name: 'abbrev', version: '2.0.0' }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'abbrev') return abbrevManifest
+      throw error('Could not resolve', { spec })
+    },
+    async extract(spec: Spec) {
+      return { resolved: '', spec }
+    },
+  } as unknown as PackageInfoClient
+
+  const setup = (t: Test, deps?: Record<string, string>) => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        ...(deps ? { dependencies: deps } : null),
+      }),
+    })
+    t.chdir(projectRoot)
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo,
+        allowScripts: ':not(*)',
+        ...extra,
+      }) as unknown as InstallOptions
+    const add = (bareSpec: string, name = 'abbrev') =>
+      Object.assign(
+        new Map([
+          [
+            rootDepID,
+            new Map<string, Dependency>([
+              [
+                name,
+                asDependency({
+                  spec: Spec.parse(name, bareSpec),
+                  type: 'prod',
+                }),
+              ],
+            ]),
+          ],
+        ]),
+        { modifiedDependencies: true },
+      )
+    const read = (f: string) =>
+      readFileSync(resolve(projectRoot, f), 'utf8')
+    return { projectRoot, opts, add, read }
+  }
+
+  await t.test(
+    'lockfileOnly saves the range, not the tag',
+    async t => {
+      const { opts, add, read } = setup(t)
+      const { install } = await import('../src/install.ts')
+      await install(opts({ lockfileOnly: true }), add('latest'))
+      t.match(read('vlt-lock.json'), 'prod ^2.0.0')
+      t.match(JSON.parse(read('package.json')), {
+        dependencies: { abbrev: '^2.0.0' },
+      })
+    },
+  )
+
+  await t.test('--save-exact on a same-target add', async t => {
+    const { opts, add, read } = setup(t, { abbrev: '^2.0.0' })
+    const { install } = await import('../src/install.ts')
+    await install(opts(), add('^2.0.0'))
+    t.match(read('vlt-lock.json'), 'prod ^2.0.0')
+
+    // nothing to reify, but the requested value still has to land
+    await install(opts({ saveExact: true }), add('latest'))
+    t.match(read('vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(read('node_modules/.vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(JSON.parse(read('package.json')), {
+      dependencies: { abbrev: '2.0.0' },
+    })
+  })
+
+  await t.test('an exact version over a range is saved', async t => {
+    const { opts, add, read } = setup(t, { abbrev: '^2.0.0' })
+    const { install } = await import('../src/install.ts')
+    await install(opts(), add('^2.0.0'))
+    t.match(read('vlt-lock.json'), 'prod ^2.0.0')
+
+    // the rebuild rewrites the edge, not updatePackageJson: the lockfile
+    // still has to follow package.json out of the no-diff early return
+    await install(opts(), add('2.0.0'))
+    t.match(read('vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(read('node_modules/.vlt-lock.json'), 'prod 2.0.0 ')
+    t.match(JSON.parse(read('package.json')), {
+      dependencies: { abbrev: '2.0.0' },
+    })
+  })
+
+  await t.test('an unresolvable explicit add rejects', async t => {
+    const { opts, add, read } = setup(t)
+    const { install } = await import('../src/install.ts')
+    const nope = add('latest', 'nonexistent')
+    nope
+      .get(joinDepIDTuple(['file', '.']))!
+      .get('nonexistent')!.type = 'optional'
+    await t.rejects(
+      install(opts({ lockfileOnly: true }), nope),
+      /Could not resolve/,
+      'an optional explicit add is not swallowed',
+    )
+    t.match(JSON.parse(read('package.json')), {
+      dependencies: undefined,
+    })
+  })
+})
+
+// the reify fixture mock re-parses `String(spec)` without a catalog
+// config, so hand it the resolved subspec the real client uses
+const catalogPackageInfo = createMockPackageInfo({
+  manifest: (spec, options) =>
+    mockPackageInfoBase.manifest(
+      typeof spec === 'string' ? spec : spec.final,
+      options,
+    ),
+  extract: (spec, target, options) =>
+    mockPackageInfoBase.extract(
+      typeof spec === 'string' ? spec : spec.final,
+      target,
+      options,
+    ),
+  resolve: (spec, options) =>
+    mockPackageInfoBase.resolve(
+      typeof spec === 'string' ? spec : spec.final,
+      options,
+    ),
+})
+
+const catalogSetup = async (t: Test) => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      devDependencies: { 'ansi-regex': 'catalog:' },
+    }),
+  })
+  t.chdir(projectRoot)
+  // reify hands each removed store dir to a detached process, which
+  // races the fixture teardown on windows (EBUSY); keep the moved-aside
+  // dir instead and let tap sweep it with the rest of the testdir
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class extends RollbackRemove {
+        confirm() {}
+      },
+    },
+  })
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: catalogPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const lock = () =>
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    ) as {
+      options: { catalog?: Record<string, string> }
+      nodes: Record<string, unknown>
+    }
+  return { projectRoot, opts, lock, install }
+}
+
+t.test(
+  'a catalog value change re-resolves in one install',
+  async t => {
+    const { opts, lock, install } = await catalogSetup(t)
+
+    await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
+    t.strictSame(
+      lock().options.catalog,
+      { 'ansi-regex': '^5.0.1' },
+      'catalog value is stored',
+    )
+
+    await install(opts({ catalog: { 'ansi-regex': '^6.0.1' } }))
+    const after = lock()
+    t.strictSame(
+      after.options.catalog,
+      { 'ansi-regex': '^6.0.1' },
+      'new catalog value is stored',
+    )
+    const ids = Object.keys(after.nodes).join(' ')
+    t.match(ids, 'ansi-regex@6.0.1', 're-resolved in one install')
+    t.notMatch(ids, 'ansi-regex@5.0.1', 'old version is gone')
+
+    await t.resolves(
+      install(
+        opts({
+          catalog: { 'ansi-regex': '^6.0.1' },
+          frozenLockfile: true,
+        }),
+      ),
+      'frozen install passes right after',
+    )
+  },
+)
+
+t.test('an options-only change is written', async t => {
+  const { opts, lock, install } = await catalogSetup(t)
+
+  // run once so both lockfiles exist: reify writes regardless when
+  // they do not, which would hide the regression
+  await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
+
+  const catalog = { 'ansi-regex': '^5.0.1', abbrev: '^2.0.0' }
+  const { diff } = await install(opts({ catalog }))
+  t.equal(diff?.hasChanges(), false, 'nothing to reify')
+  t.strictSame(
+    lock().options.catalog,
+    catalog,
+    'the unused entry is persisted anyway',
+  )
+
+  await t.resolves(
+    install(opts({ catalog, frozenLockfile: true })),
+    'frozen install passes right after',
+  )
+})
+
+t.test('a project with modifiers stays in sync', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #abbrev': '2.0.0' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(opts())
+  t.equal(
+    graph.mainImporter.edgesOut.get('abbrev')?.spec.bareSpec,
+    '2.0.0',
+    'the modifier is applied',
+  )
+  const lock = JSON.parse(read('vlt-lock.json')) as {
+    options: { modifiers?: Record<string, string> }
+  }
+  t.strictSame(
+    lock.options.modifiers,
+    { ':root > #abbrev': '2.0.0' },
+    'modifiers are stored',
+  )
+
+  await t.resolves(
+    install(opts({ frozenLockfile: true })),
+    'the frozen check sees the modifiers',
+  )
+
+  // a plain install must not rewrite either lockfile: the edge already
+  // carries the override, so it is neither a stale spec nor a diff
+  const stamp = new Date(0)
+  for (const f of lockfiles) {
+    utimesSync(resolve(projectRoot, f), stamp, stamp)
+  }
+  await install(opts())
+  for (const f of lockfiles) {
+    t.equal(
+      statSync(resolve(projectRoot, f)).mtimeMs,
+      0,
+      `${f} was left alone`,
+    )
+  }
+})
+
+// a modifier that does not govern the root's own abbrev edge leaves the
+// frozen check owning it, so editing package.json alone must be caught
+const ungovernedFrozenCase = async (
+  t: Test,
+  modifiers: Record<string, string>,
+) => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '2.0.0' },
+    }),
+    'vlt.json': JSON.stringify({ modifiers }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const { install } = await import('../src/install.ts')
+  await install(opts())
+
+  const pj = resolve(projectRoot, 'package.json')
+  writeFileSync(
+    pj,
+    JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+    }),
+  )
+  await t.rejects(
+    install(opts({ frozenLockfile: true })),
+    /abbrev spec changed from "abbrev@2.0.0" to "abbrev@\^2.0.0"/,
+    'the frozen check sees the edited spec',
+  )
+}
+
+t.test('a modifier scoped deeper does not exempt the root edge', t =>
+  ungovernedFrozenCase(t, { ':root > #unused > #abbrev': '2.0.0' }),
+)
+
+t.test('a rejecting qualifier does not exempt the root edge', t =>
+  ungovernedFrozenCase(t, {
+    ':root > #abbrev:semver(^1.0.0)': '1.1.1',
+  }),
+)
+
+t.test('the frozen error names the changed option', async t => {
+  const { opts, install } = await catalogSetup(t)
+  await install(opts({ catalog: { 'ansi-regex': '^5.0.1' } }))
+
+  await t.rejects(
+    install(
+      opts({
+        catalog: { 'ansi-regex': '^6.0.1' },
+        frozenLockfile: true,
+      }),
+    ),
+    {
+      message:
+        'Lockfile is out of sync with package.json. Run "vlt install" to update.\n' +
+        '  Configuration options have changed:\n' +
+        '    catalog: ansi-regex "^5.0.1" -> "^6.0.1"',
+    },
+    'the only detail line is the catalog entry',
   )
 })

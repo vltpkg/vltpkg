@@ -602,6 +602,7 @@ export const load = (options: LoadOptions): Graph => {
     }
   }
 
+  graph.sortNodes()
   done()
 
   return graph

@@ -51,7 +51,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
         location: './node_modules/.vlt/~npm~missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
       },
-      Edge spec(pnpmdep@1) -prod-> to: Node {
+      Edge spec(pnpmdep@^1.0.0) -prod-> to: Node {
         id: '~npm~pnpmdep@1.0.0',
         location: './node_modules/.vlt/~npm~pnpmdep@1.0.0/node_modules/pnpmdep',
         resolved: 'https://registry.npmjs.org/pnpmdep/-/pnpmdep-1.0.0.tgz'

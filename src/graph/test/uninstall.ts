@@ -115,16 +115,18 @@ t.test('uninstall with lockfileOnly option', async t => {
 
   let reifyCalled = false
   let lockfileSaveCalled = false
+  let confirmed = 0
+  let rolledBack = false
+  const removedPaths: string[] = []
 
   const { uninstall } = await t.mockImport<
     typeof import('../src/uninstall.ts')
   >('../src/uninstall.ts', {
     '../src/ideal/build.ts': {
-      build: async () => ({
-        nodes: new Map(),
-        importers: [],
-        projectRoot: dir,
-      }),
+      build: async (opts: any) => {
+        await opts.remover.rm('parked')
+        return { nodes: new Map(), importers: [], projectRoot: dir }
+      },
     },
     '../src/reify/index.ts': {
       reify: async () => {
@@ -137,6 +139,19 @@ t.test('uninstall with lockfileOnly option', async t => {
         save: () => {
           lockfileSaveCalled = true
         },
+      },
+    },
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class MockRollbackRemove {
+        async rm(path: string) {
+          removedPaths.push(path)
+        }
+        confirm() {
+          confirmed++
+        }
+        async rollback() {
+          rolledBack = true
+        }
       },
     },
   })
@@ -160,6 +175,9 @@ t.test('uninstall with lockfileOnly option', async t => {
     undefined,
     'should return undefined for diff when lockfileOnly is true',
   )
+  t.strictSame(removedPaths, ['parked'], 'a directory was parked')
+  t.equal(confirmed, 1, 'the remover is confirmed before returning')
+  t.notOk(rolledBack, 'and not rolled back')
 })
 
 t.test(
