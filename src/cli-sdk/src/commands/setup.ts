@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { RegistryClient } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
+import { asError, isErrorWithCause, isObject } from '@vltpkg/types'
 import { createInterface } from 'node:readline/promises'
 import { configWriteTarget } from '../config/index.ts'
 import { registrySelectionFields } from '../config/merge-layers.ts'
@@ -26,6 +27,31 @@ export const accountRegistryURL = (
   name: string,
 ): string =>
   `${VLT_REGISTRY_BASE}/${encodeURIComponent(account)}/${name}/`
+
+/**
+ * The account registries live at `${VLT_REGISTRY_BASE}/<account>/<name>/`, so
+ * an account slug that doesn't exist is a 404 from the login endpoint. Say
+ * that in terms of the slug the user typed, rather than passing along the
+ * bare HTTP failure.
+ */
+const accountAuthError = (account: string, er: unknown): Error =>
+  (
+    isErrorWithCause(er) &&
+    isObject(er.cause) &&
+    er.cause.status === 404
+  ) ?
+    error(
+      [
+        `No vlt.io account or organization named "${account}".`,
+        '',
+        `Looked for it at ${accountRegistryURL(account, accountRegistries[0])}`,
+        '',
+        'Check the spelling of the slug, or sign up / create the',
+        `organization at ${VLT_SIGNUP_URL}, then run \`vlt setup\` again.`,
+      ].join('\n'),
+      { code: 'ECONFIG', cause: er },
+    )
+  : asError(er)
 
 /** Ensure a registry URL ends with a single trailing slash. */
 const normalizeRegistryURL = (url: string): string =>
@@ -177,11 +203,15 @@ export const command: CommandFn<SetupResult> = async conf => {
             ', ',
           )})...`,
         )
-        await rc.login(
-          accountRegistries.map(name =>
-            accountRegistryURL(account, name),
-          ),
-        )
+        try {
+          await rc.login(
+            accountRegistries.map(name =>
+              accountRegistryURL(account, name),
+            ),
+          )
+        } catch (er) {
+          throw accountAuthError(account, er)
+        }
       }
 
       // 5. offer to add further custom aliases

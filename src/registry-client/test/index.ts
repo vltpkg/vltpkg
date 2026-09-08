@@ -58,6 +58,7 @@ const otplease = async (
 let doneUrlRetry: boolean | string = false
 let doneUrlFail = false
 let doneUrlInvalid = false
+let loginFailStatus = 404
 
 const tokensActions: [string, string][] = []
 
@@ -122,6 +123,14 @@ const registry = createServer((req, res) => {
       res.setHeader('www-authenticate', 'otp')
       return res.end('{"needs":"otp"}')
     }
+  }
+
+  // a login against a registry path that does not exist, eg a vlt.io
+  // account slug that was mistyped
+  if (/^\/nope\/-\/v1\/login$/.test(url)) {
+    res.statusCode = loginFailStatus
+    res.setHeader('content-type', 'application/json')
+    return res.end(JSON.stringify({ error: 'not found' }))
   }
 
   if (/^\/-\/v1\/login$/.test(url)) {
@@ -711,6 +720,37 @@ t.test('client.login() with multiple registries', async t => {
     'no registries to log in against',
   )
 })
+
+t.test(
+  'client.login() against a registry that does not exist',
+  async t => {
+    dropConnection = false
+    const rc = t.context.rc as RegistryClient
+    await t.rejects(
+      rc.login(`${registryURL}/nope`),
+      {
+        message: 'Failed to perform web login: 404 Not Found',
+        cause: {
+          code: 'EREQUEST',
+          status: 404,
+          url: new URL(`${registryURL}/nope/-/v1/login`),
+        },
+      },
+      'reports the status the registry responded with',
+    )
+
+    // a status code with no standard name still reports the number
+    loginFailStatus = 599
+    t.teardown(() => {
+      loginFailStatus = 404
+    })
+    await t.rejects(
+      rc.login(`${registryURL}/nope`),
+      { message: 'Failed to perform web login: 599' },
+      'unknown status codes are reported bare',
+    )
+  },
+)
 
 t.test('client.logout()', async t => {
   dropConnection = false
