@@ -45,6 +45,10 @@ import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { collectHeaders, readBody } from './response.ts'
 import { oidc } from './oidc.ts'
 import type { OidcOptions } from './oidc.ts'
+
+// eslint-disable-next-line no-console
+const log = (msg: string) => console.error(msg)
+
 export {
   CacheEntry,
   clearRuntimeTokens,
@@ -425,9 +429,15 @@ export class RegistryClient {
         return result
       }),
       urlOpen(authUrl, { signal }).catch((er: unknown) => {
+        // an aborted spawn is not a failure, e.g: login completed
+        // before the browser process exited
         if (asError(er).name === 'AbortError') return
-        ac.abort()
-        throw er
+        // the opener may exist but still fail to launch a browser,
+        // e.g: xdg-open on a headless server. Keep polling doneUrl so
+        // the user can complete the login by opening the url manually.
+        log(
+          `Could not open a browser. Please open ${authUrl} manually.`,
+        )
       }),
     ])
     /* c8 ignore stop */
