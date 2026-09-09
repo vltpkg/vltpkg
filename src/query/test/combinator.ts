@@ -150,7 +150,14 @@ t.test('bad selector type', async t => {
 t.test('usnupported combinator', async t => {
   await t.rejects(
     testCombinator({ value: '+', type: 'combinator' }),
-    /Unsupported combinator: \+/,
+    {
+      message: 'Unsupported combinator: +',
+      cause: {
+        code: 'EQUERY',
+        found: '+',
+        validOptions: ['>', '~', ' '],
+      },
+    },
     'should throw an error',
   )
 })

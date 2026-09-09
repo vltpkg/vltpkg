@@ -1,5 +1,6 @@
 import { asAttributeNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
+import { queryError } from './error.ts'
 import { removeDanglingEdges } from './pseudo/helpers.ts'
 import type { NodeLike, JSONField, Manifest } from '@vltpkg/types'
 import type { ParserState } from './types.ts'
@@ -164,9 +165,11 @@ export const attribute = async (
       return state
     }
 
-    throw error(`Unsupported attribute operator: ${curr.operator}`, {
-      found: state.current,
-    })
+    throw queryError(
+      `Unsupported attribute operator: ${curr.operator}`,
+      state.current,
+      { validOptions: [...attributeSelectorsMap.keys()] },
+    )
   }
 
   const value = curr.value || ''

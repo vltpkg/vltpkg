@@ -1,5 +1,5 @@
 import { asCombinatorNode } from '@vltpkg/dss-parser'
-import { error } from '@vltpkg/error-cause'
+import { queryError } from './error.ts'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { ParserState, ParserFn } from './types.ts'
 
@@ -124,9 +124,11 @@ export const combinator = async (state: ParserState) => {
       return state
     }
 
-    throw error(`Unsupported combinator: ${state.current.value}`, {
-      found: state.current,
-    })
+    throw queryError(
+      `Unsupported combinator: ${state.current.value}`,
+      state.current,
+      { validOptions: [...combinatorSelectorsMap.keys()] },
+    )
   }
   return parserFn(state)
 }

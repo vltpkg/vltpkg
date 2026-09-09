@@ -253,6 +253,21 @@ const printCode = (
       return { file: true }
     }
 
+    case 'EQUERY': {
+      const { found, wanted, validOptions } = err.cause
+      stderr(`Query Error: ${err.message}`)
+      if (found) {
+        stderr(indent(`Found: ${format(found)}`))
+      }
+      if (wanted) {
+        stderr(indent(`Did you mean: ${format(wanted)}`))
+      }
+      if (validOptions) {
+        stderr(indent(`Valid Options: ${format(validOptions)}`))
+      }
+      return {}
+    }
+
     case 'ECONFIG': {
       const { found, wanted, validOptions } = err.cause
       stderr(`Config Error: ${err.message}`)

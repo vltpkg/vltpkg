@@ -398,8 +398,29 @@ t.test('bad selector type', async t => {
 t.test('unsupported pseudo', async t => {
   await t.rejects(
     testPseudo(':unsupportedpseudoclass'),
-    /Unsupported pseudo-class: :unsupportedpseudoclass/,
+    {
+      message: 'Unsupported pseudo-class: :unsupportedpseudoclass',
+      cause: { code: 'EQUERY', found: ':unsupportedpseudoclass' },
+    },
     'should throw an unsupported selector error',
+  )
+
+  await t.rejects(
+    testPseudo(':difff'),
+    { cause: { wanted: ':diff' } },
+    'should suggest the one pseudo-class a typo away',
+  )
+
+  await t.rejects(
+    testPseudo(':difff(main)'),
+    { cause: { found: ':difff(main)', wanted: ':diff' } },
+    'should suggest past the arguments',
+  )
+
+  await t.rejects(
+    testPseudo(':dif'),
+    { cause: { validOptions: [':diff', ':dev', ':dist', ':is'] } },
+    'should list every pseudo-class a typo away',
   )
 })
 
