@@ -100,6 +100,16 @@ const noRegistryError = (spec: Spec) =>
     { code: 'ECONFIG', spec },
   )
 
+/**
+ * A selector that can point at a different version tomorrow: a dist tag,
+ * or a range matching anything (`*`, empty string). Manifest results for
+ * these are not cached to disk, and packument requests for them force a
+ * revalidation of the registry client's cache entry.
+ *
+ * Takes a *final* spec (`spec.final`), same as `pickManifest` sees.
+ */
+const isMovingSelector = (f: Spec) => !!(f.distTag || f.range?.isAny)
+
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #projectRoot: string
@@ -113,8 +123,13 @@ export class PackageInfoClient {
   #cachePath: string
   // In-flight coalescing key is `${registry}${name}` — no representation
   // component. Safe only because every caller requests the same full
-  // packument (see #fetchPackument).
-  #packumentPromises = new Map<string, Promise<Packument>>()
+  // packument (see #fetchPackument). The one thing that does vary per
+  // caller is forceRevalidate, so record it and let a moving selector
+  // reuse a forced promise but never a non-forced one (see packument()).
+  #packumentPromises = new Map<
+    string,
+    { promise: Promise<Packument>; forced: boolean }
+  >()
   // unique temp file names for atomic manifest cache writes
   #manifestWriteRandom = randomBytes(6).toString('hex')
   #manifestWriteCount = 0
@@ -505,11 +520,9 @@ export class PackageInfoClient {
     if (options.before) {
       return
     }
-    // if the final resolved spec is either a dist tag or something that
-    // matches any range (such as a semver range of `*` or empty string)
-    // then we skip caching
+    // a moving selector's result is variable, so don't cache it
     const f = spec.final
-    if (f.distTag || f.range?.isAny) {
+    if (isMovingSelector(f)) {
       return
     }
     const key = this.#manifestCacheKey(f, options)
@@ -942,18 +955,30 @@ export class PackageInfoClient {
         if (!registry) throw noRegistryError(spec)
         // Coalescing key has no representation component (see #fetchPackument).
         const packumentKey = `${registry}${name}`
+        const forced = isMovingSelector(f)
         const inflight = this.#packumentPromises.get(packumentKey)
-        if (inflight) return inflight
+        // a moving selector must not ride along on a non-forced request:
+        // that one can settle to a fresh-but-stale cache hit, which is
+        // exactly what forceRevalidate exists to avoid. the other
+        // direction is fine -- a forced result is never staler.
+        // costs at most one extra concurrent GET for the same packument
+        // when both shapes are asked for at once.
+        if (inflight && (!forced || inflight.forced))
+          return inflight.promise
         const pakuURL = new URL(name, registry)
         const promise = this.#fetchPackument(spec, options, pakuURL)
-        this.#packumentPromises.set(packumentKey, promise)
-        // Clean up once settled so we don't leak memory.
+        const record = { promise, forced }
+        this.#packumentPromises.set(packumentKey, record)
+        // Clean up once settled so we don't leak memory, unless a forced
+        // request has since taken the slot over.
         // Use .then/.catch instead of .finally to avoid creating
         // an unhandled rejection from the derived promise.
-        promise.then(
-          () => this.#packumentPromises.delete(packumentKey),
-          () => this.#packumentPromises.delete(packumentKey),
-        )
+        const clear = () => {
+          if (this.#packumentPromises.get(packumentKey) === record) {
+            this.#packumentPromises.delete(packumentKey)
+          }
+        }
+        promise.then(clear, clear)
         return promise
       }
     }
@@ -990,14 +1015,17 @@ export class PackageInfoClient {
     // To revisit: put the requested representation on both the disk-cache
     // key and the in-flight coalescing key, and have the SWR child
     // (cache-revalidate / revalidate) re-request the same representation.
-    const f = spec.final
-    const movingSelector = f.distTag || f.range?.isAny
     const response = await (
       await this.getRegistryClient()
     ).request(pakuURL, {
       headers: { accept: 'application/json' },
       ...(useCache === false ? { useCache } : {}),
-      ...(movingSelector ? { forceRevalidate: true } : {}),
+      // costs a conditional GET per moving selector on an otherwise warm
+      // cache, install included. 304s are cheap but not free; the
+      // alternative is serving a dist tag that moved (#1656).
+      ...(isMovingSelector(spec.final) ?
+        { forceRevalidate: true }
+      : {}),
     })
     if (response.statusCode !== 200) {
       throw this.#resolveError(

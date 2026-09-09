@@ -24,9 +24,17 @@ export const vlxInstall = async (
 ): Promise<VlxInfo> => {
   const pkgSpec = inferName(spec, options)
 
-  // We always use the cache as much as possible, to prevent unnecessarily
-  // waiting to run a command while installing something. The one we used
-  // last time is almost certainly fine.
+  // Use the cache as much as possible, to prevent unnecessarily waiting
+  // to run a command while installing something. The one we used last
+  // time is almost certainly fine.
+  //
+  // Exception: the root spec when it's a dist-tag or bare name.
+  // package-info forces a revalidation for those (#1656), so `vlx foo`
+  // pays a conditional GET even when already installed -- `resolved` is
+  // part of the install dir hash, so it can't short-circuit any earlier.
+  // A forced revalidation still falls back to the cached entry if the
+  // registry can't be reached, and Infinity here keeps that fallback
+  // open forever, so offline `vlx` keeps working off the last answer.
   options = {
     ...options,
     ['stale-while-revalidate-factor']: Infinity,

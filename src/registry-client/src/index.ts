@@ -627,6 +627,15 @@ export class RegistryClient {
       return entry
     }
 
+    // what the two early returns below would have served had
+    // forceRevalidate not skipped them. read once: staleWhileRevalidate
+    // memoizes a deadline, not an answer, so an entry can expire during
+    // a slow failure and the fallback would silently miss.
+    const forcedFallback =
+      forceRevalidate && entry?.staleWhileRevalidate ?
+        entry
+      : undefined
+
     if (
       !forceRevalidate &&
       staleWhileRevalidate &&
@@ -689,6 +698,19 @@ export class RegistryClient {
       )
       /* c8 ignore start */
     } catch (er) {
+      // a forced revalidation that can't reach the registry must be no
+      // worse than the entry it skipped past. also covers 5xx/429, which
+      // land here once RetryAgent gives up. an abort is the caller's own
+      // doing, so it still rejects.
+      if (
+        forcedFallback &&
+        !(signal as AbortSignal | null)?.aborted
+      ) {
+        // 'stale', not 'cache': a 'start' was already logged, and unlike
+        // the swr path above nothing revalidates in the background.
+        logRequest(url, 'stale', { method })
+        return forcedFallback
+      }
       // Rethrow so we get a better stack trace
       throw error('Request failed', {
         code: 'EREQUEST',
@@ -723,7 +745,17 @@ export class RegistryClient {
     if (result.isGzip && !trustIntegrity) {
       result.checkIntegrity({ url })
     }
-    if (useCache) {
+    // a forced revalidation must never replace a cached entry with an
+    // error response -- the flat 200-only rule revalidate-entry.ts has.
+    // keyed on entry existing at all, not on validity: staleWhileRevalidate
+    // is true forever for an entry with no date header, which would make
+    // one permanently unreplaceable.
+    // safe on the 304 path: handleCacheHitResponse returns the cached
+    // entry, whose statusCode is the original 200, so the date refresh
+    // still gets written back.
+    const clobbersCachedEntry =
+      forceRevalidate && !!entry && result.statusCode !== 200
+    if (useCache && !clobbersCachedEntry) {
       // Get the encoded buffer from the cache entry
       const buffer = result.encode()
       this.cache.set(
