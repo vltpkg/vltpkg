@@ -3,6 +3,7 @@ import { isAbsolute, relative, resolve, sep } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { Pax } from 'tar'
+import type { HeaderData } from 'tar'
 import { gzipSync } from 'node:zlib'
 import {
   checkFs,
@@ -23,27 +24,33 @@ const gex = new Pax(
   },
   true,
 ).encode()
-const ex = new Pax({
+const paxPath = new Pax({
   path: 'package/some/empty/dir',
   // this is actually ignored
   mode: 0o666,
 }).encode()
 const longPath = 'package/asdfasdfasdfasdf'
-// TODO: these fixtures will need to be rewritten each on their own
-// makeTar call, since the `tarDir` is cached in between file runs,
-// it may be masking issues.
-const tarball = makeTar([
+const absolutePath = resolve('ignore/absolute/paths')
+const pjEntry: (string | HeaderData)[] = [
   { path: 'package/package.json', size: pj.length },
   pj,
+]
 
-  { path: resolve('ignore/absolute/paths'), size: 1 },
+// a mix of everything, only used where the individual entries do not
+// matter: writer parity and the failure/cleanup paths. `tarDir` is
+// resolved once per archive, so every behavior assertion builds its own
+// archive below rather than sharing this one.
+const tarball = makeTar([
+  ...pjEntry,
+
+  { path: absolutePath, size: 1 },
   'z',
 
   // just here for coverage, doesn't actually do anything relevant
   gex,
 
   // this overrides the path
-  ex,
+  paxPath,
   { path: 'package/some/e', type: 'Directory' },
 
   Buffer.from('not a valid tar header, ignore and skip this'),
@@ -110,63 +117,179 @@ const makeFilesTar = (files: Record<string, string>) => {
 for (const [writer, get] of writers) {
   const unpack = get(real)
   t.test(writer, t => {
-    t.test('unpack into a dir', t => {
-      const check = async (t: Test) => {
-        t.throws(() => lstatSync(resolve('ignore/absolute/paths')))
-        const d = t.testdirName
+    // one archive per behavior: `tarDir` is resolved from the first
+    // entry of an archive, so a shared fixture would let that single
+    // resolution decide every assertion.
+    t.test('unpack a file into a dir', t => {
+      const tar = makeTar([...pjEntry])
+      const check = (t: Test, d: string) => {
         t.equal(lstatSync(d + '/package.json').isFile(), true)
-        const f = lstatSync(d + '/dir/some-file')
-        t.equal(f.isFile(), true)
-        t.not(f.mtime.toISOString(), '2024-01-01T00:00:00.000Z')
-        t.not(f.mode & 0o777, 0o123)
-        t.throws(() => lstatSync(d + '/slinky'))
-        t.throws(() => lstatSync(d + '/../dots'))
-        t.throws(() => lstatSync(d + '/ignoreme'))
-        t.throws(() => lstatSync(d + '/a'))
-        t.throws(() => lstatSync(d + '/directory'))
-        t.throws(() => lstatSync(d + '/../outside/directory'))
-        t.equal(readFileSync(d + '/asdfasdfasdfasdf', 'utf8'), 'a')
-
-        await t.rejects(
-          () => unpack(tarball.subarray(0, tarball.length - 1024), d),
-          {
-            message:
-              'Invalid tarball: not terminated by 1024 null bytes',
-          },
-        )
-        await t.rejects(() => unpack(Buffer.alloc(512), d), {
-          message:
-            'Invalid tarball: not terminated by 1024 null bytes',
-        })
-        await t.rejects(() => unpack(Buffer.alloc(5), d), {
-          message: 'Invalid tarball: length not divisible by 512',
-        })
-        // got path overridden with pax header
-        t.throws(() => lstatSync(d + '/some/e'))
-        const dir = lstatSync(d + '/some/empty/dir')
-        t.equal(dir.isDirectory(), true)
-        if (process.platform !== 'win32') {
-          t.equal(dir.mode & 0o700, 0o700, 'dir is mode 0o7xx')
-        }
-        t.end()
+        t.equal(readFileSync(d + '/package.json', 'utf8'), pj)
       }
 
       t.test('buffer', async t => {
-        await unpack(tarball, t.testdir())
-        await check(t)
+        const d = t.testdir()
+        await unpack(tar, d)
+        check(t, d)
       })
 
       t.test('buffer, folder does not exist yet', async t => {
-        await unpack(tarball, t.testdirName)
-        await check(t)
+        const d = t.testdirName
+        await unpack(tar, d)
+        check(t, d)
       })
 
       t.test('gzipped', async t => {
-        await unpack(gzipped, t.testdir())
-        await check(t)
+        const d = t.testdir()
+        await unpack(gzipSync(tar), d)
+        check(t, d)
       })
 
       t.end()
+    })
+
+    t.test('ignores mode, mtime and uid', async t => {
+      const tar = makeTar([
+        {
+          path: 'package/dir/some-file',
+          mode: 0o123,
+          uid: 1234,
+          mtime: new Date('2024-01-01'),
+          size: 1,
+        },
+        'x',
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      const f = lstatSync(d + '/dir/some-file')
+      t.equal(f.isFile(), true)
+      t.not(f.mtime.toISOString(), '2024-01-01T00:00:00.000Z')
+      t.not(f.mode & 0o777, 0o123)
+    })
+
+    t.test('an absolute path cannot become the tarDir', async t => {
+      const tar = makeTar([
+        { path: absolutePath, size: 1 },
+        'z',
+        ...pjEntry,
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.throws(() => lstatSync(absolutePath))
+      t.equal(readFileSync(d + '/package.json', 'utf8'), pj)
+    })
+
+    t.test('ignores absolute paths outside the tarDir', async t => {
+      const tar = makeTar([
+        ...pjEntry,
+        { path: absolutePath, size: 1 },
+        'z',
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.throws(() => lstatSync(absolutePath))
+      t.strictSame(readdirSync(d), ['package.json'])
+    })
+
+    t.test('ignores entries outside the tarDir', async t => {
+      const tar = makeTar([
+        ...pjEntry,
+        { path: 'outside/directory', type: 'Directory' },
+        { path: 'outside/ignoreme', size: 1 },
+        'x',
+        { path: '../dots', size: 1 },
+        'x',
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.throws(() => lstatSync(d + '/../dots'))
+      t.throws(() => lstatSync(d + '/ignoreme'))
+      t.throws(() => lstatSync(d + '/directory'))
+      t.throws(() => lstatSync(d + '/../outside/directory'))
+      t.strictSame(readdirSync(d), ['package.json'])
+    })
+
+    t.test('filters out symbolic links', async t => {
+      const tar = makeTar([
+        ...pjEntry,
+        {
+          path: 'package/slinky',
+          linkpath: 'package/target',
+          type: 'SymbolicLink',
+        },
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.throws(() => lstatSync(d + '/slinky'))
+      t.strictSame(readdirSync(d), ['package.json'])
+    })
+
+    t.test('skips invalid headers', async t => {
+      const tar = makeTar([
+        Buffer.from('not a valid tar header, ignore and skip this'),
+        ...pjEntry,
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.equal(readFileSync(d + '/package.json', 'utf8'), pj)
+    })
+
+    t.test('ignores global extended headers', async t => {
+      const tar = makeTar([gex, ...pjEntry])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.equal(readFileSync(d + '/package.json', 'utf8'), pj)
+    })
+
+    t.test('a pax header overrides the entry path', async t => {
+      const tar = makeTar([
+        paxPath,
+        { path: 'package/some/e', type: 'Directory' },
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.throws(() => lstatSync(d + '/some/e'))
+      const dir = lstatSync(d + '/some/empty/dir')
+      t.equal(dir.isDirectory(), true)
+      if (process.platform !== 'win32') {
+        // the mode in the pax header is ignored
+        t.equal(dir.mode & 0o700, 0o700, 'dir is mode 0o7xx')
+      }
+    })
+
+    t.test('a long path header overrides the entry path', async t => {
+      const tar = makeTar([
+        {
+          path: '././@LongPath',
+          type: 'NextFileHasLongPath',
+          size: longPath.length,
+        },
+        longPath,
+        { path: 'package/a', size: 1 },
+        'a',
+      ])
+      const d = t.testdirName
+      await unpack(tar, d)
+      t.throws(() => lstatSync(d + '/a'))
+      t.equal(readFileSync(d + '/asdfasdfasdfasdf', 'utf8'), 'a')
+    })
+
+    t.test('rejects malformed tarballs', async t => {
+      const tar = makeTar([...pjEntry])
+      const d = t.testdir()
+      await t.rejects(
+        () => unpack(tar.subarray(0, tar.length - 1024), d),
+        {
+          message:
+            'Invalid tarball: not terminated by 1024 null bytes',
+        },
+      )
+      await t.rejects(() => unpack(Buffer.alloc(512), d), {
+        message: 'Invalid tarball: not terminated by 1024 null bytes',
+      })
+      await t.rejects(() => unpack(Buffer.alloc(5), d), {
+        message: 'Invalid tarball: length not divisible by 512',
+      })
     })
 
     t.test('validate unpack path sanitization', async t => {
@@ -240,25 +363,6 @@ for (const [writer, get] of writers) {
         },
       )
 
-      t.test(
-        'blocks Windows drive-relative path escapes',
-        async t => {
-          const driveRelativePaths = [
-            'c:../../../windows/system32/evil.dll',
-            'd:..\\..\\important\\file.txt',
-            'c:foo/../../../escape.txt',
-          ]
-          for (const path of driveRelativePaths) {
-            const maliciousTar = makeTar([{ path, size: 4 }, 'evil'])
-            const dir = t.testdir()
-            await t.rejects(
-              unpack(maliciousTar, dir),
-              'throws an error when no file is extracted',
-            )
-          }
-        },
-      )
-
       // Test: Chained Windows roots should be blocked
       t.test('strips chained Windows roots', async t => {
         const maliciousTar = makeTar([
@@ -284,16 +388,19 @@ for (const [writer, get] of writers) {
         )
       })
 
-      t.test('blocks directory entries with traversal', async t => {
-        const maliciousTar = makeTar([
-          { path: 'package/../../escape-dir', type: 'Directory' },
-        ])
-        const dir = t.testdir()
-        await t.rejects(
-          unpack(maliciousTar, dir),
-          'throws an error when no file is extracted',
-        )
-      })
+      t.test(
+        'blocks directory entries escaping the tarDir',
+        async t => {
+          const maliciousTar = makeTar([
+            { path: 'package/../../escape-dir', type: 'Directory' },
+          ])
+          const dir = t.testdir()
+          await t.rejects(
+            unpack(maliciousTar, dir),
+            'throws an error when no file is extracted',
+          )
+        },
+      )
 
       t.end()
     })
