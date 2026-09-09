@@ -16,6 +16,15 @@ exports[`test/print-err.ts > TAP > snapshots > ECONFIG > no code > output 1`] = 
 Config Error: Invalid config keys
 `
 
+exports[`test/print-err.ts > TAP > snapshots > ENEEDAUTH > bare > output 1`] = `
+Authentication Error: Not logged in
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ENEEDAUTH > with url > output 1`] = `
+Authentication Error: Failed to publish package: 403 Forbidden — You do not have permission to publish "findmy"
+  URL: https://registry.npmjs.org/findmy
+`
+
 exports[`test/print-err.ts > TAP > snapshots > EQUERY > bare > output 1`] = `
 Query Error: Unsupported selector
 `
