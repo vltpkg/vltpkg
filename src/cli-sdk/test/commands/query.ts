@@ -164,7 +164,10 @@ t.test('query', async t => {
   sharedOptions.packageJson.read = () => graph.mainImporter.manifest!
   const options = {
     ...sharedOptions,
-    projectRoot: t.testdirName,
+    // the query command requires a vlt install
+    projectRoot: t.testdir({
+      node_modules: { '.vlt-lock.json': '{}' },
+    }),
   }
 
   t.matchSnapshot(
@@ -314,6 +317,8 @@ t.test('query', async t => {
       version: '1.0.0',
     }
     const dir = t.testdir({
+      // the query command requires a vlt install
+      node_modules: { '.vlt-lock.json': '{}' },
       'package.json': JSON.stringify(mainManifest),
       'vlt.json': JSON.stringify({
         workspaces: { packages: ['./packages/*'] },
@@ -444,6 +449,8 @@ t.test('query', async t => {
 
   await t.test('running from homedir', async t => {
     const dir = t.testdir({
+      // the query command requires a vlt install
+      node_modules: { '.vlt-lock.json': '{}' },
       projects: {
         'my-project': {
           node_modules: {
@@ -559,6 +566,8 @@ t.test('query', async t => {
         },
       },
       node_modules: {
+        // the query command requires a vlt install
+        '.vlt-lock.json': '{}',
         a: t.fixture('symlink', '../packages/a'),
         b: t.fixture('symlink', '../packages/a'),
       },
@@ -601,6 +610,8 @@ t.test('query', async t => {
       version: '1.0.0',
     }
     const dir = t.testdir({
+      // the query command requires a vlt install
+      node_modules: { '.vlt-lock.json': '{}' },
       'package.json': JSON.stringify(mainManifest),
       'vlt.json': JSON.stringify({
         workspaces: { packages: ['./packages/*'] },
@@ -667,6 +678,8 @@ t.test('query', async t => {
         },
       },
       node_modules: {
+        // the query command requires a vlt install
+        '.vlt-lock.json': '{}',
         '.vlt': {
           [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
             node_modules: {
@@ -915,6 +928,8 @@ t.test('query', async t => {
         version: '1.0.0',
       }
       const dir = t.testdir({
+        // the query command requires a vlt install
+        node_modules: { '.vlt-lock.json': '{}' },
         'package.json': JSON.stringify(mainManifest),
         'vlt.json': JSON.stringify({
           workspaces: { packages: ['./packages/*'] },
@@ -1096,6 +1111,88 @@ t.test('query', async t => {
 
         t.equal(logged.length, 0, 'should not log empty message')
       },
+    )
+  })
+})
+
+t.test('graph source validation', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const fixture = {
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({}),
+  }
+
+  const run = async (
+    t: Test,
+    dir: string,
+    values: Partial<LoadedConfig['values']> & { target?: string },
+  ) => {
+    const Command = await mockQuery(t)
+    const packageJson = new PackageJson()
+    packageJson.read = () => mainManifest
+    return Command.command({
+      positionals: [],
+      values: { view: 'count', ...values },
+      options: { ...sharedOptions, packageJson, projectRoot: dir },
+      get: (key: string) => (values as any)[key],
+    } as unknown as LoadedConfig)
+  }
+
+  await t.test('no hidden lockfile', async t => {
+    const dir = t.testdir({ ...fixture, node_modules: { foo: {} } })
+    await t.rejects(
+      run(t, dir, { view: 'count' }),
+      {
+        message:
+          'Not a vlt project: run `vlt install` to build the graph that `vlt query` reads',
+        cause: {
+          code: 'EQUERY',
+          path: join(dir, 'node_modules', '.vlt-lock.json'),
+        },
+      },
+      'should refuse to query a node_modules vlt did not install',
+    )
+  })
+
+  await t.test('no node_modules at all', async t => {
+    const dir = t.testdir(fixture)
+    await t.rejects(
+      run(t, dir, { view: 'count' }),
+      { cause: { code: 'EQUERY' } },
+      'should refuse to query a project that was never installed',
+    )
+  })
+
+  await t.test('hidden lockfile present', async t => {
+    const dir = t.testdir({
+      ...fixture,
+      node_modules: { '.vlt-lock.json': '{}' },
+    })
+    await t.resolves(run(t, dir, { view: 'count' }))
+  })
+
+  await t.test('host context queries are exempt', async t => {
+    const dir = t.testdir(fixture)
+    for (const values of [
+      { target: ':host(local) *' },
+      { scope: ':host(local) *' },
+    ]) {
+      await t.resolves(
+        run(t, dir, values as Partial<LoadedConfig['values']>),
+        `should not require an install for ${JSON.stringify(values)}`,
+      )
+    }
+    const Command = await mockQuery(t)
+    const packageJson = new PackageJson()
+    packageJson.read = () => mainManifest
+    await t.resolves(
+      Command.command({
+        positionals: [':host(local) *'],
+        values: { view: 'count' },
+        options: { ...sharedOptions, packageJson, projectRoot: dir },
+        get: () => undefined,
+      } as unknown as LoadedConfig),
+      'should not require an install for a positional host query',
     )
   })
 })

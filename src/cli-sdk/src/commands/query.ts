@@ -9,6 +9,8 @@ import {
 import { Query } from '@vltpkg/query'
 import { stdout } from '../output.ts'
 import { error } from '@vltpkg/error-cause'
+import { lstatSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { createDiffFilesProvider } from '../query-diff-files.ts'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
@@ -140,6 +142,28 @@ export const views = {
   png: MermaidImageView,
 } as const satisfies Views<QueryResult>
 
+/**
+ * `vlt query` reads the installed graph from
+ * `node_modules/.vlt-lock.json`. Without it, `actual.load` falls back to
+ * walking `node_modules`, which finds nothing in a project installed by
+ * another client and reports every dependency as missing - an empty
+ * answer that looks like a real one.
+ */
+const assertVltProject = (projectRoot: string) => {
+  const hiddenLockfile = resolve(
+    projectRoot,
+    'node_modules/.vlt-lock.json',
+  )
+  if (
+    !lstatSync(hiddenLockfile, { throwIfNoEntry: false })?.isFile()
+  ) {
+    throw error(
+      'Not a vlt project: run `vlt install` to build the graph that `vlt query` reads',
+      { code: 'EQUERY', path: hiddenLockfile },
+    )
+  }
+}
+
 export const command: CommandFn<QueryResult> = async conf => {
   const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
@@ -149,8 +173,26 @@ export const command: CommandFn<QueryResult> = async conf => {
   let graph: Graph | undefined
   let securityArchive: SecurityArchive | undefined
 
+  // retrieve default values and set up host contexts
+  const defaultProjectQueryString = '*'
+  const defaultLocalScopeQueryString = ':host(local) *'
+  const positionalQueryString = conf.positionals[0]
+  const targetQueryString = conf.get('target')
+  const scopeQueryString = conf.get('scope')
+
+  // `:host()` swaps the graph for one loaded from somewhere else, so
+  // those queries do not need this project to be installed.
+  const usesHostContext = [
+    positionalQueryString,
+    targetQueryString,
+    scopeQueryString,
+  ].some(q => q?.includes(':host('))
+
   // optionally load the cwd graph if we found a package.json file
   if (mainManifest) {
+    if (!usesHostContext) {
+      assertVltProject(conf.options.projectRoot)
+    }
     graph = actual.load({
       ...conf.options,
       mainManifest,
@@ -162,13 +204,6 @@ export const command: CommandFn<QueryResult> = async conf => {
       nodes: [...graph.nodes.values()],
     })
   }
-
-  // retrieve default values and set up host contexts
-  const defaultProjectQueryString = '*'
-  const defaultLocalScopeQueryString = ':host(local) *'
-  const positionalQueryString = conf.positionals[0]
-  const targetQueryString = conf.get('target')
-  const scopeQueryString = conf.get('scope')
   const queryString = targetQueryString || positionalQueryString
   const hostContexts = await createHostContextsMap(conf)
   const diffFiles = createDiffFilesProvider(conf.options.projectRoot)

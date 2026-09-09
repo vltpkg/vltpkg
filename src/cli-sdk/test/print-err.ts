@@ -218,6 +218,14 @@ t.test('snapshots', async t => {
     )
     await testErr(
       t,
+      'path',
+      error('Not a vlt project', {
+        code: 'EQUERY',
+        path: '/some/project/node_modules/.vlt-lock.json',
+      }),
+    )
+    await testErr(
+      t,
       'bare',
       error('Unsupported selector', { code: 'EQUERY' }),
     )

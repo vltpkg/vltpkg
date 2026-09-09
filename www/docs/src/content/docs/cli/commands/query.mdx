@@ -18,6 +18,12 @@ $ vlt query <query> --view=[human | json | mermaid | svg | png | count]
 
 List installed dependencies matching the provided query.
 
+The graph being queried is the one vlt installed, read from
+`node_modules/.vlt-lock.json`. Run `vlt install` first: in a project
+installed by another client there is no such graph to query. `:host()`
+queries are the exception, since they load their graph from somewhere
+else.
+
 ## Examples
 
 Query packages with the name "foo"

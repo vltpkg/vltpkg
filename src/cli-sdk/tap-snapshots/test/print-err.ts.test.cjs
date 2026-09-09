@@ -29,6 +29,11 @@ exports[`test/print-err.ts > TAP > snapshots > EQUERY > bare > output 1`] = `
 Query Error: Unsupported selector
 `
 
+exports[`test/print-err.ts > TAP > snapshots > EQUERY > path > output 1`] = `
+Query Error: Not a vlt project
+  Path: /some/project/node_modules/.vlt-lock.json
+`
+
 exports[`test/print-err.ts > TAP > snapshots > EQUERY > suggestion > output 1`] = `
 Query Error: Unsupported selector
   Found: .dev
