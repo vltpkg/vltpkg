@@ -1,17 +1,11 @@
 import t from 'tap'
-import { isResponseOK } from '../src/worker.ts'
 import { Pool } from '../src/pool.ts'
 
-import { lstatSync } from 'node:fs'
-import { availableParallelism } from 'node:os'
+import { lstatSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
-t.equal(p.jobs, 8 * (Math.max(availableParallelism(), 2) - 1))
-
-// make it smaller so we can cover the contention cases
-p.jobs = 2
 
 const makePkg = (name: string, version: string): Buffer => {
   const pj = { name, version }
@@ -88,7 +82,6 @@ t.test('unpack all the things!', async t => {
       true,
     )
   }
-  t.equal(p.pending.size, 0, 'pending must be empty after unpack')
 })
 
 t.test('unpack all the things, but flattened', async t => {
@@ -109,13 +102,46 @@ t.test('unpack all the things, but flattened', async t => {
       true,
     )
   }
-  t.equal(p.pending.size, 0, 'pending must be empty after unpack')
   t.end()
 })
 
-t.test('response ok/error checking', t => {
-  t.equal(isResponseOK({ id: 1, ok: true }), true)
-  t.equal(isResponseOK({ id: 1, error: 'x' }), false)
-  t.equal(isResponseOK({ ok: true }), false, 'id required')
-  t.end()
+t.test('unpackFile', async t => {
+  const head = Buffer.from('cache head bytes')
+  const tarData = makePkg('file-pkg', '1.0.0')
+  const d = t.testdir()
+  const file = resolve(d, 'pkg.tgz')
+  writeFileSync(file, Buffer.concat([head, tarData]))
+  await p.unpackFile(file, resolve(d, 'out'), head.length)
+  t.match(
+    JSON.parse(readFileSync(resolve(d, 'out/package.json'), 'utf8')),
+    { name: 'file-pkg' },
+  )
+})
+
+t.test('VLT_TAR_SYNC=0 falls back to the async writer', async t => {
+  const prev = process.env.VLT_TAR_SYNC
+  process.env.VLT_TAR_SYNC = '0'
+  t.teardown(() => {
+    if (prev === undefined) delete process.env.VLT_TAR_SYNC
+    else process.env.VLT_TAR_SYNC = prev
+  })
+  const { Pool } =
+    await t.mockImport<typeof import('../src/pool.ts')>(
+      '../src/pool.ts',
+    )
+  const p = new Pool()
+  const tarData = makePkg('async-pkg', '1.0.0')
+  const d = t.testdir()
+  const file = resolve(d, 'pkg.tgz')
+  writeFileSync(file, tarData)
+  await p.unpack(tarData, resolve(d, 'buf'))
+  await p.unpackFile(file, resolve(d, 'file'))
+  for (const out of ['buf', 'file']) {
+    t.match(
+      JSON.parse(
+        readFileSync(resolve(d, out, 'package.json'), 'utf8'),
+      ),
+      { name: 'async-pkg' },
+    )
+  }
 })

@@ -7,6 +7,7 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { STATUS_CODES } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
@@ -70,6 +71,14 @@ export {
   type Token,
   type TokenResponse,
   type WebAuthChallenge,
+}
+
+/** A response body read straight out of the cache file. */
+export type CachedBody = {
+  /** the cache file it came from */
+  path: string
+  /** the body, a view into the file's bytes */
+  body: Buffer
 }
 
 export type CacheableMethod = 'GET' | 'HEAD'
@@ -502,6 +511,77 @@ export class RegistryClient {
     throw error('Invalid response from web login endpoint', {
       response,
     })
+  }
+
+  /**
+   * Read a valid cached non-JSON body straight off disk, bypassing the
+   * in-memory cache LRU so that a tarball is never held in it.
+   *
+   * One read: the head is decoded from the same bytes the body comes
+   * from, so `cache-unzip` rewriting the head cannot land between the
+   * two and hand back a body at a stale offset.
+   *
+   * Does not log a cache hit -- the caller may still reject the body
+   * and fall back to {@link request}, which logs its own.
+   *
+   * Returns undefined on anything unexpected; callers fall back to
+   * {@link request}.
+   */
+  cachedBody(
+    url: URL | string,
+    options: {
+      integrity?: Integrity
+      method?: CacheableMethod
+    } = {},
+  ): CachedBody | undefined {
+    const { integrity, method = 'GET' } = options
+    try {
+      // normalize like request() does, or a url that is not already in
+      // canonical form (an explicit :443, say) keys a different file
+      // and the fast path silently never hits.
+      const key = cacheKey(
+        method,
+        typeof url === 'string' ? new URL(url) : url,
+      )
+
+      // an in-memory value can be newer than disk, since cache.set
+      // writes to disk asynchronously. let request() serve those.
+      // (an in-flight fetch() peeks as undefined, so the probe reads
+      // disk underneath it -- benign, tarball urls are immutable.)
+      if (this.cache.peek(key)) return undefined
+
+      // same order as the cache's own disk read
+      const paths = new Set<string>()
+      try {
+        const i = this.cache.integrityPath(integrity)
+        if (i) paths.add(i)
+      } catch {}
+      paths.add(this.cache.path(key))
+
+      for (const path of paths) {
+        let buf: Buffer
+        try {
+          buf = readFileSync(path)
+        } catch {
+          continue
+        }
+        const entry = CacheEntry.decode(buf)
+        // statusCode must stay first: an unparseable buffer decodes to
+        // the module-level emptyCacheEntry singleton, and valid/isJSON
+        // memoize onto `this`, so reading them off it would poison the
+        // singleton process-wide.
+        if (
+          entry.statusCode !== 200 ||
+          !entry.valid ||
+          entry.isJSON
+        ) {
+          continue
+        }
+        return { path, body: entry.buffer() }
+      }
+      /* c8 ignore next */
+    } catch {}
+    return undefined
   }
 
   async request(

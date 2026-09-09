@@ -10,7 +10,6 @@
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/types": "workspace:*",
     "rimraf": "catalog:",
     "tar": "catalog:"
   },
@@ -64,11 +63,6 @@
     "./unpack": {
       "import": {
         "default": "./src/unpack.ts"
-      }
-    },
-    "./unpack-request": {
-      "import": {
-        "default": "./src/unpack-request.ts"
       }
     }
   },

@@ -1,6 +1,7 @@
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
+import { logRequest } from '@vltpkg/output'
 import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
@@ -33,8 +34,11 @@ import {
   resolve as pathResolve,
   relative,
 } from 'node:path'
+import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
 import { rename } from './rename.ts'
+
+const debug = debuglog('vlt')
 
 const xdg = new XDG('vlt')
 export const delimiter = '~'
@@ -230,6 +234,34 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
+        // if the tarball is already on disk, unpack it straight from
+        // the cache file: it never has to be held in the client's
+        // in-memory cache. anything unexpected falls through to the
+        // fetch path, which throws its own error if the body is
+        // genuinely bad.
+        const cached = (await this.getRegistryClient()).cachedBody(
+          r.resolved,
+          { integrity: r.integrity },
+        )
+        if (cached) {
+          try {
+            await (
+              await this.getTarPool()
+            ).unpack(cached.body, target)
+            logRequest(r.resolved, 'cache')
+            return r
+          } catch (er) {
+            // a systematically failing fast path (every entry still
+            // gzipped, EACCES, ENOSPC...) doubles the IO of the fetch
+            // path, so leave a trace behind. NODE_DEBUG=vlt to see it.
+            debug(
+              'cached tarball unpack failed: %s: %s',
+              cached.path,
+              er,
+            )
+          }
+        }
+
         const fetchTarball = async (useCache?: false) => {
           const trustIntegrity =
             this.#trustedIntegrities.get(r.resolved) === r.integrity
@@ -385,9 +417,7 @@ export class PackageInfoClient {
         const st = await stat(path)
         if (st.isFile()) {
           try {
-            await (
-              await this.getTarPool()
-            ).unpack(await this.tarball(spec, options), target)
+            await (await this.getTarPool()).unpackFile(path, target)
           } catch (er) {
             throw this.#resolveError(
               spec,
@@ -847,9 +877,7 @@ export class PackageInfoClient {
         const s = spec
         return await this.#tmpdir(async dir => {
           try {
-            await (
-              await this.getTarPool()
-            ).unpack(await readFile(path), dir)
+            await (await this.getTarPool()).unpackFile(path, dir)
           } catch (er) {
             throw this.#resolveError(
               s,

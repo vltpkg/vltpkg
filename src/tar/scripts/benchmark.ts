@@ -11,7 +11,7 @@ import {
   numToFixed,
   timePromises,
 } from '@vltpkg/benchmark'
-import { unpack } from '../src/unpack.ts'
+import { unpack, unpackSync } from '../src/unpack.ts'
 
 const DIRS = {
   source: resolve(import.meta.dirname, 'fixtures/artifacts'),
@@ -41,10 +41,13 @@ const test = async (
 console.log(`extracting ${artifacts.length} artifacts`)
 
 const p = new Pool()
-await test('@vltpkg/tar', async (tgz, target) =>
+await test('pool (sync)', async (tgz, target) =>
   await p.unpack(readFileSync(tgz), target))
 
-await test('direct unpack', async (tgz, target) =>
+await test('unpackSync', async (tgz, target) =>
+  unpackSync(readFileSync(tgz), target))
+
+await test('unpack (async)', async (tgz, target) =>
   unpack(readFileSync(tgz), target))
 
 await test('pacote', (tgz, target) => pacote.extract(tgz, target))

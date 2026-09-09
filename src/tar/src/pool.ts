@@ -1,100 +1,44 @@
-import { error } from '@vltpkg/error-cause'
-import { asError } from '@vltpkg/types'
-import os from 'node:os'
-import { UnpackRequest } from './unpack-request.ts'
-import { isResponseOK, Worker } from './worker.ts'
-import type { ResponseError, ResponseOK } from './worker.ts'
+import { readFile } from 'node:fs/promises'
+import { unpack, unpackFileSync, unpackSync } from './unpack.ts'
 
-export * from './worker.ts'
+// Field kill switch: restores the async writer without a release.
+const syncUnpack = process.env.VLT_TAR_SYNC !== '0'
 
 /**
- * Automatically expanding/contracting set of workers to maximize parallelism
- * of unpack operations up to 1 less than the number of CPUs (or 1).
+ * Unpacks tarballs into place.
  *
- * `pool.unpack(tarData, target)` will perform the unpack operation
- * synchronously, in one of these workers, and returns a promise when the
- * worker has confirmed completion of the task.
+ * Unpacking runs synchronously on the main thread, which is measurably
+ * faster than the async writers (the libuv round trip per file costs
+ * more than the IO).
+ *
+ * There is no queue here. The only limiter is the caller's: reify caps
+ * extraction at `Math.max(availableParallelism() - 1, 1) * 8` in flight
+ * (`@vltpkg/graph`, `src/reify/index.ts`). A consumer that is not reify
+ * is unbounded -- add your own cap.
  */
 export class Pool {
   /**
-   * Number of workers to employ. Defaults to 8 times one less than
-   * the number of available CPUs, with a minimum of 8.
-   */
-  /* c8 ignore next */
-  jobs: number = 8 * (Math.max(os.availableParallelism(), 2) - 1)
-  /**
-   * Set of currently active worker threads
-   */
-  workers = new Set<Worker>()
-  /**
-   * Queue of requests awaiting an available worker
-   */
-  queue: UnpackRequest[] = []
-  /**
-   * All requests that have not yet been confirmed completed, both
-   * those currently assigned to a worker and those still waiting in
-   * the queue. Entries are removed once the request resolves or
-   * rejects, releasing the reference to its tarball buffer.
-   */
-  pending = new Map<number, UnpackRequest>()
-
-  // handle a message from the worker
-  #onMessage(w: Worker, m: ResponseError | ResponseOK) {
-    const { id } = m
-    // a request has been met or failed, report and either
-    // pick up the next item in the queue, or terminate worker
-    const ur = this.pending.get(id)
-    /* c8 ignore next */
-    if (!ur) return
-    // request is done, stop holding its tarball buffer in memory
-    this.pending.delete(id)
-    if (isResponseOK(m)) {
-      ur.resolve()
-      /* c8 ignore start - nearly impossible in normal circumstances */
-    } else {
-      ur.reject(
-        error(
-          asError(m.error, 'failed without error message').message,
-          {
-            found: m,
-            cause: m.error,
-          },
-        ),
-      )
-    }
-    /* c8 ignore stop */
-    const next = this.queue.shift()
-    if (!next) {
-      this.workers.delete(w)
-    } else {
-      void w.process(next)
-    }
-  }
-
-  // create a new worker
-  #createWorker(req: UnpackRequest) {
-    const w: Worker = new Worker((m: ResponseError | ResponseOK) =>
-      this.#onMessage(w, m),
-    )
-    this.workers.add(w)
-    void w.process(req)
-  }
-
-  /**
    * Provide the tardata to be unpacked, and the location where it's to be
-   * placed. Will create a new worker up to the `jobs` value, and then start
-   * pushing in the queue for workers to pick up as they become available.
-   *
-   * Returned promise resolves when the provided tarball has been extracted.
+   * placed. Resolves when the tarball has been extracted.
    */
-  async unpack(tarData: Buffer, target: string) {
-    const ur = new UnpackRequest(tarData, target)
-    this.pending.set(ur.id, ur)
-    if (this.workers.size < this.jobs) {
-      this.#createWorker(ur)
-    } else {
-      this.queue.push(ur)
+  async unpack(tarData: Buffer, target: string): Promise<void> {
+    if (!syncUnpack) return unpack(tarData, target)
+    unpackSync(tarData, target)
+  }
+
+  /**
+   * Same, reading the tarball from a file and skipping `offset` leading
+   * bytes, so a cache entry is unpacked without loading it into the
+   * registry client's in-memory cache.
+   */
+  async unpackFile(
+    file: string,
+    target: string,
+    offset = 0,
+  ): Promise<void> {
+    if (!syncUnpack) {
+      return unpack((await readFile(file)).subarray(offset), target)
     }
-    return ur.promise
+    unpackFileSync(file, target, offset)
   }
 }
