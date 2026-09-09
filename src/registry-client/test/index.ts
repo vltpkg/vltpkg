@@ -201,6 +201,13 @@ const registry = createServer((req, res) => {
     return res.end(JSON.stringify({ location }))
   }
 
+  // a transient error response, whatever conditional headers came in
+  if (url === '/404-packument') {
+    res.statusCode = 404
+    res.setHeader('content-type', 'application/json')
+    return res.end(JSON.stringify({ error: 'Not found' }))
+  }
+
   if (url === '/412-packument') {
     if (req.headers['if-none-match']) {
       res.statusCode = 412
@@ -954,22 +961,29 @@ t.test('staleWhileRevalidate', async t => {
     'revalidated, got fresh response',
   )
   await cache.promise()
-  rc.cache = cache
 })
 
-t.test('forceRevalidate bypasses fresh cache entries', async t => {
-  const rc = t.context.rc as RegistryClient
-  const key = `${registryURL}/abbrev`
+// seed a 20m-old cache entry -- old enough that the mock's
+// if-modified-since branch won't 304 it. max-age 1h leaves it strictly
+// valid; max-age 5m leaves it stale but inside the swr window, which is
+// the state forceRevalidate skips past and vlx lives in.
+const seed = async (
+  rc: RegistryClient,
+  key: string,
+  body: string,
+  etagHeader: string,
+  maxAge = 3600,
+) => {
   const entry = new CacheEntry(
     200,
     toRawHeaders({
       'content-type': 'application/json',
       date: new Date(Date.now() - 20 * 60 * 1000).toUTCString(),
-      'cache-control': 'max-age=3600',
-      etag: '"old-etag"',
+      'cache-control': `max-age=${maxAge}`,
+      etag: etagHeader,
     }),
   )
-  entry.addBody(Buffer.from('{"cached":true}'))
+  entry.addBody(Buffer.from(body))
   const encoded = entry.encode()
   rc.cache.set(
     key,
@@ -980,6 +994,20 @@ t.test('forceRevalidate bypasses fresh cache entries', async t => {
     ),
   )
   await rc.cache.promise()
+  return entry
+}
+
+t.test('forceRevalidate bypasses fresh cache entries', async t => {
+  const rc = t.context.rc as RegistryClient
+  const key = `${registryURL}/abbrev`
+  await seed(rc, key, '{"cached":true}', '"old-etag"')
+
+  const cached = await rc.request(key)
+  t.strictSame(
+    cached.json(),
+    { cached: true },
+    'without the flag the fresh entry is served straight from cache',
+  )
 
   const result = await rc.request(key, { forceRevalidate: true })
   t.strictSame(
@@ -987,6 +1015,108 @@ t.test('forceRevalidate bypasses fresh cache entries', async t => {
     { hello: 'world' },
     'fresh cache entry was conditionally revalidated',
   )
+})
+
+t.test(
+  'forceRevalidate 304 keeps the body, refreshes date',
+  async t => {
+    dropConnection = false
+    const rc = t.context.rc as RegistryClient
+    const key = `${registryURL}/abbrev`
+    // matches the mock's etag, so the conditional GET 304s
+    const seeded = await seed(rc, key, '{"cached":true}', etag)
+
+    const result = await rc.request(key, { forceRevalidate: true })
+    t.strictSame(
+      result.json(),
+      { cached: true },
+      '304 kept the cached body',
+    )
+    t.ok(
+      new Date(result.getHeaderString('date') ?? 0) >
+        new Date(seeded.getHeaderString('date') ?? 0),
+      'date was refreshed',
+    )
+
+    // and the refreshed entry is what a later process reads back
+    await rc.cache.promise()
+    const rc2 = new RC({ cache: dirname(rc.cache.path()) })
+    const again = await rc2.request(key)
+    t.strictSame(
+      again.json(),
+      { cached: true },
+      'written back as valid',
+    )
+  },
+)
+
+// 3600: still strictly valid. 300: stale but inside the swr window, the
+// state forceRevalidate skips past and the common one on a warm cache.
+for (const maxAge of [3600, 300]) {
+  t.test(
+    `forceRevalidate does not clobber on a non-200 (max-age=${maxAge})`,
+    async t => {
+      dropConnection = false
+      const rc = t.context.rc as RegistryClient
+      const key = `${registryURL}/404-packument`
+      await seed(rc, key, '{"cached":true}', '"old-etag"', maxAge)
+
+      const res = await rc.request(key, { forceRevalidate: true })
+      t.equal(res.statusCode, 404, 'the 404 is what the caller sees')
+
+      // the good entry survived on disk, for this process and the next
+      await rc.cache.promise()
+      const rc2 = new RC({ cache: dirname(rc.cache.path()) })
+      const buf = await rc2.cache.fetch(key)
+      t.strictSame(
+        CacheEntry.decode(buf!).json(),
+        { cached: true },
+        'cached entry was not replaced by the 404',
+      )
+    },
+  )
+}
+
+for (const maxAge of [3600, 300]) {
+  t.test(
+    `forceRevalidate falls back to cache when offline (max-age=${maxAge})`,
+    async t => {
+      dropConnection = false
+      const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
+      // port 1 is not listening, so agent.request throws
+      const key = 'http://localhost:1/abbrev'
+      await seed(rc, key, '{"cached":true}', '"old-etag"', maxAge)
+
+      const result = await rc.request(key, { forceRevalidate: true })
+      t.strictSame(
+        result.json(),
+        { cached: true },
+        'unreachable registry is no worse than the entry it skipped',
+      )
+
+      await t.rejects(
+        rc.request('http://localhost:1/nothing-cached', {
+          forceRevalidate: true,
+        }),
+        { cause: { code: 'EREQUEST' } },
+        'still throws with nothing to fall back on',
+      )
+    },
+  )
+}
+
+t.test('an aborted forced revalidation still rejects', async t => {
+  dropConnection = false
+  const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
+  const key = 'http://localhost:1/abbrev'
+  await seed(rc, key, '{"cached":true}', '"old-etag"', 300)
+  const ac = new AbortController()
+  const p = rc.request(key, {
+    forceRevalidate: true,
+    signal: ac.signal,
+  })
+  ac.abort()
+  await t.rejects(p, "abort is the caller's doing, not a cache miss")
 })
 
 t.test('undecodable cache entry is a miss', async t => {

@@ -174,6 +174,30 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', j.byteLength)
       return res.end(j)
     }
+    case '/moving': {
+      movingRequests++
+      // etag tracks the dist-tag, so an unchanged packument 304s and a
+      // moved one comes back 200
+      const tag = `"${movingLatest}"`
+      if (req.headers['if-none-match'] === tag) {
+        res.statusCode = 304
+        return res.end()
+      }
+      const json = Buffer.from(
+        JSON.stringify({
+          name: 'moving',
+          'dist-tags': { latest: movingLatest },
+          versions: {
+            '1.0.0': { name: 'moving', version: '1.0.0' },
+            '2.0.0': { name: 'moving', version: '2.0.0' },
+          },
+        }),
+      )
+      res.setHeader('cache-control', 'public, max-age=3600')
+      res.setHeader('etag', tag)
+      res.setHeader('content-length', json.byteLength)
+      return res.end(json)
+    }
     case '/coalesced': {
       coalescedPackumentRequests++
       coalescedPackumentAccept = req.headers.accept
@@ -328,6 +352,8 @@ const server = createServer((req, res) => {
 
 const notFoundURLs: string[] = []
 let corruptedOnceServed = 0
+let movingRequests = 0
+let movingLatest = '1.0.0'
 let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
 let abbrevTgzRequests = 0
@@ -2235,6 +2261,87 @@ t.test(
     await (await pi.getRegistryClient()).cache.promise()
   },
 )
+
+t.test('moving selectors force a revalidation', async t => {
+  const cache = t.testdir()
+  // one client per simulated process; the point is the disk cache
+  const client = () => new PackageInfoClient({ ...options, cache })
+  const flush = async (pi: PackageInfoClient) =>
+    (await pi.getRegistryClient()).cache.promise()
+  movingRequests = 0
+  movingLatest = '1.0.0'
+
+  const a = client()
+  t.equal(
+    (await a.packument('moving@1.0.0'))['dist-tags'].latest,
+    '1.0.0',
+  )
+  t.equal(movingRequests, 1, 'cold miss')
+  await flush(a)
+
+  // latest moves; the cached packument is still strictly valid
+  movingLatest = '2.0.0'
+
+  const b = client()
+  t.equal(
+    (await b.packument('moving@1.0.0'))['dist-tags'].latest,
+    '1.0.0',
+    'pinned spec is still served from cache',
+  )
+  t.equal(movingRequests, 1, 'pinned spec made no request')
+  await flush(b)
+
+  const c = client()
+  t.equal(
+    (await c.packument('moving@latest'))['dist-tags'].latest,
+    '2.0.0',
+    'dist tag picked up the new latest',
+  )
+  t.equal(movingRequests, 2, 'dist tag revalidated')
+  await flush(c)
+
+  const d = client()
+  t.equal(
+    (await d.packument('moving'))['dist-tags'].latest,
+    '2.0.0',
+    'a bare name is a moving selector too',
+  )
+  t.equal(movingRequests, 3, 'bare name revalidated (304)')
+  await flush(d)
+})
+
+t.test('moving selector does not ride a pinned request', async t => {
+  const cache = t.testdir()
+  movingRequests = 0
+  movingLatest = '1.0.0'
+
+  const warm = new PackageInfoClient({ ...options, cache })
+  await warm.packument('moving@1.0.0')
+  await (await warm.getRegistryClient()).cache.promise()
+  movingLatest = '2.0.0'
+
+  // the pinned request lands in #packumentPromises first and will settle
+  // to a cache hit; the dist tag must not coalesce onto it
+  const pi = new PackageInfoClient({ ...options, cache })
+  const [pinned, moving] = await Promise.all([
+    pi.packument('moving@1.0.0'),
+    pi.packument('moving@latest'),
+  ])
+  t.equal(pinned['dist-tags'].latest, '1.0.0', 'pinned got the cache')
+  t.equal(moving['dist-tags'].latest, '2.0.0', 'dist tag got fresh')
+
+  // the reverse direction still coalesces: a pinned spec is happy with a
+  // forced result
+  const pi2 = new PackageInfoClient({ ...options, cache })
+  const before = movingRequests
+  const [m2, p2] = await Promise.all([
+    pi2.packument('moving@latest'),
+    pi2.packument('moving@1.0.0'),
+  ])
+  t.equal(m2, p2, 'shared one packument')
+  t.equal(movingRequests, before + 1, 'made one request')
+  await (await pi2.getRegistryClient()).cache.promise()
+})
 
 t.test('late parse failure refetches packument', async t => {
   const pi = new PackageInfoClient({
