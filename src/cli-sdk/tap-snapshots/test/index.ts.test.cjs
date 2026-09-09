@@ -43,6 +43,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --cache=<path>
     --call=<cmd>
     --color
+    --commit
     --config=<all | user | project>
     --dashboard-root=<path>
     --default-registry-alias=<name>
@@ -60,6 +61,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --git-host-archives=<name=template>
     --git-hosts=<name=template>
     --git-shallow
+    --git-tag-version
     --help
     --identity=<name>
     --if-present
@@ -113,6 +115,7 @@ Unknown config option: asdf
     cache
     call
     color
+    commit
     config
     dashboard-root
     default-registry-alias
@@ -130,6 +133,7 @@ Unknown config option: asdf
     git-host-archives
     git-hosts
     git-shallow
+    git-tag-version
     help
     identity
     if-present

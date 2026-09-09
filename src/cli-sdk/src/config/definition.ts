@@ -786,6 +786,25 @@ export const definition = j
       validOptions: ['public', 'restricted'] as const,
     },
   })
+  .flag({
+    'git-tag-version': {
+      description: `Commit and tag the version change made by \`vlt version\`.
+
+                    Set \`--no-git-tag-version\` to bump the version in
+                    \`package.json\` without touching git at all, so that a
+                    series of bumps can be committed together.`,
+      default: true,
+    },
+    commit: {
+      description: `Create the version commit in \`vlt version\`.
+
+                    Set \`--no-commit\` to leave the bumped \`package.json\`
+                    uncommitted while still creating the git tag. Implied by
+                    \`--no-git-tag-version\`.`,
+      default: true,
+    },
+  })
+
   .opt({
     otp: {
       description: `Provide an OTP to use when publishing a package.`,
