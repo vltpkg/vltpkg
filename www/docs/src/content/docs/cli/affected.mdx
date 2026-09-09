@@ -1,0 +1,141 @@
+---
+title: Affected Dependencies
+sidebar:
+  label: Affected
+  order: 6
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+In a monorepo, a change to one workspace rarely stays there. The
+_affected_ set is the workspace you touched **plus everything that
+depends on it** — the packages whose tests, builds and publishes could
+break because of your change.
+
+vlt has no `affected` command. Affected is inherited state, so it is
+expressed with [Dependency Selector Syntax](/cli/selectors) instead:
+[`:diff()`](/cli/selectors/pseudo-classes/diff) finds what changed,
+and [`:has()`](/cli/selectors/pseudo-classes/has) walks back up to
+what depends on it.
+
+## What changed
+
+[`:diff()`](/cli/selectors/pseudo-classes/diff) matches packages whose
+files changed against a git commitish, defaulting to `HEAD`:
+
+<Code
+  code={`# uncommitted changes
+$ vlt query ':workspace:diff()'
+
+# everything on this branch that main does not have
+
+$ vlt query ':workspace:diff(main)'`} title="Terminal" lang="bash" />
+
+The `:workspace` prefix matters. The project root owns every file that
+is not inside a workspace, so a bare `:diff(main)` also matches the
+root whenever _anything_ changed.
+
+## What depends on what changed
+
+[`:has()`](/cli/selectors/pseudo-classes/has) matches packages with a
+**direct** dependency on a match:
+
+<Code
+  code="$ vlt query ':workspace:has(:diff(main))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Nest it to reach further up the graph. Each level of `:has()` is one
+more hop away from the change:
+
+<Code
+  code={`# dependents of the dependents
+$ vlt query ':workspace:has(:has(:diff(main)))'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## The affected set
+
+Combine both with a comma. Selector lists are unioned, so this is
+"changed, or depending on something changed":
+
+<Code
+  code="$ vlt query ':workspace:diff(main), :workspace:has(:diff(main))'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Given a monorepo where `packages/utils` changed on your branch:
+
+```
+my-monorepo
+├── packages/utils/       ← files changed
+├── packages/core/          depends on utils
+├── packages/cli/           depends on core
+└── apps/docs/              depends on nothing
+```
+
+`:workspace:diff(main), :workspace:has(:diff(main))` selects:
+
+```
+my-monorepo
+├── packages/utils/       ✅ changed
+├── packages/core/        ✅ depends on utils
+├── packages/cli/            depends on core, two hops away
+└── apps/docs/
+```
+
+`packages/cli` is two hops from the change, so it needs another level
+of `:has()`. Add one selector per hop your graph is deep:
+
+<Code
+  code={`$ vlt query ':workspace:diff(main),
+    :workspace:has(:diff(main)),
+    :workspace:has(:has(:diff(main)))'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Running scripts on the affected set
+
+`vlt run` takes the same selector via `--scope`, so a CI job can test
+only what your branch could have broken:
+
+<Code
+  code={`$ vlt run test \\
+  --scope=':workspace:diff(main), :workspace:has(:diff(main))' \\
+  --if-present`}
+  title="Terminal"
+  lang="bash"
+/>
+
+`--if-present` skips workspaces without the script instead of failing.
+`--workspace` and `--workspace-group` narrow the same way when a path
+glob or a named group is a better fit than a query.
+
+## Gating a CI job
+
+`--expect-results` turns a query into a check: `vlt query` exits
+non-zero when the result count does not match, so a job can bail out
+early when nothing relevant changed.
+
+<Code
+  code={`$ vlt query ':workspace:diff(origin/main)' --expect-results='>0' \\
+  || echo 'nothing affected, skipping'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Note that results are counted as graph edges, not as packages: one
+workspace depended on from several places counts more than once. Use
+`--view=json` when you need the packages themselves.
+
+## See also
+
+- [`:diff()`](/cli/selectors/pseudo-classes/diff) — match packages by
+  git changes
+- [`:has()`](/cli/selectors/pseudo-classes/has) — match packages by
+  their dependencies
+- [Workspaces](/cli/workspaces) — defining workspaces and groups

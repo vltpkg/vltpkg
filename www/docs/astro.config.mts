@@ -136,6 +136,7 @@ export default defineConfig({
            */
           exclude: [
             'cli/workspaces',
+            'cli/affected',
             'cli/selectors/**',
             'packages/**',
             'get-started/reference',
