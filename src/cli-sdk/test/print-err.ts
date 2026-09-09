@@ -197,6 +197,32 @@ t.test('snapshots', async t => {
     )
   })
 
+  t.test('EQUERY', async t => {
+    await testErr(
+      t,
+      'suggestion',
+      error('Unsupported selector', {
+        code: 'EQUERY',
+        found: '.dev',
+        wanted: ':dev',
+      }),
+    )
+    await testErr(
+      t,
+      'valid options',
+      error('Unsupported combinator: +', {
+        code: 'EQUERY',
+        found: '+',
+        validOptions: ['>', '~', ' '],
+      }),
+    )
+    await testErr(
+      t,
+      'bare',
+      error('Unsupported selector', { code: 'EQUERY' }),
+    )
+  })
+
   t.test('EREQUEST', async t => {
     await testErr(
       t,

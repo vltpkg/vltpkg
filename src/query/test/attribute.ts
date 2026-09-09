@@ -143,7 +143,14 @@ t.test('bad selector type', async t => {
 t.test('bad operator', async t => {
   await t.rejects(
     testAttr('[name==foo]'),
-    /Unsupported attribute operator: +=/,
+    {
+      message: 'Unsupported attribute operator: =',
+      cause: {
+        code: 'EQUERY',
+        found: '[name==foo]',
+        validOptions: ['=', '^=', '$=', '~=', '*=', '|='],
+      },
+    },
     'should throw an error',
   )
 })

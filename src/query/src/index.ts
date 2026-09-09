@@ -1,4 +1,3 @@
-import { error } from '@vltpkg/error-cause'
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 import {
   parse,
@@ -12,7 +11,8 @@ import {
 import { attribute } from './attribute.ts'
 import { combinator } from './combinator.ts'
 import { id } from './id.ts'
-import { pseudo } from './pseudo.ts'
+import { pseudo, pseudoSelectorNames } from './pseudo.ts'
+import { queryError, selectorText } from './error.ts'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import type {
@@ -41,11 +41,27 @@ export type SearchOptions = {
 
 const noopFn = async (state: ParserState) => state
 
+/**
+ * `.dev` and a bare `dev` are the two ways a css habit shows up in a
+ * query. Neither is valid DSS, but the intent is usually a pseudo-class
+ * of that name, and otherwise a package name.
+ */
+const unsupportedName = (state: ParserState) => {
+  const text = selectorText(state.current)
+  const name = text.replace(/^[.#]/, '')
+  return queryError('Unsupported selector', state.current, {
+    wanted:
+      pseudoSelectorNames.has(name) ? `:${name}`
+      : name ? `#${name}`
+      : undefined,
+  })
+}
+
 const selectors = {
   attribute,
-  /* c8 ignore start */
+  /* c8 ignore start -- dss-parser reports `.foo` as an escaped tag */
   class: async (state: ParserState) => {
-    throw error('Unsupported selector', { found: state.current })
+    throw unsupportedName(state)
   },
   /* c8 ignore end */
   combinator,
@@ -70,11 +86,11 @@ const selectors = {
     return state
   },
   string: async (state: ParserState) => {
-    throw error('Unsupported selector', { found: state.current })
+    throw queryError('Unsupported selector', state.current)
   },
   tag: async (state: ParserState) => {
     if (state.current.value !== '{' && state.current.value !== '}') {
-      throw error('Unsupported selector', { found: state.current })
+      throw unsupportedName(state)
     }
     return state
   },
@@ -96,11 +112,9 @@ export const walk = async (
       return state
     }
 
-    throw error(
+    throw queryError(
       `Missing parser for query node: ${state.current.type}`,
-      {
-        found: state.current,
-      },
+      state.current,
     )
   }
   state = await parserFn(state)

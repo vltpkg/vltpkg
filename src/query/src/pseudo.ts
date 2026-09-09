@@ -1,5 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
+import { didYouMean, queryError, selectorText } from './error.ts'
 import {
   asPostcssNodeWithChildren,
   asPseudoNode,
@@ -374,6 +375,13 @@ const pseudoSelectors = new Map<string, ParserFn>(
 )
 
 /**
+ * Names of every supported pseudo-class, without the leading `:`.
+ */
+export const pseudoSelectorNames: ReadonlySet<string> = new Set(
+  pseudoSelectors.keys(),
+)
+
+/**
  * Parsers the `pseudo` node types.
  */
 export const pseudo = async (state: ParserState) => {
@@ -390,9 +398,20 @@ export const pseudo = async (state: ParserState) => {
       return state
     }
 
-    throw error(`Unsupported pseudo-class: ${state.current.value}`, {
-      found: state.current,
-    })
+    // `:difff(x)` should still suggest `:diff`, so drop any arguments
+    const name = selectorText(state.current)
+      .replace(/^:/, '')
+      .replace(/\(.*$/s, '')
+    const suggestions = didYouMean(name, pseudoSelectorNames).map(
+      n => `:${n}`,
+    )
+    throw queryError(
+      `Unsupported pseudo-class: ${state.current.value}`,
+      state.current,
+      suggestions.length > 1 ?
+        { validOptions: suggestions }
+      : { wanted: suggestions[0] },
+    )
   }
 
   const result = await parserFn(state)

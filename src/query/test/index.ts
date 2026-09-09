@@ -292,7 +292,10 @@ t.test('insights', async t => {
 t.test('bad selector type', async t => {
   await t.rejects(
     walk(testBrokenState()),
-    /Missing parser for query node: bork/,
+    {
+      message: 'Missing parser for query node: bork',
+      cause: { code: 'EQUERY' },
+    },
     'should throw a parser error',
   )
 })
@@ -306,15 +309,40 @@ t.test('bad selector type [loose mode]', async t => {
 
 t.test('trying to use tag selectors', async t => {
   const graph = getSimpleGraph()
-  await t.rejects(
+  const search = (query: string) =>
     new Query({
       nodes: new Set(graph.nodes.values()),
       edges: graph.edges,
       importers: graph.importers,
       securityArchive: undefined,
-    }).search('foo', mockSearchOptions),
-    /Unsupported selector/,
+    }).search(query, mockSearchOptions)
+
+  await t.rejects(
+    search('foo'),
+    {
+      message: 'Unsupported selector',
+      // the parsed node is circular, only its text may be reported
+      cause: { code: 'EQUERY', found: 'foo', wanted: '#foo' },
+    },
     'should throw an unsupported selector error',
+  )
+
+  await t.rejects(
+    search('.dev'),
+    { cause: { code: 'EQUERY', found: '.dev', wanted: ':dev' } },
+    'should suggest the pseudo-class of the same name',
+  )
+
+  await t.rejects(
+    search('.foo'),
+    { cause: { code: 'EQUERY', found: '.foo', wanted: '#foo' } },
+    'should suggest an id selector when there is no such pseudo-class',
+  )
+
+  await t.rejects(
+    search('.'),
+    { cause: { code: 'EQUERY', found: '.', wanted: undefined } },
+    'should not guess when there is no name to guess from',
   )
 })
 
@@ -327,7 +355,10 @@ t.test('trying to use string selectors', async t => {
       importers: graph.importers,
       securityArchive: undefined,
     }).search('"foo"', mockSearchOptions),
-    /Unsupported selector/,
+    {
+      message: 'Unsupported selector',
+      cause: { code: 'EQUERY', found: '"foo"' },
+    },
     'should throw an unsupported selector error',
   )
 })

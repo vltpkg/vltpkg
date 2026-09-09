@@ -16,6 +16,22 @@ exports[`test/print-err.ts > TAP > snapshots > ECONFIG > no code > output 1`] = 
 Config Error: Invalid config keys
 `
 
+exports[`test/print-err.ts > TAP > snapshots > EQUERY > bare > output 1`] = `
+Query Error: Unsupported selector
+`
+
+exports[`test/print-err.ts > TAP > snapshots > EQUERY > suggestion > output 1`] = `
+Query Error: Unsupported selector
+  Found: .dev
+  Did you mean: :dev
+`
+
+exports[`test/print-err.ts > TAP > snapshots > EQUERY > valid options > output 1`] = `
+Query Error: Unsupported combinator: +
+  Found: +
+  Valid Options: [ '>', '~', ' ' ]
+`
+
 exports[`test/print-err.ts > TAP > snapshots > EREQUEST > internal cause > file 1`] = `
 Error: oh no! my request!
     at {STACK_LINE} {

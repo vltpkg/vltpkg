@@ -205,6 +205,7 @@ export type Codes =
   | 'ERESOLVE'
   | 'EUNKNOWN'
   | 'EUSAGE'
+  | 'EQUERY'
   | 'EREQUEST'
   | 'ECONFIG'
   | 'ELOCKFILEVERSION'
