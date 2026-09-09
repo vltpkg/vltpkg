@@ -25,3 +25,35 @@ premajor, prerelease).
 
 If run in a git repository, it will also create a version commit and
 tag.
+
+## Options
+
+### no-git-tag-version
+
+Bump the version without creating a git commit or tag.
+
+<Code
+  code="$ vlt version patch --no-git-tag-version"
+  title="Terminal"
+  lang="bash"
+/>
+
+Useful for bumping several workspaces and then committing all of the
+changes together:
+
+<Code
+  code={`$ vlt version prerelease --workspace="./infra/cli*" --no-git-tag-version
+$ git commit -am 'v1.2.3'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### no-commit
+
+Create the git tag, but leave the version bump uncommitted.
+
+<Code
+  code="$ vlt version patch --no-commit"
+  title="Terminal"
+  lang="bash"
+/>

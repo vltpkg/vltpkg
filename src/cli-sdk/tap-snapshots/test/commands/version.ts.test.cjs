@@ -18,7 +18,8 @@ package.json.
 The \`<newversion>\` argument should be a valid semver string or a valid increment
 type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
-If run in a git repository, it will also create a version commit and tag.
+If run in a git repository, it will also create a version commit and tag. Use
+\`--no-git-tag-version\` to skip both, or \`--no-commit\` to skip only the commit.
 
   Options
 
@@ -41,5 +42,15 @@ If run in a git repository, it will also create a version commit and tag.
       Run version bump across all workspaces in the monorepo.
 
       ​--recursive
+
+    no-git-tag-version
+      Bump the version without creating a git commit or tag.
+
+      ​--no-git-tag-version
+
+    no-commit
+      Create the git tag, but leave the version bump uncommitted.
+
+      ​--no-commit
 
 `

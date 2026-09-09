@@ -126,6 +126,14 @@ Object {
     "short": "c",
     "type": "boolean",
   },
+  "commit": Object {
+    "description": String(
+      Create the version commit in \`vlt version\`.
+      
+      Set \`--no-commit\` to leave the bumped \`package.json\` uncommitted while still creating the git tag. Implied by \`--no-git-tag-version\`.
+    ),
+    "type": "boolean",
+  },
   "config": Object {
     "description": "Specify which configuration to show or operate on when running \`vlt config\` commands. For read operations (get, pick, list): \`all\` shows merged configuration from both user and project files (default). For write operations (set, delete, edit): defaults to \`project\`. \`user\` shows/modifies only user-level configuration, \`project\` shows/modifies only project-level configuration.",
     "hint": "all | user | project",
@@ -293,6 +301,14 @@ Object {
       Set to force \`--depth=1\` on all git clone actions. When set explicitly to false with --no-git-shallow, then \`--depth=1\` will not be used.
       
       When not set explicitly, \`--depth=1\` will be used for git hosts known to support this behavior.
+    ),
+    "type": "boolean",
+  },
+  "git-tag-version": Object {
+    "description": String(
+      Commit and tag the version change made by \`vlt version\`.
+      
+      Set \`--no-git-tag-version\` to bump the version in \`package.json\` without touching git at all, so that a series of bumps can be committed together.
     ),
     "type": "boolean",
   },
@@ -614,6 +630,7 @@ Array [
   "--cache=<path>",
   "--call=<cmd>",
   "--color",
+  "--commit",
   "--config=<all | user | project>",
   "--dashboard-root=<path>",
   "--default-registry-alias=<name>",
@@ -631,6 +648,7 @@ Array [
   "--git-host-archives=<name=template>",
   "--git-hosts=<name=template>",
   "--git-shallow",
+  "--git-tag-version",
   "--help",
   "--identity=<name>",
   "--if-present",
@@ -681,6 +699,7 @@ Array [
   "cache",
   "call",
   "color",
+  "commit",
   "config",
   "dashboard-root",
   "default-registry-alias",
@@ -698,6 +717,7 @@ Array [
   "git-host-archives",
   "git-hosts",
   "git-shallow",
+  "git-tag-version",
   "help",
   "identity",
   "if-present",

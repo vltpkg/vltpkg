@@ -100,6 +100,10 @@ class MockConfig {
     ) {
       return this.values[key] || undefined
     }
+    // these default to true in the config definition
+    if (key === 'git-tag-version' || key === 'commit') {
+      return this.values[key] ?? true
+    }
     return this.values[key]
   }
 }
@@ -552,6 +556,63 @@ t.test('git operations', async t => {
         },
       },
     )
+  })
+
+  t.test('--no-git-tag-version skips git entirely', async t => {
+    const { result, gitSpawnCalls } = await run(
+      t,
+      ['patch'],
+      { 'git-tag-version': false },
+      undefined,
+      {
+        is: async () => true,
+        isClean: async () => true,
+      },
+    )
+
+    t.strictSame(result, {
+      name: 'a',
+      oldVersion: '1.0.0',
+      newVersion: '1.0.1',
+      dir: process.cwd(),
+    })
+    t.strictSame(gitSpawnCalls, [])
+  })
+
+  t.test('--no-commit still tags', async t => {
+    const { result, gitSpawnCalls } = await run(
+      t,
+      ['patch'],
+      { commit: false },
+      undefined,
+      {
+        is: async () => true,
+        isClean: async () => true,
+      },
+    )
+
+    t.strictSame(result, {
+      name: 'a',
+      oldVersion: '1.0.0',
+      newVersion: '1.0.1',
+      dir: process.cwd(),
+      tag: 'v1.0.1',
+    })
+    t.strictSame(
+      gitSpawnCalls.map(c => c.args[0]),
+      ['tag'],
+    )
+  })
+
+  t.test('--no-git-tag-version wins over --commit', async t => {
+    const { gitSpawnCalls } = await run(
+      t,
+      ['patch'],
+      { 'git-tag-version': false, commit: true },
+      undefined,
+      { is: async () => true, isClean: async () => true },
+    )
+    t.strictSame(gitSpawnCalls, [])
   })
 
   t.test('not in git repo', async t => {

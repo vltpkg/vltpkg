@@ -41,6 +41,15 @@ export type CommandResultSingle = {
 export type CommandResult =
   CommandResultSingle | CommandResultSingle[]
 
+/**
+ * `--no-git-tag-version` skips the whole git dance, matching npm.
+ * `--no-commit` only skips the commit, leaving the bump uncommitted.
+ */
+const gitOptions = (conf: ParsedConfig): VersionOptions => {
+  const tag = conf.get('git-tag-version')
+  return { tag, commit: tag && conf.get('commit') }
+}
+
 const isValidVersionIncrement = (
   value: string,
 ): value is IncrementType =>
@@ -51,8 +60,6 @@ const version = async (
   increment: string | undefined,
   cwd: string,
   {
-    // Hardcode happy path options for now.
-    // TODO: make these config definitions
     prereleaseId = 'pre',
     commit = true,
     tag = true,
@@ -140,7 +147,6 @@ const version = async (
 
   // Handle git operations if we're in a git repository
   if (
-    /* c8 ignore next -- commit and tag are always true for now */
     (commit || tag) &&
     (await isGit({ cwd: conf.options.projectRoot }))
   ) {
@@ -237,7 +243,7 @@ export const usage: CommandUsage = () => {
 
     The \`<newversion>\` argument should be a valid semver string or a valid increment type (one of patch, minor, major, prepatch, preminor, premajor, prerelease).
 
-    If run in a git repository, it will also create a version commit and tag.`,
+    If run in a git repository, it will also create a version commit and tag. Use \`--no-git-tag-version\` to skip both, or \`--no-commit\` to skip only the commit.`,
     options: {
       scope: {
         value: '<query>',
@@ -256,6 +262,14 @@ export const usage: CommandUsage = () => {
       recursive: {
         description:
           'Run version bump across all workspaces in the monorepo.',
+      },
+      'no-git-tag-version': {
+        description:
+          'Bump the version without creating a git commit or tag.',
+      },
+      'no-commit': {
+        description:
+          'Create the git tag, but leave the version bump uncommitted.',
       },
     },
   })
@@ -339,7 +353,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     }
   } else {
     const cwd = options.packageJson.find(process.cwd()) ?? projectRoot
-    return version(conf, positionals[0], cwd)
+    return version(conf, positionals[0], cwd, gitOptions(conf))
   }
 
   assert(
@@ -351,6 +365,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   for (const location of locations) {
     results.push(
       await version(conf, positionals[0], location, {
+        ...gitOptions(conf),
         includeNameInCommit: true,
         includeNameInTag: true,
       }),
