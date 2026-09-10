@@ -22,7 +22,7 @@ import type {
   PackageInfoClientRequestOptions,
 } from '../src/index.ts'
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
-import { PackageInfoClient } from '../src/index.ts'
+import { PackageInfoClient, PACKUMENT_ACCEPT } from '../src/index.ts'
 
 t.saveFixture = true
 
@@ -2235,12 +2235,17 @@ t.test(
       1,
       'made one registry request',
     )
-    // Regression guard: #1692 briefly requested corgi and dropped license
-    // from stored manifests. See PackageInfoClient.#fetchPackument.
+    // Regression guard: #1692 briefly requested npm's corgi and dropped
+    // license from stored manifests. See PackageInfoClient.#fetchPackument.
     t.equal(
       coalescedPackumentAccept,
-      'application/json',
-      'requested the full packument',
+      PACKUMENT_ACCEPT,
+      'requested the vlt packument with a full-packument fallback',
+    )
+    t.notMatch(
+      coalescedPackumentAccept,
+      /vnd\.npm\.install/,
+      'never requests npm corgi',
     )
     t.equal(
       paku,

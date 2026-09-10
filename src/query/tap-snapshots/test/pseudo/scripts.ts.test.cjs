@@ -53,6 +53,7 @@ exports[`test/pseudo/scripts.ts > TAP > selects packages that need to be built >
 Object {
   "edges": Array [],
   "nodes": Array [
+    "abbreviated-pkg",
     "install-pkg",
     "postinstall-pkg",
     "preinstall-pkg",

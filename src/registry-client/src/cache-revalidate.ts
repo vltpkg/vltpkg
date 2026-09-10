@@ -12,9 +12,12 @@ export const register = (
   path: string,
   method: 'HEAD' | 'GET',
   url: string | URL,
+  accept?: string[] | string,
 ): void => {
   const r = registered.get(path) ?? new Set<string>()
-  const key = `${method} ${url}`
+  // `METHOD URL[ ACCEPT]`; a serialized URL never contains a space, so
+  // the child splits on the first two.
+  const key = `${method} ${url}${accept ? ` ${String(accept)}` : ''}`
   r.add(key)
   registered.set(path, r)
   if (!didProcessBeforeExitHook) {

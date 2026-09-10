@@ -12,6 +12,9 @@ const nodeNeedsBuild = (node: NodeLike): boolean => {
   /* c8 ignore next */
   if (!manifest) return false
 
+  // abbreviated registry manifests replace `scripts` with this flag
+  if (manifest.hasInstallScript) return true
+
   const { scripts = {} } = manifest
 
   // Check for install lifecycle scripts

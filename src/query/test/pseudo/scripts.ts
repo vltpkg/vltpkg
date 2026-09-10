@@ -69,6 +69,10 @@ t.test('selects packages that need to be built', async t => {
         scripts: { postinstall: 'echo post installing' },
       })
       const nodeWithoutScripts = createTestNode('no-scripts-pkg', {})
+      // abbreviated registry manifest: no scripts, only the flag
+      const nodeWithFlag = createTestNode('abbreviated-pkg', {
+        hasInstallScript: true,
+      })
 
       const res = await scripts(
         getState(':scripts', [
@@ -76,12 +80,18 @@ t.test('selects packages that need to be built', async t => {
           nodeWithPreinstall,
           nodeWithPostinstall,
           nodeWithoutScripts,
+          nodeWithFlag,
         ]),
       )
 
       t.strictSame(
         [...res.partial.nodes].map(n => n.name).sort(),
-        ['install-pkg', 'postinstall-pkg', 'preinstall-pkg'],
+        [
+          'abbreviated-pkg',
+          'install-pkg',
+          'postinstall-pkg',
+          'preinstall-pkg',
+        ],
         'should select packages with install lifecycle scripts',
       )
       t.matchSnapshot({
