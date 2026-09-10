@@ -27,7 +27,7 @@ to walk further up the graph, one dependency hop per level.
 ### Packages with a peer dependency on react
 
 <Code
-  code="$ vlt query ':has(.peer[name=react])'"
+  code="$ vlt query ':has(:peer[name=react])'"
   title="Terminal"
   lang="bash"
 />
@@ -43,7 +43,7 @@ my-app
     └── react@18.2.0 (peer)
 ```
 
-`:has(.peer[name=react])` selects packages that have a peer dependency
+`:has(:peer[name=react])` selects packages that have a peer dependency
 on react:
 
 ```
@@ -57,18 +57,14 @@ my-app
 
 ### Packages that depend on vulnerable packages
 
-<Code
-  code="$ vlt query ':has(> :cve(*))'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':has(:cve)'" title="Terminal" lang="bash" />
 
 This finds packages whose **direct dependencies** have known CVEs.
 
 ### Packages that depend on outdated packages
 
 <Code
-  code="$ vlt query ':has(> :outdated(major))'"
+  code="$ vlt query ':has(:outdated(major))'"
   title="Terminal"
   lang="bash"
 />

@@ -185,6 +185,7 @@ export default defineConfig({
             'cli/registries',
             'cli/security',
             'cli/workspaces',
+            'cli/affected',
             'cli/catalogs',
             'cli/peer-dependencies',
             'cli/graph-modifiers',
