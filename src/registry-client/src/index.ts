@@ -35,6 +35,7 @@ import type { JSONObj } from './cache-entry.ts'
 import { CacheEntry } from './cache-entry.ts'
 import { register } from './cache-revalidate.ts'
 import { bun, deno, node } from './env.ts'
+import { getHeader } from './get-header.ts'
 import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { getDispatcher } from './proxy.ts'
@@ -642,8 +643,14 @@ export class RegistryClient {
       entry?.staleWhileRevalidate &&
       m
     ) {
-      // revalidate while returning the stale entry
-      register(dirname(this.cache.path()), m, url)
+      // revalidate while returning the stale entry, re-requesting the
+      // same representation since the cache key does not include accept
+      register(
+        dirname(this.cache.path()),
+        m,
+        url,
+        getHeader(options.headers, 'accept'),
+      )
       logRequest(url, 'stale', { method })
       return entry
     }

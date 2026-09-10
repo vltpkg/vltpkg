@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import type { RunOptions } from '@vltpkg/run'
+import { normalizeManifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import * as FSP from 'node:fs/promises'
 import * as FS from 'node:fs'
@@ -149,6 +150,16 @@ t.test(
       scurry: new PathScurry(projectRoot),
       loadManifests: true,
     })
+    // y arrives from the registry as an abbreviated manifest, so its
+    // install scripts have to be read from the extracted package.json
+    const ay = after.nodes.get(yid)
+    if (!ay) throw new Error('no y node in after??')
+    ay.manifest = normalizeManifest({
+      name: 'y',
+      version: '1.2.3',
+      hasInstallScript: true,
+      dependencies: { x: '1' },
+    })
     const bx = before.nodes.get(xid)
     const by = before.nodes.get(yid)
     if (!bx) throw new Error('no x node in before??')
@@ -210,6 +221,11 @@ t.test(
       t.ok(
         installRun.signal instanceof AbortSignal,
         'install run should have signal',
+      )
+      t.equal(
+        installRun.manifest?.scripts?.install,
+        'true',
+        'install run reads scripts from the extracted package.json',
       )
     }
 

@@ -13,6 +13,7 @@ import type { Node } from '../node.ts'
 import { nonEmptyList } from '../non-empty-list.ts'
 import { optionalFail } from './optional-fail.ts'
 import { binChmod } from './bin-chmod.ts'
+import { scriptsManifest } from './scripts-manifest.ts'
 
 /**
  * Returns an object mapping registries to the names of the packages built.
@@ -101,8 +102,9 @@ const visit = async (
   // currently nullish, that could happen in a scenario where the ideal
   // graph is from a lockfile and there's no actual graph available
   // to hydrate the manifest data from.
-  node.manifest ??= packageJson.read(node.resolvedLocation(scurry))
-  const { manifest } = node
+  const dir = node.resolvedLocation(scurry)
+  node.manifest ??= packageJson.read(dir)
+  const manifest = scriptsManifest(node.manifest, dir, packageJson)
   const { scripts = {} } = manifest
 
   const {

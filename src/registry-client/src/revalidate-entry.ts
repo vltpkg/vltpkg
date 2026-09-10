@@ -55,6 +55,7 @@ export const revalidateEntry = async (
   rc: RegistryClient,
   method: 'GET' | 'HEAD',
   url: URL | string,
+  accept?: string,
 ): Promise<void> => {
   try {
     const u = typeof url === 'string' ? new URL(url) : url
@@ -86,6 +87,10 @@ export const revalidateEntry = async (
         'npm-session',
         randomUUID(),
       )
+      // the representation the entry was originally fetched with
+      if (accept) {
+        options.headers = addHeader(options.headers, 'accept', accept)
+      }
       setCacheHeaders(options, entry)
       options.headers = addHeader(
         options.headers,
