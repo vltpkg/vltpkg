@@ -234,6 +234,15 @@ const printCode = (
       return { file: true }
     }
 
+    case 'ENEEDAUTH': {
+      const { url } = err.cause
+      stderr(`Authentication Error: ${err.message}`)
+      if (url) {
+        stderr(indent(`URL: ${formatURL(url, format)}`))
+      }
+      return {}
+    }
+
     case 'EREQUEST': {
       const { url, method } = err.cause
       const { code, syscall } = err.cause.cause ?? {}

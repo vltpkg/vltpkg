@@ -302,10 +302,91 @@ t.test('command', async t => {
       positionals: ['publish'],
     })
 
+    await t.rejects(command(config), {
+      message:
+        /Failed to publish package: 403 Forbidden — Publishing is not allowed/,
+      cause: {
+        // an account problem, not a bug to report
+        code: 'ENEEDAUTH',
+        url: new URL('https://registry.npmjs.org/@test%2Fpackage'),
+        method: 'PUT',
+      },
+    })
     await t.rejects(
       command(config),
-      /Failed to publish package: 403 Forbidden — Publishing is not allowed/,
+      /Run `vlt whoami` to see who you are logged in as/,
+      'should say how to check and change accounts',
     )
+  })
+
+  t.test('handles 401 unauthorized', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        description: 'Test package for publish command',
+        main: 'index.js',
+      }),
+      'index.js': '// test file\nconsole.log("hello");',
+      'README.md': '# Test Package',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
+      statusCode: 401,
+      text: JSON.stringify({ error: 'unauthorized' }),
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    await t.rejects(command(config), {
+      message:
+        /Not logged in to https:\/\/registry\.npmjs\.org\. Run `vlt login` and try again\./,
+      cause: { code: 'ENEEDAUTH' },
+    })
+  })
+
+  t.test('server errors stay reportable', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/package',
+        version: '1.2.3',
+        main: 'index.js',
+      }),
+      'index.js': '// test file',
+      'vlt.json': '{}',
+    })
+
+    t.chdir(dir)
+
+    mockResponses.set('https://registry.npmjs.org/@test%2Fpackage', {
+      statusCode: 500,
+      text: 'boom',
+    })
+
+    const config = makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: 'https://registry.npmjs.org',
+      },
+      positionals: ['publish'],
+    })
+
+    await t.rejects(command(config), {
+      message:
+        /Failed to publish package: 500 Internal Server Error — boom/,
+      cause: { code: 'EREQUEST', method: 'PUT' },
+    })
   })
 
   t.test('handles 404 errors with special message', async t => {

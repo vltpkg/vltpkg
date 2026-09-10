@@ -350,6 +350,9 @@ const commandSingle = async (
       })
     } catch (err) {
       throw error('Failed to publish package', {
+        code: 'EREQUEST',
+        url: publishUrl,
+        method: 'PUT',
         cause: asError(err),
       })
     }
@@ -358,17 +361,28 @@ const commandSingle = async (
     // respond with a 202 Accepted when processing is deferred (e.g. for
     // publish-time malware scanning).
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      // the registry turning down our credentials is the user's to fix,
+      // not a bug to report, so it gets told apart from a registry that
+      // is simply broken.
+      const denied =
+        response.statusCode === 401 || response.statusCode === 403
       let advice = ''
       if (response.statusCode === 409) {
         advice = `\n⚠️ ${name}@${version} already exists in the registry. Bump the version and try again.`
       } else if (response.statusCode === 404) {
         advice =
           "\n⚠️ Make sure you're logged in and have access to publish the package."
+      } else if (response.statusCode === 401) {
+        advice = `\n⚠️ Not logged in to ${registryUrl.origin}. Run \`vlt login\` and try again.`
+      } else if (response.statusCode === 403) {
+        advice = `\n⚠️ ${name} cannot be published by this account. Run \`vlt whoami\` to see who you are logged in as, and \`vlt login\` to switch accounts. A name already taken by someone else cannot be reused.`
       }
       throw error(
         `Failed to publish package: ${registryErrorMessage(response)}${advice}`,
         {
+          code: denied ? 'ENEEDAUTH' : 'EREQUEST',
           url: publishUrl,
+          method: 'PUT',
           response,
         },
       )

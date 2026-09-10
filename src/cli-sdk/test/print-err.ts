@@ -223,6 +223,26 @@ t.test('snapshots', async t => {
     )
   })
 
+  t.test('ENEEDAUTH', async t => {
+    await testErr(
+      t,
+      'with url',
+      error(
+        'Failed to publish package: 403 Forbidden — You do not have permission to publish "findmy"',
+        {
+          code: 'ENEEDAUTH',
+          url: new URL('https://registry.npmjs.org/findmy'),
+          method: 'PUT',
+        },
+      ),
+    )
+    await testErr(
+      t,
+      'bare',
+      error('Not logged in', { code: 'ENEEDAUTH' }),
+    )
+  })
+
   t.test('EREQUEST', async t => {
     await testErr(
       t,
