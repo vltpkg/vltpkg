@@ -85,11 +85,7 @@ Find all outdated direct dependencies:
 
 Find all packages that depend on a vulnerable package:
 
-<Code
-  code="$ vlt query ':has(> :cve(*))'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':has(:cve)'" title="Terminal" lang="bash" />
 
 Find all dev-only dependencies that use eval:
 

@@ -7,9 +7,9 @@ sidebar:
 
 import { Code } from '@astrojs/starlight/components'
 
-The `:has()` pseudo-class matches packages that **have descendants
-matching** a given selector expression. It's the dependency graph
-equivalent of the
+The `:has()` pseudo-class matches packages that **depend on** a match
+for a given selector expression. It's the dependency graph equivalent
+of the
 [CSS `:has()` selector](https://developer.mozilla.org/en-US/docs/Web/CSS/:has).
 
 ## Syntax
@@ -18,15 +18,16 @@ equivalent of the
 :has(<selector-list>)
 ```
 
-The selector list is evaluated against the descendants of each
-candidate node.
+The selector list is evaluated against the whole graph, then packages
+with a direct dependency on one of its matches are kept. Nest `:has()`
+to walk further up the graph, one dependency hop per level.
 
 ## Examples
 
 ### Packages with a peer dependency on react
 
 <Code
-  code="$ vlt query ':has(.peer[name=react])'"
+  code="$ vlt query ':has(:peer[name=react])'"
   title="Terminal"
   lang="bash"
 />
@@ -42,7 +43,7 @@ my-app
     └── react@18.2.0 (peer)
 ```
 
-`:has(.peer[name=react])` selects packages that have a peer dependency
+`:has(:peer[name=react])` selects packages that have a peer dependency
 on react:
 
 ```
@@ -56,18 +57,14 @@ my-app
 
 ### Packages that depend on vulnerable packages
 
-<Code
-  code="$ vlt query ':has(> :cve(*))'"
-  title="Terminal"
-  lang="bash"
-/>
+<Code code="$ vlt query ':has(:cve)'" title="Terminal" lang="bash" />
 
 This finds packages whose **direct dependencies** have known CVEs.
 
 ### Packages that depend on outdated packages
 
 <Code
-  code="$ vlt query ':has(> :outdated(major))'"
+  code="$ vlt query ':has(:outdated(major))'"
   title="Terminal"
   lang="bash"
 />
@@ -77,22 +74,35 @@ This finds packages whose **direct dependencies** have known CVEs.
 Find packages that have a dependency that was modified:
 
 <Code
-  code="$ vlt query ':has(> :diff(main))'"
+  code="$ vlt query ':has(:diff(main))'"
   title="Terminal"
   lang="bash"
 />
 
-### Using child combinator inside :has()
+See [Affected Dependencies](/cli/affected) for using this to test only
+what a branch could have broken.
 
-The `>` inside `:has()` means **direct dependency**:
+### Reaching further than one hop
+
+`:has()` only looks one dependency deep, so `>` inside it is redundant
+— these select the same packages:
 
 <Code
-  code={`# Packages with a direct dep named "lodash"
-$ vlt query ':has(> [name=lodash])'
+  code={`$ vlt query ':has(> [name=lodash])'
+$ vlt query ':has([name=lodash])'`}
+  title="Terminal"
+  lang="bash"
+/>
 
-# Packages with any transitive dep named "lodash"
+To match packages that depend on lodash _through_ another package,
+nest another `:has()`:
 
-$ vlt query ':has([name=lodash])'`} title="Terminal" lang="bash" />
+<Code
+  code={`# depends on something that depends on lodash
+$ vlt query ':has(:has([name=lodash]))'`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ## See also
 
@@ -101,3 +111,4 @@ $ vlt query ':has([name=lodash])'`} title="Terminal" lang="bash" />
 - [`:is()`](/cli/selectors/pseudo-classes/is) — forgiving selector
   list matching
 - [Combinators](/cli/selectors/combinators) — `>`, ` `, `~`
+- [Affected Dependencies](/cli/affected) — what a change breaks

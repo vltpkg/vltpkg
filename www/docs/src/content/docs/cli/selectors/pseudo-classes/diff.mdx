@@ -20,7 +20,16 @@ then maps them to packages by their file path location.
 ```
 
 When called with no argument, defaults to `HEAD` (uncommitted
-changes).
+changes). Untracked files are not seen — `git diff` only reports
+tracked ones.
+
+The comparison is two-dot: the ref's tree against your working tree,
+in both directions. To compare against the merge base instead — "what
+this branch changed", regardless of how far `main` has moved — use the
+three-dot form, `:diff(main...HEAD)`.
+
+Refs containing a `/` must be quoted, `:diff("origin/main")`;
+unquoted, the selector parser rejects the slash.
 
 ## Examples
 
@@ -88,7 +97,7 @@ my-monorepo
 Run tests only for changed workspaces:
 
 <Code
-  code="$ vlt query ':workspace:diff(main)' --view=json | xargs -I {} vlr test -w {}"
+  code={`$ vlt run test --scope=':workspace:diff(main...HEAD)'`}
   title="Terminal"
   lang="bash"
 />
@@ -96,13 +105,15 @@ Run tests only for changed workspaces:
 Find packages that depend on changed packages:
 
 <Code
-  code="$ vlt query ':has(> :diff(main))'"
+  code="$ vlt query ':has(:diff(main))'"
   title="Terminal"
   lang="bash"
 />
 
 ## See also
 
+- [Affected Dependencies](/cli/affected) — testing only what a change
+  could have broken
 - [`:path()`](/cli/selectors/pseudo-classes/path) — match by file path
 - [`:has()`](/cli/selectors/pseudo-classes/has) — find packages that
   depend on changed packages

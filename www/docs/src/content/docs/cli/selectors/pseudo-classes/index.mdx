@@ -27,7 +27,7 @@ but operate on dependency graph nodes.
   />
   <LinkCard
     title=":has()"
-    description="Match packages that have descendants matching a selector"
+    description="Match packages that depend on a match for a selector"
     href="/cli/selectors/pseudo-classes/has"
   />
   <LinkCard
@@ -94,23 +94,23 @@ but operate on dependency graph nodes.
 
 ## Quick reference
 
-| Selector                                                  | Description              | Example                   |
-| --------------------------------------------------------- | ------------------------ | ------------------------- |
-| [`:attr()`](/cli/selectors/pseudo-classes/attr)           | Nested property match    | `:attr(engines, [node])`  |
-| [`:dist()`](/cli/selectors/pseudo-classes/dist)           | By registry dist-tag     | `:dist(latest)`           |
-| [`:has()`](/cli/selectors/pseudo-classes/has)             | Has matching descendants | `:has(.peer[name=react])` |
-| [`:host()`](/cli/selectors/pseudo-classes/host)           | Switch graph context     | `:host(local) :malware`   |
-| [`:is()`](/cli/selectors/pseudo-classes/is)               | Match any in list        | `:is([name=a], [name=b])` |
-| [`:not()`](/cli/selectors/pseudo-classes/not)             | Negation                 | `:not([license=MIT])`     |
-| [`:outdated()`](/cli/selectors/pseudo-classes/outdated)   | Newer version exists     | `:outdated(major)`        |
-| [`:published()`](/cli/selectors/pseudo-classes/published) | By publish date          | `:published(">2024")`     |
-| [`:semver()`](/cli/selectors/pseudo-classes/semver)       | Semver comparison        | `:semver(^1.0.0)`         |
-| [`:spec()`](/cli/selectors/pseudo-classes/spec)           | By specifier string      | `:spec(^1.0.0)`           |
-| [`:path()`](/cli/selectors/pseudo-classes/path)           | By file path             | `:path("packages/**")`    |
-| [`:type()`](/cli/selectors/pseudo-classes/type)           | By package type          | `:type(git)`              |
-| [`:diff()`](/cli/selectors/pseudo-classes/diff)           | Changed files            | `:diff(main)`             |
-| [`:hostname()`](/cli/selectors/pseudo-classes/hostname)   | By upstream hostname     | `:hostname(github.com)`   |
-| [`:registry()`](/cli/selectors/pseudo-classes/registry)   | By registry name         | `:registry(npm)`          |
+| Selector                                                  | Description           | Example                   |
+| --------------------------------------------------------- | --------------------- | ------------------------- |
+| [`:attr()`](/cli/selectors/pseudo-classes/attr)           | Nested property match | `:attr(engines, [node])`  |
+| [`:dist()`](/cli/selectors/pseudo-classes/dist)           | By registry dist-tag  | `:dist(latest)`           |
+| [`:has()`](/cli/selectors/pseudo-classes/has)             | Depends on a match    | `:has(:peer[name=react])` |
+| [`:host()`](/cli/selectors/pseudo-classes/host)           | Switch graph context  | `:host(local) :malware`   |
+| [`:is()`](/cli/selectors/pseudo-classes/is)               | Match any in list     | `:is([name=a], [name=b])` |
+| [`:not()`](/cli/selectors/pseudo-classes/not)             | Negation              | `:not([license=MIT])`     |
+| [`:outdated()`](/cli/selectors/pseudo-classes/outdated)   | Newer version exists  | `:outdated(major)`        |
+| [`:published()`](/cli/selectors/pseudo-classes/published) | By publish date       | `:published(">2024")`     |
+| [`:semver()`](/cli/selectors/pseudo-classes/semver)       | Semver comparison     | `:semver(^1.0.0)`         |
+| [`:spec()`](/cli/selectors/pseudo-classes/spec)           | By specifier string   | `:spec(^1.0.0)`           |
+| [`:path()`](/cli/selectors/pseudo-classes/path)           | By file path          | `:path("packages/**")`    |
+| [`:type()`](/cli/selectors/pseudo-classes/type)           | By package type       | `:type(git)`              |
+| [`:diff()`](/cli/selectors/pseudo-classes/diff)           | Changed files         | `:diff(main)`             |
+| [`:hostname()`](/cli/selectors/pseudo-classes/hostname)   | By upstream hostname  | `:hostname(github.com)`   |
+| [`:registry()`](/cli/selectors/pseudo-classes/registry)   | By registry name      | `:registry(npm)`          |
 
 ## See also
 

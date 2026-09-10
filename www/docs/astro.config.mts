@@ -136,6 +136,7 @@ export default defineConfig({
            */
           exclude: [
             'cli/workspaces',
+            'cli/affected',
             'cli/selectors/**',
             'packages/**',
             'get-started/reference',
@@ -184,6 +185,7 @@ export default defineConfig({
             'cli/registries',
             'cli/security',
             'cli/workspaces',
+            'cli/affected',
             'cli/catalogs',
             'cli/peer-dependencies',
             'cli/graph-modifiers',
