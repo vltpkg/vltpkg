@@ -12,6 +12,7 @@ import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { createGetAuthHeader } from '../query-auth.ts'
+import { assertVltInstalled } from '../is-vlt-installed.ts'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
@@ -45,6 +46,11 @@ export const usage: CommandUsage = () =>
       top-level items in the output graph. The --target option allows you to
       filter what dependencies to include in the output. Using both options
       allows you to render subgraphs of the dependency graph.
+
+      The listed graph is the one built by \`vlt install\`. In a project
+      installed by another client there is no such graph and the command
+      errors instead of reporting every dependency as missing. Queries
+      using \`:host()\` load their graph from elsewhere and are exempt.
 
       Defaults to listing direct dependencies of a project and any configured
       workspace.`,
@@ -108,20 +114,6 @@ export const command: CommandFn<ListResult> = async conf => {
   let graph: Graph | undefined
   let securityArchive: SecurityArchive | undefined
 
-  // optionally load the cwd graph if we found a package.json file
-  if (mainManifest) {
-    graph = actual.load({
-      ...conf.options,
-      mainManifest,
-      modifiers,
-      monorepo,
-      loadManifests: true,
-    })
-    securityArchive = await SecurityArchive.start({
-      nodes: [...graph.nodes.values()],
-    })
-  }
-
   // Validate positional arguments - only allow package names, not direct queries
   for (const arg of conf.positionals) {
     if (!/^[@\w-]/.test(arg)) {
@@ -143,6 +135,29 @@ export const command: CommandFn<ListResult> = async conf => {
   const scopeQueryString = conf.get('scope')
   const queryString = targetQueryString || positionalQueryString
   const projectQueryString = ':workspace, :project > *'
+
+  // `:host()` swaps the graph for one loaded from somewhere else, so
+  // those queries do not need this project to be installed.
+  const usesHostContext = [queryString, scopeQueryString].some(q =>
+    q?.includes(':host('),
+  )
+
+  // optionally load the cwd graph if we found a package.json file
+  if (mainManifest) {
+    if (!usesHostContext) {
+      assertVltInstalled(conf.options.projectRoot, 'ls')
+    }
+    graph = actual.load({
+      ...conf.options,
+      mainManifest,
+      modifiers,
+      monorepo,
+      loadManifests: true,
+    })
+    securityArchive = await SecurityArchive.start({
+      nodes: [...graph.nodes.values()],
+    })
+  }
   const selectImporters: string[] = []
   const hostContexts = await createHostContextsMap(conf)
   const getAuthHeader = createGetAuthHeader(conf)

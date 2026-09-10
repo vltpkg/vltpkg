@@ -9,13 +9,12 @@ import {
 import { Query } from '@vltpkg/query'
 import { stdout } from '../output.ts'
 import { error } from '@vltpkg/error-cause'
-import { lstatSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { createDiffFilesProvider } from '../query-diff-files.ts'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { createGetAuthHeader } from '../query-auth.ts'
+import { assertVltInstalled } from '../is-vlt-installed.ts'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
@@ -53,6 +52,11 @@ export const usage: CommandUsage = () =>
       an alternative to positional arguments, it allows you to filter what
       dependencies to include in the output. Using both options allows you to
       render subgraphs of the dependency graph.
+
+      The queried graph is the one built by \`vlt install\`. In a project
+      installed by another client there is no such graph and the command
+      errors instead of reporting every dependency as missing. Queries
+      using \`:host()\` load their graph from elsewhere and are exempt.
 
       Defaults to listing all dependencies of the project root and workspaces.`,
 
@@ -142,28 +146,6 @@ export const views = {
   png: MermaidImageView,
 } as const satisfies Views<QueryResult>
 
-/**
- * `vlt query` reads the installed graph from
- * `node_modules/.vlt-lock.json`. Without it, `actual.load` falls back to
- * walking `node_modules`, which finds nothing in a project installed by
- * another client and reports every dependency as missing - an empty
- * answer that looks like a real one.
- */
-const assertVltProject = (projectRoot: string) => {
-  const hiddenLockfile = resolve(
-    projectRoot,
-    'node_modules/.vlt-lock.json',
-  )
-  if (
-    !lstatSync(hiddenLockfile, { throwIfNoEntry: false })?.isFile()
-  ) {
-    throw error(
-      'Not a vlt project: run `vlt install` to build the graph that `vlt query` reads',
-      { code: 'EQUERY', path: hiddenLockfile },
-    )
-  }
-}
-
 export const command: CommandFn<QueryResult> = async conf => {
   const modifiers = GraphModifier.maybeLoad(conf.options)
   const monorepo = conf.options.monorepo
@@ -179,19 +161,19 @@ export const command: CommandFn<QueryResult> = async conf => {
   const positionalQueryString = conf.positionals[0]
   const targetQueryString = conf.get('target')
   const scopeQueryString = conf.get('scope')
+  // --target takes precedence over the positional query
+  const queryString = targetQueryString || positionalQueryString
 
   // `:host()` swaps the graph for one loaded from somewhere else, so
   // those queries do not need this project to be installed.
-  const usesHostContext = [
-    positionalQueryString,
-    targetQueryString,
-    scopeQueryString,
-  ].some(q => q?.includes(':host('))
+  const usesHostContext = [queryString, scopeQueryString].some(q =>
+    q?.includes(':host('),
+  )
 
   // optionally load the cwd graph if we found a package.json file
   if (mainManifest) {
     if (!usesHostContext) {
-      assertVltProject(conf.options.projectRoot)
+      assertVltInstalled(conf.options.projectRoot, 'query')
     }
     graph = actual.load({
       ...conf.options,
@@ -204,7 +186,6 @@ export const command: CommandFn<QueryResult> = async conf => {
       nodes: [...graph.nodes.values()],
     })
   }
-  const queryString = targetQueryString || positionalQueryString
   const hostContexts = await createHostContextsMap(conf)
   const diffFiles = createDiffFilesProvider(conf.options.projectRoot)
   const getAuthHeader = createGetAuthHeader(conf)

@@ -1,4 +1,4 @@
-import { rmSync } from 'fs'
+import { existsSync, rmSync } from 'fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
@@ -1841,3 +1841,54 @@ t.test('verifyImporterNodeModules', async t => {
     },
   )
 })
+
+t.test(
+  'hidden lockfile cache write requires the vlt store',
+  async t => {
+    const manifest = JSON.stringify({
+      name: 'p',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0' },
+    })
+    const foo = {
+      'package.json': JSON.stringify({
+        name: 'foo',
+        version: '1.0.0',
+      }),
+    }
+    const run = (projectRoot: string) => {
+      t.chdir(projectRoot)
+      unload('project')
+      return load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      })
+    }
+
+    const foreign = t.testdir({
+      'package.json': manifest,
+      'vlt.json': '{}',
+      node_modules: { foo },
+    })
+    run(foreign)
+    t.notOk(
+      existsSync(`${foreign}/node_modules/.vlt-lock.json`),
+      'walking a node_modules not built by vlt writes no hidden lockfile',
+    )
+
+    const vlt = t.testdir({
+      'package.json': manifest,
+      'vlt.json': '{}',
+      node_modules: { '.vlt': {}, foo },
+    })
+    run(vlt)
+    t.ok(
+      existsSync(`${vlt}/node_modules/.vlt-lock.json`),
+      'walking a vlt node_modules caches the hidden lockfile',
+    )
+  },
+)
