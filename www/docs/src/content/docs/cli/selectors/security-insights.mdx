@@ -107,7 +107,7 @@ Matches packages with a specific CVE alert:
 
 Match packages with any CVE:
 
-<Code code="$ vlt query ':cve(*)'" title="Terminal" lang="bash" />
+<Code code="$ vlt query ':cve'" title="Terminal" lang="bash" />
 
 ### `:cwe(<id>)`
 
@@ -351,7 +351,7 @@ Run a comprehensive security audit:
 
 <Code
   code={`# Critical issues
-$ vlt query ':malware, :cve(*), :obfuscated'
+$ vlt query ':malware, :cve, :obfuscated'
 
 # Vulnerability scan with severity
 
