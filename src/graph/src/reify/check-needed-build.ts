@@ -2,7 +2,9 @@ import type { PathScurry } from 'path-scurry'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { join } from 'node:path'
+import { scriptsManifest } from './scripts-manifest.ts'
 
 /**
  * Build data containing the queue of DepIDs that need building
@@ -47,16 +49,17 @@ const nodeNeedsBuild = (
   // If the manifest is not available on the node, read it from disk.
   // This can happen when the ideal graph is loaded from a lockfile
   // and there's no actual graph available to hydrate the manifest data from.
-  let manifest = node.manifest
-  if (!manifest) {
-    try {
-      manifest = packageJson.read(node.resolvedLocation(scurry))
-      node.manifest = manifest
-    } catch {
-      // If the manifest cannot be read (missing/corrupted), treat as
-      // "no build needed" to avoid failing the entire reification.
-      return false
-    }
+  // An abbreviated registry manifest carries `hasInstallScript` in place
+  // of `scripts` and is likewise resolved from disk.
+  let manifest: NormalizedManifest
+  try {
+    const dir = node.resolvedLocation(scurry)
+    node.manifest ??= packageJson.read(dir)
+    manifest = scriptsManifest(node.manifest, dir, packageJson)
+  } catch {
+    // If the manifest cannot be read (missing/corrupted), treat as
+    // "no build needed" to avoid failing the entire reification.
+    return false
   }
 
   const { scripts = {} } = manifest

@@ -60,6 +60,21 @@ t.test('missing cache file is a no-op', async t => {
   t.equal(hits, 0)
 })
 
+t.test('re-requests the representation it was given', async t => {
+  const accepts: (string | undefined)[] = []
+  const { url } = await listen(t, (req, res) => {
+    accepts.push(req.headers.accept)
+    res.statusCode = 304
+    res.end()
+  })
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const target = `${url}/pkg`
+  await seed(rc, 'GET', target, jsonEntry({ etag: '"abc"' }))
+  await revalidateEntry(rc, 'GET', target)
+  await revalidateEntry(rc, 'GET', target, 'application/json')
+  t.strictSame(accepts, [undefined, 'application/json'])
+})
+
 t.test('truncated cache file is a no-op', async t => {
   let hits = 0
   const { url } = await listen(t, (_req, res) => {
