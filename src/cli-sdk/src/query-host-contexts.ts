@@ -5,6 +5,7 @@ import { reloadConfig } from './reload-config.ts'
 import { actual, createVirtualRoot } from '@vltpkg/graph'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { error } from '@vltpkg/error-cause'
+import { isVltInstalled } from './is-vlt-installed.ts'
 import type { PathBase, PathScurry } from 'path-scurry'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { LoadedConfig } from './config/index.ts'
@@ -26,13 +27,6 @@ try {
 } catch {}
 const home =
   foundHome ?? posix.dirname(posix.format(parse(process.cwd())))
-
-const isVltInstalled = (folder: PathBase): boolean =>
-  !!folder.resolve('node_modules/.vlt').lstatSync()?.isDirectory() ||
-  !!folder
-    .resolve('node_modules/.vlt-lock.json')
-    .lstatSync()
-    ?.isFile()
 
 /**
  * Generates possible project keys for a given folder.
@@ -134,7 +128,7 @@ export const createHostContextsMap = async (
         const config = await reloadConfig(folder.fullpath())
 
         // only include projects that are vlt-installed
-        if (!isVltInstalled(folder)) {
+        if (!isVltInstalled(folder.fullpath())) {
           continue
         }
 

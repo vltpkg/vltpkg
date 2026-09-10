@@ -164,7 +164,8 @@ t.test('list', async t => {
   sharedOptions.packageJson.read = () => graph.mainImporter.manifest!
   const options = {
     ...sharedOptions,
-    projectRoot: t.testdirName,
+    // the list command requires a vlt install
+    projectRoot: t.testdir({ node_modules: { '.vlt': {} } }),
   }
 
   t.matchSnapshot(
@@ -290,6 +291,8 @@ t.test('list', async t => {
       version: '1.0.0',
     }
     const dir = t.testdir({
+      // the list command requires a vlt install
+      node_modules: { '.vlt': {} },
       'package.json': JSON.stringify(mainManifest),
       'vlt.json': JSON.stringify({
         workspaces: { packages: ['./packages/*'] },
@@ -401,6 +404,8 @@ t.test('list', async t => {
 
   await t.test('running from homedir', async t => {
     const dir = t.testdir({
+      // the list command requires a vlt install
+      node_modules: { '.vlt': {} },
       projects: {
         'my-project': {
           node_modules: {
@@ -516,6 +521,8 @@ t.test('list', async t => {
         },
       },
       node_modules: {
+        // the list command requires a vlt install
+        '.vlt': {},
         a: t.fixture('symlink', '../packages/a'),
         b: t.fixture('symlink', '../packages/a'),
       },
@@ -558,6 +565,8 @@ t.test('list', async t => {
       version: '1.0.0',
     }
     const dir = t.testdir({
+      // the list command requires a vlt install
+      node_modules: { '.vlt': {} },
       'package.json': JSON.stringify(mainManifest),
       'vlt.json': JSON.stringify({
         workspaces: { packages: ['./packages/*'] },
@@ -820,5 +829,76 @@ t.test('list', async t => {
       }),
       'should handle complex query string',
     )
+  })
+})
+
+t.test('install validation', async t => {
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const fixture = {
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({}),
+  }
+
+  const run = async (
+    t: Test,
+    dir: string,
+    values: Partial<LoadedConfig['values']> & { target?: string },
+  ) => {
+    const Command = await mockList(t)
+    const packageJson = new PackageJson()
+    packageJson.read = () => mainManifest
+    return Command.command({
+      positionals: [],
+      values: { view: 'count', ...values },
+      options: { ...sharedOptions, packageJson, projectRoot: dir },
+      get: (key: string) => (values as any)[key],
+    } as unknown as LoadedConfig)
+  }
+
+  await t.test('node_modules not installed by vlt', async t => {
+    const dir = t.testdir({ ...fixture, node_modules: { foo: {} } })
+    await t.rejects(
+      run(t, dir, { view: 'count' }),
+      {
+        message:
+          'node_modules was not installed by vlt: run `vlt install` to rebuild it before running `vlt ls`, or use `:host()` to query another project',
+        cause: { code: 'EQUERY', path: join(dir, 'node_modules') },
+      },
+      'should refuse to list a node_modules vlt did not install',
+    )
+  })
+
+  await t.test('no node_modules at all', async t => {
+    const dir = t.testdir(fixture)
+    await t.rejects(
+      run(t, dir, { view: 'count' }),
+      {
+        message:
+          'Project is not installed: run `vlt install` to build the graph that `vlt ls` reads',
+        cause: { code: 'EQUERY', path: join(dir, 'node_modules') },
+      },
+      'should refuse to list a project that was never installed',
+    )
+  })
+
+  await t.test('vlt store present', async t => {
+    const dir = t.testdir({
+      ...fixture,
+      node_modules: { '.vlt': {} },
+    })
+    await t.resolves(run(t, dir, { view: 'count' }))
+  })
+
+  await t.test('host context queries are exempt', async t => {
+    const dir = t.testdir(fixture)
+    for (const values of [
+      { target: ':host(local) *' },
+      { scope: ':host(local) *' },
+    ]) {
+      await t.resolves(
+        run(t, dir, values as Partial<LoadedConfig['values']>),
+        `should not require an install for ${JSON.stringify(values)}`,
+      )
+    }
   })
 })
