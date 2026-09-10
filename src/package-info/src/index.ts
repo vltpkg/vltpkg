@@ -51,6 +51,41 @@ export const delimiter = '~'
 export const PACKUMENT_ACCEPT =
   'application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*'
 
+/**
+ * True when resolving `spec` can never select a prerelease, so the
+ * `?stable` packument is enough. A non-default tag, or a range with a
+ * prerelease in one of its comparators, admits prereleases; so does
+ * `*`, but it only picks one when no stable version exists, which
+ * {@link PackageInfoClient.manifest} covers by retrying with the full
+ * packument.
+ */
+const stableSuffices = (
+  spec: Spec,
+  { tag }: PickManifestOptions,
+): boolean => {
+  if (tag && tag !== 'latest') return false
+  const { distTag, range } = spec.final
+  if (distTag) return distTag === 'latest'
+  if (!range || range.includePrerelease) return false
+  return !range.set.some(c => c.tuples.some(admitsPrerelease))
+}
+
+// `^1` desugars to `>=1.0.0 <2.0.0-0`: the `-0` upper bound is the lowest
+// prerelease, there to exclude the 2.0.0 prereleases, not admit them.
+type RangeTuple = NonNullable<
+  Spec['range']
+>['set'][number]['tuples'][number]
+const admitsPrerelease = (t: RangeTuple): boolean => {
+  if (!Array.isArray(t)) return false
+  const [op, { prerelease }] = t
+  if (!prerelease?.length) return false
+  return !(
+    op === '<' &&
+    prerelease.length === 1 &&
+    prerelease[0] === 0
+  )
+}
+
 export type Resolution = {
   resolved: string
   integrity?: Integrity
@@ -78,6 +113,12 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   RegistryClientRequestOptions & {
     /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
     from?: string
+    /**
+     * Only versions without a prerelease are needed. A registry that
+     * supports it serves a smaller `?stable` packument with prereleases
+     * (and the dist-tags pointing at them) removed; others ignore it.
+     */
+    stable?: boolean
   }
 
 export type PackageInfoClientExtractOptions =
@@ -129,11 +170,11 @@ export class PackageInfoClient {
   #trustedIntegrities = new Map<string, Integrity>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
-  // In-flight coalescing key is `${registry}${name}` — no representation
-  // component. Safe only because every caller requests the same full
-  // packument (see #fetchPackument). The one thing that does vary per
-  // caller is forceRevalidate, so record it and let a moving selector
-  // reuse a forced promise but never a non-forced one (see packument()).
+  // In-flight coalescing key is the packument URL, `?stable` included,
+  // like the disk cache; every caller requests the same representation
+  // (see #fetchPackument). The one thing that does vary per caller is
+  // forceRevalidate, so record it and let a moving selector reuse a
+  // forced promise but never a non-forced one (see packument()).
   #packumentPromises = new Map<
     string,
     { promise: Promise<Packument>; forced: boolean }
@@ -796,11 +837,21 @@ export class PackageInfoClient {
           }
         }
 
-        const mani = pickManifest(
-          await this.packument(f, options),
+        const stable = stableSuffices(spec, options)
+        let mani = pickManifest(
+          await this.packument(f, { ...options, stable }),
           spec,
           options,
         )
+        // the stable packument hides prerelease-only packages and
+        // dist-tags that point at a prerelease; the full one has them
+        if (!mani && stable) {
+          mani = pickManifest(
+            await this.packument(f, options),
+            spec,
+            options,
+          )
+        }
         if (!mani) throw this.#resolveError(spec, options)
 
         // Cache the manifest data. Skip paths already written this
@@ -961,19 +1012,26 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         if (!registry) throw noRegistryError(spec)
-        // Coalescing key has no representation component (see #fetchPackument).
-        const packumentKey = `${registry}${name}`
+        const pakuURL = new URL(name, registry)
         const forced = isMovingSelector(f)
-        const inflight = this.#packumentPromises.get(packumentKey)
         // a moving selector must not ride along on a non-forced request:
         // that one can settle to a fresh-but-stale cache hit, which is
         // exactly what forceRevalidate exists to avoid. the other
         // direction is fine -- a forced result is never staler.
         // costs at most one extra concurrent GET for the same packument
         // when both shapes are asked for at once.
+        // Coalesced per URL, like the disk cache; the representation is
+        // fixed by the accept header (see #fetchPackument). A full
+        // packument already in flight also serves a stable request.
+        if (options.stable) {
+          const full = this.#packumentPromises.get(String(pakuURL))
+          if (full && (!forced || full.forced)) return full.promise
+          pakuURL.search = '?stable'
+        }
+        const packumentKey = String(pakuURL)
+        const inflight = this.#packumentPromises.get(packumentKey)
         if (inflight && (!forced || inflight.forced))
           return inflight.promise
-        const pakuURL = new URL(name, registry)
         const promise = this.#fetchPackument(spec, options, pakuURL)
         const record = { promise, forced }
         this.#packumentPromises.set(packumentKey, record)

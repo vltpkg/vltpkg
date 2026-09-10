@@ -101,7 +101,10 @@ const PORT = 15443 + Number(process.env.TAP_CHILD_ID || 0)
 const etag = '"yolo"'
 const server = createServer((req, res) => {
   res.setHeader('connection', 'close')
-  switch (req.url) {
+  // most routes serve the same document with or without `?stable`
+  const stable = !!req.url?.endsWith('?stable')
+  const path = stable ? req.url?.slice(0, -'?stable'.length) : req.url
+  switch (path) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       abbrevTgzRequests++
       res.setHeader('content-type', 'application/octet-stream')
@@ -195,6 +198,57 @@ const server = createServer((req, res) => {
       )
       res.setHeader('cache-control', 'public, max-age=3600')
       res.setHeader('etag', tag)
+      res.setHeader('content-length', json.byteLength)
+      return res.end(json)
+    }
+    // prereleases and the dist-tags pointing at them are absent from the
+    // `?stable` document, as the vlt registry serves it
+    case '/stable-pkg': {
+      packumentRequests.push(String(req.url))
+      const mani = (version: string) => ({
+        name: 'stable-pkg',
+        version,
+        dist: {
+          tarball: `http://localhost:${PORT}/stable-pkg/-/stable-pkg-${version}.tgz`,
+        },
+      })
+      const versions: Record<string, unknown> = {
+        '1.0.0': mani('1.0.0'),
+        '1.1.0': mani('1.1.0'),
+      }
+      const distTags: Record<string, string> = { latest: '1.1.0' }
+      if (!stable) {
+        versions['2.0.0-beta.1'] = mani('2.0.0-beta.1')
+        distTags.next = '2.0.0-beta.1'
+      }
+      const json = Buffer.from(
+        JSON.stringify({
+          name: 'stable-pkg',
+          'dist-tags': distTags,
+          versions,
+        }),
+      )
+      res.setHeader('content-length', json.byteLength)
+      return res.end(json)
+    }
+    // only ever published prereleases
+    case '/pre-only': {
+      packumentRequests.push(String(req.url))
+      const json = Buffer.from(
+        JSON.stringify({
+          name: 'pre-only',
+          'dist-tags': stable ? {} : { latest: '1.0.0-beta.1' },
+          versions:
+            stable ?
+              {}
+            : {
+                '1.0.0-beta.1': {
+                  name: 'pre-only',
+                  version: '1.0.0-beta.1',
+                },
+              },
+        }),
+      )
       res.setHeader('content-length', json.byteLength)
       return res.end(json)
     }
@@ -356,6 +410,7 @@ let movingRequests = 0
 let movingLatest = '1.0.0'
 let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
+const packumentRequests: string[] = []
 let abbrevTgzRequests = 0
 
 const defaultRegistry = `http://localhost:${PORT}/`
@@ -2415,4 +2470,89 @@ t.test('no registry configured', async t => {
   await t.rejects(manifest('abbrev@2.0.0', noRegistry), {
     cause: { code: 'ECONFIG' },
   })
+})
+
+t.test('stable packuments', async t => {
+  const pi = () =>
+    new PackageInfoClient({ ...options, cache: t.testdir() })
+  t.beforeEach(() => (packumentRequests.length = 0))
+
+  t.test('range that cannot match a prerelease', async t => {
+    const mani = await pi().manifest('stable-pkg@^1')
+    t.equal(mani.version, '1.1.0')
+    t.strictSame(packumentRequests, ['/stable-pkg?stable'])
+  })
+
+  t.test('latest tag', async t => {
+    const mani = await pi().manifest('stable-pkg@latest')
+    t.equal(mani.version, '1.1.0')
+    t.strictSame(packumentRequests, ['/stable-pkg?stable'])
+  })
+
+  t.test('any range', async t => {
+    const mani = await pi().manifest('stable-pkg')
+    t.equal(mani.version, '1.1.0')
+    t.strictSame(packumentRequests, ['/stable-pkg?stable'])
+  })
+
+  t.test('resolve() goes through the same path', async t => {
+    const res = await pi().resolve('stable-pkg@^1')
+    t.match(res.resolved, /stable-pkg-1\.1\.0\.tgz$/)
+    t.strictSame(packumentRequests, ['/stable-pkg?stable'])
+  })
+
+  t.test('other dist-tags need the full packument', async t => {
+    const mani = await pi().manifest('stable-pkg@next')
+    t.equal(mani.version, '2.0.0-beta.1')
+    t.strictSame(packumentRequests, ['/stable-pkg'])
+  })
+
+  t.test(
+    'a prerelease in the range needs the full packument',
+    async t => {
+      const mani = await pi().manifest('stable-pkg@^2.0.0-beta.0')
+      t.equal(mani.version, '2.0.0-beta.1')
+      t.strictSame(packumentRequests, ['/stable-pkg'])
+    },
+  )
+
+  t.test(
+    'a non-default tag option needs the full packument',
+    async t => {
+      const mani = await pi().manifest('stable-pkg', { tag: 'next' })
+      t.equal(mani.version, '2.0.0-beta.1')
+      t.strictSame(packumentRequests, ['/stable-pkg'])
+    },
+  )
+
+  t.test('packument() is never filtered', async t => {
+    const paku = await pi().packument('stable-pkg')
+    t.ok(paku.versions['2.0.0-beta.1'])
+    t.strictSame(packumentRequests, ['/stable-pkg'])
+  })
+
+  t.test(
+    'retries with the full packument for a prerelease-only package',
+    async t => {
+      const mani = await pi().manifest('pre-only@latest')
+      t.equal(mani.version, '1.0.0-beta.1')
+      t.strictSame(packumentRequests, [
+        '/pre-only?stable',
+        '/pre-only',
+      ])
+    },
+  )
+
+  t.test(
+    'still fails when the full packument has no match',
+    async t => {
+      await t.rejects(pi().manifest('stable-pkg@^3'), {
+        message: 'Could not resolve',
+      })
+      t.strictSame(packumentRequests, [
+        '/stable-pkg?stable',
+        '/stable-pkg',
+      ])
+    },
+  )
 })
