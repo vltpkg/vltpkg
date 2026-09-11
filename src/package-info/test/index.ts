@@ -2525,6 +2525,30 @@ t.test('stable packuments', async t => {
     },
   )
 
+  t.test(
+    'a moving selector only reuses a forced full request',
+    async t => {
+      const p = pi()
+      coalescedPackumentRequests = 0
+      // an exact-version packument request is not forced, so `latest`
+      // (forced, stable) cannot ride along and fetches on its own
+      await Promise.all([
+        p.packument('coalesced@2.0.0'),
+        p.manifest('coalesced@latest'),
+      ])
+      t.equal(coalescedPackumentRequests, 2)
+
+      // both forced: the stable request reuses the full one in flight
+      const q = pi()
+      coalescedPackumentRequests = 0
+      await Promise.all([
+        q.packument('coalesced'),
+        q.manifest('coalesced@latest'),
+      ])
+      t.equal(coalescedPackumentRequests, 1)
+    },
+  )
+
   t.test('packument() is never filtered', async t => {
     const paku = await pi().packument('stable-pkg')
     t.ok(paku.versions['2.0.0-beta.1'])

@@ -66,6 +66,8 @@ const stableSuffices = (
   if (tag && tag !== 'latest') return false
   const { distTag, range } = spec.final
   if (distTag) return distTag === 'latest'
+  /* c8 ignore next 2 - a registry spec always has a tag or a range, and
+   * Spec never parses one with includePrerelease */
   if (!range || range.includePrerelease) return false
   return !range.set.some(c => c.tuples.some(admitsPrerelease))
 }
