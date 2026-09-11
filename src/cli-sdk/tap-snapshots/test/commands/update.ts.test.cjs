@@ -15,7 +15,8 @@ Usage:
   vlt update
 
 Update dependencies to their latest in-range versions. Discards the lockfile and
-resolves dependencies from scratch.
+resolves dependencies from scratch. Registry and git host options given on the
+command line or via env are saved to the project vlt.json.
 
   Aliases
 

@@ -180,6 +180,10 @@ export const definition = j
 
      Command-specific fields may be set in a nested \`command\` object that
      overrides any options defined at the top level.
+
+     Object type values given in the environment or on the command line
+     are merged key by key over the config files (command line wins over
+     environment); other values replace them.
     `,
   )
 
@@ -250,6 +254,14 @@ export const definition = j
                     alias must be configured (e.g. via \`vlt setup\`) before it
                     can be used. The \`gh\` and \`jsr\` aliases have built-in
                     defaults that can be overridden here.
+
+                    Aliases given on the command line or in
+                    \`VLT_REGISTRIES\` (newline-delimited) merge with the
+                    configured ones, later sources winning per key. Registry
+                    and git host options given this way to \`install\`,
+                    \`add\` or \`update\` are saved to the project
+                    \`vlt.json\` (or the user one with \`--config=user\`)
+                    when no config file already has them.
                     `,
     },
 

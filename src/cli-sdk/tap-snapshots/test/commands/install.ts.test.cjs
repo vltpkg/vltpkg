@@ -24,7 +24,8 @@ Usage:
   vlt install [packages ...]
 
 Install the specified packages, updating package.json and vlt-lock.json
-appropriately.
+appropriately. Registry and git host options given on the command line or via
+env (e.g. \`--registries name=url\`) are saved to the project vlt.json.
 
   Aliases
 

@@ -314,3 +314,54 @@ t.test('hasNpmRegistry', async t => {
     'default-registry-alias at a missing alias -> false',
   )
 })
+
+t.test('normalizeRegistryURL / unknownSpecPrefixError', async t => {
+  const { normalizeRegistryURL, unknownSpecPrefixError } =
+    await load()
+  t.equal(normalizeRegistryURL('http://a'), 'http://a/')
+  t.equal(normalizeRegistryURL('http://a/'), 'http://a/')
+  const er = unknownSpecPrefixError('loc', 'foo@loc:foo@1', ['npm:'])
+  t.match(er, {
+    message: /^Unknown spec prefix "loc:" in "foo@loc:foo@1"\./,
+    cause: {
+      code: 'ECONFIG',
+      found: 'loc:',
+      validOptions: ['npm:'],
+    },
+  })
+  t.match(er.message, '`vlt config set registries.loc=<url>`')
+})
+
+t.test('asUnknownSpecPrefix', async t => {
+  const { asUnknownSpecPrefix } = await load()
+  const { error } = await import('@vltpkg/error-cause')
+  t.match(
+    asUnknownSpecPrefix(
+      error('Protocol nope: is not defined', {
+        spec: 'bar@nope:bar@^2.x',
+        found: 'nope:',
+        validOptions: ['npm:'],
+      }),
+    ),
+    {
+      message:
+        /^Unknown spec prefix "nope:" in "bar@nope:bar@\^2\.x"\./,
+      cause: {
+        code: 'ECONFIG',
+        found: 'nope:',
+        validOptions: ['npm:'],
+      },
+    },
+  )
+  for (const er of [
+    new Error('x'),
+    'str',
+    error('Protocol x: is not defined', { found: 'x:' }),
+    error('Named catalog not found', {
+      spec: 'a@catalog:x',
+      found: 'x:',
+    }),
+  ]) {
+    t.equal(asUnknownSpecPrefix(er), er, 'passes through')
+  }
+})

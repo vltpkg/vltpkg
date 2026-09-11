@@ -17,6 +17,7 @@ const clearEnv = () => {
   for (const k of Object.keys(process.env)) {
     if (
       k.startsWith('VLT_') ||
+      k === '__VLT_INTERNAL_EXPLICIT' ||
       k === 'FORCE_COLOR' ||
       k === 'NO_COLOR'
     ) {
@@ -1416,4 +1417,189 @@ t.test('pairsToRecords/recordsToPairs round-trip', async t => {
     pairsToRecords(pairs as Parameters<typeof pairsToRecords>[0]),
     records,
   )
+})
+
+t.test('record fields merge file -> env -> cli', async t => {
+  const load = async (
+    t: Test,
+    argv: string[],
+    config: Record<string, unknown> = {
+      registries: { npm: 'https://npm/', loc: 'https://file-loc/' },
+      'git-hosts': { gh2: 'git+ssh://file/$1' },
+      workspace: ['a'],
+    },
+  ) => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ config }),
+      '.git': {},
+    })
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    return Config.load(dir, argv, true)
+  }
+
+  t.test('cli merges over file', async t => {
+    const c = await load(t, [
+      'install',
+      '--registries',
+      'x=https://cli-x/',
+      '--git-hosts',
+      'gh3=git+ssh://cli/$1',
+      '--workspace',
+      'b',
+    ])
+    t.strictSame(c.getRecord('registries'), {
+      npm: 'https://npm/',
+      loc: 'https://file-loc/',
+      x: 'https://cli-x/',
+    })
+    t.strictSame(c.getRecord('git-hosts'), {
+      gh2: 'git+ssh://file/$1',
+      gh3: 'git+ssh://cli/$1',
+    })
+    t.strictSame(c.get('workspace'), ['b'], 'plain lists replace')
+    t.strictSame(c.explicit, {
+      registries: ['x=https://cli-x/'],
+      'git-hosts': ['gh3=git+ssh://cli/$1'],
+      workspace: ['b'],
+    })
+  })
+
+  t.test('cli wins over env wins over file, per key', async t => {
+    process.env.VLT_REGISTRIES =
+      'loc=https://env-loc/\ne=https://env-e/\nx=https://env-x/'
+    process.env.VLT_REGISTRY = 'https://env-reg/'
+    const c = await load(t, [
+      'install',
+      '--registries',
+      'x=https://cli-x/',
+    ])
+    t.strictSame(c.getRecord('registries'), {
+      npm: 'https://npm/',
+      loc: 'https://env-loc/',
+      e: 'https://env-e/',
+      x: 'https://cli-x/',
+    })
+    t.strictSame(c.explicit, {
+      registry: 'https://env-reg/',
+      registries: [
+        'loc=https://env-loc/',
+        'e=https://env-e/',
+        'x=https://cli-x/',
+      ],
+    })
+  })
+
+  t.test(
+    'env scalar under a command block is not explicit',
+    async t => {
+      process.env.VLT_REGISTRY = 'https://env/'
+      const c = await load(t, ['install'], {
+        command: { install: { registry: 'https://blk/' } },
+      })
+      t.equal(c.get('registry'), 'https://blk/')
+      t.strictSame(c.explicit, {})
+    },
+  )
+
+  t.test('pair with no value is kept', async t => {
+    const c = await load(t, ['install', '--registries', 'bare'])
+    t.match(c.get('registries'), [
+      'npm=https://npm/',
+      'loc=https://file-loc/',
+      'bare',
+    ])
+  })
+
+  t.test('file and cli pairs deduped by key', async t => {
+    const c = await load(t, [
+      'install',
+      '--registries',
+      'loc=https://x/',
+    ])
+    t.strictSame(c.get('registries'), [
+      'npm=https://npm/',
+      'loc=https://x/',
+    ])
+  })
+
+  t.test('plain argv has nothing explicit', async t => {
+    const c = await load(t, ['install'])
+    t.strictSame(c.explicit, {})
+    t.strictSame(c.getRecord('registries'), {
+      npm: 'https://npm/',
+      loc: 'https://file-loc/',
+    })
+  })
+
+  t.test('cli record with no file value', async t => {
+    const c = await load(
+      t,
+      ['install', '--scoped-registries', '@a=https://a/'],
+      {},
+    )
+    t.strictSame(c.getRecord('scoped-registries'), {
+      '@a': 'https://a/',
+    })
+  })
+
+  t.test('command block replaces top level, cli merges', async t => {
+    const c = await load(
+      t,
+      ['install', '--registries', 'x=https://cli-x/'],
+      {
+        registries: { npm: 'https://npm/' },
+        command: {
+          install: { registries: { blk: 'https://blk/' } },
+        },
+      },
+    )
+    t.strictSame(c.getRecord('registries'), {
+      blk: 'https://blk/',
+      x: 'https://cli-x/',
+    })
+  })
+
+  t.test('nested vlt: inherited env is not explicit', async t => {
+    await load(t, ['install', '--registries', 'x=https://cli-x/'])
+    t.equal(
+      process.env.VLT_REGISTRIES,
+      'npm=https://npm/\nloc=https://file-loc/\nx=https://cli-x/',
+    )
+    const c = await load(t, ['install'], {})
+    t.strictSame(c.explicit, { registries: ['x=https://cli-x/'] })
+    t.strictSame(
+      c.getRecord('registries'),
+      {
+        npm: 'https://npm/',
+        loc: 'https://file-loc/',
+        x: 'https://cli-x/',
+      },
+      'inherited env still applies',
+    )
+  })
+
+  t.test(
+    'nested vlt: env changed for the child is explicit',
+    async t => {
+      await load(t, ['install'])
+      process.env.VLT_REGISTRIES = `${process.env.VLT_REGISTRIES}\ny=https://y/`
+      process.env.VLT_REGISTRY = 'https://child/'
+      const c = await load(t, ['install'], {})
+      t.strictSame(c.explicit, {
+        registry: 'https://child/',
+        registries: ['y=https://y/'],
+      })
+    },
+  )
+
+  t.test('bad parent env is ignored', async t => {
+    process.env.__VLT_INTERNAL_EXPLICIT = '{'
+    process.env.VLT_REGISTRY = 'https://env/'
+    const c = await load(t, ['install'])
+    t.strictSame(c.explicit, { registry: 'https://env/' })
+  })
+
+  t.end()
 })
