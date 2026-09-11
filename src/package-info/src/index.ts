@@ -6,6 +6,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import type {
+  CacheEntry,
   RegistryClient,
   RegistryClientOptions,
   RegistryClientRequestOptions,
@@ -47,6 +48,15 @@ const xdg = new XDG('vlt')
 export const delimiter = '~'
 
 /**
+ * vlt's abbreviated packument: corgi plus the fields the graph relies on
+ * (`license`, `time`, `hasInstallScript`), minus `dist.integrity` (the
+ * tarball response carries a `Repr-Digest` instead) and with
+ * `dist.tarball` relative to the registry base.
+ */
+export const VLT_PACKUMENT_MIME =
+  'application/vnd.vlt.packument-v1+json'
+
+/**
  * Accept header for packument requests. Prefers vlt's abbreviated
  * packument and falls back to the full one on registries that do not
  * know the type. See `PackageInfoClient.#fetchPackument`.
@@ -59,14 +69,18 @@ export const delimiter = '~'
  * only so a registry that rejects what it cannot satisfy exactly still
  * has something to match.
  */
-export const PACKUMENT_ACCEPT =
-  'application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*; q=0.1'
+export const PACKUMENT_ACCEPT = `${VLT_PACKUMENT_MIME}; q=1.0, application/json; q=0.8, */*; q=0.1`
 
 export type Resolution = {
   resolved: string
   integrity?: Integrity
   signatures?: Exclude<Manifest['dist'], undefined>['signatures']
   spec: Spec
+  /**
+   * The manifest came from a vlt packument, which carries no
+   * `dist.integrity`: the tarball response must carry a `Repr-Digest`.
+   */
+  digestRequired?: boolean
 }
 
 export type PackageInfoClientOptions = RegistryClientOptions &
@@ -89,6 +103,12 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   RegistryClientRequestOptions & {
     /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
     from?: string
+    /**
+     * Fetch the full packument (readme, maintainers, `dist.integrity`)
+     * rather than the abbreviated one. Bypasses the disk cache, which is
+     * keyed by URL alone, so the two representations never mix.
+     */
+    full?: boolean
   }
 
 export type PackageInfoClientExtractOptions =
@@ -138,6 +158,8 @@ export class PackageInfoClient {
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
+  // `${registry}${name}` of every packument served as VLT_PACKUMENT_MIME
+  #vltPackuments = new Set<string>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
   // In-flight coalescing key is `${registry}${name}` — no representation
@@ -283,6 +305,7 @@ export class PackageInfoClient {
               await this.getTarPool()
             ).unpack(cached.body, target)
             logRequest(r.resolved, 'cache')
+            r.integrity ??= cached.integrity
             return r
           } catch (er) {
             // a systematically failing fast path (every entry still
@@ -336,27 +359,40 @@ export class PackageInfoClient {
 
           const buf = response.buffer()
 
-          // Verify network-delivered tarball bytes against dist.integrity.
-          // Skip cache-served bodies: they were verified on the fetch that
-          // populated the cache, and cache-unzip rewrites them un-gzipped
-          // so the gzip-hash can never match. Skip lockfile-sourced
-          // integrity: it was verified on first install.
-          if (r.integrity && !fromLockfile && !response.fromCache) {
-            const hash = createHash('sha512')
-            hash.update(buf)
-            const computed: Integrity = `sha512-${hash.digest('base64')}`
-            /* c8 ignore start - defense-in-depth: registry client's
-             * checkIntegrity() usually catches mismatches first. */
-            if (computed !== r.integrity) {
-              throw error('Tarball integrity check failed', {
-                code: 'EINTEGRITY',
-                spec,
-                url: r.resolved,
-                wanted: r.integrity,
-                found: computed,
-              })
+          if (r.integrity) {
+            // Verify network-delivered tarball bytes against dist.integrity.
+            // Skip cache-served bodies: they were verified on the fetch that
+            // populated the cache, and cache-unzip rewrites them un-gzipped
+            // so the gzip-hash can never match. Skip lockfile-sourced
+            // integrity: it was verified on first install.
+            if (!fromLockfile && !response.fromCache) {
+              const hash = createHash('sha512')
+              hash.update(buf)
+              const computed: Integrity = `sha512-${hash.digest('base64')}`
+              /* c8 ignore start - defense-in-depth: registry client's
+               * checkIntegrity() usually catches mismatches first. */
+              if (computed !== r.integrity) {
+                throw error('Tarball integrity check failed', {
+                  code: 'EINTEGRITY',
+                  spec,
+                  url: r.resolved,
+                  wanted: r.integrity,
+                  found: computed,
+                })
+              }
+              /* c8 ignore stop */
             }
-            /* c8 ignore stop */
+          } else if (response.fromCache) {
+            // the hash the body was stored under
+            r.integrity = response.integrity
+          } else {
+            // no dist.integrity: check against the digest the registry
+            // sent with the tarball, and hand the hash back so the
+            // lockfile pins it from now on
+            r.integrity = verifiedDigest(response, r.digestRequired, {
+              spec,
+              url: r.resolved,
+            })
           }
 
           return buf
@@ -660,6 +696,12 @@ export class PackageInfoClient {
               })
             }
             /* c8 ignore stop */
+          } else if (!integrity && !response.fromCache) {
+            verifiedDigest(
+              response,
+              this.#vltPackuments.has(`${f.registry}${f.name}`),
+              { spec, url: tarball },
+            )
           }
 
           return buf
@@ -972,6 +1014,11 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         if (!registry) throw noRegistryError(spec)
+        const pakuURL = new URL(name, registry)
+        // a full representation neither reads nor feeds the coalescing
+        // map, which holds the abbreviated one
+        if (options.full)
+          return this.#fetchPackument(spec, options, pakuURL)
         // Coalescing key has no representation component (see #fetchPackument).
         const packumentKey = `${registry}${name}`
         const forced = isMovingSelector(f)
@@ -984,7 +1031,6 @@ export class PackageInfoClient {
         // when both shapes are asked for at once.
         if (inflight && (!forced || inflight.forced))
           return inflight.promise
-        const pakuURL = new URL(name, registry)
         const promise = this.#fetchPackument(spec, options, pakuURL)
         const record = { promise, forced }
         this.#packumentPromises.set(packumentKey, record)
@@ -1031,8 +1077,12 @@ export class PackageInfoClient {
     const response = await (
       await this.getRegistryClient()
     ).request(pakuURL, {
-      headers: { accept: PACKUMENT_ACCEPT },
-      ...(useCache === false ? { useCache } : {}),
+      headers: {
+        accept: options.full ? 'application/json' : PACKUMENT_ACCEPT,
+      },
+      ...(useCache === false || options.full ?
+        { useCache: false }
+      : {}),
       // costs a conditional GET per moving selector on an otherwise warm
       // cache, install included. 304s are cheap but not free; the
       // alternative is serving a dist tag that moved (#1656).
@@ -1051,14 +1101,22 @@ export class PackageInfoClient {
         },
       )
     }
+    let paku: Packument
     try {
-      return response.json() as Packument
+      paku = response.json() as Packument
     } catch (er) {
       if (useCache !== false) {
         return this.#fetchPackument(spec, options, pakuURL, false)
       }
       throw er
     }
+    const { registry, name } = spec.final
+    if (response.contentType.startsWith(VLT_PACKUMENT_MIME)) {
+      this.#vltPackuments.add(`${registry}${name}`)
+    }
+    /* c8 ignore next - registry specs always have a registry */
+    if (registry) absolutizeTarballs(paku, registry)
+    return paku
   }
 
   async resolve(
@@ -1116,11 +1174,17 @@ export class PackageInfoClient {
         if (mani.dist) {
           const { integrity, tarball, signatures } = mani.dist
           if (tarball) {
-            const r = {
+            const r: Resolution = {
               resolved: tarball,
               integrity,
               signatures,
               spec,
+            }
+            if (
+              !integrity &&
+              this.#vltPackuments.has(`${f.registry}${f.name}`)
+            ) {
+              r.digestRequired = true
             }
             this.#resolutions.set(memoKey, r)
             return r
@@ -1235,5 +1299,43 @@ export class PackageInfoClient {
       this.#resolveError,
     )
     return er
+  }
+}
+
+/**
+ * The sha512 of a network-delivered tarball whose manifest carried no
+ * `dist.integrity`, checked against the RFC 9530 digest the registry sent
+ * alongside it. A registry that omits `dist.integrity` labels every
+ * tarball, so a missing digest fails when `required`.
+ */
+const verifiedDigest = (
+  response: CacheEntry,
+  required: boolean | undefined,
+  context: ErrorCauseOptions,
+): Integrity => {
+  const computed = response.integrityActual
+  const { digest } = response
+  if (digest ? digest !== computed : required) {
+    throw error('Tarball integrity check failed', {
+      code: 'EINTEGRITY',
+      wanted: digest,
+      found: computed,
+      ...context,
+    })
+  }
+  return computed
+}
+
+// vlt packuments carry dist.tarball relative to the registry base
+// (`foo/-/foo-1.0.0.tgz`), the form conventionalRegistryTarball builds.
+// Nothing downstream sees a relative URL: the manifest cache, the graph
+// and the lockfile all get the absolute one.
+const absolutizeTarballs = (paku: Packument, registry: string) => {
+  const base = registry.endsWith('/') ? registry : registry + '/'
+  for (const { dist } of Object.values(paku.versions)) {
+    const tarball = dist?.tarball
+    if (tarball && !/^[a-z][a-z0-9+.-]*:/i.test(tarball)) {
+      dist.tarball = String(new URL(tarball, base))
+    }
   }
 }
