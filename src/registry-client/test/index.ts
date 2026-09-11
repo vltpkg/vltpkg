@@ -5,6 +5,7 @@ import { linkSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
+import { createHash } from 'node:crypto'
 import t from 'tap'
 import type { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
@@ -378,13 +379,14 @@ t.test('register unzipping for gzip responses', async t => {
 
 t.test('integrity http header handling', async t => {
   const rc = t.context.rc as RegistryClient
-  const ok = await rc.request(`${registryURL}/some/tarball`, {
-    integrity:
-      'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
-  })
-  t.equal(
-    ok.integrity,
-    'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+  // the registry echoes the expected integrity in a header, but the
+  // body does not hash to it: a server header is never trusted
+  await t.rejects(
+    rc.request(`${registryURL}/some/tarball`, {
+      integrity:
+        'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+    }),
+    { cause: { code: 'EINTEGRITY' } },
   )
   const notOk = await rc.request(
     `${registryURL}/some/other/tarball`,
@@ -395,6 +397,29 @@ t.test('integrity http header handling', async t => {
   )
   t.match(notOk, { statusCode: 406 })
   await rc.cache.promise()
+})
+
+t.test('artifact with no expected integrity', async t => {
+  const dir = t.testdir()
+  const rc = new RC({ cache: dir })
+  const url = `${registryURL}/some/unlabelled/tarball`
+  const res = await rc.request(url)
+  const actual = `sha512-${createHash('sha512')
+    .update(res.buffer())
+    .digest('base64')}`
+  t.equal(res.integrity, undefined, 'nothing was expected')
+  t.equal(
+    res.getHeaderString('integrity'),
+    actual,
+    'the server-sent integrity header is replaced by the real hash',
+  )
+  await rc.cache.promise()
+
+  // a fresh client reads it back from disk, content-addressed
+  const again = new RC({ cache: dir })
+  const found = again.cachedBody(url, { integrity: actual })
+  t.equal(found?.path, again.cache.integrityPath(actual))
+  t.equal(found?.integrity, actual, 'stored under its hash')
 })
 
 t.test('follow redirects', { saveFixture: true }, async t => {

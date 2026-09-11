@@ -430,6 +430,20 @@ export class CacheEntry {
   }
 
   /**
+   * The sha-512 member of an RFC 9530 `Repr-Digest` (or `Content-Digest`)
+   * response header, as an SRI string. A registry that serves packuments
+   * without `dist.integrity` labels each tarball this way instead.
+   */
+  get digest(): Integrity | undefined {
+    const value =
+      this.getHeaderString('repr-digest') ??
+      this.getHeaderString('content-digest')
+    const m =
+      value && /(?:^|,)\s*sha-512=:([A-Za-z0-9+/]{86}==):/.exec(value)
+    return m ? `sha512-${m[1]}` : undefined
+  }
+
+  /**
    * Give it a key, and it'll return the buffer of that header value
    */
   getHeader(h: string): Uint8Array | undefined {
@@ -451,6 +465,20 @@ export class CacheEntry {
    */
   setHeader(h: string, value: Uint8Array | string) {
     this.#headers = setRawHeader(this.#headers, h, value)
+  }
+
+  /**
+   * Remove a header, if present
+   */
+  deleteHeader(h: string) {
+    const key = h.toLowerCase()
+    for (let i = 0; i < this.#headers.length; i += 2) {
+      const k = this.#headers[i]
+      if (k && getDecodedValue(k).toLowerCase() === key) {
+        this.#headers.splice(i, 2)
+        return
+      }
+    }
   }
 
   /**
