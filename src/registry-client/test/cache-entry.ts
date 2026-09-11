@@ -839,3 +839,45 @@ t.test('decodeHead / encodeHead', t => {
   t.type(constructed.headSize, 'number')
   t.end()
 })
+
+t.test('digest header', async t => {
+  const b64 = 'A'.repeat(86) + '=='
+  const entry = (h: Record<string, string>) =>
+    new CacheEntry(200, toRawHeaders(h))
+  t.equal(
+    entry({ 'repr-digest': `sha-512=:${b64}:` }).digest,
+    `sha512-${b64}`,
+  )
+  t.equal(
+    entry({ 'content-digest': `sha-512=:${b64}:` }).digest,
+    `sha512-${b64}`,
+    'content-digest is accepted too',
+  )
+  t.equal(
+    entry({
+      'repr-digest': `sha-256=:${'B'.repeat(43)}=:, sha-512=:${b64}:`,
+    }).digest,
+    `sha512-${b64}`,
+    'picks the sha-512 member of a dictionary',
+  )
+  t.equal(
+    entry({ 'repr-digest': `sha-256=:${'B'.repeat(43)}=:` }).digest,
+    undefined,
+  )
+  t.equal(
+    entry({ 'repr-digest': 'sha-512=:nope:' }).digest,
+    undefined,
+  )
+  t.equal(entry({}).digest, undefined)
+})
+
+t.test('deleteHeader', async t => {
+  const ce = new CacheEntry(
+    200,
+    toRawHeaders({ a: '1', Integrity: 'x', b: '2' }),
+  )
+  ce.deleteHeader('integrity')
+  t.strictSame(ce.headers, toRawHeaders({ a: '1', b: '2' }))
+  ce.deleteHeader('nope')
+  t.strictSame(ce.headers, toRawHeaders({ a: '1', b: '2' }))
+})

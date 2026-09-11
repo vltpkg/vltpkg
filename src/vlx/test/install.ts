@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { VlxOptions } from '../src/index.ts'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 
 const getVlxInstall = async (
   t: Test,
@@ -15,12 +15,18 @@ const getVlxInstall = async (
       path,
       options,
     }),
+    resolvedIntegrity = 'sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg==',
+    installedIntegrity,
   }: {
     mockVlxInfo?: (
       path: string,
       options: VlxOptions,
       manifest?: NormalizedManifest,
     ) => { path: string; options: VlxOptions }
+    /** what package-info resolves to before the install; null for none */
+    resolvedIntegrity?: string | null
+    /** what the install hashed while extracting */
+    installedIntegrity?: string
   } = {},
 ) => {
   const installs: [string, NormalizedManifest][] = []
@@ -31,6 +37,15 @@ const getVlxInstall = async (
     const { projectRoot, packageJson } = options
     t.equal(options['stale-while-revalidate-factor'], Infinity)
     installs.push([projectRoot, packageJson.read(projectRoot)])
+    return {
+      graph: {
+        mainImporter: {
+          edgesOut: new Map([
+            ['abbrev', { to: { integrity: installedIntegrity } }],
+          ]),
+        },
+      },
+    }
   }
 
   class MockPackageInfoClient {
@@ -38,8 +53,7 @@ const getVlxInstall = async (
       return {
         resolved:
           'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
-        integrity:
-          'sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg==',
+        integrity: resolvedIntegrity ?? undefined,
       }
     }
   }
@@ -114,6 +128,30 @@ t.test('need an install, accept prompt with --yes', async t => {
   t.strictSame(installs[0]?.[1].dependencies, {
     abbrev: 'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
   })
+})
+
+t.test('pins the integrity the install hashed', async t => {
+  const integrity = `sha512-${'a'.repeat(86)}==`
+  const { vlxInstall, options, expectedInstallDir, installs } =
+    await getVlxInstall(t, {
+      // an abbreviated packument resolves without one
+      resolvedIntegrity: null,
+      installedIntegrity: integrity,
+    })
+  await vlxInstall(
+    'abbrev',
+    { ...options, yes: true },
+    async () => 'no',
+  )
+  t.equal(
+    installs[0]?.[1].vlx?.integrity,
+    undefined,
+    'none before install',
+  )
+  const written = JSON.parse(
+    readFileSync(resolve(expectedInstallDir, 'package.json'), 'utf8'),
+  )
+  t.equal(written.vlx.integrity, integrity, 'recorded after install')
 })
 
 t.test('need no install, prompt not relevant', async t => {

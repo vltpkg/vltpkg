@@ -80,6 +80,8 @@ export type CachedBody = {
   path: string
   /** the body, a view into the file's bytes */
   body: Buffer
+  /** the hash the entry was stored under, if it has one */
+  integrity?: Integrity
 }
 
 export type CacheableMethod = 'GET' | 'HEAD'
@@ -585,7 +587,11 @@ export class RegistryClient {
         ) {
           continue
         }
-        return { path, body: entry.buffer() }
+        return {
+          path,
+          body: entry.buffer(),
+          integrity: entry.integrity,
+        }
       }
       /* c8 ignore next */
     } catch {}
@@ -606,7 +612,7 @@ export class RegistryClient {
       staleWhileRevalidate = true,
       forceRevalidate = false,
     } = options
-    let { trustIntegrity } = options
+    const { trustIntegrity } = options
 
     const m = isCacheableMethod(method) ? method : undefined
     const { useCache = !!m } = options
@@ -745,12 +751,12 @@ export class RegistryClient {
       },
     )
 
-    if (result.getHeader('integrity')) {
-      trustIntegrity = true
-    }
-
-    if (result.isGzip && !trustIntegrity) {
-      result.checkIntegrity({ url })
+    // a server-sent integrity header is not evidence: only the caller's
+    // expectation, or a body read back from the cache, is trusted. the
+    // header is dropped so it can never be stored as the entry's hash.
+    if (!trustIntegrity && !result.fromCache) {
+      result.deleteHeader('integrity')
+      if (result.isGzip) result.checkIntegrity({ url })
     }
     // a forced revalidation must never replace a cached entry with an
     // error response -- the flat 200-only rule revalidate-entry.ts has.
@@ -763,7 +769,15 @@ export class RegistryClient {
     const clobbersCachedEntry =
       forceRevalidate && !!entry && result.statusCode !== 200
     if (useCache && !clobbersCachedEntry) {
-      // Get the encoded buffer from the cache entry
+      // content-address an artifact the caller had no expected hash for,
+      // so a later lookup by hash still finds it; packuments are not
+      // worth hashing. integrityActual also records the hash in the
+      // entry's headers, so it runs before encode().
+      const integrity =
+        result.integrity ??
+        (result.statusCode === 200 && !result.isJSON ?
+          result.integrityActual
+        : undefined)
       const buffer = result.encode()
       this.cache.set(
         key,
@@ -772,9 +786,7 @@ export class RegistryClient {
           buffer.byteOffset,
           buffer.byteLength,
         ),
-        {
-          integrity: result.integrity,
-        },
+        { integrity },
       )
     }
     return result
