@@ -1,6 +1,8 @@
 import { update } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
+import { planSpecConfigPersist } from '../persist-spec-config.ts'
+import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -14,7 +16,9 @@ export const usage: CommandUsage = () =>
     command: 'update',
     usage: '',
     description: `Update dependencies to their latest in-range versions.
-                  Discards the lockfile and resolves dependencies from scratch.`,
+                  Discards the lockfile and resolves dependencies from scratch.
+                  Registry and git host options given on the command line or
+                  via env are saved to the project vlt.json.`,
     options: {
       'allow-scripts': {
         value: '<query>',
@@ -33,6 +37,9 @@ export const views = {
       }
     : null),
     graph: i.graph.toJSON(),
+    ...(i.persistedConfig ?
+      { persistedConfig: i.persistedConfig }
+    : null),
   }),
   human: lazyView(
     async () =>
@@ -48,6 +55,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     })
   }
 
+  const persist = planSpecConfigPersist(conf)
   /* c8 ignore start */
   const allowScripts =
     conf.get('allow-scripts') ?
@@ -57,6 +65,14 @@ export const command: CommandFn<InstallResult> = async conf => {
   const { buildQueue, graph } = await update({
     ...conf.options,
     allowScripts,
+  }).catch((er: unknown) => {
+    throw asUnknownSpecPrefix(er)
   })
-  return { buildQueue, graph }
+  if (persist)
+    await conf.addConfigToFile(persist.which, persist.values)
+  return {
+    buildQueue,
+    graph,
+    ...(persist ? { persistedConfig: persist } : null),
+  }
 }

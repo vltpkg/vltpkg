@@ -101,7 +101,10 @@ export type ConfigFileLayer = Partial<PairsAsRecords>
  * `registries` alias names are used as spec prefixes, where `~` is
  * reserved, and an empty name has nothing to prefix with.
  */
-const assertRegistryKeys = (registries: unknown, file: string) => {
+export const assertRegistryKeys = (
+  registries: unknown,
+  file: string,
+) => {
   if (!registries || typeof registries !== 'object') return
   const obj =
     Array.isArray(registries) ?
@@ -110,6 +113,7 @@ const assertRegistryKeys = (registries: unknown, file: string) => {
   for (const key of Object.keys(obj)) {
     if (key === '' || key.includes('~')) {
       throw error('Reserved character found in registries name', {
+        code: 'ECONFIG',
         path: file,
         found: key,
       })
@@ -175,6 +179,33 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
 }
 
 const kRecord = Symbol('parsed key=value record')
+
+// jackspeak's env var name for a field
+const envKey = (k: string) =>
+  `VLT_${k.replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase()}`
+
+// `parse()` writes every resolved value to `VLT_*`, so a nested vlt
+// can't tell inherited env from env set for it. this holds the
+// parent's explicit values and the `VLT_*` env it wrote.
+const kParentEnv = '__VLT_INTERNAL_EXPLICIT'
+type ParentEnv = { explicit: RecordPairs; env: RecordString }
+const parentEnv = (): ParentEnv | undefined => {
+  try {
+    return JSON.parse(process.env[kParentEnv] ?? '') as ParentEnv
+  } catch {
+    return undefined
+  }
+}
+
+// last pair per key wins, keeping the first one's position
+const dedupePairs = (pairs: string[]) => [
+  ...new Map(
+    pairs.map(p => {
+      const eq = p.indexOf('=')
+      return [eq === -1 ? p : p.substring(0, eq), p]
+    }),
+  ).values(),
+]
 
 export type ConfigDataNoCommand = {
   [
@@ -395,8 +426,16 @@ export class Config {
     // Store the original args for potential reload
     this.#originalArgs = [...args]
 
+    const envKeys = Object.keys(defaultValues).filter(
+      k => process.env[envKey(k)] !== undefined,
+    )
+    const parent = parentEnv()
+    // file layer values, before env replaces them
+    const fileValues = this.#defaults()
     this.jack.loadEnvDefaults()
+    const envValues = this.#defaults()
     const p = this.jack.parseRaw(args)
+    const cliKeys = Object.keys(p.values)
 
     const fallback = getCommand(p.values['fallback-command'])
     this.command = getCommand(p.positionals[0])
@@ -404,13 +443,50 @@ export class Config {
     const cmdOrFallback = this.command ?? fallback
     const cmdSpecific =
       cmdOrFallback && this.commandValues[cmdOrFallback]
-    if (cmdSpecific) {
-      this.jack.setConfigValues(recordsToPairs(cmdSpecific))
-    }
+    const cmdPairs = cmdSpecific ? recordsToPairs(cmdSpecific) : {}
+    if (cmdSpecific) this.jack.setConfigValues(cmdPairs)
 
     // ok, applied cmd-specific defaults, do rest of the parse
     this.jack.applyDefaults(p)
+
+    // what was set on the cli or env for this run. record fields hold
+    // only those pairs, env then cli, so later ones win per key.
+    const values = p.values as RecordPairs
+    const explicit: RecordPairs = {}
+    for (const k of new Set([...envKeys, ...cliKeys])) {
+      const cli = cliKeys.includes(k) ? values[k] : undefined
+      const env = this.#explicitEnv(k, envValues[k], parent)
+      if (isRecordField(k)) {
+        const pairs = [
+          ...((env ?? []) as string[]),
+          ...((cli ?? []) as string[]),
+        ]
+        if (pairs.length) explicit[k] = dedupePairs(pairs)
+      } else if (cli !== undefined) explicit[k] = cli
+      // a command block beats env for scalars
+      else if (env !== undefined && !(k in cmdPairs))
+        explicit[k] = env
+    }
+    this.explicit = explicit
+    // record fields merge per key: file (or command block) -> env -> cli
+    for (const k of recordFields) {
+      const env = envKeys.includes(k) ? envValues[k] : []
+      const cli = cliKeys.includes(k) ? values[k] : []
+      const pairs = [...(env as string[]), ...(cli as string[])]
+      if (!pairs.length) continue
+      const base = (k in cmdPairs ? cmdPairs[k] : fileValues[k]) ?? []
+      values[k] = dedupePairs([...(base as string[]), ...pairs])
+    }
     this.jack.writeEnv(p)
+    process.env[kParentEnv] = JSON.stringify({
+      explicit,
+      env: Object.fromEntries(
+        Object.keys(defaultValues).flatMap(k => {
+          const v = process.env[envKey(k)]
+          return v === undefined ? [] : [[envKey(k), v]]
+        }),
+      ),
+    } satisfies ParentEnv)
 
     if (this.command) p.positionals.shift()
     else this.command = getCommand(p.values['fallback-command'])
@@ -429,6 +505,41 @@ export class Config {
     /* c8 ignore stop */
 
     return this
+  }
+
+  /**
+   * Values set on the command line or via `VLT_*` env for this run.
+   * Record fields hold only those `key=value` pairs, not the ones from
+   * config files.
+   *
+   * `VLT_*` env left as a parent vlt process wrote it only counts for
+   * what was explicit in that parent.
+   */
+  explicit: ConfigData = {}
+
+  // a field's explicit env value: all of it at the top level, the new
+  // pairs (or changed scalar) when inherited from a parent vlt
+  #explicitEnv(
+    k: string,
+    value: unknown,
+    parent?: ParentEnv,
+  ): unknown {
+    const cur = process.env[envKey(k)]
+    if (cur === undefined) return undefined
+    const written = parent?.env[envKey(k)]
+    if (cur === written) return parent?.explicit[k]
+    if (!isRecordField(k) || written === undefined) return value
+    const old = new Set(written.split('\n'))
+    return (value as string[]).filter(p => !old.has(p))
+  }
+
+  // the current jack defaults, ie config file (+ env, once loaded) values
+  #defaults(): RecordPairs {
+    const d = { values: {}, positionals: [] }
+    this.jack.applyDefaults(
+      d as unknown as Parameters<typeof this.jack.applyDefaults>[0],
+    )
+    return d.values
   }
 
   /**

@@ -1,6 +1,9 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
+import { planSpecConfigPersist } from '../persist-spec-config.ts'
+import { asUnknownSpecPrefix } from '../require-registry.ts'
+import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Diff, Graph } from '@vltpkg/graph'
@@ -24,6 +27,10 @@ export type InstallResult = {
    * The diff between the actual and ideal graphs, if available.
    */
   diff?: Diff
+  /**
+   * Spec config from the cli / env that was saved to a config file.
+   */
+  persistedConfig?: SpecConfigPersistPlan
 }
 
 export const needsRegistry = true
@@ -34,7 +41,10 @@ export const usage: CommandUsage = () =>
     command: 'install',
     usage: '[packages ...]',
     description: `Install the specified packages, updating package.json and
-                  vlt-lock.json appropriately.`,
+                  vlt-lock.json appropriately. Registry and git host options
+                  given on the command line or via env (e.g.
+                  \`--registries name=url\`) are saved to the project
+                  vlt.json.`,
     options: {
       'save-dev': {
         description:
@@ -155,6 +165,9 @@ export const views = {
           message: `${i.buildQueue.length} packages that will need to be built, run "vlt build" to complete the install.`,
         }
       : null),
+      ...(i.persistedConfig ?
+        { persistedConfig: i.persistedConfig }
+      : null),
     }
   },
   human: lazyView(
@@ -169,6 +182,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   const monorepo = conf.options.monorepo
   const scurry = conf.options.scurry
   const { add } = parseAddArgs(conf, scurry, monorepo)
+  const persist = planSpecConfigPersist(conf)
   const frozenLockfile = conf.options['frozen-lockfile']
   const expectLockfile = conf.options['expect-lockfile']
   const lockfileOnly = conf.options['lockfile-only']
@@ -192,7 +206,11 @@ export const command: CommandFn<InstallResult> = async conf => {
       savePrefix,
     },
     add,
-  )
+  ).catch((er: unknown) => {
+    throw asUnknownSpecPrefix(er)
+  })
+  if (persist)
+    await conf.addConfigToFile(persist.which, persist.values)
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(
@@ -203,5 +221,10 @@ export const command: CommandFn<InstallResult> = async conf => {
       conf.values.telemetry,
     )
   } catch {}
-  return { buildQueue, graph, diff }
+  return {
+    buildQueue,
+    graph,
+    diff,
+    ...(persist ? { persistedConfig: persist } : null),
+  }
 }

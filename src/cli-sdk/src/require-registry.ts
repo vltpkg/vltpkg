@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { isErrorWithCause, isObject } from '@vltpkg/types'
 import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import { selectRegistry } from './select-registry.ts'
 import type { RegistryCandidate } from './select-registry.ts'
@@ -19,6 +20,53 @@ export const missingRegistryError = (): Error =>
     ].join('\n'),
     { code: 'ECONFIG' },
   )
+
+/** Ensure a registry URL ends with a single trailing slash. */
+export const normalizeRegistryURL = (url: string): string =>
+  url.endsWith('/') ? url : `${url}/`
+
+/**
+ * A spec used a `name:` prefix that no registry alias or git host
+ * defines.
+ */
+export const unknownSpecPrefixError = (
+  prefix: string,
+  spec: string,
+  validOptions?: unknown[],
+): Error =>
+  error(
+    [
+      `Unknown spec prefix "${prefix}:" in "${spec}".`,
+      '',
+      `Define it with \`--registries ${prefix}=<url>\` or`,
+      `\`--git-hosts ${prefix}=<template>\` (saved to vlt.json), or run`,
+      `\`vlt config set registries.${prefix}=<url>\`.`,
+    ].join('\n'),
+    { code: 'ECONFIG', found: `${prefix}:`, validOptions },
+  )
+
+/**
+ * Turn a spec parse error about an unknown `name:` prefix into
+ * {@link unknownSpecPrefixError}. Other values are returned as is.
+ */
+export const asUnknownSpecPrefix = (er: unknown): unknown => {
+  const { found, spec, validOptions } = (
+    isErrorWithCause(er) && isObject(er.cause) ?
+      er.cause
+    : {}) as {
+    found?: unknown
+    spec?: unknown
+    validOptions?: unknown[]
+  }
+  return (
+      typeof found === 'string' &&
+        /^[^:]+:$/.test(found) &&
+        typeof spec === 'string' &&
+        (er as Error).message.startsWith('Protocol ')
+    ) ?
+      unknownSpecPrefixError(found.slice(0, -1), spec, validOptions)
+    : er
+}
 
 /**
  * Install-related commands need the alias that bare specs resolve
