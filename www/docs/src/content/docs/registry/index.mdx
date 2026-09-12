@@ -12,6 +12,10 @@ import {
   TabItem,
 } from '@astrojs/starlight/components'
 import Image from '../../../components/image/image.astro'
+import {
+  RegistryAuthSnippet,
+  ScopeRegistrySnippet,
+} from '../../../components/snippets'
 
 ## Sign Up
 
@@ -108,21 +112,7 @@ Alternatively, configure a project manually:
 
 1. **Set up your private `@acme` scope**
 
-   Your private scope lives in a separate registry. To set it up in
-   `vlt.json`, run:
-
-   ```bash
-   vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/
-   ```
-
-   Then obtain an authentication token for your private scope:
-
-   ```bash
-   vlt login --registry=https://registry.vlt.io/acme/main/
-   ```
-
-   Now you can publish and install packages from your private `@acme`
-   scope.
+   <ScopeRegistrySnippet packageManager="vlt" account="acme" />
 
 2. **Set up the vlt.io npm mirror**
 
@@ -183,15 +173,11 @@ Alternatively, configure a project manually:
    Your private scope lives in a separate registry. To set it up in
    `.npmrc`, run:
 
-   ```bash
-   npm config set @acme:registry https://registry.vlt.io/acme/main/ --location=project
-   ```
+   <ScopeRegistrySnippet packageManager="npm" account="acme" />
 
    Then obtain an authentication token for your private scope:
 
-   ```bash
-   npm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
-   ```
+   <RegistryAuthSnippet packageManager="npm" account="acme" />
 
    Now you can publish and install packages from your private `@acme`
    scope.
@@ -233,15 +219,11 @@ Alternatively, configure a project manually:
    Your private scope lives in a separate registry. To set it up in
    `.npmrc`, run:
 
-   ```bash
-   pnpm config set @acme:registry https://registry.vlt.io/acme/main/ --location=project
-   ```
+   <ScopeRegistrySnippet packageManager="pnpm" account="acme" />
 
    Then obtain an authentication token for your private scope:
 
-   ```bash
-   pnpm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
-   ```
+   <RegistryAuthSnippet packageManager="pnpm" account="acme" />
 
    Now you can publish and install packages from your private `@acme`
    scope.
@@ -287,16 +269,11 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
    Your private scope lives in a separate registry. To set it up in
    `.yarnrc.yml`, run:
 
-   ```bash
-   yarn config set npmScopes.acme.npmRegistryServer "https://registry.vlt.io/acme/main/"
-   yarn config set npmScopes.acme.npmPublishRegistry "https://registry.vlt.io/acme/main/"
-   ```
+   <ScopeRegistrySnippet packageManager="yarn" account="acme" />
 
    Then obtain an authentication token for your private scope:
 
-   ```bash
-   yarn npm login --scope acme --always-auth --web-login
-   ```
+   <RegistryAuthSnippet packageManager="yarn" account="acme" />
 
    Now you can publish and install packages from your private `@acme`
    scope.
@@ -311,22 +288,7 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
 
 1. **Get a token**
 
-   To authenticate Bun with your registries, first create an
-   authentication token from your account's
-   [Tokens page](https://www.vlt.io/tokens/acme) and define an
-   environment variable. If you're using a `.env` file, define the
-   token there:
-
-   ```ini
-   VLT_TOKEN=<your token>
-   ```
-
-   You can also add it to your `.bashrc` or `.zshrc`, or export it in
-   your current shell for the duration of your session:
-
-   ```bash
-   export VLT_TOKEN=<your token>
-   ```
+   <RegistryAuthSnippet packageManager="bun" account="acme" />
 
 2. **Set up the vlt.io npm mirror**
 
@@ -356,11 +318,7 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
    your account rather than to a specific registry, so the same
    `$VLT_TOKEN` works here too:
 
-   ```toml
-   [install.scopes.acme]
-   url = "https://registry.vlt.io/acme/main/"
-   token = "$VLT_TOKEN"
-   ```
+   <ScopeRegistrySnippet packageManager="bun" account="acme" />
 
    Now you can publish and install packages from your private `@acme`
    scope — `bun publish` resolves the registry from the package name's
@@ -412,12 +370,7 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
    mapping and a matching auth-token line — the token line's host/path
    must exactly match the scope's registry URL:
 
-   ```bash
-   cat >> .npmrc <<'EOF'
-   @acme:registry=https://registry.vlt.io/acme/main/
-   //registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
-   EOF
-   ```
+   <ScopeRegistrySnippet packageManager="deno" account="acme" />
 
    vlt.io tokens are scoped to your account rather than to a specific
    registry, so the same `VLT_TOKEN` works here too. Now you can

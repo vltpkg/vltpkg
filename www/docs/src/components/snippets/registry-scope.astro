@@ -1,0 +1,110 @@
+---
+import { Code } from '@astrojs/starlight/components'
+
+export interface Props {
+  packageManager: string
+  account: string
+}
+
+const { packageManager, account } = Astro.props
+---
+
+{
+  packageManager === 'vlt' && (
+    <>
+      <Code
+        code={`vlt config set scoped-registries=@${account}=https://registry.vlt.io/${account}/main/`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        This updates <code>vlt.json</code> with the registry mapping.
+        Your <code>vlt.json</code> will now contain:
+      </p>
+      <Code
+        code={`{
+  "config":
+    { "scoped-registries":
+      { "@${account}": "https://registry.vlt.io/${account}/main/" }
+      }
+    }
+  `}
+        title="vlt.json"
+        lang="json"
+      />
+    </>
+  )
+}
+
+{
+  packageManager === 'npm' && (
+    <>
+      <Code
+        code={`npm config set @${account}:registry https://registry.vlt.io/${account}/main/ --location=project`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        This updates <code>.npmrc</code> with the scoped registry.
+      </p>
+    </>
+  )
+}
+
+{
+  packageManager === 'pnpm' && (
+    <>
+      <Code
+        code={`pnpm config set @${account}:registry https://registry.vlt.io/${account}/main/ --location=project`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        This updates <code>.npmrc</code> with the scoped registry.
+      </p>
+    </>
+  )
+}
+
+{
+  packageManager === 'yarn' && (
+    <>
+      <Code
+        code={`yarn config set npmScopes.${account}.npmRegistryServer "https://registry.vlt.io/${account}/main/"
+yarn config set npmScopes.${account}.npmPublishRegistry "https://registry.vlt.io/${account}/main/"`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        This updates <code>.yarnrc.yml</code> with the scoped
+        registry.
+      </p>
+    </>
+  )
+}
+
+{
+  packageManager === 'bun' && (
+    <Code
+      code={`# Edit or create bunfig.toml and add:
+[install.scopes.${account}]
+url = "https://registry.vlt.io/${account}/main/"
+token = "$VLT_TOKEN"`}
+      title="bunfig.toml"
+      lang="toml"
+    />
+  )
+}
+
+{
+  packageManager === 'deno' && (
+    <Code
+      code={`cat >> .npmrc <<'EOF'
+@${account}:registry=https://registry.vlt.io/${account}/main/
+//registry.vlt.io/${account}/main/:_authToken=\${VLT_TOKEN}
+EOF`}
+      title="Terminal"
+      lang="bash"
+    />
+  )
+}

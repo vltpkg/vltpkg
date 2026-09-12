@@ -1,0 +1,111 @@
+---
+import { Code } from '@astrojs/starlight/components'
+
+export interface Props {
+  packageManager: string
+  account: string
+}
+
+const { packageManager, account } = Astro.props
+---
+
+{
+  packageManager === 'vlt' && (
+    <>
+      <Code
+        code={`vlt login --registry=https://registry.vlt.io/${account}/main/`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        This opens your browser to log in. Once authenticated, your
+        credentials are stored locally for future publishes.
+      </p>
+    </>
+  )
+}
+
+{
+  packageManager === 'npm' && (
+    <>
+      <Code
+        code={`npm login --registry=https://registry.vlt.io/${account}/main/ --scope=@${account}`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>This prompts you to enter your vlt credentials.</p>
+    </>
+  )
+}
+
+{
+  packageManager === 'pnpm' && (
+    <>
+      <Code
+        code={`pnpm login --registry=https://registry.vlt.io/${account}/main/ --scope=@${account}`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>This will prompt you to enter your vlt credentials.</p>
+    </>
+  )
+}
+
+{
+  packageManager === 'yarn' && (
+    <>
+      <Code
+        code={`yarn npm login --scope ${account} --always-auth --web-login`}
+        title="Terminal"
+        lang="bash"
+      />
+      <p>This opens your browser to log in.</p>
+    </>
+  )
+}
+
+{
+  packageManager === 'bun' && (
+    <>
+      <p>
+        Create a personal token on your{' '}
+        <a href={`https://www.vlt.io/tokens/${account}`}>
+          account tokens page
+        </a>
+        and set it as an environment variable:
+      </p>
+      <Code
+        code="export VLT_TOKEN=<your-token>"
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        (Or add it to <code>.env</code> in your project.)
+      </p>
+    </>
+  )
+}
+
+{
+  packageManager === 'deno' && (
+    <>
+      <p>
+        Create a personal token on your{' '}
+        <a href={`https://www.vlt.io/tokens/${account}`}>
+          account tokens page
+        </a>
+        and add it to a <code>.env</code> file (make sure it's in{' '}
+        <code>.gitignore</code>):
+      </p>
+      <Code
+        code="echo 'VLT_TOKEN=<your-token>' >> .env"
+        title="Terminal"
+        lang="bash"
+      />
+      <p>
+        Pass <code>--env-file</code> when installing dependencies
+        later.
+      </p>
+    </>
+  )
+}
