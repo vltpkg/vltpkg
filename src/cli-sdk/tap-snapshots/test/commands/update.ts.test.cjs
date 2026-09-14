@@ -15,14 +15,19 @@ Usage:
   vlt update
 
 Update dependencies to their latest in-range versions. Discards the lockfile and
-resolves dependencies from scratch. Registry and git host options given on the
-command line or via env are saved to the project vlt.json.
+resolves dependencies from scratch.
 
   Aliases
 
     ​u
 
   Options
+
+    save-config
+      Save registry and git host options given on the command line or via env
+      (e.g. \`--registries name=url\`) to vlt.json.
+
+      ​--save-config
 
     allow-scripts
       Filter which packages are allowed to run lifecycle scripts using DSS query

@@ -1,7 +1,7 @@
 /**
- * Save registry and git host config given on the command line or via
- * `VLT_*` env to `install` / `update`, so that the config files plus the
- * lockfile can reproduce the install.
+ * With `--save-config`, save registry and git host config given on the
+ * command line or via `VLT_*` env to `install` / `update`, so that the
+ * config files plus the lockfile can reproduce the install.
  * @module
  */
 
@@ -113,16 +113,18 @@ const ownsSelection = (layer?: ConfigFileLayer) =>
 
 /**
  * The spec config set on the cli / env that the target config file (the
- * project `vlt.json`, unless `--config=user`) should get. Values already
- * in either config file are left alone. Throws `ECONFIG` when the target
- * file (or its `command.<cmd>` block) sets a value to something else, or
- * a value is invalid.
+ * project `vlt.json`, unless `--config=user`) should get. `undefined`
+ * unless `--save-config` is set. Values already in either config file
+ * are left alone. Throws `ECONFIG` when the target file (or its
+ * `command.<cmd>` block) sets a value to something else, or a value is
+ * invalid.
  *
  * Call before installing, write the result after it succeeds.
  */
 export const planSpecConfigPersist = (
   conf: LoadedConfig,
 ): SpecConfigPersistPlan | undefined => {
+  if (!conf.get('save-config')) return undefined
   const explicit = pairsToRecords(conf.explicit) as Record<
     string,
     unknown

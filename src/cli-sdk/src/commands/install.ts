@@ -41,10 +41,7 @@ export const usage: CommandUsage = () =>
     command: 'install',
     usage: '[packages ...]',
     description: `Install the specified packages, updating package.json and
-                  vlt-lock.json appropriately. Registry and git host options
-                  given on the command line or via env (e.g.
-                  \`--registries name=url\`) are saved to the project
-                  vlt.json.`,
+                  vlt-lock.json appropriately.`,
     options: {
       'save-dev': {
         description:
@@ -70,6 +67,10 @@ export const usage: CommandUsage = () =>
       'save-prod': {
         description:
           'Save installed packages to package.json as dependencies.',
+      },
+      'save-config': {
+        description:
+          'Save registry and git host options given on the command line or via env (e.g. `--registries name=url`) to vlt.json.',
       },
       workspace: {
         value: '<path|glob>',

@@ -16,10 +16,12 @@ export const usage: CommandUsage = () =>
     command: 'update',
     usage: '',
     description: `Update dependencies to their latest in-range versions.
-                  Discards the lockfile and resolves dependencies from scratch.
-                  Registry and git host options given on the command line or
-                  via env are saved to the project vlt.json.`,
+                  Discards the lockfile and resolves dependencies from scratch.`,
     options: {
+      'save-config': {
+        description:
+          'Save registry and git host options given on the command line or via env (e.g. `--registries name=url`) to vlt.json.',
+      },
       'allow-scripts': {
         value: '<query>',
         description:

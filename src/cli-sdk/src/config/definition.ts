@@ -257,11 +257,9 @@ export const definition = j
 
                     Aliases given on the command line or in
                     \`VLT_REGISTRIES\` (newline-delimited) merge with the
-                    configured ones, later sources winning per key. Registry
-                    and git host options given this way to \`install\`,
-                    \`add\` or \`update\` are saved to the project
-                    \`vlt.json\` (or the user one with \`--config=user\`)
-                    when no config file already has them.
+                    configured ones, later sources winning per key. Pass
+                    \`--save-config\` to \`install\`, \`add\` or
+                    \`update\` to save them to \`vlt.json\`.
                     `,
     },
 
@@ -728,6 +726,17 @@ export const definition = j
                     This is useful if a package already exists in
                     devDependencies or optionalDependencies, but you want to
                     move it to be a non-optional production dependency.`,
+    },
+    'save-config': {
+      description: `Save the registry and git host options given on the
+                    command line or via \`VLT_*\` env (\`--registry\`,
+                    \`--registries\`, \`--default-registry-alias\`,
+                    \`--scoped-registries\`, \`--jsr-registries\`,
+                    \`--git-hosts\`, \`--git-host-archives\`) to the
+                    project \`vlt.json\` (or the user one with
+                    \`--config=user\`) after a successful \`install\`,
+                    \`add\` or \`update\`. Values a config file already
+                    has are left alone.`,
     },
   })
 

@@ -124,13 +124,13 @@ layering rules.
 
 ### Saving registries given to install
 
-Registry and git host options passed on the command line or via
-`VLT_*` env to `vlt install`, `vlt add` or `vlt update` are saved to
-the project `vlt.json` after a successful install, so a fresh clone
-installs with a plain `vlt install`:
+With `--save-config`, registry and git host options passed on the
+command line or via `VLT_*` env to `vlt install`, `vlt add` or
+`vlt update` are saved to the project `vlt.json` after a successful
+install, so a fresh clone installs with a plain `vlt install`:
 
 <Code
-  code="​​$ vlt install --registries loc=http://reg.local foo@loc:foo@1.x"
+  code="​​$ vlt install --save-config --registries loc=http://reg.local foo@loc:foo@1.x"
   title="Terminal"
   lang="bash"
 />
@@ -140,6 +140,7 @@ installs with a plain `vlt install`:
 { "config": { "registries": { "loc": "http://reg.local/" } } }
 ```
 
+- Without `--save-config` the options only apply to that run.
 - Values already in effect from the user or project `vlt.json` are not
   copied.
 - A different value for the same key in the target file (or its

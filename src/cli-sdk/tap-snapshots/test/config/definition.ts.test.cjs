@@ -443,7 +443,7 @@ Object {
       
       There is **no** built-in \`npm\` registry URL; the \`npm\` alias must be configured (e.g. via \`vlt setup\`) before it can be used. The \`gh\` and \`jsr\` aliases have built-in defaults that can be overridden here.
       
-      Aliases given on the command line or in \`VLT_REGISTRIES\` (newline-delimited) merge with the configured ones, later sources winning per key. Registry and git host options given this way to \`install\`, \`add\` or \`update\` are saved to the project \`vlt.json\` (or the user one with \`--config=user\`) when no config file already has them.
+      Aliases given on the command line or in \`VLT_REGISTRIES\` (newline-delimited) merge with the configured ones, later sources winning per key. Pass \`--save-config\` to \`install\`, \`add\` or \`update\` to save them to \`vlt.json\`.
     ),
     "hint": "name=url",
     "multiple": true,
@@ -461,6 +461,10 @@ Object {
     ),
     "hint": "url",
     "type": "string",
+  },
+  "save-config": Object {
+    "description": "Save the registry and git host options given on the command line or via \`VLT_*\` env (\`--registry\`, \`--registries\`, \`--default-registry-alias\`, \`--scoped-registries\`, \`--jsr-registries\`, \`--git-hosts\`, \`--git-host-archives\`) to the project \`vlt.json\` (or the user one with \`--config=user\`) after a successful \`install\`, \`add\` or \`update\`. Values a config file already has are left alone.",
+    "type": "boolean",
   },
   "save-dev": Object {
     "description": "Save installed packages to a package.json file as devDependencies",
@@ -668,6 +672,7 @@ Array [
   "--recursive",
   "--registries=<name=url>",
   "--registry=<url>",
+  "--save-config",
   "--save-dev",
   "--save-exact",
   "--save-optional",
@@ -737,6 +742,7 @@ Array [
   "recursive",
   "registries",
   "registry",
+  "save-config",
   "save-dev",
   "save-exact",
   "save-optional",

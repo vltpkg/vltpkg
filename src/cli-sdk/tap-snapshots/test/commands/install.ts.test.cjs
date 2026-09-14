@@ -24,8 +24,7 @@ Usage:
   vlt install [packages ...]
 
 Install the specified packages, updating package.json and vlt-lock.json
-appropriately. Registry and git host options given on the command line or via
-env (e.g. \`--registries name=url\`) are saved to the project vlt.json.
+appropriately.
 
   Aliases
 
@@ -63,6 +62,12 @@ env (e.g. \`--registries name=url\`) are saved to the project vlt.json.
       Save installed packages to package.json as dependencies.
 
       ​--save-prod
+
+    save-config
+      Save registry and git host options given on the command line or via env
+      (e.g. \`--registries name=url\`) to vlt.json.
+
+      ​--save-config
 
     workspace
       Limit installation targets to matching workspaces.

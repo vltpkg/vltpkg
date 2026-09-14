@@ -26,15 +26,28 @@ const conf = (
   } = {},
   config?: string,
   command = 'install',
+  saveConfig = true,
 ) =>
   ({
     explicit,
     layers,
     command,
-    get: (k: string) => (k === 'config' ? config : undefined),
+    get: (k: string) =>
+      k === 'config' ? config
+      : k === 'save-config' ? saveConfig
+      : undefined,
   }) as unknown as LoadedConfig
 
 const loc = ['loc=http://loc']
+
+t.test('nothing without --save-config', async t => {
+  t.equal(
+    planSpecConfigPersist(
+      conf({ registries: loc }, {}, undefined, 'install', false),
+    ),
+    undefined,
+  )
+})
 
 t.test('nothing explicit', async t => {
   t.equal(planSpecConfigPersist(conf({})), undefined)
@@ -461,15 +474,21 @@ t.test('through a real Config.load', async t => {
   }
   t.strictSame(
     await load(['install', '--registry', 'http://u/']),
+    undefined,
+    'no --save-config',
+  )
+  const save = ['install', '--save-config']
+  t.strictSame(
+    await load([...save, '--registry', 'http://u/']),
     { which: 'project', values: { registry: 'http://u/' } },
     'user registry dropped by project selection',
   )
   await t.rejects(
-    load(['install', '--git-hosts', 'gl=git+ssh://b/$1']),
+    load([...save, '--git-hosts', 'gl=git+ssh://b/$1']),
     { message: /^command\.install\.git-hosts\.gl is already set/ },
   )
   t.equal(
-    await load(['install', '--registries', 'npm=http://u']),
+    await load([...save, '--registries', 'npm=http://u']),
     undefined,
     'alias catalogs merge, same in user',
   )

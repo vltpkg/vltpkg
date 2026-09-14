@@ -39,8 +39,8 @@ export const unknownSpecPrefixError = (
       `Unknown spec prefix "${prefix}:" in "${spec}".`,
       '',
       `Define it with \`--registries ${prefix}=<url>\` or`,
-      `\`--git-hosts ${prefix}=<template>\` (saved to vlt.json), or run`,
-      `\`vlt config set registries.${prefix}=<url>\`.`,
+      `\`--git-hosts ${prefix}=<template>\` (add \`--save-config\` to keep`,
+      `it in vlt.json), or run \`vlt config set registries.${prefix}=<url>\`.`,
     ].join('\n'),
     { code: 'ECONFIG', found: `${prefix}:`, validOptions },
   )
