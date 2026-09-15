@@ -326,10 +326,56 @@ export class RegistryClient {
     seek?: (obj: T) => boolean,
   ): Promise<T[]> {
     const resp = await this.request(url, options)
-    const { objects, urls } = resp.json() as {
-      objects: T[]
-      urls: { next?: string }
+    const { statusCode } = resp
+    if (statusCode < 200 || statusCode >= 300) {
+      let detail: unknown
+      try {
+        const body: unknown = resp.json()
+        if (body && typeof body === 'object' && 'error' in body) {
+          detail = body.error
+        }
+      } catch {
+        // Registries and proxies can return plain text or HTML errors.
+      }
+      const status = STATUS_CODES[statusCode]
+      throw error(
+        `Failed to fetch paginated results: ${statusCode}${
+          status ? ` ${status}` : ''
+        }${typeof detail === 'string' && detail ? `: ${detail}` : ''}`,
+        { code: 'EREQUEST', status: statusCode, url: String(url) },
+      )
     }
+    let body: unknown
+    try {
+      body = resp.json()
+    } catch (cause) {
+      throw error('Invalid JSON in paginated registry response', {
+        code: 'EREQUEST',
+        url: String(url),
+        cause,
+      })
+    }
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      !('objects' in body) ||
+      !Array.isArray(body.objects) ||
+      !('urls' in body) ||
+      !body.urls ||
+      typeof body.urls !== 'object' ||
+      Array.isArray(body.urls) ||
+      ('next' in body.urls &&
+        body.urls.next !== null &&
+        body.urls.next !== undefined &&
+        typeof body.urls.next !== 'string')
+    ) {
+      throw error('Invalid pagination in registry response', {
+        code: 'EREQUEST',
+        url: String(url),
+      })
+    }
+    const objects = body.objects as T[]
+    const urls = body.urls as { next?: string | null }
     // if we have more, and haven't found our target, fetch more
     return urls.next && !(seek && objects.some(seek)) ?
         objects.concat(await this.scroll<T>(urls.next, options, seek))
