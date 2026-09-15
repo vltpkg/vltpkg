@@ -20,9 +20,17 @@ exports[`test/print-err.ts > TAP > snapshots > ENEEDAUTH > bare > output 1`] = `
 Authentication Error: Not logged in
 `
 
+exports[`test/print-err.ts > TAP > snapshots > ENEEDAUTH > with status > output 1`] = `
+Authentication Error: Failed to look up the current user: 401 Unauthorized — unauthorized
+  URL: https://registry.npmjs.org/-/whoami
+  Method: GET
+  Status: 401
+`
+
 exports[`test/print-err.ts > TAP > snapshots > ENEEDAUTH > with url > output 1`] = `
 Authentication Error: Failed to publish package: 403 Forbidden — You do not have permission to publish "findmy"
   URL: https://registry.npmjs.org/findmy
+  Method: PUT
 `
 
 exports[`test/print-err.ts > TAP > snapshots > EQUERY > bare > output 1`] = `
@@ -151,6 +159,47 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-EREQUES
 
 exports[`test/print-err.ts > TAP > snapshots > EREQUEST > with cause > output no file 1`] = `
 Request Error: oh no! my request!
+`
+
+exports[`test/print-err.ts > TAP > snapshots > EREQUEST > with status > file 1`] = `
+Error: Failed to list dist-tags: 404 Not Found
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'EREQUEST',
+    url: URL {
+      href: 'https://x.y/-/package/p/dist-tags',
+      origin: 'https://x.y',
+      protocol: 'https:',
+      username: '',
+      password: '',
+      host: 'x.y',
+      hostname: 'x.y',
+      port: '',
+      pathname: '/-/package/p/dist-tags',
+      search: '',
+      searchParams: URLSearchParams {},
+      hash: ''
+    },
+    method: 'GET',
+    status: 404
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > EREQUEST > with status > output 1`] = `
+Request Error: Failed to list dist-tags: 404 Not Found
+  URL: https://x.y/-/package/p/dist-tags
+  Method: GET
+  Status: 404
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-EREQUEST-with-status/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > EREQUEST > with status > output no file 1`] = `
+Request Error: Failed to list dist-tags: 404 Not Found
+  URL: https://x.y/-/package/p/dist-tags
+  Method: GET
+  Status: 404
 `
 
 exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > basic > file 1`] = `

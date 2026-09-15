@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/semver'
 import { asError } from '@vltpkg/types'
@@ -156,16 +156,18 @@ export const command: CommandFn<CommandResult> = async conf => {
     })
   } catch (err) {
     throw error('failed to update deprecation status', {
+      code: 'EREQUEST',
+      url: packageUrl,
+      method: 'PUT',
       cause: asError(err),
     })
   }
 
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw error('failed to update deprecation status', {
-      url: packageUrl,
-      response,
-    })
-  }
+  assertOk(response, {
+    message: 'failed to update deprecation status',
+    url: packageUrl,
+    method: 'PUT',
+  })
 
   return {
     name,

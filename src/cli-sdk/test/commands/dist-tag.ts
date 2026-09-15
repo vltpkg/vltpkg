@@ -1,3 +1,4 @@
+import { assertOk } from '@vltpkg/registry-client'
 import t from 'tap'
 import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -11,12 +12,14 @@ let requestLog: {
 let mockResponse: {
   statusCode: number
   json: () => unknown
+  text?: () => string
 } = { statusCode: 200, json: () => ({}) }
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/dist-tag.ts')
 >('../../src/commands/dist-tag.ts', {
   '@vltpkg/registry-client': {
+    assertOk,
     RegistryClient: class {
       async request(
         url: string | URL,
@@ -143,10 +146,17 @@ t.test('add subcommand', async t => {
   })
 
   t.test('throws on failed response', async t => {
-    mockResponse = { statusCode: 403, json: () => ({}) }
+    mockResponse = {
+      statusCode: 403,
+      json: () => ({}),
+      text: () => '{"error":"no access"}',
+    }
     await t.rejects(
       Command.command(makeConfig(['add', 'my-pkg@1.0.0', 'beta'])),
-      { message: /Failed to add dist-tag/ },
+      {
+        message: 'Failed to add dist-tag: 403 Forbidden — no access',
+        cause: { code: 'ENEEDAUTH', status: 403, method: 'PUT' },
+      },
     )
   })
 })
@@ -186,7 +196,10 @@ t.test('rm subcommand', async t => {
     mockResponse = { statusCode: 404, json: () => ({}) }
     await t.rejects(
       Command.command(makeConfig(['rm', 'my-pkg', 'beta'])),
-      { message: /Failed to remove dist-tag/ },
+      {
+        message: 'Failed to remove dist-tag: 404 Not Found',
+        cause: { code: 'EREQUEST', status: 404, method: 'DELETE' },
+      },
     )
   })
 })
@@ -266,7 +279,10 @@ t.test('ls subcommand', async t => {
     mockResponse = { statusCode: 404, json: () => ({}) }
     await t.rejects(
       Command.command(makeConfig(['ls', 'nonexistent'])),
-      { message: /Failed to list dist-tags/ },
+      {
+        message: 'Failed to list dist-tags: 404 Not Found',
+        cause: { code: 'EREQUEST', status: 404, method: 'GET' },
+      },
     )
   })
 })

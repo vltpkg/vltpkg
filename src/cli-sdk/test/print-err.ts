@@ -238,6 +238,19 @@ t.test('snapshots', async t => {
     )
     await testErr(
       t,
+      'with status',
+      error(
+        'Failed to look up the current user: 401 Unauthorized — unauthorized',
+        {
+          code: 'ENEEDAUTH',
+          url: new URL('https://registry.npmjs.org/-/whoami'),
+          method: 'GET',
+          status: 401,
+        },
+      ),
+    )
+    await testErr(
+      t,
       'bare',
       error('Not logged in', { code: 'ENEEDAUTH' }),
     )
@@ -260,6 +273,16 @@ t.test('snapshots', async t => {
           code: 'ECONNRESET',
           syscall: 'read',
         }),
+      }),
+    )
+    await testErr(
+      t,
+      'with status',
+      error('Failed to list dist-tags: 404 Not Found', {
+        code: 'EREQUEST',
+        url: new URL('https://x.y/-/package/p/dist-tags'),
+        method: 'GET',
+        status: 404,
       }),
     )
     await testErr(

@@ -235,16 +235,23 @@ const printCode = (
     }
 
     case 'ENEEDAUTH': {
-      const { url } = err.cause
+      const { url, method, status } = err.cause
       stderr(`Authentication Error: ${err.message}`)
       if (url) {
         stderr(indent(`URL: ${formatURL(url, format)}`))
+      }
+      if (method) {
+        stderr(indent(`Method: ${format(method)}`))
+      }
+      // a 401 and a 403 mean very different things to a user
+      if (status) {
+        stderr(indent(`Status: ${format(status)}`))
       }
       return {}
     }
 
     case 'EREQUEST': {
-      const { url, method } = err.cause
+      const { url, method, status } = err.cause
       const { code, syscall } = err.cause.cause ?? {}
       stderr(`Request Error: ${err.message}`)
       if (code) {
@@ -258,6 +265,11 @@ const printCode = (
       }
       if (method) {
         stderr(indent(`Method: ${format(method)}`))
+      }
+      // set whenever the registry actually answered; its absence is
+      // what distinguishes a transport failure from a response.
+      if (status) {
+        stderr(indent(`Status: ${format(status)}`))
       }
       return { file: true }
     }

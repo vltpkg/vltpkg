@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { commandUsage } from '../config/usage.ts'
 import { resolveRegistry } from '../require-registry.ts'
@@ -176,12 +176,11 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
 
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw error('Failed to add dist-tag', {
-          url,
-          response,
-        })
-      }
+      assertOk(response, {
+        message: 'Failed to add dist-tag',
+        url,
+        method: 'PUT',
+      })
 
       return { id: name, tag, version }
     }
@@ -205,12 +204,11 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
 
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw error('Failed to remove dist-tag', {
-          url,
-          response,
-        })
-      }
+      assertOk(response, {
+        message: 'Failed to remove dist-tag',
+        url,
+        method: 'DELETE',
+      })
 
       return { id: name, tag }
     }
@@ -224,12 +222,10 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
 
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw error('Failed to list dist-tags', {
-          url,
-          response,
-        })
-      }
+      assertOk(response, {
+        message: 'Failed to list dist-tags',
+        url,
+      })
 
       const tags = response.json() as Record<string, string>
 
