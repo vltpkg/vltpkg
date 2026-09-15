@@ -63,6 +63,11 @@
       "import": {
         "default": "./src/cache-entry.ts"
       }
+    },
+    "./registry-error": {
+      "import": {
+        "default": "./src/registry-error.ts"
+      }
     }
   },
   "files": [

@@ -58,7 +58,12 @@ const otplease = async (
 let doneUrlRetry: boolean | string = false
 let doneUrlFail = false
 let doneUrlInvalid = false
+let doneUrlNotFound = false
 let loginFailStatus = 404
+
+// flags for the logout failure paths
+let tokensListStatus = 200
+let tokensDeleteStatus = 200
 
 const tokensActions: [string, string][] = []
 
@@ -78,6 +83,18 @@ const registry = createServer((req, res) => {
   }
 
   if (url.startsWith('/-/npm/v1/tokens')) {
+    if (req.method === 'GET' && tokensListStatus !== 200) {
+      res.statusCode = tokensListStatus
+      return res.end('{"error":"cannot list tokens"}')
+    }
+    if (req.method === 'DELETE' && tokensDeleteStatus !== 200) {
+      tokensActions.push([
+        req.method,
+        url.substring('/-/npm/v1/tokens'.length),
+      ])
+      res.statusCode = tokensDeleteStatus
+      return res.end('{"error":"cannot revoke"}')
+    }
     tokensActions.push([
       req.method ?? 'wat!?',
       url.substring('/-/npm/v1/tokens'.length),
@@ -154,6 +171,11 @@ const registry = createServer((req, res) => {
       doneUrlInvalid = false
       res.statusCode = 200
       return res.end('{"no":"token here"}')
+    }
+    if (doneUrlNotFound) {
+      doneUrlNotFound = false
+      res.statusCode = 404
+      return res.end('{"error":"no such login"}')
     }
     if (doneUrlFail) {
       doneUrlFail = false
@@ -821,7 +843,22 @@ t.test('client.login() with doneUrl failure status code', async t => {
   dropConnection = false
   doneUrlFail = true
   const rc = t.context.rc as RegistryClient
-  await t.rejects(rc.login(registryURL))
+  await t.rejects(rc.login(registryURL), {
+    message: 'Web login failed: 403 Forbidden — {"no":"way"}',
+    cause: { code: 'ENEEDAUTH', status: 403 },
+  })
+})
+
+t.test('client.login() when doneUrl is not implemented', async t => {
+  dropConnection = false
+  doneUrlNotFound = true
+  const rc = t.context.rc as RegistryClient
+  await t.rejects(rc.login(registryURL), {
+    message:
+      'Web login failed: 404 Not Found — no such login\n' +
+      '⚠️ This registry does not implement the web login endpoint.',
+    cause: { code: 'EREQUEST', status: 404 },
+  })
 })
 
 t.test('401 prompting otplease', async t => {
@@ -1532,3 +1569,39 @@ t.test(
     })
   },
 )
+
+t.test('logout() reports revocation failures', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+
+  t.test('token listing fails', async t => {
+    const errs = t.capture(console, 'error').args
+    tokensListStatus = 500
+    t.teardown(() => {
+      tokensListStatus = 200
+    })
+    getKC('').set(registryURL, 'Bearer npm_Yy')
+    await rc.logout(registryURL)
+    // args() drains the capture, so read it once
+    const [[warning] = []] = errs()
+    t.match(warning, /Could not list tokens at /)
+    t.match(warning, /revoke the token in the registry UI/)
+    // the local credential goes away regardless
+    t.equal(await getKC('').get(registryURL), undefined)
+  })
+
+  t.test('revocation is refused', async t => {
+    const errs = t.capture(console, 'error').args
+    tokensDeleteStatus = 403
+    t.teardown(() => {
+      tokensDeleteStatus = 200
+    })
+    getKC('').set(registryURL, 'Bearer npm_Yy')
+    await rc.logout(registryURL)
+    t.match(
+      errs()[0]?.[0],
+      /Failed to revoke the token on the registry: 403 Forbidden — cannot revoke/,
+    )
+    t.equal(await getKC('').get(registryURL), undefined)
+  })
+})
