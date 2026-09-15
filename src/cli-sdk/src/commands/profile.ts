@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, assertOk } from '@vltpkg/registry-client'
 import type { JSONField } from '@vltpkg/types'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
@@ -92,6 +92,17 @@ const getProfile = async (
   const registryUrl = new URL(await resolveRegistry(conf))
   const url = new URL('-/npm/v1/user', registryUrl)
   const response = await rc.request(url, { useCache: false })
+  // before json(): otherwise an error body makes the 'Property not
+  // found in profile' check below blame the user's argument for what is
+  // really an auth failure.
+  assertOk(response, {
+    message: 'Failed to fetch profile',
+    url,
+    advice: statusCode =>
+      statusCode === 401 || statusCode === 403 ?
+        `Not logged in to ${registryUrl.origin}. Run \`vlt login\` and try again.`
+      : undefined,
+  })
   const data = response.json()
 
   const [property] = args
@@ -128,6 +139,15 @@ const setProfile = async (
     body: JSON.stringify({ [property]: value }),
     otp: conf.options.otp,
     useCache: false,
+  })
+  assertOk(response, {
+    message: 'Failed to update profile',
+    url,
+    method: 'POST',
+    advice: statusCode =>
+      statusCode === 401 || statusCode === 403 ?
+        `Not logged in to ${registryUrl.origin}. Run \`vlt login\` and try again.`
+      : undefined,
   })
   const data = response.json()
   return { property, value: data[property] }
