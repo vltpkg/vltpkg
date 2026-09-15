@@ -1601,12 +1601,20 @@ t.test('record fields merge file -> env -> cli', async t => {
       '[]',
       '1',
       '{"explicit":{},"env":{"VLT_REGISTRY":1}}',
+      '{"explicit":{"registry":{}},"env":{"VLT_REGISTRY":"https://env/"}}',
     ]) {
       clearEnv()
       process.env.__VLT_INTERNAL_EXPLICIT = bad
       process.env.VLT_REGISTRY = 'https://env/'
       const c = await load(t, ['install'])
       t.strictSame(c.explicit, { registry: 'https://env/' }, bad)
+    }
+    for (const bad of ['{"a":"b"}', '"loc=http://x/"', '[1]']) {
+      clearEnv()
+      process.env.VLT_REGISTRIES = 'loc=http://x/'
+      process.env.__VLT_INTERNAL_EXPLICIT = `{"explicit":{"registries":${bad}},"env":{"VLT_REGISTRIES":"loc=http://x/"}}`
+      const c = await load(t, ['install'])
+      t.strictSame(c.explicit, { registries: ['loc=http://x/'] }, bad)
     }
   })
 

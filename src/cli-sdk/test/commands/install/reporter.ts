@@ -1,4 +1,6 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { emitter } from '@vltpkg/output'
+import type { Events } from '@vltpkg/output'
 import * as ink from 'ink'
 import { PassThrough } from 'node:stream'
 import { setTimeout } from 'node:timers/promises'
@@ -27,6 +29,8 @@ const { InstallReporter } = await t.mockImport<
 })
 
 const reporter = () => new InstallReporter({}, {} as LoadedConfig)
+const request = (state: Events['request']['state']) =>
+  emitter.emit('request', { url: 'https://x/', state })
 
 t.test('steps, requests and trailer', async t => {
   const r = reporter()
@@ -34,26 +38,26 @@ t.test('steps, requests and trailer', async t => {
   await setTimeout(50)
   t.match(out, 'resolving dependencies')
   emitter.emit('graphStep', { step: 'build', state: 'start' })
-  emitter.emit('request', { state: 'start' } as any)
+  request('start')
   await setTimeout(50)
   t.match(out, /1 request$/m)
-  emitter.emit('request', { state: 'start' } as any)
-  emitter.emit('request', { state: 'cache' } as any)
+  request('start')
+  request('cache')
   await setTimeout(50)
   t.match(out, '2 requests')
   t.match(out, '1 cache hit')
   emitter.emit('graphStep', { step: 'build', state: 'stop' })
-  emitter.emit('request', { state: 'stale' } as any)
-  emitter.emit('request', { state: 'end' } as any)
+  request('stale')
+  request('complete')
   await setTimeout(50)
   t.match(out, 'resolving dependencies ✓')
   t.match(out, '2 cache hits')
   await r.done(
     {
-      buildQueue: ['a' as any],
+      buildQueue: [joinDepIDTuple(['registry', '', 'a@1.0.0'])],
       persistedConfig: {
         which: 'project',
-        values: { registries: { loc: 'http://loc/' } },
+        values: { registries: { loc: 'http://u:t@loc/' } },
       },
     } as unknown as InstallResult,
     { time: 5 },
@@ -61,7 +65,10 @@ t.test('steps, requests and trailer', async t => {
   await setTimeout(50)
   t.match(out, 'Done in 5ms')
   t.match(out, '1 packages have install scripts')
-  t.match(out, 'Saved registries.loc=http://loc/ to project vlt.json')
+  t.match(
+    out,
+    'Saved registries.loc=http://***@loc/ to project vlt.json',
+  )
   r.error(new Error('x'))
 })
 

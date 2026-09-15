@@ -320,6 +320,7 @@ t.test('normalizeRegistryURL / unknownSpecPrefixError', async t => {
     await load()
   t.equal(normalizeRegistryURL('http://a'), 'http://a/')
   t.equal(normalizeRegistryURL('http://a/'), 'http://a/')
+  t.equal(normalizeRegistryURL('http://a//'), 'http://a/')
   const er = unknownSpecPrefixError('loc', 'foo@loc:foo@1', ['npm:'])
   t.match(er, {
     message: /^Unknown spec prefix "loc:" in "foo@loc:foo@1"\./,

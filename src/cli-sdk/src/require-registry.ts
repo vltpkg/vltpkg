@@ -23,7 +23,7 @@ export const missingRegistryError = (): Error =>
 
 /** Ensure a registry URL ends with a single trailing slash. */
 export const normalizeRegistryURL = (url: string): string =>
-  url.endsWith('/') ? url : `${url}/`
+  url.replace(/\/*$/, '/')
 
 /**
  * A spec used a `name:` prefix that no registry alias or git host

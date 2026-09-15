@@ -68,6 +68,16 @@ const urlFields = new Set([
 const norm = (field: string, v: string) =>
   urlFields.has(field) ? normalizeRegistryURL(v) : v
 
+// printed values end up in CI logs, and a url can carry a token
+const redact = (value: string) => {
+  if (!URL.canParse(value)) return value
+  const url = new URL(value)
+  if (!url.username && !url.password) return value
+  url.username = ''
+  url.password = ''
+  return url.href.replace('://', '://***@')
+}
+
 // a layer's (or command block's) value, `null` meaning absent
 const fromLayer = (
   layer: Record<string, unknown> | undefined,
@@ -105,18 +115,19 @@ const conflictError = (
   const name =
     (block ? `command.${block}.` : '') +
     (key === undefined ? field : `${field}.${key}`)
+  const cur = redact(current)
   const flag =
     key === undefined ?
-      `--${field}=${current}`
-    : `--${field} ${key}=${current}`
+      `--${field}=${cur}`
+    : `--${field} ${key}=${cur}`
   return error(
     [
-      `${name} is already set to ${current} in ${file}.`,
+      `${name} is already set to ${cur} in ${file}.`,
       '',
       `Pass \`${flag}\`${key === undefined ? '' : ', use another name,'} or run`,
       block ?
         '`vlt config edit` to change it first.'
-      : `\`vlt config set ${name}=${wanted}\` first.`,
+      : `\`vlt config set ${name}=${redact(wanted)}\` first.`,
     ].join('\n'),
     { code: 'ECONFIG', found: wanted, wanted: current },
   )
@@ -151,8 +162,7 @@ export const planSpecConfigPersist = (
   const otherSelectors = which === 'user' || !ownsSelection(target)
   // a command block beats the top level for its command (names like
   // `add` canonicalized, last wins). a record field in the block replaces
-  // the top level one, so keys it lacks that get written at the top
-  // level are still shadowed for that command.
+  // the top level one, so keys it lacks go in the block.
   const blocks = (target?.command ?? {}) as Record<
     string,
     Record<string, unknown> | undefined
@@ -202,7 +212,14 @@ export const planSpecConfigPersist = (
           blockName,
         )
       }
-      const current = fromLayer(target, field, key)
+      const toBlock =
+        key !== undefined && isObject(block?.[field]) ?
+          blockName
+        : undefined
+      const current =
+        toBlock === undefined ?
+          fromLayer(target, field, key)
+        : undefined
       if (current !== undefined) {
         if (norm(field, current) === value) continue
         throw conflictError(field, key, current, value, find(which))
@@ -211,6 +228,7 @@ export const planSpecConfigPersist = (
       // target drops it, else the builtin
       const inOther =
         (
+          toBlock !== undefined ||
           isNulled(target, field, key) ||
           (key === undefined && !otherSelectors)
         ) ?
@@ -224,9 +242,17 @@ export const planSpecConfigPersist = (
       if (inEffect !== undefined && norm(field, inEffect) === value) {
         continue
       }
-      if (key === undefined) staged[field] = value
+      let dest = staged
+      if (toBlock !== undefined) {
+        const cmds = (staged.command ??= {}) as Record<
+          string,
+          Record<string, unknown>
+        >
+        dest = cmds[toBlock] ??= {}
+      }
+      if (key === undefined) dest[field] = value
       else {
-        const rec = (staged[field] ??= {}) as Record<string, string>
+        const rec = (dest[field] ??= {}) as Record<string, string>
         rec[key] = value
       }
     }
@@ -257,10 +283,11 @@ export const planSpecConfigPersist = (
   return { which, values: staged }
 }
 
+const entries = (path: string, v: unknown): string[] =>
+  isObject(v) ?
+    Object.entries(v).flatMap(([k, x]) => entries(`${path}.${k}`, x))
+  : [`${path}=${redact(String(v))}`]
+
 /** `field=value` / `field.key=value` lines for a plan's values. */
 export const persistedEntries = (values: ConfigFileData): string[] =>
-  Object.entries(values).flatMap(([f, v]) =>
-    v && typeof v === 'object' ?
-      Object.entries(v).map(([k, x]) => `${f}.${k}=${String(x)}`)
-    : [`${f}=${String(v)}`],
-  )
+  Object.entries(values).flatMap(([f, v]) => entries(f, v))

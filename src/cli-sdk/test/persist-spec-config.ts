@@ -269,6 +269,46 @@ t.test('command block of the target file', async t => {
     { registries: { loc: 'http://b/' } },
     'other command block ignored',
   )
+  t.strictSame(
+    planSpecConfigPersist(
+      conf(
+        { registries: ['other=http://b', 'u=http://u'] },
+        {
+          project: { ...project, registries: { other: 'http://c/' } },
+          user: { registries: { u: 'http://u/' } },
+        },
+      ),
+    )?.values,
+    {
+      command: {
+        install: {
+          registries: { other: 'http://b/', u: 'http://u/' },
+        },
+      },
+    },
+    'record in block replaces top level, key goes in block',
+  )
+})
+
+t.test('userinfo redacted in messages', async t => {
+  t.throws(
+    () =>
+      planSpecConfigPersist(
+        conf(
+          { registries: ['loc=http://u:tok@a'] },
+          { project: { registries: { loc: 'http://u:old@a/' } } },
+        ),
+      ),
+    {
+      message: [
+        'registries.loc is already set to http://***@a/ in /project/vlt.json.',
+        '',
+        'Pass `--registries loc=http://***@a/`, use another name, or run',
+        '`vlt config set registries.loc=http://***@a/` first.',
+      ].join('\n'),
+      cause: { found: 'http://u:tok@a/', wanted: 'http://u:old@a/' },
+    },
+  )
 })
 
 t.test('all spec fields, builtins skipped', async t => {
@@ -583,14 +623,31 @@ t.test('through a real Config.load', async t => {
     undefined,
     'alias catalogs merge, same in user',
   )
+  t.strictSame(
+    (await load([...save, '--git-hosts', 'gl2=git+ssh://c/$1']))
+      ?.values,
+    {
+      command: {
+        install: { 'git-hosts': { gl2: 'git+ssh://c/$1' } },
+      },
+    },
+    'key missing from block record',
+  )
 })
 
 t.test('persistedEntries', async t => {
   t.strictSame(
     persistedEntries({
       registry: 'http://r/',
-      registries: { loc: 'http://loc/' },
+      registries: { loc: 'http://u:t@loc/' },
+      command: {
+        install: { 'git-hosts': { gl: 'git+ssh://u@a/$1' } },
+      },
     }),
-    ['registry=http://r/', 'registries.loc=http://loc/'],
+    [
+      'registry=http://r/',
+      'registries.loc=http://***@loc/',
+      'command.install.git-hosts.gl=git+ssh://***@a/$1',
+    ],
   )
 })

@@ -25,7 +25,8 @@ resolves dependencies from scratch.
 
     save-config
       Save registry and git host options given on the command line or via env
-      (e.g. \`--registries name=url\`) to vlt.json.
+      (e.g. \`--registries name=url\`) to the project vlt.json, or the user
+      vlt.json with --config=user.
 
       ​--save-config
 

@@ -196,6 +196,11 @@ const parentEnv = (): ParentEnv | undefined => {
     return (
         isObject(p) &&
           isObject(p.explicit) &&
+          Object.entries(p.explicit).every(([k, v]) =>
+            isRecordField(k) ?
+              Array.isArray(v) && v.every(x => typeof x === 'string')
+            : !isObject(v),
+          ) &&
           isRecordStringString(p.env)
       ) ?
         (p as ParentEnv)
