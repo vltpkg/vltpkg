@@ -1595,10 +1595,19 @@ t.test('record fields merge file -> env -> cli', async t => {
   )
 
   t.test('bad parent env is ignored', async t => {
-    process.env.__VLT_INTERNAL_EXPLICIT = '{'
-    process.env.VLT_REGISTRY = 'https://env/'
-    const c = await load(t, ['install'])
-    t.strictSame(c.explicit, { registry: 'https://env/' })
+    for (const bad of [
+      '{',
+      '{}',
+      '[]',
+      '1',
+      '{"explicit":{},"env":{"VLT_REGISTRY":1}}',
+    ]) {
+      clearEnv()
+      process.env.__VLT_INTERNAL_EXPLICIT = bad
+      process.env.VLT_REGISTRY = 'https://env/'
+      const c = await load(t, ['install'])
+      t.strictSame(c.explicit, { registry: 'https://env/' }, bad)
+    }
   })
 
   t.end()

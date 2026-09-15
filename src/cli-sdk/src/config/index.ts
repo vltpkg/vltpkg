@@ -30,6 +30,7 @@ import { getOptions } from '@vltpkg/spec'
 import {
   assertRecordStringString,
   assertRecordStringT,
+  isObject,
   isRecordStringString,
 } from '@vltpkg/types'
 import type { Validator, WhichConfig } from '@vltpkg/vlt-json'
@@ -191,7 +192,14 @@ const kParentEnv = '__VLT_INTERNAL_EXPLICIT'
 type ParentEnv = { explicit: RecordPairs; env: RecordString }
 const parentEnv = (): ParentEnv | undefined => {
   try {
-    return JSON.parse(process.env[kParentEnv] ?? '') as ParentEnv
+    const p = JSON.parse(process.env[kParentEnv] ?? '') as unknown
+    return (
+        isObject(p) &&
+          isObject(p.explicit) &&
+          isRecordStringString(p.env)
+      ) ?
+        (p as ParentEnv)
+      : undefined
   } catch {
     return undefined
   }
@@ -518,7 +526,8 @@ export class Config {
   explicit: ConfigData = {}
 
   // a field's explicit env value: all of it at the top level, the new
-  // pairs (or changed scalar) when inherited from a parent vlt
+  // pairs (or changed scalar) when inherited from a parent vlt. once a
+  // script changes a record var, the parent's explicit pairs are dropped.
   #explicitEnv(
     k: string,
     value: unknown,

@@ -106,6 +106,19 @@ t.test('file layers decide', async t => {
     { registries: { loc: 'http://loc/' } },
     'null in project is absent',
   )
+  t.strictSame(
+    planSpecConfigPersist(
+      conf(
+        { registries: loc },
+        {
+          user: { registries: { loc: 'http://loc/' } },
+          project: { registries: { loc: null } },
+        },
+      ),
+    )?.values,
+    { registries: { loc: 'http://loc/' } },
+    'null in project drops the user value',
+  )
   t.throws(
     () =>
       planSpecConfigPersist(
@@ -136,17 +149,40 @@ t.test('file layers decide', async t => {
     { message: /^registry is already set to http:\/\/b\/ in/ },
     'scalar conflict',
   )
+  t.throws(
+    () =>
+      planSpecConfigPersist(
+        conf(
+          { 'default-registry-alias': 'npm' },
+          { project: { 'default-registry-alias': 'vlt' } },
+        ),
+      ),
+    { message: /^default-registry-alias is already set to vlt in/ },
+    'builtin value conflict',
+  )
 })
 
 t.test('invalid values are ECONFIG', async t => {
-  for (const r of ['=http://x', 'a~b=http://x']) {
+  t.throws(
+    () =>
+      planSpecConfigPersist(conf({ registries: ['a~b=http://x'] })),
+    {
+      message: 'Reserved character found in registries name',
+      cause: { code: 'ECONFIG', found: 'a~b' },
+    },
+  )
+  for (const f of ['registries', 'scoped-registries', 'git-hosts']) {
     t.throws(
-      () => planSpecConfigPersist(conf({ registries: [r] })),
+      () => planSpecConfigPersist(conf({ [f]: ['=http://x'] })),
       {
-        message: 'Reserved character found in registries name',
-        cause: { code: 'ECONFIG' },
+        message: `${f} has an entry with no name.`,
+        cause: {
+          code: 'ECONFIG',
+          found: '=http://x',
+          wanted: '<name>=http://x',
+        },
       },
-      r,
+      f,
     )
   }
   t.throws(
@@ -206,6 +242,21 @@ t.test('command block of the target file', async t => {
     undefined,
     'same value in block',
   )
+  t.throws(
+    () =>
+      planSpecConfigPersist(
+        conf(
+          { registries: ['loc=http://b'] },
+          {
+            project: {
+              command: { add: { registries: { loc: 'http://a/' } } },
+            },
+          },
+        ),
+      ),
+    { message: /^command\.add\.registries\.loc is already set/ },
+    'aliased command block',
+  )
   t.strictSame(
     planSpecConfigPersist(
       conf(
@@ -264,6 +315,27 @@ t.test('all spec fields, builtins skipped', async t => {
       ?.values,
     { registries: { gh: 'http://mygh/' } },
     'overridden builtin',
+  )
+  t.strictSame(
+    planSpecConfigPersist(
+      conf(
+        {
+          'default-registry-alias': 'npm',
+          registries: [`gh=${defaultRegistries.gh}`],
+        },
+        {
+          user: {
+            'default-registry-alias': 'vlt',
+            registries: { gh: 'http://mygh/' },
+          },
+        },
+      ),
+    )?.values,
+    {
+      registries: { gh: defaultRegistries.gh },
+      'default-registry-alias': 'npm',
+    },
+    'builtin value over a user value',
   )
 })
 
@@ -339,6 +411,25 @@ t.test('registry selection guard', async t => {
       'default-registry-alias': 'vlt',
     },
     'staged selector not overwritten',
+  )
+  t.strictSame(
+    planSpecConfigPersist(
+      conf(
+        { registries: loc, 'default-registry-alias': 'npm' },
+        {
+          user: {
+            ...user,
+            registries: { vlt: 'http://vlt/', npm: 'http://npm/' },
+          },
+        },
+      ),
+    )?.values,
+    {
+      registries: { loc: 'http://loc/', npm: 'http://npm/' },
+      registry: 'http://u/',
+      'default-registry-alias': 'npm',
+    },
+    'explicit builtin alias kept',
   )
 })
 

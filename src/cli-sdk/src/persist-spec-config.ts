@@ -13,6 +13,7 @@ import {
   defaultRegistries,
   defaultRegistryName,
 } from '@vltpkg/spec'
+import { isObject } from '@vltpkg/types'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 import { find } from '@vltpkg/vlt-json'
 import {
@@ -26,6 +27,7 @@ import type {
   ConfigFileLayer,
   LoadedConfig,
 } from './config/index.ts'
+import { getCommand } from './config/definition.ts'
 import {
   registrySelectionFields,
   registrySelectors,
@@ -80,6 +82,18 @@ const fromLayer = (
   return typeof r === 'string' ? r : undefined
 }
 
+// set to `null`, removing the value from outer layers
+const isNulled = (
+  layer: Record<string, unknown> | undefined,
+  field: string,
+  key?: string,
+) => {
+  const v = layer?.[field]
+  return key === undefined ?
+      v === null
+    : isObject(v) && v[key] === null
+}
+
 const conflictError = (
   field: string,
   key: string | undefined,
@@ -114,10 +128,10 @@ const ownsSelection = (layer?: ConfigFileLayer) =>
 /**
  * The spec config set on the cli / env that the target config file (the
  * project `vlt.json`, unless `--config=user`) should get. `undefined`
- * unless `--save-config` is set. Values already in either config file
- * are left alone. Throws `ECONFIG` when the target file (or its
- * `command.<cmd>` block) sets a value to something else, or a value is
- * invalid.
+ * unless `--save-config` is set. Values already in effect from a config
+ * file or builtin are left alone. Throws `ECONFIG` when the target file
+ * (or its `command.<cmd>` block) sets a value to something else, or a
+ * value is invalid.
  *
  * Call before installing, write the result after it succeeds.
  */
@@ -135,11 +149,18 @@ export const planSpecConfigPersist = (
   const other = conf.layers[which === 'project' ? 'user' : 'project']
   // a project that owns selection drops the user's selectors
   const otherSelectors = which === 'user' || !ownsSelection(target)
-  // a command block beats the top level for its command. a record field
-  // in the block replaces the top level one, so keys it lacks that get
-  // written at the top level are still shadowed for that command.
-  const block = target?.command?.[conf.command] as
+  // a command block beats the top level for its command (names like
+  // `add` canonicalized, last wins). a record field in the block replaces
+  // the top level one, so keys it lacks that get written at the top
+  // level are still shadowed for that command.
+  const blocks = (target?.command ?? {}) as Record<
+    string,
     Record<string, unknown> | undefined
+  >
+  const blockName = Object.keys(blocks)
+    .filter(n => getCommand(n) === conf.command)
+    .at(-1)
+  const block = blockName ? blocks[blockName] : undefined
   const staged: Record<string, unknown> = {}
   for (const field of specConfigFields) {
     const v = explicit[field]
@@ -148,8 +169,17 @@ export const planSpecConfigPersist = (
       isRecordField(field) ?
         Object.entries(v as Record<string, string>)
       : [[undefined, v as string]]
-    if (field === 'registries') assertRegistryKeys(v, `--${field}`)
     for (const [key, raw] of entries) {
+      if (key === '') {
+        throw error(`${field} has an entry with no name.`, {
+          code: 'ECONFIG',
+          found: `=${raw}`,
+          wanted: `<name>=${raw}`,
+        })
+      }
+      if (key !== undefined && field === 'registries') {
+        assertRegistryKeys({ [key]: raw }, `--${field}`)
+      }
       if (key !== undefined && !raw) {
         throw error(`${field}.${key} has no value.`, {
           code: 'ECONFIG',
@@ -160,14 +190,6 @@ export const planSpecConfigPersist = (
       // eg an empty VLT_REGISTRY
       if (!raw) continue
       const value = norm(field, raw)
-      if (
-        key === undefined ?
-          field === 'default-registry-alias' &&
-          value === defaultRegistryName
-        : builtins[field]?.[key] === value
-      ) {
-        continue
-      }
       const inBlock = fromLayer(block, field, key)
       if (inBlock !== undefined) {
         if (norm(field, inBlock) === value) continue
@@ -177,7 +199,7 @@ export const planSpecConfigPersist = (
           inBlock,
           value,
           find(which),
-          conf.command,
+          blockName,
         )
       }
       const current = fromLayer(target, field, key)
@@ -185,12 +207,21 @@ export const planSpecConfigPersist = (
         if (norm(field, current) === value) continue
         throw conflictError(field, key, current, value, find(which))
       }
-      const inOther = fromLayer(other, field, key)
-      if (
-        inOther !== undefined &&
-        norm(field, inOther) === value &&
-        (key !== undefined || otherSelectors)
-      ) {
+      // in effect without saving: the other file's value, unless the
+      // target drops it, else the builtin
+      const inOther =
+        (
+          isNulled(target, field, key) ||
+          (key === undefined && !otherSelectors)
+        ) ?
+          undefined
+        : fromLayer(other, field, key)
+      const builtin =
+        key !== undefined ? builtins[field]?.[key]
+        : field === 'default-registry-alias' ? defaultRegistryName
+        : undefined
+      const inEffect = inOther ?? builtin
+      if (inEffect !== undefined && norm(field, inEffect) === value) {
         continue
       }
       if (key === undefined) staged[field] = value

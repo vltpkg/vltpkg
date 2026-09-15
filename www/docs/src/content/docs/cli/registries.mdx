@@ -145,16 +145,18 @@ install, so a fresh clone installs with a plain `vlt install`:
   copied.
 - A different value for the same key in the target file (or its
   `command.<cmd>` block) is an `ECONFIG` error, nothing is installed.
-  Change it with `vlt config set registries.loc=<url>` first. An
-  invalid alias name or a missing URL is an `ECONFIG` error too.
+  Change it with `vlt config set registries.loc=<url>` first. A
+  missing or invalid name, or a missing value, is an `ECONFIG` error
+  too.
 - `--config=user` saves to the user `vlt.json` instead.
 - When the project file had no `registry`, `registries` or
   `default-registry-alias`, the user's `registry` and
   `default-registry-alias` (with that alias's URL) are copied along,
   since the project now owns registry selection.
 - A `vlt install` run by a vlt script (`vlt run`, `vlt exec`, ...)
-  only saves what was given to the parent vlt or set for the child,
-  not config the parent read from its own files.
+  inherits `--save-config`, but only saves what was given to the
+  parent vlt or set for the child, not config the parent read from its
+  own files.
 
 ### Bootstrapping with `vlt login`
 
