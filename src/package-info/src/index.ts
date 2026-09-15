@@ -10,6 +10,9 @@ import type {
   RegistryClientOptions,
   RegistryClientRequestOptions,
 } from '@vltpkg/registry-client'
+// subpath import: keeps the lazy `import('@vltpkg/registry-client')`
+// below from becoming an eager dependency on the whole client.
+import { registryErrorMessage } from '@vltpkg/registry-client/registry-error'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { Pool } from '@vltpkg/tar'
@@ -293,7 +296,7 @@ export class PackageInfoClient {
             throw this.#resolveError(
               spec,
               options,
-              `Registry returned HTTP ${response.statusCode} when ` +
+              `${registryErrorMessage(response)} when ` +
                 `fetching the tarball for ${spec}. The resolved version ` +
                 `may have been unpublished, or the registry may be ` +
                 `misconfigured or unreachable.`,
@@ -384,7 +387,7 @@ export class PackageInfoClient {
           throw this.#resolveError(
             spec,
             options,
-            'failed to fetch remote tarball',
+            `failed to fetch remote tarball: ${registryErrorMessage(response)}`,
             {
               url: r.resolved,
               response,
@@ -606,7 +609,7 @@ export class PackageInfoClient {
             throw this.#resolveError(
               spec,
               options,
-              `Registry returned HTTP ${response.statusCode} when ` +
+              `${registryErrorMessage(response)} when ` +
                 `fetching the tarball for ${spec} at ${tarball}. The ` +
                 `version may have been unpublished, or the registry may ` +
                 `be misconfigured or unreachable.`,
@@ -712,7 +715,7 @@ export class PackageInfoClient {
           throw this.#resolveError(
             spec,
             options,
-            'failed to fetch URL',
+            `failed to fetch URL: ${registryErrorMessage(response)}`,
             { response, url: remoteURL },
           )
         }
@@ -849,7 +852,7 @@ export class PackageInfoClient {
             throw this.#resolveError(
               s,
               options,
-              'failed to fetch URL',
+              `failed to fetch URL: ${registryErrorMessage(response)}`,
               { response, url: remoteURL },
             )
           }
@@ -1031,7 +1034,7 @@ export class PackageInfoClient {
       throw this.#resolveError(
         spec,
         options,
-        'failed to fetch packument',
+        `failed to fetch packument: ${registryErrorMessage(response)}`,
         {
           url: pakuURL,
           response,
