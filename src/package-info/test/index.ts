@@ -341,6 +341,44 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
+    case '/-/vlt/capabilities': {
+      batchCapabilityRequests++
+      if (batchCapabilities === undefined) {
+        res.statusCode = 404
+        return res.end(JSON.stringify({ error: 'not found' }))
+      }
+      const json = JSON.stringify(batchCapabilities)
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+
+    case '/-/vlt/manifests': {
+      let body = ''
+      req.on('data', (c: Buffer) => (body += String(c)))
+      req.on('end', () => {
+        const { specs } = JSON.parse(body) as { specs: string[] }
+        batchRequests.push(specs)
+        const lines = specs
+          .filter(spec => spec in batchManifests)
+          .map(spec =>
+            JSON.stringify({
+              status: 200,
+              spec,
+              manifest: batchManifests[spec],
+            }),
+          )
+        // one malformed line, which the client must skip
+        lines.push('not json')
+        const ndjson = lines.join('\n') + '\n'
+        res.statusCode = 207
+        res.setHeader('content-type', 'application/x-ndjson')
+        res.setHeader('content-length', ndjson.length)
+        res.end(ndjson)
+      })
+      return
+    }
+
     default: {
       res.statusCode = 404
       t.comment('not found', req.url)
@@ -351,6 +389,13 @@ const server = createServer((req, res) => {
 })
 
 const notFoundURLs: string[] = []
+// what the batch endpoints serve; capabilities undefined answers 404
+let batchCapabilities: { manifests?: string } | undefined
+let batchCapabilityRequests = 0
+const batchRequests: string[][] = []
+const batchManifests: Record<string, Manifest> = {
+  'abbrev@2.0.0': { name: 'abbrev', version: '2.0.0' },
+}
 let corruptedOnceServed = 0
 let movingRequests = 0
 let movingLatest = '1.0.0'
@@ -2409,5 +2454,86 @@ t.test('no registry configured', async t => {
   })
   await t.rejects(manifest('abbrev@2.0.0', noRegistry), {
     cause: { code: 'ECONFIG' },
+  })
+})
+
+t.test('prefetchManifests', async t => {
+  const { resetCapabilities } = await import('../src/batch.ts')
+  const wanted = (name: string, version: string) => ({
+    registry: defaultRegistry,
+    name,
+    version,
+  })
+  t.beforeEach(t => {
+    resetCapabilities()
+    batchCapabilities = { manifests: '0.1' }
+    batchRequests.length = 0
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_BATCH_MANIFESTS: '1' },
+    })
+  })
+
+  t.test('is a no-op when the flag is off', async t => {
+    t.intercept(process, 'env', { value: { ...process.env } })
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+    t.equal(pi.batchedManifestCount, 0)
+    t.strictSame(batchRequests, [], 'no request went out')
+  })
+
+  t.test('is a no-op for an empty list', async t => {
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    pi.prefetchManifests([])
+    t.equal(pi.batchedManifestCount, 0)
+  })
+
+  t.test('delivers manifests that manifest() then reads', async t => {
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+    // not arrived yet: manifest() waits on the in-flight batch
+    const mani = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(mani, { name: 'abbrev', version: '2.0.0' })
+    t.strictSame(batchRequests, [['abbrev@2.0.0']])
+    t.equal(pi.batchedManifestCount, 1)
+    // arrived: answered from memory, no second request
+    await pi.manifest('abbrev@2.0.0')
+    t.equal(batchRequests.length, 1)
+  })
+
+  t.test('asks each registry once, even when prefetched twice', async t => {
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+    pi.prefetchManifests([wanted('abbrev', '1.0.0')])
+    await pi.manifest('abbrev@2.0.0')
+    t.equal(batchRequests.length, 1, 'second prefetch for the registry ignored')
+  })
+
+  t.test('a spec the batch did not deliver falls through', async t => {
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    pi.prefetchManifests([wanted('abbrev', '1.99.99')])
+    // waits on the batch, misses, then resolves via the packument path
+    const mani = (await pi.manifest('abbrev@2.0.0')) as Manifest
+    t.equal(mani.version, '2.0.0')
+  })
+
+  t.test('a registry without the endpoint leaves everything alone', async t => {
+    batchCapabilities = undefined
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+    const mani = (await pi.manifest('abbrev@2.0.0')) as Manifest
+    t.equal(mani.version, '2.0.0', 'served by the per-name path')
+    t.equal(pi.batchedManifestCount, 0)
+    t.strictSame(batchRequests, [], 'no batch request was made')
+  })
+
+  t.test('a batch that blows up leaves every spec to manifest()', async t => {
+    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    const broken = Object.create(pi) as typeof pi
+    Object.defineProperty(broken, 'getRegistryClient', {
+      value: () => Promise.reject(new Error('boom')),
+    })
+    broken.prefetchManifests([wanted('abbrev', '2.0.0')])
+    const mani = (await broken.manifest('abbrev@2.0.0')) as Manifest
+    t.equal(mani.version, '2.0.0', 'per-name path unaffected')
   })
 })
