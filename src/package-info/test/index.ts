@@ -15,6 +15,7 @@ import { createServer } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
+import type { Test } from 'tap'
 import { x as tarX } from 'tar'
 import type {
   PackageInfoClientExtractOptions,
@@ -2464,9 +2465,17 @@ t.test('prefetchManifests', async t => {
     name,
     version,
   })
+  // per-test cache dir: the registry client disk-caches GETs by URL, so a
+  // shared dir would serve one test's capability document to the next
+  const freshClient = (t: Test) =>
+    new PackageInfoClient({
+      registry: defaultRegistry,
+      cache: t.testdir(),
+    })
   t.beforeEach(t => {
     resetCapabilities()
     batchCapabilities = { manifests: '0.1' }
+    batchCapabilityRequests = 0
     batchRequests.length = 0
     t.intercept(process, 'env', {
       value: { ...process.env, VLT_BATCH_MANIFESTS: '1' },
@@ -2474,25 +2483,29 @@ t.test('prefetchManifests', async t => {
   })
 
   t.test('is a no-op when the flag is off', async t => {
-    t.intercept(process, 'env', { value: { ...process.env } })
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    // spread-and-delete: `...process.env` would copy the flag back in
+    const env = { ...process.env }
+    delete env.VLT_BATCH_MANIFESTS
+    t.intercept(process, 'env', { value: env })
+    const pi = freshClient(t)
     pi.prefetchManifests([wanted('abbrev', '2.0.0')])
     t.equal(pi.batchedManifestCount, 0)
     t.strictSame(batchRequests, [], 'no request went out')
   })
 
   t.test('is a no-op for an empty list', async t => {
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    const pi = freshClient(t)
     pi.prefetchManifests([])
     t.equal(pi.batchedManifestCount, 0)
   })
 
   t.test('delivers manifests that manifest() then reads', async t => {
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
+    const pi = freshClient(t)
     pi.prefetchManifests([wanted('abbrev', '2.0.0')])
     // not arrived yet: manifest() waits on the in-flight batch
     const mani = await pi.manifest('abbrev@2.0.0')
     t.strictSame(mani, { name: 'abbrev', version: '2.0.0' })
+    t.equal(batchCapabilityRequests, 1, 'probed the registry once')
     t.strictSame(batchRequests, [['abbrev@2.0.0']])
     t.equal(pi.batchedManifestCount, 1)
     // arrived: answered from memory, no second request
@@ -2500,40 +2513,65 @@ t.test('prefetchManifests', async t => {
     t.equal(batchRequests.length, 1)
   })
 
-  t.test('asks each registry once, even when prefetched twice', async t => {
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
-    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
-    pi.prefetchManifests([wanted('abbrev', '1.0.0')])
-    await pi.manifest('abbrev@2.0.0')
-    t.equal(batchRequests.length, 1, 'second prefetch for the registry ignored')
-  })
+  t.test(
+    'asks each registry once, even when prefetched twice',
+    async t => {
+      const pi = freshClient(t)
+      pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+      pi.prefetchManifests([wanted('abbrev', '1.0.0')])
+      await pi.manifest('abbrev@2.0.0')
+      t.equal(
+        batchRequests.length,
+        1,
+        'second prefetch for the registry ignored',
+      )
+    },
+  )
 
-  t.test('a spec the batch did not deliver falls through', async t => {
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
-    pi.prefetchManifests([wanted('abbrev', '1.99.99')])
-    // waits on the batch, misses, then resolves via the packument path
-    const mani = (await pi.manifest('abbrev@2.0.0')) as Manifest
-    t.equal(mani.version, '2.0.0')
-  })
+  t.test(
+    'a spec the batch did not deliver falls through',
+    async t => {
+      const pi = freshClient(t)
+      pi.prefetchManifests([wanted('abbrev', '1.99.99')])
+      // waits on the batch, misses, then resolves via the packument path
+      const mani = (await pi.manifest('abbrev@2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0')
+    },
+  )
 
-  t.test('a registry without the endpoint leaves everything alone', async t => {
-    batchCapabilities = undefined
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
-    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
-    const mani = (await pi.manifest('abbrev@2.0.0')) as Manifest
-    t.equal(mani.version, '2.0.0', 'served by the per-name path')
-    t.equal(pi.batchedManifestCount, 0)
-    t.strictSame(batchRequests, [], 'no batch request was made')
-  })
+  t.test(
+    'a registry without the endpoint leaves everything alone',
+    async t => {
+      batchCapabilities = undefined
+      const pi = freshClient(t)
+      pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+      const mani = (await pi.manifest('abbrev@2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0', 'served by the per-name path')
+      t.equal(pi.batchedManifestCount, 0)
+      t.strictSame(batchRequests, [], 'no batch request was made')
+    },
+  )
 
-  t.test('a batch that blows up leaves every spec to manifest()', async t => {
-    const pi = new PackageInfoClient({ registry: defaultRegistry, cache })
-    const broken = Object.create(pi) as typeof pi
-    Object.defineProperty(broken, 'getRegistryClient', {
-      value: () => Promise.reject(new Error('boom')),
-    })
-    broken.prefetchManifests([wanted('abbrev', '2.0.0')])
-    const mani = (await broken.manifest('abbrev@2.0.0')) as Manifest
-    t.equal(mani.version, '2.0.0', 'per-name path unaffected')
-  })
+  t.test(
+    'a batch that blows up leaves every spec to manifest()',
+    async t => {
+      class Broken extends PackageInfoClient {
+        async getRegistryClient(): Promise<never> {
+          throw new Error('boom')
+        }
+      }
+      const pi = new Broken({
+        registry: defaultRegistry,
+        cache: t.testdir(),
+      })
+      pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+      // manifest() awaits the failed batch without blowing up on it, misses,
+      // and falls through to the per-name path -- whose own error is what
+      // surfaces, proving the batch failure was swallowed
+      await t.rejects(pi.manifest('abbrev@2.0.0'), {
+        message: 'boom',
+      })
+      t.equal(pi.batchedManifestCount, 0)
+    },
+  )
 })
