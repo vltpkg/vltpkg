@@ -396,6 +396,7 @@ let batchCapabilityRequests = 0
 const batchRequests: string[][] = []
 const batchManifests: Record<string, Manifest> = {
   'abbrev@2.0.0': { name: 'abbrev', version: '2.0.0' },
+  'abbrev@3.0.0': { name: 'abbrev', version: '3.0.0' },
 }
 let corruptedOnceServed = 0
 let movingRequests = 0
@@ -2552,12 +2553,46 @@ t.test('prefetchManifests', async t => {
     },
   )
 
+  t.test('selection options bypass the batch', async t => {
+    const pi = freshClient(t)
+    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+    await pi.manifest('abbrev@2.0.0')
+    t.equal(pi.batchedManifestCount, 1)
+    // an os-constrained request never touched pickManifest through the
+    // batch, so it takes the packument path and gets the full manifest
+    const mani = (await pi.manifest('abbrev@2.0.0', {
+      os: 'linux',
+    })) as Manifest
+    t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+  })
+
+  t.test('a settled batch can be asked again', async t => {
+    const pi = freshClient(t)
+    pi.prefetchManifests([wanted('abbrev', '2.0.0')])
+    await pi.manifest('abbrev@2.0.0')
+    t.equal(batchRequests.length, 1)
+    pi.prefetchManifests([wanted('abbrev', '3.0.0')])
+    // only the second batch carries 3.0.0, so this waits for it to land
+    const mani = (await pi.manifest('abbrev@3.0.0')) as Manifest
+    t.equal(mani.version, '3.0.0')
+    t.equal(
+      batchRequests.length,
+      2,
+      'settled entry cleared, asked again',
+    )
+  })
+
   t.test(
     'a batch that blows up leaves every spec to manifest()',
     async t => {
+      // distinct errors per call, so a leaked batch rejection cannot
+      // pass for the fallback path's own failure
+      let calls = 0
       class Broken extends PackageInfoClient {
         async getRegistryClient(): Promise<never> {
-          throw new Error('boom')
+          throw new Error(
+            ++calls === 1 ? 'batch boom' : 'fallback boom',
+          )
         }
       }
       const pi = new Broken({
@@ -2569,7 +2604,7 @@ t.test('prefetchManifests', async t => {
       // and falls through to the per-name path -- whose own error is what
       // surfaces, proving the batch failure was swallowed
       await t.rejects(pi.manifest('abbrev@2.0.0'), {
-        message: 'boom',
+        message: 'fallback boom',
       })
       t.equal(pi.batchedManifestCount, 0)
     },

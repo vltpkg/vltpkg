@@ -163,12 +163,42 @@ t.test('fetchBatch', async t => {
         JSON.stringify({ status: 200, manifest: { name: 'x' } }),
         JSON.stringify({
           status: 200,
+          spec: 'string-mani@1.0.0',
+          manifest: 'not an object',
+        }),
+        JSON.stringify({
+          status: 200,
+          spec: 'wrong-name@1.0.0',
+          manifest: { name: 'other', version: '1.0.0' },
+        }),
+        JSON.stringify({
+          status: 200,
+          spec: 'wrong-version@1.0.0',
+          manifest: { name: 'wrong-version', version: '2.0.0' },
+        }),
+        JSON.stringify({
+          status: 200,
+          spec: 'unrequested@1.0.0',
+          manifest: { name: 'unrequested', version: '1.0.0' },
+        }),
+        JSON.stringify({
+          status: 200,
           spec: 'good@1.0.0',
           manifest: { name: 'good', version: '1.0.0' },
         }),
       ]),
     )
-    const found = await fetchBatch(c, registry, ['good@1.0.0'])
-    t.strictSame([...found.keys()], ['good@1.0.0'])
+    const found = await fetchBatch(c, registry, [
+      'good@1.0.0',
+      'no-manifest@1.0.0',
+      'string-mani@1.0.0',
+      'wrong-name@1.0.0',
+      'wrong-version@1.0.0',
+    ])
+    t.strictSame(
+      [...found.keys()],
+      ['good@1.0.0'],
+      'only the requested record whose manifest matches its spec',
+    )
   })
 })

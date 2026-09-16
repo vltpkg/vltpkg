@@ -53,6 +53,8 @@ const lockedRegistryVersion = (
   const f = spec.final
   if (f.type !== 'registry') return
   const { registry, name: specName, bareSpec } = f
+  // hydrate always fills these for a registry spec; the types are optional
+  /* c8 ignore next */
   if (!registry || !specName || !bareSpec) return
   return { registry, name: specName, version: bareSpec }
 }

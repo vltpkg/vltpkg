@@ -24,13 +24,6 @@ export type Capabilities = {
   manifests?: string
 }
 
-/** One NDJSON line of a batch response. */
-export type BatchRecord = {
-  status: number
-  spec: string
-  manifest?: Manifest
-}
-
 // Registries answer the capability document once per process. A registry
 // that does not support batching must not be asked again on every install
 // step, so failures memoize as `false` too.
@@ -57,7 +50,8 @@ export const supportsBatch = async (
 /**
  * The manifests for `specs`, keyed by the spec that asked for them. Specs the
  * registry did not resolve are absent, as are all of them when the request
- * fails.
+ * fails. Records for specs that were not asked for, and records whose
+ * manifest does not carry the name and version its spec names, are dropped.
  */
 export const fetchBatch = async (
   client: RegistryClient,
@@ -66,6 +60,7 @@ export const fetchBatch = async (
 ): Promise<Map<string, Manifest>> => {
   const found = new Map<string, Manifest>()
   if (!specs.length) return found
+  const requested = new Set(specs)
 
   let body: string
   try {
@@ -92,7 +87,9 @@ export const fetchBatch = async (
   for (const line of body.split('\n')) {
     if (!line) continue
     const record = parseRecord(line)
-    if (record) found.set(record.spec, record.manifest)
+    if (record && requested.has(record.spec)) {
+      found.set(record.spec, record.manifest)
+    }
   }
   return found
 }
@@ -128,13 +125,21 @@ const probeCapabilities = async (
 const parseRecord = (
   line: string,
 ): { spec: string; manifest: Manifest } | undefined => {
-  let record: BatchRecord
+  // parsed wire data: nothing about its shape can be assumed
+  let record: { status?: unknown; spec?: unknown; manifest?: unknown }
   try {
-    record = JSON.parse(line) as BatchRecord
+    record = JSON.parse(line) as typeof record
   } catch {
     return
   }
-  if (record.status !== 200) return
-  if (typeof record.spec !== 'string' || !record.manifest) return
-  return { spec: record.spec, manifest: record.manifest }
+  const { spec, manifest } = record
+  if (record.status !== 200 || typeof spec !== 'string') return
+  if (typeof manifest !== 'object' || manifest === null) return
+  // the manifest must be the one its spec names: these entries are handed
+  // out by exact key, so a registry mixup would poison the lookup
+  const mani = manifest as Manifest
+  const at = spec.lastIndexOf('@')
+  if (mani.name !== spec.slice(0, at)) return
+  if (mani.version !== spec.slice(at + 1)) return
+  return { spec, manifest: mani }
 }

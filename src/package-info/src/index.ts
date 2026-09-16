@@ -86,6 +86,15 @@ export type BatchWanted = {
   version: string
 }
 
+// request options that change which manifest is picked, or how
+const SELECTION_OPTIONS = [
+  'before',
+  'os',
+  'arch',
+  'libc',
+  'node-version',
+] as const
+
 export type PackageInfoClientExtractOptions =
   PackageInfoClientRequestOptions & {
     integrity?: Integrity
@@ -788,10 +797,16 @@ export class PackageInfoClient {
 
     for (const [registry, group] of byRegistry) {
       if (this.#batchPromises.has(registry)) continue
-      this.#batchPromises.set(
-        registry,
-        this.#runBatch(registry, group),
-      )
+      const promise = this.#runBatch(registry, group)
+      this.#batchPromises.set(registry, promise)
+      // clear once settled, unless a later run has taken the slot, so a
+      // later prefetch can ask again and manifest() stops waiting on it
+      const clear = () => {
+        if (this.#batchPromises.get(registry) === promise) {
+          this.#batchPromises.delete(registry)
+        }
+      }
+      promise.then(clear, clear)
     }
   }
 
@@ -831,17 +846,23 @@ export class PackageInfoClient {
 
     switch (f.type) {
       case 'registry': {
-        const batchKey = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
-        const batched = this.#batchedManifests.get(batchKey)
-        if (batched) return batched
-        // Not here yet: wait for the batch that would carry it rather than
-        // racing it with a packument fetch for the same manifest.
-        const inflight =
-          f.registry ? this.#batchPromises.get(f.registry) : undefined
-        if (inflight) {
-          await inflight
-          const arrived = this.#batchedManifests.get(batchKey)
-          if (arrived) return arrived
+        // a batch entry never went through pickManifest, so any option
+        // that affects selection has to take the packument path
+        if (!SELECTION_OPTIONS.some(k => options[k] !== undefined)) {
+          const batchKey = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
+          const batched = this.#batchedManifests.get(batchKey)
+          if (batched) return batched
+          // Not here yet: wait for the batch that would carry it rather
+          // than racing it with a packument fetch for the same manifest.
+          const inflight =
+            f.registry ?
+              this.#batchPromises.get(f.registry)
+            : undefined
+          if (inflight) {
+            await inflight
+            const arrived = this.#batchedManifests.get(batchKey)
+            if (arrived) return arrived
+          }
         }
 
         // Check if manifest is cached, if so just return it earlier
