@@ -115,10 +115,8 @@ export const build = async (
     })
   }
 
-  // Every manifest the lockfile did not carry, in one request per registry,
-  // started before the breadth-first build asks for them one at a time. Not
-  // awaited: the build blocks on it only when it needs a manifest that has
-  // not arrived.
+  // Start fetching the manifests the lockfile did not carry, one request per
+  // registry. `manifest()` picks them up as they land.
   prefetchManifests(graph, packageInfo, options)
 
   const res = await buildIdealFromStartingGraph({
