@@ -35,10 +35,7 @@ t.test('does nothing at all when the flag is off', async t => {
   const seen: unknown[][] = []
   const graph = graphOf([registryNode('a', '1.0.0')])
 
-  t.equal(
-    await prefetchManifests(graph, packageInfo(seen), options),
-    0,
-  )
+  t.equal(prefetchManifests(graph, packageInfo(seen), options), 0)
   t.strictSame(seen, [], 'the client is never touched')
 })
 
@@ -56,10 +53,7 @@ t.test('with the flag on', async t => {
       registryNode('@scope/b', '2.3.4'),
     ])
 
-    t.equal(
-      await prefetchManifests(graph, packageInfo(seen), options),
-      2,
-    )
+    t.equal(prefetchManifests(graph, packageInfo(seen), options), 2)
     t.strictSame(seen[0], [
       {
         registry: 'https://registry.npmjs.org/',
