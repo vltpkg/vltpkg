@@ -3,6 +3,7 @@ import { graphStep } from '@vltpkg/output'
 import { load as loadActual } from '../actual/load.ts'
 import { load as loadVirtual } from '../lockfile/load.ts'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
+import { prefetchResolve } from './prefetch-resolve.ts'
 import { isPathSecurityError } from '../path-security-error.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions as LoadActualOptions } from '../actual/load.ts'
@@ -113,6 +114,10 @@ export const build = async (
       monorepo,
     })
   }
+
+  // Start resolving the importers' dependencies server-side, one request
+  // to the default registry. manifest() picks the answers up as they land.
+  prefetchResolve(graph, packageInfo, options)
 
   const res = await buildIdealFromStartingGraph({
     ...options,

@@ -675,6 +675,24 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', tarAbbrev.byteLength)
       return res.end(tarAbbrev)
     }
+    case '/-/vlt/resolve': {
+      let reqBody = ''
+      req.on('data', (c: Buffer) => (reqBody += String(c)))
+      req.on('end', () => {
+        resolveRequests.push(JSON.parse(reqBody))
+        const lines = resolveRecords.map(r => JSON.stringify(r))
+        const ndjson = lines.join('\n') + '\n'
+        res.statusCode = 207
+        res.setHeader('content-type', 'application/x-ndjson')
+        res.setHeader('content-length', ndjson.length)
+        // held open, so a test can look at what manifest() does while a
+        // resolve is still streaming
+        if (resolveHoldMs) setTimeout(() => res.end(ndjson), resolveHoldMs)
+        else res.end(ndjson)
+      })
+      return
+    }
+
     case '/-/vlt/capabilities': {
       capabilitiesRequests++
       const json = JSON.stringify(capabilitiesDocument)
@@ -724,6 +742,11 @@ let plainTarRequests = 0
 let noTypeRequests = 0
 let noTypeTarRequests = 0
 let capabilitiesRequests = 0
+// what the resolve endpoint serves, and the requests it saw
+const resolveRequests: Record<string, unknown>[] = []
+let resolveRecords: Record<string, unknown>[] = []
+// ms the resolve endpoint withholds its body for; 0 answers immediately
+let resolveHoldMs = 0
 let stableRequests: string[] = []
 let stableDelay = 0
 // No `stable-filter`: most registries serve none, and the packument
@@ -5056,4 +5079,207 @@ t.test('brotli tarballs', async t => {
       'the index manifest came along, so it really was the store',
     )
   })
+})
+
+t.test('prefetchResolve', async t => {
+  const roots = [{ name: 'abbrev', spec: '^2.0.0' }]
+  const freshClient = (t: Test) =>
+    new PackageInfoClient({
+      registry: defaultRegistry,
+      cache: t.testdir(),
+    })
+  t.beforeEach(t => {
+    resetCapabilities()
+    capabilitiesDocument = { resolve: '0.1' }
+    resolveRequests.length = 0
+    resolveHoldMs = 0
+    resolveRecords = [
+      {
+        status: 200,
+        name: 'abbrev',
+        requested: ['^2.0.0'],
+        manifest: { name: 'abbrev', version: '2.0.0' },
+      },
+      { end: true, status: 200, returned: 1, unresolved: 0 },
+    ]
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_BATCH_RESOLVE: '1' },
+    })
+  })
+
+  t.test('is a no-op when the flag is off', async t => {
+    const env = { ...process.env }
+    delete env.VLT_BATCH_RESOLVE
+    t.intercept(process, 'env', { value: env })
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    t.equal(pi.resolvedManifestCount, 0)
+    t.strictSame(resolveRequests, [], 'no request went out')
+  })
+
+  t.test('is a no-op for an empty root list', async t => {
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots: [] })
+    t.equal(pi.resolvedManifestCount, 0)
+  })
+
+  t.test('a range lookup reads the resolved manifest', async t => {
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    // not arrived yet: manifest() waits on the in-flight resolve
+    const mani = await pi.manifest('abbrev@^2.0.0')
+    t.strictSame(mani, { name: 'abbrev', version: '2.0.0' })
+    t.equal(resolveRequests.length, 1)
+    t.strictSame(resolveRequests[0], { roots })
+    // by-version key arrived too
+    const exact = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(exact, { name: 'abbrev', version: '2.0.0' })
+    t.equal(resolveRequests.length, 1, 'answered from memory')
+  })
+
+  t.test('selection options bypass the resolve map', async t => {
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    await pi.manifest('abbrev@^2.0.0')
+    // an os-constrained request takes the packument path and gets the
+    // full manifest, never the resolve entry
+    const mani = (await pi.manifest('abbrev@2.0.0', {
+      os: 'linux',
+    })) as Manifest
+    t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+  })
+
+  t.test(
+    'a spec the resolve did not deliver falls through',
+    async t => {
+      const pi = freshClient(t)
+      resolveRecords = [
+        { end: true, status: 200, returned: 0, unresolved: 1 },
+      ]
+      pi.prefetchResolve(defaultRegistry, { roots })
+      // waits on the resolve, misses, then the packument path answers
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0')
+    },
+  )
+
+  t.test(
+    'a registry without the endpoint leaves everything alone',
+    async t => {
+      capabilitiesDocument = {}
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0', 'served by the per-name path')
+      t.equal(pi.resolvedManifestCount, 0)
+      t.strictSame(resolveRequests, [], 'no resolve request was made')
+    },
+  )
+
+  t.test(
+    'a slow resolve does not hold up the graph build',
+    async t => {
+      // the resolve would deliver this key, but not before the wait is
+      // up; the per-name path answers instead of the install stalling
+      resolveHoldMs = 500
+      t.intercept(process, 'env', {
+        value: {
+          ...process.env,
+          VLT_BATCH_RESOLVE: '1',
+          VLT_BATCH_RESOLVE_WAIT_MS: '0',
+        },
+      })
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.strictSame(
+        mani,
+        pakuAbbrev.versions['2.0.0'],
+        'the full manifest, so it came from the packument',
+      )
+    },
+  )
+
+  t.test('waits the configured number of ms', async t => {
+    // long enough that the held resolve still wins the race
+    resolveHoldMs = 50
+    t.intercept(process, 'env', {
+      value: {
+        ...process.env,
+        VLT_BATCH_RESOLVE: '1',
+        VLT_BATCH_RESOLVE_WAIT_MS: '5000',
+      },
+    })
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.strictSame(
+      mani,
+      { name: 'abbrev', version: '2.0.0' },
+      'the resolve record, so the wait outlasted the hold',
+    )
+  })
+
+  t.test('two lookups can wait for the same key', async t => {
+    resolveHoldMs = 20
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const [a, b] = await Promise.all([
+      pi.manifest('abbrev@^2.0.0'),
+      pi.manifest('abbrev@^2.0.0'),
+    ])
+    t.strictSame(a, { name: 'abbrev', version: '2.0.0' })
+    t.strictSame(b, a, 'both got the resolved manifest')
+  })
+
+  t.test('a settled resolve can be asked again', async t => {
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    await pi.manifest('abbrev@^2.0.0')
+    t.equal(resolveRequests.length, 1)
+    resolveRecords = [
+      {
+        status: 200,
+        name: 'abbrev',
+        requested: ['^3.0.0'],
+        manifest: { name: 'abbrev', version: '3.0.0' },
+      },
+    ]
+    pi.prefetchResolve(defaultRegistry, {
+      roots: [{ name: 'abbrev', spec: '^3.0.0' }],
+    })
+    // only the second resolve carries ^3.0.0, so this waits for it
+    const mani = (await pi.manifest('abbrev@^3.0.0')) as Manifest
+    t.equal(mani.version, '3.0.0')
+    t.equal(
+      resolveRequests.length,
+      2,
+      'settled entry cleared, asked again',
+    )
+  })
+
+  t.test(
+    'a resolve that blows up leaves every spec to manifest()',
+    async t => {
+      // distinct errors per call, so a leaked resolve rejection cannot
+      // pass for the fallback path's own failure
+      let calls = 0
+      class Broken extends PackageInfoClient {
+        async getRegistryClient(): Promise<never> {
+          throw new Error(
+            ++calls === 1 ? 'resolve boom' : 'fallback boom',
+          )
+        }
+      }
+      const pi = new Broken({
+        registry: defaultRegistry,
+        cache: t.testdir(),
+      })
+      pi.prefetchResolve(defaultRegistry, { roots })
+      await t.rejects(pi.manifest('abbrev@^2.0.0'), {
+        message: 'fallback boom',
+      })
+      t.equal(pi.resolvedManifestCount, 0)
+    },
+  )
 })
