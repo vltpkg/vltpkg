@@ -1,5 +1,4 @@
 import { hydrate } from '@vltpkg/dep-id'
-import { batchEnabled } from '@vltpkg/package-info'
 import type {
   BatchWanted,
   PackageInfoClient,
@@ -23,7 +22,11 @@ export const prefetchManifests = (
   packageInfo: PackageInfoClient,
   options: SpecOptions,
 ): number => {
-  if (!batchEnabled()) return 0
+  // same flag the client checks; read here as well so a disabled run never
+  // walks the graph or touches the client (whose test doubles may not carry
+  // prefetchManifests). a value import would force the real package-info
+  // module graph onto every consumer that stubs it, so the check is local.
+  if (process.env.VLT_BATCH_MANIFESTS !== '1') return 0
 
   const wanted: BatchWanted[] = []
   for (const node of graph.nodes.values()) {

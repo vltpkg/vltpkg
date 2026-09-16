@@ -21,7 +21,6 @@ import {
   fetchBatch,
   supportsBatch,
 } from './batch.ts'
-export { batchEnabled } from './batch.ts'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
