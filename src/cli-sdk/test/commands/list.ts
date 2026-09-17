@@ -861,7 +861,7 @@ t.test('install validation', async t => {
       run(t, dir, { view: 'count' }),
       {
         message:
-          'node_modules was not installed by vlt: run `vlt install` to rebuild it before running `vlt ls`, or use `:host()` to query another project',
+          'No vlt install found in node_modules: run `vlt install` to rebuild it before running `vlt ls`, or use `:host()` to query another project',
         cause: { code: 'EQUERY', path: join(dir, 'node_modules') },
       },
       'should refuse to list a node_modules vlt did not install',

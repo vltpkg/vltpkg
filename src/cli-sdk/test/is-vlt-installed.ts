@@ -29,6 +29,41 @@ t.test('isVltInstalled', async t => {
     'foreign node_modules is not a vlt install',
   )
   t.equal(isVltInstalled(t.testdir({})), false, 'no node_modules')
+  t.equal(
+    isVltInstalled(t.testdir({ node_modules: 'file' })),
+    false,
+    'node_modules that is a file is not a vlt install',
+  )
+})
+
+t.test('lstat errors other than ENOENT', async t => {
+  const dir = t.testdir({ node_modules: { '.vlt': {} } })
+  const { isVltInstalled, assertVltInstalled } = await t.mockImport<
+    typeof import('../src/is-vlt-installed.ts')
+  >('../src/is-vlt-installed.ts', {
+    'node:fs': {
+      lstatSync: (path: string) => {
+        throw Object.assign(new Error('permission denied'), {
+          code: 'EACCES',
+          path,
+        })
+      },
+    },
+  })
+  t.equal(
+    isVltInstalled(dir),
+    false,
+    'unreadable node_modules is not a vlt install',
+  )
+  t.throws(
+    () => assertVltInstalled(dir, 'query'),
+    {
+      message:
+        'Project is not installed: run `vlt install` to build the graph that `vlt query` reads',
+      cause: { code: 'EQUERY', path: resolve(dir, 'node_modules') },
+    },
+    'should raise the usage error instead of the fs error',
+  )
 })
 
 t.test('assertVltInstalled', async t => {
@@ -42,8 +77,15 @@ t.test('assertVltInstalled', async t => {
   const foreign = t.testdir({ node_modules: { foo: {} } })
   t.throws(() => assertVltInstalled(foreign, 'query'), {
     message:
-      'node_modules was not installed by vlt: run `vlt install` to rebuild it before running `vlt query`, or use `:host()` to query another project',
+      'No vlt install found in node_modules: run `vlt install` to rebuild it before running `vlt query`, or use `:host()` to query another project',
     cause: { code: 'EQUERY', path: resolve(foreign, 'node_modules') },
+  })
+
+  const nmFile = t.testdir({ node_modules: 'file' })
+  t.throws(() => assertVltInstalled(nmFile, 'query'), {
+    message:
+      'Project is not installed: run `vlt install` to build the graph that `vlt query` reads',
+    cause: { code: 'EQUERY', path: resolve(nmFile, 'node_modules') },
   })
 
   const empty = t.testdir({})

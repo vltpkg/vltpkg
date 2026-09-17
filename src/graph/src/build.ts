@@ -68,7 +68,7 @@ const filterNodesByQuery = async (
  * 3. Constructs a Diff object representing what needs to be built
  * 4. Filters nodes based on buildState === 'needed'
  * 5. Calls the reify build process with the constructed diff
- * 6. Persists build results to lockfile
+ * 6. Persists build results to the hidden lockfile, when the vlt store exists
  */
 export const build = async (
   options: BuildOptions,
@@ -126,11 +126,22 @@ export const build = async (
     targetFilteredNodes,
   )
 
-  // Save hidden lockfile with updated buildState
-  saveHidden({
-    ...options,
-    graph: actualGraph,
-  })
+  // Save hidden lockfile with updated buildState, but only when the
+  // store exists, i.e. this node_modules was built by vlt. Loading a
+  // node_modules installed by another client finds nothing to build,
+  // and must not leave a file behind that makes it look like a vlt
+  // install. A dependency-less vlt install has no store either, but it
+  // also has no nodes, so there is no build state to persist.
+  if (
+    scurry
+      .lstatSync(scurry.resolve(projectRoot, 'node_modules/.vlt'))
+      ?.isDirectory()
+  ) {
+    saveHidden({
+      ...options,
+      graph: actualGraph,
+    })
+  }
 
   return buildResult
 }

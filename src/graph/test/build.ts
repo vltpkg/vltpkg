@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { build } from '../src/build.ts'
@@ -202,6 +202,79 @@ t.test('build function', async t => {
   })
 
   t.end()
+})
+
+t.test('hidden lockfile is only saved for a vlt install', async t => {
+  const pkgId = joinDepIDTuple(['registry', '', 'test-pkg@1.0.0'])
+  const testPkg = () => ({
+    'package.json': JSON.stringify({
+      name: 'test-pkg',
+      version: '1.0.0',
+    }),
+  })
+  const manifest = JSON.stringify({
+    name: 'test-project',
+    version: '1.0.0',
+    dependencies: { 'test-pkg': '1.0.0' },
+  })
+  const dir = t.testdir({
+    // installed by another client: no store, packages are plain dirs
+    foreign: {
+      'package.json': manifest,
+      'vlt.json': JSON.stringify({}),
+      node_modules: { 'test-pkg': testPkg() },
+    },
+    // installed by vlt: packages are linked from the store
+    vlt: {
+      'package.json': manifest,
+      'vlt.json': JSON.stringify({}),
+      node_modules: {
+        '.vlt': {
+          [pkgId]: { node_modules: { 'test-pkg': testPkg() } },
+        },
+        'test-pkg': t.fixture(
+          'symlink',
+          join('.vlt', pkgId, 'node_modules', 'test-pkg'),
+        ),
+      },
+    },
+  })
+  const hiddenLockfile = (root: string) =>
+    resolve(root, 'node_modules/.vlt-lock.json')
+  const run = (root: string) =>
+    build({
+      projectRoot: root,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(root),
+      target: ':scripts',
+    })
+
+  const foreign = resolve(dir, 'foreign')
+  t.strictSame(
+    await run(foreign),
+    { success: [], failure: [] },
+    'should find nothing to build in a foreign node_modules',
+  )
+  t.notOk(
+    existsSync(hiddenLockfile(foreign)),
+    'building a foreign node_modules must not write a hidden lockfile',
+  )
+
+  const vlt = resolve(dir, 'vlt')
+  t.strictSame(
+    await run(vlt),
+    { success: [], failure: [] },
+    'should find nothing to build in the vlt node_modules',
+  )
+  t.ok(
+    existsSync(hiddenLockfile(vlt)),
+    'building a vlt node_modules saves the hidden lockfile',
+  )
+  const saved = JSON.parse(readFileSync(hiddenLockfile(vlt), 'utf8'))
+  t.ok(
+    saved.nodes[pkgId],
+    'should persist the nodes found in the store',
+  )
 })
 
 t.test('build with target option', async t => {

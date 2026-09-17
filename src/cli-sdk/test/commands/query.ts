@@ -1146,7 +1146,7 @@ t.test('install validation', async t => {
       run(t, dir, { view: 'count' }),
       {
         message:
-          'node_modules was not installed by vlt: run `vlt install` to rebuild it before running `vlt query`, or use `:host()` to query another project',
+          'No vlt install found in node_modules: run `vlt install` to rebuild it before running `vlt query`, or use `:host()` to query another project',
         cause: { code: 'EQUERY', path: join(dir, 'node_modules') },
       },
       'should refuse to query a node_modules vlt did not install',
@@ -1220,6 +1220,7 @@ t.test('install validation', async t => {
   )
 
   await t.test('real loader over foreign and vlt trees', async t => {
+    const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
     const foo = () => ({
       'package.json': JSON.stringify({
         name: 'foo',
@@ -1241,7 +1242,15 @@ t.test('install validation', async t => {
           dependencies: { foo: '^1.0.0' },
         }),
         'vlt.json': JSON.stringify({}),
-        node_modules: { '.vlt': {}, foo: foo() },
+        // the walk only follows symlinks into the store, so link foo
+        // the way reify does, otherwise it is reported as missing
+        node_modules: {
+          '.vlt': { [fooId]: { node_modules: { foo: foo() } } },
+          foo: t.fixture(
+            'symlink',
+            join('.vlt', fooId, 'node_modules', 'foo'),
+          ),
+        },
       },
       projects: {
         other: {
@@ -1312,6 +1321,11 @@ t.test('install validation', async t => {
       await run(vlt, ['*']),
       1,
       'should answer from the walk when the store exists',
+    )
+    t.equal(
+      await run(vlt, [':missing']),
+      0,
+      'should find the dependency linked from the store',
     )
     t.ok(
       existsSync(hiddenLockfile(vlt)),
