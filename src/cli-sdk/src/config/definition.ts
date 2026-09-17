@@ -180,6 +180,10 @@ export const definition = j
 
      Command-specific fields may be set in a nested \`command\` object that
      overrides any options defined at the top level.
+
+     Object type values given in the environment or on the command line
+     are merged key by key over the config files (command line wins over
+     environment); other values replace them.
     `,
   )
 
@@ -250,6 +254,12 @@ export const definition = j
                     alias must be configured (e.g. via \`vlt setup\`) before it
                     can be used. The \`gh\` and \`jsr\` aliases have built-in
                     defaults that can be overridden here.
+
+                    Aliases given on the command line or in
+                    \`VLT_REGISTRIES\` (newline-delimited) merge with the
+                    configured ones, later sources winning per key. Pass
+                    \`--save-config\` to \`install\`, \`add\` or
+                    \`update\` to save them to \`vlt.json\`.
                     `,
     },
 
@@ -716,6 +726,17 @@ export const definition = j
                     This is useful if a package already exists in
                     devDependencies or optionalDependencies, but you want to
                     move it to be a non-optional production dependency.`,
+    },
+    'save-config': {
+      description: `Save the registry and git host options given on the
+                    command line or via \`VLT_*\` env (\`--registry\`,
+                    \`--registries\`, \`--default-registry-alias\`,
+                    \`--scoped-registries\`, \`--jsr-registries\`,
+                    \`--git-hosts\`, \`--git-host-archives\`) to the
+                    project \`vlt.json\` (or the user one with
+                    \`--config=user\`) after a successful \`install\`,
+                    \`add\` or \`update\`. Values a config file already
+                    has are left alone.`,
     },
   })
 

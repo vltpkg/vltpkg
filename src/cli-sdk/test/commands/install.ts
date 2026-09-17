@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -40,6 +41,7 @@ await Command.command({
   positionals: [],
   values: {},
   options,
+  explicit: {},
   get: () => undefined,
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should call install with expected options')
@@ -49,6 +51,7 @@ await Command.command({
   positionals: ['abbrev@2'],
   values: { 'save-dev': true },
   options,
+  explicit: {},
   get: () => undefined,
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should install adding a new dependency')
@@ -362,6 +365,7 @@ t.test('frozen-lockfile flag', async t => {
     positionals: [],
     values: {},
     options,
+    explicit: {},
     get: () => undefined,
   } as unknown as LoadedConfig)
 
@@ -410,6 +414,7 @@ t.test('lockfile-only flag', async t => {
     positionals: [],
     values: {},
     options,
+    explicit: {},
     get: () => undefined,
   } as unknown as LoadedConfig)
 
@@ -418,4 +423,100 @@ t.test('lockfile-only flag', async t => {
     /install lockfileOnly=true/,
     'should pass lockfileOnly to install',
   )
+})
+
+t.test('persists spec config after install', async t => {
+  const plan = {
+    which: 'project',
+    values: { registries: { loc: 'http://loc/' } },
+  }
+  const setup = async (opts: {
+    plan?: typeof plan
+    conflict?: boolean
+    fail?: boolean | Error
+  }) => {
+    let log = ''
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/install.ts')
+    >('../../src/commands/install.ts', {
+      '@vltpkg/graph': {
+        async install() {
+          log += 'install\n'
+          if (opts.fail instanceof Error) throw opts.fail
+          if (opts.fail) throw new Error('install failed')
+          return { graph: {} }
+        },
+      },
+      '../../src/parse-add-remove-args.ts': {
+        parseAddArgs: () => ({ add: new Map() }),
+      },
+      '../../src/persist-spec-config.ts': {
+        planSpecConfigPersist: () => {
+          log += 'plan\n'
+          if (opts.conflict) throw new Error('conflict')
+          return opts.plan
+        },
+      },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: {},
+      get: () => undefined,
+      addConfigToFile: async (which: string, values: unknown) => {
+        log += `write ${which} ${JSON.stringify(values)}\n`
+      },
+    } as unknown as LoadedConfig
+    return { run: () => Command.command(conf), log: () => log }
+  }
+
+  t.test('writes after install', async t => {
+    const { run, log } = await setup({ plan })
+    const res = await run()
+    t.equal(
+      log(),
+      'plan\ninstall\nwrite project {"registries":{"loc":"http://loc/"}}\n',
+    )
+    t.strictSame(res.persistedConfig, plan)
+  })
+  t.test('no plan, no write', async t => {
+    const { run, log } = await setup({})
+    const res = await run()
+    t.equal(log(), 'plan\ninstall\n')
+    t.equal(res.persistedConfig, undefined)
+  })
+  t.test('failed install, no write', async t => {
+    const { run, log } = await setup({ plan, fail: true })
+    await t.rejects(run(), { message: 'install failed' })
+    t.equal(log(), 'plan\ninstall\n')
+  })
+  t.test('unknown spec prefix from package.json', async t => {
+    const { run } = await setup({
+      fail: error('Protocol nope: is not defined', {
+        spec: 'bar@nope:bar@^2.x',
+        found: 'nope:',
+      }),
+    })
+    await t.rejects(run(), {
+      message:
+        /^Unknown spec prefix "nope:" in "bar@nope:bar@\^2\.x"/,
+      cause: { code: 'ECONFIG' },
+    })
+  })
+  t.test('conflict, no install', async t => {
+    const { run, log } = await setup({ plan, conflict: true })
+    await t.rejects(run(), { message: 'conflict' })
+    t.equal(log(), 'plan\n')
+  })
+  t.end()
+})
+
+t.test('json view includes persistedConfig', async t => {
+  const persistedConfig = {
+    which: 'project' as const,
+    values: { registries: { loc: 'http://loc/' } },
+  }
+  t.match(Command.views.json({ graph: {} as any, persistedConfig }), {
+    persistedConfig,
+  })
 })

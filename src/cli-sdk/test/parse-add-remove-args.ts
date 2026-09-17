@@ -729,3 +729,27 @@ t.test('parseRemoveArgs', async t => {
     )
   })
 })
+
+t.test('unknown spec prefix', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({ name: 'my-project' }),
+  })
+  t.chdir(dir)
+  const scurry = new PathScurry(dir)
+  const conf = new MockConfig() as LoadedConfig
+  conf.positionals = ['foo@loc:foo@^1.x']
+  t.throws(() => parseAddArgs(conf, scurry), {
+    message: /^Unknown spec prefix "loc:" in "foo@loc:foo@\^1\.x"\./,
+    cause: {
+      code: 'ECONFIG',
+      found: 'loc:',
+      validOptions: Array,
+    },
+  })
+  conf.positionals = ['foo@catalog:nope']
+  t.throws(
+    () => parseAddArgs(conf, scurry),
+    { cause: { code: undefined } },
+    'other spec errors pass through',
+  )
+})

@@ -6,6 +6,7 @@ import { createInterface } from 'node:readline/promises'
 import { configWriteTarget } from '../config/index.ts'
 import { registrySelectionFields } from '../config/merge-layers.ts'
 import { commandUsage } from '../config/usage.ts'
+import { normalizeRegistryURL } from '../require-registry.ts'
 import { stdout } from '../output.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
@@ -52,10 +53,6 @@ const accountAuthError = (account: string, er: unknown): Error =>
       { code: 'ECONFIG', cause: er },
     )
   : asError(er)
-
-/** Ensure a registry URL ends with a single trailing slash. */
-const normalizeRegistryURL = (url: string): string =>
-  url.endsWith('/') ? url : `${url}/`
 
 export type SetupResult = {
   /** the account slug the registries were built for */

@@ -66,6 +66,12 @@ field, to `null` in the JSON configuration to explicitly remove it:
 > user level config location for your system, run:
 > `vlt config location --config=user`
 
+Object type values given via `VLT_*` environment variables or on the
+command line are merged key by key over the config files, command line
+winning over environment. Other values replace them. List values in
+the environment are newline-delimited, e.g.
+`VLT_REGISTRIES=$'a=https://a/\nb=https://b/'`.
+
 ### Registry selection across layers
 
 Registry selection is an exception to plain per-field layering,
@@ -167,6 +173,12 @@ The `npm:` prefix is **not** pre-registered to any URL — configure it
 (for example with `vlt setup`) before bare specs or `npm:` aliases can
 resolve. The built-in `gh:` and `jsr:` prefixes are pre-registered but
 remain overridable here.
+
+Aliases given on the command line or in `VLT_REGISTRIES` merge with
+the configured ones, later sources winning per key. Pass
+[`--save-config`](#--save-config) to `vlt install`, `vlt add` or
+`vlt update` to save them to `vlt.json`. See
+[Registries](/cli/registries#saving-registries-given-to-install).
 
 Can be set multiple times
 
@@ -414,6 +426,16 @@ Save installed packages into dependencies specifically. This is useful
 if a package already exists in devDependencies or
 optionalDependencies, but you want to move it to be a non-optional
 production dependency.
+
+### `--save-config`
+
+Save the registry and git host options given on the command line or
+via `VLT_*` env (`--registry`, `--registries`,
+`--default-registry-alias`, `--scoped-registries`, `--jsr-registries`,
+`--git-hosts`, `--git-host-archives`) to the project `vlt.json` (or
+the user one with `--config=user`) after a successful `install`, `add`
+or `update`. Values a config file already has are left alone. See
+[Registries](/cli/registries#saving-registries-given-to-install).
 
 ### `-v --version`
 

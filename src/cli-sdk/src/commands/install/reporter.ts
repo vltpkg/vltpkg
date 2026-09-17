@@ -12,6 +12,7 @@ import {
 import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
+import { persistedEntries } from '../../persist-spec-config.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -129,6 +130,12 @@ export class InstallReporter extends ViewClass {
       out += '🔎 Run `vlt query :scripts` to list them\n'
       out +=
         '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
+    }
+    const saved = _result.persistedConfig
+    if (saved) {
+      for (const e of persistedEntries(saved.values)) {
+        out += `\nSaved ${e} to ${saved.which} vlt.json`
+      }
     }
     this.#instance?.rerender($(App, { trailer: out }))
     return undefined

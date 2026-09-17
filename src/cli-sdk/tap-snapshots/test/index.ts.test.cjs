@@ -79,6 +79,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --recursive
     --registries=<name=url>
     --registry=<url>
+    --save-config
     --save-dev
     --save-exact
     --save-optional
@@ -151,6 +152,7 @@ Unknown config option: asdf
     recursive
     registries
     registry
+    save-config
     save-dev
     save-exact
     save-optional
