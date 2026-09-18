@@ -124,6 +124,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       throw error('Failed to fetch package metadata', {
         code: 'EREQUEST',
         url: packumentUrl,
+        method: 'GET',
         cause: asError(err),
       })
     }
@@ -217,6 +218,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       throw error('Failed to fetch package metadata', {
         code: 'EREQUEST',
         url: packumentUrl,
+        method: 'GET',
         cause: asError(err),
       })
     }
