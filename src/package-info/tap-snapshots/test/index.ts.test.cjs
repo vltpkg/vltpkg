@@ -8,6 +8,7 @@
 exports[`test/index.ts > TAP > fails on non-200 response > expected not-found URLs 1`] = `
 Set {
   "/lodash",
+  "/lodash?stable",
   "/lodash.tgz",
   "/missing.tgz",
 }
