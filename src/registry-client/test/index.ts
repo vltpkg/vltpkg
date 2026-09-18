@@ -67,6 +67,9 @@ let tokensDeleteStatus = 200
 
 const tokensActions: [string, string][] = []
 
+// [url, authorization] per request, for redirect auth tests
+const authSeen: [string, string | undefined][] = []
+
 const registry = createServer((req, res) => {
   if (dropConnection) {
     dropConnection = false
@@ -75,6 +78,7 @@ const registry = createServer((req, res) => {
   res.setHeader('connection', 'close')
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req
+  authSeen.push([url, req.headers.authorization])
 
   if (url.startsWith('/-/put')) {
     return res.end(
@@ -199,6 +203,34 @@ const registry = createServer((req, res) => {
     urlOpenEE.on('login', handler)
     if (opened[tok]) urlOpenEE.emit('login', tok)
     return
+  }
+
+  // same-origin and cross-origin redirects, for auth header tests
+  if (url.startsWith('/acme/npm/chain/')) {
+    // same origin, then cross origin
+    res.statusCode = 307
+    res.setHeader('location', `/xo${url}`)
+    return res.end()
+  }
+  if (url.startsWith('/acme/npm/')) {
+    res.statusCode = 307
+    res.setHeader('location', `/alt${url}`)
+    return res.end()
+  }
+  if (url.startsWith('/xo/acme/npm/')) {
+    // 127.0.0.1 is a different origin than localhost
+    res.statusCode = 307
+    res.setHeader('location', `http://127.0.0.1:${PORT}/alt${url}`)
+    return res.end()
+  }
+  if (url.startsWith('/alt/')) {
+    if (url.includes('/otp/') && !req.headers['npm-otp']) {
+      res.statusCode = 401
+      res.setHeader('www-authenticate', 'otp')
+      return res.end('{}')
+    }
+    res.setHeader('content-type', 'application/json')
+    return res.end('{}')
   }
 
   if (/^\/30[0-9]-redirect/.test(url)) {
@@ -352,7 +384,12 @@ const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   })
 
 // default ones to use for tests that don't need their own mocks
-const { RegistryClient: RC, getKC } = await mockIndex(t)
+const {
+  RegistryClient: RC,
+  getKC,
+  setRuntimeToken,
+  clearRuntimeTokens,
+} = await mockIndex(t)
 
 t.teardown(() => registry.close())
 
@@ -802,6 +839,108 @@ t.test('client.logout()', async t => {
       ['GET', '/page/2'],
     ]),
   )
+})
+
+// after logout, so no keychain token for registryURL is left over
+t.test('authorization across redirects', async t => {
+  const scoped = `${registryURL}/acme/npm`
+  const other = `http://127.0.0.1:${PORT}`
+  const hops = async (
+    t: Test,
+    path: string,
+    headers?: RegistryClientRequestOptions['headers'],
+  ) => {
+    t.teardown(clearRuntimeTokens)
+    authSeen.length = 0
+    const rc = t.context.rc as RegistryClient
+    const res = await rc.request(`${registryURL}${path}`, {
+      useCache: false,
+      headers,
+    })
+    t.equal(res.statusCode, 200)
+    return authSeen
+  }
+
+  t.test('same origin keeps path-scoped token', async t => {
+    setRuntimeToken(scoped, 'Bearer scoped')
+    t.strictSame(await hops(t, '/acme/npm/abbrev'), [
+      ['/acme/npm/abbrev', 'Bearer scoped'],
+      ['/alt/acme/npm/abbrev', 'Bearer scoped'],
+    ])
+  })
+
+  t.test('same origin keeps token over shorter key', async t => {
+    setRuntimeToken(scoped, 'Bearer scoped')
+    setRuntimeToken(registryURL, 'Bearer ORIGIN')
+    t.strictSame(await hops(t, '/acme/npm/abbrev'), [
+      ['/acme/npm/abbrev', 'Bearer scoped'],
+      ['/alt/acme/npm/abbrev', 'Bearer scoped'],
+    ])
+  })
+
+  t.test('cross origin strips token', async t => {
+    setRuntimeToken(registryURL, 'Bearer ORIGIN')
+    t.strictSame(await hops(t, '/xo/acme/npm/abbrev'), [
+      ['/xo/acme/npm/abbrev', 'Bearer ORIGIN'],
+      ['/alt/xo/acme/npm/abbrev', undefined],
+    ])
+  })
+
+  t.test('cross origin resolves target token', async t => {
+    setRuntimeToken(registryURL, 'Bearer ORIGIN')
+    setRuntimeToken(other, 'Bearer BTOKEN')
+    t.strictSame(await hops(t, '/xo/acme/npm/abbrev'), [
+      ['/xo/acme/npm/abbrev', 'Bearer ORIGIN'],
+      ['/alt/xo/acme/npm/abbrev', 'Bearer BTOKEN'],
+    ])
+  })
+
+  t.test('same origin then cross origin', async t => {
+    setRuntimeToken(scoped, 'Bearer scoped')
+    setRuntimeToken(other, 'Bearer BTOKEN')
+    t.strictSame(await hops(t, '/acme/npm/chain/abbrev'), [
+      ['/acme/npm/chain/abbrev', 'Bearer scoped'],
+      ['/xo/acme/npm/chain/abbrev', 'Bearer scoped'],
+      ['/alt/xo/acme/npm/chain/abbrev', 'Bearer BTOKEN'],
+    ])
+  })
+
+  t.test('otp retry on redirected hop keeps token', async t => {
+    setRuntimeToken(scoped, 'Bearer scoped')
+    t.strictSame(await hops(t, '/acme/npm/otp/abbrev'), [
+      ['/acme/npm/otp/abbrev', 'Bearer scoped'],
+      ['/alt/acme/npm/otp/abbrev', 'Bearer scoped'],
+      ['/alt/acme/npm/otp/abbrev', 'Bearer scoped'],
+    ])
+  })
+
+  t.test('cross origin strips caller authorization', async t => {
+    setRuntimeToken(registryURL, 'Bearer ORIGIN')
+    // any casing, and a dup entry next to the resolved token
+    for (const headers of [
+      { Authorization: 'Bearer CALLER' },
+      ['authorization', 'Bearer CALLER'],
+    ]) {
+      const [, hop2] = await hops(t, '/xo/acme/npm/abbrev', headers)
+      t.strictSame(hop2, ['/alt/xo/acme/npm/abbrev', undefined])
+    }
+  })
+
+  t.test('no token', async t => {
+    t.strictSame(await hops(t, '/acme/npm/abbrev'), [
+      ['/acme/npm/abbrev', undefined],
+      ['/alt/acme/npm/abbrev', undefined],
+    ])
+  })
+
+  t.test('same origin keeps keychain token', async t => {
+    getKC('').set(scoped, 'Bearer kc')
+    t.teardown(() => getKC('').delete(scoped))
+    t.strictSame(await hops(t, '/acme/npm/abbrev'), [
+      ['/acme/npm/abbrev', 'Bearer kc'],
+      ['/alt/acme/npm/abbrev', 'Bearer kc'],
+    ])
+  })
 })
 
 t.test('client.login() when the browser opener fails', async t => {

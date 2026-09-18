@@ -51,6 +51,10 @@ To remove a token from vlt's keychain, use the `vlt token rm` command.
 Note that this will _not_ delete the token from the server; it only
 removes it from the local keychain store.
 
+A token follows redirects that stay on the same origin (scheme, host
+and port), even to paths outside the registry URL, and is dropped when
+a redirect changes origin.
+
 ## CI (and Other Headless Environments)
 
 A token for the default registry can be provided in the `VLT_TOKEN`
