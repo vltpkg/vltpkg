@@ -1,3 +1,4 @@
+import { assertOk } from '@vltpkg/registry-client'
 import t from 'tap'
 import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -8,6 +9,7 @@ let requestOptions: Record<string, unknown> = {}
 let requestBody = ''
 let mockResponse: {
   statusCode: number
+  text?: () => string
 } | null = null
 let mockRequestError: Error | null = null
 
@@ -49,6 +51,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/deprecate.ts')
 >('../../src/commands/deprecate.ts', {
   '@vltpkg/registry-client': {
+    assertOk,
     RegistryClient: class {
       async request(
         url: string | URL,
@@ -227,6 +230,7 @@ t.test('error: unknown package name', async t => {
     typeof import('../../src/commands/deprecate.ts')
   >('../../src/commands/deprecate.ts', {
     '@vltpkg/registry-client': {
+      assertOk,
       RegistryClient: class {
         async request() {
           return { statusCode: 200 }
@@ -293,11 +297,16 @@ t.test('error: request failure', async t => {
 })
 
 t.test('error: non-200 response', async t => {
-  mockResponse = { statusCode: 403 }
+  mockResponse = {
+    statusCode: 403,
+    text: () => '{"error":"not a maintainer"}',
+  }
   await t.rejects(
     Command.command(makeConfig(['my-package', 'deprecated'])),
     {
-      message: /failed to update deprecation status/,
+      message:
+        'failed to update deprecation status: 403 Forbidden — not a maintainer',
+      cause: { code: 'ENEEDAUTH', status: 403, method: 'PUT' },
     },
   )
 })

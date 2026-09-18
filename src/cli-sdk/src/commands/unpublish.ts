@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { asError } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
@@ -122,16 +122,21 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     } catch (err) {
       throw error('Failed to fetch package metadata', {
+        code: 'EREQUEST',
+        url: packumentUrl,
+        method: 'GET',
         cause: asError(err),
       })
     }
 
-    if (packumentResponse.statusCode !== 200) {
-      throw error('Package not found on the registry', {
-        url: packumentUrl,
-        response: packumentResponse,
-      })
-    }
+    assertOk(packumentResponse, {
+      message: 'Failed to fetch package metadata',
+      url: packumentUrl,
+      advice: statusCode =>
+        statusCode === 404 ?
+          `${name} was not found on this registry.`
+        : undefined,
+    })
 
     const packument = packumentResponse.json() as Record<
       string,
@@ -187,16 +192,18 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     } catch (err) {
       throw error('Failed to unpublish package version', {
+        code: 'EREQUEST',
+        url: putUrl,
+        method: 'PUT',
         cause: asError(err),
       })
     }
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw error('Failed to unpublish package version', {
-        url: putUrl,
-        response,
-      })
-    }
+    assertOk(response, {
+      message: 'Failed to unpublish package version',
+      url: putUrl,
+      method: 'PUT',
+    })
   } else {
     // Unpublish entire package — DELETE the packument
     // First fetch the packument to get the _rev
@@ -209,16 +216,21 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     } catch (err) {
       throw error('Failed to fetch package metadata', {
+        code: 'EREQUEST',
+        url: packumentUrl,
+        method: 'GET',
         cause: asError(err),
       })
     }
 
-    if (packumentResponse.statusCode !== 200) {
-      throw error('Package not found on the registry', {
-        url: packumentUrl,
-        response: packumentResponse,
-      })
-    }
+    assertOk(packumentResponse, {
+      message: 'Failed to fetch package metadata',
+      url: packumentUrl,
+      advice: statusCode =>
+        statusCode === 404 ?
+          `${name} was not found on this registry.`
+        : undefined,
+    })
 
     const packument = packumentResponse.json() as Record<
       string,
@@ -243,16 +255,18 @@ export const command: CommandFn<CommandResult> = async conf => {
       })
     } catch (err) {
       throw error('Failed to unpublish package', {
+        code: 'EREQUEST',
+        url: deleteUrl,
+        method: 'DELETE',
         cause: asError(err),
       })
     }
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw error('Failed to unpublish package', {
-        url: deleteUrl,
-        response,
-      })
-    }
+    assertOk(response, {
+      message: 'Failed to unpublish package',
+      url: deleteUrl,
+      method: 'DELETE',
+    })
   }
 
   return {

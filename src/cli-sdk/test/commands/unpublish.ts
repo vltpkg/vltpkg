@@ -681,7 +681,10 @@ t.test('command', async t => {
       })
 
       await t.rejects(command(config), {
-        message: 'Package not found on the registry',
+        message:
+          'Failed to fetch package metadata: 404 Not Found\n' +
+          '⚠️ nonexistent-package was not found on this registry.',
+        cause: { code: 'EREQUEST', status: 404 },
       })
     },
   )
@@ -706,7 +709,10 @@ t.test('command', async t => {
       })
 
       await t.rejects(command(config), {
-        message: 'Package not found on the registry',
+        message:
+          'Failed to fetch package metadata: 404 Not Found\n' +
+          '⚠️ nonexistent-package was not found on this registry.',
+        cause: { code: 'EREQUEST', status: 404 },
       })
     },
   )
@@ -942,3 +948,34 @@ t.test('views', async t => {
     t.same(output, result)
   })
 })
+
+t.test(
+  'a non-404 packument failure carries no 404 advice',
+  async t => {
+    for (const positionals of [
+      ['nonexistent-package@1.0.0'],
+      ['nonexistent-package'],
+    ]) {
+      mockResponses.set(
+        'https://registry.npmjs.org/nonexistent-package',
+        { statusCode: 500, text: 'kaboom' },
+      )
+      const config = makeTestConfig({
+        options: {
+          registry: 'https://registry.npmjs.org',
+          force: true,
+        },
+        positionals,
+      })
+      await t.rejects(
+        command(config),
+        {
+          message:
+            'Failed to fetch package metadata: 500 Internal Server Error — kaboom',
+          cause: { code: 'EREQUEST', status: 500 },
+        },
+        positionals.join(' '),
+      )
+    }
+  },
+)
