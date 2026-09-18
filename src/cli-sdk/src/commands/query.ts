@@ -14,6 +14,7 @@ import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { createGetAuthHeader } from '../query-auth.ts'
+import { assertVltInstalled } from '../is-vlt-installed.ts'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
@@ -51,6 +52,11 @@ export const usage: CommandUsage = () =>
       an alternative to positional arguments, it allows you to filter what
       dependencies to include in the output. Using both options allows you to
       render subgraphs of the dependency graph.
+
+      The queried graph is the one built by \`vlt install\`. In a project
+      installed by another client there is no such graph and the command
+      errors instead of reporting every dependency as missing. Queries
+      using \`:host()\` load their graph from elsewhere and are exempt.
 
       Defaults to listing all dependencies of the project root and workspaces.`,
 
@@ -149,8 +155,26 @@ export const command: CommandFn<QueryResult> = async conf => {
   let graph: Graph | undefined
   let securityArchive: SecurityArchive | undefined
 
+  // retrieve default values and set up host contexts
+  const defaultProjectQueryString = '*'
+  const defaultLocalScopeQueryString = ':host(local) *'
+  const positionalQueryString = conf.positionals[0]
+  const targetQueryString = conf.get('target')
+  const scopeQueryString = conf.get('scope')
+  // --target takes precedence over the positional query
+  const queryString = targetQueryString || positionalQueryString
+
+  // `:host()` swaps the graph for one loaded from somewhere else, so
+  // those queries do not need this project to be installed.
+  const usesHostContext = [queryString, scopeQueryString].some(q =>
+    q?.includes(':host('),
+  )
+
   // optionally load the cwd graph if we found a package.json file
   if (mainManifest) {
+    if (!usesHostContext) {
+      assertVltInstalled(conf.options.projectRoot, 'query')
+    }
     graph = actual.load({
       ...conf.options,
       mainManifest,
@@ -162,14 +186,6 @@ export const command: CommandFn<QueryResult> = async conf => {
       nodes: [...graph.nodes.values()],
     })
   }
-
-  // retrieve default values and set up host contexts
-  const defaultProjectQueryString = '*'
-  const defaultLocalScopeQueryString = ':host(local) *'
-  const positionalQueryString = conf.positionals[0]
-  const targetQueryString = conf.get('target')
-  const scopeQueryString = conf.get('scope')
-  const queryString = targetQueryString || positionalQueryString
   const hostContexts = await createHostContextsMap(conf)
   const diffFiles = createDiffFilesProvider(conf.options.projectRoot)
   const getAuthHeader = createGetAuthHeader(conf)

@@ -591,9 +591,15 @@ export const load = (options: LoadOptions): Graph => {
     // Clean up any pending modifier entries that were never completed
     modifiers?.rollbackActiveEntries()
 
-    // caches the load result to the hidden lockfile when enabled
+    // caches the load result to the hidden lockfile, but only when the
+    // store exists, i.e. this node_modules was built by vlt. a walk over
+    // a node_modules installed by another client finds nothing, and
+    // must not leave a file behind that makes it look like a vlt install.
     if (
-      scurry.cwd.resolve('node_modules').lstatSync()?.isDirectory()
+      scurry.cwd
+        .resolve('node_modules/.vlt')
+        .lstatSync()
+        ?.isDirectory()
     ) {
       saveHidden({
         ...options,

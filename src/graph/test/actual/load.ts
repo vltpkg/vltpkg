@@ -1,4 +1,5 @@
-import { rmSync } from 'fs'
+import { existsSync, rmSync } from 'fs'
+import { resolve } from 'node:path'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
@@ -1841,3 +1842,60 @@ t.test('verifyImporterNodeModules', async t => {
     },
   )
 })
+
+t.test(
+  'hidden lockfile cache write requires the vlt store',
+  async t => {
+    const manifest = JSON.stringify({
+      name: 'p',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0' },
+    })
+    const foo = () => ({
+      'package.json': JSON.stringify({
+        name: 'foo',
+        version: '1.0.0',
+      }),
+    })
+    // one fixture with two roots: a second t.testdir() in the same test
+    // would rmdir the first while it is still cwd, which fails on Windows
+    const dir = t.testdir({
+      foreign: {
+        'package.json': manifest,
+        'vlt.json': '{}',
+        node_modules: { foo: foo() },
+      },
+      vlt: {
+        'package.json': manifest,
+        'vlt.json': '{}',
+        node_modules: { '.vlt': {}, foo: foo() },
+      },
+    })
+    const run = (projectRoot: string) => {
+      t.chdir(projectRoot)
+      unload('project')
+      return load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      })
+    }
+
+    const foreign = resolve(dir, 'foreign')
+    run(foreign)
+    t.notOk(
+      existsSync(`${foreign}/node_modules/.vlt-lock.json`),
+      'walking a node_modules not built by vlt writes no hidden lockfile',
+    )
+
+    const vlt = resolve(dir, 'vlt')
+    run(vlt)
+    t.ok(
+      existsSync(`${vlt}/node_modules/.vlt-lock.json`),
+      'walking a vlt node_modules caches the hidden lockfile',
+    )
+  },
+)

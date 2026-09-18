@@ -164,6 +164,11 @@ positional arguments, it allows you to filter what dependencies to include in
 the output. Using both options allows you to render subgraphs of the dependency
 graph.
 
+The queried graph is the one built by \`vlt install\`. In a project installed by
+another client there is no such graph and the command errors instead of
+reporting every dependency as missing. Queries using \`:host()\` load their graph
+from elsewhere and are exempt.
+
 Defaults to listing all dependencies of the project root and workspaces.
 
   Aliases

@@ -18,6 +18,13 @@ $ vlt query <query> --view=[human | json | mermaid | svg | png | count]
 
 List installed dependencies matching the provided query.
 
+The graph being queried is the one built by `vlt install`. In a
+project installed by another client (an `npm install` or
+`pnpm install` `node_modules`) there is no such graph, so the command
+errors instead of reporting every dependency as missing. Run
+`vlt install` first. `:host()` queries are the exception, since they
+load their graph from somewhere else.
+
 ## Examples
 
 Query packages with the name "foo"
