@@ -1,23 +1,13 @@
 {
-  "name": "@vltpkg/security-archive",
-  "description": "A database of security information of packages",
+  "name": "@vltpkg/user-agent",
+  "description": "The User-Agent string that vlt sends with every outbound request",
   "version": "1.0.10",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/security-archive"
+    "directory": "src/user-agent"
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
-  "dependencies": {
-    "@vltpkg/dep-id": "workspace:*",
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "@vltpkg/user-agent": "workspace:*",
-    "@vltpkg/xdg": "workspace:*",
-    "lru-cache": "catalog:",
-    "p-retry": "catalog:"
-  },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
@@ -55,16 +45,6 @@
       "import": {
         "default": "./src/index.ts"
       }
-    },
-    "./browser": {
-      "import": {
-        "default": "./src/browser.ts"
-      }
-    },
-    "./update-expired": {
-      "import": {
-        "default": "./src/update-expired.ts"
-      }
     }
   },
   "files": [
@@ -73,5 +53,5 @@
   "bugs": {
     "url": "https://github.com/vltpkg/vltpkg/issues"
   },
-  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/security-archive#readme"
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/user-agent#readme"
 }

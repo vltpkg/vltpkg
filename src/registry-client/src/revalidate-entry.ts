@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { open, readFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import type { Dispatcher } from 'undici'
+import { userAgent } from '@vltpkg/user-agent'
 import { addHeader } from './add-header.ts'
 import { getTokenByURL } from './auth.ts'
 import { CacheEntry } from './cache-entry.ts'
@@ -10,7 +11,7 @@ import type {
   RegistryClient,
   RegistryClientRequestOptions,
 } from './index.ts'
-import { cacheKey, userAgent } from './index.ts'
+import { cacheKey } from './index.ts'
 import { collectHeaders, readBody } from './response.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 

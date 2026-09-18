@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 import pRetry, { AbortError } from 'p-retry'
 import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { loadPackageJson } from 'package-json-from-dist'
+import { userAgent } from '@vltpkg/user-agent'
 import { asPackageReportData } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { JSONItemResponse } from './index.ts'
@@ -16,13 +16,6 @@ export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
   'sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api'
-
-export const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
-}
 
 /**
  * Serialized payload sent to the detached process via stdin.
@@ -67,7 +60,7 @@ const retrieveRemoteData = async (
         method: 'POST',
         headers: {
           Authorization: `Basic ${Buffer.from(`${SOCKET_PUBLIC_API_TOKEN}:`).toString('base64url')}`,
-          'User-Agent': `@vltpkg/security-archive/${version}`,
+          'User-Agent': userAgent,
         },
         body: JSON.stringify({
           components: Array.from(queue),

@@ -16,9 +16,9 @@
     "@vltpkg/output": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/url-open": "workspace:*",
+    "@vltpkg/user-agent": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
     "cache-control-parser": "^2.0.6",
-    "package-json-from-dist": "catalog:",
     "undici": "^7.16.0"
   },
   "devDependencies": {

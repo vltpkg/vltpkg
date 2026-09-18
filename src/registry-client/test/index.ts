@@ -262,7 +262,7 @@ const registry = createServer((req, res) => {
   )
   t.match(
     req.headers['user-agent'],
-    '@vltpkg/registry-client',
+    /^vlt\//,
     'got a user-agent header',
   )
   t.match(
@@ -339,11 +339,6 @@ const mockCacheReval = { register: revalRegister }
 
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../src/index.ts')>('../src/index.ts', {
-    // always get fresh copy of env since it reads globalThis
-    '../src/env.ts':
-      await t.mockImport<typeof import('../src/env.ts')>(
-        '../src/env.ts',
-      ),
     '@vltpkg/cache-unzip': mockCacheUnzip,
     '../src/cache-revalidate.ts': mockCacheReval,
     '@vltpkg/url-open': mockUrlOpen,
@@ -521,80 +516,6 @@ t.test('follow redirects', { saveFixture: true }, async t => {
       }
     }
   })
-})
-
-t.test('user-agent', t => {
-  t.test('with navigator.userAgent', async t => {
-    t.intercept(globalThis, 'navigator', {
-      value: { userAgent: 'navUA' },
-    })
-    const { userAgent } = await mockIndex(t)
-    t.match(
-      userAgent,
-      /^@vltpkg\/registry-client\/[^ ]+ navUA$/,
-      'navigator.userAgent present',
-    )
-  })
-
-  t.test('no navigator.userAgent', t => {
-    t.intercept(globalThis, 'navigator', { value: null })
-
-    t.test('bun', async t => {
-      t.intercept(
-        globalThis as typeof globalThis & { Bun: any },
-        'Bun',
-        { value: {} },
-      )
-      t.intercept(process, 'versions', {
-        value: { bun: 'bunver' },
-      })
-      const { userAgent } = await mockIndex(t)
-      t.match(
-        userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ Bun\/bunver$/,
-      )
-    })
-
-    t.test('deno', async t => {
-      t.intercept(
-        globalThis as typeof globalThis & { Deno: any },
-        'Deno',
-        { value: {} },
-      )
-      t.intercept(process, 'versions', {
-        value: { deno: 'denover' },
-      })
-      const { userAgent } = await mockIndex(t)
-      t.match(
-        userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ Deno\/denover$/,
-      )
-    })
-
-    t.test('node', async t => {
-      t.intercept(process, 'versions', {
-        value: { node: 'nodever' },
-      })
-      const { userAgent } = await mockIndex(t)
-      t.match(
-        userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ Node.js\/nodever$/,
-      )
-    })
-
-    t.test('nothing we know about', async t => {
-      t.intercept(process, 'versions', { value: {} })
-      const { userAgent } = await mockIndex(t)
-      t.match(
-        userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ \(unknown platform\)$/,
-      )
-    })
-
-    t.end()
-  })
-
-  t.end()
 })
 
 t.test('npm-session header', async t => {

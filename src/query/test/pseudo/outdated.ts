@@ -23,12 +23,14 @@ const npmSpecOptions: SpecOptions = {
 }
 
 const fetchedUrls: string[] = []
+const fetchedUserAgents: (string | undefined)[] = []
 
 global.fetch = (async (
   url: string,
   init?: { headers?: Record<string, string> },
 ) => {
   fetchedUrls.push(url)
+  fetchedUserAgents.push(init?.headers?.['User-Agent'])
   if (url.startsWith('http://example.com/private/registry/')) {
     if (init?.headers?.authorization !== 'Bearer test-token') {
       return {
@@ -390,6 +392,20 @@ t.test('retrieveRemoveVersions', async t => {
       retrieveRemoteVersions(node),
       /Failed to fetch packument/,
       'should fail when no auth header is available',
+    )
+  })
+
+  await t.test('sends a vlt user-agent', async t => {
+    const node = {
+      name: 'a',
+      id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
+      options: npmSpecOptions,
+    } as NodeLike
+    await retrieveRemoteVersions(node)
+    t.match(
+      fetchedUserAgents.at(-1),
+      /^vlt\/\d+\.\d+\.\d+/,
+      'user-agent header is vlt/<version>',
     )
   })
 })
