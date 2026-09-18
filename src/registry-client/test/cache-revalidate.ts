@@ -45,6 +45,7 @@ t.test('registering the beforeExit event', async t => {
               'GET https://example.com/\x00',
               'HEAD https://example.com/2\x00',
               'GET https://example.com/3\x00',
+              'GET https://example.com/4 application/json; q=0.8, */*\x00',
             ])
           },
         }
@@ -55,6 +56,12 @@ t.test('registering the beforeExit event', async t => {
   register(t.testdirName, 'GET', 'https://example.com/')
   register(t.testdirName, 'HEAD', 'https://example.com/2')
   register(t.testdirName, 'GET', 'https://example.com/3')
+  register(
+    t.testdirName,
+    'GET',
+    'https://example.com/4',
+    'application/json; q=0.8, */*',
+  )
   t.equal(beHooks.length, 1)
   t.type(beHooks[0], 'function')
   beHooks[0]?.()

@@ -981,6 +981,40 @@ t.test('do not trust manifests npm mucks with', async t => {
 })
 
 t.test(
+  'read scripts from disk for abbreviated manifests',
+  async t => {
+    const cwd = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.2.3',
+        scripts: { install: 'echo ok' },
+      }),
+    })
+    // an abbreviated registry manifest has no scripts to run
+    const manifest: Manifest = {
+      name: 'x',
+      version: '1.2.3',
+      hasInstallScript: true,
+    }
+    const res = await run({
+      cwd,
+      manifest,
+      arg0: 'install',
+      projectRoot: cwd,
+      color: true,
+    })
+    t.match(res, {
+      command: 'echo ok',
+      args: [],
+      status: 0,
+      signal: null,
+      stdout: 'ok',
+      stderr: '',
+    })
+  },
+)
+
+t.test(
   'detect binding.gyp and run implicit node-gyp rebuild',
   async t => {
     // Track what commands were executed
