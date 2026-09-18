@@ -14,6 +14,7 @@ import { readdir, rmdir, utimes, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createHash } from 'node:crypto'
 import t from 'tap'
 import { x as tarX } from 'tar'
 import type {
@@ -77,6 +78,9 @@ const pakuAbbrev = JSON.parse(
   readFileSync(pathResolve(fixtures, 'abbrev-full.json'), 'utf8'),
 )
 const tgzAbbrev = readFileSync(fixtures + '/abbrev-2.0.0.tgz')
+const tgzAbbrevSha512 = createHash('sha512')
+  .update(tgzAbbrev)
+  .digest('base64')
 const tgzFile = String(
   pathToFileURL(pathResolve(fixtures, 'abbrev-2.0.0.tgz')),
 )
@@ -370,6 +374,46 @@ const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/json')
       res.setHeader('content-length', json.length)
       return res.end(json)
+    }
+    // vlt packuments: no dist.integrity, registry-relative tarball paths
+    case '/digest':
+    case '/digest-bad':
+    case '/digest-missing': {
+      const name = path.slice(1)
+      const json = JSON.stringify({
+        name,
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name,
+            version: '1.0.0',
+            dist: { tarball: `${name}/-/${name}-1.0.0.tgz` },
+          },
+        },
+      })
+      res.setHeader(
+        'content-type',
+        'application/vnd.vlt.packument-v1+json',
+      )
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/digest/-/digest-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${tgzAbbrevSha512}:`)
+      return res.end(tgzAbbrev)
+    }
+    case '/digest-bad/-/digest-bad-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${'0'.repeat(86)}==:`)
+      return res.end(tgzAbbrev)
+    }
+    case '/digest-missing/-/digest-missing-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      return res.end(tgzAbbrev)
     }
     case '/no-integrity/-/no-integrity-1.0.0.tgz': {
       // Serve a valid tarball for a package with no dist.integrity
@@ -2579,4 +2623,108 @@ t.test('stable packuments', async t => {
       ])
     },
   )
+})
+
+t.test('tarballs labelled with a digest', async t => {
+  const pi = () =>
+    new PackageInfoClient({ ...options, cache: t.testdir() })
+  const integrity = `sha512-${tgzAbbrevSha512}`
+
+  t.test(
+    'relative tarball paths resolve against the registry',
+    async t => {
+      const res = await pi().resolve('digest@1.0.0')
+      t.match(res, {
+        resolved: `${defaultRegistry}digest/-/digest-1.0.0.tgz`,
+        integrity: undefined,
+        digestRequired: true,
+      })
+    },
+  )
+
+  t.test(
+    'resolve against a registry without a trailing slash',
+    async t => {
+      const p = new PackageInfoClient({
+        ...options,
+        registry: defaultRegistry.replace(/\/$/, ''),
+        cache: t.testdir(),
+      })
+      const res = await p.resolve('digest@1.0.0')
+      t.equal(
+        res.resolved,
+        `${defaultRegistry}digest/-/digest-1.0.0.tgz`,
+      )
+    },
+  )
+
+  t.test(
+    'extract verifies the digest and hands the hash back',
+    async t => {
+      const dir = t.testdir()
+      const p = pi()
+      const res = await p.extract('digest@1.0.0', `${dir}/a`)
+      t.equal(res.integrity, integrity)
+      await (await p.getRegistryClient()).cache.promise()
+
+      // a fresh resolution of the same tarball is served from the
+      // in-memory cache, hash included
+      const warm = await p.extract('digest@^1', `${dir}/b`)
+      t.equal(warm.integrity, integrity)
+
+      // and a fresh client unpacks it straight off the cache file
+      const cold = new PackageInfoClient({
+        ...options,
+        cache: (await p.getRegistryClient()).cache.path(),
+      })
+      const again = await cold.extract('digest@1.0.0', `${dir}/c`)
+      t.equal(again.integrity, integrity)
+    },
+  )
+
+  t.test('extract rejects a body that does not match', async t => {
+    const dir = t.testdir()
+    await t.rejects(pi().extract('digest-bad@1.0.0', dir), {
+      cause: { code: 'EINTEGRITY', found: integrity },
+    })
+  })
+
+  t.test(
+    'extract requires the digest for a vlt packument',
+    async t => {
+      const dir = t.testdir()
+      await t.rejects(pi().extract('digest-missing@1.0.0', dir), {
+        cause: { code: 'EINTEGRITY', wanted: undefined },
+      })
+    },
+  )
+
+  t.test(
+    'a plain packument without integrity still records the hash',
+    async t => {
+      const dir = t.testdir()
+      const res = await pi().extract('no-integrity@1.0.0', dir)
+      t.equal(res.integrity, integrity)
+    },
+  )
+
+  t.test('tarball() verifies the digest', async t => {
+    const buf = await pi().tarball('digest@1.0.0')
+    t.strictSame(buf, tgzAbbrev)
+    await t.rejects(pi().tarball('digest-bad@1.0.0'), {
+      cause: { code: 'EINTEGRITY' },
+    })
+    await t.rejects(pi().tarball('digest-missing@1.0.0'), {
+      cause: { code: 'EINTEGRITY' },
+    })
+  })
+
+  t.test('full packuments are requested as plain json', async t => {
+    coalescedPackumentRequests = 0
+    coalescedPackumentAccept = undefined
+    const paku = await pi().packument('coalesced', { full: true })
+    t.ok(paku.versions['2.0.0'])
+    t.equal(coalescedPackumentAccept, 'application/json')
+    t.equal(coalescedPackumentRequests, 1)
+  })
 })
