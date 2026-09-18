@@ -39,7 +39,11 @@ import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { getDispatcher } from './proxy.ts'
 import { isRedirect, redirect } from './redirect.ts'
-import { assertOk, registryErrorMessage } from './registry-error.ts'
+import {
+  assertOk,
+  registryErrorMessage,
+  requestError,
+} from './registry-error.ts'
 import type { ErrorResponse } from './registry-error.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 import type { TokenResponse } from './token-response.ts'
@@ -67,6 +71,7 @@ export {
   oidc,
   registryBase,
   registryErrorMessage,
+  requestError,
   runtimeTokens,
   setRuntimeToken,
   setToken,

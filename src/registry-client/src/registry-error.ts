@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { asError, isObject } from '@vltpkg/types'
 import { STATUS_CODES } from 'node:http'
 
 /**
@@ -91,10 +92,12 @@ export type AssertOkOptions = {
   /** the method used; defaults to GET */
   method?: string
   /**
-   * Status-specific guidance appended to the message. Only consulted
-   * when the response is an error.
+   * Status-specific guidance appended to the message, one `⚠️` line
+   * per entry. Only consulted when the response is an error.
    */
-  advice?: (statusCode: number) => string | undefined
+  advice?: (
+    statusCode: number,
+  ) => string | (string | undefined)[] | undefined
 }
 
 /**
@@ -110,27 +113,129 @@ export type AssertOkOptions = {
  * an issue" footer, which is how a routine 403 ends up reported to the
  * user as a vlt bug.
  */
-export const assertOk = (
+const registryError = (
   response: ErrorResponse,
   { message, url, method = 'GET', advice }: AssertOkOptions,
-): void => {
+  from: (...a: never[]) => unknown,
+  cause?: unknown,
+): Error => {
   const { statusCode } = response
-  // NOT `statusCode >= 200 && statusCode < 300`: duck-typed responses
-  // that omit statusCode must stay non-errors, and this matches every
-  // hand-rolled check it replaces.
-  if (!(statusCode < 200 || statusCode >= 300)) return
-
   const denied = statusCode === 401 || statusCode === 403
   const extra = advice?.(statusCode)
-  throw error(
-    `${message}: ${registryErrorMessage(response)}${extra ? `\n⚠️ ${extra}` : ''}`,
+  const tips = (Array.isArray(extra) ? extra : [extra]).filter(
+    (t): t is string => !!t,
+  )
+  const warn = tips.map(t => `\n⚠️ ${t}`).join('')
+  return error(
+    `${message}: ${registryErrorMessage(response)}${warn}`,
     {
       code: denied ? 'ENEEDAUTH' : 'EREQUEST',
       url,
       method,
       status: statusCode,
       response,
+      ...(cause === undefined ? {} : { cause: asError(cause) }),
     },
-    assertOk,
+    from,
+  )
+}
+
+export const assertOk = (
+  response: ErrorResponse,
+  options: AssertOkOptions,
+): void => {
+  const { statusCode } = response
+  // NOT `statusCode >= 200 && statusCode < 300`: duck-typed responses
+  // that omit statusCode must stay non-errors, and this matches every
+  // hand-rolled check it replaces.
+  if (!(statusCode < 200 || statusCode >= 300)) return
+  throw registryError(response, options, assertOk)
+}
+
+const isTextFn = (v: unknown): v is () => unknown =>
+  typeof v === 'function'
+
+export type RequestErrorOptions = AssertOkOptions
+
+/**
+ * Wrap an error thrown *by* `RegistryClient.request()` -- as opposed to a
+ * non-2xx response it returned, which is {@link assertOk}'s job.
+ *
+ * A command that catches such an error and rethrows a flat
+ * `error(message, { code: 'EREQUEST' })` throws away the only part the
+ * user needed: an expired token arrives here as "Missing or invalid
+ * authentication token...", and the rethrow reduces that to "Failed to
+ * publish package" with the real reason buried in an error log.
+ *
+ * The auth challenges in `otplease` throw rather than return, but they
+ * still carry the response that provoked them. Where there is a status
+ * to be had, this builds the error through the same path a returned
+ * response takes, so a thrown 401 and a refused 401 read identically.
+ * The thrown message is the *reason* and is never dropped: it is the
+ * detail after the status, unless the registry's own words are readable,
+ * in which case those are the detail and the reason becomes a `⚠️` line
+ * ahead of whatever advice the caller adds.
+ *
+ * With no status at all -- a genuine transport failure -- the inner
+ * cause's message is appended so a redirect loop or a refused socket
+ * names itself, and that cause is carried through for `printErr` to
+ * show as Code/Syscall.
+ */
+export const requestError = (
+  err: unknown,
+  { message, url, method = 'GET', advice }: RequestErrorOptions,
+): Error => {
+  const e = asError(err)
+  const reason = e.message
+  // `error()` hangs its options bag off `.cause`
+  const bag = isObject(e.cause) ? e.cause : undefined
+  const res = isObject(bag?.response) ? bag.response : undefined
+  const statusCode =
+    typeof bag?.status === 'number' ? bag.status
+    : typeof res?.statusCode === 'number' ? res.statusCode
+    : undefined
+
+  if (statusCode !== undefined) {
+    // what the registry said, when the thrower kept a readable body.
+    // a raw undici response has none; a CacheEntry does.
+    let body = ''
+    try {
+      const text = res?.text
+      if (isTextFn(text)) body = String(text()).trim()
+    } catch {
+      // an undecodable body is no worse than an absent one
+    }
+    return registryError(
+      { ...res, statusCode, text: () => body || reason },
+      {
+        message,
+        url,
+        method,
+        advice: sc => [
+          // the reason only moves here when the body took its place
+          ...(body ? [reason] : []),
+          ...[advice?.(sc)].flat(),
+        ],
+      },
+      requestError,
+      e,
+    )
+  }
+
+  const inner =
+    bag?.cause === undefined ? undefined : asError(bag.cause)
+  const detail =
+    inner?.message && inner.message !== reason ?
+      `${reason}: ${inner.message}`
+    : reason
+  return error(
+    `${message}: ${detail}`,
+    {
+      code: 'EREQUEST',
+      url,
+      method,
+      cause: inner ?? e,
+    },
+    requestError,
   )
 }

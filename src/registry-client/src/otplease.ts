@@ -54,6 +54,9 @@ export const otplease = async (
 
   if (wwwAuth.has('ipaddress')) {
     throw error('Authorization is not allowed from your ip address', {
+      code: 'ENEEDAUTH',
+      status: response.statusCode,
+      method: options.method,
       response,
     })
   }
@@ -93,6 +96,9 @@ export const otplease = async (
     }
 
     throw error('Unrecognized OTP authentication challenge', {
+      code: 'ENEEDAUTH',
+      status: response.statusCode,
+      method: options.method,
       response,
     })
   }
@@ -100,12 +106,22 @@ export const otplease = async (
   if (wwwAuth.has('bearer')) {
     throw error(
       'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
-      { response },
+      {
+        code: 'ENEEDAUTH',
+        status: response.statusCode,
+        method: options.method,
+        response,
+      },
     )
   }
 
   if (wwwAuth.size) {
-    throw error('Unknown authentication challenge', { response })
+    throw error('Unknown authentication challenge', {
+      code: 'ENEEDAUTH',
+      status: response.statusCode,
+      method: options.method,
+      response,
+    })
   }
 
   // Consume the body to check if it's prompting for OTP.

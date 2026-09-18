@@ -1,9 +1,11 @@
+import { error } from '@vltpkg/error-cause'
 import { gzipSync } from 'node:zlib'
 import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
 import {
   assertOk,
   registryErrorMessage,
+  requestError,
 } from '../src/registry-error.ts'
 
 const entry = (
@@ -192,5 +194,173 @@ t.test('handles an unknown status code', t => {
     registryErrorMessage(entry(599, 'failure')),
     '599 — failure',
   )
+  t.end()
+})
+
+t.test('assertOk renders each advice entry on its own line', t => {
+  t.throws(
+    () =>
+      assertOk(entry(500, 'boom'), {
+        message: 'Failed',
+        url: 'https://x.com/',
+        advice: () => ['first thing', undefined, 'second thing'],
+      }),
+    {
+      message:
+        'Failed: 500 Internal Server Error — boom\n' +
+        '⚠️ first thing\n⚠️ second thing',
+    },
+  )
+  t.end()
+})
+
+t.test('requestError', t => {
+  const url = new URL('https://x.com/thing')
+
+  t.test('the thrown reason is the detail of a status error', t => {
+    // otplease throws rather than returning, but still carries the
+    // response that provoked it -- a raw undici response, no text()
+    const thrown = error('Missing or invalid authentication token.', {
+      code: 'ENEEDAUTH',
+      status: 401,
+      response: { statusCode: 401, headers: {} },
+    })
+    const e = requestError(thrown, {
+      message: 'Failed to publish package',
+      url,
+      method: 'PUT',
+    })
+    t.equal(
+      e.message,
+      'Failed to publish package: 401 Unauthorized — ' +
+        'Missing or invalid authentication token.',
+    )
+    t.match(e, {
+      cause: {
+        code: 'ENEEDAUTH',
+        method: 'PUT',
+        status: 401,
+        cause: thrown,
+      },
+    })
+    t.end()
+  })
+
+  t.test('takes the status off the response when absent', t => {
+    const thrown = error('nope', { response: { statusCode: 503 } })
+    const e = requestError(thrown, { message: 'Failed', url })
+    t.equal(e.message, 'Failed: 503 Service Unavailable — nope')
+    t.match(e, { cause: { code: 'EREQUEST', status: 503 } })
+    t.end()
+  })
+
+  t.test("caller's advice is added, never substituted", t => {
+    const thrown = error('nope', { response: { statusCode: 403 } })
+    const e = requestError(thrown, {
+      message: 'Failed',
+      url,
+      advice: statusCode =>
+        statusCode === 403 ? 'do the other thing' : undefined,
+    })
+    t.equal(
+      e.message,
+      'Failed: 403 Forbidden — nope\n⚠️ do the other thing',
+    )
+    // advice that declines leaves just the reason
+    const e2 = requestError(thrown, {
+      message: 'Failed',
+      url,
+      advice: () => undefined,
+    })
+    t.equal(e2.message, 'Failed: 403 Forbidden — nope')
+    t.end()
+  })
+
+  t.test(
+    'a readable body is the detail; the reason becomes a tip',
+    t => {
+      const thrown = error('Missing token.', {
+        response: {
+          statusCode: 401,
+          text: () => '{"error":"token expired"}',
+        },
+      })
+      const e = requestError(thrown, { message: 'Failed', url })
+      t.equal(
+        e.message,
+        'Failed: 401 Unauthorized — token expired\n⚠️ Missing token.',
+      )
+      // with caller advice too, nothing is lost: reason first, then tip
+      const e2 = requestError(thrown, {
+        message: 'Failed',
+        url,
+        advice: () => 'Run `vlt login`.',
+      })
+      t.equal(
+        e2.message,
+        'Failed: 401 Unauthorized — token expired\n' +
+          '⚠️ Missing token.\n⚠️ Run `vlt login`.',
+      )
+      t.end()
+    },
+  )
+
+  t.test('an unreadable body counts as no body', t => {
+    const thrown = error('nope', {
+      response: {
+        statusCode: 401,
+        text: () => {
+          throw new Error('bad gzip')
+        },
+      },
+    })
+    const e = requestError(thrown, { message: 'Failed', url })
+    t.equal(e.message, 'Failed: 401 Unauthorized — nope')
+    t.end()
+  })
+
+  t.test('a transport failure names its cause and keeps it', t => {
+    const syscall = Object.assign(
+      new Error('connect ECONNREFUSED 127.0.0.1:1'),
+      { code: 'ECONNREFUSED', syscall: 'connect' },
+    )
+    const thrown = error('Request failed', {
+      code: 'EREQUEST',
+      cause: syscall,
+    })
+    const e = requestError(thrown, {
+      message: 'Failed to publish package',
+      url,
+      method: 'PUT',
+    })
+    t.equal(
+      e.message,
+      'Failed to publish package: Request failed: ' +
+        'connect ECONNREFUSED 127.0.0.1:1',
+    )
+    // printErr reads cause.cause for Code/Syscall
+    t.match(e, {
+      cause: { code: 'EREQUEST', method: 'PUT', cause: syscall },
+    })
+    t.end()
+  })
+
+  t.test('an inner cause repeating the message is not doubled', t => {
+    const thrown = error('boom', { cause: new Error('boom') })
+    const e = requestError(thrown, { message: 'Failed', url })
+    t.equal(e.message, 'Failed: boom')
+    t.end()
+  })
+
+  t.test('a bare error with no cause bag', t => {
+    const e = requestError(new Error('kaboom'), {
+      message: 'Failed',
+      url,
+    })
+    t.equal(e.message, 'Failed: kaboom')
+    t.match(e, { cause: { code: 'EREQUEST', method: 'GET' } })
+    t.end()
+  })
+
   t.end()
 })

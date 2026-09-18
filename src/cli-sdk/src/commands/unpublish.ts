@@ -1,7 +1,10 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient, assertOk } from '@vltpkg/registry-client'
+import {
+  RegistryClient,
+  assertOk,
+  requestError,
+} from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
-import { asError } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
 import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -121,11 +124,9 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
     } catch (err) {
-      throw error('Failed to fetch package metadata', {
-        code: 'EREQUEST',
+      throw requestError(err, {
+        message: 'Failed to fetch package metadata',
         url: packumentUrl,
-        method: 'GET',
-        cause: asError(err),
       })
     }
 
@@ -191,11 +192,10 @@ export const command: CommandFn<CommandResult> = async conf => {
         otp,
       })
     } catch (err) {
-      throw error('Failed to unpublish package version', {
-        code: 'EREQUEST',
+      throw requestError(err, {
+        message: 'Failed to unpublish package version',
         url: putUrl,
         method: 'PUT',
-        cause: asError(err),
       })
     }
 
@@ -215,11 +215,9 @@ export const command: CommandFn<CommandResult> = async conf => {
         useCache: false,
       })
     } catch (err) {
-      throw error('Failed to fetch package metadata', {
-        code: 'EREQUEST',
+      throw requestError(err, {
+        message: 'Failed to fetch package metadata',
         url: packumentUrl,
-        method: 'GET',
-        cause: asError(err),
       })
     }
 
@@ -254,11 +252,10 @@ export const command: CommandFn<CommandResult> = async conf => {
         otp,
       })
     } catch (err) {
-      throw error('Failed to unpublish package', {
-        code: 'EREQUEST',
+      throw requestError(err, {
+        message: 'Failed to unpublish package',
         url: deleteUrl,
         method: 'DELETE',
-        cause: asError(err),
       })
     }
 
