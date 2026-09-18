@@ -47,9 +47,17 @@ export const delimiter = '~'
  * Accept header for packument requests. Prefers vlt's abbreviated
  * packument and falls back to the full one on registries that do not
  * know the type. See `PackageInfoClient.#fetchPackument`.
+ *
+ * The trailing wildcard range carries an explicit `q=0.1` so that it stays
+ * below `application/json`. A media range with no `q` defaults to `q=1.0`
+ * (RFC 9110 12.5.1), which on a registry that negotiates strictly by
+ * quality would let an unrelated representation — npm's corgi among them
+ * — outrank the full packument and drop `license`. The wildcard is kept
+ * only so a registry that rejects what it cannot satisfy exactly still
+ * has something to match.
  */
 export const PACKUMENT_ACCEPT =
-  'application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*'
+  'application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*; q=0.1'
 
 export type Resolution = {
   resolved: string
@@ -1000,7 +1008,7 @@ export class PackageInfoClient {
   ): Promise<Packument> {
     // Request vlt's abbreviated packument, falling back to the full one:
     //   accept: application/vnd.vlt.packument-v1+json; q=1.0,
-    //           application/json; q=0.8, */*
+    //           application/json; q=0.8, */*; q=0.1
     //
     // npm's corgi (`application/vnd.npm.install-v1+json`) is never
     // requested. The version entry returned here becomes `node.manifest`

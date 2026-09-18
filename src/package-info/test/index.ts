@@ -2247,6 +2247,14 @@ t.test(
       /vnd\.npm\.install/,
       'never requests npm corgi',
     )
+    // A media range with no `q` is q=1.0, so an unqualified `*/*` would
+    // tie with the vlt type and outrank the full packument on a registry
+    // that negotiates strictly by quality.
+    t.match(
+      coalescedPackumentAccept,
+      /\*\/\*;\s*q=0\.1\b/,
+      'wildcard range ranks below the full packument',
+    )
     t.equal(
       paku,
       pakuAgain,
