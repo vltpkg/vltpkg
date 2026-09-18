@@ -1,4 +1,5 @@
-import { RegistryClient } from '@vltpkg/registry-client'
+import { error } from '@vltpkg/error-cause'
+import { RegistryClient, assertOk } from '@vltpkg/registry-client'
 import type { JSONField } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
 import { resolveRegistry } from '../require-registry.ts'
@@ -41,10 +42,25 @@ export const views = {
 
 export const command: CommandFn<CommandResult> = async conf => {
   const rc = new RegistryClient(conf.options)
-  const response = await rc.request(
-    new URL('-/whoami', await resolveRegistry(conf)),
-    { useCache: false },
-  )
+  const url = new URL('-/whoami', await resolveRegistry(conf))
+  const response = await rc.request(url, { useCache: false })
+  assertOk(response, {
+    message: 'Failed to look up the current user',
+    url,
+    advice: statusCode =>
+      statusCode === 401 || statusCode === 403 ?
+        `Not logged in to ${url.origin}. Run \`vlt login\` and try again.`
+      : undefined,
+  })
   const { username } = response.json()
+  if (typeof username !== 'string' || !username) {
+    throw error('Registry did not report a username', {
+      code: 'EREQUEST',
+      url,
+      wanted: 'a `username` string',
+      found: username,
+      response,
+    })
+  }
   return { username }
 }

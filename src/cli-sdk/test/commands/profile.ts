@@ -1,3 +1,4 @@
+import { assertOk } from '@vltpkg/registry-client'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -16,6 +17,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/profile.ts')
 >('../../src/commands/profile.ts', {
   '@vltpkg/registry-client': {
+    assertOk,
     RegistryClient: class {
       async request(
         url: string | URL,
@@ -23,6 +25,7 @@ const Command = await t.mockImport<
       ) {
         requestLog.push({ url: String(url), opts })
         return {
+          statusCode: 200,
           json: () => ({ ...profileData }),
         }
       }
@@ -79,6 +82,7 @@ t.test('set property', async t => {
     typeof import('../../src/commands/profile.ts')
   >('../../src/commands/profile.ts', {
     '@vltpkg/registry-client': {
+      assertOk,
       RegistryClient: class {
         async request(
           url: string | URL,
@@ -86,6 +90,7 @@ t.test('set property', async t => {
         ) {
           requestLog.push({ url: String(url), opts })
           return {
+            statusCode: 200,
             json: () => ({ ...updatedData }),
           }
         }
@@ -118,6 +123,7 @@ t.test('set with multiple words in value', async t => {
     typeof import('../../src/commands/profile.ts')
   >('../../src/commands/profile.ts', {
     '@vltpkg/registry-client': {
+      assertOk,
       RegistryClient: class {
         async request(
           url: string | URL,
@@ -125,6 +131,7 @@ t.test('set with multiple words in value', async t => {
         ) {
           log.push({ url: String(url), opts })
           return {
+            statusCode: 200,
             json: () => ({
               ...profileData,
               fullname: 'Test User Name',
@@ -254,4 +261,72 @@ t.test('views', async t => {
     const data = { name: 'testuser' }
     t.strictSame(Command.views.json(data), data)
   })
+})
+
+t.test('a 401 reports auth, not a bogus usage error', async t => {
+  // this used to raise EUSAGE 'Property not found in profile',
+  // blaming the user's argument for an auth failure
+  const Failing = await t.mockImport<
+    typeof import('../../src/commands/profile.ts')
+  >('../../src/commands/profile.ts', {
+    '@vltpkg/registry-client': {
+      assertOk,
+      RegistryClient: class {
+        async request() {
+          return {
+            statusCode: 401,
+            text: () => '{"error":"unauthorized"}',
+            json: () => ({ error: 'unauthorized' }),
+          }
+        }
+      },
+    },
+  })
+
+  for (const positionals of [
+    ['get'],
+    ['get', 'email'],
+    ['set', 'email', 'a@b.com'],
+  ]) {
+    await t.rejects(
+      Failing.command({
+        options: { registry: 'https://registry' },
+        positionals,
+      } as LoadedConfig),
+      {
+        message:
+          /: 401 Unauthorized — unauthorized\n⚠️ Not logged in to https:\/\/registry\./,
+        cause: { code: 'ENEEDAUTH', status: 401 },
+      },
+      positionals.join(' '),
+    )
+  }
+})
+
+t.test('a server error carries no login advice', async t => {
+  const Failing = await t.mockImport<
+    typeof import('../../src/commands/profile.ts')
+  >('../../src/commands/profile.ts', {
+    '@vltpkg/registry-client': {
+      assertOk,
+      RegistryClient: class {
+        async request() {
+          return { statusCode: 500, text: () => 'kaboom' }
+        }
+      },
+    },
+  })
+  for (const positionals of [['get'], ['set', 'email', 'a@b.com']]) {
+    await t.rejects(
+      Failing.command({
+        options: { registry: 'https://registry' },
+        positionals,
+      } as LoadedConfig),
+      {
+        message: /: 500 Internal Server Error — kaboom$/,
+        cause: { code: 'EREQUEST', status: 500 },
+      },
+      positionals.join(' '),
+    )
+  }
 })

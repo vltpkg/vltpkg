@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { CacheEntry } from '@vltpkg/registry-client'
+import { CacheEntry, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { mkdir, rm } from 'node:fs/promises'
 import prettyBytes from 'pretty-bytes'
@@ -355,13 +355,18 @@ const add = async (
       })
       .then(async r => {
         const { resolved, integrity } = r
-        await (
+        const response = await (
           await packageInfo.getRegistryClient()
         ).request(resolved, {
           ...conf.options,
           integrity,
           staleWhileRevalidate: false,
           query: undefined,
+        })
+        // otherwise a 404 tarball still prints '+ <spec>'
+        assertOk(response, {
+          message: `Failed to cache ${spec}`,
+          url: resolved,
         })
         view?.stdout('+', spec, r.resolved)
       })

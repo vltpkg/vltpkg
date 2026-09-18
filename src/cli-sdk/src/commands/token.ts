@@ -122,7 +122,9 @@ const formatRegistryTokens = (r: RegistryTokens): string => {
   if (!r.localToken) {
     lines.push('  (skipped remote query — no auth token)')
   } else if (r.error) {
-    lines.push(`  error: ${r.error}`)
+    // messages now carry advice on a second line; keep it indented
+    // under the registry heading rather than dedented to column 0.
+    lines.push(`  error: ${r.error.replaceAll('\n', '\n  ')}`)
   } else if (r.tokens.length === 0) {
     lines.push('  (no remote tokens found)')
   } else {

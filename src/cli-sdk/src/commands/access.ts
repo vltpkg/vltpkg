@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { RegistryClient, assertOk } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import { resolveRegistry } from '../require-registry.ts'
@@ -106,6 +106,18 @@ const encodePkgName = (name: string) =>
     `@${encodeURIComponent(name.slice(1))}`
   : encodeURIComponent(name)
 
+// 401/403/404 from the access endpoints all mean something the user can
+// act on, so each gets a concrete next step rather than a bare status.
+const accessAdvice =
+  (what: string) =>
+  (statusCode: number): string | undefined =>
+    statusCode === 401 ? 'Run `vlt login` and try again.'
+    : statusCode === 403 ?
+      `This account cannot ${what}. Run \`vlt whoami\` to see who you are logged in as.`
+    : statusCode === 404 ?
+      'Not found. Check the name, and that this account has access to it.'
+    : undefined
+
 const listPackages = async (
   conf: LoadedConfig,
   args: string[],
@@ -128,6 +140,11 @@ const listPackages = async (
     registryUrl,
   )
   const response = await rc.request(url, { useCache: false })
+  assertOk(response, {
+    message: 'Failed to list packages',
+    url,
+    advice: accessAdvice('list packages for this scope'),
+  })
   const data = response.json() as Record<string, string>
   return { packages: data }
 }
@@ -155,6 +172,11 @@ const getStatus = async (
     registryUrl,
   )
   const response = await rc.request(url, { useCache: false })
+  assertOk(response, {
+    message: 'Failed to get package access status',
+    url,
+    advice: accessAdvice('read access for this package'),
+  })
   const data = response.json() as { access: string }
   return { package: pkg, access: data.access }
 }
@@ -190,12 +212,18 @@ const setStatus = async (
     `-/package/${encodePkgName(pkg)}/access`,
     registryUrl,
   )
-  await rc.request(url, {
+  const response = await rc.request(url, {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ access: accessLevel }),
     otp: conf.options.otp,
     useCache: false,
+  })
+  assertOk(response, {
+    message: 'Failed to set package access status',
+    url,
+    method: 'PUT',
+    advice: accessAdvice('change access for this package'),
   })
   return { package: pkg, access: accessLevel }
 }
@@ -235,7 +263,7 @@ const grant = async (
     `-/team/${encodeURIComponent(scope)}/${encodeURIComponent(team)}/package`,
     registryUrl,
   )
-  await rc.request(url, {
+  const response = await rc.request(url, {
     method: 'PUT',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -244,6 +272,12 @@ const grant = async (
     }),
     otp: conf.options.otp,
     useCache: false,
+  })
+  assertOk(response, {
+    message: 'Failed to grant team access',
+    url,
+    method: 'PUT',
+    advice: accessAdvice('grant access for this team'),
   })
   return {
     granted: {
@@ -281,12 +315,18 @@ const revoke = async (
     `-/team/${encodeURIComponent(scope)}/${encodeURIComponent(team)}/package`,
     registryUrl,
   )
-  await rc.request(url, {
+  const response = await rc.request(url, {
     method: 'DELETE',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ package: pkgName }),
     otp: conf.options.otp,
     useCache: false,
+  })
+  assertOk(response, {
+    message: 'Failed to revoke team access',
+    url,
+    method: 'DELETE',
+    advice: accessAdvice('revoke access for this team'),
   })
   return {
     revoked: {

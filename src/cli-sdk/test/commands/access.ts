@@ -1,3 +1,4 @@
+import { assertOk } from '@vltpkg/registry-client'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { AccessResult } from '../../src/commands/access.ts'
@@ -17,8 +18,12 @@ const makeRequestLog = () => {
 const makeMockModule = (
   log: RequestLog[],
   responseData: Record<string, unknown> = {},
+  statusCode = 200,
 ) => ({
+  // t.mockImport replaces the module wholesale rather than merging, so
+  // every name the command imports has to be present here.
   '@vltpkg/registry-client': {
+    assertOk,
     RegistryClient: class {
       async request(
         url: string | URL,
@@ -36,6 +41,8 @@ const makeMockModule = (
           otp: opts?.otp,
         })
         return {
+          statusCode,
+          text: () => JSON.stringify(responseData),
           json: () => responseData,
         }
       }
@@ -658,4 +665,60 @@ t.test('set status - unscoped package', async t => {
     log[0]!.url,
     'https://registry.npmjs.org/-/package/unscoped-pkg/access',
   )
+})
+
+t.test(
+  'surfaces registry errors instead of faking success',
+  async t => {
+    // these three used to discard the response entirely and report
+    // success even when the registry said no
+    const cases: [string, string[], string][] = [
+      ['set', ['set', 'status=restricted', 'pkg'], 'PUT'],
+      ['grant', ['grant', 'read-write', 'scope:team', 'pkg'], 'PUT'],
+      ['revoke', ['revoke', 'scope:team', 'pkg'], 'DELETE'],
+      ['get status', ['get', 'status', 'pkg'], 'GET'],
+      ['list packages', ['list', 'packages', 'scope'], 'GET'],
+    ]
+    for (const [name, positionals, method] of cases) {
+      await t.test(name, async t => {
+        const { log } = makeRequestLog()
+        const { command } = await t.mockImport<
+          typeof import('../../src/commands/access.ts')
+        >(
+          '../../src/commands/access.ts',
+          makeMockModule(log, { error: 'nope' }, 403),
+        )
+        await t.rejects(command(makeConfig(positionals)), {
+          cause: { code: 'ENEEDAUTH', status: 403, method },
+        })
+      })
+    }
+  },
+)
+
+t.test('advice varies by status', async t => {
+  const expectations: [number, RegExp, string][] = [
+    [401, /⚠️ Run `vlt login` and try again\.$/, 'ENEEDAUTH'],
+    [
+      404,
+      /⚠️ Not found\. Check the name, and that this account has access to it\.$/,
+      'EREQUEST',
+    ],
+    [500, /: 500 Internal Server Error — .*$/, 'EREQUEST'],
+  ]
+  for (const [statusCode, message, code] of expectations) {
+    await t.test(String(statusCode), async t => {
+      const { log } = makeRequestLog()
+      const { command } = await t.mockImport<
+        typeof import('../../src/commands/access.ts')
+      >(
+        '../../src/commands/access.ts',
+        makeMockModule(log, { error: 'nope' }, statusCode),
+      )
+      await t.rejects(command(makeConfig(['get', 'status', 'pkg'])), {
+        message,
+        cause: { code, status: statusCode },
+      })
+    })
+  }
 })
