@@ -46,6 +46,22 @@ const debug = debuglog('vlt')
 const xdg = new XDG('vlt')
 export const delimiter = '~'
 
+/**
+ * Accept header for packument requests. Prefers vlt's abbreviated
+ * packument and falls back to the full one on registries that do not
+ * know the type. See `PackageInfoClient.#fetchPackument`.
+ *
+ * The trailing wildcard range carries an explicit `q=0.1` so that it stays
+ * below `application/json`. A media range with no `q` defaults to `q=1.0`
+ * (RFC 9110 12.5.1), which on a registry that negotiates strictly by
+ * quality would let an unrelated representation — npm's corgi among them
+ * — outrank the full packument and drop `license`. The wildcard is kept
+ * only so a registry that rejects what it cannot satisfy exactly still
+ * has something to match.
+ */
+export const PACKUMENT_ACCEPT =
+  'application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*; q=0.1'
+
 export type Resolution = {
   resolved: string
   integrity?: Integrity
@@ -993,35 +1009,29 @@ export class PackageInfoClient {
     pakuURL: URL,
     useCache?: false,
   ): Promise<Packument> {
-    // Always request the full packument (`application/json`), never the
-    // abbreviated "corgi" form:
-    //   accept: application/vnd.npm.install-v1+json; q=1.0,
-    //           application/json; q=0.8, */*
+    // Request vlt's abbreviated packument, falling back to the full one:
+    //   accept: application/vnd.vlt.packument-v1+json; q=1.0,
+    //           application/json; q=0.8, */*; q=0.1
     //
-    // Corgi is smaller (~−41% packument bytes, est. 1–3s on clean installs)
-    // but is disabled for two load-bearing reasons:
+    // npm's corgi (`application/vnd.npm.install-v1+json`) is never
+    // requested. The version entry returned here becomes `node.manifest`
+    // and is persisted to the hidden lockfile, and corgi drops `license`
+    // and `time`, so graph queries like `[license=MPL-2.0]` could not
+    // match a field that was never stored (shipped in 1.0.0-rc.33 via
+    // #1692, reverted in #1707). The vlt type guarantees both, and a
+    // registry that does not know it ignores it and serves the full
+    // packument, so the graph gets every field it relies on either way.
+    // The one shape difference is `scripts`, which the vlt type replaces
+    // with `hasInstallScript`; reify reads the extracted package.json in
+    // that case.
     //
-    // 1. Metadata loss reaches the lockfile. The version entry returned
-    //    here is `node.manifest` and is persisted to vlt-lock.json / the
-    //    hidden lockfile. Corgi drops `license` (also `time`, `readme`,
-    //    `maintainers`, `_rev`, `scripts`), so graph queries like
-    //    `[license=MPL-2.0]` cannot match a field that was never stored.
-    //    Shipped in 1.0.0-rc.33 via #1692 (8ba2b10c); 24 false-positive
-    //    edges in the dependency-check job on #1704
-    //    (`@resvg/resvg-wasm@2.6.2` MPL-2.0 in package.json, blank in the
-    //    stored graph); isolated in #1705; reverted in #1707.
-    //
-    // 2. The RegistryClient disk cache key is method + URL only — no
-    //    accept, no Vary — so a full-packument request can be served a
-    //    cached abbreviated body (and vice versa).
-    //
-    // To revisit: put the requested representation on both the disk-cache
-    // key and the in-flight coalescing key, and have the SWR child
-    // (cache-revalidate / revalidate) re-request the same representation.
+    // The RegistryClient disk cache key is method + URL only, so every
+    // packument request must use this same accept header, and the SWR
+    // revalidation child re-requests the representation it was given.
     const response = await (
       await this.getRegistryClient()
     ).request(pakuURL, {
-      headers: { accept: 'application/json' },
+      headers: { accept: PACKUMENT_ACCEPT },
       ...(useCache === false ? { useCache } : {}),
       // costs a conditional GET per moving selector on an otherwise warm
       // cache, install included. 304s are cheap but not free; the

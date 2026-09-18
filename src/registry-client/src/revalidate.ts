@@ -19,10 +19,29 @@ const revalidateConcurrency = (raw: string | undefined): number => {
     : defaultConcurrency
 }
 
+type Req = [
+  method: 'GET' | 'HEAD',
+  url: URL,
+  accept: string | undefined,
+]
+
+const parseReq = (line: string): Req | undefined => {
+  const method =
+    line.startsWith('GET ') ? 'GET'
+    : line.startsWith('HEAD ') ? 'HEAD'
+    : undefined
+  if (!method) return undefined
+  const rest = line.substring(method.length + 1)
+  const sp = rest.indexOf(' ')
+  return sp === -1 ?
+      [method, new URL(rest), undefined]
+    : [method, new URL(rest.substring(0, sp)), rest.substring(sp + 1)]
+}
+
 const runPool = async (
-  reqs: ['GET' | 'HEAD', URL][],
+  reqs: Req[],
   concurrency: number,
-  fn: (method: 'GET' | 'HEAD', url: URL) => Promise<void>,
+  fn: (...req: Req) => Promise<void>,
 ) => {
   let next = 0
   const n = Math.min(concurrency, reqs.length)
@@ -34,7 +53,7 @@ const runPool = async (
         const req = reqs[i]
         /* c8 ignore next */
         if (req === undefined) return
-        await fn(req[0], req[1])
+        await fn(...req)
       }
     }),
   )
@@ -47,7 +66,7 @@ export const main = async (
   if (!cache) {
     return false
   }
-  const reqs = await new Promise<['GET' | 'HEAD', URL][]>(res => {
+  const reqs = await new Promise<Req[]>(res => {
     const chunks: Buffer[] = []
     let chunkLen = 0
     input.on('data', (chunk: Buffer) => {
@@ -55,20 +74,11 @@ export const main = async (
       chunkLen += chunk.length
     })
     input.on('end', () => {
-      const reqs: ['GET' | 'HEAD', URL][] = Buffer.concat(
-        chunks,
-        chunkLen,
-      )
+      const reqs = Buffer.concat(chunks, chunkLen)
         .toString()
         .split('\0')
-        .filter(
-          i => !!i && (i.startsWith('GET ') || i.startsWith('HEAD ')),
-        )
-        .map(i =>
-          i.startsWith('GET ') ?
-            ['GET', new URL(i.substring('GET '.length))]
-          : ['HEAD', new URL(i.substring('HEAD '.length))],
-        )
+        .map(parseReq)
+        .filter(req => req !== undefined)
 
       res(reqs)
     })
@@ -82,7 +92,7 @@ export const main = async (
   await runPool(
     reqs,
     revalidateConcurrency(process.env.VLT_REVALIDATE_CONCURRENCY),
-    (method, url) => revalidateEntry(rc, method, url),
+    (method, url, accept) => revalidateEntry(rc, method, url, accept),
   )
 
   return true

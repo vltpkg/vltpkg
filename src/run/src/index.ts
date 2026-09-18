@@ -147,7 +147,10 @@ export type RunOptions = SharedOptions & {
   /**
    * Pass in a manifest to avoid having to read it at all
    */
-  manifest?: Pick<Manifest, 'scripts' | 'gypfile'>
+  manifest?: Pick<
+    Manifest,
+    'scripts' | 'gypfile' | 'hasInstallScript'
+  >
 
   /**
    * if the script is not defined in package.json#scripts, just ignore it and
@@ -252,12 +255,14 @@ const runImpl = async <
   // npm adds a `"install": "node-gyp rebuild"` if a binding.gyp
   // is present at the time of publish, EVEN IF it's not included
   // in the package. So, we need to read the actual package.json
-  // in those cases.
-  const untrustworthy = !!(
-    manifest?.gypfile &&
-    arg0 === 'install' &&
-    manifest.scripts?.install === 'node-gyp rebuild'
-  )
+  // in those cases. Likewise an abbreviated registry manifest only
+  // says `hasInstallScript`, and the scripts live on disk.
+  const untrustworthy =
+    !!manifest &&
+    ((manifest.gypfile === true &&
+      arg0 === 'install' &&
+      manifest.scripts?.install === 'node-gyp rebuild') ||
+      (manifest.hasInstallScript === true && !manifest.scripts))
   const pj =
     (untrustworthy ? undefined : manifest) ??
     packageJson.read(options.cwd)

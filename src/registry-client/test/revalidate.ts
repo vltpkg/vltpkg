@@ -67,9 +67,11 @@ t.test('validate args', async t => {
 
 t.test('revalidate a url', async t => {
   let requests = 0
+  const accepts: (string | undefined)[] = []
   const server = createServer((req, res) => {
     t.equal(req.url, '/' + String(req.method))
     requests++
+    accepts.push(req.headers.accept)
     req.resume()
     res.setHeader('connection', 'close')
     res.end('ok')
@@ -99,9 +101,14 @@ t.test('revalidate a url', async t => {
         env: ENV,
       },
     )
-    cp.stdin.write(`GET ${reg}/GET\0HEAD ${reg}/HEAD\0`, () => {
-      cp.stdin.end()
-    })
+    // the accept is everything after the URL, spaces included
+    cp.stdin.write(
+      `GET ${reg}/GET\0HEAD ${reg}/HEAD\0` +
+        `GET ${reg}/GET application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*\0`,
+      () => {
+        cp.stdin.end()
+      },
+    )
     cp.on('close', (status, signal) => {
       res({ status, signal })
     })
@@ -112,7 +119,12 @@ t.test('revalidate a url', async t => {
     signal: null,
   })
 
-  t.equal(requests, 2)
+  t.equal(requests, 3)
+  t.strictSame(accepts.sort(), [
+    'application/vnd.vlt.packument-v1+json; q=1.0, application/json; q=0.8, */*',
+    undefined,
+    undefined,
+  ])
 })
 
 t.test('pool caps in-flight requests', async t => {

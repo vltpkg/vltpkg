@@ -853,6 +853,13 @@ export type Manifest = {
   bin?: Record<string, string> | string
   /** run-script actions for this package */
   scripts?: Record<string, string>
+  /**
+   * Set in place of `scripts` by abbreviated registry manifests (npm's
+   * `application/vnd.npm.install-v1+json` and vlt's
+   * `application/vnd.vlt.packument-v1+json`) when the package has an
+   * install, preinstall, or postinstall script.
+   */
+  hasInstallScript?: boolean
   /** supported run-time platforms this package can run on */
   engines?: Record<string, string>
   /** supported operating systems this package can run on */
