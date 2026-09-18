@@ -1604,4 +1604,35 @@ t.test('logout() reports revocation failures', async t => {
     )
     t.equal(await getKC('').get(registryURL), undefined)
   })
+
+  t.test('revocation cannot reach the registry', async t => {
+    // request() rethrows a transport failure, which would otherwise
+    // escape logout() and strand the credential on disk
+    const errs = t.capture(console, 'error').args
+    const real = rc.request.bind(rc)
+    t.intercept(rc, 'request', {
+      value: async (
+        url: URL | string,
+        options: RegistryClientRequestOptions = {},
+      ) => {
+        if (options.method === 'DELETE') {
+          throw Object.assign(new Error('Request failed'), {
+            cause: { code: 'ECONNRESET', syscall: 'read' },
+          })
+        }
+        return real(url, options)
+      },
+    })
+    getKC('').set(registryURL, 'Bearer npm_Yy')
+    await rc.logout(registryURL)
+    t.match(
+      errs()[0]?.[0],
+      /Failed to revoke the token on the registry: Request failed/,
+    )
+    t.equal(
+      await getKC('').get(registryURL),
+      undefined,
+      'local credential is removed even so',
+    )
+  })
 })

@@ -420,40 +420,48 @@ export class RegistryClient {
       `Removing the local credential anyway; revoke the token in the ` +
       `registry UI if it is still live.`
 
-    let record: { key: string; token: string } | undefined
+    // the `finally` is the guarantee: `request()` rethrows a transport
+    // failure as EREQUEST, so without it a registry we cannot reach at
+    // all would take the local credential down with it.
     try {
-      record = await this.seek<{
-        key: string
-        token: string
-      }>(tokensUrl, ({ token }) => s.startsWith(token), {
-        useCache: false,
-      })
-    } catch (er) {
-      log(
-        `Could not list tokens at ${tokensUrl}: ${asError(er).message}\n` +
-          stillLive,
-      )
-    }
-
-    if (record) {
-      const deleteUrl = new URL(
-        `-/npm/v1/tokens/token/${record.key}`,
-        base,
-      )
-      const response = await this.request(deleteUrl, {
-        useCache: false,
-        method: 'DELETE',
-      })
-      if (!response.ok) {
+      let record: { key: string; token: string } | undefined
+      try {
+        record = await this.seek<{
+          key: string
+          token: string
+        }>(tokensUrl, ({ token }) => s.startsWith(token), {
+          useCache: false,
+        })
+      } catch (er) {
         log(
-          `Failed to revoke the token on the registry: ` +
-            `${registryErrorMessage(response)}\n` +
+          `Could not list tokens at ${tokensUrl}: ${asError(er).message}\n` +
             stillLive,
         )
       }
-    }
 
-    await deleteToken(registry, this.identity)
+      if (record) {
+        const deleteUrl = new URL(
+          `-/npm/v1/tokens/token/${record.key}`,
+          base,
+        )
+        const failed = (detail: string) =>
+          log(
+            `Failed to revoke the token on the registry: ${detail}\n` +
+              stillLive,
+          )
+        try {
+          const response = await this.request(deleteUrl, {
+            useCache: false,
+            method: 'DELETE',
+          })
+          if (!response.ok) failed(registryErrorMessage(response))
+        } catch (er) {
+          failed(asError(er).message)
+        }
+      }
+    } finally {
+      await deleteToken(registry, this.identity)
+    }
   }
 
   /**
