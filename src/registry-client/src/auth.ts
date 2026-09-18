@@ -103,7 +103,12 @@ export const getToken = async (
 /**
  * Find the best matching token for a request URL by performing a
  * longest-prefix match against all known registry keys (runtime
- * tokens, env-var registries, and keychain entries).
+ * tokens, env-var registries, and keychain entries). A key that
+ * resolves no token is skipped.
+ *
+ * `VLT_TOKEN_<key>` env vars are only read for a known key: their
+ * names are lossy (`.`, `-`, `/` all become `_`), so probing them by
+ * request URL would hand the token to lookalike hosts.
  *
  * This is used by `RegistryClient.request()` which only has the
  * full request URL — not the configured registry URL that was used
@@ -130,26 +135,13 @@ export const getTokenByURL = async (
     candidates.push(k)
   }
 
-  // Find the longest candidate key that is a prefix of the
-  // normalized request URL.
-  let bestKey: string | undefined
-  let bestLen = 0
-  for (const candidate of candidates) {
-    if (
-      candidate.length > bestLen &&
-      (normalized === candidate ||
-        normalized.startsWith(candidate + '/'))
-    ) {
-      bestKey = candidate
-      bestLen = candidate.length
-    }
+  // Longest candidate key that is a prefix of the normalized request
+  // URL and has a token (VLT_REGISTRY may have none).
+  const matches = candidates
+    .filter(c => normalized === c || normalized.startsWith(c + '/'))
+    .sort((a, b) => b.length - a.length)
+  for (const key of matches) {
+    const tok = await getToken(key, identity)
+    if (tok) return tok
   }
-
-  if (bestKey) {
-    return getToken(bestKey, identity)
-  }
-
-  // Fall back to origin-only match (handles VLT_TOKEN_* env vars
-  // which we can't enumerate by URL).
-  return getToken(requestUrl, identity)
 }
