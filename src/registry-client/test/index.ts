@@ -1419,3 +1419,116 @@ t.test('cachedBody', async t => {
     t.ok(rc.cachedBody(url), 'found once dropped from memory')
   })
 })
+
+t.test(
+  'scroll reports HTTP errors before parsing pagination',
+  async t => {
+    const rc = t.context.rc as RegistryClient
+    const url = new URL('/-/npm/v1/tokens', registryURL)
+    const cases: [number, string, string][] = [
+      [404, '404 Not Found', '404 Not Found'],
+      [
+        403,
+        '{"error":"Missing token:read"}',
+        '403 Forbidden: Missing token:read',
+      ],
+      [
+        501,
+        '{"error":"Token list not implemented"}',
+        '501 Not Implemented: Token list not implemented',
+      ],
+      [502, '<html>Bad gateway</html>', '502 Bad Gateway'],
+      [401, '', '401 Unauthorized'],
+      [403, '{"error":{}}', '403 Forbidden'],
+      [403, '{"error":""}', '403 Forbidden'],
+      [403, 'null', '403 Forbidden'],
+      [403, '42', '403 Forbidden'],
+      [403, '{}', '403 Forbidden'],
+      [199, '{}', '199'],
+    ]
+    for (const [status, body, message] of cases) {
+      const response = new CacheEntry(status, [])
+      response.addBody(Buffer.from(body))
+      t.intercept(rc, 'request', { value: async () => response })
+      await t.rejects(rc.scroll(url), {
+        message: `Failed to fetch paginated results: ${message}`,
+        cause: { code: 'EREQUEST', status, url: String(url) },
+      })
+    }
+  },
+)
+
+t.test('scroll rejects malformed successful responses', async t => {
+  const rc = t.context.rc as RegistryClient
+  const url = `${registryURL}/-/npm/v1/tokens`
+  const invalidBodies = [
+    null,
+    1,
+    [],
+    {},
+    { objects: {} },
+    { objects: [] },
+    { objects: [], urls: null },
+    { objects: [], urls: 'next' },
+    { objects: [], urls: [] },
+    { objects: [], urls: { next: 42 } },
+  ]
+  for (const body of invalidBodies) {
+    const response = new CacheEntry(200, [])
+    response.addBody(Buffer.from(JSON.stringify(body)))
+    t.intercept(rc, 'request', { value: async () => response })
+    await t.rejects(rc.scroll(url), {
+      message: 'Invalid pagination in registry response',
+      cause: { code: 'EREQUEST', url },
+    })
+  }
+  const response = new CacheEntry(200, [])
+  response.addBody(Buffer.from('not json'))
+  t.intercept(rc, 'request', { value: async () => response })
+  await t.rejects(rc.scroll(url), {
+    message: 'Invalid JSON in paginated registry response',
+    cause: { code: 'EREQUEST', url, cause: SyntaxError },
+  })
+})
+
+t.test(
+  'scroll validates every page and accepts terminal next values',
+  async t => {
+    const rc = t.context.rc as RegistryClient
+    const url = `${registryURL}/-/npm/v1/tokens`
+    const next = `${url}/page/2`
+    for (const urls of [
+      {},
+      { next: null },
+      { next: '' },
+      { next: undefined },
+    ]) {
+      const response = new CacheEntry(200, [])
+      t.intercept(response, 'json', {
+        value: () => ({ objects: [], urls }),
+      })
+      t.intercept(rc, 'request', { value: async () => response })
+      t.strictSame(await rc.scroll(url), [])
+    }
+    const page = new CacheEntry(200, [])
+    page.addBody(
+      Buffer.from(
+        JSON.stringify({
+          objects: [{ key: 'first' }],
+          urls: { next },
+        }),
+      ),
+    )
+    const failure = new CacheEntry(403, [])
+    failure.addBody(Buffer.from('{"error":"Access denied"}'))
+    t.intercept(rc, 'request', {
+      value: async (href: string | URL) =>
+        String(href) === url ? page : failure,
+    })
+    await t.rejects(rc.scroll(url), {
+      message:
+        'Failed to fetch paginated results: 403 Forbidden: Access denied',
+      cause: { code: 'EREQUEST', status: 403, url: next },
+    })
+  },
+)
