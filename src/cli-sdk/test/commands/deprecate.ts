@@ -1,4 +1,4 @@
-import { assertOk } from '@vltpkg/registry-client'
+import { assertOk, requestError } from '@vltpkg/registry-client'
 import t from 'tap'
 import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -52,6 +52,7 @@ const Command = await t.mockImport<
 >('../../src/commands/deprecate.ts', {
   '@vltpkg/registry-client': {
     assertOk,
+    requestError,
     RegistryClient: class {
       async request(
         url: string | URL,
@@ -231,6 +232,7 @@ t.test('error: unknown package name', async t => {
   >('../../src/commands/deprecate.ts', {
     '@vltpkg/registry-client': {
       assertOk,
+      requestError,
       RegistryClient: class {
         async request() {
           return { statusCode: 200 }

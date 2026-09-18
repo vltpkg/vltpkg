@@ -1,9 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { RegistryClient, assertOk } from '@vltpkg/registry-client'
+import {
+  RegistryClient,
+  assertOk,
+  requestError,
+} from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/semver'
-import { asError } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { commandUsage } from '../config/usage.ts'
 import { resolveRegistry } from '../require-registry.ts'
@@ -155,11 +158,10 @@ export const command: CommandFn<CommandResult> = async conf => {
       otp,
     })
   } catch (err) {
-    throw error('failed to update deprecation status', {
-      code: 'EREQUEST',
+    throw requestError(err, {
+      message: 'failed to update deprecation status',
       url: packageUrl,
       method: 'PUT',
-      cause: asError(err),
     })
   }
 

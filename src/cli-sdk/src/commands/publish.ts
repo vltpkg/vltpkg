@@ -4,6 +4,7 @@ import {
   assertOk,
   oidc,
   registryBase,
+  requestError,
 } from '@vltpkg/registry-client'
 import type { CacheEntry } from '@vltpkg/registry-client'
 import { run } from '@vltpkg/run'
@@ -12,7 +13,6 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
 import assert from 'node:assert'
-import { asError } from '@vltpkg/types'
 import type { NormalizedManifest } from '@vltpkg/types'
 import { dirname, resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
@@ -335,6 +335,19 @@ const commandSingle = async (
   )
 
   if (!dry) {
+    // the same guidance whether the registry refused the request or the
+    // client threw before a response came back (an expired token, say)
+    const publishAdvice = (statusCode: number) =>
+      statusCode === 409 ?
+        `${name}@${version} already exists in the registry. Bump the version and try again.`
+      : statusCode === 404 ?
+        "Make sure you're logged in and have access to publish the package."
+      : statusCode === 401 ?
+        `Not logged in to ${registryUrl.origin}. Run \`vlt login\` and try again.`
+      : statusCode === 403 ?
+        `${name} cannot be published by this account. Run \`vlt whoami\` to see who you are logged in as, and \`vlt login\` to switch accounts. A name already taken by someone else cannot be reused.`
+      : undefined
+
     let response: CacheEntry
     try {
       response = await rc.request(publishUrl, {
@@ -349,11 +362,11 @@ const commandSingle = async (
         otp,
       })
     } catch (err) {
-      throw error('Failed to publish package', {
-        code: 'EREQUEST',
+      throw requestError(err, {
+        message: 'Failed to publish package',
         url: publishUrl,
         method: 'PUT',
-        cause: asError(err),
+        advice: publishAdvice,
       })
     }
 
@@ -368,16 +381,7 @@ const commandSingle = async (
       message: 'Failed to publish package',
       url: publishUrl,
       method: 'PUT',
-      advice: statusCode =>
-        statusCode === 409 ?
-          `${name}@${version} already exists in the registry. Bump the version and try again.`
-        : statusCode === 404 ?
-          "Make sure you're logged in and have access to publish the package."
-        : statusCode === 401 ?
-          `Not logged in to ${registryUrl.origin}. Run \`vlt login\` and try again.`
-        : statusCode === 403 ?
-          `${name} cannot be published by this account. Run \`vlt whoami\` to see who you are logged in as, and \`vlt login\` to switch accounts. A name already taken by someone else cannot be reused.`
-        : undefined,
+      advice: publishAdvice,
     })
 
     // On deferred publishes the registry explains the delay in an

@@ -7,6 +7,7 @@ import {
   RegistryClient,
   assertOk,
   registryBase,
+  requestError,
 } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -1034,6 +1035,7 @@ t.test('publish command with scope', async t => {
       },
       '@vltpkg/registry-client': {
         assertOk,
+        requestError,
         RegistryClient: class {
           async request() {
             return {
@@ -1123,6 +1125,7 @@ t.test('publish command with scope', async t => {
       },
       '@vltpkg/registry-client': {
         assertOk,
+        requestError,
         RegistryClient: class {
           async request() {
             return {
