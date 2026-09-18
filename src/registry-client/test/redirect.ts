@@ -2,6 +2,7 @@ import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
 import { isRedirect, redirect } from '../src/redirect.ts'
 import type { RedirectResponse } from '../src/redirect.ts'
+import type { RegistryClientRequestOptions } from '../src/index.ts'
 
 t.compareOptions = { includeGetters: true }
 
@@ -145,6 +146,87 @@ t.test('redirect', t => {
       new URL('https://example.com/c'),
     ),
     'no redirections, just return []',
+  )
+
+  t.end()
+})
+
+t.test('authorization', t => {
+  const auth = 'Bearer tok'
+  const follow = (
+    headers: RegistryClientRequestOptions['headers'],
+    location: string,
+    from = 'https://example.com/a',
+  ) =>
+    redirect(
+      { headers },
+      new CacheEntry(307, [
+        Buffer.from('location'),
+        Buffer.from(location),
+      ]) as RedirectResponse,
+      new URL(from),
+    )[1]?.headers
+
+  t.strictSame(
+    follow({ authorization: auth, x: 'y' }, '/b'),
+    { authorization: auth, x: 'y' },
+    'kept on same origin',
+  )
+  t.strictSame(
+    follow(['authorization', auth, 'x', 'y'], '/b'),
+    ['authorization', auth, 'x', 'y'],
+    'kept on same origin, array',
+  )
+  t.strictSame(
+    follow(
+      { authorization: auth, x: 'y' },
+      'https://other.example.com/b',
+    ),
+    { x: 'y' },
+    'stripped on host change',
+  )
+  t.strictSame(
+    follow({ authorization: auth }, 'http://example.com/b'),
+    {},
+    'stripped on https -> http',
+  )
+  t.strictSame(
+    follow({ authorization: auth }, 'https://example.com:8443/b'),
+    {},
+    'stripped on port change',
+  )
+  t.strictSame(
+    follow(
+      { Authorization: auth, authorization: auth, x: 'y' },
+      'https://other.example.com/b',
+    ),
+    { x: 'y' },
+    'stripped in any casing',
+  )
+  t.strictSame(
+    follow(
+      ['authorization', auth, 'x', 'y', 'Authorization', auth],
+      'https://other.example.com/b',
+    ),
+    ['x', 'y'],
+    'every entry stripped, flat array',
+  )
+  t.strictSame(
+    follow(
+      [
+        ['authorization', auth],
+        ['x', 'y'],
+        ['Authorization', auth],
+      ],
+      'https://other.example.com/b',
+    ),
+    [['x', 'y']],
+    'every entry stripped, pairs',
+  )
+  t.strictSame(
+    follow(undefined, 'https://other.example.com/b'),
+    {},
+    'no headers',
   )
 
   t.end()
