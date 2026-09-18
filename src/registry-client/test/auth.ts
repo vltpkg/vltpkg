@@ -39,10 +39,7 @@ class Keychain {
 
   async get(reg: string) {
     this.log.push(['get', reg])
-    if (reg in this.#data) {
-      return this.#data[reg] as `Bearer ${string}`
-    }
-    return 'Bearer stokenboken' as const
+    return this.#data[reg] as `Bearer ${string}` | undefined
   }
 
   async keys() {
@@ -185,8 +182,12 @@ t.test('getToken', async t => {
     typeof import('../src/auth.ts')
   >('../src/auth.ts', mocks)
   await t.rejects(getToken('not a url', ''))
+  getKC('').set('https://x.com', 'Bearer stokenboken')
   t.equal(await getToken('https://x.com/', ''), 'Bearer stokenboken')
-  t.strictSame(checkLog(getKC('')), [['get', 'https://x.com']])
+  t.strictSame(checkLog(getKC('')), [
+    ['set', 'https://x.com', 'Bearer stokenboken'],
+    ['get', 'https://x.com'],
+  ])
   process.env.VLT_TOKEN = 'fromenv'
   process.env.VLT_REGISTRY = 'https://asdf.com/'
   t.strictSame(
@@ -317,16 +318,15 @@ t.test('getTokenByURL exact match', async t => {
   clearRuntimeTokens()
 })
 
-t.test('getTokenByURL falls back to getToken', async t => {
+t.test('getTokenByURL no match', async t => {
   const { getTokenByURL } = await t.mockImport<
     typeof import('../src/auth.ts')
   >('../src/auth.ts', mocks)
-  // No runtime tokens or keychain entries; falls through to getToken
-  // which uses the mock keychain's get() returning 'Bearer stokenboken'
   t.equal(
     await getTokenByURL('https://unknown.com/foo', ''),
-    'Bearer stokenboken',
+    undefined,
   )
+  t.equal(await getTokenByURL('file:///a/b', ''), undefined)
 })
 
 t.test('getTokenByURL prefers env registry with path', async t => {
@@ -384,6 +384,65 @@ t.test(
     )
   },
 )
+
+t.test('getTokenByURL VLT_TOKEN_* env vars', async t => {
+  const { getTokenByURL, getKC } = await t.mockImport<
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
+  process.env.VLT_TOKEN_https_npm_corp_com = 'corp'
+  process.env.VLT_TOKEN_https_r_io_acme_npm = 'acme'
+  t.teardown(() => {
+    delete process.env.VLT_TOKEN_https_npm_corp_com
+    delete process.env.VLT_TOKEN_https_r_io_acme_npm
+  })
+  // lossy names, never probed by request URL
+  for (const url of [
+    'https://npm-corp.com/x.tgz',
+    'https://npm.corp/com/x.tgz',
+    'https://npm-corp.com/',
+    'https://r.io/acme-npm/x',
+    // env-only key, #1844
+    'https://npm.corp.com/x.tgz',
+  ]) {
+    t.equal(await getTokenByURL(url, ''), undefined, url)
+  }
+  // read for a known key, over its keychain token
+  getKC('').set('https://npm.corp.com', 'Bearer kc')
+  t.equal(
+    await getTokenByURL('https://npm.corp.com/x.tgz', ''),
+    'Bearer corp',
+  )
+  t.equal(
+    await getTokenByURL('https://npm-corp.com/x.tgz', ''),
+    undefined,
+  )
+})
+
+t.test('getTokenByURL VLT_REGISTRY without VLT_TOKEN', async t => {
+  const { getTokenByURL, getKC } = await t.mockImport<
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
+  const { VLT_TOKEN } = process.env
+  delete process.env.VLT_TOKEN
+  process.env.VLT_REGISTRY = 'https://registry.vlt.io/luke/'
+  t.teardown(() => {
+    delete process.env.VLT_REGISTRY
+    delete process.env.VLT_TOKEN_https_registry_vlt_io_luke
+    if (VLT_TOKEN) process.env.VLT_TOKEN = VLT_TOKEN
+  })
+  getKC('').set('https://registry.vlt.io', 'Bearer kc-origin')
+  t.equal(
+    await getTokenByURL('https://registry.vlt.io/luke/pkg', ''),
+    'Bearer kc-origin',
+    'does not shadow a shorter key',
+  )
+  process.env.VLT_TOKEN_https_registry_vlt_io_luke = 'luke-env'
+  t.equal(
+    await getTokenByURL('https://registry.vlt.io/luke/pkg', ''),
+    'Bearer luke-env',
+    'VLT_TOKEN_<key> for VLT_REGISTRY',
+  )
+})
 
 t.test('get a KC with a different identity', async t => {
   const { getKC } = await t.mockImport<
