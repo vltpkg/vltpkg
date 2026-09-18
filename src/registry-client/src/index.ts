@@ -39,6 +39,8 @@ import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { getDispatcher } from './proxy.ts'
 import { isRedirect, redirect } from './redirect.ts'
+import { assertOk, registryErrorMessage } from './registry-error.ts'
+import type { ErrorResponse } from './registry-error.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 import type { TokenResponse } from './token-response.ts'
 import { getTokenResponse } from './token-response.ts'
@@ -52,6 +54,7 @@ import type { OidcOptions } from './oidc.ts'
 const log = (msg: string) => console.error(msg)
 
 export {
+  assertOk,
   CacheEntry,
   clearRuntimeTokens,
   deleteToken,
@@ -63,9 +66,11 @@ export {
   normalizeRegistryKey,
   oidc,
   registryBase,
+  registryErrorMessage,
   runtimeTokens,
   setRuntimeToken,
   setToken,
+  type ErrorResponse,
   type JSONObj,
   type OidcOptions,
   type Token,
@@ -406,22 +411,57 @@ export class RegistryClient {
 
     const base = registryBase(registry)
     const tokensUrl = new URL('-/npm/v1/tokens', base)
-    const record = await this.seek<{
-      key: string
-      token: string
-    }>(tokensUrl, ({ token }) => s.startsWith(token), {
-      useCache: false,
-    }).catch(() => undefined)
+    // Logging out must always drop the local credential -- a registry
+    // that will not talk to us cannot be allowed to strand a token on
+    // disk. But a token that outlives `vlt logout` server-side is
+    // security-relevant, so a failure is said out loud rather than
+    // swallowed.
+    const stillLive =
+      `Removing the local credential anyway; revoke the token in the ` +
+      `registry UI if it is still live.`
 
-    if (record) {
-      const { key } = record
-      await this.request(
-        new URL(`-/npm/v1/tokens/token/${key}`, base),
-        { useCache: false, method: 'DELETE' },
-      )
+    // the `finally` is the guarantee: `request()` rethrows a transport
+    // failure as EREQUEST, so without it a registry we cannot reach at
+    // all would take the local credential down with it.
+    try {
+      let record: { key: string; token: string } | undefined
+      try {
+        record = await this.seek<{
+          key: string
+          token: string
+        }>(tokensUrl, ({ token }) => s.startsWith(token), {
+          useCache: false,
+        })
+      } catch (er) {
+        log(
+          `Could not list tokens at ${tokensUrl}: ${asError(er).message}\n` +
+            stillLive,
+        )
+      }
+
+      if (record) {
+        const deleteUrl = new URL(
+          `-/npm/v1/tokens/token/${record.key}`,
+          base,
+        )
+        const failed = (detail: string) =>
+          log(
+            `Failed to revoke the token on the registry: ${detail}\n` +
+              stillLive,
+          )
+        try {
+          const response = await this.request(deleteUrl, {
+            useCache: false,
+            method: 'DELETE',
+          })
+          if (!response.ok) failed(registryErrorMessage(response))
+        } catch (er) {
+          failed(asError(er).message)
+        }
+      }
+    } finally {
+      await deleteToken(registry, this.identity)
     }
-
-    await deleteToken(registry, this.identity)
   }
 
   /**
@@ -557,11 +597,22 @@ export class RegistryClient {
       }
       return await this.#checkLogin(url, options)
     }
+    assertOk(response, {
+      message: 'Web login failed',
+      url,
+      advice: statusCode =>
+        statusCode === 404 ?
+          'This registry does not implement the web login endpoint.'
+        : undefined,
+    })
     if (response.statusCode === 200) {
       const token = getTokenResponse(response.json())
       if (token) return token
     }
     throw error('Invalid response from web login endpoint', {
+      code: 'EREQUEST',
+      url,
+      status: response.statusCode,
       response,
     })
   }

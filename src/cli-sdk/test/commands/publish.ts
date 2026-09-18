@@ -3,7 +3,11 @@ import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import type { CommandResultSingle } from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
-import { RegistryClient, registryBase } from '@vltpkg/registry-client'
+import {
+  RegistryClient,
+  registryBase,
+  registryErrorMessage,
+} from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 interface MockResponse {
@@ -1029,6 +1033,7 @@ t.test('publish command with scope', async t => {
         },
       },
       '@vltpkg/registry-client': {
+        registryErrorMessage,
         RegistryClient: class {
           async request() {
             return {
@@ -1117,6 +1122,7 @@ t.test('publish command with scope', async t => {
         },
       },
       '@vltpkg/registry-client': {
+        registryErrorMessage,
         RegistryClient: class {
           async request() {
             return {

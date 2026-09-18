@@ -3,6 +3,7 @@ import {
   RegistryClient,
   oidc,
   registryBase,
+  registryErrorMessage,
 } from '@vltpkg/registry-client'
 import type { CacheEntry } from '@vltpkg/registry-client'
 import { run } from '@vltpkg/run'
@@ -21,7 +22,6 @@ import type { LoadedConfig } from '../config/index.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
 import { minimatch } from 'minimatch'
 import { resolveRegistry } from '../require-registry.ts'
-import { registryErrorMessage } from '../registry-error-message.ts'
 import { stderr } from '../output.ts'
 
 export const needsRegistry = true

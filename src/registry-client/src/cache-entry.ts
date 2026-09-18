@@ -355,6 +355,20 @@ export class CacheEntry {
   get statusCode() {
     return this.#statusCode
   }
+
+  /**
+   * True when the registry answered with a 2xx.
+   *
+   * `RegistryClient.request()` resolves for every status, so this is how
+   * code holding a real CacheEntry asks "did it work?".
+   *
+   * Note this is the strict form. Use it only where a genuine CacheEntry
+   * is guaranteed; `assertOk` uses the loose range check because it is
+   * also handed duck-typed responses.
+   */
+  get ok(): boolean {
+    return this.#statusCode >= 200 && this.#statusCode < 300
+  }
   get headers(): Uint8Array[] {
     return this.#headers
   }
