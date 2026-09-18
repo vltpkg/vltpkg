@@ -43,10 +43,12 @@ export const assertVltInstalled = (
 ): void => {
   if (isVltInstalled(projectRoot)) return
   const nodeModules = resolve(projectRoot, 'node_modules')
-  throw error(
+  const hint =
     isDir(nodeModules) ?
-      `No vlt install found in node_modules: run \`vlt install\` to rebuild it before running \`vlt ${command}\`, or use \`:host()\` to query another project`
-    : `Project is not installed: run \`vlt install\` to build the graph that \`vlt ${command}\` reads`,
-    { code: 'EQUERY', path: nodeModules },
-  )
+      `run \`vlt install\` to rebuild it before running \`vlt ${command}\``
+    : `run \`vlt install\` before running \`vlt ${command}\``
+  throw error(`No vlt install found in ${nodeModules}\n\n  ${hint}`, {
+    code: 'EQUERY',
+    path: nodeModules,
+  })
 }

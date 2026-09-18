@@ -263,11 +263,8 @@ const printCode = (
     }
 
     case 'EQUERY': {
-      const { found, wanted, validOptions, path } = err.cause
+      const { found, wanted, validOptions } = err.cause
       stderr(`Query Error: ${err.message}`)
-      if (path) {
-        stderr(indent(`Path: ${format(path)}`))
-      }
       if (found) {
         stderr(indent(`Found: ${format(found)}`))
       }

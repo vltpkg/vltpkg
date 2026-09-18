@@ -58,8 +58,7 @@ t.test('lstat errors other than ENOENT', async t => {
   t.throws(
     () => assertVltInstalled(dir, 'query'),
     {
-      message:
-        'Project is not installed: run `vlt install` to build the graph that `vlt query` reads',
+      message: `No vlt install found in ${resolve(dir, 'node_modules')}\n\n  run \`vlt install\` before running \`vlt query\``,
       cause: { code: 'EQUERY', path: resolve(dir, 'node_modules') },
     },
     'should raise the usage error instead of the fs error',
@@ -76,22 +75,19 @@ t.test('assertVltInstalled', async t => {
 
   const foreign = t.testdir({ node_modules: { foo: {} } })
   t.throws(() => assertVltInstalled(foreign, 'query'), {
-    message:
-      'No vlt install found in node_modules: run `vlt install` to rebuild it before running `vlt query`, or use `:host()` to query another project',
+    message: `No vlt install found in ${resolve(foreign, 'node_modules')}\n\n  run \`vlt install\` to rebuild it before running \`vlt query\``,
     cause: { code: 'EQUERY', path: resolve(foreign, 'node_modules') },
   })
 
   const nmFile = t.testdir({ node_modules: 'file' })
   t.throws(() => assertVltInstalled(nmFile, 'query'), {
-    message:
-      'Project is not installed: run `vlt install` to build the graph that `vlt query` reads',
+    message: `No vlt install found in ${resolve(nmFile, 'node_modules')}\n\n  run \`vlt install\` before running \`vlt query\``,
     cause: { code: 'EQUERY', path: resolve(nmFile, 'node_modules') },
   })
 
   const empty = t.testdir({})
   t.throws(() => assertVltInstalled(empty, 'ls'), {
-    message:
-      'Project is not installed: run `vlt install` to build the graph that `vlt ls` reads',
+    message: `No vlt install found in ${resolve(empty, 'node_modules')}\n\n  run \`vlt install\` before running \`vlt ls\``,
     cause: { code: 'EQUERY', path: resolve(empty, 'node_modules') },
   })
 })

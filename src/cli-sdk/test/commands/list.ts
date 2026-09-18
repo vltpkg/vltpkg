@@ -860,8 +860,7 @@ t.test('install validation', async t => {
     await t.rejects(
       run(t, dir, { view: 'count' }),
       {
-        message:
-          'No vlt install found in node_modules: run `vlt install` to rebuild it before running `vlt ls`, or use `:host()` to query another project',
+        message: `No vlt install found in ${resolve(dir, 'node_modules')}\n\n  run \`vlt install\` to rebuild it before running \`vlt ls\``,
         cause: { code: 'EQUERY', path: join(dir, 'node_modules') },
       },
       'should refuse to list a node_modules vlt did not install',
@@ -873,8 +872,7 @@ t.test('install validation', async t => {
     await t.rejects(
       run(t, dir, { view: 'count' }),
       {
-        message:
-          'Project is not installed: run `vlt install` to build the graph that `vlt ls` reads',
+        message: `No vlt install found in ${resolve(dir, 'node_modules')}\n\n  run \`vlt install\` before running \`vlt ls\``,
         cause: { code: 'EQUERY', path: join(dir, 'node_modules') },
       },
       'should refuse to list a project that was never installed',
