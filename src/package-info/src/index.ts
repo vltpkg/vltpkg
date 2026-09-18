@@ -15,6 +15,12 @@ import { Spec } from '@vltpkg/spec'
 import type { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
+import {
+  batchEnabled,
+  batches,
+  fetchBatch,
+  supportsBatch,
+} from './batch.ts'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -71,6 +77,22 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
     /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
     from?: string
   }
+
+/** One exact `name@version` a batch request should fetch, and from where. */
+export type BatchWanted = {
+  registry: string
+  name: string
+  version: string
+}
+
+// request options that change which manifest is picked, or how
+const SELECTION_OPTIONS = [
+  'before',
+  'os',
+  'arch',
+  'libc',
+  'node-version',
+] as const
 
 export type PackageInfoClientExtractOptions =
   PackageInfoClientRequestOptions & {
@@ -139,6 +161,14 @@ export class PackageInfoClient {
   // needed. entries are removed when the on-disk file is invalidated
   // so the refreshed manifest can be written again.
   #manifestWritePaths = new Set<string>()
+  // Manifests a batch request already delivered, keyed as the batch keys
+  // them: `${registry}${name}@${version}`. Only ever holds exact versions,
+  // which are immutable, so a hit here needs no freshness check.
+  #batchedManifests = new Map<string, Manifest>()
+  // One in-flight batch per registry. `manifest()` waits on it only when it
+  // needs a key that has not arrived, so the request overlaps whatever the
+  // graph build does before it asks for its first manifest.
+  #batchPromises = new Map<string, Promise<void>>()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -745,6 +775,65 @@ export class PackageInfoClient {
     }
   }
 
+  /**
+   * Start fetching manifests for many exact `name@version` pairs, one request
+   * per registry, and return without waiting for any of them. `manifest()`
+   * answers from what has arrived, and blocks on the request only when it
+   * needs a key that has not.
+   *
+   * A no-op unless `VLT_BATCH_MANIFESTS=1` and the registry says it serves
+   * the endpoint. Anything it does not deliver is left to `manifest()`.
+   */
+  prefetchManifests(wanted: BatchWanted[]): void {
+    if (!batchEnabled() || !wanted.length) return
+
+    const byRegistry = new Map<string, BatchWanted[]>()
+    for (const w of wanted) {
+      let group = byRegistry.get(w.registry)
+      if (!group) byRegistry.set(w.registry, (group = []))
+      group.push(w)
+    }
+
+    for (const [registry, group] of byRegistry) {
+      if (this.#batchPromises.has(registry)) continue
+      const promise = this.#runBatch(registry, group)
+      this.#batchPromises.set(registry, promise)
+      // clear once settled, unless a later run has taken the slot, so a
+      // later prefetch can ask again and manifest() stops waiting on it
+      const clear = () => {
+        if (this.#batchPromises.get(registry) === promise) {
+          this.#batchPromises.delete(registry)
+        }
+      }
+      promise.then(clear, clear)
+    }
+  }
+
+  /** Never rejects: a batch that fails leaves every spec to `manifest()`. */
+  async #runBatch(
+    registry: string,
+    group: BatchWanted[],
+  ): Promise<void> {
+    try {
+      const client = await this.getRegistryClient()
+      if (!(await supportsBatch(client, registry))) return
+      const specs = group.map(w => `${w.name}@${w.version}`)
+      for (const chunk of batches(specs)) {
+        const manifests = await fetchBatch(client, registry, chunk)
+        for (const [spec, manifest] of manifests) {
+          this.#batchedManifests.set(`${registry}${spec}`, manifest)
+        }
+      }
+    } catch {
+      // The per-name path still has every spec.
+    }
+  }
+
+  /** How many manifests a batch has delivered so far. For tests. */
+  get batchedManifestCount(): number {
+    return this.#batchedManifests.size
+  }
+
   async manifest(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
@@ -756,6 +845,25 @@ export class PackageInfoClient {
 
     switch (f.type) {
       case 'registry': {
+        // a batch entry never went through pickManifest, so any option
+        // that affects selection has to take the packument path
+        if (!SELECTION_OPTIONS.some(k => options[k] !== undefined)) {
+          const batchKey = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
+          const batched = this.#batchedManifests.get(batchKey)
+          if (batched) return batched
+          // Not here yet: wait for the batch that would carry it rather
+          // than racing it with a packument fetch for the same manifest.
+          const inflight =
+            f.registry ?
+              this.#batchPromises.get(f.registry)
+            : undefined
+          if (inflight) {
+            await inflight
+            const arrived = this.#batchedManifests.get(batchKey)
+            if (arrived) return arrived
+          }
+        }
+
         // Check if manifest is cached, if so just return it earlier
         const cachePath = this._manifestCachePath(spec, options)
         if (cachePath) {
