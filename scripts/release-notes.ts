@@ -67,6 +67,7 @@ const humanCoAuthors = async (number: number): Promise<string[]> => {
           commits: {
             nodes: {
               commit: {
+                author: { email: string } | null
                 authors: {
                   nodes: {
                     email: string
@@ -87,6 +88,7 @@ const humanCoAuthors = async (number: number): Promise<string[]> => {
         commits(first: 100) {
           nodes {
             commit {
+              author { email }
               authors(first: 10) {
                 nodes { email user { login } }
               }
@@ -96,20 +98,36 @@ const humanCoAuthors = async (number: number): Promise<string[]> => {
       }
     }
   }`
-  const result = await api<Result>('/graphql', {
-    query,
-    variables: { owner, repo, number },
-  })
-  if (result.errors?.length) {
-    throw new Error(
-      `pull request #${number}: ${result.errors.map(e => e.message).join('; ')}`,
-    )
+  let result: Result
+  try {
+    result = await api<Result>('/graphql', {
+      query,
+      variables: { owner, repo, number },
+    })
+    if (result.errors?.length) {
+      throw new Error(result.errors.map(e => e.message).join('; '))
+    }
+  } catch (er) {
+    // This runs after the packages are published and the tag is pushed,
+    // so a failed lookup keeps the bot attribution rather than failing
+    // the release.
+    console.warn(`pull request #${number}: ${er}`)
+    return []
   }
   const logins = new Set<string>()
   for (const { commit } of result.data?.repository?.pullRequest
     ?.commits.nodes ?? []) {
+    // `authors` includes the commit's own author, not just the trailers,
+    // and a human pushing to a bot's branch must not re-attribute the
+    // whole pull request to them.
+    const author = commit.author?.email.toLowerCase()
     for (const { email, user } of commit.authors.nodes) {
-      if (user && !isBot(user.login) && !isNoReply(email)) {
+      if (
+        user &&
+        !isBot(user.login) &&
+        !isNoReply(email) &&
+        email.toLowerCase() !== author
+      ) {
         logins.add(user.login)
       }
     }

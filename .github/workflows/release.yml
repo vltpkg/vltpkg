@@ -282,6 +282,8 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      # release notes look up pull request commit authors
+      pull-requests: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -385,6 +387,7 @@ jobs:
         run: |
           gh release create "${{ steps.versions.outputs.version }}" \
             --verify-tag \
+            --title="${{ steps.versions.outputs.version }}" \
             --notes-file=release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}
