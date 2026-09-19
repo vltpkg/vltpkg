@@ -39,6 +39,10 @@ wizard.
    not clobbering, existing entries). Aliases that already live in a
    `vlt.json` are left where they are, so a project-local alias does
    not get copied into your user config (or the reverse).
+6. If your keychain has a token for only one of `npm` / `main`, copies
+   it to the other. Existing tokens are never overwritten, and
+   `VLT_TOKEN*` environment tokens are never saved. This also runs
+   with `--yes` or when you skip authentication.
 
 If the project you run this in configures its own registries, the
 output says so:
@@ -49,11 +53,11 @@ project.
 
 ## Options
 
-| Flag                       | Description                                                                        |
-| -------------------------- | ---------------------------------------------------------------------------------- |
-| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.  |
-| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times. |
-| `--yes`                    | Skip interactive prompts. Requires `<account>` and does not open a browser.        |
+| Flag                       | Description                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.   |
+| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.  |
+| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs. |
 
 ## Examples
 

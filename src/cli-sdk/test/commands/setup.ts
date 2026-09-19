@@ -1,4 +1,6 @@
 import t from 'tap'
+import { normalizeRegistryKey } from '@vltpkg/registry-client'
+import type { Token } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -6,10 +8,19 @@ type Added = [string, Record<string, unknown>]
 
 // Build a mocked setup module with injectable readline answers and a
 // RegistryClient stub that records the registries it logs in against.
-const loadSetup = async (answers: string[], loginError?: Error) => {
+const loadSetup = async (
+  answers: string[],
+  loginError?: Error,
+  initialTokens?: Record<string, Token>,
+  saveError?: Error,
+) => {
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
   const logged: string[] = []
+  const kcWrites: [string, Token, string][] = []
+  const stored = new Map<string, Token>(
+    Object.entries(initialTokens ?? {}),
+  )
   const queue = [...answers]
   const mod = await t.mockImport<
     typeof import('../../src/commands/setup.ts')
@@ -19,8 +30,25 @@ const loadSetup = async (answers: string[], loginError?: Error) => {
         async login(registry: string | string[]) {
           loginCalls.push(registry)
           if (loginError) throw loginError
+          const regs = Array.isArray(registry) ? registry : [registry]
+          for (const reg of regs) {
+            stored.set(normalizeRegistryKey(reg), 'Bearer from-login')
+          }
         }
       },
+      // stands in for env/runtime tokens, which must not be persisted
+      getToken: async () => 'Bearer from-env',
+      getKC: (identity: string) => ({
+        get: async (key: string) => stored.get(key),
+        set: (key: string, token: Token) => {
+          kcWrites.push([key, token, identity])
+          stored.set(key, token)
+        },
+        save: async () => {
+          if (saveError) throw saveError
+        },
+      }),
+      normalizeRegistryKey,
     },
     'node:readline/promises': {
       createInterface: () => ({
@@ -35,13 +63,14 @@ const loadSetup = async (answers: string[], loginError?: Error) => {
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
     },
   })
-  return { mod, loginCalls, questions, logged }
+  return { mod, loginCalls, questions, logged, kcWrites, stored }
 }
 
 const makeConf = (
   opts: {
     yes?: boolean
     config?: string
+    identity?: string
     positionals?: string[]
     registries?: Record<string, string>
     layers?: {
@@ -57,7 +86,10 @@ const makeConf = (
       k === 'yes' ? opts.yes
       : k === 'config' ? opts.config
       : undefined,
-    options: { registries: opts.registries ?? {} },
+    options: {
+      registries: opts.registries ?? {},
+      identity: opts.identity ?? '',
+    },
     layers: opts.layers ?? {},
     addConfigToFile: async (
       which: string,
@@ -111,7 +143,7 @@ t.test('url + view helpers', async t => {
 
 t.test('non-interactive with account + extras', async t => {
   const added: Added[] = []
-  const { mod, loginCalls } = await loadSetup([])
+  const { mod, loginCalls, kcWrites } = await loadSetup([])
   const result = await mod.command(
     makeConf(
       {
@@ -133,6 +165,7 @@ t.test('non-interactive with account + extras', async t => {
     [],
     'no browser auth in non-interactive mode',
   )
+  t.strictSame(kcWrites, [], 'env/runtime tokens are not persisted')
   t.equal(added.length, 1)
   t.equal(added[0]?.[0], 'user')
   t.strictSame(added[0]?.[1], {
@@ -220,15 +253,16 @@ t.test('non-interactive writes to project config', async t => {
 
 t.test('interactive: prompt account, auth, add alias', async t => {
   const added: Added[] = []
-  const { mod, loginCalls, logged } = await loadSetup([
-    'acme', // account slug
-    'y', // authenticate now
-    'y', // add another alias?
-    'partner', // alias name
-    'https://partner.example.com', // url
-    'y', // authenticate against partner?
-    'n', // add another alias?
-  ])
+  const { mod, loginCalls, logged, kcWrites, stored } =
+    await loadSetup([
+      'acme', // account slug
+      'y', // authenticate now
+      'y', // add another alias?
+      'partner', // alias name
+      'https://partner.example.com', // url
+      'y', // authenticate against partner?
+      'n', // add another alias?
+    ])
   const result = await mod.command(makeConf({}, added))
   t.strictSame(
     loginCalls,
@@ -241,6 +275,16 @@ t.test('interactive: prompt account, auth, add alias', async t => {
     ],
     'account registries authenticated in a single login',
   )
+  t.strictSame(
+    Object.fromEntries(stored),
+    {
+      'https://registry.vlt.io/acme/npm': 'Bearer from-login',
+      'https://registry.vlt.io/acme/main': 'Bearer from-login',
+      'https://partner.example.com': 'Bearer from-login',
+    },
+    'login token stored for both account registries',
+  )
+  t.strictSame(kcWrites, [], 'nothing left for setup to copy')
   t.strictSame(result.registries, {
     npm: 'https://registry.vlt.io/acme/npm/',
     main: 'https://registry.vlt.io/acme/main/',
@@ -332,3 +376,100 @@ t.test('interactive: empty account slug rejects', async t => {
     cause: { code: 'ECONFIG' },
   })
 })
+
+t.test(
+  'copies an existing main token onto npm during --yes',
+  async t => {
+    const added: Added[] = []
+    const { mod, kcWrites } = await loadSetup([], undefined, {
+      'https://registry.vlt.io/acme/main': 'Bearer existing-main',
+    })
+    await mod.command(
+      makeConf({ yes: true, positionals: ['acme'] }, added),
+    )
+    t.strictSame(kcWrites, [
+      [
+        'https://registry.vlt.io/acme/npm',
+        'Bearer existing-main',
+        '',
+      ],
+    ])
+  },
+)
+
+t.test(
+  'copies an existing npm token onto main during --yes',
+  async t => {
+    const added: Added[] = []
+    const { mod, kcWrites } = await loadSetup([], undefined, {
+      'https://registry.vlt.io/acme/npm': 'Bearer existing-npm',
+    })
+    await mod.command(
+      makeConf({ yes: true, positionals: ['acme'] }, added),
+    )
+    t.strictSame(kcWrites, [
+      [
+        'https://registry.vlt.io/acme/main',
+        'Bearer existing-npm',
+        '',
+      ],
+    ])
+  },
+)
+
+t.test(
+  'skipped auth still copies an existing token onto the other',
+  async t => {
+    const added: Added[] = []
+    const { mod, loginCalls, kcWrites } = await loadSetup(
+      ['n', 'n'],
+      undefined,
+      {
+        'https://registry.vlt.io/acme/main': 'Bearer existing-main',
+      },
+    )
+    await mod.command(
+      makeConf({ positionals: ['acme'], identity: 'corp' }, added),
+    )
+    t.strictSame(loginCalls, [], 'auth was skipped')
+    t.strictSame(kcWrites, [
+      [
+        'https://registry.vlt.io/acme/npm',
+        'Bearer existing-main',
+        'corp',
+      ],
+    ])
+  },
+)
+
+t.test('--yes keeps differing npm and main tokens', async t => {
+  const added: Added[] = []
+  const { mod, kcWrites } = await loadSetup([], undefined, {
+    'https://registry.vlt.io/acme/npm': 'Bearer stale-npm',
+    'https://registry.vlt.io/acme/main': 'Bearer fresh-main',
+  })
+  await mod.command(
+    makeConf({ yes: true, positionals: ['acme'] }, added),
+  )
+  t.strictSame(kcWrites, [], 'existing tokens not overwritten')
+})
+
+t.test(
+  'keychain failure does not block the config write',
+  async t => {
+    const added: Added[] = []
+    const { mod } = await loadSetup(
+      [],
+      undefined,
+      { 'https://registry.vlt.io/acme/main': 'Bearer existing-main' },
+      Object.assign(new Error('EACCES'), { code: 'EACCES' }),
+    )
+    await t.rejects(
+      mod.command(
+        makeConf({ yes: true, positionals: ['acme'] }, added),
+      ),
+      { code: 'EACCES' },
+    )
+    t.equal(added.length, 1, 'config written before the keychain')
+  },
+)
