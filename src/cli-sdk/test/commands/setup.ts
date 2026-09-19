@@ -61,7 +61,7 @@ const loadSetup = async (
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
     },
   })
-  return { mod, loginCalls, questions, logged, kcWrites }
+  return { mod, loginCalls, questions, logged, kcWrites, stored }
 }
 
 const makeConf = (
@@ -255,7 +255,7 @@ t.test('non-interactive writes to project config', async t => {
 
 t.test('interactive: prompt account, auth, add alias', async t => {
   const added: Added[] = []
-  const { mod, loginCalls, logged, kcWrites } = await loadSetup([
+  const { mod, loginCalls, logged, kcWrites, stored } = await loadSetup([
     'acme', // account slug
     'y', // authenticate now
     'y', // add another alias?
@@ -277,13 +277,15 @@ t.test('interactive: prompt account, auth, add alias', async t => {
     'account registries authenticated in a single login',
   )
   t.strictSame(
-    kcWrites,
-    [
-      ['https://registry.vlt.io/acme/npm', 'Bearer from-login', ''],
-      ['https://registry.vlt.io/acme/main', 'Bearer from-login', ''],
-    ],
+    Object.fromEntries(stored),
+    {
+      'https://registry.vlt.io/acme/npm': 'Bearer from-login',
+      'https://registry.vlt.io/acme/main': 'Bearer from-login',
+      'https://partner.example.com': 'Bearer from-login',
+    },
     'login token stored for both account registries',
   )
+  t.strictSame(kcWrites, [], 'nothing left for setup to copy')
   t.strictSame(result.registries, {
     npm: 'https://registry.vlt.io/acme/npm/',
     main: 'https://registry.vlt.io/acme/main/',
@@ -392,11 +394,6 @@ t.test(
         'Bearer existing-main',
         '',
       ],
-      [
-        'https://registry.vlt.io/acme/main',
-        'Bearer existing-main',
-        '',
-      ],
     ])
   },
 )
@@ -413,11 +410,6 @@ t.test(
     )
     t.strictSame(kcWrites, [
       [
-        'https://registry.vlt.io/acme/npm',
-        'Bearer existing-npm',
-        '',
-      ],
-      [
         'https://registry.vlt.io/acme/main',
         'Bearer existing-npm',
         '',
@@ -427,7 +419,7 @@ t.test(
 )
 
 t.test(
-  'skipped auth still copies an existing token onto both',
+  'skipped auth still copies an existing token onto the other',
   async t => {
     const added: Added[] = []
     const { mod, loginCalls, kcWrites } = await loadSetup(
@@ -447,11 +439,18 @@ t.test(
         'Bearer existing-main',
         'corp',
       ],
-      [
-        'https://registry.vlt.io/acme/main',
-        'Bearer existing-main',
-        'corp',
-      ],
     ])
   },
 )
+
+t.test('--yes keeps differing npm and main tokens', async t => {
+  const added: Added[] = []
+  const { mod, kcWrites } = await loadSetup([], undefined, {
+    'https://registry.vlt.io/acme/npm': 'Bearer stale-npm',
+    'https://registry.vlt.io/acme/main': 'Bearer fresh-main',
+  })
+  await mod.command(
+    makeConf({ yes: true, positionals: ['acme'] }, added),
+  )
+  t.strictSame(kcWrites, [], 'existing tokens not overwritten')
+})

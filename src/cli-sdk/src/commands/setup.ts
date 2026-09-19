@@ -36,9 +36,8 @@ export const accountRegistryURL = (
 /**
  * Path-scoped keychain keys do not match sibling registries
  * (`…/<account>/main` vs `…/<account>/npm`). One account token covers
- * both, so persist it under each account registry URL whenever setup
- * runs — including `--yes` and skipped auth, when a token already
- * exists for either alias.
+ * both, so when the keychain holds it for only one alias, copy it to
+ * the other.
  */
 export const persistAccountTokens = async (
   account: string,
@@ -49,13 +48,13 @@ export const persistAccountTokens = async (
   const keys = accountRegistries.map(name =>
     normalizeRegistryKey(accountRegistryURL(account, name)),
   )
-  let token: Awaited<ReturnType<typeof kc.get>> = undefined
-  for (const key of keys) {
-    token = await kc.get(key)
-    if (token) break
-  }
+  const tokens = await Promise.all(keys.map(k => kc.get(k)))
+  const token = tokens.find(Boolean)
   if (!token) return
-  for (const key of keys) kc.set(key, token)
+  // fill gaps only: never overwrite an existing (maybe newer) token
+  for (const [i, key] of keys.entries()) {
+    if (!tokens[i]) kc.set(key, token)
+  }
   await kc.save()
 }
 
@@ -271,9 +270,8 @@ export const command: CommandFn<SetupResult> = async conf => {
       }
     }
 
-    // 6. store the account token under both `npm` and `main`. login()
-    // already writes both when auth ran; this also covers `--yes` and
-    // skipped auth when a token already exists for one of them.
+    // 6. fill a missing `npm`/`main` keychain entry from the other.
+    // no-op after login(), which already wrote both.
     await persistAccountTokens(account, conf.options.identity)
 
     // 7. persist the staged registries (merged, not clobbered)
