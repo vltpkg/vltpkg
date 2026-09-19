@@ -28,6 +28,10 @@ const bun = isBun ? versions.bun : undefined
 const deno = isDeno ? versions.deno : undefined
 const node = isNode ? versions.node : undefined
 
+// Anything that is not one of the server-side runtimes we know about
+// is treated as a browser (or browser-like) environment.
+const isBrowser = !isDeno && !isBun && !isNode
+
 const runtime =
   nav?.userAgent ??
   (bun ? `Bun/${bun}`
@@ -43,3 +47,15 @@ const runtime =
  * from `navigator.userAgent` when the runtime provides one.
  */
 export const userAgent = `vlt/${pkg.version} ${runtime}`
+
+/**
+ * Headers to spread into the `headers` of a `fetch()` call so that the
+ * request carries {@link userAgent}.
+ *
+ * Empty in browsers: the browser sets its own `User-Agent` and does not let
+ * scripts override it, and since `User-Agent` is not a CORS-safelisted
+ * request header, setting it would force a preflight on cross-origin
+ * registry requests that not every registry accepts.
+ */
+export const userAgentHeaders: Readonly<Record<string, string>> =
+  isBrowser ? {} : { 'User-Agent': userAgent }

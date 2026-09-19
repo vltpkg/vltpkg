@@ -21,7 +21,14 @@ is safe to use from browser-safe packages such as `@vltpkg/query`.
 ## Usage
 
 ```js
-import { userAgent } from '@vltpkg/user-agent'
+import { userAgent, userAgentHeaders } from '@vltpkg/user-agent'
 
 console.log(userAgent) // vlt/1.0.10 Node.js/22.22.0
+
+// `userAgentHeaders` is `{ 'User-Agent': userAgent }` in Node.js, Bun and
+// Deno, and `{}` in a browser, where the header cannot be set by scripts
+// and would otherwise force a CORS preflight on cross-origin requests.
+await fetch(url, {
+  headers: { Accept: 'application/json', ...userAgentHeaders },
+})
 ```

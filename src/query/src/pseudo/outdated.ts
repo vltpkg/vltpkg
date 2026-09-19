@@ -1,7 +1,7 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
-import { userAgent } from '@vltpkg/user-agent'
+import { userAgentHeaders } from '@vltpkg/user-agent'
 import { asError } from '@vltpkg/types'
 import {
   compare,
@@ -93,7 +93,7 @@ export const retrieveRemoteVersions = async (
 
   const headers: Record<string, string> = {
     Accept: 'application/vnd.npm.install-v1+json',
-    'User-Agent': userAgent,
+    ...userAgentHeaders,
   }
   const auth = await getAuthHeader?.(String(url))
   if (auth) {
