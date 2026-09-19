@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { RegistryClient } from '@vltpkg/registry-client'
+import {
+  getToken,
+  RegistryClient,
+  setToken,
+} from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import { asError, isErrorWithCause, isObject } from '@vltpkg/types'
 import { createInterface } from 'node:readline/promises'
@@ -28,6 +32,31 @@ export const accountRegistryURL = (
   name: string,
 ): string =>
   `${VLT_REGISTRY_BASE}/${encodeURIComponent(account)}/${name}/`
+
+/**
+ * Path-scoped keychain keys do not match sibling registries
+ * (`…/<account>/main` vs `…/<account>/npm`). One account token covers
+ * both, so persist it under each account registry URL whenever setup
+ * runs — including `--yes` and skipped auth, when a token already
+ * exists for either alias.
+ */
+export const persistAccountTokens = async (
+  account: string,
+  identity: string,
+): Promise<void> => {
+  const urls = accountRegistries.map(name =>
+    accountRegistryURL(account, name),
+  )
+  let token: Awaited<ReturnType<typeof getToken>> = undefined
+  for (const url of urls) {
+    token = await getToken(url, identity)
+    if (token) break
+  }
+  if (!token) return
+  for (const url of urls) {
+    await setToken(url, token, identity)
+  }
+}
 
 /**
  * The account registries live at `${VLT_REGISTRY_BASE}/<account>/<name>/`, so
@@ -105,9 +134,10 @@ export const usage: CommandUsage = () =>
                   that \`vlt install\` and \`vlx\` work out of the box.
 
                   Sign up or log in at ${VLT_SIGNUP_URL} first. The wizard
-                  authenticates against your account and writes the
-                  \`npm\` and \`main\` registry aliases (and any additional
-                  aliases you add) to your user \`vlt.json\`.`,
+                  authenticates against your account, stores the token
+                  for both the \`npm\` and \`main\` registries, and writes
+                  those aliases (and any additional aliases you add) to
+                  your user \`vlt.json\`.`,
     options: {
       config: {
         value: '<user | project>',
@@ -193,8 +223,8 @@ export const command: CommandFn<SetupResult> = async conf => {
         'Authenticate with your vlt.io account now? (Y/n) ',
       )
       if (!/^n/i.test(doAuth)) {
-        // one token covers every registry on the account, so the browser
-        // opens once and the token is stored for all of them.
+        // one login covers both account registries; the token is stored
+        // for each of them so path-scoped keychain lookups match.
         stdout(
           `Authenticating your account registries (${accountRegistries.join(
             ', ',
@@ -240,7 +270,12 @@ export const command: CommandFn<SetupResult> = async conf => {
       }
     }
 
-    // 6. persist the staged registries (merged, not clobbered)
+    // 6. store the account token under both `npm` and `main`. login()
+    // already writes both when auth ran; this also covers `--yes` and
+    // skipped auth when a token already exists for one of them.
+    await persistAccountTokens(account, conf.options.identity)
+
+    // 7. persist the staged registries (merged, not clobbered)
     await conf.addConfigToFile(which, { registries })
 
     // writing the user config from inside a project that configures its own

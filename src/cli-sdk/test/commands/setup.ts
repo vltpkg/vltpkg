@@ -4,12 +4,22 @@ import type { LoadedConfig } from '../../src/config/index.ts'
 
 type Added = [string, Record<string, unknown>]
 
+type StoredToken = `Bearer ${string}` | `Basic ${string}`
+
 // Build a mocked setup module with injectable readline answers and a
 // RegistryClient stub that records the registries it logs in against.
-const loadSetup = async (answers: string[], loginError?: Error) => {
+const loadSetup = async (
+  answers: string[],
+  loginError?: Error,
+  initialTokens?: Record<string, StoredToken>,
+) => {
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
   const logged: string[] = []
+  const setTokenCalls: [string, StoredToken, string][] = []
+  const stored = new Map<string, StoredToken>(
+    Object.entries(initialTokens ?? {}),
+  )
   const queue = [...answers]
   const mod = await t.mockImport<
     typeof import('../../src/commands/setup.ts')
@@ -19,7 +29,20 @@ const loadSetup = async (answers: string[], loginError?: Error) => {
         async login(registry: string | string[]) {
           loginCalls.push(registry)
           if (loginError) throw loginError
+          const regs = Array.isArray(registry) ? registry : [registry]
+          for (const reg of regs) {
+            stored.set(reg, 'Bearer from-login')
+          }
         }
+      },
+      getToken: async (registry: string) => stored.get(registry),
+      setToken: async (
+        registry: string,
+        token: StoredToken,
+        identity: string,
+      ) => {
+        setTokenCalls.push([registry, token, identity])
+        stored.set(registry, token)
       },
     },
     'node:readline/promises': {
@@ -35,13 +58,14 @@ const loadSetup = async (answers: string[], loginError?: Error) => {
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
     },
   })
-  return { mod, loginCalls, questions, logged }
+  return { mod, loginCalls, questions, logged, setTokenCalls }
 }
 
 const makeConf = (
   opts: {
     yes?: boolean
     config?: string
+    identity?: string
     positionals?: string[]
     registries?: Record<string, string>
     layers?: {
@@ -57,7 +81,10 @@ const makeConf = (
       k === 'yes' ? opts.yes
       : k === 'config' ? opts.config
       : undefined,
-    options: { registries: opts.registries ?? {} },
+    options: {
+      registries: opts.registries ?? {},
+      identity: opts.identity ?? '',
+    },
     layers: opts.layers ?? {},
     addConfigToFile: async (
       which: string,
@@ -111,7 +138,7 @@ t.test('url + view helpers', async t => {
 
 t.test('non-interactive with account + extras', async t => {
   const added: Added[] = []
-  const { mod, loginCalls } = await loadSetup([])
+  const { mod, loginCalls, setTokenCalls } = await loadSetup([])
   const result = await mod.command(
     makeConf(
       {
@@ -132,6 +159,11 @@ t.test('non-interactive with account + extras', async t => {
     loginCalls,
     [],
     'no browser auth in non-interactive mode',
+  )
+  t.strictSame(
+    setTokenCalls,
+    [],
+    'no token to copy when the keychain is empty',
   )
   t.equal(added.length, 1)
   t.equal(added[0]?.[0], 'user')
@@ -220,7 +252,7 @@ t.test('non-interactive writes to project config', async t => {
 
 t.test('interactive: prompt account, auth, add alias', async t => {
   const added: Added[] = []
-  const { mod, loginCalls, logged } = await loadSetup([
+  const { mod, loginCalls, logged, setTokenCalls } = await loadSetup([
     'acme', // account slug
     'y', // authenticate now
     'y', // add another alias?
@@ -240,6 +272,14 @@ t.test('interactive: prompt account, auth, add alias', async t => {
       'https://partner.example.com/',
     ],
     'account registries authenticated in a single login',
+  )
+  t.strictSame(
+    setTokenCalls,
+    [
+      ['https://registry.vlt.io/acme/npm/', 'Bearer from-login', ''],
+      ['https://registry.vlt.io/acme/main/', 'Bearer from-login', ''],
+    ],
+    'login token stored for both account registries',
   )
   t.strictSame(result.registries, {
     npm: 'https://registry.vlt.io/acme/npm/',
@@ -332,3 +372,83 @@ t.test('interactive: empty account slug rejects', async t => {
     cause: { code: 'ECONFIG' },
   })
 })
+
+t.test(
+  'copies an existing main token onto npm during --yes',
+  async t => {
+    const added: Added[] = []
+    const { mod, setTokenCalls } = await loadSetup([], undefined, {
+      'https://registry.vlt.io/acme/main/': 'Bearer existing-main',
+    })
+    await mod.command(
+      makeConf({ yes: true, positionals: ['acme'] }, added),
+    )
+    t.strictSame(setTokenCalls, [
+      [
+        'https://registry.vlt.io/acme/npm/',
+        'Bearer existing-main',
+        '',
+      ],
+      [
+        'https://registry.vlt.io/acme/main/',
+        'Bearer existing-main',
+        '',
+      ],
+    ])
+  },
+)
+
+t.test(
+  'copies an existing npm token onto main during --yes',
+  async t => {
+    const added: Added[] = []
+    const { mod, setTokenCalls } = await loadSetup([], undefined, {
+      'https://registry.vlt.io/acme/npm/': 'Bearer existing-npm',
+    })
+    await mod.command(
+      makeConf({ yes: true, positionals: ['acme'] }, added),
+    )
+    t.strictSame(setTokenCalls, [
+      [
+        'https://registry.vlt.io/acme/npm/',
+        'Bearer existing-npm',
+        '',
+      ],
+      [
+        'https://registry.vlt.io/acme/main/',
+        'Bearer existing-npm',
+        '',
+      ],
+    ])
+  },
+)
+
+t.test(
+  'skipped auth still copies an existing token onto both',
+  async t => {
+    const added: Added[] = []
+    const { mod, loginCalls, setTokenCalls } = await loadSetup(
+      ['n', 'n'],
+      undefined,
+      {
+        'https://registry.vlt.io/acme/main/': 'Bearer existing-main',
+      },
+    )
+    await mod.command(
+      makeConf({ positionals: ['acme'], identity: 'corp' }, added),
+    )
+    t.strictSame(loginCalls, [], 'auth was skipped')
+    t.strictSame(setTokenCalls, [
+      [
+        'https://registry.vlt.io/acme/npm/',
+        'Bearer existing-main',
+        'corp',
+      ],
+      [
+        'https://registry.vlt.io/acme/main/',
+        'Bearer existing-main',
+        'corp',
+      ],
+    ])
+  },
+)
