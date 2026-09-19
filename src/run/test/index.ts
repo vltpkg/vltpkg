@@ -118,7 +118,7 @@ t.test('run', async t => {
   t.test('npm_config_user_agent format', async t => {
     t.match(
       npmConfigUserAgent,
-      /^vlt\/\d+\.\d+\.\d+ node\/v\d+\.\d+\.\d+ \w+ \w+$/,
+      /^vlt\/\d+\.\d+\.\d+ \S+$/,
       'npm_config_user_agent matches expected format',
     )
     const result = await promiseSpawn(

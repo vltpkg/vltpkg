@@ -1,6 +1,7 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
+import { userAgentHeaders } from '@vltpkg/user-agent'
 import {
   asPostcssNodeWithChildren,
   asTagNode,
@@ -35,6 +36,7 @@ export const retrieveDistTags = async (
   const response = await fetch(String(url), {
     headers: {
       Accept: 'application/vnd.npm.install-v1+json',
+      ...userAgentHeaders,
     },
     signal,
   })
