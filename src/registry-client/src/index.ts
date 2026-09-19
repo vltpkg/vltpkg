@@ -753,6 +753,7 @@ export class RegistryClient {
     // either no cache entry, or need to revalidate before use.
     setCacheHeaders(options, entry)
 
+    const redirected = redirections.size > 0
     redirections.add(String(url))
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated for callers; this is the one place that sets it
@@ -783,12 +784,17 @@ export class RegistryClient {
     }
     options.method = options.method ?? 'GET'
 
-    // will remove if we don't have a token.
-    options.headers = addHeader(
-      options.headers,
-      'authorization',
-      await getTokenByURL(String(u), this.identity),
-    )
+    // a same-origin redirect keeps the credential of the hop that led
+    // here, since path-scoped keys may not match the new path.
+    // redirect() strips it when the origin changes.
+    if (!redirected || !getHeader(options.headers, 'authorization')) {
+      // will remove if we don't have a token.
+      options.headers = addHeader(
+        options.headers,
+        'authorization',
+        await getTokenByURL(String(u), this.identity),
+      )
+    }
 
     let response: Dispatcher.ResponseData | null = null
     try {
