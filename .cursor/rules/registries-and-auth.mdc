@@ -39,10 +39,11 @@ writes the account's registry aliases to `vlt.json` via
 - `registries.npm  = https://registry.vlt.io/<account>/npm/`
 - `registries.main = https://registry.vlt.io/<account>/main/`
 
-The account token is written to the keychain under **both** of those
-URLs (path-scoped keys do not match sibling registries). That happens
-on every `vlt setup` run, including `--yes` / skipped auth, when a
-token already exists for either alias.
+The account token must be in the keychain under **both** of those
+URLs (path-scoped keys do not match sibling registries). Login writes
+both; after the `vlt.json` write, setup also fills a missing one from
+the other (keychain only, never overwrites, never persists env tokens),
+including `--yes` / skipped auth.
 
 It then loops to add optional custom aliases (partner/team registries).
 Runs unattended with `vlt setup <account> --yes` (+ `--registries name=url`).
