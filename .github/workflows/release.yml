@@ -368,13 +368,24 @@ jobs:
           git tag -a "${{ steps.versions.outputs.version }}" -m "Release ${{ steps.versions.outputs.version }}"
           git push origin "${{ steps.versions.outputs.version }}"
 
+      # Same as `gh release create --generate-notes` except pull requests
+      # opened by a GitHub App (e.g. `ruy-bot[bot]`) are attributed to the
+      # human co-authors of their commits instead of the app.
+      - name: Generate Release Notes
+        run: |
+          ./scripts/release-notes.ts \
+            "${{ steps.versions.outputs.version }}" \
+            "${{ steps.versions.outputs.previous-version }}" \
+            | tee release-notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Create GitHub Release
         if: needs.pre-check.outputs.dry-run != 'true'
         run: |
           gh release create "${{ steps.versions.outputs.version }}" \
             --verify-tag \
-            --generate-notes \
-            --notes-start-tag="${{ steps.versions.outputs.previous-version }}"
+            --notes-file=release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}
 
