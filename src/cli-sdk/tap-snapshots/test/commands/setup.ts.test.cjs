@@ -14,7 +14,7 @@ vlt setup [<account>]
 
 Configure the registry aliases for your vlt.io account so that \`vlt install\` and \`vlx\` work out of the box.
 
-Sign up or log in at https://www.vlt.io first. The wizard authenticates against your account and writes the \`npm\` and \`main\` registry aliases (and any additional aliases you add) to your user \`vlt.json\`.
+Sign up or log in at https://www.vlt.io first. The wizard authenticates against your account, stores the token for both the \`npm\` and \`main\` registries, and writes those aliases (and any additional aliases you add) to your user \`vlt.json\`.
 
 ## Options
 
