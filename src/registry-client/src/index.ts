@@ -214,6 +214,13 @@ export type RegistryClientRequestOptions = Omit<
   forceRevalidate?: boolean
 }
 
+/**
+ * The `User-Agent` header sent with every request. Re-exported from
+ * `@vltpkg/user-agent`, which is where the value is defined, so that
+ * existing importers of this package keep working.
+ */
+export { userAgent }
+
 // Agent-level knobs only. Do not spread these onto per-request options —
 // connections/pipelining/keepAlive/connect are ignored at dispatch time,
 // and bodyTimeout/headersTimeout would clobber caller overrides.

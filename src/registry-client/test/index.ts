@@ -518,6 +518,17 @@ t.test('follow redirects', { saveFixture: true }, async t => {
   })
 })
 
+t.test('user-agent', async t => {
+  const { userAgent } = await mockIndex(t)
+  const shared = await import('@vltpkg/user-agent')
+  t.equal(
+    userAgent,
+    shared.userAgent,
+    're-exports the shared @vltpkg/user-agent value',
+  )
+  t.match(userAgent, /^vlt\//, 'starts with vlt/')
+})
+
 t.test('npm-session header', async t => {
   dropConnection = false
   t.test('is a valid UUID, consistent across requests', async t => {
