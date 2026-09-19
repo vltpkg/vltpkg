@@ -375,10 +375,14 @@ jobs:
       # human co-authors of their commits instead of the app.
       - name: Generate Release Notes
         run: |
+          # Deliberately not piped to `tee`: the default shell has no
+          # `pipefail`, so a pipe would hide a failure here and publish a
+          # release with empty notes.
           ./scripts/release-notes.ts \
             "${{ steps.versions.outputs.version }}" \
             "${{ steps.versions.outputs.previous-version }}" \
-            | tee release-notes.md
+            > release-notes.md
+          cat release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}
 
