@@ -1,8 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import {
-  getToken,
+  getKC,
+  normalizeRegistryKey,
   RegistryClient,
-  setToken,
 } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import { asError, isErrorWithCause, isObject } from '@vltpkg/types'
@@ -44,18 +44,19 @@ export const persistAccountTokens = async (
   account: string,
   identity: string,
 ): Promise<void> => {
-  const urls = accountRegistries.map(name =>
-    accountRegistryURL(account, name),
+  // keychain only: getToken() also returns env/runtime tokens
+  const kc = getKC(identity)
+  const keys = accountRegistries.map(name =>
+    normalizeRegistryKey(accountRegistryURL(account, name)),
   )
-  let token: Awaited<ReturnType<typeof getToken>> = undefined
-  for (const url of urls) {
-    token = await getToken(url, identity)
+  let token: Awaited<ReturnType<typeof kc.get>> = undefined
+  for (const key of keys) {
+    token = await kc.get(key)
     if (token) break
   }
   if (!token) return
-  for (const url of urls) {
-    await setToken(url, token, identity)
-  }
+  for (const key of keys) kc.set(key, token)
+  await kc.save()
 }
 
 /**
