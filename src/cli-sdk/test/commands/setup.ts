@@ -13,6 +13,7 @@ const loadSetup = async (
   answers: string[],
   loginError?: Error,
   initialTokens?: Record<string, StoredToken>,
+  saveError?: Error,
 ) => {
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
@@ -44,7 +45,9 @@ const loadSetup = async (
           kcWrites.push([key, token, identity])
           stored.set(key, token)
         },
-        save: async () => {},
+        save: async () => {
+          if (saveError) throw saveError
+        },
       }),
       normalizeRegistryKey,
     },
@@ -453,4 +456,19 @@ t.test('--yes keeps differing npm and main tokens', async t => {
     makeConf({ yes: true, positionals: ['acme'] }, added),
   )
   t.strictSame(kcWrites, [], 'existing tokens not overwritten')
+})
+
+t.test('keychain failure does not block the config write', async t => {
+  const added: Added[] = []
+  const { mod } = await loadSetup(
+    [],
+    undefined,
+    { 'https://registry.vlt.io/acme/main': 'Bearer existing-main' },
+    Object.assign(new Error('EACCES'), { code: 'EACCES' }),
+  )
+  await t.rejects(
+    mod.command(makeConf({ yes: true, positionals: ['acme'] }, added)),
+    { code: 'EACCES' },
+  )
+  t.equal(added.length, 1, 'config written before the keychain')
 })

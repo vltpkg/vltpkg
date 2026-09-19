@@ -270,12 +270,13 @@ export const command: CommandFn<SetupResult> = async conf => {
       }
     }
 
-    // 6. fill a missing `npm`/`main` keychain entry from the other.
-    // no-op after login(), which already wrote both.
-    await persistAccountTokens(account, conf.options.identity)
-
-    // 7. persist the staged registries (merged, not clobbered)
+    // 6. persist the staged registries (merged, not clobbered)
     await conf.addConfigToFile(which, { registries })
+
+    // 7. fill a missing `npm`/`main` keychain entry from the other.
+    // no-op after login(), which already wrote both. runs after the
+    // config write so a keychain failure can't block it.
+    await persistAccountTokens(account, conf.options.identity)
 
     // writing the user config from inside a project that configures its own
     // registries has no effect here, so say so rather than looking like it
