@@ -1,25 +1,24 @@
 import t from 'tap'
 import { normalizeRegistryKey } from '@vltpkg/registry-client'
+import type { Token } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 type Added = [string, Record<string, unknown>]
-
-type StoredToken = `Bearer ${string}` | `Basic ${string}`
 
 // Build a mocked setup module with injectable readline answers and a
 // RegistryClient stub that records the registries it logs in against.
 const loadSetup = async (
   answers: string[],
   loginError?: Error,
-  initialTokens?: Record<string, StoredToken>,
+  initialTokens?: Record<string, Token>,
   saveError?: Error,
 ) => {
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
   const logged: string[] = []
-  const kcWrites: [string, StoredToken, string][] = []
-  const stored = new Map<string, StoredToken>(
+  const kcWrites: [string, Token, string][] = []
+  const stored = new Map<string, Token>(
     Object.entries(initialTokens ?? {}),
   )
   const queue = [...answers]
@@ -41,7 +40,7 @@ const loadSetup = async (
       getToken: async () => 'Bearer from-env',
       getKC: (identity: string) => ({
         get: async (key: string) => stored.get(key),
-        set: (key: string, token: StoredToken) => {
+        set: (key: string, token: Token) => {
           kcWrites.push([key, token, identity])
           stored.set(key, token)
         },
@@ -166,11 +165,7 @@ t.test('non-interactive with account + extras', async t => {
     [],
     'no browser auth in non-interactive mode',
   )
-  t.strictSame(
-    kcWrites,
-    [],
-    'env/runtime tokens are not persisted',
-  )
+  t.strictSame(kcWrites, [], 'env/runtime tokens are not persisted')
   t.equal(added.length, 1)
   t.equal(added[0]?.[0], 'user')
   t.strictSame(added[0]?.[1], {
@@ -258,15 +253,16 @@ t.test('non-interactive writes to project config', async t => {
 
 t.test('interactive: prompt account, auth, add alias', async t => {
   const added: Added[] = []
-  const { mod, loginCalls, logged, kcWrites, stored } = await loadSetup([
-    'acme', // account slug
-    'y', // authenticate now
-    'y', // add another alias?
-    'partner', // alias name
-    'https://partner.example.com', // url
-    'y', // authenticate against partner?
-    'n', // add another alias?
-  ])
+  const { mod, loginCalls, logged, kcWrites, stored } =
+    await loadSetup([
+      'acme', // account slug
+      'y', // authenticate now
+      'y', // add another alias?
+      'partner', // alias name
+      'https://partner.example.com', // url
+      'y', // authenticate against partner?
+      'n', // add another alias?
+    ])
   const result = await mod.command(makeConf({}, added))
   t.strictSame(
     loginCalls,
@@ -458,17 +454,22 @@ t.test('--yes keeps differing npm and main tokens', async t => {
   t.strictSame(kcWrites, [], 'existing tokens not overwritten')
 })
 
-t.test('keychain failure does not block the config write', async t => {
-  const added: Added[] = []
-  const { mod } = await loadSetup(
-    [],
-    undefined,
-    { 'https://registry.vlt.io/acme/main': 'Bearer existing-main' },
-    Object.assign(new Error('EACCES'), { code: 'EACCES' }),
-  )
-  await t.rejects(
-    mod.command(makeConf({ yes: true, positionals: ['acme'] }, added)),
-    { code: 'EACCES' },
-  )
-  t.equal(added.length, 1, 'config written before the keychain')
-})
+t.test(
+  'keychain failure does not block the config write',
+  async t => {
+    const added: Added[] = []
+    const { mod } = await loadSetup(
+      [],
+      undefined,
+      { 'https://registry.vlt.io/acme/main': 'Bearer existing-main' },
+      Object.assign(new Error('EACCES'), { code: 'EACCES' }),
+    )
+    await t.rejects(
+      mod.command(
+        makeConf({ yes: true, positionals: ['acme'] }, added),
+      ),
+      { code: 'EACCES' },
+    )
+    t.equal(added.length, 1, 'config written before the keychain')
+  },
+)
