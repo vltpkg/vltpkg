@@ -12,9 +12,9 @@ import { STATUS_CODES } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
-import { loadPackageJson } from 'package-json-from-dist'
 import type { Agent, Dispatcher } from 'undici'
 import { RetryAgent } from 'undici'
+import { userAgent } from '@vltpkg/user-agent'
 import { addHeader } from './add-header.ts'
 import type { Token } from './auth.ts'
 import {
@@ -34,7 +34,6 @@ import {
 import type { JSONObj } from './cache-entry.ts'
 import { CacheEntry } from './cache-entry.ts'
 import { register } from './cache-revalidate.ts'
-import { bun, deno, node } from './env.ts'
 import { getHeader } from './get-header.ts'
 import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
@@ -215,21 +214,12 @@ export type RegistryClientRequestOptions = Omit<
   forceRevalidate?: boolean
 }
 
-const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_REGISTRY_CLIENT_PACKAGE_JSON,
-) as {
-  version: string
-}
-
-const nua =
-  (globalThis.navigator as Navigator | undefined)?.userAgent ??
-  (bun ? `Bun/${bun}`
-  : deno ? `Deno/${deno}`
-  : node ? `Node.js/${node}`
-  : '(unknown platform)')
-
-export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
+/**
+ * The `User-Agent` header sent with every request. Re-exported from
+ * `@vltpkg/user-agent`, which is where the value is defined, so that
+ * existing importers of this package keep working.
+ */
+export { userAgent }
 
 // Agent-level knobs only. Do not spread these onto per-request options —
 // connections/pipelining/keepAlive/connect are ignored at dispatch time,

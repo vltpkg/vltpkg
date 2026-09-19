@@ -4,9 +4,9 @@ import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
-import { loadPackageJson } from 'package-json-from-dist'
 import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import { userAgent } from '@vltpkg/user-agent'
 import { XDG } from '@vltpkg/xdg'
 import { asPackageReportData } from './types.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-expired.ts'
@@ -68,14 +68,6 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
    * Number of retries attempts to reach the remote security API.
    */
   retries?: number
-}
-
-// Loads the version number to be used in the User-Agent header
-export const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
 }
 
 /**
@@ -360,7 +352,7 @@ export class SecurityArchive
       method: 'POST',
       headers: {
         Authorization: `Basic ${Buffer.from(`${SOCKET_PUBLIC_API_TOKEN}:`).toString('base64url')}`,
-        'User-Agent': `@vltpkg/security-archive/${version}`,
+        'User-Agent': userAgent,
       },
       body: JSON.stringify({
         components: Array.from(queue),

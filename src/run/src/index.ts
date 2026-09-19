@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { userAgent } from '@vltpkg/user-agent'
 import { PackageJson } from '@vltpkg/package-json'
 import type {
   PromiseSpawnOptions,
@@ -23,9 +24,9 @@ export * from './node-gyp.ts'
 
 /**
  * The user agent string set as `npm_config_user_agent` in lifecycle script
- * environments. Follows the conventional format used by package managers.
+ * environments. Matches the `user-agent` header sent with registry requests.
  */
-export const npmConfigUserAgent = `vlt/${process.version.slice(1)} node/${process.version} ${process.platform} ${process.arch}`
+export const npmConfigUserAgent = userAgent
 
 /** map of which node_modules/.bin folders exist */
 const dotBins = new Map<string, boolean>()

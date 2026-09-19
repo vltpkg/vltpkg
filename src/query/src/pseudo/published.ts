@@ -1,6 +1,7 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
+import { userAgentHeaders } from '@vltpkg/user-agent'
 import { asError } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
@@ -47,6 +48,7 @@ export const retrieveRemoteDate = async (
   url.pathname = `/${node.name}`
 
   const response = await fetch(String(url), {
+    headers: { ...userAgentHeaders },
     signal,
   })
   // on missing valid auth or API, it should abort the retry logic

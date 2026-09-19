@@ -263,7 +263,6 @@ export const bundle = async ({
 
   const define = {
     CLI_PACKAGE_JSON: 'cli-package.json',
-    REGISTRY_CLIENT_PACKAGE_JSON: 'registry-client-package.json',
     LIVE_RELOAD: false,
     ...internalDefine,
   }
@@ -322,10 +321,6 @@ export const bundle = async ({
   assert(done.size, 'no code split paths found')
 
   // copy package jsons that get read at runtime
-  cpSync(
-    join(WORKSPACE_DIR, 'registry-client/package.json'),
-    join(outdir, define.REGISTRY_CLIENT_PACKAGE_JSON),
-  )
   cpSync(
     join(CLI, 'package.json'),
     join(outdir, define.CLI_PACKAGE_JSON),
