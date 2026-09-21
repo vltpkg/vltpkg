@@ -18,6 +18,13 @@ import { Spec } from '@vltpkg/spec'
 import type { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
+import {
+  fetchResolve,
+  resolveEnabled,
+  supportsResolve,
+} from './resolve-batch.ts'
+import type { ResolveRequest } from './resolve-batch.ts'
+export type { ResolveRequest } from './resolve-batch.ts'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -91,6 +98,16 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
     from?: string
   }
 
+// request options that change which manifest is picked, or how; a batch
+// entry never went through pickManifest under them, so they bypass it
+const SELECTION_OPTIONS = [
+  'before',
+  'os',
+  'arch',
+  'libc',
+  'node-version',
+] as const
+
 export type PackageInfoClientExtractOptions =
   PackageInfoClientRequestOptions & {
     integrity?: Integrity
@@ -158,6 +175,15 @@ export class PackageInfoClient {
   // needed. entries are removed when the on-disk file is invalidated
   // so the refreshed manifest can be written again.
   #manifestWritePaths = new Set<string>()
+
+  // Manifests a resolve batch delivered, keyed both as
+  // `${registry}${name}@${range}` for every spec that chose a version and
+  // `${registry}${name}@${version}` for the version itself.
+  #resolvedManifests = new Map<string, Manifest>()
+  // One in-flight resolve per registry. `manifest()` waits on it only when
+  // it needs a key that has not arrived, so the request overlaps whatever
+  // the graph build does before it asks for its first manifest.
+  #resolvePromises = new Map<string, Promise<void>>()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -764,6 +790,58 @@ export class PackageInfoClient {
     }
   }
 
+  /**
+   * Start a server-side resolve for `request` against `registry` and
+   * return without waiting. `manifest()` answers from what has arrived,
+   * and blocks on the request only when it needs a key that has not.
+   *
+   * A no-op unless `VLT_BATCH_RESOLVE=1` and the registry says it serves
+   * the endpoint. Anything it does not deliver is left to `manifest()`.
+   */
+  prefetchResolve(registry: string, request: ResolveRequest): void {
+    if (!resolveEnabled() || !request.roots.length) return
+    if (this.#resolvePromises.has(registry)) return
+    const promise = this.#runResolve(registry, request)
+    this.#resolvePromises.set(registry, promise)
+    // clear once settled, unless a later run has taken the slot, so a
+    // later prefetch can ask again and manifest() stops waiting on it
+    const clear = () => {
+      if (this.#resolvePromises.get(registry) === promise) {
+        this.#resolvePromises.delete(registry)
+      }
+    }
+    promise.then(clear, clear)
+  }
+
+  /** Never rejects: a resolve that fails leaves every spec to manifest(). */
+  async #runResolve(
+    registry: string,
+    request: ResolveRequest,
+  ): Promise<void> {
+    try {
+      const client = await this.getRegistryClient()
+      if (!(await supportsResolve(client, registry))) return
+      const { byRange, byExact } = await fetchResolve(
+        client,
+        registry,
+        request,
+      )
+      for (const [key, manifest] of byRange) {
+        this.#resolvedManifests.set(`${registry}${key}`, manifest)
+      }
+      for (const [key, manifest] of byExact) {
+        this.#resolvedManifests.set(`${registry}${key}`, manifest)
+      }
+    } catch {
+      // The per-name path still has every spec.
+    }
+  }
+
+  /** How many manifests resolve batches have delivered. For tests. */
+  get resolvedManifestCount(): number {
+    return this.#resolvedManifests.size
+  }
+
   async manifest(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
@@ -775,6 +853,25 @@ export class PackageInfoClient {
 
     switch (f.type) {
       case 'registry': {
+        // a resolve entry never went through pickManifest under any
+        // selection option, so those take the packument path
+        if (!SELECTION_OPTIONS.some(k => options[k] !== undefined)) {
+          const key = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
+          const resolved = this.#resolvedManifests.get(key)
+          if (resolved) return resolved
+          // Not here yet: wait for the resolve that would carry it rather
+          // than racing it with a packument fetch for the same manifest.
+          const inflight =
+            f.registry ?
+              this.#resolvePromises.get(f.registry)
+            : undefined
+          if (inflight) {
+            await inflight
+            const arrived = this.#resolvedManifests.get(key)
+            if (arrived) return arrived
+          }
+        }
+
         // Check if manifest is cached, if so just return it earlier
         const cachePath = this._manifestCachePath(spec, options)
         if (cachePath) {
