@@ -143,7 +143,10 @@ const server = createServer((req, res) => {
     }
     return res.end(json)
   }
-  switch (req.url) {
+  // Everything below is a registry that does not serve the filter, and so
+  // ignores the unknown parameter and answers the full packument -- what
+  // the client counts on while the capability document is still in flight.
+  switch (req.url?.replace(/\?stable$/, '')) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       abbrevTgzRequests++
       res.setHeader('content-type', 'application/octet-stream')
@@ -2403,6 +2406,9 @@ t.test('the ?stable packument filter', async t => {
     async t => {
       capabilitiesDocument = withoutFilter
       const pi = client(t)
+      // settle the document first: until it lands the client asks
+      // optimistically, which the next subtest covers
+      await pi.capabilities(defaultRegistry)
       t.equal(
         (await pi.manifest('stable-nofilter@^1.0.0')).version,
         '1.1.0',
@@ -2438,6 +2444,38 @@ t.test('the ?stable packument filter', async t => {
           )
         })
       }
+    },
+  )
+
+  await t.test(
+    'asks optimistically before the document lands',
+    async t => {
+      // no round trip in front of the first packument of a cold install:
+      // a registry that does not know `?stable` ignores it and serves the
+      // full packument, which resolves just as well
+      capabilitiesDocument = withoutFilter
+      const pi = client(t)
+      t.equal(
+        (await pi.manifest('stable-optimistic@^1.0.0')).version,
+        '1.1.0',
+      )
+      t.strictSame(stableRequests, ['/stable-optimistic?stable'])
+    },
+  )
+
+  await t.test(
+    'stops asking once the registry says it has no filter',
+    async t => {
+      capabilitiesDocument = withoutFilter
+      const pi = client(t)
+      // first ask is optimistic, and settles the document behind it
+      await pi.manifest('stable-first@^1.0.0')
+      await pi.capabilities(defaultRegistry)
+      await pi.manifest('stable-second@^1.0.0')
+      t.strictSame(stableRequests, [
+        '/stable-first?stable',
+        '/stable-second',
+      ])
     },
   )
 

@@ -40,11 +40,15 @@ import {
 import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
 import type { Capabilities } from './capabilities.ts'
-import { getCapabilities } from './capabilities.ts'
+import { getCapabilities, peekCapabilities } from './capabilities.ts'
 import { rename } from './rename.ts'
 
 export type { Capabilities } from './capabilities.ts'
-export { getCapabilities, resetCapabilities } from './capabilities.ts'
+export {
+  getCapabilities,
+  peekCapabilities,
+  resetCapabilities,
+} from './capabilities.ts'
 
 const debug = debuglog('vlt')
 
@@ -209,14 +213,28 @@ export class PackageInfoClient {
 
   /**
    * Whether the packument for `f` can be fetched with `?stable`: the
-   * selector has to be one a prerelease cannot answer, and the registry has
-   * to serve the filter. A registry that does not serve it is asked for the
-   * full packument, which is what it would have answered either way.
+   * selector has to be one a prerelease cannot answer, and the registry
+   * must not have told us it does not serve the filter.
+   *
+   * Never waits on the capability document, which would put a round trip in
+   * front of the first packument of every cold install. Until that document
+   * arrives the answer is yes: a registry that does not know `?stable`
+   * ignores the parameter and serves the full packument, which resolution
+   * reads just as well. Once the document does arrive it is authoritative,
+   * so a registry that does not serve the filter stops being asked with it.
    */
-  async #stable(f: Spec): Promise<boolean> {
+  #stable(f: Spec): boolean {
     const { registry } = f
     if (!registry || !isStableSelector(f)) return false
-    return !!(await this.capabilities(registry))['stable-filter']
+    const client = this.#registryClient
+    if (!client) {
+      // the registry client is built lazily, so the first caller starts it
+      // and the document along with it, and asks optimistically meanwhile
+      void this.capabilities(registry).catch(() => {})
+      return true
+    }
+    const caps = peekCapabilities(client, registry)
+    return !caps || !!caps['stable-filter']
   }
 
   async getTarPool() {
@@ -855,7 +873,7 @@ export class PackageInfoClient {
         }
 
         const mani = pickManifest(
-          await this.#packument(f, options, await this.#stable(f)),
+          await this.#packument(f, options, this.#stable(f)),
           spec,
           options,
         )
