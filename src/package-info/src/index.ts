@@ -12,7 +12,6 @@ import type {
 } from '@vltpkg/registry-client'
 // subpath import: keeps the lazy `import('@vltpkg/registry-client')`
 // below from becoming an eager dependency on the whole client.
-import type { RefusalCandidate } from '@vltpkg/registry-client/registry-error'
 import {
   registryErrorMessage,
   tokenRefusalAdvice,
@@ -1231,10 +1230,7 @@ export class PackageInfoClient {
     // Every registry failure here carries its response, so the advice is
     // attached once rather than at each throw site. The cast is because
     // `response` is typed loosely enough to include a `fetch` Response.
-    const advice = tokenRefusalAdvice(
-      extra.response as RefusalCandidate | undefined,
-      extra.url,
-    )
+    const advice = tokenRefusalAdvice(extra.response, extra.url)
     const er = error(
       advice ? `${message}\n⚠️ ${advice}` : message,
       {

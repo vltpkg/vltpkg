@@ -1,7 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { asError, isObject } from '@vltpkg/types'
 import { STATUS_CODES } from 'node:http'
-import { normalizeRegistryKey } from './registry-key.ts'
 
 /**
  * The parts of a `CacheEntry` these helpers need.
@@ -93,11 +92,8 @@ export const registryErrorMessage = (
   return detail ? `${status} — ${truncate(detail)}` : status
 }
 
-/**
- * What a vlt registry calls the two 401s a client can resolve on its own.
- * Nothing else tells them apart from a rejected credential.
- */
-const refusalCodes: Record<string, TokenRefusal['condition']> = {
+/** What a vlt registry calls the two 401s a client can resolve on its own. */
+const refusals: Record<string, 'expired' | 'revoked'> = {
   TokenExpiredError: 'expired',
   TokenRevokedError: 'revoked',
 }
@@ -105,146 +101,49 @@ const refusalCodes: Record<string, TokenRefusal['condition']> = {
 /** vlt.io account and organization slugs, as the registry mints them. */
 const accountSlug = /^(?=.{3,63}$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
 
-// Registries that send no `code` -- third parties, and any vlt origin that
-// predates the codes -- say it in the message.
-const saysExpired = /\btokens? (?:has |have )?expired\b/i
-const saysRevoked =
-  /\btokens? (?:was |were |has been |have been )?revoked\b/i
-
-/** How `VLT_TOKEN_*` variables spell a registry key. */
-const mangleKey = (key: string) => key.replace(/[^a-zA-Z0-9]+/g, '_')
-
-const underKey = (key: string, registryKey: string) =>
-  key === registryKey || key.startsWith(registryKey + '/')
-
-/**
- * The environment variable that supplied the token for `url`, if one did,
- * mirroring the env-var half of `getToken()` in `./auth.ts`.
- *
- * A variable names its registry in a mangled key, and mangling is lossy, so the
- * name is compared against the mangled URL; that also matches a request under a
- * registry the variable names.
- */
-const envTokenVar = (url: URL): string | undefined => {
-  const key = normalizeRegistryKey(url.href)
-  const envRegistry = process.env.VLT_REGISTRY
+/** How a 401 says the token it refused died, if it does. */
+export const tokenRefusal = (
+  response: unknown,
+): 'expired' | 'revoked' | undefined => {
+  // a CacheEntry, a node:http message, or a bare object off an error's cause
+  // bag; `isObject` would refuse the class instances
+  const res = response as Partial<ErrorResponse> | null | undefined
+  if (typeof res !== 'object' || res?.statusCode !== 401)
+    return undefined
+  let text = ''
   try {
-    if (
-      process.env.VLT_TOKEN &&
-      envRegistry &&
-      underKey(key, normalizeRegistryKey(envRegistry))
-    ) {
-      return 'VLT_TOKEN'
-    }
-  } catch {
-    // a VLT_REGISTRY that is not a url supplies no token, and must not
-    // replace the error being reported with a parse failure
-  }
-  const mangled = mangleKey(key)
-  const prefix = 'VLT_TOKEN_'
-  for (const [name, value] of Object.entries(process.env)) {
-    if (!value || !name.startsWith(prefix)) continue
-    if (mangled.startsWith(mangleKey(name.slice(prefix.length)))) {
-      return name
-    }
-  }
-  return undefined
-}
-
-/**
- * The parts of a response {@link tokenRefusalAdvice} reads. Looser than
- * {@link ErrorResponse}, which a `node:http` message off an error's cause bag
- * does not satisfy: that type leaves `statusCode` optional.
- */
-export type RefusalCandidate = {
-  statusCode?: number
-  text?: () => string
-}
-
-/** A token the registry says is dead, and whether a vlt registry said so. */
-export type TokenRefusal = {
-  condition: 'expired' | 'revoked'
-  vlt: boolean
-}
-
-const tokenRefusal = (
-  response?: RefusalCandidate,
-): TokenRefusal | undefined => {
-  if (response?.statusCode !== 401) return undefined
-  let text: string
-  try {
-    text = response.text?.().trim() ?? ''
+    if (typeof res.text === 'function') text = res.text()
   } catch {
     // an undecodable body (bad gzip) says nothing either way
     return undefined
   }
-  if (!text) return undefined
   const code = parseBody(text)?.code
-  const named =
-    typeof code === 'string' ? refusalCodes[code] : undefined
-  if (named) return { condition: named, vlt: true }
-  const detail = detailFromJSON(text) ?? text
-  if (saysExpired.test(detail))
-    return { condition: 'expired', vlt: false }
-  if (saysRevoked.test(detail))
-    return { condition: 'revoked', vlt: false }
-  return undefined
+  return typeof code === 'string' ? refusals[code] : undefined
 }
 
-/** Whether a response says the credential it refused is expired or revoked. */
-export const isTokenRefusal = (
-  response?: RefusalCandidate,
-): boolean => tokenRefusal(response) !== undefined
-
 /**
- * What to do about a 401 whose body says the token is expired or revoked, or
- * `undefined` for every other response. Which command fixes it depends on where
- * the token came from: an environment variable, a vlt.io account registry, or
- * anything else.
+ * What to do about a 401 that says the token expired or was revoked, or
+ * `undefined` for every other response. The account is the first path segment
+ * of any request to a vlt registry, and one token covers every registry on it.
  */
 export const tokenRefusalAdvice = (
-  response?: RefusalCandidate,
+  response: unknown,
   url?: URL | string,
 ): string | undefined => {
-  const refusal = tokenRefusal(response)
-  if (!refusal || url === undefined) return undefined
-  const gone =
-    refusal.condition === 'expired' ? 'has expired' : 'was revoked'
-  let u: URL
+  const gone = tokenRefusal(response)
+  if (!gone || url === undefined) return undefined
+  let account: string | undefined
   try {
-    u = new URL(String(url))
+    account = new URL(String(url)).pathname.split('/')[1]
   } catch {
     return undefined
   }
-
-  const env = envTokenVar(u)
-  if (env) {
-    return (
-      `The token for ${u.origin} comes from $${env}, and it ${gone}. ` +
-      `Create a new token${refusal.vlt ? ' in the vlt.io dashboard' : ''} ` +
-      `and set $${env} to it.`
-    )
-  }
-
-  // `/<account>/<registry>/...` on a vlt registry, which only `code` identifies:
-  // the host varies by environment.
-  const [account, registry] = u.pathname.slice(1).split('/')
-  if (
-    refusal.vlt &&
-    registry &&
-    account &&
-    accountSlug.test(account)
-  ) {
-    return (
-      `Your token for the "${account}" account ${gone}. Run ` +
-      `\`vlt setup ${account}\` to log in again — one token covers every ` +
-      `registry on the account.`
-    )
-  }
-
+  if (!account || !accountSlug.test(account)) return undefined
   return (
-    `Your token for ${u.origin} ${gone}. Run ` +
-    `\`vlt login --registry=${u.origin}/\` to log in again.`
+    `Your token for the "${account}" account ` +
+    `${gone === 'expired' ? 'has expired' : 'was revoked'}. Run ` +
+    `\`vlt setup ${account}\` to log in again — one token covers every ` +
+    `registry on the account.`
   )
 }
 

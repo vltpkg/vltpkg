@@ -112,7 +112,7 @@ const server = createServer((req, res) => {
       )
       return res.end(tgzAbbrev)
     }
-    case '/expired': {
+    case '/acme/npm/expired': {
       // what the vlt registry's edge answers when a token's `exp` has passed
       const json = JSON.stringify({
         code: 'TokenExpiredError',
@@ -1395,14 +1395,21 @@ t.test('extraction failures', async t => {
 t.test(
   'an expired token is explained, not just reported',
   async t => {
-    await t.rejects(packument('expired@latest', options), {
-      message:
-        `failed to fetch packument: 401 Unauthorized — Token expired. ` +
-        `Authenticate again to get a new token.\n` +
-        `⚠️ Your token for http://localhost:${PORT} has expired. Run ` +
-        `\`vlt login --registry=http://localhost:${PORT}/\` to log in again.`,
-      cause: { code: 'ERESOLVE' },
-    })
+    await t.rejects(
+      packument('expired@latest', {
+        ...options,
+        registry: `${defaultRegistry}acme/npm/`,
+      }),
+      {
+        message:
+          'failed to fetch packument: 401 Unauthorized — Token expired. ' +
+          'Authenticate again to get a new token.\n' +
+          '⚠️ Your token for the "acme" account has expired. Run ' +
+          '`vlt setup acme` to log in again — one token covers every ' +
+          'registry on the account.',
+        cause: { code: 'ERESOLVE' },
+      },
+    )
   },
 )
 

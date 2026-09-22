@@ -67,15 +67,6 @@ Tokens can optionally be given an expiration date, after which they
 stop working. Expired and revoked tokens are rejected on every
 request.
 
-A request refused because the token expired or was revoked says so:
-the registry names which in the message rather than answering a bare
-`401`, and `vlt` adds the command that gets you a working token back.
-Which command that is depends on where the token came from. A token in
-your keychain is replaced by running `vlt setup` with your account
-slug, which re-authenticates every registry on the account at once; a
-token that came from a `VLT_TOKEN_*` variable is not, so the advice
-names that variable instead of suggesting a login command.
-
 ## Managing tokens
 
 Create, inspect, and revoke tokens from your account's token settings
