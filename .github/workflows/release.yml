@@ -272,11 +272,15 @@ jobs:
             gh pr merge -R vltpkg/vltpkg --rebase release
             ```
 
+  # THROWAWAY BRANCH: npm publish, git tag and GitHub release for v1.1.1
+  # were already completed manually. This job is disabled so a manual
+  # `workflow_dispatch` (action=publish) only runs the vlt registry
+  # publish below.
   publish:
     name: Publish
     runs-on: ubuntu-latest
     needs: pre-check
-    if: needs.pre-check.outputs.action == 'publish'
+    if: false
     outputs:
       version: ${{ steps.versions.outputs.version }}
     permissions:
@@ -401,13 +405,15 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - pre-check
-      - publish
-    if: needs.publish.result == 'success' && needs.pre-check.outputs.dry-run != 'true'
+    # THROWAWAY BRANCH: does not wait for the (disabled) npm publish job.
+    if: needs.pre-check.outputs.action == 'publish'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # THROWAWAY BRANCH: HEAD is the workflow tweak commit, HEAD~1 is
+          # `Release v1.1.1`, so the diff base has to be HEAD~2.
+          fetch-depth: 3
 
       - name: Setup vlt
         uses: vltpkg/setup-vlt@v1
@@ -423,8 +429,13 @@ jobs:
 
       - name: Publish
         run: |
-          commit="$(git rev-parse HEAD~1)"
+          # THROWAWAY BRANCH: diff against the commit before `Release v1.1.1`
+          commit="$(git rev-parse HEAD~2)"
           VLT="$(pwd)/scripts/bins/vlt"
+          dry_run_flag=""
+          if [[ "${{ needs.pre-check.outputs.dry-run }}" == "true" ]]; then
+            dry_run_flag="--dry-run"
+          fi
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
             if [[ -f "$dir/package.json" ]]; then
               is_private=$(jq -r '.private // false' "$dir/package.json")
@@ -442,7 +453,7 @@ jobs:
                 renamed=true
               fi
               echo "Publishing $dir to vlt registry..."
-              (cd "$dir" && $VLT publish --access=public)
+              (cd "$dir" && $VLT publish --access=public $dry_run_flag)
               if [[ "$renamed" == "true" ]]; then
                 echo "Restoring original package name: $package_name"
                 jq --arg n "$package_name" '.name = $n' "$dir/package.json" > "$dir/package.json.tmp"
