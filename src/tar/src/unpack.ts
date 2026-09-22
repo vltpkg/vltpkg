@@ -20,8 +20,21 @@ import { rimraf, rimrafSync } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
-import { unzip as unzipCB, unzipSync as unzipSyncCB } from 'node:zlib'
+import {
+  unzip as unzipCB,
+  unzipSync as unzipSyncCB,
+  brotliDecompress as brotliCB,
+  brotliDecompressSync as brotliSyncCB,
+} from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
+
+/**
+ * How a tarball's bytes are compressed. `gzip` is auto-detected from the
+ * bytes (the `.tgz` and raw-tar cases), so it never has to be passed. Brotli
+ * has no magic-byte signature, so a `.tar.br` MUST be flagged explicitly by
+ * the caller — it can never be sniffed.
+ */
+export type TarballFormat = 'gzip' | 'brotli'
 
 // Matches node-tar's MAX_DECOMPRESSION_RATIO, which npm uses via pacote.
 const MAX_DECOMPRESSION_RATIO = 1000
@@ -69,6 +82,44 @@ const unzipSync = (input: Buffer): Buffer => {
   } catch (er) {
     throw unzipError(er, input.length, max)
   }
+}
+
+const brotli = async (input: Buffer) => {
+  const max = unzipMax(input.length)
+  return new Promise<Buffer>((res, rej) =>
+    brotliCB(input, { maxOutputLength: max }, (er, result) =>
+      er ? rej(unzipError(er, input.length, max)) : res(result),
+    ),
+  )
+}
+
+const brotliSync = (input: Buffer): Buffer => {
+  const max = unzipMax(input.length)
+  try {
+    return brotliSyncCB(input, { maxOutputLength: max })
+  } catch (er) {
+    throw unzipError(er, input.length, max)
+  }
+}
+
+// gzip is sniffed from the two magic bytes; brotli must be declared. Anything
+// else is assumed to be a raw, uncompressed tar.
+const decompress = async (
+  input: Buffer,
+  format?: TarballFormat,
+): Promise<Buffer> => {
+  if (format === 'brotli') return brotli(input)
+  const isGzip = input[0] === 0x1f && input[1] === 0x8b
+  return isGzip ? unzip(input) : input
+}
+
+const decompressSync = (
+  input: Buffer,
+  format?: TarballFormat,
+): Buffer => {
+  if (format === 'brotli') return brotliSync(input)
+  const isGzip = input[0] === 0x1f && input[1] === 0x8b
+  return isGzip ? unzipSync(input) : input
 }
 
 const exists = async (path: string): Promise<boolean> => {
@@ -231,21 +282,21 @@ const write = async (
 export const unpack = async (
   tarData: Buffer,
   target: string,
+  format?: TarballFormat,
 ): Promise<void> => {
-  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
-  await unpackUnzipped(
-    isGzip ? await unzip(tarData) : tarData,
-    target,
-  )
+  await unpackUnzipped(await decompress(tarData, format), target)
 }
 
 /**
  * Same as {@link unpack}, but blocking. Faster: the async writers pay a
  * libuv round trip per file, which costs more than the IO itself.
  */
-export const unpackSync = (tarData: Buffer, target: string): void => {
-  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
-  unpackUnzippedSync(isGzip ? unzipSync(tarData) : tarData, target)
+export const unpackSync = (
+  tarData: Buffer,
+  target: string,
+  format?: TarballFormat,
+): void => {
+  unpackUnzippedSync(decompressSync(tarData, format), target)
 }
 
 /**
@@ -257,7 +308,9 @@ export const unpackFileSync = (
   file: string,
   target: string,
   offset = 0,
-): void => unpackSync(readFileSync(file).subarray(offset), target)
+  format?: TarballFormat,
+): void =>
+  unpackSync(readFileSync(file).subarray(offset), target, format)
 
 const tmpName = (target: string) =>
   dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()

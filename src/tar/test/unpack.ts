@@ -4,7 +4,7 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { Pax } from 'tar'
 import type { HeaderData } from 'tar'
-import { gzipSync } from 'node:zlib'
+import { gzipSync, brotliCompressSync } from 'node:zlib'
 import {
   checkFs,
   unpack as unpackAsync,
@@ -878,5 +878,47 @@ t.test('checkFs differential vs relative() impl', t => {
       }
     }
   }
+  t.end()
+})
+
+t.test('brotli format', t => {
+  const tar = makeTar([...pjEntry])
+  const compressed = brotliCompressSync(tar)
+  const checkPj = (t: Test, dir: string) =>
+    t.equal(readFileSync(dir + '/package.json', 'utf8'), pj)
+
+  t.test('async unpack decompresses brotli', async t => {
+    const d = t.testdir()
+    await unpackAsync(compressed, d, 'brotli')
+    checkPj(t, d)
+  })
+
+  t.test('sync unpack decompresses brotli', async t => {
+    const d = t.testdir()
+    unpackSync(compressed, d, 'brotli')
+    checkPj(t, d)
+  })
+
+  t.test('unpackFileSync decompresses brotli from disk', async t => {
+    const d = t.testdir({ 'x.tar.br': compressed })
+    unpackFileSync(
+      resolve(d, 'x.tar.br'),
+      resolve(d, 'out'),
+      0,
+      'brotli',
+    )
+    t.equal(readFileSync(resolve(d, 'out/package.json'), 'utf8'), pj)
+  })
+
+  t.test('respects the decompression ratio cap', async t => {
+    const bomb = brotliCompressSync(Buffer.alloc(2 * 1024 * 1024))
+    await t.rejects(() => unpackAsync(bomb, t.testdir(), 'brotli'), {
+      message: 'tarball exceeds maximum unpacked size',
+    })
+    t.throws(() => unpackSync(bomb, t.testdirName, 'brotli'), {
+      message: 'tarball exceeds maximum unpacked size',
+    })
+  })
+
   t.end()
 })
