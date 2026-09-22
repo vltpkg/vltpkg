@@ -10,7 +10,7 @@ import {
   readlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { readdir, rmdir, utimes, writeFile } from 'node:fs/promises'
+import { readdir, rm, utimes, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -1643,8 +1643,9 @@ t.test('cache manifests', async t => {
     cache: xdgDir,
   }
   // clean up current cache directory
-  await rmdir(pathResolve(xdgDir, 'package-info'), {
+  await rm(pathResolve(xdgDir, 'package-info'), {
     recursive: true,
+    force: true,
   }).catch(() => {})
 
   await t.test(
@@ -1709,8 +1710,9 @@ t.test('cache manifests', async t => {
 
   await t.test('caching skipped with dist tags', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     })
 
     const pi = new PackageInfoClient(opts)
@@ -1769,8 +1771,9 @@ t.test('cache manifests', async t => {
     'different cache keys for different options',
     async t => {
       // clean up current cache directory
-      await rmdir(pathResolve(xdgDir, 'package-info'), {
+      await rm(pathResolve(xdgDir, 'package-info'), {
         recursive: true,
+        force: true,
       })
 
       const filesBefore = await readdir(
@@ -1825,8 +1828,9 @@ t.test('cache manifests', async t => {
 
   await t.test('different cache keys for os and arch', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     })
 
     const filesBefore = await readdir(
@@ -1884,8 +1888,9 @@ t.test('cache manifests', async t => {
 
   await t.test('cache only applies to registry specs', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     })
 
     const pi = new PackageInfoClient(opts)
@@ -1930,8 +1935,9 @@ t.test('cache manifests', async t => {
         },
       })
       // clean up current cache directory
-      await rmdir(pathResolve(xdgDir, 'package-info'), {
+      await rm(pathResolve(xdgDir, 'package-info'), {
         recursive: true,
+        force: true,
       })
 
       const pi = new MockPIC(opts)
@@ -1956,7 +1962,7 @@ t.test('cache manifests', async t => {
     const pi = new PackageInfoClient(opts)
 
     // clean up the full cache directory
-    await rmdir(pathResolve(xdgDir), { recursive: true })
+    await rm(pathResolve(xdgDir), { recursive: true, force: true })
 
     const mani = await pi.manifest('abbrev@2.0.0')
     t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
@@ -1972,8 +1978,9 @@ t.test('cache manifests', async t => {
 
   await t.test('expired cache entry', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2016,8 +2023,9 @@ t.test('cache manifests', async t => {
 
   await t.test('legacy cache entry format', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2059,8 +2067,9 @@ t.test('cache manifests', async t => {
 
   await t.test('cache file contains only the manifest', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2090,8 +2099,9 @@ t.test('cache manifests', async t => {
 
   await t.test('concurrent misses dedup cache writes', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
