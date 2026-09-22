@@ -4,7 +4,7 @@ sidebar:
   label: publish
 ---
 
-import { Code } from '@astrojs/starlight/components'
+import { Aside, Code } from '@astrojs/starlight/components'
 
 Usage:
 
@@ -52,11 +52,35 @@ to it.
 
 ## Publishing in CI
 
-### OIDC (Recommended)
+### Service token
+
+For the vlt.io registry, publish from CI with a **service token**. A
+personal token answers every publish with a one-time-password
+challenge and fails unattended with `EOTP`. Set it as `VLT_TOKEN`:
+
+<Code
+  code={`      - run: vlt publish
+        env:
+          VLT_TOKEN: \${{ secrets.VLT_TOKEN }}`}
+  title="github-actions.yml"
+  lang="yaml"
+/>
+
+See [CI & automation](/registry/publishing/ci) for the full workflow,
+and
+[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
+for how token environment variables are named.
+
+### OIDC
 
 If your CI provider supports OpenID Connect, vlt can publish without
 any stored tokens. On GitHub Actions, add `id-token: write` to your
 job's permissions and vlt handles authentication automatically.
+
+<Aside type="note">
+  This requires a registry that supports OIDC trusted publishing. The
+  vlt.io registry currently does not — use a service token there.
+</Aside>
 
 See [Authentication — OIDC](/cli/auth#oidc-openid-connect) for full
 details on supported providers and configuration.
@@ -75,10 +99,3 @@ details on supported providers and configuration.
   title="github-actions.yml"
   lang="yaml"
 />
-
-### VLT_TOKEN
-
-For registries that don't support OIDC, set the `VLT_TOKEN`
-environment variable with a valid auth token. See
-[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
-for details on configuring tokens for default and custom registries.

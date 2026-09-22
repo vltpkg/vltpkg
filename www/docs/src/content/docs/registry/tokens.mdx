@@ -77,16 +77,26 @@ tokens.
 ![Creating a token in the dashboard](/images/create-tokens.png)
 
 <Aside type="note">
-  The npm `token` CLI subcommands (`npm token list`, `npm token
-  create`) are not supported by the registry endpoints — manage tokens
-  in the dashboard instead.
+  The dashboard is the easiest place to manage tokens, but the npm
+  `token` subcommands (`npm token list`, `npm token create`) also work
+  against your registry. `pnpm token` does not — pnpm reports `Not
+  implemented in pnpm. Use the npm CLI directly`.
 </Aside>
 
 ## Using tokens in CI
 
-Provide a token through the environment rather than a config file. For
-your account registry, set the `VLT_TOKEN_*` variable derived from the
-registry URL (non-alphanumeric characters become `_`):
+Provide a token through the environment rather than a config file. The
+portable form is `VLT_TOKEN` alongside `VLT_REGISTRY`:
+
+<Code
+  code={`VLT_REGISTRY=https://registry.vlt.io/acme/main/ \
+VLT_TOKEN="<service token>" vlt install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Per-registry `VLT_TOKEN_*` variables, named after the registry URL
+with non-alphanumeric characters replaced by `_`, also work:
 
 <Code
   code={`VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" vlt install`}
@@ -94,10 +104,16 @@ registry URL (non-alphanumeric characters become `_`):
   lang="bash"
 />
 
+<Aside type="caution">
+  The per-registry variables do **not** apply to registries configured
+  through `scoped-registries` — vlt sends no credentials to a scoped
+  registry on their strength alone. If you use `scoped-registries`,
+  set `VLT_TOKEN` and `VLT_REGISTRY` instead.
+</Aside>
+
 See
 [Authentication — CI](/cli/auth#ci-and-other-headless-environments)
-for details, and
-[Publishing — CI](/registry/publishing#publishing-from-ci) for the
+for details, and [CI & automation](/registry/publishing/ci) for the
 publish workflow.
 
 With npm, use the standard `.npmrc` auth entry, ideally referencing an
