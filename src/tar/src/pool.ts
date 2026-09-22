@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { unpack, unpackFileSync, unpackSync } from './unpack.ts'
+import type { TarballFormat } from './unpack.ts'
 
 // Field kill switch: restores the async writer without a release.
 const syncUnpack = process.env.VLT_TAR_SYNC !== '0'
@@ -21,9 +22,13 @@ export class Pool {
    * Provide the tardata to be unpacked, and the location where it's to be
    * placed. Resolves when the tarball has been extracted.
    */
-  async unpack(tarData: Buffer, target: string): Promise<void> {
-    if (!syncUnpack) return unpack(tarData, target)
-    unpackSync(tarData, target)
+  async unpack(
+    tarData: Buffer,
+    target: string,
+    format?: TarballFormat,
+  ): Promise<void> {
+    if (!syncUnpack) return unpack(tarData, target, format)
+    unpackSync(tarData, target, format)
   }
 
   /**
@@ -35,10 +40,15 @@ export class Pool {
     file: string,
     target: string,
     offset = 0,
+    format?: TarballFormat,
   ): Promise<void> {
     if (!syncUnpack) {
-      return unpack((await readFile(file)).subarray(offset), target)
+      return unpack(
+        (await readFile(file)).subarray(offset),
+        target,
+        format,
+      )
     }
-    unpackFileSync(file, target, offset)
+    unpackFileSync(file, target, offset, format)
   }
 }

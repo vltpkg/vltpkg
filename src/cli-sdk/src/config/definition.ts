@@ -787,6 +787,13 @@ export const definition = j
       description:
         'Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.',
     },
+    'brotli-tarballs': {
+      description: `Download Brotli-compressed tarballs (\`.tar.br\`) when the
+                    registry advertises them for a resolved version, transferring
+                    less data than the standard gzip \`.tgz\`. Set
+                    \`--no-brotli-tarballs\` to always download the \`.tgz\`.`,
+      default: true,
+    },
   })
   .opt({
     'allow-scripts': {

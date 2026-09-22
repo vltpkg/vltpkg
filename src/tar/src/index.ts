@@ -1,2 +1,2 @@
-export { unpack } from './unpack.ts'
+export { unpack, type TarballFormat } from './unpack.ts'
 export * from './pool.ts'

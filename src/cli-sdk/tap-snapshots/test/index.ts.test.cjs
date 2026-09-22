@@ -40,6 +40,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --arch=<arch>
     --bail
     --before=<date>
+    --brotli-tarballs
     --cache=<path>
     --call=<cmd>
     --color
@@ -113,6 +114,7 @@ Unknown config option: asdf
     arch
     bail
     before
+    brotli-tarballs
     cache
     call
     color

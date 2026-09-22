@@ -10,8 +10,11 @@ import {
   readlinkSync,
   writeFileSync,
 } from 'node:fs'
+import { gunzipSync, brotliCompressSync } from 'node:zlib'
+import { createHash } from 'node:crypto'
 import { readdir, rmdir, utimes, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
@@ -77,6 +80,15 @@ const pakuAbbrev = JSON.parse(
   readFileSync(pathResolve(fixtures, 'abbrev-full.json'), 'utf8'),
 )
 const tgzAbbrev = readFileSync(fixtures + '/abbrev-2.0.0.tgz')
+// The same package as a Brotli-recompressed tar (gzip layer stripped), plus
+// the RFC 9530 Repr-Digest a registry would send for it.
+const tarAbbrev = gunzipSync(tgzAbbrev)
+const brAbbrev = brotliCompressSync(tarAbbrev)
+const brDigest = `sha-512=:${createHash('sha512')
+  .update(brAbbrev)
+  .digest('base64')}:`
+// Names of the brotli packages whose `.tar.br` was actually fetched.
+const brHits: string[] = []
 const tgzFile = String(
   pathToFileURL(pathResolve(fixtures, 'abbrev-2.0.0.tgz')),
 )
@@ -101,6 +113,7 @@ const PORT = 15443 + Number(process.env.TAP_CHILD_ID || 0)
 const etag = '"yolo"'
 const server = createServer((req, res) => {
   res.setHeader('connection', 'close')
+  if (req.url?.startsWith('/brotli-')) return serveBrotli(req, res)
   switch (req.url) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       abbrevTgzRequests++
@@ -378,6 +391,59 @@ for (const manifest of Object.values<Manifest>(pakuAbbrev.versions)) {
       defaultRegistry,
     )
   }
+}
+
+// Serves the `/brotli-<name>` test packages: a packument advertising a
+// `.tar.br` alternate, the `.tgz` fallback, and a `.tar.br` whose response
+// varies by name (`404`, `nodigest`, `baddigest`; anything else is a valid
+// brotli with the correct Repr-Digest).
+function serveBrotli(req: IncomingMessage, res: ServerResponse) {
+  const url = req.url ?? ''
+  const tgzIntegrity = pakuAbbrev.versions['2.0.0'].dist.integrity
+  const file =
+    /^\/(brotli-[a-z]+)\/-\/\1-1\.0\.0\.(tgz|tar\.br)$/.exec(url)
+  if (file) {
+    const [, name, ext] = file
+    res.setHeader('content-type', 'application/octet-stream')
+    if (ext === 'tgz') {
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('integrity', tgzIntegrity)
+      return res.end(tgzAbbrev)
+    }
+    if (name === 'brotli-404') {
+      res.statusCode = 404
+      return res.end('no brotli here')
+    }
+    brHits.push(name!)
+    if (name === 'brotli-baddigest') {
+      res.setHeader('repr-digest', 'sha-512=:not-the-real-digest:')
+    } else if (name !== 'brotli-nodigest') {
+      res.setHeader('repr-digest', brDigest)
+    }
+    res.setHeader('content-length', brAbbrev.byteLength)
+    return res.end(brAbbrev)
+  }
+  const name = url.slice(1)
+  const json = JSON.stringify({
+    name,
+    'dist-tags': { latest: '1.0.0' },
+    versions: {
+      '1.0.0': {
+        name,
+        version: '1.0.0',
+        dist: {
+          tarball: `${defaultRegistry}${name}/-/${name}-1.0.0.tgz`,
+          integrity: tgzIntegrity,
+          alternates: [
+            { kind: 'tar.br', tarball: `${name}-1.0.0.tar.br` },
+          ],
+        },
+      },
+    },
+  })
+  res.setHeader('content-type', 'application/json')
+  res.setHeader('content-length', json.length)
+  return res.end(json)
 }
 
 t.before(() => new Promise<void>(res => server.listen(PORT, res)))
@@ -2423,4 +2489,70 @@ t.test('no registry configured', async t => {
   await t.rejects(manifest('abbrev@2.0.0', noRegistry), {
     cause: { code: 'ECONFIG' },
   })
+})
+
+t.test('brotli tarballs', async t => {
+  // resolve advertises the brotli URL, resolved against dist.tarball
+  t.equal(
+    (await resolve('brotli-ok@1', options)).brotli,
+    `${defaultRegistry}brotli-ok/-/brotli-ok-1.0.0.tar.br`,
+    'resolve exposes the absolute brotli url',
+  )
+  // disabled by config -> no brotli url
+  t.equal(
+    (
+      await resolve('brotli-ok@1', {
+        ...options,
+        'brotli-tarballs': false,
+      })
+    ).brotli,
+    undefined,
+    '--no-brotli-tarballs disables it',
+  )
+  // a package with no alternates -> no brotli url
+  t.equal(
+    (await resolve('abbrev@2', options)).brotli,
+    undefined,
+    'no alternates means no brotli',
+  )
+
+  const hasPkgJson = (dir: string) =>
+    lstatSync(dir + '/package.json').isFile()
+
+  await t.test('extracts from the brotli variant', async t => {
+    const target = `${dir}/br-ok`
+    await extract('brotli-ok@1', target, options)
+    t.ok(hasPkgJson(target), 'unpacked the brotli tarball')
+    t.ok(brHits.includes('brotli-ok'), 'fetched the .tar.br')
+  })
+
+  await t.test(
+    'config off never fetches the brotli variant',
+    async t => {
+      const target = `${dir}/br-off`
+      await extract('brotli-off@1', target, {
+        ...options,
+        'brotli-tarballs': false,
+      })
+      t.ok(hasPkgJson(target), 'unpacked the gzip tarball')
+      t.notOk(
+        brHits.includes('brotli-off'),
+        'never touched the .tar.br',
+      )
+    },
+  )
+
+  // Each of these fails the brotli attempt and must fall back to the
+  // integrity-verified .tgz, still extracting correctly.
+  for (const name of [
+    'brotli-404',
+    'brotli-nodigest',
+    'brotli-baddigest',
+  ]) {
+    await t.test(`falls back to gzip for ${name}`, async t => {
+      const target = `${dir}/${name}`
+      await extract(`${name}@1`, target, options)
+      t.ok(hasPkgJson(target), 'unpacked via the gzip fallback')
+    })
+  }
 })

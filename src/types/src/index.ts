@@ -47,6 +47,15 @@ export type Dist = {
     keyid: KeyID
     sig: string
   }[]
+  /**
+   * Alternate tarball formats the registry offers for this version, each
+   * with its own reference. A `tar.br` entry is a Brotli-recompressed tar
+   * whose `tarball` is a reference relative to this `dist`'s `tarball` (e.g.
+   * the bare filename `foo-1.2.3.tar.br`), resolved with
+   * `new URL(entry.tarball, dist.tarball)`. No integrity is listed — a client
+   * verifies the download against the tarball response's `Repr-Digest` header.
+   */
+  alternates?: { kind: string; tarball: string }[]
 }
 
 /** An object used to mark some peerDeps as optional */

@@ -103,6 +103,10 @@ Object {
     "hint": "date",
     "type": "string",
   },
+  "brotli-tarballs": Object {
+    "description": "Download Brotli-compressed tarballs (\`.tar.br\`) when the registry advertises them for a resolved version, transferring less data than the standard gzip \`.tgz\`. Set \`--no-brotli-tarballs\` to always download the \`.tgz\`.",
+    "type": "boolean",
+  },
   "cache": Object {
     "description": "Location of the vlt on-disk cache. Defaults to the platform-specific directory recommended by the XDG specification.",
     "hint": "path",
@@ -633,6 +637,7 @@ Array [
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
+  "--brotli-tarballs",
   "--cache=<path>",
   "--call=<cmd>",
   "--color",
@@ -703,6 +708,7 @@ Array [
   "arch",
   "bail",
   "before",
+  "brotli-tarballs",
   "cache",
   "call",
   "color",

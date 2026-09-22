@@ -67,6 +67,14 @@ export type Resolution = {
   integrity?: Integrity
   signatures?: Exclude<Manifest['dist'], undefined>['signatures']
   spec: Spec
+  /**
+   * Absolute URL of a Brotli (`.tar.br`) variant of the tarball, when the
+   * registry advertised one for this version and brotli is enabled. Resolved
+   * from `dist.alternates` against `resolved`. The `.tgz` at `resolved` stays
+   * the canonical, integrity-pinned artifact; this is an opportunistic
+   * transfer optimization, verified against the response `Repr-Digest`.
+   */
+  brotli?: string
 }
 
 export type PackageInfoClientOptions = RegistryClientOptions &
@@ -75,6 +83,12 @@ export type PackageInfoClientOptions = RegistryClientOptions &
     projectRoot?: string
     /** PackageJson object */
     packageJson?: PackageJson
+
+    /**
+     * Download Brotli (`.tar.br`) tarballs when the registry advertises them.
+     * Defaults to true; set false to always use the gzip `.tgz`.
+     */
+    'brotli-tarballs'?: boolean
 
     monorepo?: Monorepo
 
@@ -183,6 +197,67 @@ export class PackageInfoClient {
     return this.#tarPoolPromise
   }
 
+  /**
+   * The absolute URL of a version's Brotli (`.tar.br`) tarball, or undefined
+   * when the registry advertised none or `--no-brotli-tarballs` is set.
+   * `dist.alternates` entries are references relative to `dist.tarball`, so
+   * they resolve with `new URL(entry.tarball, tarball)`.
+   */
+  #brotliUrl(
+    tarball: string,
+    alternates: Exclude<Manifest['dist'], undefined>['alternates'],
+  ): string | undefined {
+    if (this.options['brotli-tarballs'] === false) return undefined
+    const entry = alternates?.find(
+      a => a.kind === 'tar.br' && !!a.tarball,
+    )
+    if (!entry) return undefined
+    /* c8 ignore start - a malformed reference just disables brotli */
+    try {
+      return new URL(entry.tarball, tarball).href
+    } catch {
+      return undefined
+    }
+    /* c8 ignore stop */
+  }
+
+  /**
+   * Download a Brotli tarball and verify its bytes against the response's
+   * `Repr-Digest` header (the packument carries no integrity for it). Throws
+   * on a non-200, a missing/mismatched digest, or any transport error, so the
+   * caller can fall back to the integrity-verified `.tgz`.
+   */
+  async #fetchBrotli(url: string): Promise<Buffer> {
+    const response = await (
+      await this.getRegistryClient()
+    ).request(url)
+    if (response.statusCode !== 200) {
+      throw error('brotli tarball not available', {
+        url,
+        response,
+      })
+    }
+    const buf = response.buffer()
+    const header = response.getHeaderString('repr-digest')
+    const match = header?.match(/sha-512=:([^:]+):/)
+    if (!match) {
+      throw error('brotli tarball missing Repr-Digest', { url })
+    }
+    const wanted: Integrity = `sha512-${match[1]}`
+    const found: Integrity = `sha512-${createHash('sha512')
+      .update(buf)
+      .digest('base64')}`
+    if (found !== wanted) {
+      throw error('brotli tarball digest check failed', {
+        code: 'EINTEGRITY',
+        url,
+        wanted,
+        found,
+      })
+    }
+    return buf
+  }
+
   constructor(options: PackageInfoClientOptions = {}) {
     this.options = options
     this.#projectRoot = options.projectRoot || process.cwd()
@@ -268,6 +343,27 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
+        // Prefer the Brotli variant when the registry advertised one: it
+        // transfers less than the gzip .tgz. It has no packument integrity,
+        // so it is verified against its Repr-Digest; on any failure (404,
+        // digest mismatch, transport, unpack) fall through to the
+        // integrity-verified .tgz path below, which stays authoritative.
+        if (r.brotli) {
+          try {
+            const buf = await this.#fetchBrotli(r.brotli)
+            await (
+              await this.getTarPool()
+            ).unpack(buf, target, 'brotli')
+            return r
+          } catch (er) {
+            debug(
+              'brotli tarball failed, falling back to gzip: %s: %s',
+              r.brotli,
+              er,
+            )
+          }
+        }
+
         // if the tarball is already on disk, unpack it straight from
         // the cache file: it never has to be held in the client's
         // in-memory cache. anything unexpected falls through to the
@@ -1114,13 +1210,16 @@ export class PackageInfoClient {
       case 'registry': {
         const mani = await this.manifest(spec, options)
         if (mani.dist) {
-          const { integrity, tarball, signatures } = mani.dist
+          const { integrity, tarball, signatures, alternates } =
+            mani.dist
           if (tarball) {
-            const r = {
+            const brotli = this.#brotliUrl(tarball, alternates)
+            const r: Resolution = {
               resolved: tarball,
               integrity,
               signatures,
               spec,
+              ...(brotli ? { brotli } : {}),
             }
             this.#resolutions.set(memoKey, r)
             return r
