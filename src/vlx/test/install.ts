@@ -4,7 +4,7 @@ import type { NormalizedManifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
-import type { VlxOptions } from '../src/index.ts'
+import type { VlxManifest, VlxOptions } from '../src/index.ts'
 import { mkdirSync, readFileSync } from 'node:fs'
 
 const getVlxInstall = async (
@@ -29,7 +29,7 @@ const getVlxInstall = async (
     installedIntegrity?: string
   } = {},
 ) => {
-  const installs: [string, NormalizedManifest][] = []
+  const installs: [string, VlxManifest][] = []
   const packageJson = new PackageJson()
   const dir = t.testdir({})
 

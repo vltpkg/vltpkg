@@ -325,7 +325,7 @@ const server = createServer((req, res) => {
     case '/digest':
     case '/digest-bad':
     case '/digest-missing': {
-      const name = path.slice(1)
+      const name = req.url.slice(1)
       const json = JSON.stringify({
         name,
         'dist-tags': { latest: '1.0.0' },

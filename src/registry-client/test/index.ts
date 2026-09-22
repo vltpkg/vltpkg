@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import { createHash } from 'node:crypto'
+import type { Integrity } from '@vltpkg/types'
 import t from 'tap'
 import type { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
@@ -458,7 +459,7 @@ t.test('artifact with no expected integrity', async t => {
   const rc = new RC({ cache: dir })
   const url = `${registryURL}/some/unlabelled/tarball`
   const res = await rc.request(url)
-  const actual = `sha512-${createHash('sha512')
+  const actual: Integrity = `sha512-${createHash('sha512')
     .update(res.buffer())
     .digest('base64')}`
   t.equal(res.integrity, undefined, 'nothing was expected')

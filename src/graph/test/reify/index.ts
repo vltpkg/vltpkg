@@ -56,6 +56,87 @@ const mockPackageInfo = createMockPackageInfo()
 // specs resolve and default-registry DepIDs canonicalize to `~npm~...`.
 const registries = { npm: 'https://registry.npmjs.org/' }
 
+t.test('integrity learned while extracting is pinned', async t => {
+  // a vlt packument carries no dist.integrity; the tarball response
+  // carries a digest instead, which extract() verifies and hands back
+  const integrity =
+    'sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=='
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: {
+          lodash: '4',
+        },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const packageInfo = createMockPackageInfo({
+    async manifest(
+      spec: Spec | string,
+      options: PackageInfoClientRequestOptions = {},
+    ) {
+      const mani = await mockPackageInfoBase.manifest(spec, options)
+      if (mani.dist) delete mani.dist.integrity
+      return mani
+    },
+    async resolve(
+      spec: Spec | string,
+      options: PackageInfoClientRequestOptions = {},
+    ): Promise<Resolution> {
+      const res = await mockPackageInfoBase.resolve(spec, options)
+      return { ...res, integrity: undefined, digestRequired: true }
+    },
+    async extract(
+      spec: Spec | string,
+      target: string,
+      options: PackageInfoClientRequestOptions = {},
+    ): Promise<Resolution> {
+      const res = await mockPackageInfoBase.extract(
+        spec,
+        target,
+        options,
+      )
+      return { ...res, integrity }
+    },
+  })
+  const opts = {
+    projectRoot,
+    registry: 'https://registry.npmjs.org/',
+    packageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    remover: new RollbackRemove(),
+  }
+  const graph = await ideal.build(opts)
+  const lodash = graph.mainImporter.edgesOut.get('lodash')?.to
+  t.equal(lodash?.integrity, undefined, 'none known before extract')
+  await reify({ ...opts, graph, allowScripts: ':not(*)' })
+  t.equal(
+    lodash?.integrity,
+    integrity,
+    'node learned it from extract',
+  )
+  const lockfile = JSON.parse(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+  ) as LockfileData
+  t.equal(
+    lockfile.nodes[
+      joinDepIDTuple(['registry', '', 'lodash@4.17.21'])
+    ]?.[2],
+    integrity,
+    'vlt-lock.json pins it',
+  )
+})
+
 t.test('super basic reification', async t => {
   const dir = t.testdir({
     cache: {},
