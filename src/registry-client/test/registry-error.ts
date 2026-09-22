@@ -377,7 +377,7 @@ t.test('token refusal', t => {
   const account = 'https://registry.vlt.io/acme/npm/react'
   const setup = (gone: string) =>
     `Your token for the "acme" account ${gone}. Run \`vlt setup acme\` to ` +
-    'log in again — one token covers every registry on the account.'
+    'log in again.'
 
   t.test('reads the condition out of the code', t => {
     t.equal(tokenRefusal(entry(401, expired)), 'expired')

@@ -1405,8 +1405,7 @@ t.test(
           'failed to fetch packument: 401 Unauthorized — Token expired. ' +
           'Authenticate again to get a new token.\n' +
           '⚠️ Your token for the "acme" account has expired. Run ' +
-          '`vlt setup acme` to log in again — one token covers every ' +
-          'registry on the account.',
+          '`vlt setup acme` to log in again.',
         cause: { code: 'ERESOLVE' },
       },
     )

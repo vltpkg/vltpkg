@@ -142,8 +142,7 @@ export const tokenRefusalAdvice = (
   return (
     `Your token for the "${account}" account ` +
     `${gone === 'expired' ? 'has expired' : 'was revoked'}. Run ` +
-    `\`vlt setup ${account}\` to log in again — one token covers every ` +
-    `registry on the account.`
+    `\`vlt setup ${account}\` to log in again.`
   )
 }
 

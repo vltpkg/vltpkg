@@ -38,7 +38,9 @@ const formatURL = (v: unknown, format: Formatter) =>
 const hasCustomToString = (
   v: unknown,
 ): v is { toString: () => string } =>
-  isObject(v) && v.toString !== Object.prototype.toString
+  typeof v === 'object' &&
+  v !== null &&
+  v.toString !== Object.prototype.toString
 
 // Render a value that has a meaningful custom `toString()` (such as a
 // `Spec`, e.g. `next@*`) as a concise string rather than dumping its
@@ -228,8 +230,12 @@ const printCode = (
       if (from) {
         stderr(indent(`From: ${format(from)}`))
       }
-      if (response) {
-        stderr(indent(`Response: ${format(response)}`))
+      // the full response is in the error log; here only the status
+      const status = (
+        response as { statusCode?: unknown } | undefined
+      )?.statusCode
+      if (status) {
+        stderr(indent(`Status: ${format(status)}`))
       }
       return { file: true }
     }
