@@ -4,6 +4,7 @@ import type {
   RegistryClient,
   RegistryClientRequestOptions,
 } from './index.ts'
+import { isTokenRefusal } from './registry-error.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { urlOpen } from '@vltpkg/url-open'
 import { createInterface } from 'node:readline/promises'
@@ -104,6 +105,13 @@ export const otplease = async (
   }
 
   if (wwwAuth.has('bearer')) {
+    // A token the registry says is dead explains itself in the body, so hand
+    // it back to be rendered like any other 401. Every other bearer challenge
+    // -- npm's own registry sends one with no body -- keeps the generic line.
+    const text = await responseBodyText(response).catch(() => '')
+    if (isTokenRefusal({ statusCode: 401, text: () => text })) {
+      return { bodyConsumed: text }
+    }
     throw error(
       'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
       {

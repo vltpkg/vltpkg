@@ -1,9 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { gzipSync } from 'node:zlib'
+import type { Test } from 'tap'
 import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
 import {
   assertOk,
+  isTokenRefusal,
+  tokenRefusalAdvice,
   registryErrorMessage,
   requestError,
 } from '../src/registry-error.ts'
@@ -282,13 +285,13 @@ t.test('requestError', t => {
       const thrown = error('Missing token.', {
         response: {
           statusCode: 401,
-          text: () => '{"error":"token expired"}',
+          text: () => '{"error":"token rejected"}',
         },
       })
       const e = requestError(thrown, { message: 'Failed', url })
       t.equal(
         e.message,
-        'Failed: 401 Unauthorized — token expired\n⚠️ Missing token.',
+        'Failed: 401 Unauthorized — token rejected\n⚠️ Missing token.',
       )
       // with caller advice too, nothing is lost: reason first, then tip
       const e2 = requestError(thrown, {
@@ -298,7 +301,7 @@ t.test('requestError', t => {
       })
       t.equal(
         e2.message,
-        'Failed: 401 Unauthorized — token expired\n' +
+        'Failed: 401 Unauthorized — token rejected\n' +
           '⚠️ Missing token.\n⚠️ Run `vlt login`.',
       )
       t.end()
@@ -359,6 +362,229 @@ t.test('requestError', t => {
     })
     t.equal(e.message, 'Failed: kaboom')
     t.match(e, { cause: { code: 'EREQUEST', method: 'GET' } })
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('token refusal advice', t => {
+  // what the edge in front of the vlt registry answers with
+  const edgeExpired = JSON.stringify({
+    code: 'TokenExpiredError',
+    message: 'Token expired. Authenticate again to get a new token.',
+  })
+  // what a registry that sends no code says
+  const originExpired = '{"error":"Token expired"}'
+  const revoked = JSON.stringify({
+    code: 'TokenRevokedError',
+    message: 'Token revoked. Authenticate again to get a new token.',
+  })
+  const account = 'https://registry.vlt.io/acme/npm/react'
+
+  const withEnv = (
+    t: Test,
+    env: Record<string, string | undefined>,
+  ) => {
+    const restore = { ...process.env }
+    for (const [key, value] of Object.entries(env)) {
+      if (value === undefined) delete process.env[key]
+      else process.env[key] = value
+    }
+    t.teardown(() => {
+      for (const key of Object.keys(process.env)) {
+        if (!(key in restore)) delete process.env[key]
+      }
+      Object.assign(process.env, restore)
+    })
+  }
+
+  t.test('names the account registry a vlt token belongs to', t => {
+    withEnv(t, { VLT_TOKEN: undefined, VLT_REGISTRY: undefined })
+    const setup = (gone: string) =>
+      `Your token for the "acme" account ${gone}. Run \`vlt setup acme\` to ` +
+      'log in again — one token covers every registry on the account.'
+    t.equal(
+      tokenRefusalAdvice(entry(401, edgeExpired), account),
+      setup('has expired'),
+    )
+    // a revoked token needs the same command, and says which it was
+    t.equal(
+      tokenRefusalAdvice(entry(401, revoked), account),
+      setup('was revoked'),
+    )
+    t.equal(
+      tokenRefusalAdvice(
+        entry(401, '{"error":"Token has been revoked"}'),
+        account,
+      ),
+      'Your token for https://registry.vlt.io was revoked. Run ' +
+        '`vlt login --registry=https://registry.vlt.io/` to log in again.',
+    )
+    t.end()
+  })
+
+  t.test('falls back to login against the registry', t => {
+    withEnv(t, { VLT_TOKEN: undefined, VLT_REGISTRY: undefined })
+    const login = (origin: string) =>
+      `Your token for ${origin} has expired. Run ` +
+      `\`vlt login --registry=${origin}/\` to log in again.`
+    // a registry that says so in words rather than in `code`
+    t.equal(
+      tokenRefusalAdvice(
+        entry(401, originExpired),
+        'https://registry.npmjs.org/react',
+      ),
+      login('https://registry.npmjs.org'),
+    )
+    // a plain-text body saying the same thing
+    t.equal(
+      tokenRefusalAdvice(
+        entry(401, 'Your tokens have expired'),
+        'https://r.io/react',
+      ),
+      login('https://r.io'),
+    )
+    // `code` from a URL with no account/registry pair under it
+    t.equal(
+      tokenRefusalAdvice(
+        entry(401, edgeExpired),
+        'https://registry.vlt.io/-/ping',
+      ),
+      login('https://registry.vlt.io'),
+    )
+    t.end()
+  })
+
+  t.test('a VLT_REGISTRY that is not a url supplies nothing', t => {
+    withEnv(t, {
+      VLT_TOKEN: 'from-env',
+      VLT_REGISTRY: 'not a url',
+    })
+    t.equal(
+      tokenRefusalAdvice(entry(401, edgeExpired), account),
+      'Your token for the "acme" account has expired. Run ' +
+        '`vlt setup acme` to log in again — one token covers every ' +
+        'registry on the account.',
+    )
+    t.end()
+  })
+
+  t.test('no login command replaces a token from the env', t => {
+    withEnv(t, {
+      VLT_TOKEN: 'from-env',
+      VLT_REGISTRY: 'https://registry.vlt.io/acme/npm/',
+    })
+    t.equal(
+      tokenRefusalAdvice(entry(401, edgeExpired), account),
+      'The token for https://registry.vlt.io comes from $VLT_TOKEN, and ' +
+        'it has expired. Create a new token in the vlt.io dashboard and ' +
+        'set $VLT_TOKEN to it.',
+    )
+    t.end()
+  })
+
+  t.test('a VLT_TOKEN_* variable names itself', t => {
+    withEnv(t, {
+      VLT_TOKEN: undefined,
+      VLT_REGISTRY: undefined,
+      VLT_TOKEN_https_registry_npmjs_org: 'from-env',
+    })
+    t.equal(
+      tokenRefusalAdvice(
+        entry(401, originExpired),
+        'https://registry.npmjs.org/react',
+      ),
+      'The token for https://registry.npmjs.org comes from ' +
+        '$VLT_TOKEN_https_registry_npmjs_org, and it has expired. Create ' +
+        'a new token and set $VLT_TOKEN_https_registry_npmjs_org to it.',
+    )
+    t.end()
+  })
+
+  t.test('anything else gets no advice', t => {
+    withEnv(t, { VLT_TOKEN: undefined, VLT_REGISTRY: undefined })
+    const unreadable = entry(401, Buffer.from([0x1f, 0x8b, 0x00]), [
+      ['content-encoding', 'gzip'],
+    ])
+    for (const [label, response, url] of [
+      ['not a 401', entry(403, edgeExpired), account],
+      ['no body', entry(401), account],
+      [
+        'a rejected token',
+        entry(
+          401,
+          '{"code":"UnauthorizedError","message":"Invalid token"}',
+        ),
+        account,
+      ],
+      [
+        'a JSON body that is not an object',
+        entry(401, '"expired"'),
+        account,
+      ],
+      ['an unreadable body', unreadable, account],
+      ['no url to advise about', entry(401, edgeExpired), undefined],
+      [
+        'a url that will not parse',
+        entry(401, edgeExpired),
+        'not a url',
+      ],
+    ] as [string, CacheEntry, string | undefined][]) {
+      t.equal(tokenRefusalAdvice(response, url), undefined, label)
+    }
+    // a raw undici response, which carries no readable body at all
+    t.equal(
+      tokenRefusalAdvice({ statusCode: 401 }, account),
+      undefined,
+      'a response with no body to read',
+    )
+    // an error that never had a response on it
+    t.equal(
+      tokenRefusalAdvice(undefined, account),
+      undefined,
+      'no response at all',
+    )
+    t.end()
+  })
+
+  t.test('is a predicate otplease can ask before it throws', t => {
+    t.equal(isTokenRefusal(entry(401, edgeExpired)), true)
+    t.equal(isTokenRefusal(entry(401, originExpired)), true)
+    t.equal(
+      isTokenRefusal(
+        entry(
+          401,
+          '{"code":"UnauthorizedError","message":"Invalid token"}',
+        ),
+      ),
+      false,
+    )
+    t.equal(isTokenRefusal(undefined), false)
+    t.end()
+  })
+
+  t.test('stands in for the advice the caller would give', t => {
+    withEnv(t, { VLT_TOKEN: undefined, VLT_REGISTRY: undefined })
+    t.throws(
+      () =>
+        assertOk(entry(401, edgeExpired), {
+          message: 'Failed to publish package',
+          url: account,
+          advice: statusCode =>
+            statusCode === 401 ?
+              'Not logged in. Run `vlt login` and try again.'
+            : undefined,
+        }),
+      {
+        message:
+          'Failed to publish package: 401 Unauthorized — Token expired. ' +
+          'Authenticate again to get a new token.\n⚠️ Your token for the ' +
+          '"acme" account has expired. Run `vlt setup acme` to log in again ' +
+          '— one token covers every registry on the account.',
+        cause: { code: 'ENEEDAUTH', status: 401 },
+      },
+    )
     t.end()
   })
 

@@ -1,21 +1,9 @@
 import { Keychain } from '@vltpkg/keychain'
+import { normalizeRegistryKey } from './registry-key.ts'
+
+export { normalizeRegistryKey }
 
 export type Token = `Bearer ${string}` | `Basic ${string}`
-
-/**
- * Normalize a registry URL into a stable key that preserves the
- * path prefix.  The result is `origin + pathname` with trailing
- * slashes stripped so that
- *   `https://r.io/luke/`  and  `https://r.io/luke`
- * both produce the same key.
- *
- * For plain-origin registries the result is identical to the old
- * `new URL(url).origin` behaviour (e.g. `https://registry.npmjs.org`).
- */
-export const normalizeRegistryKey = (url: string): string => {
-  const u = new URL(url)
-  return (u.origin + u.pathname).replace(/\/+$/, '')
-}
 
 /**
  * Ensure a registry URL ends with `/` so that `new URL(path, base)`
