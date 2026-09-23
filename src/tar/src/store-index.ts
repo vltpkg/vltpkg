@@ -28,11 +28,11 @@ export type StoreIndex = {
   name?: string
   version?: string
   /**
-   * the parsed package.json, if a valid manifest, so reify need not
-   * read it back from disk. Absent in entries written before it. Only
-   * checked to be an object on read.
+   * package.json as compact JSON text, if a valid manifest, so reify
+   * need not read it back from disk. Text, so a reader that does not
+   * need it skips the parse. Absent in entries written before it.
    */
-  manifest?: Record<string, unknown>
+  manifest?: string
 }
 
 /** Index fields read from the tarball's own package.json. */
@@ -77,7 +77,7 @@ const isStoreIndex = (x: unknown): x is StoreIndex =>
   x.dirs.every(isRelPath) &&
   Array.isArray(x.files) &&
   x.files.every(isIndexFile) &&
-  (x.manifest === undefined || isRecord(x.manifest))
+  isOptString(x.manifest)
 
 /**
  * Read the sidecar index of a global store entry. Missing, unparseable
@@ -136,6 +136,6 @@ export const storeIndexManifest = (
   if (bins && Object.keys(bins).length) result.bins = bins
   if (typeof name === 'string') result.name = name
   if (typeof version === 'string') result.version = version
-  if (isManifest(pkg)) result.manifest = pkg
+  if (isManifest(pkg)) result.manifest = JSON.stringify(pkg)
   return result
 }

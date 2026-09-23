@@ -111,7 +111,9 @@ export const extractNode = async (
     // same result as reading it back, or left for that on failure
     if (r.manifest && !node.manifest) {
       try {
-        node.manifest = normalizeManifest(asManifest(r.manifest))
+        node.manifest = normalizeManifest(
+          asManifest(JSON.parse(r.manifest)),
+        )
       } catch {}
     }
     if (r.bindingGyp !== undefined) node.bindingGyp = r.bindingGyp

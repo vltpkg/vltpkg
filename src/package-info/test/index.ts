@@ -1578,7 +1578,7 @@ t.test('global store', async t => {
     const pi = await client({ 'store-linker': 'hardlink' }, true)
     const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
     t.strictSame(
-      res.manifest,
+      JSON.parse(String(res.manifest)),
       JSON.parse(readFileSync(dir + '/t/package.json', 'utf8')),
     )
     t.equal(res.bindingGyp, false)

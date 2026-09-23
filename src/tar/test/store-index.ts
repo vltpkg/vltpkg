@@ -19,7 +19,7 @@ const valid: StoreIndex = {
   bins: { cli: 'bin/cli.js' },
   name: 'x',
   version: '1.0.0',
-  manifest: { name: 'x', version: '1.0.0', bin: 'bin/cli.js' },
+  manifest: '{"name":"x","version":"1.0.0","bin":"bin/cli.js"}',
 }
 
 t.test('storeIndexPath', async t => {
@@ -62,8 +62,7 @@ t.test('malformed index is a miss', async t => {
     ['bins value', { ...valid, bins: { x: 1 } }],
     ['dirs', { ...valid, dirs: 'bin' }],
     ['files', { ...valid, files: {} }],
-    ['manifest', { ...valid, manifest: [] }],
-    ['manifest string', { ...valid, manifest: '{}' }],
+    ['manifest object', { ...valid, manifest: {} }],
     ['file not array', { ...valid, files: ['a'] }],
     ['file length', { ...valid, files: [['a', 1]] }],
     ['file size', { ...valid, files: [['a', '1', 0]] }],
@@ -109,7 +108,7 @@ t.test('storeIndexManifest', async t => {
 
   t.strictSame(storeIndexManifest(pj({}), false), {
     scripts: false,
-    manifest: {},
+    manifest: '{}',
   })
   const full = {
     name: 'a',
@@ -121,7 +120,7 @@ t.test('storeIndexManifest', async t => {
     scripts: false,
     name: 'a',
     version: '1.2.3',
-    manifest: full,
+    manifest: JSON.stringify(full),
   })
   t.strictSame(
     storeIndexManifest(
@@ -197,7 +196,7 @@ t.test('storeIndexManifest', async t => {
       Buffer.from('\uFEFF' + JSON.stringify({ name: 'bom' })),
       false,
     ),
-    { scripts: false, name: 'bom', manifest: { name: 'bom' } },
+    { scripts: false, name: 'bom', manifest: '{"name":"bom"}' },
     'leading BOM',
   )
   t.throws(() => storeIndexManifest(Buffer.from('{nope'), false), {

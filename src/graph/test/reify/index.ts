@@ -914,8 +914,9 @@ t.test(
             target,
             options,
           )),
-          manifest: JSON.parse(
-            readFileSync(resolve(target, 'package.json'), 'utf8'),
+          manifest: readFileSync(
+            resolve(target, 'package.json'),
+            'utf8',
           ),
           bindingGyp: false,
         }),

@@ -955,7 +955,7 @@ t.test('unpackToStoreSync', async t => {
       bins: { p: 'bin/p.js', q: 'lib/q' },
       name: '@s/p',
       version: '1.0.0',
-      manifest: JSON.parse(pj),
+      manifest: JSON.stringify(JSON.parse(pj)),
     })
     t.equal(
       readFileSync(resolve(dir, 'lib/deep/x/y.js'), 'utf8'),

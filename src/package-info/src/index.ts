@@ -100,8 +100,8 @@ export type Resolution = {
  * carries what its index knows, so reify need not read it from disk.
  */
 export type ExtractResolution = Resolution & {
-  /** the package.json as parsed, if the index has it */
-  manifest?: Record<string, unknown>
+  /** the package.json as JSON text, if the index has it */
+  manifest?: string
   /** true if the package has a root binding.gyp */
   bindingGyp?: boolean
 }

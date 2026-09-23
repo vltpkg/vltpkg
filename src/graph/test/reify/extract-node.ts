@@ -744,7 +744,7 @@ t.test('global store index data', async t => {
     })
     const node = storeNode()
     await run(node, {
-      manifest: structuredClone(pkg),
+      manifest: JSON.stringify(pkg),
       bindingGyp: true,
     })
     const lockfileForm = (m: NormalizedManifest | undefined) =>
@@ -759,15 +759,19 @@ t.test('global store index data', async t => {
   t.test('existing manifest kept', async t => {
     const manifest = { name: 'store-pkg', version: '1.2.3' }
     const node = storeNode({ manifest })
-    await run(node, { manifest: { ...pkg }, bindingGyp: false })
+    await run(node, {
+      manifest: JSON.stringify(pkg),
+      bindingGyp: false,
+    })
     t.equal(node.manifest, manifest)
     t.equal(node.bindingGyp, false)
   })
 
   t.test('invalid manifest left for the disk read', async t => {
     for (const manifest of [
-      { ...pkg, version: '' },
-      { ...pkg, dependencies: { a: 1 } },
+      JSON.stringify({ ...pkg, version: '' }),
+      JSON.stringify({ ...pkg, dependencies: { a: 1 } }),
+      '{nope',
     ]) {
       const node = storeNode()
       await run(node, { manifest })

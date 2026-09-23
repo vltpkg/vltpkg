@@ -223,10 +223,42 @@ t.test('verifyStoreEntry', async t => {
       sidecar,
       JSON.stringify({
         ...JSON.parse(readFileSync(sidecar, 'utf8')),
-        manifest: {},
+        later: {},
       }),
     )
     t.equal(verifyStoreEntry(entry, tar), undefined)
+  })
+
+  t.test('manifest', async t => {
+    const edit = (entry: string, manifest?: string) => {
+      const sidecar = storeIndexPath(entry)
+      const index = JSON.parse(readFileSync(sidecar, 'utf8'))
+      writeFileSync(sidecar, JSON.stringify({ ...index, manifest }))
+    }
+    t.test('older sidecar without it', async t => {
+      const { entry } = makeEntry(t)
+      edit(entry)
+      t.equal(verifyStoreEntry(entry, tar), undefined)
+    })
+    t.test('differs', async t => {
+      const { entry } = makeEntry(t)
+      edit(entry, '{"name":"pkg","version":"1.0.1"}')
+      t.equal(verifyStoreEntry(entry, tar), 'index differs')
+    })
+    t.test('lossy JSON values round-trip', async t => {
+      const pj = '{"name":"pkg","version":"1.0.0","x":-0,"y":1e999}'
+      const tar = makeTar([
+        { path: 'package/package.json', size: pj.length },
+        pj,
+      ])
+      const store = t.testdir({ store: {} }) + '/store'
+      const entry = resolve(store, hex)
+      const tmp = resolve(store, '.tmp/x')
+      const { index } = unpackToStoreSync(tar, tmp)
+      writeFileSync(storeIndexPath(entry), JSON.stringify(index))
+      renameSync(tmp, entry)
+      t.equal(verifyStoreEntry(entry, tar), undefined)
+    })
   })
 
   t.test('unreadable file', async t => {
