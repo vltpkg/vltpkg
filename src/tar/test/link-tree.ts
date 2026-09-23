@@ -12,6 +12,7 @@ import { basename, dirname, posix, resolve, win32 } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { linkFromStore } from '../src/link-tree.ts'
+import type { StoreLinkResult } from '../src/link-tree.ts'
 import { storeCopiedPath } from '../src/store-entry.ts'
 import { storeIndexPath } from '../src/store-index.ts'
 import type { StoreIndex } from '../src/store-index.ts'
@@ -19,6 +20,8 @@ import { unpackToStoreSync } from '../src/unpack.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 type LinkTree = typeof import('../src/link-tree.ts')
+
+const how = (r: StoreLinkResult) => r && r.how
 
 const prevMask = process.umask(0o022)
 t.teardown(() => {
@@ -117,7 +120,7 @@ t.test('links every file, package.json last', async t => {
       FS.linkSync(src, dst)
     },
   })
-  t.equal(linkFromStore(entry, target), 'link')
+  t.strictSame(linkFromStore(entry, target), { how: 'link', index })
   checkTree(t, entry, index, target, () => 2)
   t.equal(order.length, index.files.length)
   t.not(index.files.at(-1)?.[0], 'package.json', 'not last by path')
@@ -135,14 +138,14 @@ t.test('replaces an existing target', async t => {
   const { entry, index, target } = makeEntry(t)
   FS.mkdirSync(target, { recursive: true })
   writeFileSync(resolve(target, 'old'), 'old')
-  t.equal(linkFromStore(entry, target), 'link')
+  t.equal(how(linkFromStore(entry, target)), 'link')
   t.equal(existsSync(resolve(target, 'old')), false)
   checkTree(t, entry, index, target, () => 2)
 })
 
 t.test('copy option copies every file', async t => {
   const { entry, index, target } = makeEntry(t)
-  t.equal(linkFromStore(entry, target, { copy: true }), 'copy')
+  t.equal(how(linkFromStore(entry, target, { copy: true })), 'copy')
   checkTree(t, entry, index, target, () => 1)
   // copies are writable and do not write through to the store
   writeFileSync(resolve(target, 'index.js'), 'changed')
@@ -158,7 +161,7 @@ t.test(
       process.umask(0o022)
     })
     const { entry, index, target } = makeEntry(t)
-    t.equal(linkFromStore(entry, target, { copy: true }), 'copy')
+    t.equal(how(linkFromStore(entry, target, { copy: true })), 'copy')
     checkTree(t, entry, index, target, () => 1)
     t.equal(
       statSync(resolve(target, 'bin/cli.js')).mode & 0o777,
@@ -173,7 +176,7 @@ t.test('install scripts imply copy', async t => {
     storeIndexPath(entry),
     JSON.stringify({ ...index, scripts: true }),
   )
-  t.equal(linkFromStore(entry, target), 'copy')
+  t.equal(how(linkFromStore(entry, target)), 'copy')
   checkTree(t, entry, index, target, () => 1)
 })
 
@@ -213,7 +216,7 @@ t.test('index without package.json', async t => {
     storeIndexPath(entry),
     JSON.stringify({ ...index, files }),
   )
-  t.equal(linkFromStore(entry, target), 'link')
+  t.equal(how(linkFromStore(entry, target)), 'link')
   t.equal(existsSync(resolve(target, 'package.json')), false)
   t.equal(statSync(resolve(target, 'index.js')).nlink, 2)
 })
@@ -229,11 +232,11 @@ t.test('process-wide downgrade to copy', async t => {
           throw errno(code)
         },
       })
-      t.equal(linkFromStore(entry, target), 'copy')
+      t.equal(how(linkFromStore(entry, target)), 'copy')
       checkTree(t, entry, index, target, () => 1)
       t.equal(calls, 1, 'stops linking after the first failure')
       const other = resolve(dirname(target), 'other')
-      t.equal(linkFromStore(entry, other), 'copy')
+      t.equal(how(linkFromStore(entry, other)), 'copy')
       t.equal(calls, 1, 'still copying on the next package')
       t.equal(statSync(resolve(other, 'index.js')).nlink, 1)
     })
@@ -248,10 +251,10 @@ t.test('EMLINK copies that file only', async t => {
       FS.linkSync(src, dst)
     },
   })
-  t.equal(linkFromStore(entry, target), 'link')
+  t.equal(how(linkFromStore(entry, target)), 'link')
   checkTree(t, entry, index, target, p => (p === 'lib/a.js' ? 1 : 2))
   const other = resolve(dirname(target), 'other')
-  t.equal(linkFromStore(entry, other), 'link')
+  t.equal(how(linkFromStore(entry, other)), 'link')
   t.equal(
     statSync(resolve(other, 'index.js')).nlink,
     3,
@@ -318,7 +321,7 @@ t.test('ENOENT', async t => {
     t.equal(existsSync(resolve(entry, 'package.json')), true)
     t.equal(existsSync(storeIndexPath(entry)), true)
     // not mistaken for overlayfs: still linking afterwards
-    t.equal(linkFromStore(entry, target), 'link')
+    t.equal(how(linkFromStore(entry, target)), 'link')
     t.equal(statSync(resolve(target, 'index.js')).nlink, 2)
   })
 
@@ -331,7 +334,7 @@ t.test('ENOENT', async t => {
         throw errno('ENOENT')
       },
     })
-    t.equal(linkFromStore(entry, target), 'copy')
+    t.equal(how(linkFromStore(entry, target)), 'copy')
     checkTree(t, entry, index, target, () => 1)
     t.equal(calls, 1)
   })
@@ -389,7 +392,7 @@ t.test('VLT_STORE_VERIFY=1 discards a modified entry', async t => {
     '../src/link-tree.ts',
   )
   const { entry, target } = makeEntry(t)
-  t.equal(linkFromStore(entry, target), 'link')
+  t.equal(how(linkFromStore(entry, target)), 'link')
   // written in place through the link
   writeFileSync(resolve(target, 'package.json'), '{}')
   const other = resolve(dirname(target), 'other')
@@ -495,7 +498,7 @@ for (const path of [win32, posix]) {
       const root = path === win32 ? 'C:' : ''
       const target = [root, 'proj', 'node_modules', 'pkg'].join(s)
       const entry = [root, 'store', 'v1', 'abc'].join(s)
-      t.equal(linkFromStore(entry, target), 'link')
+      t.equal(how(linkFromStore(entry, target)), 'link')
       const tmp = String(calls[0]?.[1])
       t.equal(path.dirname(tmp), path.dirname(target))
       t.match(path.basename(tmp), /^\.pkg\.[0-9a-f]+\.\d+$/)

@@ -32,8 +32,12 @@ const verify = process.env.VLT_STORE_VERIFY === '1'
  */
 export type StoreLinker = 'auto' | 'hardlink' | 'copy' | 'unpack'
 
-/** `copy`: every file copied (install scripts, `copy`, downgrade) */
-export type StoreLinkResult = 'link' | 'copy' | false
+/**
+ * How a store entry was placed (`copy`: every file copied, for install
+ * scripts, `copy` or a downgrade) and its index, or false on a miss.
+ */
+export type StoreLinkResult =
+  { how: 'link' | 'copy'; index: StoreIndex } | false
 
 export type LinkFromStoreOptions = {
   /**
@@ -145,8 +149,8 @@ const fill = (
  * Materialize a global store entry at `target` from its sidecar index:
  * hardlink each file into a sibling temp dir (package.json last), then
  * rename it into place. Files that cannot be linked are copied, as is
- * every file of a package with install scripts. Returns 'link' or
- * 'copy', or false, leaving `target` untouched, on a store miss (no
+ * every file of a package with install scripts. Returns how, with the
+ * index, or false, leaving `target` untouched, on a store miss (no
  * valid index, entry not a directory, symlinked target parent), a name
  * clash on a case-insensitive target, or a damaged entry, which is
  * removed.
@@ -190,7 +194,7 @@ export const linkFromStore = (
     // nlink stays 1: tell prune-store it is used
     if (copied || copyAll) markStoreEntryCopied(storeEntry)
     succeeded = true
-    return copied || copyAll ? 'copy' : 'link'
+    return { how: copied || copyAll ? 'copy' : 'link', index }
   } finally {
     if (!succeeded) {
       /* c8 ignore start */

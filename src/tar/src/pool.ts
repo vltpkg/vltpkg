@@ -55,7 +55,8 @@ export class Pool {
 
   /**
    * Hardlink (or copy) a global store entry into `target`. Resolves
-   * how, or false on a store miss. See {@link linkFromStore}.
+   * how, with the index, or false on a store miss. See
+   * {@link linkFromStore}.
    */
   async linkFromStore(
     storeEntry: string,

@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { normalizeBinPaths } from '@vltpkg/types'
+import { isManifest, normalizeBinPaths } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { readFileSync } from 'node:fs'
 import { debuglog } from 'node:util'
@@ -27,12 +27,18 @@ export type StoreIndex = {
   bins?: Record<string, string>
   name?: string
   version?: string
+  /**
+   * the parsed package.json, if a valid manifest, so reify need not
+   * read it back from disk. Absent in entries written before it. Only
+   * checked to be an object on read.
+   */
+  manifest?: Record<string, unknown>
 }
 
 /** Index fields read from the tarball's own package.json. */
 export type StoreIndexManifest = Pick<
   StoreIndex,
-  'scripts' | 'bins' | 'name' | 'version'
+  'scripts' | 'bins' | 'name' | 'version' | 'manifest'
 >
 
 /** The sidecar is a sibling, so it is never linked with the tree. */
@@ -70,7 +76,8 @@ const isStoreIndex = (x: unknown): x is StoreIndex =>
   Array.isArray(x.dirs) &&
   x.dirs.every(isRelPath) &&
   Array.isArray(x.files) &&
-  x.files.every(isIndexFile)
+  x.files.every(isIndexFile) &&
+  (x.manifest === undefined || isRecord(x.manifest))
 
 /**
  * Read the sidecar index of a global store entry. Missing, unparseable
@@ -129,5 +136,6 @@ export const storeIndexManifest = (
   if (bins && Object.keys(bins).length) result.bins = bins
   if (typeof name === 'string') result.name = name
   if (typeof version === 'string') result.version = version
+  if (isManifest(pkg)) result.manifest = pkg
   return result
 }
