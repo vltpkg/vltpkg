@@ -102,10 +102,11 @@ missing file is removed and `false` returned. Two index paths that
 collide on a case-insensitive target (`EEXIST`) also return `false`.
 
 `EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to copying
-(read + write into a fresh file); `EMLINK` copies that file only.
-Other link errors throw. Every file is copied with `copy: true` or
-when the index has `scripts`, so install scripts never write into the
-store.
+(read + write into a fresh file); `ENOENT` while both the source and
+the target's parent exist (overlayfs cross-layer links) does the same.
+`EMLINK` copies that file only. Other link errors throw. Every file is
+copied with `copy: true` or when the index has `scripts`, so install
+scripts never write into the store.
 
 `VLT_STORE_VERIFY=1` checks the linked package.json size against the
 index and removes the entry on a mismatch (debugging aid).
