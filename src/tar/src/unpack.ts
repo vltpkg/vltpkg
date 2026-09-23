@@ -90,7 +90,7 @@ const tmp = randomBytes(6).toString('hex') + '.'
 const tmpSuffix = () => tmp + String(id++)
 
 /** A file parsed out of a tarball, at its destination path. */
-type FileEntry = {
+export type FileEntry = {
   path: string
   body: Buffer
   /** written with the exec bit: world-executable in the tar header */
