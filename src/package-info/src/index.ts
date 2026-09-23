@@ -211,6 +211,18 @@ export class PackageInfoClient {
   #cachePath: string
   #storeRoot: string
   #storeLinker: StoreLinker
+  #storeHits = 0
+  #storeMisses = 0
+  #storeHitRateLogged = false
+  #logStoreHitRate = () => {
+    const n = Math.max(1, this.#storeHits + this.#storeMisses)
+    debug(
+      'global store: linked=%d missed=%d hit rate=%s%%',
+      this.#storeHits,
+      this.#storeMisses,
+      ((this.#storeHits / n) * 100).toFixed(1),
+    )
+  }
   // In-flight coalescing key is `${registry}${name}` — no representation
   // component. Safe only because every caller requests the same full
   // packument (see #fetchPackument). The one thing that does vary per
@@ -386,16 +398,23 @@ export class PackageInfoClient {
             integrityHex(r.integrity)
           : undefined
         const copy = this.#storeLinker === 'copy' || installScripts
-        if (
-          hex &&
-          (await pool.linkFromStore(
-            pathResolve(this.#storeRoot, hex),
-            target,
-            { copy },
-          ))
-        ) {
-          logRequest(r.resolved, 'cache')
-          return r
+        if (hex) {
+          if (debug.enabled && !this.#storeHitRateLogged) {
+            this.#storeHitRateLogged = true
+            process.once('beforeExit', this.#logStoreHitRate)
+          }
+          if (
+            await pool.linkFromStore(
+              pathResolve(this.#storeRoot, hex),
+              target,
+              { copy },
+            )
+          ) {
+            this.#storeHits++
+            logRequest(r.resolved, 'store')
+            return r
+          }
+          this.#storeMisses++
         }
 
         // if the tarball is already on disk, unpack it straight from

@@ -21,6 +21,7 @@ import { createServer } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
+import * as util from 'node:util'
 import type { Test } from 'tap'
 import t from 'tap'
 import { x as tarX } from 'tar'
@@ -1475,7 +1476,7 @@ t.test('global store', async t => {
     renameSync(tmp, pathResolve(store, hex))
   }
 
-  const setup = async (t: Test) => {
+  const setup = async (t: Test, debugged?: unknown[][]) => {
     const dir = t.testdir({ 'vlt.json': '{}' })
     t.chdir(dir)
     unload()
@@ -1485,6 +1486,15 @@ t.test('global store', async t => {
     const { PackageInfoClient } = await t.mockImport<
       typeof import('../src/index.ts')
     >('../src/index.ts', {
+      ...(debugged && {
+        'node:util': {
+          ...util,
+          debuglog: () =>
+            Object.assign((...a: unknown[]) => debugged.push(a), {
+              enabled: true,
+            }),
+        },
+      }),
       '@vltpkg/cache-unzip': {
         register: (...args: unknown[]) => registered.push(args),
       },
@@ -1549,7 +1559,7 @@ t.test('global store', async t => {
       await pi.extract('abbrev@2', `${dir}/${linker}`, lockOpts)
       t.equal(nlink(`${dir}/${linker}`), ++n, linker)
     }
-    t.strictSame(states, ['cache', 'cache'])
+    t.strictSame(states, ['store', 'store'])
     t.strictSame(registered, [])
     t.match(
       JSON.parse(readFileSync(`${dir}/auto/package.json`, 'utf8')),
@@ -1644,7 +1654,7 @@ t.test('global store', async t => {
     await pi.extract('abbrev@2', dir + '/t', lockOpts)
     t.equal(nlink(dir + '/t'), 1)
     t.equal(nlink(`${store}/${hex}`), 1, 'store file not linked')
-    t.strictSame(states, ['cache'])
+    t.strictSame(states, ['store'])
   })
 
   t.test('store-linker=unpack, or invalid: store unused', async t => {
@@ -1677,6 +1687,30 @@ t.test('global store', async t => {
     t.equal(nlink(dir + '/t'), 1)
     t.strictSame(links, [])
     t.strictSame(registered, [])
+  })
+
+  t.test('hit rate on NODE_DEBUG at exit', async t => {
+    const debugged: unknown[][] = []
+    const { dir, store, client, prime } = await setup(t, debugged)
+    await prime()
+    const pi = await client({ 'store-linker': 'auto' })
+    await pi.extract('abbrev@2', dir + '/miss', lockOpts)
+    populate(store)
+    await pi.extract('abbrev@2', dir + '/hit', lockOpts)
+    await pi.extract('abbrev@2', dir + '/hit2', lockOpts)
+    const rate = () =>
+      debugged.filter(([f]) => String(f).includes('hit rate'))
+    t.strictSame(rate(), [], 'nothing until exit')
+    process.emit('beforeExit', 0)
+    process.emit('beforeExit', 0)
+    t.strictSame(rate(), [
+      [
+        'global store: linked=%d missed=%d hit rate=%s%%',
+        2,
+        1,
+        '66.7',
+      ],
+    ])
   })
 
   t.test('git specs untouched', async t => {
