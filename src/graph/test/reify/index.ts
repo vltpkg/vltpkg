@@ -1157,6 +1157,60 @@ t.test(
   },
 )
 
+t.test('binding.gyp found past a stale path cache', async t => {
+  // node_modules ENOENT is cached before extraction
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: { lodash: '4' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const scurry = new PathScurry(projectRoot)
+  const packageJson = new PackageJson()
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry,
+    packageJson,
+    remover: new RollbackRemove(),
+  })
+  const packageInfo = createMockPackageInfo({
+    extract: async (spec, target, options) => {
+      const res = await mockPackageInfoBase.extract(
+        spec,
+        target,
+        options,
+      )
+      writeFileSync(resolve(target, 'binding.gyp'), '{}')
+      return res
+    },
+  })
+  const result = await reify({
+    projectRoot,
+    packageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry,
+    packageJson,
+    graph,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+  const id = joinDepIDTuple(['registry', '', 'lodash@4.17.21'])
+  t.strictSame(result.buildQueue, [id])
+  t.equal(graph.nodes.get(id)?.buildState, 'needed')
+})
+
 t.test('reify recreates deleted workspace node_modules', async t => {
   const projectRoot = t.testdir({
     cache: {},
