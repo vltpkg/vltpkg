@@ -49,6 +49,12 @@ t.test(
           ),
           'all cache entries are ungzipped',
         )
+        t.ok(
+          readdirSync(join(dirs.cache, 'vlt/store/v1')).some(n =>
+            /^[0-9a-f]{128}$/.test(n),
+          ),
+          'global store populated by default',
+        )
       },
     })
     t.equal(status, 0)

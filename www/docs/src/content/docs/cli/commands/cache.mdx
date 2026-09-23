@@ -104,20 +104,27 @@ Remove global store entries that no `node_modules` folder links to.
 
 ## Global store
 
-With
-[`store-linker`](/cli/configuring#--store-linkerauto--hardlink--copy--unpack)
-(or `VLT_STORE_LINKER`) set to `auto`, `hardlink` or `copy`, a
-background process explodes each cached package tarball into a global
-store under `<cache>/store`, and installs place packages from it
-instead of unpacking tarballs again. Files in `node_modules` are then
-hardlinks into the global store, so editing one in place changes it
-for every project: use `store-linker=copy` for that. Packages with
-install scripts are always copied.
+The global store holds every cached package tarball unpacked, under
+`<cache>/store`. A background process fills it after each install, and
+later installs hardlink package files from it instead of unpacking
+tarballs again. Packages with install scripts are always copied.
 
-The global store is a cache. Deleting it never breaks an installed
-project. `delete`, `delete-before` and `clean` also remove the global
-store entries of the tarballs they remove, and `delete-all` removes
-the whole global store.
+Files in `node_modules` are hardlinks into the global store, so
+editing one in place changes it for every project on the machine. To
+edit `node_modules` in place (debugging, patching), set
+[`store-linker=copy`](/cli/configuring#--store-linkerauto--hardlink--copy--unpack)
+and reinstall from scratch (remove `node_modules` first), so its files
+are copies. If files were already edited through a hardlink, run
+`vlt cache verify --all` to drop the changed entries.
+`store-linker=unpack` (or `VLT_STORE_LINKER=unpack`) skips the global
+store entirely.
+
+The global store is a cache: deleting it, whole or in part, never
+breaks an installed project. `delete`, `delete-before` and `clean`
+also remove the global store entries of the tarballs they remove,
+`delete-all` removes the whole global store, and `prune-store` removes
+entries no project links to (entries only ever copied count as
+unused).
 
 ## Examples
 
