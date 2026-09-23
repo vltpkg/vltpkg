@@ -525,7 +525,15 @@ const storeFixture = (t: Test, names: string[], gzip = false) => {
       const hash = createHash('sha512').update(tgz).digest()
       const integrity: Integrity = `sha512-${hash.toString('base64')}`
       const hex = hash.toString('hex')
-      const entry = new CacheEntry(200, [], { integrity })
+      // a content-type, or encode() un-gzips it
+      const entry = new CacheEntry(
+        200,
+        [
+          Buffer.from('content-type'),
+          Buffer.from('application/octet-stream'),
+        ],
+        { integrity },
+      )
       entry.addBody(tgz)
       writeFileSync(resolve(cachePath, hex), entry.encode())
       const tmp = resolve(storeRoot, `.tmp/${hex}`)
@@ -638,12 +646,18 @@ t.test('verify --all', async t => {
 // the child leaves the entries it explodes gzipped
 t.test('verify gzipped cached tarballs', async t => {
   const command = await verifyCommand(t)
-  const { storeRoot, pkgs, packageInfo } = storeFixture(
+  const { cachePath, storeRoot, pkgs, packageInfo } = storeFixture(
     t,
     ['ok', 'edited'],
     true,
   )
   const edited = pkg(pkgs, 'edited')
+  t.equal(
+    CacheEntry.isGzipEntry(
+      readFileSync(resolve(cachePath, edited.hex)),
+    ),
+    true,
+  )
   writeFileSync(resolve(edited.entry, 'index.js'), 'x')
   const result = await command({
     positionals: ['verify'],
