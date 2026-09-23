@@ -15,6 +15,7 @@ t.test('output', async t => {
 
   logRequest('https://example.com', 'start')
   logRequest('https://example.com', 'cache', { method: 'GET' })
+  logRequest('https://example.com', 'store')
   logRequest('https://example.com', 'complete', {
     method: 'GET',
     statusCode: 200,
