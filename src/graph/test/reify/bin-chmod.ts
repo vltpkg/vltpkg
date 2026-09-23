@@ -62,3 +62,16 @@ t.test('no bins', async t => {
   await binChmod(fakeNode(t.testdir()), new PathScurry(t.testdirName))
   t.strictSame(chmods, [])
 })
+
+t.test(
+  'unreadable target skipped',
+  { skip: isWin && 'symlinks' },
+  async t => {
+    const dir = t.testdir({
+      a: t.fixture('symlink', 'b'),
+      b: t.fixture('symlink', 'a'),
+    })
+    await binChmod(fakeNode(dir, { loop: 'a' }), new PathScurry(dir))
+    t.strictSame(chmods, [])
+  },
+)

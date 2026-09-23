@@ -30,13 +30,18 @@ export const binChmod = async (
     const path = scurry.resolve(
       `${node.resolvedLocation(scurry)}/${bin}`,
     )
-    // only if the file exists, and not already executable: a file
-    // linked from the global store is, and chmod would change the store
-    const mode = statSync(path, { throwIfNoEntry: false })?.mode
-    if (mode !== undefined && (mode & 0o111) !== 0o111) {
-      // `| 0o111` keeps group-writable files at 0o775
-      chmods.push(chmod(path, (mode & 0o777) | 0o111))
+    let mode: number
+    try {
+      mode = statSync(path).mode
+    } catch {
+      // missing or unreadable (ENOENT, ELOOP, EACCES): skip
+      continue
     }
+    // a file linked from the global store is executable already, and
+    // chmod would change the store
+    if ((mode & 0o111) === 0o111) continue
+    // `| 0o111` keeps group-writable files at 0o775
+    chmods.push(chmod(path, (mode & 0o777) | 0o111))
   }
   await Promise.all(chmods)
 }

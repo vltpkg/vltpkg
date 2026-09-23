@@ -277,9 +277,10 @@ t.test('should handle missing bin files gracefully', async t => {
     statSync: (path: string) => {
       statChecks.push(path)
       // simulate missing files for paths that contain 'missing-bin'
-      return path.includes('missing-bin') ? undefined : (
-          { mode: 0o644 }
-        )
+      if (path.includes('missing-bin')) {
+        throw Object.assign(new Error('missing'), { code: 'ENOENT' })
+      }
+      return { mode: 0o644 }
     },
   })
 

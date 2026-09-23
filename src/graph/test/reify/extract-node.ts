@@ -122,6 +122,37 @@ t.test('successfully extract a node', async t => {
     'resolved passed',
   )
   t.equal(options.fromLockfile, true, 'fromLockfile passed')
+  t.equal(options.installScripts, false, 'no install scripts')
+})
+
+t.test('install scripts from the manifest', async t => {
+  const manifests = [
+    { scripts: { install: 'x' } },
+    { scripts: { preinstall: 'x' } },
+    { scripts: { postinstall: 'x' } },
+    { hasInstallScript: true },
+    { scripts: { test: 'x' } },
+  ]
+  for (const m of manifests) {
+    const node = mockNode({
+      id: joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+      location: './node_modules/foo',
+      name: 'foo',
+      manifest: { name: 'foo', version: '1.2.3', ...m },
+    })
+    await extractNode(
+      node,
+      new PathScurry(t.testdirName),
+      mockRemover,
+      getOptions(configData),
+      mockPackageInfo,
+      mockDiff,
+    )
+  }
+  t.strictSame(
+    extracted.map(([, , o]) => o.installScripts),
+    [true, true, true, true, false],
+  )
 })
 
 t.test('handle extraction failure for optional node', async t => {
