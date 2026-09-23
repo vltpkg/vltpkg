@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { integrityHex, integrityRE } from '@vltpkg/types'
 import type { Integrity } from '@vltpkg/types'
 import { createHash, randomBytes } from 'node:crypto'
 import { opendirSync, readFileSync } from 'node:fs'
@@ -287,16 +288,14 @@ export class Cache extends LRUCache<
    */
   integrityPath(integrity?: Integrity) {
     if (!integrity) return undefined
-    const m = /^sha512-([a-zA-Z0-9/+]{86}==)$/.exec(integrity)
-    const hash = m?.[1]
-    if (!hash) {
+    const hex = integrityHex(integrity)
+    if (!hex) {
       throw error('invalid integrity value', {
         found: integrity,
-        wanted: /^sha512-([a-zA-Z0-9/+]{86}==)$/,
+        wanted: integrityRE,
       })
     }
-    const base = Buffer.from(hash, 'base64').toString('hex')
-    return resolve(this.#path, base)
+    return resolve(this.#path, hex)
   }
 
   /**
