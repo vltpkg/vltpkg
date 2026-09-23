@@ -30,6 +30,8 @@ export const storeEnabled = () =>
 const STALE_MS = 60 * 60 * 1000
 
 export type ExplodeSummary = {
+  /** keys this run wrote to the store */
+  exploded: Set<string>
   written: number
   /** already in the store, or another writer won */
   skipped: number
@@ -137,6 +139,7 @@ export const explode = async (
   if (!storeEnabled()) return
   const start = performance.now()
   const s: ExplodeSummary = {
+    exploded: new Set(),
     written: 0,
     skipped: 0,
     ignored: 0,
@@ -162,6 +165,7 @@ export const explode = async (
       try {
         const res = explodeEntry(store, buf)
         if (typeof res === 'number') {
+          s.exploded.add(key)
           s.written++
           s.bytes += res
         } else s[res]++

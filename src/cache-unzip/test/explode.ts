@@ -70,6 +70,7 @@ t.test('explodes gzipped and raw tarballs', async t => {
   })
   const s = await explode(cache, store, ['gz', 'raw'])
   t.match(s, { written: 2, skipped: 0, failed: 0, ms: Number })
+  t.strictSame(s?.exploded, new Set(['gz', 'raw']))
   t.strictSame(readdirSync(join(store, '.tmp')), [], 'tmp emptied')
   t.strictSame(
     readdirSync(store).sort(),
@@ -129,7 +130,7 @@ t.test('explodes gzipped and raw tarballs', async t => {
   const side = lstatSync(join(store, `${tgzHex}.json`))
   t.match(
     await explode(cache, store, ['gz', 'raw']),
-    { written: 0, skipped: 2, failed: 0 },
+    { exploded: new Set(), written: 0, skipped: 2, failed: 0 },
     'idempotent',
   )
   t.equal(
@@ -241,7 +242,13 @@ t.test('bad entries are skipped, the rest still written', async t => {
       'missing',
       'gz',
     ]),
-    { written: 1, skipped: 0, ignored: 3, failed: 4 },
+    {
+      exploded: new Set(['gz']),
+      written: 1,
+      skipped: 0,
+      ignored: 3,
+      failed: 4,
+    },
   )
   t.strictSame(
     readdirSync(store).sort(),
