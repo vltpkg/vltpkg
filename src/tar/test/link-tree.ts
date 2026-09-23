@@ -41,6 +41,11 @@ const tar = makeTar([
   'a',
   { path: 'package/lib/deep/b.js', size: 1, mode: 0o755 },
   'b',
+  // sort after package.json, so its deferral is observable
+  { path: 'package/readme.md', size: 2 },
+  'rm',
+  { path: 'package/src/x.js', size: 1 },
+  'x',
 ])
 
 // what the explode child does: write, sidecar, then rename into place
@@ -114,7 +119,8 @@ t.test('links every file, package.json last', async t => {
   t.equal(linkFromStore(entry, target), true)
   checkTree(t, entry, index, target, () => 2)
   t.equal(order.length, index.files.length)
-  t.equal(order.indexOf('package.json'), order.length - 1)
+  t.not(index.files.at(-1)?.[0], 'package.json', 'not last by path')
+  t.equal(order.at(-1), 'package.json')
   if (!isWin) {
     t.equal(
       statSync(resolve(target, 'bin/cli.js')).mode & 0o777,
@@ -141,6 +147,24 @@ t.test('copy option copies every file', async t => {
   writeFileSync(resolve(target, 'index.js'), 'changed')
   t.equal(readFileSync(resolve(entry, 'index.js'), 'utf8'), 'index')
 })
+
+t.test(
+  'copies keep store modes under any umask',
+  { skip: isWin && 'no posix modes' },
+  async t => {
+    process.umask(0o027)
+    t.teardown(() => {
+      process.umask(0o022)
+    })
+    const { entry, index, target } = makeEntry(t)
+    t.equal(linkFromStore(entry, target, { copy: true }), true)
+    checkTree(t, entry, index, target, () => 1)
+    t.equal(
+      statSync(resolve(target, 'bin/cli.js')).mode & 0o777,
+      0o751,
+    )
+  },
+)
 
 t.test('install scripts imply copy', async t => {
   const { entry, index, target } = makeEntry(t)
@@ -254,7 +278,7 @@ t.test('ENOENT', async t => {
     }
   })
 
-  t.test('discard is best effort', async t => {
+  t.test('discard is best effort, sidecar goes last', async t => {
     const { entry, target } = makeEntry(t)
     rmSync(resolve(entry, 'lib/a.js'))
     const { rimraf, rimrafSync } = await import('rimraf')
@@ -264,7 +288,7 @@ t.test('ENOENT', async t => {
         rimraf: {
           rimraf,
           rimrafSync: (p: string) => {
-            if (p === storeIndexPath(entry)) throw errno('EACCES')
+            if (p === entry) throw errno('EBUSY')
             return rimrafSync(p)
           },
         },
@@ -273,13 +297,18 @@ t.test('ENOENT', async t => {
     t.equal(linkFromStore(entry, target), false)
     noTrace(t, target)
     t.equal(existsSync(entry), true)
+    t.equal(existsSync(storeIndexPath(entry)), true, 'sidecar kept')
   })
 
   t.test('target parent gone: throws, entry kept', async t => {
     const { entry, target } = makeEntry(t)
+    let removed = false
     const { linkFromStore } = await mockFS(t, {
       linkSync: (src: FS.PathLike, dst: FS.PathLike) => {
-        rmSync(dirname(target), { recursive: true, force: true })
+        if (!removed) {
+          removed = true
+          rmSync(dirname(target), { recursive: true, force: true })
+        }
         FS.linkSync(src, dst)
       },
     })
@@ -287,6 +316,9 @@ t.test('ENOENT', async t => {
     t.equal(existsSync(dirname(target)), false)
     t.equal(existsSync(resolve(entry, 'package.json')), true)
     t.equal(existsSync(storeIndexPath(entry)), true)
+    // not mistaken for overlayfs: still linking afterwards
+    t.equal(linkFromStore(entry, target), true)
+    t.equal(statSync(resolve(target, 'index.js')).nlink, 2)
   })
 
   t.test('both sides present: overlayfs, copy', async t => {
@@ -305,11 +337,7 @@ t.test('ENOENT', async t => {
 })
 
 t.test('other link errors throw and clean up', async t => {
-  for (const er of [
-    errno('EEXIST'),
-    errno('EIO'),
-    new Error('boom'),
-  ]) {
+  for (const er of [errno('EIO'), new Error('boom')]) {
     const { entry, target } = makeEntry(t)
     const { linkFromStore } = await mockFS(t, {
       linkSync: () => {
@@ -320,6 +348,58 @@ t.test('other link errors throw and clean up', async t => {
     noTrace(t, target)
     t.equal(existsSync(storeIndexPath(entry)), true, 'entry kept')
   }
+})
+
+t.test('name clash (case-insensitive target) is a miss', async t => {
+  const clash = (
+    t: Test,
+    patch: (i: StoreIndex) => Partial<StoreIndex>,
+    copy = false,
+  ) => {
+    const { entry, index, target } = makeEntry(t)
+    writeFileSync(
+      storeIndexPath(entry),
+      JSON.stringify({ ...index, ...patch(index) }),
+    )
+    t.equal(linkFromStore(entry, target, { copy }), false)
+    noTrace(t, target)
+    t.equal(existsSync(storeIndexPath(entry)), true, 'entry kept')
+  }
+  const dupFile = ({ files }: StoreIndex): Partial<StoreIndex> => ({
+    files: [...files, ['index.js', 5, 0]],
+  })
+  t.test('dir', async t => {
+    clash(t, ({ dirs }) => ({ dirs: [...dirs, 'lib'] }))
+  })
+  t.test('file, linking', async t => {
+    clash(t, dupFile)
+  })
+  t.test('file, copying', async t => {
+    clash(t, dupFile, true)
+  })
+})
+
+t.test('VLT_STORE_VERIFY=1 discards a modified entry', async t => {
+  process.env.VLT_STORE_VERIFY = '1'
+  t.teardown(() => {
+    delete process.env.VLT_STORE_VERIFY
+  })
+  const { linkFromStore } = await t.mockImport<LinkTree>(
+    '../src/link-tree.ts',
+  )
+  const { entry, target } = makeEntry(t)
+  t.equal(linkFromStore(entry, target), true)
+  // written in place through the link
+  writeFileSync(resolve(target, 'package.json'), '{}')
+  const other = resolve(dirname(target), 'other')
+  t.equal(linkFromStore(entry, other), false)
+  t.strictSame(
+    readdirSync(dirname(target)),
+    ['pkg'],
+    'no other, no tmp',
+  )
+  t.equal(existsSync(entry), false, 'entry removed')
+  t.equal(existsSync(storeIndexPath(entry)), false, 'sidecar removed')
 })
 
 t.test('copy read errors other than ENOENT throw', async t => {
@@ -342,11 +422,13 @@ t.test(
   async t => {
     const { entry, index, target } = makeEntry(t)
     let calls = 0
+    let failed: string | undefined
     let tmpHadPj: boolean | undefined
     const { linkFromStore } = await mockFS(t, {
       linkSync: (src: FS.PathLike, dst: FS.PathLike) => {
-        // second-to-last file overall
+        // second-to-last link, which sorts after package.json
         if (++calls === index.files.length - 1) {
+          failed = basename(String(dst))
           const tmp = readdirSync(dirname(target)).find(n =>
             n.startsWith('.pkg.'),
           )
@@ -359,6 +441,7 @@ t.test(
       },
     })
     t.throws(() => linkFromStore(entry, target), { code: 'EIO' })
+    t.equal(failed, 'x.js')
     t.equal(tmpHadPj, false)
     noTrace(t, target)
   },

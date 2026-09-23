@@ -1,21 +1,26 @@
 import {
+  chmodSync,
   linkSync,
   lstatSync,
   mkdirSync,
   readFileSync,
   renameSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, sep } from 'node:path'
 import { debuglog } from 'node:util'
 import { rimrafSync } from 'rimraf'
 import { readStoreIndex, storeIndexPath } from './store-index.ts'
-import type { StoreIndexFile } from './store-index.ts'
+import type { StoreIndex, StoreIndexFile } from './store-index.ts'
 import { tmpName } from './unpack.ts'
 
 const debug = debuglog('vlt')
 
 const noThrow = { throwIfNoEntry: false } as const
+
+// debug spot-check: linked package.json size must match the index
+const verify = process.env.VLT_STORE_VERIFY === '1'
 
 export type LinkFromStoreOptions = {
   /**
@@ -74,26 +79,63 @@ const place = (
   }
   // `wx`: only ever a fresh file, never truncate what may be a link
   writeFileSync(dst, body, { mode: exec ? 0o777 : 0o666, flag: 'wx' })
+  // store bins have every exec bit, whatever the umask
+  if (exec) chmodSync(dst, statSync(src).mode & 0o777)
   return true
 }
 
-const discard = (storeEntry: string): false => {
-  debug('global store: removing damaged entry', storeEntry)
+/**
+ * Fill `tmp` from the entry. 'damaged': a source file is gone (or,
+ * with VLT_STORE_VERIFY=1, package.json changed size). 'clash': two
+ * index paths map to one name on a case-insensitive target.
+ */
+const fill = (
+  storeEntry: string,
+  tmp: string,
+  index: StoreIndex,
+  copy: boolean,
+): 'damaged' | 'clash' | undefined => {
+  // Index paths are validated relative '/'-paths: concatenation is
+  // safe and much cheaper than join() on this per-file hot path.
+  const native =
+    sep === '/' ?
+      (p: string) => p
+    : (p: string) => p.replaceAll('/', sep)
+  const put = ([p, , exec]: StoreIndexFile) =>
+    place(
+      storeEntry + sep + native(p),
+      tmp + sep + native(p),
+      exec,
+      copy,
+    )
   try {
-    rimrafSync(storeIndexPath(storeEntry))
-    rimrafSync(storeEntry)
-  } catch {}
-  return false
+    for (const d of index.dirs) mkdirSync(tmp + sep + native(d))
+    let pj: StoreIndexFile | undefined
+    for (const f of index.files) {
+      if (f[0] === 'package.json') pj = f
+      else if (!put(f)) return 'damaged'
+    }
+    if (!pj) return
+    // last, so an interrupted tmp dir never looks complete
+    if (!put(pj)) return 'damaged'
+    if (verify && statSync(tmp + sep + pj[0]).size !== pj[1]) {
+      return 'damaged'
+    }
+  } catch (er) {
+    if ((er as NodeJS.ErrnoException).code === 'EEXIST')
+      return 'clash'
+    throw er
+  }
 }
 
 /**
  * Materialize a global store entry at `target` from its sidecar index:
  * hardlink each file into a sibling temp dir (package.json last), then
- * rename it into place. A file that cannot be linked is copied, as is
+ * rename it into place. Files that cannot be linked are copied, as is
  * every file of a package with install scripts. Returns false, leaving
  * `target` untouched, on a store miss (no valid index, entry not a
- * directory, symlinked target parent) or a damaged entry, which is
- * removed.
+ * directory, symlinked target parent), a name clash on a
+ * case-insensitive target, or a damaged entry, which is removed.
  */
 export const linkFromStore = (
   storeEntry: string,
@@ -113,21 +155,21 @@ export const linkFromStore = (
   let succeeded = false
   try {
     mkdirSync(tmp)
-    for (const d of index.dirs) mkdirSync(join(tmp, d))
-    const put = ([p, , exec]: StoreIndexFile) =>
-      place(
-        join(storeEntry, p),
-        join(tmp, p),
-        exec,
-        copy || index.scripts,
-      )
-    let pj: StoreIndexFile | undefined
-    for (const f of index.files) {
-      if (f[0] === 'package.json') pj = f
-      else if (!put(f)) return discard(storeEntry)
+    const miss = fill(storeEntry, tmp, index, copy || index.scripts)
+    if (miss === 'clash') {
+      debug('global store: name clash in target', storeEntry)
+      return false
     }
-    // last, so an interrupted tmp dir never looks complete
-    if (pj && !put(pj)) return discard(storeEntry)
+    if (miss) {
+      debug('global store: removing damaged entry', storeEntry)
+      // dir first: a sidecar without its dir is a plain miss, while a
+      // dir without its sidecar would never be re-exploded
+      try {
+        rimrafSync(storeEntry)
+        rimrafSync(storeIndexPath(storeEntry))
+      } catch {}
+      return false
+    }
 
     const targetExists = !!lstatSync(target, noThrow)
     if (targetExists) renameSync(target, og)
