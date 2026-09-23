@@ -95,6 +95,8 @@ export type CachedBody = {
   body: Buffer
   /** the hash the entry was stored under, if it has one */
   integrity?: Integrity
+  /** the body on disk is gzipped (`body` may be un-gzipped) */
+  gzip: boolean
 }
 
 export type CacheableMethod = 'GET' | 'HEAD'
@@ -703,6 +705,7 @@ export class RegistryClient {
           key,
           body: entry.buffer(),
           integrity: entry.integrity,
+          gzip: CacheEntry.isGzipEntry(buf),
         }
       }
       /* c8 ignore next */
