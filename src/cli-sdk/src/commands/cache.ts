@@ -8,6 +8,7 @@ import {
   storeEntryTime,
   verifyStoreEntry,
 } from '@vltpkg/tar/store-entry'
+import { readStoreIndex } from '@vltpkg/tar/store-index'
 import { integrityHex } from '@vltpkg/types'
 import { readFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
@@ -106,9 +107,9 @@ const usageDef = {
     verify: {
       usage: ['<package-spec> [<package-spec>...]', '--all'],
       description: `Check global store entries against their cached
-                    tarballs (file list, sizes, contents) and remove any
-                    that differ, e.g. after a file in \`node_modules\`
-                    was edited in place.`,
+                    tarballs (file list, contents, exec bits) and remove
+                    any that differ or have no cached tarball, e.g. after
+                    a file in \`node_modules\` was edited in place.`,
     },
 
     'prune-store': {
@@ -400,6 +401,12 @@ const deleteAll = async (
 const entries = (n: number) =>
   `${n} global store entr${n === 1 ? 'y' : 'ies'}`
 
+/** `name@version` from the entry's sidecar, else `hex` */
+const entryLabel = (entry: string, hex: string) => {
+  const i = readStoreIndex(entry)
+  return i?.name && i.version ? `${i.name}@${i.version}` : hex
+}
+
 const verify = async (
   conf: LoadedConfig,
   specs: string[],
@@ -416,7 +423,7 @@ const verify = async (
     await packageInfo.getRegistryClient()
   ).cache.path()
   const present = new Set(storeEntryNames(storeRoot))
-  const checks: [label: string, hex: string][] = []
+  const checks: [key: string, hex: string][] = []
   if (all) {
     for (const hex of present) checks.push([hex, hex])
   } else {
@@ -430,7 +437,7 @@ const verify = async (
     }
   }
   const removed: Record<string, string> = {}
-  for (const [label, hex] of checks) {
+  for (const [key, hex] of checks) {
     const entry = resolve(storeRoot, hex)
     let tarball: Buffer | undefined
     try {
@@ -441,8 +448,10 @@ const verify = async (
     const reason =
       tarball ? verifyStoreEntry(entry, tarball) : 'no cached tarball'
     if (reason) {
+      // read before the sidecar goes
+      const label = all ? entryLabel(entry, hex) : key
       removeStoreEntry(entry)
-      removed[label] = reason
+      removed[key] = reason
       view?.stdout('-', label, reason)
     }
   }

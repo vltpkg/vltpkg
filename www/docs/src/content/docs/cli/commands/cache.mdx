@@ -86,8 +86,8 @@ Delete the entire cache folder to make vlt slower.
 ### verify
 
 Check global store entries against their cached tarballs (file list,
-sizes, contents) and remove any that differ, e.g. after a file in
-`node_modules` was edited in place.
+contents, exec bits) and remove any that differ or have no cached
+tarball, e.g. after a file in `node_modules` was edited in place.
 
 <Code
   code={`$ vlt cache verify <package-spec> [<package-spec>...]
@@ -104,10 +104,11 @@ Remove global store entries that no `node_modules` folder links to.
 
 ## Global store
 
-The global store holds every cached package tarball unpacked, under
-`<cache>/store`. A background process fills it after each install, and
-later installs hardlink package files from it instead of unpacking
-tarballs again. Packages with install scripts are always copied.
+The global store holds cached registry package tarballs unpacked,
+under `<cache>/store`. A background process fills it after each
+install, and later installs hardlink package files from it instead of
+unpacking tarballs again. Packages with install scripts are always
+copied.
 
 Files in `node_modules` are hardlinks into the global store, so
 editing one in place changes it for every project on the machine. To
@@ -115,9 +116,10 @@ edit `node_modules` in place (debugging, patching), set
 [`store-linker=copy`](/cli/configuring#--store-linkerauto--hardlink--copy--unpack)
 and reinstall from scratch (remove `node_modules` first), so its files
 are copies. If files were already edited through a hardlink, run
-`vlt cache verify --all` to drop the changed entries.
-`store-linker=unpack` (or `VLT_STORE_LINKER=unpack`) skips the global
-store entirely.
+`vlt cache verify --all` to drop the changed entries, then remove
+`node_modules` and reinstall in every project that linked them: their
+files are still the edited ones. `store-linker=unpack` (or
+`VLT_STORE_LINKER=unpack`) skips the global store entirely.
 
 The global store is a cache: deleting it, whole or in part, never
 breaks an installed project. `delete`, `delete-before` and `clean`

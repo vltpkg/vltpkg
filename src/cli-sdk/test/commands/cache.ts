@@ -555,10 +555,14 @@ const pkg = (
   return p
 }
 
-t.test('verify', async t => {
+const verifyCommand = async (t: Test) => {
   const { command, CacheView } = await mockCommand(t)
   new CacheView({}, {} as unknown as LoadedConfig)
+  return command
+}
 
+t.test('verify without specs', async t => {
+  const command = await verifyCommand(t)
   await t.rejects(
     command({
       positionals: ['verify'],
@@ -569,69 +573,73 @@ t.test('verify', async t => {
       cause: { code: 'EUSAGE' },
     },
   )
+})
 
-  t.test('--all', async t => {
-    const { cachePath, storeRoot, pkgs, packageInfo } = storeFixture(
-      t,
-      ['ok', 'edited', 'orphan'],
-    )
-    const ok = pkg(pkgs, 'ok')
-    const edited = pkg(pkgs, 'edited')
-    const orphan = pkg(pkgs, 'orphan')
-    // written through a hardlink in some node_modules
-    writeFileSync(resolve(edited.entry, 'index.js'), 'x')
-    rmSync(resolve(cachePath, orphan.hex))
-    const result = await command({
-      positionals: ['verify'],
-      values: { all: true },
-      options: { packageInfo, storeRoot },
-    } as unknown as LoadedConfig)
-    t.strictSame(result, {
-      checked: 3,
-      removed: {
-        [edited.hex]: 'modified index.js',
-        [orphan.hex]: 'no cached tarball',
-      },
-    })
-    t.equal(existsSync(ok.entry), true, 'intact entry kept')
-    for (const p of [edited, orphan]) {
-      t.equal(existsSync(p.entry), false)
-      t.equal(existsSync(storeIndexPath(p.entry)), false)
-    }
-    const byStr = (a: unknown, b: unknown) =>
-      String(a).localeCompare(String(b))
-    t.strictSame(
-      [...logged].sort(byStr),
-      [
-        ['-', edited.hex, 'modified index.js'],
-        ['-', orphan.hex, 'no cached tarball'],
-        ['Checked 3 global store entries, removed 2'],
-      ].sort(byStr),
-    )
+t.test('verify --all', async t => {
+  const command = await verifyCommand(t)
+  const { cachePath, storeRoot, pkgs, packageInfo } = storeFixture(
+    t,
+    ['ok', 'edited', 'orphan', 'noindex'],
+  )
+  const ok = pkg(pkgs, 'ok')
+  const edited = pkg(pkgs, 'edited')
+  const orphan = pkg(pkgs, 'orphan')
+  const noindex = pkg(pkgs, 'noindex')
+  // written through a hardlink in some node_modules
+  writeFileSync(resolve(edited.entry, 'index.js'), 'x')
+  rmSync(resolve(cachePath, orphan.hex))
+  writeFileSync(storeIndexPath(noindex.entry), '{}')
+  const result = await command({
+    positionals: ['verify'],
+    values: { all: true },
+    options: { packageInfo, storeRoot },
+  } as unknown as LoadedConfig)
+  t.strictSame(result, {
+    checked: 4,
+    removed: {
+      [edited.hex]: 'modified index.js',
+      [orphan.hex]: 'no cached tarball',
+      [noindex.hex]: 'no index',
+    },
   })
+  t.equal(existsSync(ok.entry), true, 'intact entry kept')
+  for (const p of [edited, orphan, noindex]) {
+    t.equal(existsSync(p.entry), false)
+    t.equal(existsSync(storeIndexPath(p.entry)), false)
+  }
+  const byStr = (a: unknown, b: unknown) =>
+    String(a).localeCompare(String(b))
+  // named from the sidecar, hex without one
+  t.strictSame(
+    [...logged].sort(byStr),
+    [
+      ['-', 'edited@1.0.0', 'modified index.js'],
+      ['-', 'orphan@1.0.0', 'no cached tarball'],
+      ['-', noindex.hex, 'no index'],
+      ['Checked 4 global store entries, removed 3'],
+    ].sort(byStr),
+  )
+})
 
-  t.test('specs', async t => {
-    const { storeRoot, pkgs, packageInfo } = storeFixture(t, [
-      'a',
-      'b',
-    ])
-    const b = pkg(pkgs, 'b')
-    writeFileSync(storeIndexPath(b.entry), '{}')
-    const result = await command({
-      positionals: ['verify', 'a', 'b', 'missing', 'git'],
-      values: {},
-      options: { packageInfo, storeRoot },
-    } as unknown as LoadedConfig)
-    t.strictSame(result, { checked: 2, removed: { b: 'no index' } })
-    t.equal(existsSync(pkg(pkgs, 'a').entry), true)
-    t.equal(existsSync(b.entry), false)
-    t.strictSame(logged, [
-      ['Not in the global store:', 'missing'],
-      ['Not in the global store:', 'git'],
-      ['-', 'b', 'no index'],
-      ['Checked 2 global store entries, removed 1'],
-    ])
-  })
+t.test('verify specs', async t => {
+  const command = await verifyCommand(t)
+  const { storeRoot, pkgs, packageInfo } = storeFixture(t, ['a', 'b'])
+  const b = pkg(pkgs, 'b')
+  writeFileSync(storeIndexPath(b.entry), '{}')
+  const result = await command({
+    positionals: ['verify', 'a', 'b', 'missing', 'git'],
+    values: {},
+    options: { packageInfo, storeRoot },
+  } as unknown as LoadedConfig)
+  t.strictSame(result, { checked: 2, removed: { b: 'no index' } })
+  t.equal(existsSync(pkg(pkgs, 'a').entry), true)
+  t.equal(existsSync(b.entry), false)
+  t.strictSame(logged, [
+    ['Not in the global store:', 'missing'],
+    ['Not in the global store:', 'git'],
+    ['-', 'b', 'no index'],
+    ['Checked 2 global store entries, removed 1'],
+  ])
 })
 
 t.test('prune-store', async t => {

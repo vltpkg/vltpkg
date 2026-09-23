@@ -97,7 +97,7 @@ const commandHelp = {
     defaultOrder: 4,
   },
   cache: {
-    args: '[add|ls|info|clean|delete|delete-before|delete-all]',
+    args: '[add|ls|info|clean|delete|delete-before|delete-all|verify|prune-store]',
     desc: 'Manage the package cache',
   },
   ci: {

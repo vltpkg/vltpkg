@@ -74,7 +74,7 @@ vlt cache delete-all
 
 ### verify
 
-Check global store entries against their cached tarballs (file list, sizes, contents) and remove any that differ, e.g. after a file in \`node_modules\` was edited in place.
+Check global store entries against their cached tarballs (file list, contents, exec bits) and remove any that differ or have no cached tarball, e.g. after a file in \`node_modules\` was edited in place.
 
 \`\`\`
 vlt cache verify <package-spec> [<package-spec>...]
@@ -131,24 +131,6 @@ With \`verify\`, check every global store entry.
 --all
 \`\`\`
 
-`
-
-exports[`test/commands/cache.ts > TAP > logged by --all 1`] = `
-Array [
-  Array [
-    "-",
-    "596eec1f7f2fe1d3832bcb8e8c5d3dbc5f98e6907ae1b1ae9263dcd9398930aca3af910f173bbc9eadaea424048ba1470b507c581ee515347d3bad9f1ac288a8",
-    "modified index.js",
-  ],
-  Array [
-    "-",
-    "f32c4ee2de97691dc0db078eb020e65a01b63e58bf760cf7225162d6531542b58daa7da40e38bcf082a3b1e9dd53d7ba060e33a1f5ecfbd8f8799078a7f78e64",
-    "no cached tarball",
-  ],
-  Array [
-    "Checked 3 global store entries, removed 2",
-  ],
-]
 `
 
 exports[`test/commands/cache.ts > TAP > logged by add 1`] = `
@@ -296,7 +278,30 @@ Array [
 ]
 `
 
-exports[`test/commands/cache.ts > TAP > logged by specs 1`] = `
+exports[`test/commands/cache.ts > TAP > logged by verify --all 1`] = `
+Array [
+  Array [
+    "-",
+    "092ed654583b52a2c0dfd3b796fbbb69583e7dae57659f381882544e213247375cb18f047a37682032ad314cdc5fae9ae0298bbaa893366af32dd35711abd6de",
+    "no index",
+  ],
+  Array [
+    "-",
+    "edited@1.0.0",
+    "modified index.js",
+  ],
+  Array [
+    "-",
+    "orphan@1.0.0",
+    "no cached tarball",
+  ],
+  Array [
+    "Checked 4 global store entries, removed 3",
+  ],
+]
+`
+
+exports[`test/commands/cache.ts > TAP > logged by verify specs 1`] = `
 Array [
   Array [
     "-",
@@ -317,25 +322,8 @@ Array [
 ]
 `
 
-exports[`test/commands/cache.ts > TAP > logged by verify 1`] = `
-Array [
-  Array [
-    "-",
-    "b",
-    "no index",
-  ],
-  Array [
-    "Checked 2 global store entries, removed 1",
-  ],
-  Array [
-    "Not in the global store:",
-    "git",
-  ],
-  Array [
-    "Not in the global store:",
-    "missing",
-  ],
-]
+exports[`test/commands/cache.ts > TAP > logged by verify without specs 1`] = `
+Array []
 `
 
 exports[`test/commands/cache.ts > TAP > ls > all results 1`] = `
