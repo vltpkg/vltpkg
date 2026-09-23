@@ -37,6 +37,7 @@ BENCH_OUTPUT_FOLDER="$BENCH_RESULTS/$BENCH_FIXTURE/$BENCH_VARIATION"
 BENCH_BINARY="${BENCH_BINARY:=vlt}"
 # $$: one log per run, also with several commands (BENCH_BINARY=a,b)
 BENCH_COMMAND_VLT="{binary} install --view=human --cache=.vlt-cache > $BENCH_OUTPUT_FOLDER/vlt-output-\${HYPERFINE_ITERATION}-\$\$.log 2>&1"
+export BENCH_CHILD_WAIT_LOG="$BENCH_OUTPUT_FOLDER/child-wait.log"
 
 # Clean up & create the results directory
 rm -rf "$BENCH_OUTPUT_FOLDER"

@@ -13,8 +13,8 @@ hyperfine \
   --warmup="$BENCH_WARMUP" \
   --runs="$BENCH_RUNS" \
   --setup="bash $BENCH_SCRIPTS/clean-helpers.sh clean_all" \
-  --prepare="sleep 1; bash $BENCH_SCRIPTS/clean-helpers.sh clean_node_modules" \
-  --conclude="sleep 1; bash $BENCH_SCRIPTS/clean-helpers.sh clean_node_modules" \
+  --prepare="bash $BENCH_SCRIPTS/clean-helpers.sh wait_vlt_children; sleep 1; bash $BENCH_SCRIPTS/clean-helpers.sh clean_node_modules" \
+  --conclude="bash $BENCH_SCRIPTS/clean-helpers.sh wait_vlt_children; sleep 1; bash $BENCH_SCRIPTS/clean-helpers.sh clean_node_modules" \
   --cleanup="bash $BENCH_SCRIPTS/clean-helpers.sh clean_all" \
   --parameter-list "binary" "$BENCH_BINARY" \
   --command-name="{binary} install: $BENCH_FIXTURE & $BENCH_VARIATION" "$BENCH_COMMAND_VLT"
