@@ -66,10 +66,21 @@ export const storeEntryLinked = (storeEntry: string): boolean =>
       (lstatSync(join(storeEntry, p), noThrow)?.nlink ?? 1) > 1,
   )
 
+// v1 fields; optional fields added later stay unchecked
+const indexKeys = [
+  'v',
+  'files',
+  'dirs',
+  'scripts',
+  'bins',
+  'name',
+  'version',
+] as const
+
 /**
  * Check a global store entry against the tarball it was exploded from:
- * sidecar index, file list and every file's bytes. Returns why it does
- * not match, or undefined if it does.
+ * sidecar index, file list, every file's bytes and exec bit (not on
+ * Windows). Returns why it does not match, or undefined if it does.
  */
 export const verifyStoreEntry = (
   storeEntry: string,
@@ -83,7 +94,11 @@ export const verifyStoreEntry = (
   }
   const index = readStoreIndex(storeEntry)
   if (!index) return 'no index'
-  if (!isDeepStrictEqual(index, layout.index)) return 'index differs'
+  if (
+    indexKeys.some(k => !isDeepStrictEqual(index[k], layout.index[k]))
+  ) {
+    return 'index differs'
+  }
   const found = new Set<string>()
   try {
     for (const d of readdirSync(storeEntry, {
@@ -97,10 +112,22 @@ export const verifyStoreEntry = (
   } catch {
     return 'missing'
   }
+  const modes = process.platform !== 'win32'
   for (const f of layout.files) {
     const p = relPath(storeEntry, f.path)
     if (!found.delete(p)) return `missing ${p}`
-    if (!readFileSync(f.path).equals(f.body)) return `modified ${p}`
+    let body: Buffer
+    let mode: number
+    try {
+      mode = statSync(f.path).mode
+      body = readFileSync(f.path)
+    } catch {
+      return `unreadable ${p}`
+    }
+    if (!body.equals(f.body)) return `modified ${p}`
+    if (modes && ((mode & 0o111) !== 0) !== f.executable) {
+      return `mode ${p}`
+    }
   }
   const [extra] = found
   return extra === undefined ? undefined : `extra ${extra}`

@@ -1,7 +1,10 @@
+import * as FS from 'node:fs'
 import {
+  chmodSync,
   existsSync,
   linkSync,
   readdirSync,
+  readFileSync,
   renameSync,
   rmSync,
   utimesSync,
@@ -36,6 +39,7 @@ const tar = makeTar([
   'a',
 ])
 const hex = 'ab'.repeat(64)
+const isWin = process.platform === 'win32'
 
 const makeEntry = (t: Test) => {
   const store = t.testdir({ store: {} }) + '/store'
@@ -78,6 +82,26 @@ t.test('removeStoreEntry, sidecar and dir', async t => {
   t.strictSame(readdirSync(store), ['.tmp'])
   removeStoreEntry(entry)
 })
+
+t.test(
+  'removeStoreEntry keeps the sidecar if the dir stays',
+  async t => {
+    const { entry } = makeEntry(t)
+    const rimraf = await import('rimraf')
+    const { removeStoreEntry } = await t.mockImport<
+      typeof import('../src/store-entry.ts')
+    >('../src/store-entry.ts', {
+      rimraf: t.createMock(rimraf, {
+        rimrafSync: (p: string) => {
+          if (p === entry) throw new Error('EBUSY')
+          return rimraf.rimrafSync(p)
+        },
+      }),
+    })
+    t.throws(() => removeStoreEntry(entry), { message: 'EBUSY' })
+    t.equal(existsSync(storeIndexPath(entry)), true)
+  },
+)
 
 t.test('storeEntryTime', async t => {
   const { entry } = makeEntry(t)
@@ -151,5 +175,67 @@ t.test('verifyStoreEntry', async t => {
   t.test('bad tarball', async t => {
     const { entry } = makeEntry(t)
     t.equal(verifyStoreEntry(entry, Buffer.alloc(0)), 'bad tarball')
+  })
+
+  t.test('optional index fields added later: unchecked', async t => {
+    const { entry } = makeEntry(t)
+    const sidecar = storeIndexPath(entry)
+    writeFileSync(
+      sidecar,
+      JSON.stringify({
+        ...JSON.parse(readFileSync(sidecar, 'utf8')),
+        manifest: {},
+      }),
+    )
+    t.equal(verifyStoreEntry(entry, tar), undefined)
+  })
+
+  t.test('unreadable file', async t => {
+    const { entry } = makeEntry(t)
+    const { verifyStoreEntry } = await t.mockImport<
+      typeof import('../src/store-entry.ts')
+    >('../src/store-entry.ts', {
+      'node:fs': t.createMock(FS, {
+        readFileSync: (p: string, o?: BufferEncoding) => {
+          if (p === resolve(entry, 'cli')) {
+            throw Object.assign(new Error('EACCES'), {
+              code: 'EACCES',
+            })
+          }
+          return readFileSync(p, o)
+        },
+      }),
+    })
+    t.equal(verifyStoreEntry(entry, tar), 'unreadable cli')
+  })
+
+  t.test(
+    'exec bit changed through a link',
+    { skip: isWin && 'no posix modes' },
+    async t => {
+      const { entry } = makeEntry(t)
+      chmodSync(resolve(entry, 'cli'), 0o644)
+      t.equal(verifyStoreEntry(entry, tar), 'mode cli')
+      chmodSync(resolve(entry, 'cli'), 0o755)
+      chmodSync(resolve(entry, 'lib/a.js'), 0o755)
+      t.equal(verifyStoreEntry(entry, tar), 'mode lib/a.js')
+    },
+  )
+
+  t.test('exec bits, any platform', async t => {
+    const { entry } = makeEntry(t)
+    // no exec bits anywhere, as stat reports on Windows
+    const { verifyStoreEntry } = await t.mockImport<
+      typeof import('../src/store-entry.ts')
+    >('../src/store-entry.ts', {
+      'node:fs': t.createMock(FS, {
+        statSync: (p: string, o?: FS.StatSyncOptions) =>
+          Object.assign(FS.statSync(p, o) ?? {}, { mode: 0o100644 }),
+      }),
+    })
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.equal(verifyStoreEntry(entry, tar), 'mode cli')
+    t.intercept(process, 'platform', { value: 'win32' })
+    t.equal(verifyStoreEntry(entry, tar), undefined, 'unchecked')
   })
 })
