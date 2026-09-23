@@ -268,6 +268,10 @@ const agentOptions: Agent.Options = {
 
 const xdg = new XDG('vlt')
 
+/** Global store root under the cache folder `cache`. */
+export const storeRoot = (cache: string) =>
+  resolve(cache, 'store', 'v1')
+
 const defaultCacheMaxSize = 256 * 1024 * 1024
 
 const parseCacheMaxSize = (raw: string | undefined): number => {
@@ -299,12 +303,17 @@ export class RegistryClient {
     this.identity = identity
     this.staleWhileRevalidateFactor = staleWhileRevalidateFactor
     const path = resolve(cache, 'registry-client')
+    const store = storeRoot(cache)
     this.cache = new Cache({
       path,
+      store,
       maxSize: parseCacheMaxSize(process.env.VLT_CACHE_MAX_SIZE),
       onDiskWrite(_path, key, data) {
-        if (CacheEntry.isGzipEntry(data)) {
-          cacheUnzipRegister(path, key)
+        if (
+          CacheEntry.isGzipEntry(data) ||
+          CacheEntry.isTarballEntry(data)
+        ) {
+          cacheUnzipRegister(path, key, store)
         }
       },
     })

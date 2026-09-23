@@ -340,6 +340,35 @@ t.test('isGzip', t => {
   t.end()
 })
 
+t.test('isTarballEntry', t => {
+  const integrity = `sha512-${createHash('sha512').update('x').digest('base64')}`
+  const tgz = Buffer.from('not json')
+  const is = (
+    status: number,
+    headers: Record<string, string>,
+    body = tgz,
+  ) => CacheEntry.isTarballEntry(toRawEntry(status, headers, body))
+  t.equal(CacheEntry.isTarballEntry(Buffer.alloc(1)), false, 'short')
+  t.equal(is(200, { integrity }), true, 'no content-type')
+  t.equal(is(200, { integrity }, gzipSync(tgz)), true, 'gzipped')
+  t.equal(
+    is(200, {
+      'content-type': 'application/octet-stream',
+      integrity,
+    }),
+    true,
+    'octet-stream',
+  )
+  t.equal(is(200, {}), false, 'no integrity')
+  t.equal(is(404, { integrity }), false, 'not 200')
+  t.equal(
+    is(200, { 'content-type': 'application/json', integrity }),
+    false,
+    'json',
+  )
+  t.end()
+})
+
 t.test('decoding a partial buffer should not blow up', t => {
   const totesEmpty = CacheEntry.decode(Buffer.alloc(0))
   t.match(totesEmpty, {
