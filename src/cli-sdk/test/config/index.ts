@@ -1448,7 +1448,11 @@ t.test('pairsToRecords/recordsToPairs round-trip', async t => {
       publish: { registries: { npm: 'https://publish/' } },
     },
   }
-  const pairs = recordsToPairs(records)
+  const pairs = recordsToPairs({
+    ...records,
+    projectRoot: '/p',
+    storeRoot: '/s',
+  })
   t.strictSame(pairs, {
     tag: 'beta',
     registries: ['npm=https://npm/'],

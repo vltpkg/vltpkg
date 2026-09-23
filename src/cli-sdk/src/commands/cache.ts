@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import { CacheEntry, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { mkdir, rm } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
 import type { LoadedConfig } from '../config/index.ts'
 import type { CommandUsageDefinition } from '../config/usage.ts'
@@ -332,10 +332,10 @@ const deleteAll = async (
 ) => {
   const { cache } = await conf.options.packageInfo.getRegistryClient()
   await rm(cache.path(), { recursive: true, force: true })
-  // the whole global store, every layout version
-  if (cache.store) {
-    await rm(dirname(cache.store), { recursive: true, force: true })
-  }
+  // every global store layout version, and a store root set elsewhere
+  const rf = { recursive: true, force: true }
+  await rm(resolve(conf.options.cache, 'store'), rf)
+  if (cache.store) await rm(cache.store, rf)
   await mkdir(cache.path(), { recursive: true })
   view?.stdout('Deleted all cache entries.')
 }

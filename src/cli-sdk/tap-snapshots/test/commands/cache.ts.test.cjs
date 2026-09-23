@@ -147,6 +147,9 @@ Array [
   Array [
     "Deleted all cache entries.",
   ],
+  Array [
+    "Deleted all cache entries.",
+  ],
 ]
 `
 

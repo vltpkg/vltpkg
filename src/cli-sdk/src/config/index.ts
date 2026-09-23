@@ -154,6 +154,7 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
             k === 'packageJson' ||
             k === 'monorepo' ||
             k === 'projectRoot' ||
+            k === 'storeRoot' ||
             k === 'packageInfo'
           ),
       )
