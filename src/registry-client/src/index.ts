@@ -712,8 +712,9 @@ export class RegistryClient {
 
   /**
    * Queue the cached tarball at `key` (a {@link CachedBody} key) for the
-   * background child to explode into the global store. `integrity`
-   * finds it when only the integrity path holds it.
+   * background child: exploded into the global store when that is on,
+   * else un-gzipped. `integrity` finds it when only the integrity path
+   * holds it.
    */
   queueForStore(key: string, integrity?: Integrity) {
     cacheUnzipRegister(

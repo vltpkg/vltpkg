@@ -453,8 +453,12 @@ export class PackageInfoClient {
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
             // a warm install writes nothing to the cache, so queue the
-            // store miss here or an existing cache never converges
-            if (hex) rc.queueForStore(cached.key, r.integrity)
+            // store miss here or an existing cache never converges,
+            // and a gzipped body with no store link, to unzip it
+            const { body } = cached
+            if (hex || (body[0] === 0x1f && body[1] === 0x8b)) {
+              rc.queueForStore(cached.key, r.integrity)
+            }
             return r
           } catch (er) {
             // a systematically failing fast path (every entry still
