@@ -80,7 +80,9 @@ const main = async (
   const unzip = async (ks: string[]) =>
     mode === '0' ?
       []
-    : Promise.allSettled(ks.map(k => unzipEntry(cache, k)))
+    : Promise.allSettled(
+        ks.map(k => unzipEntry(cache, k, integrities.get(k))),
+      )
   // explode then reads the rewritten entries back from memory
   const all = mode === '1' ? await unzip(keys) : undefined
   const s =
@@ -129,14 +131,17 @@ const readSize = (buf: Buffer, offset: number) => {
 }
 
 /**
- * Rewrite the cache entry at `key` un-gzipped. True if it was.
- * Throws on a corrupt gzip.
+ * Rewrite the cache entry at `key`, or at the integrity it is cached
+ * `under`, un-gzipped. True if it was. Throws on a corrupt gzip.
  */
 const unzipEntry = async (
   cache: Cache,
   key: string,
+  under?: Integrity,
 ): Promise<boolean> => {
-  const buffer = await cache.fetch(key)
+  const buffer = await cache.fetch(key, {
+    context: { integrity: under },
+  })
   if (!buffer || buffer.length < 4) return false
   const headSizeOriginal = readSize(buffer, 0)
   const body = buffer.subarray(headSizeOriginal)

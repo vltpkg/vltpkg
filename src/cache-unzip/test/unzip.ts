@@ -570,6 +570,36 @@ t.test('global store', async t => {
     t.ok(existsSync(resolve(store, hex)))
   })
 
+  t.test('unzips an entry cached only at its integrity', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'registry-client')
+    const store = resolve(dir, 'store/v1')
+    const integrity = integrityOf(tgz)
+    const cache = new Cache({ path })
+    // cached under another url
+    cache.set('old', tgzEntry, { integrity })
+    await cache.promise()
+    const intFile = String(cache.integrityPath(integrity))
+    const gzipped = async (file: string) => {
+      const buf = await readFile(file)
+      return buf[buf.readUInt32BE(0)] === 0x1f
+    }
+    const run = () =>
+      spawnSync(
+        process.execPath,
+        [__CODE_SPLIT_SCRIPT_NAME, path, store],
+        {
+          input: `new\t${integrity}\0`,
+          env: { ...ENV, VLT_STORE_LINKER: 'unpack' },
+        },
+      ).status
+    t.equal(run(), 0)
+    t.equal(await gzipped(cache.path('new')), true, 'linked')
+    t.equal(run(), 0)
+    t.equal(await gzipped(intFile), false, 'unzipped')
+    t.equal(await gzipped(cache.path('new')), false)
+  })
+
   t.test('VLT_CACHE_UNZIP=0 only explodes', async t => {
     const env = {
       ...ENV,

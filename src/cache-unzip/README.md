@@ -60,9 +60,9 @@ also explodes each tarball entry with a sha512 `integrity` header into
   kept. Leftovers older than one hour are removed.
 - Explode runs first. Entries it writes stay gzipped: installs link
   them from the store. The rest are un-gzipped: store off, already in
-  the store, not a tarball, failed. So a gzipped entry registered
-  again by an install that read it instead of linking it (say, after
-  switching to `store-linker=unpack`) is un-gzipped.
+  the store, not a tarball, no sha512 integrity, failed. So a gzipped
+  entry registered again by an install that read it instead of linking
+  it (say, after switching to `store-linker=unpack`) is un-gzipped.
 - `VLT_CACHE_UNZIP=0` never un-gzips. `VLT_CACHE_UNZIP=1` un-gzips
   every entry before exploding.
 - `VLT_CACHE_EXPLODE_CONCURRENCY` sets how many entries are read at
