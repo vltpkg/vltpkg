@@ -58,7 +58,7 @@ vlt cache delete <key> [<key>...]
 
 ### delete-before
 
-Purge all cache items from before a given date. Date can be provided in any format that JavaScript can parse.
+Purge all cache items from before a given date, and global store entries written before it. Date can be provided in any format that JavaScript can parse.
 
 \`\`\`
 vlt cache delete-before <date>
@@ -70,6 +70,23 @@ Delete the entire cache folder to make vlt slower.
 
 \`\`\`
 vlt cache delete-all
+\`\`\`
+
+### verify
+
+Check global store entries against their cached tarballs (file list, sizes, contents) and remove any that differ, e.g. after a file in \`node_modules\` was edited in place.
+
+\`\`\`
+vlt cache verify <package-spec> [<package-spec>...]
+vlt cache verify --all
+\`\`\`
+
+### prune-store
+
+Remove global store entries that no \`node_modules\` folder links to.
+
+\`\`\`
+vlt cache prune-store
 \`\`\`
 
 ## Examples
@@ -98,6 +115,40 @@ Delete all entries created before Jan 1, 2025
 vlt cache vlt cache delete-before 2025-01-01
 \`\`\`
 
+Check every global store entry
+
+\`\`\`
+vlt cache verify --all
+\`\`\`
+
+## Options
+
+### all
+
+With \`verify\`, check every global store entry.
+
+\`\`\`
+--all
+\`\`\`
+
+`
+
+exports[`test/commands/cache.ts > TAP > logged by --all 1`] = `
+Array [
+  Array [
+    "-",
+    "596eec1f7f2fe1d3832bcb8e8c5d3dbc5f98e6907ae1b1ae9263dcd9398930aca3af910f173bbc9eadaea424048ba1470b507c581ee515347d3bad9f1ac288a8",
+    "modified index.js",
+  ],
+  Array [
+    "-",
+    "f32c4ee2de97691dc0db078eb020e65a01b63e58bf760cf7225162d6531542b58daa7da40e38bcf082a3b1e9dd53d7ba060e33a1f5ecfbd8f8799078a7f78e64",
+    "no cached tarball",
+  ],
+  Array [
+    "Checked 3 global store entries, removed 2",
+  ],
+]
 `
 
 exports[`test/commands/cache.ts > TAP > logged by add 1`] = `
@@ -154,7 +205,24 @@ Array [
 `
 
 exports[`test/commands/cache.ts > TAP > logged by delete-before 1`] = `
-Array []
+Array [
+  Array [
+    "-",
+    "\\"HEAD https://registry.npmjs.org/xyz\\"",
+    159,
+  ],
+  Array [
+    "-",
+    "https://registry.npmjs.org/xyz",
+    488,
+  ],
+  Array [
+    "Removed 1 global store entry",
+  ],
+  Array [
+    "Removed 2 items totalling 647 B",
+  ],
+]
 `
 
 exports[`test/commands/cache.ts > TAP > logged by human view coverage bits 1`] = `
@@ -213,6 +281,59 @@ Array [
   Array [
     "Not found:",
     "asdfasdfasdf",
+  ],
+]
+`
+
+exports[`test/commands/cache.ts > TAP > logged by prune-store 1`] = `
+Array [
+  Array [
+    "Removed 0 of 0 global store entries",
+  ],
+  Array [
+    "Removed 2 of 3 global store entries",
+  ],
+]
+`
+
+exports[`test/commands/cache.ts > TAP > logged by specs 1`] = `
+Array [
+  Array [
+    "-",
+    "b",
+    "no index",
+  ],
+  Array [
+    "Checked 2 global store entries, removed 1",
+  ],
+  Array [
+    "Not in the global store:",
+    "git",
+  ],
+  Array [
+    "Not in the global store:",
+    "missing",
+  ],
+]
+`
+
+exports[`test/commands/cache.ts > TAP > logged by verify 1`] = `
+Array [
+  Array [
+    "-",
+    "b",
+    "no index",
+  ],
+  Array [
+    "Checked 2 global store entries, removed 1",
+  ],
+  Array [
+    "Not in the global store:",
+    "git",
+  ],
+  Array [
+    "Not in the global store:",
+    "missing",
   ],
 ]
 `

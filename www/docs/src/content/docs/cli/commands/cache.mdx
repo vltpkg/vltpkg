@@ -67,8 +67,9 @@ are provided, then only those cache entries will be considered.
 
 ### delete-before
 
-Purge all cache items from before a given date. Date can be provided
-in any format that JavaScript can parse.
+Purge all cache items from before a given date, and global store
+entries written before it. Date can be provided in any format that
+JavaScript can parse.
 
 <Code
   code="$ vlt cache delete-before <date>"
@@ -81,6 +82,25 @@ in any format that JavaScript can parse.
 Delete the entire cache folder to make vlt slower.
 
 <Code code="$ vlt cache delete-all" title="Terminal" lang="bash" />
+
+### verify
+
+Check global store entries against their cached tarballs (file list,
+sizes, contents) and remove any that differ, e.g. after a file in
+`node_modules` was edited in place.
+
+<Code
+  code={`$ vlt cache verify <package-spec> [<package-spec>...]
+$ vlt cache verify --all`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### prune-store
+
+Remove global store entries that no `node_modules` folder links to.
+
+<Code code="$ vlt cache prune-store" title="Terminal" lang="bash" />
 
 ## Global store
 
@@ -134,3 +154,7 @@ Delete all entries created before Jan 1, 2025:
   title="Terminal"
   lang="bash"
 />
+
+Check every global store entry:
+
+<Code code="$ vlt cache verify --all" title="Terminal" lang="bash" />

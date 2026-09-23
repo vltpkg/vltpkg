@@ -2,17 +2,24 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import type { RegistryClientRequestOptions } from '@vltpkg/registry-client'
 import { CacheEntry } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
+import { storeIndexPath, unpackToStoreSync } from '@vltpkg/tar'
 import type { Integrity } from '@vltpkg/types'
 import { createHash } from 'node:crypto'
 import {
+  existsSync,
+  linkSync,
   mkdirSync,
   readdirSync,
+  renameSync,
+  rmSync,
   statSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs'
 import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
+import { Header } from 'tar'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 const logged: unknown[][] = []
@@ -289,9 +296,18 @@ t.test('delete removes the global store entry', async t => {
 
 t.test('delete-before', async t => {
   const dir = createCache(t)
-  const { command } = await mockCommand(t)
+  const { command, CacheView } = await mockCommand(t)
+  new CacheView({}, {} as unknown as LoadedConfig)
 
-  const options = { cache: dir }
+  const storeRoot = resolve(dir, 'store/v1')
+  const [oldHex, newHex] = ['a', 'b'].map(c => c.repeat(128))
+  for (const hex of [oldHex, newHex]) {
+    mkdirSync(resolve(storeRoot, String(hex)), { recursive: true })
+    writeFileSync(resolve(storeRoot, `${hex}.json`), '{}')
+  }
+  // sidecar mtime is when the entry was written
+  utimesSync(resolve(storeRoot, `${oldHex}.json`), 1000, 1000)
+  const options = { cache: dir, storeRoot }
   Object.assign(options, {
     packageInfo: new PackageInfoClient(options),
   })
@@ -333,6 +349,11 @@ t.test('delete-before', async t => {
   t.throws(() =>
     statSync(resolve(dir, 'registry-client', pakukeyHash) + '.key'),
   )
+  t.strictSame(readdirSync(storeRoot), [
+    String(newHex),
+    `${newHex}.json`,
+  ])
+  t.strictSame(logged.at(-1), ['Removed 1 global store entry'])
 })
 
 t.test('clean', async t => {
@@ -460,4 +481,191 @@ t.test('info', async t => {
   t.equal(result, undefined)
   t.strictSame(logged, [[JSON.stringify(pakument, null, 2)]])
   t.matchStrict(erred, [[pakukey, pakuEntry]])
+})
+
+// a tarball holding `files` under package/
+const makeTar = (files: Record<string, string>) => {
+  const chunks: Buffer[] = []
+  for (const [path, body] of Object.entries(files)) {
+    const h = Buffer.alloc(512)
+    new Header({
+      path: `package/${path}`,
+      type: 'File',
+      size: body.length,
+      mode: 0o644,
+    }).encode(h, 0)
+    const b = Buffer.alloc(512 * Math.ceil(body.length / 512))
+    b.write(body)
+    chunks.push(h, b)
+  }
+  return Buffer.concat([...chunks, Buffer.alloc(1024)])
+}
+
+// cache a tarball under its integrity, and explode it into the store
+const storeFixture = (t: Test, names: string[]) => {
+  const dir = t.testdir({ 'registry-client': {}, store: {} })
+  const cachePath = resolve(dir, 'registry-client')
+  const storeRoot = resolve(dir, 'store')
+  const pkgs = Object.fromEntries(
+    names.map(name => {
+      const tgz = makeTar({
+        'package.json': JSON.stringify({ name, version: '1.0.0' }),
+        'index.js': name,
+      })
+      const hash = createHash('sha512').update(tgz).digest()
+      const integrity: Integrity = `sha512-${hash.toString('base64')}`
+      const hex = hash.toString('hex')
+      const entry = new CacheEntry(200, [], { integrity })
+      entry.addBody(tgz)
+      writeFileSync(resolve(cachePath, hex), entry.encode())
+      const tmp = resolve(storeRoot, `.tmp/${hex}`)
+      const { index } = unpackToStoreSync(tgz, tmp)
+      writeFileSync(
+        storeIndexPath(resolve(storeRoot, hex)),
+        JSON.stringify(index),
+      )
+      renameSync(tmp, resolve(storeRoot, hex))
+      return [
+        name,
+        { integrity, hex, entry: resolve(storeRoot, hex) },
+      ]
+    }),
+  )
+  const packageInfo = {
+    resolve: async (s: Spec) => ({
+      integrity:
+        s.name === 'git' ? undefined : pkgs[s.name]?.integrity,
+    }),
+    getRegistryClient: async () => ({
+      cache: { path: () => cachePath },
+    }),
+  }
+  return { cachePath, storeRoot, pkgs, packageInfo }
+}
+
+const pkg = (
+  pkgs: Record<
+    string,
+    { integrity: Integrity; hex: string; entry: string }
+  >,
+  name: string,
+) => {
+  const p = pkgs[name]
+  if (!p) throw new Error('no fixture ' + name)
+  return p
+}
+
+t.test('verify', async t => {
+  const { command, CacheView } = await mockCommand(t)
+  new CacheView({}, {} as unknown as LoadedConfig)
+
+  await t.rejects(
+    command({
+      positionals: ['verify'],
+      values: {},
+    } as unknown as LoadedConfig),
+    {
+      message: 'Must provide specs to verify, or --all',
+      cause: { code: 'EUSAGE' },
+    },
+  )
+
+  t.test('--all', async t => {
+    const { cachePath, storeRoot, pkgs, packageInfo } = storeFixture(
+      t,
+      ['ok', 'edited', 'orphan'],
+    )
+    const ok = pkg(pkgs, 'ok')
+    const edited = pkg(pkgs, 'edited')
+    const orphan = pkg(pkgs, 'orphan')
+    // written through a hardlink in some node_modules
+    writeFileSync(resolve(edited.entry, 'index.js'), 'x')
+    rmSync(resolve(cachePath, orphan.hex))
+    const result = await command({
+      positionals: ['verify'],
+      values: { all: true },
+      options: { packageInfo, storeRoot },
+    } as unknown as LoadedConfig)
+    t.strictSame(result, {
+      checked: 3,
+      removed: {
+        [edited.hex]: 'modified index.js',
+        [orphan.hex]: 'no cached tarball',
+      },
+    })
+    t.equal(existsSync(ok.entry), true, 'intact entry kept')
+    for (const p of [edited, orphan]) {
+      t.equal(existsSync(p.entry), false)
+      t.equal(existsSync(storeIndexPath(p.entry)), false)
+    }
+    const byStr = (a: unknown, b: unknown) =>
+      String(a).localeCompare(String(b))
+    t.strictSame(
+      [...logged].sort(byStr),
+      [
+        ['-', edited.hex, 'modified index.js'],
+        ['-', orphan.hex, 'no cached tarball'],
+        ['Checked 3 global store entries, removed 2'],
+      ].sort(byStr),
+    )
+  })
+
+  t.test('specs', async t => {
+    const { storeRoot, pkgs, packageInfo } = storeFixture(t, [
+      'a',
+      'b',
+    ])
+    const b = pkg(pkgs, 'b')
+    writeFileSync(storeIndexPath(b.entry), '{}')
+    const result = await command({
+      positionals: ['verify', 'a', 'b', 'missing', 'git'],
+      values: {},
+      options: { packageInfo, storeRoot },
+    } as unknown as LoadedConfig)
+    t.strictSame(result, { checked: 2, removed: { b: 'no index' } })
+    t.equal(existsSync(pkg(pkgs, 'a').entry), true)
+    t.equal(existsSync(b.entry), false)
+    t.strictSame(logged, [
+      ['Not in the global store:', 'missing'],
+      ['Not in the global store:', 'git'],
+      ['-', 'b', 'no index'],
+      ['Checked 2 global store entries, removed 1'],
+    ])
+  })
+})
+
+t.test('prune-store', async t => {
+  const { command, CacheView } = await mockCommand(t)
+  new CacheView({}, {} as unknown as LoadedConfig)
+  const { storeRoot, pkgs } = storeFixture(t, ['used', 'unused'])
+  const used = pkg(pkgs, 'used')
+  linkSync(
+    resolve(used.entry, 'index.js'),
+    resolve(storeRoot, '../linked.js'),
+  )
+  const orphan = 'c'.repeat(128)
+  writeFileSync(resolve(storeRoot, `${orphan}.json`), '{}')
+  const result = await command({
+    positionals: ['prune-store'],
+    options: { storeRoot },
+  } as unknown as LoadedConfig)
+  t.strictSame(result, {
+    checked: 3,
+    removed: {
+      [pkg(pkgs, 'unused').hex]: 'unused',
+      [orphan]: 'unused',
+    },
+  })
+  t.strictSame(readdirSync(storeRoot).sort(), [
+    '.tmp',
+    used.hex,
+    `${used.hex}.json`,
+  ])
+  t.strictSame(logged, [['Removed 2 of 3 global store entries']])
+
+  await command({
+    positionals: ['prune-store'],
+    options: { storeRoot: resolve(storeRoot, 'nope') },
+  } as unknown as LoadedConfig)
+  t.strictSame(logged[1], ['Removed 0 of 0 global store entries'])
 })

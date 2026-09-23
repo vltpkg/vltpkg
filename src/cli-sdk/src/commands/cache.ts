@@ -1,6 +1,15 @@
 import { error } from '@vltpkg/error-cause'
 import { CacheEntry, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
+import {
+  removeStoreEntry,
+  storeEntryLinked,
+  storeEntryNames,
+  storeEntryTime,
+  verifyStoreEntry,
+} from '@vltpkg/tar/store-entry'
+import { integrityHex } from '@vltpkg/types'
+import { readFileSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
@@ -17,6 +26,14 @@ export type CacheMap = Record<
   ReturnType<CacheEntry['toJSON']>
 >
 
+/** `verify`, `prune-store`: entries checked, and why each was removed */
+export type StoreResult = {
+  checked: number
+  removed: Record<string, string>
+}
+
+export type CacheResult = void | CacheMap | StoreResult
+
 export type CacheSubcommands = keyof (typeof usageDef)['subcommands']
 
 let view: CacheView
@@ -30,7 +47,7 @@ export class CacheView extends ViewClass {
   }
 }
 
-export const views: Views<void | CacheMap> = {
+export const views: Views<CacheResult> = {
   human: CacheView,
 }
 
@@ -76,13 +93,28 @@ const usageDef = {
 
     'delete-before': {
       usage: '<date>',
-      description: `Purge all cache items from before a given date. Date can be
+      description: `Purge all cache items from before a given date, and
+                    global store entries written before it. Date can be
                     provided in any format that JavaScript can parse.`,
     },
 
     'delete-all': {
       usage: '',
       description: `Delete the entire cache folder to make vlt slower.`,
+    },
+
+    verify: {
+      usage: ['<package-spec> [<package-spec>...]', '--all'],
+      description: `Check global store entries against their cached
+                    tarballs (file list, sizes, contents) and remove any
+                    that differ, e.g. after a file in \`node_modules\`
+                    was edited in place.`,
+    },
+
+    'prune-store': {
+      usage: '',
+      description: `Remove global store entries that no \`node_modules\`
+                    folder links to.`,
     },
   },
   examples: {
@@ -101,6 +133,14 @@ const usageDef = {
     'vlt cache delete-before 2025-01-01': {
       description: 'Delete all entries created before Jan 1, 2025',
     },
+    'verify --all': {
+      description: 'Check every global store entry',
+    },
+  },
+  options: {
+    all: {
+      description: 'With `verify`, check every global store entry.',
+    },
   },
 } as const satisfies CommandUsageDefinition
 
@@ -108,7 +148,7 @@ export const needsRegistry = true
 
 export const usage: CommandUsage = () => commandUsage(usageDef)
 
-export const command: CommandFn<void | CacheMap> = async conf => {
+export const command: CommandFn<CacheResult> = async conf => {
   const [sub, ...args] = conf.positionals
   switch (sub) {
     case 'ls':
@@ -131,6 +171,12 @@ export const command: CommandFn<void | CacheMap> = async conf => {
 
     case 'delete-all':
       return deleteAll(conf, args, view)
+
+    case 'verify':
+      return verify(conf, args, view)
+
+    case 'prune-store':
+      return pruneStore(conf, args, view)
 
     default: {
       throw error('Unrecognized cache command', {
@@ -304,12 +350,23 @@ const deleteBefore = async (
       found: before,
     })
   }
-  return deleteEntries(
+  const map = await deleteEntries(
     conf,
     [],
     entry => !!entry.date && entry.date < before,
     view,
   )
+  const { storeRoot } = conf.options
+  let count = 0
+  for (const hex of storeEntryNames(storeRoot)) {
+    const entry = resolve(storeRoot, hex)
+    if (storeEntryTime(entry) < before.getTime()) {
+      removeStoreEntry(entry)
+      count++
+    }
+  }
+  view?.stdout(`Removed ${entries(count)}`)
+  return map
 }
 
 const deleteKeys = async (
@@ -338,6 +395,79 @@ const deleteAll = async (
   if (cache.store) await rm(cache.store, rf)
   await mkdir(cache.path(), { recursive: true })
   view?.stdout('Deleted all cache entries.')
+}
+
+const entries = (n: number) =>
+  `${n} global store entr${n === 1 ? 'y' : 'ies'}`
+
+const verify = async (
+  conf: LoadedConfig,
+  specs: string[],
+  view?: CacheView,
+): Promise<StoreResult> => {
+  const all = !!conf.values.all
+  if (!specs.length && !all) {
+    throw error('Must provide specs to verify, or --all', {
+      code: 'EUSAGE',
+    })
+  }
+  const { packageInfo, storeRoot } = conf.options
+  const cachePath = (
+    await packageInfo.getRegistryClient()
+  ).cache.path()
+  const present = new Set(storeEntryNames(storeRoot))
+  const checks: [label: string, hex: string][] = []
+  if (all) {
+    for (const hex of present) checks.push([hex, hex])
+  } else {
+    for (const spec of specs) {
+      const { integrity } = await packageInfo.resolve(
+        Spec.parseArgs(spec, conf.options),
+      )
+      const hex = integrityHex(integrity)
+      if (hex && present.has(hex)) checks.push([spec, hex])
+      else view?.stdout('Not in the global store:', spec)
+    }
+  }
+  const removed: Record<string, string> = {}
+  for (const [label, hex] of checks) {
+    const entry = resolve(storeRoot, hex)
+    let tarball: Buffer | undefined
+    try {
+      tarball = CacheEntry.decode(
+        readFileSync(resolve(cachePath, hex)),
+      ).buffer()
+    } catch {}
+    const reason =
+      tarball ? verifyStoreEntry(entry, tarball) : 'no cached tarball'
+    if (reason) {
+      removeStoreEntry(entry)
+      removed[label] = reason
+      view?.stdout('-', label, reason)
+    }
+  }
+  const n = Object.keys(removed).length
+  view?.stdout(`Checked ${entries(checks.length)}, removed ${n}`)
+  return { checked: checks.length, removed }
+}
+
+const pruneStore = async (
+  conf: LoadedConfig,
+  _: string[],
+  view?: CacheView,
+): Promise<StoreResult> => {
+  const { storeRoot } = conf.options
+  const names = storeEntryNames(storeRoot)
+  const removed: Record<string, string> = {}
+  for (const hex of names) {
+    const entry = resolve(storeRoot, hex)
+    if (storeEntryLinked(entry)) continue
+    removeStoreEntry(entry)
+    removed[hex] = 'unused'
+  }
+  const n = Object.keys(removed).length
+  view?.stdout(`Removed ${n} of ${entries(names.length)}`)
+  return { checked: names.length, removed }
 }
 
 const add = async (
