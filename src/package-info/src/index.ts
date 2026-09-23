@@ -39,7 +39,12 @@ import {
 } from 'node:path'
 import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
+import type { Capabilities } from './capabilities.ts'
+import { getCapabilities } from './capabilities.ts'
 import { rename } from './rename.ts'
+
+export type { Capabilities } from './capabilities.ts'
+export { getCapabilities, resetCapabilities } from './capabilities.ts'
 
 const debug = debuglog('vlt')
 
@@ -170,6 +175,15 @@ export class PackageInfoClient {
         return this.#registryClient
       })
     return this.#registryClientPromise
+  }
+
+  /**
+   * The vlt extensions `registry` serves, from its
+   * `GET /-/vlt/capabilities` document. A registry that does not answer
+   * one reads as an empty document, so a missing key means unsupported.
+   */
+  async capabilities(registry: string): Promise<Capabilities> {
+    return getCapabilities(await this.getRegistryClient(), registry)
   }
 
   async getTarPool() {
