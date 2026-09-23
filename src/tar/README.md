@@ -94,8 +94,8 @@ valid package.json.
 
 The index has files (`[path, size, exec]`, sorted), every directory
 (shortest first), `scripts` (install scripts or a root `binding.gyp`),
-normalized `bins`, `name`, `version` and `manifest` (the parsed
-package.json, if valid; lets reify skip reading it back).
+normalized `bins`, `name`, `version` and `manifest` (package.json as
+compact JSON text, if valid; lets reify skip reading it back).
 
 ### linkFromStore(storeEntry, target, { copy })
 
