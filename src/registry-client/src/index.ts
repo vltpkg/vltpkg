@@ -710,6 +710,20 @@ export class RegistryClient {
     return undefined
   }
 
+  /**
+   * Queue the cached tarball at `key` (a {@link CachedBody} key) for the
+   * background child to explode into the global store. `integrity`
+   * finds it when only the integrity path holds it.
+   */
+  queueForStore(key: string, integrity?: Integrity) {
+    cacheUnzipRegister(
+      this.cache.path(),
+      key,
+      this.cache.store,
+      integrity,
+    )
+  }
+
   async request(
     url: URL | string,
     options: RegistryClientRequestOptions = {},

@@ -356,9 +356,9 @@ const registry = createServer((req, res) => {
 
 const registryURL = `http://localhost:${PORT}`
 
-const unzipRegistered: [string, string, string?][] = []
-const unzipRegister = (path: string, key: string, store?: string) =>
-  unzipRegistered.push([path, key, store])
+const unzipRegistered: string[][] = []
+const unzipRegister = (...args: (string | undefined)[]) =>
+  unzipRegistered.push(args.filter(a => a !== undefined))
 
 const revalRegistered: [string, 'GET' | 'HEAD', string | URL][] = []
 const revalRegister = (
@@ -473,6 +473,20 @@ t.test('register un-gzipped tarballs with an integrity', async t => {
       resolve(t.testdirName, 'registry-client'),
       'tgz',
       resolve(t.testdirName, 'store/v1'),
+    ],
+  ])
+})
+
+t.test('queueForStore', async t => {
+  const rc = t.context.rc as RegistryClient
+  const integrity: Integrity = `sha512-${Buffer.alloc(64).toString('base64')}`
+  rc.queueForStore('k', integrity)
+  t.strictSame(unzipRegistered, [
+    [
+      resolve(t.testdirName, 'registry-client'),
+      'k',
+      resolve(t.testdirName, 'store/v1'),
+      integrity,
     ],
   ])
 })
