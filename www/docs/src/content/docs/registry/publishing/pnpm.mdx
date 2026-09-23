@@ -11,38 +11,19 @@ import { Aside } from '@astrojs/starlight/components'
 
 Verified against **pnpm 10, 11 and 12**.
 
-<Aside type="caution" title="pnpm 12 cannot install from the npm mirror right now">
+<Aside type="tip" title="pnpm 12 now works with the npm mirror">
 
-pnpm 12 rejects every version in the mirror's metadata and fails with
-`no version found for the latest tag`. pnpm **11 and older work
-fine**.
+Earlier versions of pnpm 12 rejected metadata from the vlt npm mirror
+with `no version found for the latest tag`. This was fixed upstream in
+[pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448) — update
+to the latest pnpm 12 and the mirror works correctly.
 
-This affects the **mirror only**. Publishing to `main` and installing
-your own packages from `main` work correctly on pnpm 12 — so if you
-only consume your own packages, you can stay on 12. If you install
-public npm packages through the mirror, pin the project to the latest
-11.x:
+If you previously pinned pnpm 11 as a workaround, you can move back
+to 12:
 
 ```sh
-corepack use pnpm@11.26.0
+corepack use pnpm@latest
 ```
-
-That writes `"packageManager": "pnpm@11.26.0"` into your
-`package.json`, so everyone on the project gets the same version.
-**Pin an explicit version rather than the range `pnpm@11`.** Corepack
-satisfies a range from its local cache first, so on a machine that has
-an old 11.x cached, `pnpm@11` can quietly resolve to something as old
-as `11.0.0` — and then pin it. Version matters here: see the table
-below.
-
-To change the pnpm on your `PATH` instead, pass the version explicitly
-— a bare `pnpm self-update` refuses to downgrade:
-
-```sh
-pnpm self-update 11.26.0
-```
-
-This is a bug on our side, not yours, and a fix is in progress.
 
 </Aside>
 
@@ -101,8 +82,8 @@ unlucky release with neither:
 | 11.6.0 – 11.26.0 | blocked                    | works                   |
 | 12.x             | blocked                    | works                   |
 
-So on the pinned 11.26.0 above, use `pnpm login` or the environment
-variable — never a placeholder in the file.
+On any current pnpm (11.6.0+, all of 12.x), use `pnpm login` or the
+environment variable — never a placeholder in the file.
 
 ### Option 1 — log in (recommended for laptops)
 
@@ -211,7 +192,11 @@ to `.npmrc`.
 
 ## Gotchas
 
-- **pnpm 12 + the npm mirror is broken.** See the note at the top.
+- **pnpm 12 + the npm mirror required a pnpm update.** Early pnpm 12
+  releases dropped versions whose metadata contained fields the Rust
+  parser didn't recognise. Fixed in
+  [pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448) — make
+  sure you're on the latest 12.x.
 - **`${VAR}` in a project `.npmrc` is ignored, silently.** See above.
 - **`pnpm config set` writes to your machine-global config by
   default.** Always pass `--location=project`, or credentials end up
