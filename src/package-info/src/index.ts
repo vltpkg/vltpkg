@@ -455,8 +455,7 @@ export class PackageInfoClient {
             // a warm install writes nothing to the cache, so queue the
             // store miss here or an existing cache never converges,
             // and a gzipped body with no store link, to unzip it
-            const { body } = cached
-            if (hex || (body[0] === 0x1f && body[1] === 0x8b)) {
+            if (hex || cached.gzip) {
               rc.queueForStore(cached.key, r.integrity)
             }
             return r
