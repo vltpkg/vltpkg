@@ -84,8 +84,9 @@ into place) is up to the caller.
 
 Explode a gzipped or raw tarball into `dir` (must not exist) and
 return `{ index }`. Same parsing, path safety and modes as
-`unpackSync`, plus the exec bit on every package.json `bin` target.
-Throws, writing nothing, without a valid package.json.
+`unpackSync`; package.json `bin` targets also get every exec bit, so
+nothing has to chmod them later. Throws, writing nothing, without a
+valid package.json.
 
 The index has files (`[path, size, exec]`, sorted), every directory
 (shortest first), `scripts` (install scripts or a root `binding.gyp`),
@@ -97,17 +98,25 @@ Hardlink every file of a store entry into a sibling temp dir
 (package.json last), then rename it to `target`. Returns `false`,
 creating nothing, if the sidecar is missing or invalid, the entry is
 not a directory, or the target's parent is a symlink. An entry with a
-missing file is removed and `false` returned.
+missing file is removed and `false` returned. Two index paths that
+collide on a case-insensitive target (`EEXIST`) also return `false`.
 
-A file that cannot be linked is copied (read + write into a fresh
-file). `EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to
-copying; `EMLINK` copies that file only. Every file is copied with
-`copy: true` or when the index has `scripts`, so install scripts never
-write into the store.
+`EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to copying
+(read + write into a fresh file); `EMLINK` copies that file only.
+Other link errors throw. Every file is copied with `copy: true` or
+when the index has `scripts`, so install scripts never write into the
+store.
+
+`VLT_STORE_VERIFY=1` checks the linked package.json size against the
+index and removes the entry on a mismatch (debugging aid).
 
 ### readStoreIndex(storeEntry)
 
 The sidecar index, or `undefined` if missing or invalid.
+
+### storeIndexPath(storeEntry)
+
+Sidecar path: `<storeEntry>.json`.
 
 ## Caveats
 

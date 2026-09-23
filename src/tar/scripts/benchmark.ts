@@ -29,6 +29,7 @@ const artifacts = copyTarballs(DIRS.source)
 
 // global store entries, as the explode child writes them
 resetDir(DIRS.store)
+let storeFailures = 0
 for (const a of artifacts) {
   const entry = resolve(DIRS.store, a.name)
   try {
@@ -38,7 +39,13 @@ for (const a of artifacts) {
     )
     writeFileSync(storeIndexPath(entry), JSON.stringify(index))
     renameSync(entry + '.tmp', entry)
-  } catch {}
+  } catch {
+    storeFailures++
+  }
+}
+// missing entries would make the linkFromStore rows time fast misses
+if (storeFailures) {
+  console.log(`${storeFailures} artifacts not in the global store`)
 }
 const entryOf = (tgz: string) => resolve(DIRS.store, basename(tgz))
 

@@ -90,7 +90,7 @@ const tmp = randomBytes(6).toString('hex') + '.'
 const tmpSuffix = () => tmp + String(id++)
 
 /** A file parsed out of a tarball, at its destination path. */
-export type FileEntry = {
+type FileEntry = {
   path: string
   body: Buffer
   /** written with the exec bit: world-executable in the tar header */
@@ -274,7 +274,7 @@ export const tmpName = (target: string) =>
  * What a tarball unpacks to under a root: every directory that holds an
  * entry (ancestors excluded) and every file.
  */
-export type TarEntries = { dirs: Set<string>; files: FileEntry[] }
+type TarEntries = { dirs: Set<string>; files: FileEntry[] }
 
 /**
  * Walk the tar headers and collect what has to be written. No IO, so

@@ -12,6 +12,7 @@ t.strictSame(
     unpackToStoreSync: unpack.unpackToStoreSync,
     ...linkTree,
     ...pool,
-    ...storeIndex,
+    readStoreIndex: storeIndex.readStoreIndex,
+    storeIndexPath: storeIndex.storeIndexPath,
   }),
 )

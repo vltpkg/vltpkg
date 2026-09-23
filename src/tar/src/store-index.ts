@@ -2,6 +2,9 @@ import { error } from '@vltpkg/error-cause'
 import { normalizeBinPaths } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { readFileSync } from 'node:fs'
+import { debuglog } from 'node:util'
+
+const debug = debuglog('vlt')
 
 /** `[path, size, exec]` of one file in a global store entry. */
 export type StoreIndexFile = [path: string, size: number, exec: 0 | 1]
@@ -81,10 +84,15 @@ export const readStoreIndex = (
     index = JSON.parse(
       readFileSync(storeIndexPath(storeEntry), 'utf8'),
     )
-  } catch {
+  } catch (er) {
+    if ((er as NodeJS.ErrnoException).code !== 'ENOENT') {
+      debug('global store: invalid index', storeEntry)
+    }
     return undefined
   }
-  return isStoreIndex(index) ? index : undefined
+  if (isStoreIndex(index)) return index
+  debug('global store: invalid index', storeEntry)
+  return undefined
 }
 
 /**
