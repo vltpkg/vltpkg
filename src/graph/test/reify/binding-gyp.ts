@@ -21,8 +21,21 @@ t.test('checked on disk', async t => {
   t.equal(hasBindingGyp(node('plain'), scurry), false)
 })
 
+// windows reports ENOENT here, not ENOTDIR: fake the throw
 t.test('location is a file', async t => {
   t.equal(hasBindingGyp(node('x.tgz'), scurry), false)
+  const { hasBindingGyp: mocked } = await t.mockImport<
+    typeof import('../../src/reify/binding-gyp.ts')
+  >('../../src/reify/binding-gyp.ts', {
+    'node:fs': {
+      lstatSync: () => {
+        throw Object.assign(new Error('not a dir'), {
+          code: 'ENOTDIR',
+        })
+      },
+    },
+  })
+  t.equal(mocked(node('x.tgz'), scurry), false)
 })
 
 t.test('past a stale path cache', async t => {
