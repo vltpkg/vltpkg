@@ -58,6 +58,22 @@ t.test('per-file mode, executables left alone', async t => {
   t.equal(mode('linked.js'), 0o755)
 })
 
+// windows never reports exec bits: fake them so the skip runs everywhere
+t.test('exec bits already set: skipped', async t => {
+  const chmods: unknown[] = []
+  const { binChmod } = await t.mockImport<
+    typeof import('../../src/reify/bin-chmod.ts')
+  >('../../src/reify/bin-chmod.ts', {
+    'node:fs': { statSync: () => ({ mode: 0o100755 }) },
+    'node:fs/promises': {
+      chmod: async (...a: unknown[]) => chmods.push(a),
+    },
+  })
+  const dir = t.testdir()
+  await binChmod(fakeNode(dir, { x: 'x.js' }), new PathScurry(dir))
+  t.strictSame(chmods, [])
+})
+
 t.test('no bins', async t => {
   await binChmod(fakeNode(t.testdir()), new PathScurry(t.testdirName))
   t.strictSame(chmods, [])
