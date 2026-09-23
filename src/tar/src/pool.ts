@@ -1,5 +1,13 @@
 import { readFile } from 'node:fs/promises'
-import { unpack, unpackFileSync, unpackSync } from './unpack.ts'
+import { linkFromStore } from './link-tree.ts'
+import type { LinkFromStoreOptions } from './link-tree.ts'
+import type { StoreIndex } from './store-index.ts'
+import {
+  unpack,
+  unpackFileSync,
+  unpackSync,
+  unpackToStoreSync,
+} from './unpack.ts'
 
 // Field kill switch: restores the async writer without a release.
 const syncUnpack = process.env.VLT_TAR_SYNC !== '0'
@@ -40,5 +48,28 @@ export class Pool {
       return unpack((await readFile(file)).subarray(offset), target)
     }
     unpackFileSync(file, target, offset)
+  }
+
+  /**
+   * Hardlink (or copy) a global store entry into `target`. Resolves
+   * false on a store miss. See {@link linkFromStore}.
+   */
+  async linkFromStore(
+    storeEntry: string,
+    target: string,
+    opts?: LinkFromStoreOptions,
+  ): Promise<boolean> {
+    return linkFromStore(storeEntry, target, opts)
+  }
+
+  /**
+   * Explode a tarball into `dir` for the global store. See
+   * {@link unpackToStoreSync}.
+   */
+  async unpackToStore(
+    tarData: Buffer,
+    dir: string,
+  ): Promise<{ index: StoreIndex }> {
+    return unpackToStoreSync(tarData, dir)
   }
 }

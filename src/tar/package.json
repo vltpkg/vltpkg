@@ -56,6 +56,11 @@
         "default": "./src/index.ts"
       }
     },
+    "./link-tree": {
+      "import": {
+        "default": "./src/link-tree.ts"
+      }
+    },
     "./pool": {
       "import": {
         "default": "./src/pool.ts"
