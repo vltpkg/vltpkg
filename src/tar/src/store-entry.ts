@@ -58,10 +58,14 @@ export const storeEntryTime = (storeEntry: string): number =>
 /**
  * True if a file of the global store entry has another hardlink
  * (nlink > 1), i.e. some `node_modules` uses it. Without a valid
- * sidecar nothing can link from it, so false.
+ * sidecar nothing can link from it, so false. `index`: the sidecar, if
+ * already read.
  */
-export const storeEntryLinked = (storeEntry: string): boolean =>
-  !!readStoreIndex(storeEntry)?.files.some(
+export const storeEntryLinked = (
+  storeEntry: string,
+  index = readStoreIndex(storeEntry),
+): boolean =>
+  !!index?.files.some(
     ([p]) =>
       (lstatSync(join(storeEntry, p), noThrow)?.nlink ?? 1) > 1,
   )

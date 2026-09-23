@@ -9,6 +9,7 @@ import {
   existsSync,
   linkSync,
   mkdirSync,
+  readFileSync,
   readdirSync,
   renameSync,
   rmSync,
@@ -631,7 +632,11 @@ t.test('verify specs', async t => {
     values: {},
     options: { packageInfo, storeRoot },
   } as unknown as LoadedConfig)
-  t.strictSame(result, { checked: 2, removed: { b: 'no index' } })
+  t.strictSame(result, {
+    checked: 2,
+    removed: { b: 'no index' },
+    missing: ['missing', 'git'],
+  })
   t.equal(existsSync(pkg(pkgs, 'a').entry), true)
   t.equal(existsSync(b.entry), false)
   t.strictSame(logged, [
@@ -645,8 +650,22 @@ t.test('verify specs', async t => {
 t.test('prune-store', async t => {
   const { command, CacheView } = await mockCommand(t)
   new CacheView({}, {} as unknown as LoadedConfig)
-  const { storeRoot, pkgs } = storeFixture(t, ['used', 'unused'])
+  const { storeRoot, pkgs } = storeFixture(t, [
+    'used',
+    'unused',
+    'build',
+  ])
   const used = pkg(pkgs, 'used')
+  const build = pkg(pkgs, 'build')
+  // install scripts: always copied, so kept
+  const buildIndex = storeIndexPath(build.entry)
+  writeFileSync(
+    buildIndex,
+    JSON.stringify({
+      ...JSON.parse(readFileSync(buildIndex, 'utf8')),
+      scripts: true,
+    }),
+  )
   linkSync(
     resolve(used.entry, 'index.js'),
     resolve(storeRoot, '../linked.js'),
@@ -658,18 +677,23 @@ t.test('prune-store', async t => {
     options: { storeRoot },
   } as unknown as LoadedConfig)
   t.strictSame(result, {
-    checked: 3,
+    checked: 4,
     removed: {
       [pkg(pkgs, 'unused').hex]: 'unused',
       [orphan]: 'unused',
     },
   })
-  t.strictSame(readdirSync(storeRoot).sort(), [
-    '.tmp',
-    used.hex,
-    `${used.hex}.json`,
-  ])
-  t.strictSame(logged, [['Removed 2 of 3 global store entries']])
+  t.strictSame(
+    readdirSync(storeRoot).sort(),
+    [
+      '.tmp',
+      used.hex,
+      `${used.hex}.json`,
+      build.hex,
+      `${build.hex}.json`,
+    ].sort(),
+  )
+  t.strictSame(logged, [['Removed 2 of 4 global store entries']])
 
   await command({
     positionals: ['prune-store'],

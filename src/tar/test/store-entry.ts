@@ -47,7 +47,7 @@ const makeEntry = (t: Test) => {
   const { index } = unpackToStoreSync(tar, resolve(store, '.tmp/x'))
   writeFileSync(storeIndexPath(entry), JSON.stringify(index))
   renameSync(resolve(store, '.tmp/x'), entry)
-  return { store, entry }
+  return { store, entry, index }
 }
 
 t.test('storeLayout does no IO', async t => {
@@ -115,7 +115,7 @@ t.test('storeEntryTime', async t => {
 })
 
 t.test('storeEntryLinked', async t => {
-  const { store, entry } = makeEntry(t)
+  const { store, entry, index } = makeEntry(t)
   t.equal(storeEntryLinked(entry), false, 'fresh entry')
   linkSync(resolve(entry, 'lib/a.js'), resolve(store, 'a-link'))
   t.equal(storeEntryLinked(entry), true, 'one file linked')
@@ -126,6 +126,7 @@ t.test('storeEntryLinked', async t => {
   linkSync(resolve(entry, 'lib/a.js'), resolve(store, 'a-link'))
   rmSync(storeIndexPath(entry))
   t.equal(storeEntryLinked(entry), false, 'no sidecar')
+  t.equal(storeEntryLinked(entry, index), true, 'index given')
 })
 
 t.test('verifyStoreEntry', async t => {

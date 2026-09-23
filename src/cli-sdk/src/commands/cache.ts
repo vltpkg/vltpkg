@@ -31,6 +31,8 @@ export type CacheMap = Record<
 export type StoreResult = {
   checked: number
   removed: Record<string, string>
+  /** `verify <spec>`: specs not in the global store */
+  missing?: string[]
 }
 
 export type CacheResult = void | CacheMap | StoreResult
@@ -115,7 +117,8 @@ const usageDef = {
     'prune-store': {
       usage: '',
       description: `Remove global store entries that no \`node_modules\`
-                    folder links to.`,
+                    folder links to. Entries of packages with install
+                    scripts are copied, never linked, so they stay.`,
     },
   },
   examples: {
@@ -424,6 +427,7 @@ const verify = async (
   ).cache.path()
   const present = new Set(storeEntryNames(storeRoot))
   const checks: [key: string, hex: string][] = []
+  const missing: string[] = []
   if (all) {
     for (const hex of present) checks.push([hex, hex])
   } else {
@@ -433,7 +437,10 @@ const verify = async (
       )
       const hex = integrityHex(integrity)
       if (hex && present.has(hex)) checks.push([spec, hex])
-      else view?.stdout('Not in the global store:', spec)
+      else {
+        missing.push(spec)
+        view?.stdout('Not in the global store:', spec)
+      }
     }
   }
   const removed: Record<string, string> = {}
@@ -457,7 +464,11 @@ const verify = async (
   }
   const n = Object.keys(removed).length
   view?.stdout(`Checked ${entries(checks.length)}, removed ${n}`)
-  return { checked: checks.length, removed }
+  return {
+    checked: checks.length,
+    removed,
+    ...(!all && { missing }),
+  }
 }
 
 const pruneStore = async (
@@ -470,7 +481,9 @@ const pruneStore = async (
   const removed: Record<string, string> = {}
   for (const hex of names) {
     const entry = resolve(storeRoot, hex)
-    if (storeEntryLinked(entry)) continue
+    const index = readStoreIndex(entry)
+    // install-script entries are only ever copied: nlink cannot tell
+    if (index?.scripts || storeEntryLinked(entry, index)) continue
     removeStoreEntry(entry)
     removed[hex] = 'unused'
   }

@@ -131,7 +131,7 @@ Sidecar path: `<storeEntry>.json`.
 - `verifyStoreEntry(storeEntry, tarData)`: compare an entry with its
   tarball (sidecar, file list, bytes). Returns why it differs, or
   `undefined`.
-- `storeEntryLinked(storeEntry)`: true if any file has another
+- `storeEntryLinked(storeEntry, index?)`: true if any file has another
   hardlink, i.e. some `node_modules` uses it.
 - `storeEntryTime(storeEntry)`: sidecar mtime in ms (dir mtime without
   one, else 0).
