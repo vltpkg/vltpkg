@@ -1,7 +1,7 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool, unpackToStoreSync } from '@vltpkg/tar'
-import type { StoreLinker } from '@vltpkg/tar'
+import type { StoreIndex, StoreLinker } from '@vltpkg/tar'
 import { integrityHex } from '@vltpkg/types'
 import type { Integrity, Manifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
@@ -1466,9 +1466,14 @@ t.test('global store', async t => {
   const lockOpts = { resolved: tarballURL, integrity }
 
   // what the background child writes
-  const populate = (store: string, scripts = false) => {
+  const populate = (
+    store: string,
+    scripts = false,
+    edit: (index: StoreIndex, tmp: string) => void = () => {},
+  ) => {
     const tmp = pathResolve(store, '.tmp', hex)
     const { index } = unpackToStoreSync(tgzAbbrev, tmp)
+    edit(index, tmp)
     writeFileSync(
       pathResolve(store, hex + '.json'),
       JSON.stringify({ ...index, scripts }),
@@ -1565,6 +1570,42 @@ t.test('global store', async t => {
       JSON.parse(readFileSync(`${dir}/auto/package.json`, 'utf8')),
       { name: 'abbrev', version: '2.0.0' },
     )
+  })
+
+  t.test('store link carries the index manifest', async t => {
+    const { dir, store, client } = await setup(t)
+    populate(store)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.strictSame(
+      res.manifest,
+      JSON.parse(readFileSync(dir + '/t/package.json', 'utf8')),
+    )
+    t.equal(res.bindingGyp, false)
+    t.equal(res.resolved, tarballURL)
+    t.equal(res.integrity, integrity)
+  })
+
+  t.test('store link: binding.gyp, older index', async t => {
+    const { dir, store, client } = await setup(t)
+    populate(store, false, (index, tmp) => {
+      writeFileSync(pathResolve(tmp, 'binding.gyp'), '{}')
+      index.files.unshift(['binding.gyp', 2, 0])
+      delete index.manifest
+    })
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.equal(res.manifest, undefined)
+    t.equal(res.bindingGyp, true)
+  })
+
+  t.test('unpacked: no index data', async t => {
+    const { dir, client, prime } = await setup(t)
+    await prime()
+    const pi = await client({ 'store-linker': 'hardlink' })
+    const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.equal(res.manifest, undefined)
+    t.equal(res.bindingGyp, undefined)
   })
 
   t.test('explicit store root', async t => {
