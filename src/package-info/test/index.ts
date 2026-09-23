@@ -1690,6 +1690,8 @@ t.test('global store', async t => {
   })
 
   t.test('hit rate on NODE_DEBUG at exit', async t => {
+    // emitting beforeExit would also fire other modules' hooks
+    const once = t.capture(process, 'once', () => process)
     const debugged: unknown[][] = []
     const { dir, store, client, prime } = await setup(t, debugged)
     await prime()
@@ -1705,8 +1707,9 @@ t.test('global store', async t => {
     const rate = () =>
       debugged.filter(([f]) => String(f).includes('hit rate'))
     t.strictSame(rate(), [], 'nothing until exit')
-    process.emit('beforeExit', 0)
-    process.emit('beforeExit', 0)
+    const hooks = once().filter(c => c.args[0] === 'beforeExit')
+    t.equal(hooks.length, 1, 'hooked once')
+    ;(hooks[0]?.args[1] as () => void)()
     t.strictSame(rate(), [
       [
         'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
