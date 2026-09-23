@@ -1,4 +1,5 @@
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
+import { register as cacheUnzipRegister } from '@vltpkg/cache-unzip'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { logRequest } from '@vltpkg/output'
@@ -16,11 +17,12 @@ import {
   registryErrorMessage,
   tokenRefusalAdvice,
 } from '@vltpkg/registry-client/registry-error'
+import { storeRoot } from '@vltpkg/registry-client/store-root'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
-import type { Pool } from '@vltpkg/tar'
+import type { Pool, StoreLinker } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
-import { asPackument } from '@vltpkg/types'
+import { asPackument, integrityHex } from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -108,6 +110,12 @@ export type PackageInfoClientOptions = RegistryClientOptions &
 
     /** workspace paths to load, irrelevant if Monorepo provided */
     workspace?: string[]
+
+    /**
+     * How registry packages are placed: `unpack` (default) unpacks the
+     * tarball, anything else goes through the global store first.
+     */
+    'store-linker'?: StoreLinker
   }
 
 export type PackageInfoClientRequestOptions = PickManifestOptions &
@@ -181,6 +189,9 @@ const isStableSelector = (f: Spec) => {
   return !range.isAny && !range.raw.includes('-')
 }
 
+// anything else, eg an unvalidated env value, means `unpack`
+const storeLinkers = new Set<string>(['auto', 'hardlink', 'copy'])
+
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #projectRoot: string
@@ -194,6 +205,8 @@ export class PackageInfoClient {
   #vltPackuments = new Set<string>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
+  #storeRoot: string
+  #storeLinker: StoreLinker
   // In-flight coalescing key is `${registry}${name}` — no representation
   // component. Safe only because every caller requests the same full
   // packument (see #fetchPackument). The one thing that does vary per
@@ -289,6 +302,10 @@ export class PackageInfoClient {
         packageJson: this.packageJson,
       })
     this.#cachePath = options.cache ?? xdg.cache()
+    this.#storeRoot = options.storeRoot ?? storeRoot(this.#cachePath)
+    const linker = options['store-linker']
+    this.#storeLinker =
+      linker && storeLinkers.has(linker) ? linker : 'unpack'
     // optionally create its cache directory if it doesn't exist
     void mkdir(pathResolve(this.#cachePath, 'package-info'), {
       recursive: true,
@@ -357,22 +374,48 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
+        const pool = await this.getTarPool()
+        // git tarballs keep the unpack path
+        const hex =
+          f.type === 'registry' && this.#storeLinker !== 'unpack' ?
+            integrityHex(r.integrity)
+          : undefined
+        const copy = this.#storeLinker === 'copy'
+        if (
+          hex &&
+          (await pool.linkFromStore(
+            pathResolve(this.#storeRoot, hex),
+            target,
+            { copy },
+          ))
+        ) {
+          logRequest(r.resolved, 'cache')
+          return r
+        }
+
         // if the tarball is already on disk, unpack it straight from
         // the cache file: it never has to be held in the client's
         // in-memory cache. anything unexpected falls through to the
         // fetch path, which throws its own error if the body is
         // genuinely bad.
-        const cached = (await this.getRegistryClient()).cachedBody(
-          r.resolved,
-          { integrity: r.integrity },
-        )
+        const rc = await this.getRegistryClient()
+        const cached = rc.cachedBody(r.resolved, {
+          integrity: r.integrity,
+        })
         if (cached) {
           try {
-            await (
-              await this.getTarPool()
-            ).unpack(cached.body, target)
+            await pool.unpack(cached.body, target)
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
+            // a warm install writes nothing to the cache, so queue the
+            // store miss here or an existing cache never converges
+            if (hex) {
+              cacheUnzipRegister(
+                rc.cache.path(),
+                cached.key,
+                this.#storeRoot,
+              )
+            }
             return r
           } catch (er) {
             // a systematically failing fast path (every entry still

@@ -9,6 +9,7 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
+    "@vltpkg/cache-unzip": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
     "@vltpkg/output": "workspace:*",
@@ -28,7 +29,6 @@
     "@types/node": "catalog:",
     "@types/pacote": "catalog:",
     "@vltpkg/benchmark": "workspace:*",
-    "@vltpkg/cache-unzip": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
     "eslint": "catalog:",
     "pacote": "catalog:",
