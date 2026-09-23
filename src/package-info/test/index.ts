@@ -2544,6 +2544,37 @@ t.test('tarballs labelled with a digest', async t => {
   )
 
   t.test(
+    'a cached manifest keeps requiring the digest in a fresh client',
+    async t => {
+      const cache = t.testdir()
+      const spec = Spec.parse('digest-missing@1.0.0', options)
+      const p = new PackageInfoClient({ ...options, cache })
+      t.equal((await p.resolve(spec)).digestRequired, true)
+      // the manifest cache write is fire-and-forget
+      await new Promise(resolve => setTimeout(resolve, 100))
+      const cached = JSON.parse(
+        readFileSync(p._manifestCachePath(spec, {})!, 'utf8'),
+      ) as Record<string, unknown>
+      t.equal(
+        cached.__VLT_PACKUMENT,
+        true,
+        'cache file carries the marker',
+      )
+
+      const cold = new PackageInfoClient({ ...options, cache })
+      const mani = await cold.manifest(spec)
+      t.notOk(
+        '__VLT_PACKUMENT' in mani,
+        'marker stays out of the manifest',
+      )
+      t.equal((await cold.resolve(spec)).digestRequired, true)
+      await t.rejects(cold.extract(spec, t.testdir()), {
+        cause: { code: 'EINTEGRITY', wanted: undefined },
+      })
+    },
+  )
+
+  t.test(
     'a plain packument without integrity still records the hash',
     async t => {
       const dir = t.testdir()

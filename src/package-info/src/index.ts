@@ -823,13 +823,15 @@ export class PackageInfoClient {
           try {
             // Cache file exists, read and return it. Freshness is
             // tracked via the file's mtime, so the file content is
-            // exactly the manifest and can be returned as parsed.
+            // the manifest, plus a marker when it came from a vlt
+            // packument, and can be returned as parsed.
             const [st, cached] = await Promise.all([
               stat(cachePath),
               readFile(cachePath, 'utf8'),
             ])
             const json = JSON.parse(cached) as Manifest & {
               __VLT_MANIFEST_CACHE_TIMESTAMP?: number
+              __VLT_PACKUMENT?: boolean
             }
             // removes the cache file if older than its maximum age.
             // entries written by older clients embed a timestamp in
@@ -842,6 +844,11 @@ export class PackageInfoClient {
               this.#manifestWritePaths.delete(cachePath)
               void unlink(cachePath).catch(() => {})
               throw new Error('manifest cache expired')
+            }
+            // the tarball digest stays required across processes
+            if (json.__VLT_PACKUMENT) {
+              this.#vltPackuments.add(`${f.registry}${f.name}`)
+              delete json.__VLT_PACKUMENT
             }
             return json
           } catch {
@@ -861,9 +868,14 @@ export class PackageInfoClient {
         // and racing writers for the same path.
         if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
           this.#manifestWritePaths.add(cachePath)
+          const vlt = this.#vltPackuments.has(
+            `${f.registry}${f.name}`,
+          )
           void this.#writeManifestCache(
             cachePath,
-            JSON.stringify(mani),
+            JSON.stringify(
+              vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
+            ),
           )
         }
 
