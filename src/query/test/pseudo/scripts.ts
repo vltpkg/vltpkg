@@ -252,6 +252,26 @@ t.test('selects packages that need to be built', async t => {
     },
   )
 
+  await t.test('selects nodes marked as needing a build', async t => {
+    // binding.gyp only: no scripts in package.json
+    const gyp = createTestNode('gyp-pkg', {})
+    gyp.buildState = 'needed'
+    const noManifest = createTestNode('no-manifest-pkg', {})
+    delete noManifest.manifest
+    noManifest.buildState = 'needed'
+    const built = createTestNode('built-pkg', {})
+    built.buildState = 'built'
+
+    const res = await scripts(
+      getState(':scripts', [gyp, noManifest, built]),
+    )
+
+    t.strictSame([...res.partial.nodes].map(n => n.name).sort(), [
+      'gyp-pkg',
+      'no-manifest-pkg',
+    ])
+  })
+
   await t.test('handles mixed scenarios correctly', async t => {
     const nodeNeedingBuild1 = createTestNode('build-pkg1', {
       scripts: { install: 'make install' },

@@ -380,6 +380,61 @@ t.test('build with target option', async t => {
     t.pass('build with target option completed')
   })
 
+  t.test('default target builds nodes marked needed', async t => {
+    // e.g. binding.gyp only, no scripts in package.json
+    const id = joinDepIDTuple([
+      'registry',
+      'https://registry.npmjs.org/',
+      'gyp-pkg',
+      '1.0.0',
+    ])
+    const manifest = { name: 'gyp-pkg', version: '1.0.0' }
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        dependencies: { 'gyp-pkg': '1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({}),
+      node_modules: {
+        'gyp-pkg': { 'package.json': JSON.stringify(manifest) },
+        '.vlt-lock.json': JSON.stringify({
+          lockfileVersion: 1,
+          options: { registry: 'https://registry.npmjs.org/' },
+          nodes: {
+            [joinDepIDTuple(['file', '.'])]: [0, 'test-project'],
+            // buildState: needed
+            [id]: [
+              0,
+              'gyp-pkg',
+              null,
+              null,
+              null,
+              manifest,
+              null,
+              null,
+              null,
+              1,
+            ],
+          },
+          edges: {
+            [`${joinDepIDTuple(['file', '.'])} gyp-pkg`]: `prod 1.0.0 ${id}`,
+          },
+        }),
+      },
+    })
+    const result = await build({
+      projectRoot: dir,
+      packageJson,
+      scurry,
+      target: ':scripts:not(:built)',
+    })
+    t.strictSame(
+      result.success.map(n => n.name),
+      ['gyp-pkg'],
+    )
+  })
+
   t.end()
 })
 

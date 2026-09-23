@@ -6,8 +6,11 @@ import { removeNode, removeDanglingEdges } from './helpers.ts'
  * Checks if a node needs to be built based on the conditions from the reify build process:
  * 1. Has install lifecycle scripts (install, preinstall, postinstall)
  * 2. Is an importer or git dependency with prepare scripts (prepare, preprepare, postprepare)
+ * 3. Was marked as needing a build by install (e.g. a binding.gyp-only package)
  */
 const nodeNeedsBuild = (node: NodeLike): boolean => {
+  if (node.buildState === 'needed') return true
+
   const { manifest } = node
   /* c8 ignore next */
   if (!manifest) return false
@@ -43,6 +46,7 @@ const nodeNeedsBuild = (node: NodeLike): boolean => {
  * A node needs to be built if it has:
  * - Install lifecycle scripts (install, preinstall, postinstall)
  * - Prepare scripts on importers or git dependencies (prepare, preprepare, postprepare)
+ * - A `buildState` of 'needed', set by install
  */
 export const scripts = async (state: ParserState) => {
   for (const node of state.partial.nodes) {
