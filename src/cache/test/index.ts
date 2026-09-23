@@ -109,6 +109,43 @@ t.test('delete from disk', async t => {
   t.strictSame(readdirSync(t.testdirName), [])
 })
 
+t.test('delete from disk removes the global store entry', async t => {
+  const [value, integrity] = makeValueIntegrity('hello, world')
+  const hex = createHash('sha512').update(value).digest('hex')
+  const dir = t.testdir({
+    'registry-client': {},
+    store: {
+      v1: {
+        [hex]: { 'package.json': '{}' },
+        [`${hex}.json`]: '{}',
+        other: { 'package.json': '{}' },
+        'other.json': '{}',
+      },
+    },
+  })
+  const store = resolve(dir, 'store/v1')
+  const c = new Cache({
+    path: resolve(dir, 'registry-client'),
+    store,
+  })
+  t.equal(c.store, store)
+  c.set('xyz', value, { integrity })
+  await c.promise()
+  c.delete('xyz', true)
+  await c.promise()
+  t.strictSame(
+    readdirSync(store).sort(),
+    [hex, `${hex}.json`, 'other', 'other.json'],
+    'kept without an integrity',
+  )
+  c.set('xyz', value, { integrity })
+  await c.promise()
+  c.delete('xyz', true, integrity)
+  await c.promise()
+  t.strictSame(readdirSync(resolve(dir, 'registry-client')), [])
+  t.strictSame(readdirSync(store).sort(), ['other', 'other.json'])
+})
+
 t.test('walk over cached items', async t => {
   const c = new Cache({ path: t.testdir() })
   t.equal(c.max, Cache.defaultMax)
