@@ -1,5 +1,4 @@
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
-import { register as cacheUnzipRegister } from '@vltpkg/cache-unzip'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { logRequest } from '@vltpkg/output'
@@ -141,6 +140,11 @@ export type PackageInfoClientExtractOptions =
      * Defaults to false — fresh installs always verify integrity.
      */
     fromLockfile?: boolean
+    /**
+     * The manifest declares install scripts: copy the package from the
+     * global store, never link it, even if its package.json has none.
+     */
+    installScripts?: boolean
   }
 
 // the maximum duration of a manifest cache file
@@ -324,6 +328,7 @@ export class PackageInfoClient {
       integrity,
       resolved,
       fromLockfile = false,
+      installScripts = false,
     } = options
     const f = spec.final
     // If the caller already provides both integrity and resolved
@@ -380,7 +385,7 @@ export class PackageInfoClient {
           f.type === 'registry' && this.#storeLinker !== 'unpack' ?
             integrityHex(r.integrity)
           : undefined
-        const copy = this.#storeLinker === 'copy'
+        const copy = this.#storeLinker === 'copy' || installScripts
         if (
           hex &&
           (await pool.linkFromStore(
@@ -409,13 +414,7 @@ export class PackageInfoClient {
             r.integrity ??= cached.integrity
             // a warm install writes nothing to the cache, so queue the
             // store miss here or an existing cache never converges
-            if (hex) {
-              cacheUnzipRegister(
-                rc.cache.path(),
-                cached.key,
-                this.#storeRoot,
-              )
-            }
+            if (hex) rc.queueForStore(cached.key, r.integrity)
             return r
           } catch (er) {
             // a systematically failing fast path (every entry still

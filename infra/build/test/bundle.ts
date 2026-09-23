@@ -26,11 +26,9 @@ t.test('default', async t => {
     .filter(f => /\.js$/.exec(f))
     .map(f => [f, readFileSync(join(res.outdir, f), 'utf8')] as const)
 
-  // esbuild suffixes the name (`__CODE_SPLIT_SCRIPT_NAME2`) when a
-  // bundle also inlines another script's stub
   const codeSplit = js
     .filter(([, v]) =>
-      /var __CODE_SPLIT_SCRIPT_NAME\d* = import/.test(v),
+      v.includes('var __CODE_SPLIT_SCRIPT_NAME = import'),
     )
     .map(([f]) => f)
 

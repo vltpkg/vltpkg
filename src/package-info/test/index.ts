@@ -1580,7 +1580,12 @@ t.test('global store', async t => {
       t.equal(nlink(dir + '/t'), 1)
       t.strictSame(states, ['cache'])
       t.strictSame(registered, [
-        [pathResolve(cache, 'registry-client'), tarballURL, store],
+        [
+          pathResolve(cache, 'registry-client'),
+          tarballURL,
+          store,
+          integrity,
+        ],
       ])
     },
   )
@@ -1621,6 +1626,17 @@ t.test('global store', async t => {
     t.not(readFileSync(`${store}/${hex}/package.json`, 'utf8'), '{}')
   })
 
+  t.test('manifest install scripts: copied', async t => {
+    const { dir, store, client } = await setup(t)
+    populate(store)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    await pi.extract('abbrev@2', dir + '/t', {
+      ...lockOpts,
+      installScripts: true,
+    })
+    t.equal(nlink(dir + '/t'), 1)
+  })
+
   t.test('store-linker=copy', async t => {
     const { dir, store, states, client } = await setup(t)
     populate(store)
@@ -1643,6 +1659,22 @@ t.test('global store', async t => {
       await pi.extract('abbrev@2', `${dir}/${linker}`, lockOpts)
       t.equal(nlink(`${dir}/${linker}`), 1, String(linker))
     }
+    t.strictSame(links, [])
+    t.strictSame(registered, [])
+  })
+
+  t.test('hosted git tarballs: store unused', async t => {
+    const { dir, store, links, registered, client, prime } =
+      await setup(t)
+    await prime()
+    populate(store)
+    const pi = await client({
+      'store-linker': 'hardlink',
+      'git-hosts': { fakey: `git+${pathToFileURL(repo)}#committish` },
+      'git-host-archives': { fakey: tarballURL },
+    })
+    await pi.extract('x@fakey:abbrev-2.0.0.tgz', dir + '/t', lockOpts)
+    t.equal(nlink(dir + '/t'), 1)
     t.strictSame(links, [])
     t.strictSame(registered, [])
   })
