@@ -1100,6 +1100,58 @@ t.test('store-linker and global store root', async t => {
   )
   t.equal(cli.get('store-linker'), 'copy', 'cli wins')
   t.equal(process.env.VLT_STORE_LINKER, 'copy')
+
+  t.test('invalid env warns, falls back to unpack', async t => {
+    const errs = t.capture(console, 'error').args
+    const load = async (argv: string[]) => {
+      clearEnv()
+      process.env.VLT_STORE_LINKER = 'bogus'
+      return Config.load(dir, argv, true)
+    }
+    const conf = await load(['install', '--view=json'])
+    t.equal(conf.get('store-linker'), 'unpack')
+    t.equal(
+      process.env.VLT_STORE_LINKER,
+      'unpack',
+      'child sees unpack',
+    )
+    t.strictSame(errs(), [
+      ['Warning: invalid VLT_STORE_LINKER "bogus", using unpack'],
+    ])
+    await Config.load(dir, ['install'], true)
+    t.strictSame(errs(), [], 'warns once')
+
+    await load(['install', '--store-linker=copy'])
+    t.strictSame(errs(), [
+      ['Warning: invalid VLT_STORE_LINKER "bogus", using copy'],
+    ])
+
+    for (const loglevel of ['silent', 'error']) {
+      const c = await load(['install', `--loglevel=${loglevel}`])
+      t.equal(c.get('store-linker'), 'unpack')
+      t.strictSame(errs(), [], `quiet at ${loglevel}`)
+    }
+  })
+
+  t.test('invalid cli or config value is an error', async t => {
+    clearEnv()
+    await t.rejects(
+      Config.load(dir, ['install', '--store-linker=bogus'], true),
+      { cause: { name: 'store-linker', found: 'bogus' } },
+    )
+    const d = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: { 'store-linker': 'bogus' },
+      }),
+      '.git': {},
+    })
+    const { Config: C } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    await t.rejects(C.load(d, ['install'], true), {
+      cause: { name: 'store-linker', found: 'bogus' },
+    })
+  })
 })
 
 t.test('--verbose is shorthand for --loglevel=verbose', async t => {

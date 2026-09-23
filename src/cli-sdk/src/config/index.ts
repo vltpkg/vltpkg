@@ -49,6 +49,7 @@ import {
   getCommand,
   isRecordField,
   recordFields,
+  storeLinkers,
 } from './definition.ts'
 import { merge } from './merge.ts'
 import { cloneLayer, mergeLayers } from './merge-layers.ts'
@@ -444,6 +445,13 @@ export class Config {
     // Store the original args for potential reload
     this.#originalArgs = [...args]
 
+    // an invalid env linker is treated as unpack
+    const badLinker = process.env.VLT_STORE_LINKER
+    const fixLinker =
+      badLinker !== undefined &&
+      !(storeLinkers as readonly string[]).includes(badLinker)
+    if (fixLinker) process.env.VLT_STORE_LINKER = 'unpack'
+
     const envKeys = Object.keys(defaultValues).filter(
       k => process.env[envKey(k)] !== undefined,
     )
@@ -516,6 +524,14 @@ export class Config {
     // always wins.
     if (p.values.verbose && p.values.loglevel === 'info') {
       p.values.loglevel = 'verbose'
+    }
+
+    const { loglevel } = p.values
+    if (fixLinker && loglevel !== 'silent' && loglevel !== 'error') {
+      // eslint-disable-next-line no-console
+      console.error(
+        `Warning: invalid VLT_STORE_LINKER ${JSON.stringify(badLinker)}, using ${p.values['store-linker']}`,
+      )
     }
 
     /* c8 ignore start - unpossible */

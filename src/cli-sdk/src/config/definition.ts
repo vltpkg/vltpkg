@@ -131,6 +131,14 @@ export type RecordField = (typeof recordFields)[number]
 export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
+/** Valid `store-linker` values. */
+export const storeLinkers = [
+  'auto',
+  'hardlink',
+  'copy',
+  'unpack',
+] as const
+
 const j = jack({
   envPrefix: 'VLT',
   allowPositionals: true,
@@ -362,8 +370,10 @@ export const definition = j
                       a hardlink shares its content with every project.
                     - unpack: Default. Unpack each package tarball.
 
-                    Packages with install scripts are always copied.`,
-      validOptions: ['auto', 'hardlink', 'copy', 'unpack'] as const,
+                    Packages with install scripts are always copied.
+                    An invalid \`VLT_STORE_LINKER\` warns and uses
+                    \`unpack\`.`,
+      validOptions: storeLinkers,
       default: 'unpack',
     },
     tag: {

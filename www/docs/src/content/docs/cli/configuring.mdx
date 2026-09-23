@@ -251,7 +251,8 @@ packages from it.
   every project.
 - unpack: Default. Unpack each package tarball.
 
-Packages with install scripts are always copied. See
+Packages with install scripts are always copied. An invalid
+`VLT_STORE_LINKER` warns and uses `unpack`. See
 [Global store](/cli/commands/cache#global-store).
 
 Valid options: "auto", "hardlink", "copy", "unpack"
