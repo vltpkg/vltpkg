@@ -1586,17 +1586,28 @@ t.test('global store', async t => {
     t.equal(res.integrity, integrity)
   })
 
-  t.test('store link: binding.gyp, older index', async t => {
-    const { dir, store, client } = await setup(t)
-    populate(store, false, (index, tmp) => {
+  t.test('store copy: binding.gyp, older index', async t => {
+    const { dir, store, states, client } = await setup(t)
+    // a root binding.gyp implies scripts
+    populate(store, true, (index, tmp) => {
       writeFileSync(pathResolve(tmp, 'binding.gyp'), '{}')
       index.files.unshift(['binding.gyp', 2, 0])
       delete index.manifest
     })
     const pi = await client({ 'store-linker': 'hardlink' }, true)
     const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.strictSame(states, ['cache'], 'copied')
     t.equal(res.manifest, undefined)
     t.equal(res.bindingGyp, true)
+  })
+
+  t.test('store copy: install scripts, no binding.gyp', async t => {
+    const { dir, store, client } = await setup(t)
+    populate(store, true)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.equal(res.bindingGyp, false)
+    t.type(res.manifest, 'string')
   })
 
   t.test('unpacked: no index data', async t => {

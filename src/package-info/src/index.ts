@@ -429,9 +429,10 @@ export class PackageInfoClient {
             return {
               ...r,
               manifest: index.manifest,
-              bindingGyp: index.files.some(
-                ([p]) => p === 'binding.gyp',
-              ),
+              // implies scripts, so most packages skip the scan
+              bindingGyp:
+                index.scripts &&
+                index.files.some(f => f[0] === 'binding.gyp'),
             }
           }
           this.#storeMisses++
