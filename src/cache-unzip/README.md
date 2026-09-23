@@ -35,7 +35,8 @@ On process exit, these registered keys will be passed as arguments to
 a detached deref'ed `vlt-cache-unzip` process. So, the main program
 exits normally, but the child process ignores the `SIGHUP` and keeps
 going until it's done. The next time that cache entry is read, it
-won't have to be unzipped.
+won't have to be unzipped. It exits 1 only on no path, a corrupt gzip
+body or a failed explode.
 
 ## Global Store
 
@@ -60,8 +61,10 @@ also explodes each tarball entry with a sha512 `integrity` header into
 - `VLT_CACHE_UNZIP=0` skips the un-gzip rewrite.
 - `VLT_CACHE_EXPLODE_CONCURRENCY` sets how many entries are read at
   once (default 1).
-- `NODE_DEBUG=vlt` prints a summary: entries written, skipped (already
-  there), ignored (missing or not a tarball), failed, bytes, ms.
+- `NODE_DEBUG=vlt` prints a summary to stderr, seen only when the
+  child is run by hand (vlt ignores its output): entries written,
+  skipped (already there), ignored (missing or not a tarball), failed,
+  bytes, ms.
 
 With the global store on, the child runs at the lowest CPU priority.
 

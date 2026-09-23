@@ -53,7 +53,8 @@ t.test('validate args', async t => {
         env: ENV,
       },
     ),
-    { status: 1 },
+    { status: 0 },
+    'missing keys',
   )
 })
 
@@ -375,7 +376,7 @@ t.test('VLT_TAR_MAX_UNPACKED_BYTES caps rewrite', async t => {
       env: { ...ENV, VLT_TAR_MAX_UNPACKED_BYTES: '4' },
     },
   )
-  t.equal(res.status, 1, 'nothing rewritten')
+  t.equal(res.status, 0, 'not a failure')
   const g = new Cache({ path: t.testdirName })
   t.strictSame(await g.fetch('gz'), gz, 'entry left gzipped')
 })
@@ -477,14 +478,47 @@ t.test('global store', async t => {
   })
 
   t.test('VLT_CACHE_UNZIP=0 only explodes', async t => {
-    const { store, res, gzipped } = await run(t, {
+    const env = {
+      ...ENV,
       VLT_STORE_LINKER: 'auto',
       VLT_CACHE_UNZIP: '0',
-    })
+      NODE_DEBUG: 'vlt',
+    }
+    const { dir, store, res, gzipped } = await run(t, env)
     t.equal(res.status, 0)
     t.equal(gzipped, true, 'cache entry left gzipped')
     t.ok(existsSync(resolve(store, hex)))
+
+    const again = spawnSync(
+      process.execPath,
+      [
+        __CODE_SPLIT_SCRIPT_NAME,
+        resolve(dir, 'registry-client'),
+        store,
+      ],
+      { input: 'tgz\0', encoding: 'utf8', env },
+    )
+    t.equal(again.status, 0, 'store already full')
+    t.match(again.stderr, /explode written=0 skipped=1 /)
   })
+
+  t.test(
+    'failed explode exits 1, the rest still written',
+    async t => {
+      const bad = Buffer.from('not a tarball')
+      const { store, res } = await run(
+        t,
+        { VLT_STORE_LINKER: 'hardlink', VLT_CACHE_UNZIP: '0' },
+        {
+          bad: encodeEntry({ integrity: integrityOf(bad) }, bad),
+          tgz: tgzEntry,
+        },
+      )
+      t.equal(res.status, 1)
+      t.ok(existsSync(resolve(store, hex)))
+      t.notOk(existsSync(resolve(store, hexOf(bad))))
+    },
+  )
 
   t.test('nothing written without a store linker', async t => {
     const envs: Record<string, string>[] = [
@@ -498,7 +532,7 @@ t.test('global store', async t => {
       t.strictSame(readdirSync(dir), ['registry-client'], 'no store')
     }
     const { res } = await run(t, { VLT_CACHE_UNZIP: '0' })
-    t.equal(res.status, 1, 'nothing done')
+    t.equal(res.status, 0, 'nothing done, not a failure')
   })
 
   t.test('corrupt gzip does not block the store', async t => {

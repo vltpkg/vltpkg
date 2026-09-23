@@ -32,6 +32,7 @@ const isMain = (path?: string) =>
  * (unless `VLT_CACHE_UNZIP=0`), and explode tarballs into the global
  * store root `store`, if given. Keys are `\0`-separated, each
  * optionally followed by `\t` and the integrity it is cached under.
+ * False on no `path` or a failed explode; throws on a corrupt gzip.
  */
 const main = async (
   path: undefined | string,
@@ -99,7 +100,7 @@ const main = async (
   const results = await Promise.allSettled(
     (unzip ? keys : []).map(async key => {
       const buffer = await cache.fetch(key)
-      if (!buffer || buffer.length < 4) return null
+      if (!buffer || buffer.length < 4) return
       const headSizeOriginal = readSize(buffer, 0)
       const body = buffer.subarray(headSizeOriginal)
       if (body[0] === 0x1f && body[1] === 0x8b) {
@@ -118,7 +119,7 @@ const main = async (
           ) {
             throw er
           }
-          return null
+          return
         }
         const headersBuffer = buffer.subarray(7, headSizeOriginal)
         const headers: Buffer[] = []
@@ -215,7 +216,6 @@ const main = async (
           },
         )
       }
-      return true
     }),
   )
   // reads the rewritten entries back from memory
@@ -225,10 +225,7 @@ const main = async (
   for (const r of results) {
     if (r.status === 'rejected') throw r.reason
   }
-  return (
-    results.some(r => r.status === 'fulfilled' && r.value) ||
-    !!exploded?.written
-  )
+  return !exploded?.failed
 }
 
 if (isMain(process.argv[1])) {
