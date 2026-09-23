@@ -149,6 +149,7 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
 Set {
   &ref_1 Node {
+    "bindingGyp": undefined,
     "bins": undefined,
     "buildState": "none",
     "built": false,
@@ -270,6 +271,7 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "bindingGyp": undefined,
           "bins": undefined,
           "buildState": "none",
           "built": false,
@@ -396,6 +398,7 @@ Set {
           "workspaceSpec": "*",
         },
         "to": Node {
+          "bindingGyp": undefined,
           "bins": undefined,
           "buildState": "none",
           "built": false,
@@ -430,6 +433,7 @@ Set {
     },
   },
   Node {
+    "bindingGyp": undefined,
     "bins": undefined,
     "buildState": "none",
     "built": false,
@@ -460,6 +464,7 @@ Set {
     "workspaces": undefined,
   },
   Node {
+    "bindingGyp": undefined,
     "bins": undefined,
     "buildState": "none",
     "built": false,

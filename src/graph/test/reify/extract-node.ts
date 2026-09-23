@@ -1,8 +1,11 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
+import { PackageJson } from '@vltpkg/package-json'
 import { getOptions } from '@vltpkg/spec'
 import type { Spec } from '@vltpkg/spec'
+import { expandNormalizedManifestSymbols } from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -698,4 +701,78 @@ t.test('integrity capture from remote/git deps', async t => {
       )
     },
   )
+})
+
+t.test('global store index data', async t => {
+  const id = joinDepIDTuple(['registry', '', 'store-pkg@1.2.3'])
+  const storeNode = (props: Record<string, any> = {}) =>
+    mockNode({
+      id,
+      location: `./node_modules/.vlt/${id}/node_modules/store-pkg`,
+      name: 'store-pkg',
+      integrity: 'sha512-abc',
+      resolved: 'https://registry.example.com/x.tgz',
+      ...props,
+    })
+  const linked = (r: Record<string, unknown>) =>
+    ({
+      extract: async (spec: Spec) => ({ spec, ...r }),
+    }) as unknown as PackageInfoClient
+  const run = (node: Node, r: Record<string, unknown>) =>
+    extractNode(
+      node,
+      new PathScurry(t.testdirName),
+      mockRemover,
+      getOptions(configData),
+      linked(r),
+      mockDiff,
+    )
+  const pkg = {
+    name: 'store-pkg',
+    version: 'v1.2.3',
+    author: 'A <a@example.com> (https://a.example.com)',
+    contributors: ['B <b@example.com>'],
+    funding: 'https://f.example.com',
+    bugs: 'https://b.example.com',
+    bin: './cli.js',
+    scripts: { install: 'x' },
+  }
+
+  t.test('same manifest as reading it from disk', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify(pkg, null, 2),
+    })
+    const node = storeNode()
+    await run(node, {
+      manifest: structuredClone(pkg),
+      bindingGyp: true,
+    })
+    const lockfileForm = (m: NormalizedManifest | undefined) =>
+      JSON.stringify(m && expandNormalizedManifestSymbols(m))
+    t.equal(
+      lockfileForm(node.manifest),
+      lockfileForm(new PackageJson().read(dir)),
+    )
+    t.equal(node.bindingGyp, true)
+  })
+
+  t.test('existing manifest kept', async t => {
+    const manifest = { name: 'store-pkg', version: '1.2.3' }
+    const node = storeNode({ manifest })
+    await run(node, { manifest: { ...pkg }, bindingGyp: false })
+    t.equal(node.manifest, manifest)
+    t.equal(node.bindingGyp, false)
+  })
+
+  t.test('invalid manifest left for the disk read', async t => {
+    for (const manifest of [
+      { ...pkg, version: '' },
+      { ...pkg, dependencies: { a: 1 } },
+    ]) {
+      const node = storeNode()
+      await run(node, { manifest })
+      t.equal(node.manifest, undefined)
+      t.equal(node.bindingGyp, undefined)
+    }
+  })
 })

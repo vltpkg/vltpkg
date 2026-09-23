@@ -842,6 +842,101 @@ t.test('early termination when no changes are needed', async t => {
   )
 })
 
+t.test(
+  'store-linked nodes: no package.json reads, same lockfiles',
+  async t => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'x',
+          version: '1.0.0',
+          dependencies: { lodash: '4', underscore: '1.13.7' },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const opts = () => ({
+      projectRoot,
+      registries,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      allowScripts: ':not(*)',
+      remover: new RollbackRemove(),
+    })
+    // write vlt-lock.json
+    await reify({
+      ...opts(),
+      packageInfo: mockPackageInfo,
+      packageJson: new PackageJson(),
+      graph: await ideal.build({
+        ...opts(),
+        packageInfo: mockPackageInfo,
+        packageJson: new PackageJson(),
+      }),
+    })
+    const nodeReads: string[] = []
+    class Tracked extends PackageJson {
+      read(dir: string, o?: { reload?: boolean }) {
+        if (dir.includes('.vlt')) nodeReads.push(dir)
+        return super.read(dir, o)
+      }
+    }
+    // lockfile, no node_modules: node manifests come from disk or
+    // from the global store index
+    const install = async (packageInfo: PackageInfoClient) => {
+      rmSync(resolve(projectRoot, 'node_modules'), {
+        recursive: true,
+        force: true,
+      })
+      nodeReads.length = 0
+      const packageJson = new Tracked()
+      const graph = await ideal.build({
+        ...opts(),
+        packageInfo,
+        packageJson,
+      })
+      await reify({ ...opts(), packageInfo, packageJson, graph })
+      return ['vlt-lock.json', 'node_modules/.vlt-lock.json'].map(f =>
+        readFileSync(resolve(projectRoot, f), 'utf8'),
+      )
+    }
+    const disk = await install(mockPackageInfo)
+    t.equal(nodeReads.length, 2, 'read from disk')
+    const store = await install(
+      createMockPackageInfo({
+        extract: async (spec, target, options) => ({
+          ...(await mockPackageInfoBase.extract(
+            spec,
+            target,
+            options,
+          )),
+          manifest: JSON.parse(
+            readFileSync(resolve(target, 'package.json'), 'utf8'),
+          ),
+          bindingGyp: false,
+        }),
+      }),
+    )
+    t.strictSame(nodeReads, [], 'no package.json reads')
+    t.strictSame(store, disk, 'same lockfiles')
+    const { nodes } = JSON.parse(store[1]!) as LockfileData
+    for (const [id, name] of [
+      ['lodash@4.17.21', 'lodash'],
+      ['underscore@1.13.7', 'underscore'],
+    ] as const) {
+      t.match(
+        nodes[joinDepIDTuple(['registry', '', id])]?.[5],
+        { name, version: String },
+        'hidden lockfile has the manifest',
+      )
+    }
+  },
+)
+
 t.test('checkNeededBuild is called during reification', async t => {
   // Use the same test setup as the basic reification test
   const dir = t.testdir({

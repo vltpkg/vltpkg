@@ -1,8 +1,12 @@
 import { hydrate } from '@vltpkg/dep-id'
-import type { PackageInfoClient } from '@vltpkg/package-info'
+import type {
+  ExtractResolution,
+  PackageInfoClient,
+} from '@vltpkg/package-info'
 import { platformCheck } from '@vltpkg/pick-manifest'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { SpecOptions } from '@vltpkg/spec'
+import { asManifest, normalizeManifest } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
@@ -100,36 +104,36 @@ export const extractNode = async (
     ),
   }
 
+  const extracted = (r: ExtractResolution): ExtractResult => {
+    // Store computed integrity for git/remote deps
+    if (r.integrity && !node.integrity) node.integrity = r.integrity
+    // a global store link hands over what reify would read from disk;
+    // same result as reading it back, or left for that on failure
+    if (r.manifest && !node.manifest) {
+      try {
+        node.manifest = normalizeManifest(asManifest(r.manifest))
+      } catch {}
+    }
+    if (r.bindingGyp !== undefined) node.bindingGyp = r.bindingGyp
+    return { success: true, node }
+  }
+
   try {
     await remover.rm(target)
 
     if (removeOptionalFailedNode) {
       try {
-        const result = await packageInfo.extract(
-          spec,
-          target,
-          extractOptions,
+        return extracted(
+          await packageInfo.extract(spec, target, extractOptions),
         )
-        // Store computed integrity for git/remote deps
-        if (result.integrity && !node.integrity) {
-          node.integrity = result.integrity
-        }
-        return { success: true, node }
       } catch (error) {
         removeOptionalFailedNode()
         return { success: false, node, error }
       }
     } else {
-      const result = await packageInfo.extract(
-        spec,
-        target,
-        extractOptions,
+      return extracted(
+        await packageInfo.extract(spec, target, extractOptions),
       )
-      // Store computed integrity for git/remote deps
-      if (result.integrity && !node.integrity) {
-        node.integrity = result.integrity
-      }
-      return { success: true, node }
     }
   } catch (error) {
     /* c8 ignore start */

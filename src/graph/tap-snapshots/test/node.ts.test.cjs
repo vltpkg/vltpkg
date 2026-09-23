@@ -26,6 +26,7 @@ exports[`test/node.ts > TAP > Node > should print with special tag name 1`] = `
   resolved: undefined,
   platform: undefined,
   bins: undefined,
+  bindingGyp: undefined,
   built: false,
   buildState: 'none',
   peerSetHash: undefined,

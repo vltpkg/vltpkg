@@ -1,11 +1,12 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import type { RunOptions } from '@vltpkg/run'
 import { normalizeManifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import * as FSP from 'node:fs/promises'
 import * as FS from 'node:fs'
-import { resolve } from 'node:path'
+import { basename, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { Diff } from '../../src/diff.ts'
@@ -794,3 +795,72 @@ t.test(
     }
   },
 )
+
+t.test('binding.gyp known from the global store index', async t => {
+  const runs: RunOptions[] = []
+  const { build } = await t.mockImport<
+    typeof import('../../src/reify/build.ts')
+  >('../../src/reify/build.ts', {
+    '@vltpkg/run': {
+      run: async (options: RunOptions) => {
+        runs.push(options)
+      },
+    },
+  })
+  const ids = ['gyp', 'nogyp'].map(n =>
+    joinDepIDTuple(['registry', '', `${n}@1.0.0`]),
+  ) as [DepID, DepID]
+  const pkg = (name: string) => ({
+    node_modules: {
+      [name]: {
+        'package.json': JSON.stringify({ name, version: '1.0.0' }),
+        // the index says otherwise, so this is never looked at
+        ...(name === 'nogyp' && { 'binding.gyp': '{}' }),
+      },
+    },
+  })
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test-project',
+      version: '1.0.0',
+      dependencies: { gyp: '1.0.0', nogyp: '1.0.0' },
+    }),
+    node_modules: {
+      gyp: t.fixture('symlink', `./.vlt/${ids[0]}/node_modules/gyp`),
+      nogyp: t.fixture(
+        'symlink',
+        `./.vlt/${ids[1]}/node_modules/nogyp`,
+      ),
+      '.vlt': { [ids[0]]: pkg('gyp'), [ids[1]]: pkg('nogyp') },
+    },
+  })
+  const load = () =>
+    actual.load({
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      projectRoot,
+      loadManifests: true,
+    })
+  const after = load()
+  const before = load()
+  for (const [id, bindingGyp] of [
+    [ids[0], true],
+    [ids[1], false],
+  ] as const) {
+    const n = after.nodes.get(id)
+    if (!n) throw new Error('missing node')
+    n.bindingGyp = bindingGyp
+    before.removeNode(before.nodes.get(id)!)
+  }
+  await build(
+    new Diff(before, after),
+    new PackageJson(),
+    new PathScurry(projectRoot),
+    new Set(ids),
+  )
+  t.strictSame(
+    runs.map(r => [r.arg0, basename(r.cwd)]),
+    [['install', 'gyp']],
+  )
+})
