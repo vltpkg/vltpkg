@@ -26,8 +26,34 @@ const none: Capabilities = Object.freeze({})
  */
 const asked = new Map<string, Promise<Capabilities>>()
 
+/**
+ * The documents that have come back, by capabilities URL. A caller that
+ * cannot afford to wait reads this instead of the promise above.
+ */
+const known = new Map<string, Capabilities>()
+
 /** Forget every registry that has been asked. Exposed for tests. */
-export const resetCapabilities = () => asked.clear()
+export const resetCapabilities = () => {
+  asked.clear()
+  known.clear()
+}
+
+/**
+ * What `registry` answered, if it has answered already, and `undefined`
+ * while the question is still open. Asking starts the request when nothing
+ * has asked yet, so a caller can peek now and get an answer on a later call
+ * without ever waiting for one.
+ */
+export const peekCapabilities = (
+  client: RegistryClient,
+  registry: string,
+): Capabilities | undefined => {
+  const url = capabilitiesUrl(registry)
+  const seen = known.get(url)
+  if (seen) return seen
+  void getCapabilities(client, registry)
+  return undefined
+}
 
 /**
  * The vlt extensions `registry` serves. Anything short of a capability
@@ -39,13 +65,19 @@ export const getCapabilities = async (
   client: RegistryClient,
   registry: string,
 ): Promise<Capabilities> => {
-  const url = String(new URL('-/vlt/capabilities', registry))
+  const url = capabilitiesUrl(registry)
   const seen = asked.get(url)
   if (seen) return seen
-  const doc = fetchCapabilities(client, url)
+  const doc = fetchCapabilities(client, url).then(caps => {
+    known.set(url, caps)
+    return caps
+  })
   asked.set(url, doc)
   return doc
 }
+
+const capabilitiesUrl = (registry: string) =>
+  String(new URL('-/vlt/capabilities', registry))
 
 const fetchCapabilities = async (
   client: RegistryClient,

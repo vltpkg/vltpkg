@@ -10,10 +10,11 @@ import {
   readlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { readdir, rmdir, utimes, writeFile } from 'node:fs/promises'
+import { readdir, rm, utimes, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import type { Test } from 'tap'
 import t from 'tap'
 import { x as tarX } from 'tar'
 import type {
@@ -22,7 +23,11 @@ import type {
   PackageInfoClientRequestOptions,
 } from '../src/index.ts'
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
-import { PackageInfoClient, PACKUMENT_ACCEPT } from '../src/index.ts'
+import {
+  PackageInfoClient,
+  PACKUMENT_ACCEPT,
+  resetCapabilities,
+} from '../src/index.ts'
 
 t.saveFixture = true
 
@@ -101,7 +106,47 @@ const PORT = 15443 + Number(process.env.TAP_CHILD_ID || 0)
 const etag = '"yolo"'
 const server = createServer((req, res) => {
   res.setHeader('connection', 'close')
-  switch (req.url) {
+  // `?stable` packument fixtures: a `stable-*` package answers a packument
+  // whose newest version is a prerelease that `latest` does not point at,
+  // and drops those versions -- and the dist-tag pointing at one -- when
+  // the request carries `?stable`, the way the registry filters it.
+  const stablePaku = /^\/(stable-[a-z-]+)(\?stable)?$/.exec(
+    req.url ?? '',
+  )
+  if (stablePaku) {
+    const [, name = '', filtered] = stablePaku
+    stableRequests.push(req.url ?? '')
+    const at = (version: string): Manifest => ({
+      name,
+      version,
+      dist: {
+        tarball: `${defaultRegistry}${name}/-/${name}-${version}.tgz`,
+      },
+    })
+    const json = JSON.stringify({
+      name,
+      'dist-tags':
+        filtered ?
+          { latest: '1.1.0' }
+        : { latest: '1.1.0', next: '2.0.0-rc.1' },
+      versions: {
+        '1.0.0': at('1.0.0'),
+        '1.1.0': at('1.1.0'),
+        ...(filtered ? {} : { '2.0.0-rc.1': at('2.0.0-rc.1') }),
+      },
+    })
+    res.setHeader('content-type', 'application/json')
+    res.setHeader('content-length', json.length)
+    if (stableDelay) {
+      setTimeout(() => res.end(json), stableDelay)
+      return
+    }
+    return res.end(json)
+  }
+  // Everything below is a registry that does not serve the filter, and so
+  // ignores the unknown parameter and answers the full packument -- what
+  // the client counts on while the capability document is still in flight.
+  switch (req.url?.replace(/\?stable$/, '')) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       abbrevTgzRequests++
       res.setHeader('content-type', 'application/octet-stream')
@@ -378,7 +423,12 @@ let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
 let abbrevTgzRequests = 0
 let capabilitiesRequests = 0
-const capabilitiesDocument: Record<string, unknown> = {
+let stableRequests: string[] = []
+let stableDelay = 0
+// No `stable-filter`: most registries serve none, and the packument
+// fixtures here answer the full shape. The suite covering that filter
+// turns it on for its own subtests.
+let capabilitiesDocument: Record<string, unknown> = {
   manifests: '0.1',
   resolve: '0.1',
   mimeTypes: [
@@ -1692,8 +1742,9 @@ t.test('cache manifests', async t => {
     cache: xdgDir,
   }
   // clean up current cache directory
-  await rmdir(pathResolve(xdgDir, 'package-info'), {
+  await rm(pathResolve(xdgDir, 'package-info'), {
     recursive: true,
+    force: true,
   }).catch(() => {})
 
   await t.test(
@@ -1758,8 +1809,9 @@ t.test('cache manifests', async t => {
 
   await t.test('caching skipped with dist tags', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     })
 
     const pi = new PackageInfoClient(opts)
@@ -1818,8 +1870,9 @@ t.test('cache manifests', async t => {
     'different cache keys for different options',
     async t => {
       // clean up current cache directory
-      await rmdir(pathResolve(xdgDir, 'package-info'), {
+      await rm(pathResolve(xdgDir, 'package-info'), {
         recursive: true,
+        force: true,
       })
 
       const filesBefore = await readdir(
@@ -1874,8 +1927,9 @@ t.test('cache manifests', async t => {
 
   await t.test('different cache keys for os and arch', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     })
 
     const filesBefore = await readdir(
@@ -1933,8 +1987,9 @@ t.test('cache manifests', async t => {
 
   await t.test('cache only applies to registry specs', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     })
 
     const pi = new PackageInfoClient(opts)
@@ -1979,8 +2034,9 @@ t.test('cache manifests', async t => {
         },
       })
       // clean up current cache directory
-      await rmdir(pathResolve(xdgDir, 'package-info'), {
+      await rm(pathResolve(xdgDir, 'package-info'), {
         recursive: true,
+        force: true,
       })
 
       const pi = new MockPIC(opts)
@@ -2005,7 +2061,7 @@ t.test('cache manifests', async t => {
     const pi = new PackageInfoClient(opts)
 
     // clean up the full cache directory
-    await rmdir(pathResolve(xdgDir), { recursive: true })
+    await rm(pathResolve(xdgDir), { recursive: true, force: true })
 
     const mani = await pi.manifest('abbrev@2.0.0')
     t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
@@ -2021,8 +2077,9 @@ t.test('cache manifests', async t => {
 
   await t.test('expired cache entry', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2065,8 +2122,9 @@ t.test('cache manifests', async t => {
 
   await t.test('legacy cache entry format', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2108,8 +2166,9 @@ t.test('cache manifests', async t => {
 
   await t.test('cache file contains only the manifest', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2139,8 +2198,9 @@ t.test('cache manifests', async t => {
 
   await t.test('concurrent misses dedup cache writes', async t => {
     // clean up current cache directory
-    await rmdir(pathResolve(xdgDir, 'package-info'), {
+    await rm(pathResolve(xdgDir, 'package-info'), {
       recursive: true,
+      force: true,
     }).catch(() => {})
 
     const pi = new PackageInfoClient(opts)
@@ -2326,6 +2386,8 @@ t.test(
 
 t.test('registry capabilities', async t => {
   const pi = new PackageInfoClient({ ...options, cache: t.testdir() })
+  // manifest() asks for the document too, so start from a cold memo
+  resetCapabilities()
   capabilitiesRequests = 0
 
   t.strictSame(
@@ -2340,6 +2402,175 @@ t.test('registry capabilities', async t => {
   )
   t.equal(capabilitiesRequests, 1, 'asked the registry once')
   await (await pi.getRegistryClient()).cache.promise()
+})
+
+t.test('the ?stable packument filter', async t => {
+  const client = (t: Test) =>
+    new PackageInfoClient({ ...options, cache: t.testdir() })
+
+  const withoutFilter = capabilitiesDocument
+  t.teardown(() => {
+    capabilitiesDocument = withoutFilter
+  })
+  t.beforeEach(() => {
+    resetCapabilities()
+    capabilitiesDocument = {
+      ...withoutFilter,
+      'stable-filter': '1.0',
+    }
+    stableRequests = []
+    stableDelay = 0
+  })
+
+  await t.test(
+    'a range no prerelease can answer asks for it',
+    async t => {
+      const pi = client(t)
+      t.equal(
+        (await pi.manifest('stable-range@^1.0.0')).version,
+        '1.1.0',
+      )
+      t.strictSame(stableRequests, ['/stable-range?stable'])
+    },
+  )
+
+  await t.test('an exact version asks for it too', async t => {
+    const pi = client(t)
+    t.equal(
+      (await pi.manifest('stable-exact@1.0.0')).version,
+      '1.0.0',
+    )
+    t.strictSame(stableRequests, ['/stable-exact?stable'])
+  })
+
+  await t.test(
+    'a registry without the filter is asked for the full packument',
+    async t => {
+      capabilitiesDocument = withoutFilter
+      const pi = client(t)
+      // settle the document first: until it lands the client asks
+      // optimistically, which the next subtest covers
+      await pi.capabilities(defaultRegistry)
+      t.equal(
+        (await pi.manifest('stable-nofilter@^1.0.0')).version,
+        '1.1.0',
+      )
+      t.strictSame(stableRequests, ['/stable-nofilter'])
+    },
+  )
+
+  await t.test(
+    'selectors a prerelease can answer stay on the full packument',
+    async t => {
+      const cases: [string, string, string][] = [
+        ['a dist tag', 'stable-tagged@next', '2.0.0-rc.1'],
+        ['a bare name', 'stable-bare', '1.1.0'],
+        ['the any range', 'stable-any@*', '1.1.0'],
+        [
+          'a range naming a prerelease',
+          'stable-pre@>=2.0.0-rc.1',
+          '2.0.0-rc.1',
+        ],
+        ['a hyphen range', 'stable-hyphen@1.0.0 - 1.1.0', '1.1.0'],
+      ]
+      for (const [name, spec, version] of cases) {
+        await t.test(name, async t => {
+          resetCapabilities()
+          stableRequests = []
+          const pi = client(t)
+          t.equal((await pi.manifest(spec)).version, version)
+          t.notMatch(
+            stableRequests[0],
+            /stable$/,
+            'asked for the full packument',
+          )
+        })
+      }
+    },
+  )
+
+  await t.test(
+    'asks optimistically before the document lands',
+    async t => {
+      // no round trip in front of the first packument of a cold install:
+      // a registry that does not know `?stable` ignores it and serves the
+      // full packument, which resolves just as well
+      capabilitiesDocument = withoutFilter
+      const pi = client(t)
+      t.equal(
+        (await pi.manifest('stable-optimistic@^1.0.0')).version,
+        '1.1.0',
+      )
+      t.strictSame(stableRequests, ['/stable-optimistic?stable'])
+    },
+  )
+
+  await t.test(
+    'stops asking once the registry says it has no filter',
+    async t => {
+      capabilitiesDocument = withoutFilter
+      const pi = client(t)
+      // first ask is optimistic, and settles the document behind it
+      await pi.manifest('stable-first@^1.0.0')
+      await pi.capabilities(defaultRegistry)
+      await pi.manifest('stable-second@^1.0.0')
+      t.strictSame(stableRequests, [
+        '/stable-first?stable',
+        '/stable-second',
+      ])
+    },
+  )
+
+  await t.test('packument() answers with every version', async t => {
+    // `vlt view` and `vlt deprecate` read this, and both need the
+    // prereleases the stable packument drops
+    const pi = client(t)
+    const paku = await pi.packument('stable-viewed@^1.0.0')
+    t.strictSame(Object.keys(paku.versions), [
+      '1.0.0',
+      '1.1.0',
+      '2.0.0-rc.1',
+    ])
+    t.strictSame(stableRequests, ['/stable-viewed'])
+  })
+
+  await t.test(
+    'an in-flight full packument answers a stable ask',
+    async t => {
+      const pi = client(t)
+      // the capability document is what a stable ask waits on, so settle
+      // it before the two asks race
+      await pi.capabilities(defaultRegistry)
+      stableDelay = 50
+
+      const [full, stable] = await Promise.all([
+        pi.packument('stable-shared@^1.0.0'),
+        pi.manifest('stable-shared@^1.0.0'),
+      ])
+      t.strictSame(
+        stableRequests,
+        ['/stable-shared'],
+        'fetched once, as the full packument',
+      )
+      t.equal(
+        stable,
+        full.versions['1.1.0'],
+        'both came from that fetch',
+      )
+    },
+  )
+
+  await t.test('the two shapes cache separately', async t => {
+    const pi = client(t)
+    await pi.manifest('stable-split@^1.0.0')
+    await pi.packument('stable-split@^1.0.0')
+    t.strictSame(
+      stableRequests,
+      ['/stable-split?stable', '/stable-split'],
+      'one request per representation',
+    )
+    await (await pi.getRegistryClient()).cache.promise()
+  })
 })
 
 t.test('moving selectors force a revalidation', async t => {

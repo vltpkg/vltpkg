@@ -6,7 +6,7 @@
  */
 'use strict'
 exports[`test/node.ts > TAP > Node > should print with special tag name 1`] = `
-Node [@vltpkg/graph.Node] {
+@vltpkg/graph.Node {
   confused: false,
   extracted: false,
   edgesIn: Set(0) {},

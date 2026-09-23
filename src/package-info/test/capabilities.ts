@@ -4,6 +4,7 @@ import t from 'tap'
 import {
   PackageInfoClient,
   getCapabilities,
+  peekCapabilities,
   resetCapabilities,
 } from '../src/index.ts'
 
@@ -171,5 +172,37 @@ t.test('a body that does not parse answers empty', async t => {
   t.strictSame(
     await getCapabilities(await pi.getRegistryClient(), registry()),
     {},
+  )
+})
+
+t.test('peek answers only once the document lands', async t => {
+  const pi = client(t.testdir())
+  const rc = await pi.getRegistryClient()
+
+  t.equal(
+    peekCapabilities(rc, registry()),
+    undefined,
+    'no answer yet, and asking started the request',
+  )
+  const doc = await pi.capabilities(registry())
+  t.strictSame(
+    peekCapabilities(rc, registry()),
+    doc,
+    'the document, once it has landed',
+  )
+  t.equal(requests, 1, 'the peek started the only request')
+})
+
+t.test('reset clears the settled document too', async t => {
+  const pi = client(t.testdir())
+  const rc = await pi.getRegistryClient()
+  await pi.capabilities(registry())
+  t.not(peekCapabilities(rc, registry()), undefined, 'settled')
+
+  resetCapabilities()
+  t.equal(
+    peekCapabilities(rc, registry()),
+    undefined,
+    'forgotten, so the next run asks again',
   )
 })
