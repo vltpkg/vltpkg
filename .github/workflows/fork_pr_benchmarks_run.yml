@@ -60,6 +60,16 @@ jobs:
         run: |
           bash ./infra/cli-benchmarks/scripts/setup.sh
 
+      # benchmark only: `bench-store-linker=<linker>` in the PR body sets
+      # VLT_STORE_LINKER for every benchmarked install, cache-filling
+      # warmups included
+      - name: Store linker override
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          l=$(grep -oE 'bench-store-linker=(auto|hardlink|copy|unpack)' <<<"$PR_BODY" | head -n1 | cut -d= -f2 || true)
+          if [ -n "$l" ]; then echo "VLT_STORE_LINKER=$l" >> "$GITHUB_ENV"; fi
+
       - name: Run Benchmarks variations
         run: |
           bash ./infra/cli-benchmarks/scripts/benchmark.sh ${{ matrix.fixture }} ${{ matrix.variation }}
