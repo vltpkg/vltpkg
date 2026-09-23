@@ -3,7 +3,7 @@ import EventEmitter from 'node:events'
 export type Events = {
   request: {
     url: URL | string
-    /** `store`: placed from the global store, no tarball read */
+    /** `store`: hardlinked from the global store, no tarball read */
     state: 'start' | 'complete' | '304' | 'cache' | 'stale' | 'store'
     /** HTTP method for the request, when known. */
     method?: string

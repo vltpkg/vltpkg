@@ -1,6 +1,9 @@
 import { readFile } from 'node:fs/promises'
 import { linkFromStore } from './link-tree.ts'
-import type { LinkFromStoreOptions } from './link-tree.ts'
+import type {
+  LinkFromStoreOptions,
+  StoreLinkResult,
+} from './link-tree.ts'
 import type { StoreIndex } from './store-index.ts'
 import {
   unpack,
@@ -52,13 +55,13 @@ export class Pool {
 
   /**
    * Hardlink (or copy) a global store entry into `target`. Resolves
-   * false on a store miss. See {@link linkFromStore}.
+   * how, or false on a store miss. See {@link linkFromStore}.
    */
   async linkFromStore(
     storeEntry: string,
     target: string,
     opts?: LinkFromStoreOptions,
-  ): Promise<boolean> {
+  ): Promise<StoreLinkResult> {
     return linkFromStore(storeEntry, target, opts)
   }
 

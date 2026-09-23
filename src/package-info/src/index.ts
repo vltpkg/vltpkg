@@ -211,16 +211,18 @@ export class PackageInfoClient {
   #cachePath: string
   #storeRoot: string
   #storeLinker: StoreLinker
-  #storeHits = 0
+  #storeHits = { link: 0, copy: 0 }
   #storeMisses = 0
   #storeHitRateLogged = false
   #logStoreHitRate = () => {
-    const n = Math.max(1, this.#storeHits + this.#storeMisses)
+    const { link, copy } = this.#storeHits
+    const n = Math.max(1, link + copy + this.#storeMisses)
     debug(
-      'global store: linked=%d missed=%d hit rate=%s%%',
-      this.#storeHits,
+      'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
+      link,
+      copy,
       this.#storeMisses,
-      ((this.#storeHits / n) * 100).toFixed(1),
+      (((link + copy) / n) * 100).toFixed(1),
     )
   }
   // In-flight coalescing key is `${registry}${name}` — no representation
@@ -403,15 +405,15 @@ export class PackageInfoClient {
             this.#storeHitRateLogged = true
             process.once('beforeExit', this.#logStoreHitRate)
           }
-          if (
-            await pool.linkFromStore(
-              pathResolve(this.#storeRoot, hex),
-              target,
-              { copy },
-            )
-          ) {
-            this.#storeHits++
-            logRequest(r.resolved, 'store')
+          const how = await pool.linkFromStore(
+            pathResolve(this.#storeRoot, hex),
+            target,
+            { copy },
+          )
+          if (how) {
+            this.#storeHits[how]++
+            // a copy is no link: report it as a cache hit
+            logRequest(r.resolved, how === 'link' ? 'store' : 'cache')
             return r
           }
           this.#storeMisses++

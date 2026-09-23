@@ -1654,7 +1654,7 @@ t.test('global store', async t => {
     await pi.extract('abbrev@2', dir + '/t', lockOpts)
     t.equal(nlink(dir + '/t'), 1)
     t.equal(nlink(`${store}/${hex}`), 1, 'store file not linked')
-    t.strictSame(states, ['store'])
+    t.strictSame(states, ['cache'], 'not counted as linked')
   })
 
   t.test('store-linker=unpack, or invalid: store unused', async t => {
@@ -1698,6 +1698,10 @@ t.test('global store', async t => {
     populate(store)
     await pi.extract('abbrev@2', dir + '/hit', lockOpts)
     await pi.extract('abbrev@2', dir + '/hit2', lockOpts)
+    await pi.extract('abbrev@2', dir + '/copy', {
+      ...lockOpts,
+      installScripts: true,
+    })
     const rate = () =>
       debugged.filter(([f]) => String(f).includes('hit rate'))
     t.strictSame(rate(), [], 'nothing until exit')
@@ -1705,10 +1709,11 @@ t.test('global store', async t => {
     process.emit('beforeExit', 0)
     t.strictSame(rate(), [
       [
-        'global store: linked=%d missed=%d hit rate=%s%%',
+        'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
         2,
         1,
-        '66.7',
+        1,
+        '75.0',
       ],
     ])
   })

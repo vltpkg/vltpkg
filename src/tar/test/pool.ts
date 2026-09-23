@@ -163,11 +163,11 @@ t.test('global store', async t => {
   const entry = resolve(d, 'entry')
   writeFileSync(storeIndexPath(entry), JSON.stringify(index))
   renameSync(resolve(d, 'tmp'), entry)
-  t.equal(await p.linkFromStore(entry, resolve(d, 'nm/a')), true)
+  t.equal(await p.linkFromStore(entry, resolve(d, 'nm/a')), 'link')
   t.equal(statSync(resolve(d, 'nm/a/package.json')).nlink, 2)
   t.equal(
     await p.linkFromStore(entry, resolve(d, 'nm/b'), { copy: true }),
-    true,
+    'copy',
   )
   t.equal(statSync(resolve(d, 'nm/b/package.json')).nlink, 1)
   t.equal(

@@ -66,7 +66,7 @@ Unpack the supplied Buffer of data into the target folder.
 
 Unpack a tarball read from `file`, skipping `offset` leading bytes.
 
-#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<boolean>`
+#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<'link' | 'copy' | false>`
 
 #### `pool.unpackToStore(tarData, dir) => Promise<{ index }>`
 
@@ -99,7 +99,8 @@ normalized `bins`, `name` and `version`.
 ### linkFromStore(storeEntry, target, { copy })
 
 Hardlink every file of a store entry into a sibling temp dir
-(package.json last), then rename it to `target`. Returns `false`,
+(package.json last), then rename it to `target`. Returns `'link'`, or
+`'copy'` when files were copied instead (see below). Returns `false`,
 creating nothing, if the sidecar is missing or invalid, the entry is
 not a directory, or the target's parent is a symlink. An entry with a
 missing file is removed and `false` returned. Two index paths that

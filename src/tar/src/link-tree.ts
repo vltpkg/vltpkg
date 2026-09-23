@@ -29,6 +29,9 @@ const verify = process.env.VLT_STORE_VERIFY === '1'
  */
 export type StoreLinker = 'auto' | 'hardlink' | 'copy' | 'unpack'
 
+/** `copy`: every file copied (install scripts, `copy`, downgrade) */
+export type StoreLinkResult = 'link' | 'copy' | false
+
 export type LinkFromStoreOptions = {
   /**
    * copy every file instead of hardlinking. Implied when the index says
@@ -139,16 +142,17 @@ const fill = (
  * Materialize a global store entry at `target` from its sidecar index:
  * hardlink each file into a sibling temp dir (package.json last), then
  * rename it into place. Files that cannot be linked are copied, as is
- * every file of a package with install scripts. Returns false, leaving
- * `target` untouched, on a store miss (no valid index, entry not a
- * directory, symlinked target parent), a name clash on a
- * case-insensitive target, or a damaged entry, which is removed.
+ * every file of a package with install scripts. Returns 'link' or
+ * 'copy', or false, leaving `target` untouched, on a store miss (no
+ * valid index, entry not a directory, symlinked target parent), a name
+ * clash on a case-insensitive target, or a damaged entry, which is
+ * removed.
  */
 export const linkFromStore = (
   storeEntry: string,
   target: string,
   { copy = false }: LinkFromStoreOptions = {},
-): boolean => {
+): StoreLinkResult => {
   const index = readStoreIndex(storeEntry)
   if (!index || !lstatSync(storeEntry, noThrow)?.isDirectory()) {
     return false
@@ -162,7 +166,8 @@ export const linkFromStore = (
   let succeeded = false
   try {
     mkdirSync(tmp)
-    const miss = fill(storeEntry, tmp, index, copy || index.scripts)
+    const copied = copy || index.scripts
+    const miss = fill(storeEntry, tmp, index, copied)
     if (miss === 'clash') {
       debug('global store: name clash in target', storeEntry)
       return false
@@ -180,7 +185,7 @@ export const linkFromStore = (
     renameSync(tmp, target)
     if (targetExists) rimrafSync(og)
     succeeded = true
-    return true
+    return copied || copyAll ? 'copy' : 'link'
   } finally {
     if (!succeeded) {
       /* c8 ignore start */
