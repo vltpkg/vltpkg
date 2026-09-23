@@ -89,6 +89,8 @@ export {
 export type CachedBody = {
   /** the cache file it came from */
   path: string
+  /** the cache key of the request */
+  key: string
   /** the body, a view into the file's bytes */
   body: Buffer
   /** the hash the entry was stored under, if it has one */
@@ -698,6 +700,7 @@ export class RegistryClient {
         }
         return {
           path,
+          key,
           body: entry.buffer(),
           integrity: entry.integrity,
         }

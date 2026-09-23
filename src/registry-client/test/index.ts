@@ -1575,6 +1575,7 @@ t.test('cachedBody', async t => {
     t.strictSame(found.body, tarball)
     t.strictSame(requests, [], 'the caller logs, not us')
     t.equal(found.path, rc.cache.path(url), 'found by key path')
+    t.equal(found.key, url, 'cache key')
   })
 
   t.test('normalizes the url like request() does', async t => {
@@ -1605,6 +1606,7 @@ t.test('cachedBody', async t => {
     linkSync(rc.cache.path(url), intPath)
     const found = rc.cachedBody(url, { integrity })
     t.equal(found?.path, intPath, 'preferred the integrity path')
+    t.equal(found?.key, url, 'still the request key')
     t.strictSame(found?.body, tarball)
   })
 
