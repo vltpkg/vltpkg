@@ -260,7 +260,7 @@ t.test(
 t.test('should handle missing bin files gracefully', async t => {
   const runs: RunOptions[] = []
   const chmods: string[] = []
-  const existsChecks: string[] = []
+  const statChecks: string[] = []
 
   const mockRun = async (options: RunOptions) => {
     runs.push(options)
@@ -274,12 +274,13 @@ t.test('should handle missing bin files gracefully', async t => {
   })
 
   const mockFS = t.createMock(FS, {
-    existsSync: (path: string): boolean => {
-      existsChecks.push(path)
-      // Return false for paths that contain 'missing-bin' to simulate missing files
-      return !path.includes('missing-bin')
+    statSync: (path: string) => {
+      statChecks.push(path)
+      // simulate missing files for paths that contain 'missing-bin'
+      return path.includes('missing-bin') ? undefined : (
+          { mode: 0o644 }
+        )
     },
-    statSync: (_path: string) => ({ mode: 0o644 }),
   })
 
   const { build } = await t.mockImport<
@@ -317,7 +318,7 @@ t.test('should handle missing bin files gracefully', async t => {
                 name: 'sqld',
                 version: '0.24.1-pre.42',
                 bin: {
-                  sqld: 'missing-bin/sqld', // This will trigger existsSync to return false
+                  sqld: 'missing-bin/sqld', // statSync finds nothing here
                 },
               }),
               // Note: missing-bin/sqld file doesn't exist
@@ -362,10 +363,10 @@ t.test('should handle missing bin files gracefully', async t => {
     new Set([sqldId]),
   )
 
-  // Verify the existsSync was called for the missing bin file
+  // Verify the missing bin file was looked up
   t.ok(
-    existsChecks.some(path => path.includes('missing-bin')),
-    'existsSync should be called for bin files',
+    statChecks.some(path => path.includes('missing-bin')),
+    'statSync should be called for bin files',
   )
 
   // Verify chmod was NOT called for the missing file
