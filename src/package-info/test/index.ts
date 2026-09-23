@@ -367,6 +367,14 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', tgzAbbrev.byteLength)
       return res.end(tgzAbbrev)
     }
+    case '/-/vlt/capabilities': {
+      capabilitiesRequests++
+      const json = JSON.stringify(capabilitiesDocument)
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('cache-control', 'public, max-age=86400')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     case '/no-integrity': {
       const json = JSON.stringify({
         name: 'no-integrity',
@@ -401,6 +409,15 @@ let movingLatest = '1.0.0'
 let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
 let abbrevTgzRequests = 0
+let capabilitiesRequests = 0
+const capabilitiesDocument: Record<string, unknown> = {
+  manifests: '0.1',
+  resolve: '0.1',
+  mimeTypes: [
+    'application/vnd.vlt.packument-v1+json',
+    'application/vnd.npm.install-v1+json',
+  ],
+}
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
@@ -2318,6 +2335,24 @@ t.test(
     await (await pi.getRegistryClient()).cache.promise()
   },
 )
+
+t.test('registry capabilities', async t => {
+  const pi = new PackageInfoClient({ ...options, cache: t.testdir() })
+  capabilitiesRequests = 0
+
+  t.strictSame(
+    await pi.capabilities(defaultRegistry),
+    capabilitiesDocument,
+    'read the document the registry serves',
+  )
+  t.strictSame(
+    await pi.capabilities(defaultRegistry),
+    capabilitiesDocument,
+    'the same document on a second ask',
+  )
+  t.equal(capabilitiesRequests, 1, 'asked the registry once')
+  await (await pi.getRegistryClient()).cache.promise()
+})
 
 t.test('moving selectors force a revalidation', async t => {
   const cache = t.testdir()
