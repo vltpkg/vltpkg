@@ -971,6 +971,68 @@ t.test('unpackToStoreSync', async t => {
     }
   })
 
+  t.test(
+    'bins get the bin chmod mode under any umask',
+    { skip: isWin && 'no posix modes' },
+    async t => {
+      process.umask(0o027)
+      t.teardown(() => {
+        process.umask(0o022)
+      })
+      const pj = JSON.stringify({ bin: { a: 'a.js', b: 'b.js' } })
+      const tar = makeTar([
+        { path: 'package/package.json', size: pj.length },
+        pj,
+        { path: 'package/a.js', size: 1, mode: 0o644 },
+        'a',
+        { path: 'package/b.js', size: 1, mode: 0o755 },
+        'b',
+        { path: 'package/c.js', size: 1, mode: 0o755 },
+        'c',
+      ])
+      const dir = resolve(t.testdir(), 'x')
+      unpackToStoreSync(tar, dir)
+      // (mode & 0o777) | 0o111, as reify leaves an unpacked bin
+      t.equal(mode(resolve(dir, 'a.js')), 0o751)
+      t.equal(mode(resolve(dir, 'b.js')), 0o751)
+      // not a bin: as unpackSync writes it
+      t.equal(mode(resolve(dir, 'c.js')), 0o750)
+    },
+  )
+
+  t.test('dirs differing only by case', async t => {
+    // a case-insensitive fs on a case-folding platform
+    t.intercept(process, 'platform', { value: 'darwin' })
+    const FS = await import('node:fs')
+    const made = new Set<string>()
+    const { unpackToStoreSync } = await t.mockImport<UnpackModule>(
+      '../src/unpack.ts',
+      {
+        'node:fs': t.createMock(FS, {
+          mkdirSync: (p: string, o?: { recursive?: boolean }) => {
+            const k = p.toLowerCase()
+            if (made.has(k) && !o?.recursive) {
+              throw Object.assign(new Error('EEXIST'), {
+                code: 'EEXIST',
+              })
+            }
+            made.add(k)
+          },
+          writeFileSync: () => {},
+        }),
+      },
+    )
+    const { index } = unpackToStoreSync(
+      makeFilesTar({
+        'package.json': '{}',
+        'Lib/a.js': 'a',
+        'lib/b.js': 'b',
+      }),
+      resolve(t.testdir(), 'x'),
+    )
+    t.strictSame(index.dirs, ['Lib', 'lib'])
+  })
+
   t.test('scripts', async t => {
     const scripts = (files: Record<string, string>) =>
       unpackToStoreSync(

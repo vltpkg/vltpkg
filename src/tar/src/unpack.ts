@@ -1,10 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
 import {
+  chmodSync,
   lstatSync,
   mkdirSync,
   readFileSync,
   renameSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
@@ -501,10 +503,9 @@ const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
  * Explode a gzipped or raw tarball into `dir` for the global store and
  * return its sidecar index. Same parsing and path safety as
  * {@link unpackSync}, written straight into `dir` (which must not exist;
- * the caller renames it into place). Same modes as {@link unpackSync},
- * plus the exec bit on package.json `bin` targets. Throws, writing
- * nothing, if the tarball has no valid package.json. Removes `dir` on
- * failure.
+ * the caller renames it into place). Same modes as {@link unpackSync}
+ * followed by reify's bin chmod. Throws, writing nothing, if the
+ * tarball has no valid package.json. Removes `dir` on failure.
  */
 export const unpackToStoreSync = (
   tarData: Buffer,
@@ -528,8 +529,12 @@ export const unpackToStoreSync = (
     Object.values(manifest.bins ?? {}).map(entryKey),
   )
   const indexFiles: StoreIndexFile[] = []
+  const binFiles: string[] = []
   for (const [p, f] of list) {
-    f.executable ||= bins.has(entryKey(p))
+    if (bins.has(entryKey(p))) {
+      f.executable = true
+      binFiles.push(f.path)
+    }
     indexFiles.push([p, f.body.length, f.executable ? 1 : 0])
   }
   const allDirs = new Set<string>()
@@ -548,12 +553,21 @@ export const unpackToStoreSync = (
   mkdirSync(dir, { mode: 0o777 })
   let succeeded = false
   try {
-    for (const d of indexDirs)
-      mkdirSync(join(dir, d), { mode: 0o777 })
+    // recursive: tolerates dirs that differ only by case, like unpackSync
+    for (const d of indexDirs) {
+      mkdirSync(join(dir, d), { recursive: true, mode: 0o777 })
+    }
     for (const f of files) {
       writeFileSync(f.path, f.body, {
         mode: f.executable ? 0o777 : 0o666,
       })
+    }
+    // reify's bin chmod result (umask'd mode plus all exec bits), so it
+    // never has to chmod a store inode through a link
+    let binMode = 0
+    for (const p of binFiles) {
+      binMode ||= (statSync(p).mode & 0o777) | 0o111
+      chmodSync(p, binMode)
     }
     succeeded = true
   } finally {
