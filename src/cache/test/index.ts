@@ -118,6 +118,7 @@ t.test('delete from disk removes the global store entry', async t => {
       v1: {
         [hex]: { 'package.json': '{}' },
         [`${hex}.json`]: '{}',
+        [`${hex}.copied`]: '',
         other: { 'package.json': '{}' },
         'other.json': '{}',
       },
@@ -135,7 +136,7 @@ t.test('delete from disk removes the global store entry', async t => {
   await c.promise()
   t.strictSame(
     readdirSync(store).sort(),
-    [hex, `${hex}.json`, 'other', 'other.json'],
+    [hex, `${hex}.copied`, `${hex}.json`, 'other', 'other.json'],
     'kept without an integrity',
   )
   c.set('xyz', value, { integrity })

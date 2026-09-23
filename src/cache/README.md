@@ -27,7 +27,7 @@ const cache = new Cache({
   // see @vltpkg/cache-manager for handling that
   max: 10_000,
   // optional global store root: deleting an entry from disk with its
-  // integrity also removes <store>/<integrity-hex>{,.json}
+  // integrity also removes <store>/<integrity-hex>{,.json,.copied}
   store: '/path/to/store/v1',
 })
 

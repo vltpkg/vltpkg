@@ -39,7 +39,8 @@ export type CacheOptions = {
   path: string
   /**
    * global store root. Deleting an entry from disk with its integrity
-   * also removes the store entry and sidecar index for that integrity.
+   * also removes the store entry, sidecar index and copied marker for
+   * that integrity.
    */
   store?: string
   /**
@@ -353,7 +354,7 @@ export class Cache extends LRUCache<
       // a dir without its sidecar is never re-exploded
       const entry = resolve(this.store, hex)
       await rimraf(entry)
-      await rimraf(entry + '.json')
+      await rimraf([entry + '.json', entry + '.copied'])
     }
     return deleted
   }
