@@ -40,11 +40,15 @@ import {
 import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
 import type { Capabilities } from './capabilities.ts'
-import { getCapabilities } from './capabilities.ts'
+import { getCapabilities, peekCapabilities } from './capabilities.ts'
 import { rename } from './rename.ts'
 
 export type { Capabilities } from './capabilities.ts'
-export { getCapabilities, resetCapabilities } from './capabilities.ts'
+export {
+  getCapabilities,
+  peekCapabilities,
+  resetCapabilities,
+} from './capabilities.ts'
 
 const debug = debuglog('vlt')
 
@@ -134,6 +138,27 @@ const noRegistryError = (spec: Spec) =>
  */
 const isMovingSelector = (f: Spec) => !!(f.distTag || f.range?.isAny)
 
+/**
+ * A selector that cannot land on a prerelease, and so can be answered from
+ * the registry's `?stable` packument.
+ *
+ * A dist tag has no range, and is out either way: it can point at a
+ * prerelease, which the stable packument drops along with the tag. `*` and
+ * an empty range are out for the same reason -- they resolve through
+ * `latest`. What is left is a range that names no prerelease of its own,
+ * which standard semver never matches against one.
+ *
+ * Takes a *final* spec (`spec.final`), same as `isMovingSelector`.
+ */
+const isStableSelector = (f: Spec) => {
+  const { range } = f
+  if (!range) return false
+  // A prerelease comparator always carries a `-`, and so does a hyphen
+  // range; reading that as "might be a prerelease" only ever gives up the
+  // smaller packument.
+  return !range.isAny && !range.raw.includes('-')
+}
+
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #projectRoot: string
@@ -184,6 +209,32 @@ export class PackageInfoClient {
    */
   async capabilities(registry: string): Promise<Capabilities> {
     return getCapabilities(await this.getRegistryClient(), registry)
+  }
+
+  /**
+   * Whether the packument for `f` can be fetched with `?stable`: the
+   * selector has to be one a prerelease cannot answer, and the registry
+   * must not have told us it does not serve the filter.
+   *
+   * Never waits on the capability document, which would put a round trip in
+   * front of the first packument of every cold install. Until that document
+   * arrives the answer is yes: a registry that does not know `?stable`
+   * ignores the parameter and serves the full packument, which resolution
+   * reads just as well. Once the document does arrive it is authoritative,
+   * so a registry that does not serve the filter stops being asked with it.
+   */
+  #stable(f: Spec): boolean {
+    const { registry } = f
+    if (!registry || !isStableSelector(f)) return false
+    const client = this.#registryClient
+    if (!client) {
+      // the registry client is built lazily, so the first caller starts it
+      // and the document along with it, and asks optimistically meanwhile
+      void this.capabilities(registry).catch(() => {})
+      return true
+    }
+    const caps = peekCapabilities(client, registry)
+    return !caps || !!caps['stable-filter']
   }
 
   async getTarPool() {
@@ -822,7 +873,7 @@ export class PackageInfoClient {
         }
 
         const mani = pickManifest(
-          await this.packument(f, options),
+          await this.#packument(f, options, this.#stable(f)),
           spec,
           options,
         )
@@ -942,9 +993,22 @@ export class PackageInfoClient {
     }
   }
 
+  /**
+   * The packument for `spec`, with every version the registry has. Callers
+   * that only pick a manifest out of it go through `#packument` instead,
+   * which can ask for the prerelease-free one.
+   */
   async packument(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
+  ): Promise<Packument> {
+    return this.#packument(spec, options, false)
+  }
+
+  async #packument(
+    spec: Spec | string,
+    options: PackageInfoClientRequestOptions,
+    stable: boolean,
   ): Promise<Packument> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
@@ -986,10 +1050,18 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         if (!registry) throw noRegistryError(spec)
-        // Coalescing key has no representation component (see #fetchPackument).
-        const packumentKey = `${registry}${name}`
+        // The only representation component of the coalescing key is
+        // `?stable`; everything else about the request is fixed (see
+        // #fetchPackument).
+        const fullKey = `${registry}${name}`
+        const packumentKey = stable ? `${fullKey}?stable` : fullKey
         const forced = isMovingSelector(f)
-        const inflight = this.#packumentPromises.get(packumentKey)
+        const inflight =
+          this.#packumentPromises.get(packumentKey) ??
+          // the full packument is a superset of the stable one, so an
+          // in-flight full request answers a stable ask too, and a package
+          // wanted both ways is still fetched once
+          (stable ? this.#packumentPromises.get(fullKey) : undefined)
         // a moving selector must not ride along on a non-forced request:
         // that one can settle to a fresh-but-stale cache hit, which is
         // exactly what forceRevalidate exists to avoid. the other
@@ -998,7 +1070,11 @@ export class PackageInfoClient {
         // when both shapes are asked for at once.
         if (inflight && (!forced || inflight.forced))
           return inflight.promise
-        const pakuURL = new URL(name, registry)
+        // `?stable` is a distinct URL, so it gets its own disk cache entry
+        const pakuURL = new URL(
+          stable ? `${name}?stable` : name,
+          registry,
+        )
         const promise = this.#fetchPackument(spec, options, pakuURL)
         const record = { promise, forced }
         this.#packumentPromises.set(packumentKey, record)
