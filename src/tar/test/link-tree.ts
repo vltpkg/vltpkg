@@ -8,7 +8,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { basename, dirname, resolve, win32 } from 'node:path'
+import { basename, dirname, posix, resolve, win32 } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { linkFromStore } from '../src/link-tree.ts'
@@ -447,52 +447,72 @@ t.test(
   },
 )
 
-t.test('windows separators', async t => {
-  const index: StoreIndex = {
-    v: 1,
-    files: [
-      ['lib/a.js', 1, 0],
-      ['package.json', 2, 0],
-    ],
-    dirs: ['lib'],
-    scripts: false,
-  }
-  const calls: string[][] = []
-  const dir = { isDirectory: () => true, isSymbolicLink: () => false }
-  const { linkFromStore } = await t.mockImport<LinkTree>(
-    '../src/link-tree.ts',
-    {
-      'node:path': win32,
-      'node:fs': t.createMock(FS, {
-        readFileSync: () => JSON.stringify(index),
-        lstatSync: (p: string) =>
-          p.endsWith('\\pkg') ? undefined : dir,
-        mkdirSync: (p: string) => {
-          calls.push(['mkdir', p])
+// both mappers run on every platform: CI coverage is per-OS
+for (const path of [win32, posix]) {
+  t.test(
+    `${path === win32 ? 'windows' : 'posix'} separators`,
+    async t => {
+      const index: StoreIndex = {
+        v: 1,
+        files: [
+          ['lib/a.js', 1, 0],
+          ['package.json', 2, 0],
+        ],
+        dirs: ['lib'],
+        scripts: false,
+      }
+      const calls: string[][] = []
+      const dir = {
+        isDirectory: () => true,
+        isSymbolicLink: () => false,
+      }
+      const s = path.sep
+      const { linkFromStore } = await t.mockImport<LinkTree>(
+        '../src/link-tree.ts',
+        {
+          'node:path': path,
+          'node:fs': t.createMock(FS, {
+            readFileSync: () => JSON.stringify(index),
+            lstatSync: (p: string) =>
+              p.endsWith(`${s}pkg`) ? undefined : dir,
+            mkdirSync: (p: string) => {
+              calls.push(['mkdir', p])
+            },
+            linkSync: (a: string, b: string) => {
+              calls.push(['link', a, b])
+            },
+            renameSync: (a: string, b: string) => {
+              calls.push(['rename', a, b])
+            },
+          }),
+          rimraf: {
+            rimraf: async () => false,
+            rimrafSync: () => false,
+          },
         },
-        linkSync: (s: string, d: string) => {
-          calls.push(['link', s, d])
-        },
-        renameSync: (s: string, d: string) => {
-          calls.push(['rename', s, d])
-        },
-      }),
-      rimraf: { rimraf: async () => false, rimrafSync: () => false },
+      )
+      const root = path === win32 ? 'C:' : ''
+      const target = [root, 'proj', 'node_modules', 'pkg'].join(s)
+      const entry = [root, 'store', 'v1', 'abc'].join(s)
+      t.equal(linkFromStore(entry, target), true)
+      const tmp = String(calls[0]?.[1])
+      t.equal(path.dirname(tmp), path.dirname(target))
+      t.match(path.basename(tmp), /^\.pkg\.[0-9a-f]+\.\d+$/)
+      t.strictSame(calls, [
+        ['mkdir', tmp],
+        ['mkdir', tmp + s + 'lib'],
+        [
+          'link',
+          [entry, 'lib', 'a.js'].join(s),
+          [tmp, 'lib', 'a.js'].join(s),
+        ],
+        [
+          'link',
+          entry + s + 'package.json',
+          tmp + s + 'package.json',
+        ],
+        ['rename', tmp, target],
+      ])
     },
   )
-  const target = 'C:\\proj\\node_modules\\pkg'
-  t.equal(linkFromStore('C:\\store\\v1\\abc', target), true)
-  const tmp = String(calls[0]?.[1])
-  t.match(tmp, /^C:\\proj\\node_modules\\\.pkg\.[0-9a-f]+\.\d+$/)
-  t.strictSame(calls, [
-    ['mkdir', tmp],
-    ['mkdir', tmp + '\\lib'],
-    ['link', 'C:\\store\\v1\\abc\\lib\\a.js', tmp + '\\lib\\a.js'],
-    [
-      'link',
-      'C:\\store\\v1\\abc\\package.json',
-      tmp + '\\package.json',
-    ],
-    ['rename', tmp, target],
-  ])
-})
+}
