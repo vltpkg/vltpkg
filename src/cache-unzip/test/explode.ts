@@ -144,6 +144,28 @@ t.test('explodes gzipped and raw tarballs', async t => {
   )
 })
 
+t.test('redoes an entry without a valid sidecar', async t => {
+  const { store, cache } = await setup(t, {
+    gz: entry(tgz),
+    raw: entry(tar),
+  })
+  // partial dir, no sidecar; dir with a garbage sidecar
+  mkdirSync(join(store, tgzHex, 'lib'), { recursive: true })
+  mkdirSync(join(store, tarHex), { recursive: true })
+  writeFileSync(join(store, `${tarHex}.json`), '{')
+  t.match(await explode(cache, store, ['gz', 'raw']), {
+    written: 2,
+    skipped: 0,
+  })
+  for (const hex of [tgzHex, tarHex]) {
+    t.ok(existsSync(join(store, hex, 'package.json')), hex)
+    t.match(
+      JSON.parse(readFileSync(join(store, `${hex}.json`), 'utf8')),
+      { v: 1, name: 'x' },
+    )
+  }
+})
+
 t.test('another writer wins the rename', async t => {
   const { store, cache } = await setup(t, { gz: entry(tgz) })
   const { explode } = await t.mockImport<

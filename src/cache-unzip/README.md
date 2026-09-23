@@ -52,7 +52,8 @@ also explodes each tarball entry with a sha512 `integrity` header into
 `<storeRoot>/<integrity-hex>/`, with its sidecar index next to it at
 `<integrity-hex>.json`. Unset or `unpack`: nothing is written there.
 
-- Existing entries are skipped. Bad tarballs are skipped too.
+- Existing entries are skipped, unless their sidecar is missing or
+  invalid: then they are redone. Bad tarballs are skipped too.
 - Entries are built in `<storeRoot>/.tmp/` and renamed into place,
   sidecar first. If another process wins the rename, its entry is
   kept. Leftovers older than one hour are removed.

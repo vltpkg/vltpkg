@@ -1,5 +1,8 @@
 import type { Cache } from '@vltpkg/cache'
-import { storeIndexPath } from '@vltpkg/tar/store-index'
+import {
+  readStoreIndex,
+  storeIndexPath,
+} from '@vltpkg/tar/store-index'
 import { unpackToStoreSync } from '@vltpkg/tar/unpack'
 import { integrityHex } from '@vltpkg/types'
 import type { Integrity } from '@vltpkg/types'
@@ -80,7 +83,8 @@ let seq = 0
 /**
  * Explode one cache entry into `store`. Returns the bytes written,
  * 'skipped' if already present, 'ignored' without a sha512
- * integrity. Throws on a bad tarball.
+ * integrity. An entry dir without a valid sidecar is redone. Throws on
+ * a bad tarball.
  */
 const explodeEntry = (
   store: string,
@@ -89,7 +93,11 @@ const explodeEntry = (
   const hex = integrityHex(entryIntegrity(buf))
   if (!hex) return 'ignored'
   const entry = join(store, hex)
-  if (lstatSync(entry, { throwIfNoEntry: false })) return 'skipped'
+  if (lstatSync(entry, { throwIfNoEntry: false })) {
+    // writers publish the sidecar first, so this is damage
+    if (readStoreIndex(entry)) return 'skipped'
+    rm(entry)
+  }
   const n = `${process.pid}.${seq++}`
   const tmp = join(store, '.tmp', `${hex}.${n}`)
   const sideTmp = join(store, '.tmp', `${hex}.json.${n}`)
