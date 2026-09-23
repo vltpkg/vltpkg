@@ -20,6 +20,9 @@ t.cleanSnapshot = s =>
       '$1"projectRoot": "{ROOT}"',
     )
     .replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
+    // node 26+ omits the constructor name from the inspect prefix
+    // when the toStringTag already includes it
+    .replace(/^Node \[(@vltpkg\/graph\.Node)\] \{/gm, '$1 {')
 
 const options = {
   registry: 'https://registry.npmjs.org/',

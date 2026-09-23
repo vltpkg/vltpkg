@@ -32,7 +32,8 @@ t.test('read a password', async t => {
       c.streams.stdin.write('D')
       c.streams.stdin.write('\n')
       const result = await p
-      const written = c.streams.stdout.read().toString()
+      const { stdout } = c.streams
+      const written = stdout.read(stdout.readableLength).toString()
       t.strictSame(
         { result, setMode: c.setMode, written },
         {
