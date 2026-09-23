@@ -109,7 +109,9 @@ const App = ({ trailer }: { trailer?: string }) => {
     cacheHit > 0 ?
       $(Text, null, `${cacheHit} cache hit${cacheHit > 1 ? 's' : ''}`)
     : null,
-    linked > 0 ? $(Text, null, `${linked} linked from store`) : null,
+    linked > 0 ?
+      $(Text, null, `${linked} linked from global store`)
+    : null,
     requests > 0 ?
       $(Text, null, `${requests} request${requests > 1 ? 's' : ''}`)
     : null,
