@@ -82,7 +82,7 @@ into place) is up to the caller.
 
 The vlt CLI keeps its global store under `<cache>/store/v1`, filled by
 a background process, and installs from it with the `store-linker`
-config (`auto`, `hardlink`, `copy`; `unpack` skips it).
+config (`auto` by default, `hardlink`, `copy`; `unpack` skips it).
 
 ### unpackToStoreSync(tarData, dir)
 
@@ -122,6 +122,19 @@ The sidecar index, or `undefined` if missing or invalid.
 ### storeIndexPath(storeEntry)
 
 Sidecar path: `<storeEntry>.json`.
+
+### Maintenance
+
+- `storeEntryNames(root)`: integrity hex names of the entries under a
+  store root (entry dir, sidecar or both).
+- `verifyStoreEntry(storeEntry, tarData)`: compare an entry with its
+  tarball (sidecar, file list, bytes). Returns why it differs, or
+  `undefined`.
+- `storeEntryLinked(storeEntry)`: true if any file has another
+  hardlink, i.e. some `node_modules` uses it.
+- `storeEntryTime(storeEntry)`: sidecar mtime in ms (dir mtime without
+  one, else 0).
+- `removeStoreEntry(storeEntry)`: remove the dir, then the sidecar.
 
 ## Caveats
 

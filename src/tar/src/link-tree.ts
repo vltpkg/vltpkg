@@ -11,7 +11,8 @@ import {
 import { dirname, sep } from 'node:path'
 import { debuglog } from 'node:util'
 import { rimrafSync } from 'rimraf'
-import { readStoreIndex, storeIndexPath } from './store-index.ts'
+import { removeStoreEntry } from './store-entry.ts'
+import { readStoreIndex } from './store-index.ts'
 import type { StoreIndex, StoreIndexFile } from './store-index.ts'
 import { tmpName } from './unpack.ts'
 
@@ -168,11 +169,8 @@ export const linkFromStore = (
     }
     if (miss) {
       debug('global store: removing damaged entry', storeEntry)
-      // dir first: a sidecar without its dir is a plain miss, while a
-      // dir without its sidecar would never be re-exploded
       try {
-        rimrafSync(storeEntry)
-        rimrafSync(storeIndexPath(storeEntry))
+        removeStoreEntry(storeEntry)
       } catch {}
       return false
     }

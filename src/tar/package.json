@@ -66,6 +66,11 @@
         "default": "./src/pool.ts"
       }
     },
+    "./store-entry": {
+      "import": {
+        "default": "./src/store-entry.ts"
+      }
+    },
     "./store-index": {
       "import": {
         "default": "./src/store-index.ts"

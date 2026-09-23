@@ -500,17 +500,15 @@ const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
 }
 
 /**
- * Explode a gzipped or raw tarball into `dir` for the global store and
- * return its sidecar index. Same parsing and path safety as
- * {@link unpackSync}, written straight into `dir` (which must not exist;
- * the caller renames it into place). Same modes as {@link unpackSync}
- * followed by reify's bin chmod. Throws, writing nothing, if the
- * tarball has no valid package.json. Removes `dir` on failure.
+ * What a gzipped or raw tarball explodes to in the global store at
+ * `dir`: its sidecar index, files and package.json `bin` target paths.
+ * Same parsing and path safety as {@link unpackSync}. No IO. Throws if
+ * the tarball has no valid package.json.
  */
-export const unpackToStoreSync = (
+export const storeLayout = (
   tarData: Buffer,
   dir: string,
-): { index: StoreIndex } => {
+): { index: StoreIndex; files: FileEntry[]; binFiles: string[] } => {
   const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
   const { dirs, files } = parseTarball(
     isGzip ? unzipSync(tarData) : tarData,
@@ -549,12 +547,37 @@ export const unpackToStoreSync = (
     .sort()
     .sort((a, b) => a.length - b.length)
 
+  return {
+    index: {
+      v: 1,
+      files: indexFiles.sort((a, b) => (a[0] < b[0] ? -1 : 1)),
+      dirs: indexDirs,
+      ...manifest,
+    },
+    files,
+    binFiles,
+  }
+}
+
+/**
+ * Explode a gzipped or raw tarball into `dir` for the global store and
+ * return its sidecar index (see {@link storeLayout}), written straight
+ * into `dir` (which must not exist; the caller renames it into place).
+ * Same modes as {@link unpackSync} followed by reify's bin chmod.
+ * Throws, writing nothing, without a valid package.json. Removes `dir`
+ * on failure.
+ */
+export const unpackToStoreSync = (
+  tarData: Buffer,
+  dir: string,
+): { index: StoreIndex } => {
+  const { index, files, binFiles } = storeLayout(tarData, dir)
   mkdirSync(dirname(dir), { recursive: true })
   mkdirSync(dir, { mode: 0o777 })
   let succeeded = false
   try {
     // recursive: tolerates dirs that differ only by case, like unpackSync
-    for (const d of indexDirs) {
+    for (const d of index.dirs) {
       mkdirSync(join(dir, d), { recursive: true, mode: 0o777 })
     }
     for (const f of files) {
@@ -573,13 +596,5 @@ export const unpackToStoreSync = (
   } finally {
     if (!succeeded) rimrafSync(dir)
   }
-
-  return {
-    index: {
-      v: 1,
-      files: indexFiles.sort((a, b) => (a[0] < b[0] ? -1 : 1)),
-      dirs: indexDirs,
-      ...manifest,
-    },
-  }
+  return { index }
 }
