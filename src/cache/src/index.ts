@@ -346,14 +346,16 @@ export class Cache extends LRUCache<
   ): Promise<boolean> {
     const paths = [path, path + '.key']
     const hex = integrityHex(integrity)
-    if (hex) {
-      paths.push(resolve(this.#path, hex))
-      if (this.store) {
-        const entry = resolve(this.store, hex)
-        paths.push(entry, entry + '.json')
-      }
+    if (hex) paths.push(resolve(this.#path, hex))
+    const deleted = await rimraf(paths)
+    if (hex && this.store) {
+      // dir first: a sidecar without its dir is a plain store miss,
+      // a dir without its sidecar is never re-exploded
+      const entry = resolve(this.store, hex)
+      await rimraf(entry)
+      await rimraf(entry + '.json')
     }
-    return await rimraf(paths)
+    return deleted
   }
 
   #maybeIntegrityPath(i?: Integrity) {

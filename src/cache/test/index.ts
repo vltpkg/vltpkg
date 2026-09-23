@@ -146,6 +146,37 @@ t.test('delete from disk removes the global store entry', async t => {
   t.strictSame(readdirSync(store).sort(), ['other', 'other.json'])
 })
 
+t.test('store sidecar outlives a failed dir removal', async t => {
+  const [value, integrity] = makeValueIntegrity('hello, world')
+  const hex = createHash('sha512').update(value).digest('hex')
+  const dir = t.testdir({
+    'registry-client': {},
+    store: { v1: { [hex]: {}, [`${hex}.json`]: '{}' } },
+  })
+  const store = resolve(dir, 'store/v1')
+  const { rimraf } = await import('rimraf')
+  const { Cache } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    rimraf: {
+      rimraf: async (p: string | string[]) =>
+        p === resolve(store, hex) ?
+          Promise.reject(new Error('EBUSY'))
+        : rimraf(p),
+    },
+  })
+  const c = new Cache({
+    path: resolve(dir, 'registry-client'),
+    store,
+  })
+  c.set('xyz', value, { integrity })
+  await c.promise()
+  c.delete('xyz', true, integrity)
+  await t.rejects(c.promise(), { message: 'EBUSY' })
+  t.strictSame(readdirSync(resolve(dir, 'registry-client')), [])
+  t.strictSame(readdirSync(store).sort(), [hex, `${hex}.json`])
+})
+
 t.test('walk over cached items', async t => {
   const c = new Cache({ path: t.testdir() })
   t.equal(c.max, Cache.defaultMax)
