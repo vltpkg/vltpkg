@@ -82,6 +82,23 @@ Delete the entire cache folder to make vlt slower.
 
 <Code code="$ vlt cache delete-all" title="Terminal" lang="bash" />
 
+## Global store
+
+With
+[`store-linker`](/cli/configuring#--store-linkerauto--hardlink--copy--unpack)
+(or `VLT_STORE_LINKER`) set to anything but `unpack`, a background
+process explodes each cached package tarball into a global store under
+`<cache>/store`, and installs place packages from it instead of
+unpacking tarballs again. Files in `node_modules` are then hardlinks
+into the global store, so editing one in place changes it for every
+project: use `store-linker=copy` for that. Packages with install
+scripts are always copied.
+
+The global store is a cache. Deleting it never breaks an installed
+project. `delete`, `delete-before` and `clean` also remove the global
+store entries of the tarballs they remove, and `delete-all` removes
+the whole global store.
+
 ## Examples
 
 Show cache metadata for a given registry URL:

@@ -347,6 +347,25 @@ export const definition = j
       `,
       default: cacheDir,
     },
+    'store-linker': {
+      hint: 'auto | hardlink | copy | unpack',
+      description: `How packages are placed in \`node_modules\`. Every
+                    linker but \`unpack\` fills a global store under
+                    \`cache\` in the background, then places packages
+                    from it.
+
+                    - auto: Hardlink from the global store, copying any
+                      file that cannot be linked.
+                    - hardlink: Same as \`auto\`.
+                    - copy: Copy from the global store. Use this when
+                      editing files in \`node_modules\` in place, since
+                      a hardlink shares its content with every project.
+                    - unpack: Default. Unpack each package tarball.
+
+                    Packages with install scripts are always copied.`,
+      validOptions: ['auto', 'hardlink', 'copy', 'unpack'] as const,
+      default: 'unpack',
+    },
     tag: {
       description: `Default \`dist-tag\` to install or publish`,
       default: 'latest',

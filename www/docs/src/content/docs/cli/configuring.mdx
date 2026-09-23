@@ -237,6 +237,25 @@ Can be set multiple times
 Location of the vlt on-disk cache. Defaults to the platform-specific
 directory recommended by the XDG specification.
 
+### `--store-linker=<auto | hardlink | copy | unpack>`
+
+How packages are placed in `node_modules`. Every linker but `unpack`
+fills a global store under `cache` in the background, then places
+packages from it.
+
+- auto: Hardlink from the global store, copying any file that cannot
+  be linked.
+- hardlink: Same as `auto`.
+- copy: Copy from the global store. Use this when editing files in
+  `node_modules` in place, since a hardlink shares its content with
+  every project.
+- unpack: Default. Unpack each package tarball.
+
+Packages with install scripts are always copied. See
+[Global store](/cli/commands/cache#global-store).
+
+Valid options: "auto", "hardlink", "copy", "unpack"
+
 ### `--tag=<tag>`
 
 Default `dist-tag` to install

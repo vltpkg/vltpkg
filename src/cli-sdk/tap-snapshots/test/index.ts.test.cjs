@@ -90,6 +90,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --scoped-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
+    --store-linker=<auto | hardlink | copy | unpack>
     --tag=<tag>
     --target=<query>
     --telemetry
@@ -163,6 +164,7 @@ Unknown config option: asdf
     scoped-registries
     script-shell
     stale-while-revalidate-factor
+    store-linker
     tag
     target
     telemetry

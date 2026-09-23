@@ -24,6 +24,7 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import { storeRoot } from '@vltpkg/registry-client/store-root'
 import { resetCaches } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { getOptions } from '@vltpkg/spec'
@@ -268,6 +269,8 @@ export type ConfigOptions = ConfigOptionsNoExtras &
     packageJson: PackageJson
     scurry: PathScurry
     projectRoot: string
+    /** global store root, under `cache` */
+    storeRoot: string
     monorepo?: Monorepo
     packageInfo: PackageInfoClient
   }
@@ -319,6 +322,7 @@ export class Config {
     const asRecords = pairsToRecords(this.parse().values)
     const extras = {
       projectRoot: this.projectRoot,
+      storeRoot: storeRoot(asRecords.cache),
       scurry,
       packageJson,
       monorepo: Monorepo.maybeLoad(this.projectRoot, {
