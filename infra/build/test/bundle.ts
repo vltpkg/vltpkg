@@ -8,7 +8,7 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 import { createHash } from 'node:crypto'
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 
@@ -123,6 +123,15 @@ t.test('default', async t => {
       cp.on('close', (status, signal) => res({ status, signal }))
     })
     t.matchOnlyStrict(result, { status: 0, signal: null })
+  })
+
+  await t.test('bundled unzip child runs', async t => {
+    const script = join(dir, 'cache-unzip-src-unzip.js')
+    const run = (...args: string[]) =>
+      spawnSync(process.execPath, [script, ...args], { input: '' })
+        .status
+    t.equal(run(t.testdir(), t.testdirName), 0, 'empty stdin')
+    t.equal(run(), 1, 'no path')
   })
 })
 

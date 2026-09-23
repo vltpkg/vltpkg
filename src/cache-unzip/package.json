@@ -11,6 +11,7 @@
   "dependencies": {
     "@vltpkg/cache": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/tar": "workspace:*",
     "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
+    "tar": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"

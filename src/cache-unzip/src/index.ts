@@ -6,11 +6,24 @@ const isDeno =
   (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
 
 let didProcessBeforeExitHook = false
-const registered = new Map<string, Set<string>>()
+const registered = new Map<
+  string,
+  { keys: Set<string>; store?: string }
+>()
 
-export const register = (path: string, key: string): void => {
-  const r = registered.get(path) ?? new Set<string>()
-  r.add(key)
+/**
+ * Queue the cache entry at `key` in the cache folder `path` for the
+ * background child. Pass the global store root as `store` to also
+ * explode it there (only when `VLT_STORE_LINKER` enables the store).
+ */
+export const register = (
+  path: string,
+  key: string,
+  store?: string,
+): void => {
+  const r = registered.get(path) ?? { keys: new Set<string>() }
+  r.keys.add(key)
+  r.store ??= store
   registered.set(path, r)
   if (!didProcessBeforeExitHook) {
     didProcessBeforeExitHook = true
@@ -23,9 +36,9 @@ const handleBeforeExit = () => {
   // not propagate to child processes, so the worker has to be pointed at
   // it through the environment to skip re-compiling its bundle.
   const compileCacheDir = module.getCompileCacheDir()
-  for (const [path, r] of registered) {
+  for (const [path, { keys, store }] of registered) {
     /* c8 ignore next */
-    if (!r.size) return
+    if (!keys.size) return
     const env = { ...process.env }
     if (compileCacheDir) env.NODE_COMPILE_CACHE ??= compileCacheDir
     const args = []
@@ -43,13 +56,14 @@ const handleBeforeExit = () => {
       )
     }
     args.push(__CODE_SPLIT_SCRIPT_NAME, path)
+    if (store) args.push(store)
     registered.delete(path)
     const proc = spawn(process.execPath, args, {
       detached,
       stdio: ['pipe', 'ignore', 'ignore'],
       env,
     })
-    for (const key of r) {
+    for (const key of keys) {
       proc.stdin.write(`${key}\0`)
     }
     proc.stdin.end()

@@ -1,11 +1,20 @@
 import { Cache } from '@vltpkg/cache'
 import { spawnSync } from 'node:child_process'
 import t from 'tap'
+import type { Test } from 'tap'
 import { gzipSync } from 'node:zlib'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../src/unzip.ts'
 import { createHash } from 'node:crypto'
+import { existsSync, readdirSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import type { Integrity } from '@vltpkg/types'
+import {
+  encodeEntry,
+  hexOf,
+  integrityOf,
+  pkgTar,
+} from './fixtures/entry.ts'
 
 const ENV = {
   NODE_OPTIONS: '--no-warnings --experimental-strip-types',
@@ -29,8 +38,9 @@ t.test('validate args', async t => {
       env: ENV,
     }),
     {
-      status: 1,
+      status: 0,
     },
+    'nothing to do',
   )
   t.match(
     spawnSync(
@@ -389,4 +399,99 @@ t.test('corrupt gzip still throws', async t => {
     },
   )
   t.equal(res.status, 1)
+})
+
+t.test('global store', async t => {
+  const tgz = gzipSync(pkgTar())
+  const hex = hexOf(tgz)
+  const tgzEntry = encodeEntry({ integrity: integrityOf(tgz) }, tgz)
+  const run = async (
+    t: Test,
+    env: Record<string, string>,
+    entries: Record<string, Buffer> = { tgz: tgzEntry },
+  ) => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'registry-client')
+    const store = resolve(dir, 'store/v1')
+    const cache = new Cache({ path })
+    for (const [k, v] of Object.entries(entries)) cache.set(k, v)
+    await cache.promise()
+    const res = spawnSync(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME, path, store],
+      {
+        input: Object.keys(entries).join('\0') + '\0',
+        stdio: ['pipe', 'inherit', 'pipe'],
+        encoding: 'utf8',
+        env: { ...ENV, ...env },
+      },
+    )
+    const unzipped = await new Cache({ path }).fetch('tgz')
+    return {
+      dir,
+      store,
+      res,
+      gzipped: unzipped?.subarray(-tgz.length).equals(tgz),
+    }
+  }
+
+  t.test('explodes after unzipping', async t => {
+    const { store, res, gzipped } = await run(t, {
+      VLT_STORE_LINKER: 'hardlink',
+      NODE_DEBUG: 'vlt',
+    })
+    t.equal(res.status, 0)
+    t.equal(gzipped, false, 'cache entry unzipped')
+    t.strictSame(
+      readdirSync(store).sort(),
+      ['.tmp', hex, `${hex}.json`].sort(),
+    )
+    t.match(
+      res.stderr,
+      /explode written=1 skipped=0 failed=0 bytes=\d+ ms=\d+/,
+    )
+  })
+
+  t.test('VLT_CACHE_UNZIP=0 only explodes', async t => {
+    const { store, res, gzipped } = await run(t, {
+      VLT_STORE_LINKER: 'auto',
+      VLT_CACHE_UNZIP: '0',
+    })
+    t.equal(res.status, 0)
+    t.equal(gzipped, true, 'cache entry left gzipped')
+    t.ok(existsSync(resolve(store, hex)))
+  })
+
+  t.test('nothing written without a store linker', async t => {
+    const envs: Record<string, string>[] = [
+      {},
+      { VLT_STORE_LINKER: 'unpack' },
+    ]
+    for (const env of envs) {
+      const { dir, res, gzipped } = await run(t, env)
+      t.equal(res.status, 0)
+      t.equal(gzipped, false, 'cache entry unzipped')
+      t.strictSame(readdirSync(dir), ['registry-client'], 'no store')
+    }
+    const { res } = await run(t, { VLT_CACHE_UNZIP: '0' })
+    t.equal(res.status, 1, 'nothing done')
+  })
+
+  t.test('corrupt gzip does not block the store', async t => {
+    const head10 = Buffer.alloc(10)
+    head10.writeUint32BE(10, 0)
+    const { store, res } = await run(
+      t,
+      { VLT_STORE_LINKER: 'hardlink' },
+      {
+        bad: Buffer.concat([
+          head10,
+          Buffer.from([0x1f, 0x8b, 0xff, 0xff, 0xff, 0xff]),
+        ]),
+        tgz: tgzEntry,
+      },
+    )
+    t.equal(res.status, 1, 'still throws')
+    t.ok(existsSync(resolve(store, hex)))
+  })
 })

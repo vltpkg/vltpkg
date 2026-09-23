@@ -1,9 +1,11 @@
 import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
+import { setPriority } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
 import type { Integrity } from '@vltpkg/types'
 import type EventEmitter from 'node:events'
+import { explode } from './explode.ts'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
@@ -25,9 +27,15 @@ const isMain = (path?: string) =>
   path === __CODE_SPLIT_SCRIPT_NAME ||
   path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
 
+/**
+ * Rewrite the cache entries at the keys read from `input` un-gzipped
+ * (unless `VLT_CACHE_UNZIP=0`), and explode tarballs into the global
+ * store root `store`, if given.
+ */
 const main = async (
   path: undefined | string,
   input: EventEmitter = process.stdin,
+  store?: string,
 ) => {
   if (!path) {
     return false
@@ -51,7 +59,7 @@ const main = async (
   })
 
   if (!keys.length) {
-    return false
+    return true
   }
 
   const cache = new Cache({ path })
@@ -80,8 +88,9 @@ const main = async (
     return (a << 24) | (b << 16) | (c << 8) | d
   }
 
-  const results = await Promise.all(
-    keys.map(async key => {
+  const unzip = process.env.VLT_CACHE_UNZIP !== '0'
+  const results = await Promise.allSettled(
+    (unzip ? keys : []).map(async key => {
       const buffer = await cache.fetch(key)
       if (!buffer || buffer.length < 4) return null
       const headSizeOriginal = readSize(buffer, 0)
@@ -202,15 +211,27 @@ const main = async (
       return true
     }),
   )
+  // reads the rewritten entries back from memory
+  const exploded =
+    store ? await explode(cache, store, keys) : undefined
   await cache.promise()
-  return results.some(Boolean)
+  for (const r of results) {
+    if (r.status === 'rejected') throw r.reason
+  }
+  return (
+    results.some(r => r.status === 'fulfilled' && r.value) ||
+    !!exploded?.written
+  )
 }
 
 if (isMain(process.argv[1])) {
   process.title = 'vlt-cache-unzip'
-  const path =
-    process.argv.length === 2 ? undefined : process.argv.at(-1)
-  const res = await main(path, process.stdin)
+  try {
+    setPriority(19)
+    /* c8 ignore next */
+  } catch {}
+  const [, , path, store] = process.argv
+  const res = await main(path, process.stdin, store)
   if (!res) {
     process.exit(1)
   }

@@ -3,9 +3,11 @@
 # @vltpkg/cache-unzip
 
 This is a script that can be run as a detached background process to
-un-gzip any cached response bodies in the vlt cache.
+un-gzip any cached response bodies in the vlt cache, and to explode
+cached tarballs into the global store.
 
-**[Usage](#usage)** · **[Why Do This?](#why-do-this)**
+**[Usage](#usage)** · **[Global Store](#global-store)** ·
+**[Why Do This?](#why-do-this)**
 
 ## Usage
 
@@ -34,6 +36,31 @@ a detached deref'ed `vlt-cache-unzip` process. So, the main program
 exits normally, but the child process ignores the `SIGHUP` and keeps
 going until it's done. The next time that cache entry is read, it
 won't have to be unzipped.
+
+## Global Store
+
+Pass the global store root as a third argument to `register()`:
+
+```js
+register(cachePath, myKey, storeRoot)
+```
+
+When `VLT_STORE_LINKER` is `auto`, `hardlink` or `copy`, the child
+also explodes each tarball entry with a sha512 `integrity` header into
+`<storeRoot>/<integrity-hex>/`, with its sidecar index next to it at
+`<integrity-hex>.json`. Unset or `unpack`: nothing is written there.
+
+- Existing entries are skipped. Bad tarballs are skipped too.
+- Entries are built in `<storeRoot>/.tmp/` and renamed into place,
+  sidecar first. If another process wins the rename, its entry is
+  kept. Leftovers older than one hour are removed.
+- `VLT_CACHE_UNZIP=0` skips the un-gzip rewrite.
+- `VLT_CACHE_EXPLODE_CONCURRENCY` sets how many entries are read at
+  once (default 1).
+- `NODE_DEBUG=vlt` prints a summary: entries written, skipped and
+  failed, bytes, ms.
+
+The child runs at the lowest CPU priority.
 
 ## Why Do This
 
