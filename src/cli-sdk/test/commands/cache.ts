@@ -4,7 +4,12 @@ import { CacheEntry } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import type { Integrity } from '@vltpkg/types'
 import { createHash } from 'node:crypto'
-import { statSync } from 'node:fs'
+import {
+  mkdirSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
@@ -113,11 +118,13 @@ t.test('delete-all', async t => {
         more: 'stuff',
       },
     },
+    store: { v1: { x: { 'package.json': '{}' } }, v0: {} },
   })
 
   class MockRegistryClient {
     cache = {
       path: () => resolve(dir, 'cache'),
+      store: resolve(dir, 'store/v1'),
     }
   }
 
@@ -134,6 +141,20 @@ t.test('delete-all', async t => {
   t.equal(statSync(resolve(dir, 'cache')).isDirectory(), true)
   t.throws(() => statSync(resolve(dir, 'cache', 'some')))
   t.throws(() => statSync(resolve(dir, 'cache', 'inhere')))
+  t.throws(() => statSync(resolve(dir, 'store')))
+
+  // a cache without a global store
+  await command({
+    positionals: ['delete-all'],
+    options: {
+      packageInfo: {
+        getRegistryClient: async () => ({
+          cache: { path: () => resolve(dir, 'cache') },
+        }),
+      },
+    },
+  } as unknown as LoadedConfig)
+  t.equal(statSync(resolve(dir, 'cache')).isDirectory(), true)
 })
 
 const hashBuf = createHash('sha512').update('xyz').digest()
@@ -246,6 +267,28 @@ t.test('delete', async t => {
   t.throws(() =>
     statSync(resolve(dir, 'registry-client', pakukeyHash) + '.key'),
   )
+})
+
+t.test('delete removes the global store entry', async t => {
+  const dir = createCache(t)
+  const store = resolve(dir, 'store/v1')
+  mkdirSync(resolve(store, hashHex), { recursive: true })
+  writeFileSync(resolve(store, hashHex, 'package.json'), '{}')
+  writeFileSync(resolve(store, `${hashHex}.json`), '{}')
+  const { command } = await mockCommand(t)
+  const options = { cache: dir }
+  Object.assign(options, {
+    packageInfo: new PackageInfoClient(options),
+  })
+  await command({
+    positionals: ['delete', tgzkey],
+    options,
+  } as unknown as LoadedConfig)
+  t.throws(() =>
+    statSync(resolve(dir, 'registry-client', tgzkeyHash)),
+  )
+  t.throws(() => statSync(resolve(dir, 'registry-client', hashHex)))
+  t.strictSame(readdirSync(store), [])
 })
 
 t.test('delete-before', async t => {
