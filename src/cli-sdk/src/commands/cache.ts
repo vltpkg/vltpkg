@@ -3,6 +3,7 @@ import { CacheEntry, assertOk } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import {
   removeStoreEntry,
+  storeEntryCopied,
   storeEntryLinked,
   storeEntryNames,
   storeEntryTime,
@@ -117,8 +118,9 @@ const usageDef = {
     'prune-store': {
       usage: '',
       description: `Remove global store entries that no \`node_modules\`
-                    folder links to. Entries of packages with install
-                    scripts are copied, never linked, so they stay.`,
+                    folder links to. Entries ever copied from (install
+                    scripts, \`store-linker=copy\`, a cache on another
+                    drive) stay: copies do not show use.`,
     },
   },
   examples: {
@@ -482,8 +484,12 @@ const pruneStore = async (
   for (const hex of names) {
     const entry = resolve(storeRoot, hex)
     const index = readStoreIndex(entry)
-    // install-script entries are only ever copied: nlink cannot tell
-    if (index?.scripts || storeEntryLinked(entry, index)) continue
+    if (
+      storeEntryCopied(entry, index) ||
+      storeEntryLinked(entry, index)
+    ) {
+      continue
+    }
     removeStoreEntry(entry)
     removed[hex] = 'unused'
   }

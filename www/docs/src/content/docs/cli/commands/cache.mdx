@@ -99,8 +99,8 @@ $ vlt cache verify --all`}
 ### prune-store
 
 Remove global store entries that no `node_modules` folder links to.
-Entries of packages with install scripts are copied, never linked, so
-they stay.
+Entries ever copied from (install scripts, `store-linker=copy`, a
+cache on another drive) stay: copies do not show use.
 
 <Code code="$ vlt cache prune-store" title="Terminal" lang="bash" />
 
@@ -127,8 +127,7 @@ The global store is a cache: deleting it, whole or in part, never
 breaks an installed project. `delete`, `delete-before` and `clean`
 also remove the global store entries of the tarballs they remove,
 `delete-all` removes the whole global store, and `prune-store` removes
-entries no project links to: with `store-linker=copy` or the cache on
-another drive, all but install-script ones.
+entries no project links to and no install ever copied from.
 
 ## Examples
 

@@ -2,7 +2,11 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import type { RegistryClientRequestOptions } from '@vltpkg/registry-client'
 import { CacheEntry } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
-import { storeIndexPath, unpackToStoreSync } from '@vltpkg/tar'
+import {
+  storeCopiedPath,
+  storeIndexPath,
+  unpackToStoreSync,
+} from '@vltpkg/tar'
 import type { Integrity } from '@vltpkg/types'
 import { createHash } from 'node:crypto'
 import {
@@ -279,6 +283,7 @@ t.test('delete removes the global store entry', async t => {
   mkdirSync(resolve(store, hashHex), { recursive: true })
   writeFileSync(resolve(store, hashHex, 'package.json'), '{}')
   writeFileSync(resolve(store, `${hashHex}.json`), '{}')
+  writeFileSync(resolve(store, `${hashHex}.copied`), '')
   const { command } = await mockCommand(t)
   const options = { cache: dir }
   Object.assign(options, {
@@ -305,6 +310,7 @@ t.test('delete-before', async t => {
   for (const hex of [oldHex, newHex]) {
     mkdirSync(resolve(storeRoot, String(hex)), { recursive: true })
     writeFileSync(resolve(storeRoot, `${hex}.json`), '{}')
+    writeFileSync(resolve(storeRoot, `${hex}.copied`), '')
   }
   // sidecar mtime is when the entry was written
   utimesSync(resolve(storeRoot, `${oldHex}.json`), 1000, 1000)
@@ -350,8 +356,9 @@ t.test('delete-before', async t => {
   t.throws(() =>
     statSync(resolve(dir, 'registry-client', pakukeyHash) + '.key'),
   )
-  t.strictSame(readdirSync(storeRoot), [
+  t.strictSame(readdirSync(storeRoot).sort(), [
     String(newHex),
+    `${newHex}.copied`,
     `${newHex}.json`,
   ])
   t.strictSame(logged.at(-1), ['Removed 1 global store entry'])
@@ -588,6 +595,8 @@ t.test('verify --all', async t => {
   const noindex = pkg(pkgs, 'noindex')
   // written through a hardlink in some node_modules
   writeFileSync(resolve(edited.entry, 'index.js'), 'x')
+  for (const p of [ok, edited])
+    writeFileSync(storeCopiedPath(p.entry), '')
   rmSync(resolve(cachePath, orphan.hex))
   writeFileSync(storeIndexPath(noindex.entry), '{}')
   const result = await command({
@@ -604,9 +613,11 @@ t.test('verify --all', async t => {
     },
   })
   t.equal(existsSync(ok.entry), true, 'intact entry kept')
+  t.equal(existsSync(storeCopiedPath(ok.entry)), true, 'marker kept')
   for (const p of [edited, orphan, noindex]) {
     t.equal(existsSync(p.entry), false)
     t.equal(existsSync(storeIndexPath(p.entry)), false)
+    t.equal(existsSync(storeCopiedPath(p.entry)), false)
   }
   const byStr = (a: unknown, b: unknown) =>
     String(a).localeCompare(String(b))
@@ -654,9 +665,18 @@ t.test('prune-store', async t => {
     'used',
     'unused',
     'build',
+    'copied',
+    'gone',
   ])
   const used = pkg(pkgs, 'used')
   const build = pkg(pkgs, 'build')
+  const copied = pkg(pkgs, 'copied')
+  const gone = pkg(pkgs, 'gone')
+  // copied from (store-linker=copy, other drive): kept
+  writeFileSync(storeCopiedPath(copied.entry), '')
+  // marked, but its dir is gone
+  writeFileSync(storeCopiedPath(gone.entry), '')
+  rmSync(gone.entry, { recursive: true })
   // install scripts: always copied, so kept
   const buildIndex = storeIndexPath(build.entry)
   writeFileSync(
@@ -672,15 +692,19 @@ t.test('prune-store', async t => {
   )
   const orphan = 'c'.repeat(128)
   writeFileSync(resolve(storeRoot, `${orphan}.json`), '{}')
+  const marker = 'd'.repeat(128)
+  writeFileSync(storeCopiedPath(resolve(storeRoot, marker)), '')
   const result = await command({
     positionals: ['prune-store'],
     options: { storeRoot },
   } as unknown as LoadedConfig)
   t.strictSame(result, {
-    checked: 4,
+    checked: 7,
     removed: {
       [pkg(pkgs, 'unused').hex]: 'unused',
+      [gone.hex]: 'unused',
       [orphan]: 'unused',
+      [marker]: 'unused',
     },
   })
   t.strictSame(
@@ -691,9 +715,12 @@ t.test('prune-store', async t => {
       `${used.hex}.json`,
       build.hex,
       `${build.hex}.json`,
+      copied.hex,
+      `${copied.hex}.copied`,
+      `${copied.hex}.json`,
     ].sort(),
   )
-  t.strictSame(logged, [['Removed 2 of 4 global store entries']])
+  t.strictSame(logged, [['Removed 4 of 7 global store entries']])
 
   await command({
     positionals: ['prune-store'],
