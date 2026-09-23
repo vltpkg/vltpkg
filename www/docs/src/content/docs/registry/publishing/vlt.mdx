@@ -1,0 +1,183 @@
+---
+title: vlt
+description:
+  Configure the vlt client for your vlt.io registries, and publish to
+  main.
+sidebar:
+  label: vlt
+  order: 1
+---
+
+Verified against **vlt 1.0**.
+
+## Quick start
+
+One command configures both registries for your account:
+
+```sh
+vlt setup acme
+```
+
+That authenticates in the browser and writes the `npm` and `main`
+registry aliases to your user config, so `vlt install` and `vlx` work
+everywhere. Then:
+
+```sh
+vlt install
+```
+
+If you would rather not use the wizard, or you are scripting it, see
+[manual configuration](#manual-configuration).
+
+## Manual configuration
+
+```sh
+vlt config set registry=https://registry.vlt.io/acme/npm/ \
+  registries.npm=https://registry.vlt.io/acme/npm/ \
+  registries.main=https://registry.vlt.io/acme/main/ \
+  scoped-registries.@acme=https://registry.vlt.io/acme/main/
+```
+
+That writes `vlt.json`. Add `--config=user` to apply it to every
+project instead of just this one:
+
+```json
+{
+  "config": {
+    "registry": "https://registry.vlt.io/acme/npm/",
+    "registries": {
+      "npm": "https://registry.vlt.io/acme/npm/",
+      "main": "https://registry.vlt.io/acme/main/"
+    },
+    "scoped-registries": {
+      "@acme": "https://registry.vlt.io/acme/main/"
+    }
+  }
+}
+```
+
+What each field does:
+
+- `registry` — the default registry all packages resolve against.
+  Pointing it at your mirror makes it a drop-in npm replacement.
+- `registries` — named aliases. They power
+  `vlt registry <alias> <command>` and the `<alias>:` specifier
+  syntax.
+- `scoped-registries` — routes a scope to a registry, like
+  `@scope:registry` in npm. Note the key **keeps** the `@`.
+
+## Authentication
+
+The wizard stores a token in your system keychain. To add one by hand:
+
+```sh
+vlt login --registry=https://registry.vlt.io/acme/main/
+```
+
+Or set it in the environment, which is what you want for scripts and
+CI:
+
+```sh
+export VLT_TOKEN=<your token>
+export VLT_REGISTRY=https://registry.vlt.io/acme/npm/
+```
+
+`VLT_TOKEN` alone covers the default registry. If you also use
+`scoped-registries`, set `VLT_REGISTRY` as well — without it, vlt
+sends no credentials to the scoped registry.
+
+## Install from the npm mirror
+
+```sh
+vlt install abbrev
+```
+
+## Install from your `main` registry
+
+With `scoped-registries` configured:
+
+```sh
+vlt install @acme/my-package
+```
+
+You can also pull from a named registry explicitly, without any scope
+config, using the `<alias>:` specifier syntax:
+
+```sh
+vlt install @acme/my-package@main:@acme/my-package@1.0.0
+```
+
+which records the alias in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@acme/my-package": "main:@acme/my-package@1.0.0"
+  }
+}
+```
+
+### Public packages
+
+Public packages on `main` install without a token — the registry
+mapping alone is enough, with no token in the environment or keychain:
+
+```json
+{
+  "config": {
+    "scoped-registries": {
+      "@acme": "https://registry.vlt.io/acme/main/"
+    }
+  }
+}
+```
+
+## Publish to `main`
+
+```sh
+vlt publish --registry=https://registry.vlt.io/acme/main/
+```
+
+Or set `registry` in the project `vlt.json` and just run
+`vlt publish`. Useful flags: `--access public`, `--tag`, `--dry-run`,
+and `--recursive` to publish every workspace in a monorepo.
+
+With a personal token, every publish returns a one-time-password
+challenge with a `vlt.io` URL. Open it, approve, and re-run — or pass
+the code through the environment:
+
+```sh
+VLT_OTP=<code> vlt publish
+```
+
+A **service token** skips the challenge, which is how you publish from
+CI. See [CI & automation](/registry/publishing/ci).
+
+## Working with a named registry
+
+`vlt registry <alias> <command>` runs an account command against one
+of your configured registries:
+
+```sh
+vlt registry main whoami
+vlt registry main token list
+vlt registry main access
+vlt ping                     # check connectivity to every configured registry
+```
+
+Supported commands are `whoami`, `logout`, `login`, `token`, `access`,
+`publish`, `unpublish`, `deprecate`, `dist-tag`, `profile` and `ping`.
+
+## Gotchas
+
+- **`vlt token add` needs an interactive terminal.** It reads the
+  token with raw keyboard input, so piping it in
+  (`echo $TOKEN | vlt token add`) fails with
+  `stdin.setRawMode is not a function`. Use `VLT_TOKEN` in scripts.
+- **`scoped-registries` keeps the `@`** — `scoped-registries.@acme`,
+  unlike Yarn's `npmScopes`.
+- With `scoped-registries`, `VLT_TOKEN` alone is not enough; add
+  `VLT_REGISTRY`.
+- The config key is `scoped-registries`, not `scope-registries`.
+- Per-registry `VLT_TOKEN_<registry>` variables exist but do not apply
+  to scoped registries. Prefer `VLT_REGISTRY` + `VLT_TOKEN`.

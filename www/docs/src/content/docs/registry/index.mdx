@@ -424,9 +424,12 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
    install packages from your private `@acme` scope with
    `deno install --env-file`.
 
-   Note that deno will not let you publish into npm registries, so you
-   will need an alternative tool to publish your private packages in
-   this scope.
+   `deno publish` targets [JSR](https://jsr.io) only, but `deno pack`
+   builds a real npm package from a Deno project, which you then
+   upload with `npm publish`. See
+   [the deno guide](/registry/publishing/deno) for the full workflow —
+   including Deno's 24-hour dependency-age gate, which will otherwise
+   hide a version you just published.
 
 </Steps>
 

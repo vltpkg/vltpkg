@@ -1,15 +1,15 @@
 ---
 title: Publishing Packages
 sidebar:
-  label: Publishing
+  label: Overview
   order: 3
 ---
 
 import {
   Aside,
   Code,
-  Tabs,
-  TabItem,
+  CardGrid,
+  LinkCard,
 } from '@astrojs/starlight/components'
 
 Your account's `main` registry hosts your private packages. On a
@@ -18,84 +18,62 @@ account slug — for example, an account with the slug `acme` publishes
 packages named `@acme/utils`, `@acme/app`, and so on.
 
 The registry speaks the npm registry protocol, so you can publish with
-whichever package manager you already use — vlt, npm, pnpm, yarn, or
-bun.
+whichever package manager you already use.
 
-## Configure your project
+## Guides
 
-Map your account scope to your registry so installs for that scope go
-to vlt:
+Each guide covers configuring the package manager against your
+account's two registries, installing from both, and publishing to
+`main` — along with the version requirements and gotchas specific to
+that tool. They use `acme` as the account slug; replace it with your
+own, or use the **Setup Instructions** button in the dashboard's
+**Registries** section, which generates them for your account.
 
-<Code
-  code="$ vlt config set scoped-registries=@acme=https://registry.vlt.io/acme/main/"
-  title="Terminal"
-  lang="bash"
-/>
+<CardGrid>
+  <LinkCard
+    title="vlt"
+    href="/registry/publishing/vlt"
+    description="vlt 1.0"
+  />
+  <LinkCard
+    title="npm"
+    href="/registry/publishing/npm"
+    description="npm 12"
+  />
+  <LinkCard
+    title="pnpm"
+    href="/registry/publishing/pnpm"
+    description="pnpm 10, 11 and 12"
+  />
+  <LinkCard
+    title="yarn"
+    href="/registry/publishing/yarn"
+    description="Yarn 4 (Berry) and Yarn Classic"
+  />
+  <LinkCard
+    title="bun"
+    href="/registry/publishing/bun"
+    description="bun 1.4"
+  />
+  <LinkCard
+    title="deno"
+    href="/registry/publishing/deno"
+    description="deno 2.9"
+  />
+  <LinkCard
+    title="CI & automation"
+    href="/registry/publishing/ci"
+    description="Unattended installs and publishes with a service token"
+  />
+</CardGrid>
 
-This stores the mapping in your project's `vlt.json`. See
-[Working with Named Registries](/cli/registries) for the full range of
-registry configuration options.
+Whichever client you use, you'll need to authenticate — see
+[Authentication & Tokens](/registry/tokens).
 
-Note that `vlt publish` does not pick its target registry from
-`scoped-registries` — that mapping only routes installs. Point publish
-at your registry explicitly with
-`vlt publish --registry=https://registry.vlt.io/acme/main/`, or
-configure a named registry alias:
-
-<Code
-  code="$ vlt config set registries=main=https://registry.vlt.io/acme/main/"
-  title="Terminal"
-  lang="bash"
-/>
-
-With a single alias configured, `vlt publish` targets it
-automatically; with several, pick one per command with
-`vlt registry main publish`. A `publishConfig.registry` field in
-`package.json` overrides the target, but a `--registry` flag or
-configured alias is still required for the command to run.
-
-If you're using npm, the equivalent `.npmrc` entry is:
-
-<Code
-  code="@acme:registry=https://registry.vlt.io/acme/main/"
-  title=".npmrc"
-  lang="ini"
-/>
-
-You'll also need to authenticate — see
-[Authentication & Tokens](/registry/tokens). The **Setup
-Instructions** button in the dashboard's **Registries** section
-generates both steps for your account, tailored to your package
-manager.
-
-## Publish
-
-From your package directory:
-
-<Tabs syncKey="pkg-manager">
-  <TabItem label="vlt">
-    <Code code="$ vlt publish" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="npm">
-    <Code code="$ npm publish" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="pnpm">
-    <Code code="$ pnpm publish" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="yarn">
-    <Code code="$ yarn npm publish" title="Terminal" lang="bash" />
-  </TabItem>
-  <TabItem label="bun">
-    <Code code="$ bun publish" title="Terminal" lang="bash" />
-  </TabItem>
-</Tabs>
+## What the registry validates
 
 Your package manager packs the package into a tarball and uploads it
-along with its manifest. If you're using the vlt client, see the
-[`vlt publish`](/cli/commands/publish) command reference for options
-like `--tag` and `--publish-directory`.
-
-The registry validates every publish:
+along with its manifest. The registry then validates every publish:
 
 - On a private account, the package name must be scoped to your
   account: `@acme/utils` publishes, but an unscoped name like `utils`,
@@ -136,24 +114,9 @@ with the second factor enrolled on your vlt.io account. You'll need
 one enrolled before your first publish.
 
 Service tokens are not subject to the OTP prompt, which is what makes
-unattended publishes from CI possible. Account owners and admins can
-adjust the two-factor requirement under **Settings → General**.
-
-## Publishing from CI
-
-Create a **service token** with the `package:write` privilege (see
-[Authentication & Tokens](/registry/tokens)) and provide it to the
-client through the environment:
-
-<Code
-  code={`VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" vlt publish`}
-  title="Terminal"
-  lang="bash"
-/>
-
-See
-[Authentication — CI](/cli/auth#ci-and-other-headless-environments)
-for how token environment variables are named.
+unattended publishes from CI possible — see
+[CI & automation](/registry/publishing/ci). Account owners and admins
+can adjust the two-factor requirement under **Settings → General**.
 
 <Aside type="note">
   The vlt registry does not currently support OIDC trusted publishing.
@@ -163,14 +126,54 @@ for how token environment variables are named.
 ## Deprecating and unpublishing
 
 Deprecation and unpublish follow the standard npm protocol, so
-`npm deprecate` and `npm unpublish` work against your registry.
-Deprecating a version attaches a warning message that installers
-display; it can be reversed by deprecating again with an empty
-message. Unpublishing removes a version (or an entire package), and as
-noted above, unpublished version numbers can never be reused.
+`vlt deprecate` and `vlt unpublish` — and their `npm` equivalents —
+work against your registry. Deprecating a version attaches a warning
+message that installers display; it can be reversed by deprecating
+again with an empty message. Unpublishing removes a version (or an
+entire package), and as noted above, unpublished version numbers can
+never be reused.
 
 ## Package visibility
 
-Visibility is controlled at the account level: packages on a private
-account's `main` registry are readable only by members of that
-account. There is no per-package `--access` setting.
+By default, packages on a private account's `main` registry are
+readable only by members of that account. Individual packages can be
+made **public**, which makes them installable by anyone — with no
+token at all, and no auth line in the consumer's config. Each guide
+above shows the minimal configuration a public package needs.
+
+Set the level when you publish:
+
+<Code
+  code="$ vlt publish --access=public"
+  title="Terminal"
+  lang="bash"
+/>
+
+Or record it with the package, so it doesn't depend on who runs the
+publish. Every package manager in the guides above reads this field:
+
+<Code
+  code={`{
+  "name": "@acme/utils",
+  "publishConfig": { "access": "public" }
+}`}
+  title="package.json"
+  lang="json"
+/>
+
+To read or change the level of a package that's already published:
+
+<Code
+  code={`$ vlt access get status @acme/utils
+$ vlt access set status=restricted @acme/utils
+$ vlt access list packages @acme`}
+  title="Terminal"
+  lang="bash"
+/>
+
+The two levels are `public` and `restricted`. Access changes made with
+a personal token are subject to the same OTP requirement as a publish.
+
+Teams can also be granted read-only or read-write access to individual
+packages with `vlt access grant` and `vlt access revoke` — see
+[Members & Access Control](/registry/access).

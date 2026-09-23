@@ -1,0 +1,227 @@
+---
+title: pnpm
+description:
+  Configure pnpm for your vlt.io registries, and publish to main.
+sidebar:
+  label: pnpm
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components'
+
+Verified against **pnpm 10, 11 and 12**.
+
+<Aside type="caution" title="pnpm 12 cannot install from the npm mirror right now">
+
+pnpm 12 rejects every version in the mirror's metadata and fails with
+`no version found for the latest tag`. pnpm **11 and older work
+fine**.
+
+This affects the **mirror only**. Publishing to `main` and installing
+your own packages from `main` work correctly on pnpm 12 — so if you
+only consume your own packages, you can stay on 12. If you install
+public npm packages through the mirror, pin the project to the latest
+11.x:
+
+```sh
+corepack use pnpm@11.26.0
+```
+
+That writes `"packageManager": "pnpm@11.26.0"` into your
+`package.json`, so everyone on the project gets the same version.
+**Pin an explicit version rather than the range `pnpm@11`.** Corepack
+satisfies a range from its local cache first, so on a machine that has
+an old 11.x cached, `pnpm@11` can quietly resolve to something as old
+as `11.0.0` — and then pin it. Version matters here: see the table
+below.
+
+To change the pnpm on your `PATH` instead, pass the version explicitly
+— a bare `pnpm self-update` refuses to downgrade:
+
+```sh
+pnpm self-update 11.26.0
+```
+
+This is a bug on our side, not yours, and a fix is in progress.
+
+</Aside>
+
+## Quick start
+
+```sh
+export VLT_TOKEN=<your token>
+
+pnpm config set registry https://registry.vlt.io/acme/npm/ --location=project
+pnpm config set @acme:registry https://registry.vlt.io/acme/main/ --location=project
+```
+
+Then add auth by logging in through the browser:
+
+```sh
+pnpm login --registry=https://registry.vlt.io/acme/npm/
+pnpm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
+```
+
+Now `pnpm install` works.
+
+## The config file
+
+pnpm reads registry and auth settings from `.npmrc`, same keys as npm.
+Commit the **routing** only, with no credentials:
+
+```ini
+registry=https://registry.vlt.io/acme/npm/
+@acme:registry=https://registry.vlt.io/acme/main/
+```
+
+Registry and auth keys belong in `.npmrc`; every other pnpm setting
+now lives in `pnpm-workspace.yaml`.
+
+### `${VLT_TOKEN}` does not work in a project `.npmrc`
+
+Unlike npm, yarn, bun and deno, pnpm **deliberately ignores `${...}`
+placeholders** in a repository `.npmrc` for registry, proxy and
+credential values. A file containing
+`//registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}` sends no
+`Authorization` header at all — you get a `401` that looks like a bad
+token, with no warning explaining why.
+
+This is a supply-chain fix (a malicious repo could otherwise redirect
+your token to a registry it controls), landed in **pnpm 11.5.3**, so
+it applies to every current version. Use one of the two options below
+instead.
+
+Which option is available depends on the version, and there is one
+unlucky release with neither:
+
+| pnpm version     | `${VLT_TOKEN}` in `.npmrc` | `pnpm_config_…` env var |
+| ---------------- | -------------------------- | ----------------------- |
+| 11.5.2 and older | works                      | **not supported**       |
+| 11.5.3           | blocked                    | **not supported**       |
+| 11.6.0 – 11.26.0 | blocked                    | works                   |
+| 12.x             | blocked                    | works                   |
+
+So on the pinned 11.26.0 above, use `pnpm login` or the environment
+variable — never a placeholder in the file.
+
+### Option 1 — log in (recommended for laptops)
+
+```sh
+pnpm login --registry=https://registry.vlt.io/acme/npm/
+pnpm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
+```
+
+Browser-based, and the credential is stored in your global pnpm config
+rather than in the repo.
+
+### Option 2 — pass the token as an environment variable (recommended for CI)
+
+pnpm accepts any config key as a `pnpm_config_`-prefixed variable,
+which sidesteps the placeholder restriction entirely:
+
+```sh
+env "pnpm_config_//registry.vlt.io/acme/npm/:_authToken=$VLT_TOKEN" pnpm install
+```
+
+Two notes:
+
+- Use `env` rather than `export` — the variable name contains `/`, `:`
+  and `.`, which the shell will not accept in an assignment.
+- **Needs pnpm 11.6.0 or newer.** On older versions the variable is
+  ignored and you get
+  `ERR_PNPM_FETCH_401 … No authorization header was set for the request`.
+
+## Install from the npm mirror
+
+```sh
+pnpm add abbrev
+```
+
+To move an existing project onto the mirror:
+
+```sh
+rm -rf pnpm-lock.yaml node_modules
+pnpm install
+```
+
+## Install from your `main` registry
+
+```sh
+pnpm add @acme/my-package
+```
+
+### Public packages
+
+Public packages on `main` install without a token — the registry line
+alone is enough, with no auth line:
+
+```ini
+@acme:registry=https://registry.vlt.io/acme/main/
+```
+
+## Publish to `main`
+
+```json
+{
+  "name": "@acme/my-package",
+  "version": "1.0.0",
+  "publishConfig": {
+    "registry": "https://registry.vlt.io/acme/main/"
+  }
+}
+```
+
+```sh
+pnpm publish
+```
+
+`publishConfig.registry` decides the destination, and in pnpm it is
+the **strongest** setting — it beats `@acme:registry` and even an
+explicit `--registry` flag, which is the weakest of the four. (npm
+resolves these in a different order, so don't assume a publish script
+behaves identically under both.) Add `--access public` for a package
+anyone can install.
+
+Two flags you will probably want:
+
+- `--no-git-checks` — pnpm refuses to publish unless the git tree is
+  clean and you are on the publish branch. Verified: an uncommitted
+  file fails with `ERR_PNPM_GIT_UNCLEAN`.
+- `--dry-run` — pack and report without uploading.
+
+With a personal token, every publish returns a one-time-password
+challenge with a `vlt.io` URL — open it, approve, re-run. A **service
+token** skips the prompt and is what you want in CI; see
+[CI & automation](/registry/publishing/ci).
+
+## Log in
+
+```sh
+pnpm login --registry=https://registry.vlt.io/acme/main/ --scope=@acme
+```
+
+This uses the browser login flow and prints an authentication URL.
+`--scope` also records the scope-to-registry mapping for you. In
+current pnpm the credential is written to your global pnpm config, not
+to `.npmrc`.
+
+`pnpm token` is not implemented in pnpm — it reports
+`Not implemented in pnpm. Use the npm CLI directly`. Manage tokens at
+[vlt.io](https://www.vlt.io) or with `npm token`.
+
+## Gotchas
+
+- **pnpm 12 + the npm mirror is broken.** See the note at the top.
+- **`${VAR}` in a project `.npmrc` is ignored, silently.** See above.
+- **`pnpm config set` writes to your machine-global config by
+  default.** Always pass `--location=project`, or credentials end up
+  in your user config unexpectedly. `--location` accepts only
+  `project` and `global` — there is no `user`.
+- **`always-auth` no longer exists in pnpm.** Setting it produces an
+  unrecognized-setting warning and does nothing; it isn't needed.
+- Trailing slashes must match between the registry URL and the auth
+  line.
+- `--npmrc-auth-file` (alias `--userconfig`) points pnpm at a
+  different `.npmrc` for auth. That file is treated as trusted, so
+  `${VAR}` expansion **does** work there — only use it in environments
+  that build trusted repositories.
