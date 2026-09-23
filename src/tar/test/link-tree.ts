@@ -12,6 +12,7 @@ import { basename, dirname, posix, resolve, win32 } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { linkFromStore } from '../src/link-tree.ts'
+import { storeCopiedPath } from '../src/store-entry.ts'
 import { storeIndexPath } from '../src/store-index.ts'
 import type { StoreIndex } from '../src/store-index.ts'
 import { unpackToStoreSync } from '../src/unpack.ts'
@@ -516,3 +517,58 @@ for (const path of [win32, posix]) {
     },
   )
 }
+
+t.test('copies mark the entry, links do not', async t => {
+  const copied = (entry: string) => existsSync(storeCopiedPath(entry))
+  t.test('link, EMLINK', async t => {
+    const { entry, target } = makeEntry(t)
+    t.ok(linkFromStore(entry, target))
+    t.equal(copied(entry), false)
+    const { linkFromStore: emlink } = await mockFS(t, {
+      linkSync: () => {
+        throw errno('EMLINK')
+      },
+    })
+    t.ok(emlink(entry, resolve(dirname(target), 'other')))
+    t.equal(copied(entry), false, 'per-file copies only')
+  })
+  t.test('copy, twice', async t => {
+    const { entry, target } = makeEntry(t)
+    t.ok(linkFromStore(entry, target, { copy: true }))
+    t.equal(copied(entry), true)
+    t.ok(linkFromStore(entry, target, { copy: true }))
+    t.equal(copied(entry), true)
+  })
+  t.test('downgrade', async t => {
+    const { entry, target } = makeEntry(t)
+    const { linkFromStore } = await mockFS(t, {
+      linkSync: () => {
+        throw errno('EXDEV')
+      },
+    })
+    t.ok(linkFromStore(entry, target))
+    t.equal(copied(entry), true)
+  })
+  t.test('clash: none', async t => {
+    const { entry, index, target } = makeEntry(t)
+    writeFileSync(
+      storeIndexPath(entry),
+      JSON.stringify({
+        ...index,
+        files: [...index.files, index.files[0]],
+      }),
+    )
+    t.equal(linkFromStore(entry, target, { copy: true }), false)
+    t.equal(existsSync(entry), true)
+    t.equal(copied(entry), false)
+  })
+  t.test('damaged entry discard removes it', async t => {
+    const { entry, target } = makeEntry(t)
+    t.ok(linkFromStore(entry, target, { copy: true }))
+    rmSync(resolve(entry, 'lib/a.js'))
+    const other = resolve(dirname(target), 'other')
+    t.equal(linkFromStore(entry, other, { copy: true }), false)
+    t.equal(copied(entry), false)
+    t.equal(existsSync(storeIndexPath(entry)), false)
+  })
+})

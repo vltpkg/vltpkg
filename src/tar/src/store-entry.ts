@@ -1,5 +1,7 @@
 import {
+  closeSync,
   lstatSync,
+  openSync,
   readdirSync,
   readFileSync,
   statSync,
@@ -12,14 +14,14 @@ import { storeLayout } from './unpack.ts'
 
 const noThrow = { throwIfNoEntry: false } as const
 
-const entryName = /^([0-9a-f]{128})(?:\.json)?$/
+const entryName = /^([0-9a-f]{128})(?:\.json|\.copied)?$/
 
 const relPath = (from: string, to: string) =>
   relative(from, to).replace(/\\/g, '/')
 
 /**
  * Integrity hex names of the global store entries under `root`, each
- * with an entry dir, a sidecar index or both. Sorted.
+ * with an entry dir, a sidecar index or a copied marker. Sorted.
  */
 export const storeEntryNames = (root: string): string[] => {
   let names: string[]
@@ -37,12 +39,32 @@ export const storeEntryNames = (root: string): string[] => {
 }
 
 /**
+ * Marker next to a global store entry: some install copied from it, so
+ * its files' nlink cannot show use. See {@link markStoreEntryCopied}.
+ */
+export const storeCopiedPath = (storeEntry: string) =>
+  storeEntry + '.copied'
+
+/**
+ * Mark a global store entry as copied from. Called on copies only:
+ * one exclusive create per entry, a failed open after that.
+ */
+export const markStoreEntryCopied = (storeEntry: string): void => {
+  try {
+    closeSync(openSync(storeCopiedPath(storeEntry), 'wx'))
+  } catch {
+    // EEXIST: marked. Else prune-store may drop it: only a re-explode.
+  }
+}
+
+/**
  * Remove a global store entry. Dir first: a sidecar without its dir is
  * a plain miss. Projects linked from it keep their files.
  */
 export const removeStoreEntry = (storeEntry: string): void => {
   rimrafSync(storeEntry)
   rimrafSync(storeIndexPath(storeEntry))
+  rimrafSync(storeCopiedPath(storeEntry))
 }
 
 /**
@@ -54,6 +76,20 @@ export const storeEntryTime = (storeEntry: string): number =>
     statSync(storeIndexPath(storeEntry), noThrow) ??
     statSync(storeEntry, noThrow)
   )?.mtimeMs ?? 0
+
+/**
+ * True if the global store entry has a valid sidecar and dir, and was
+ * copied from (marker) or has install scripts (always copied). `index`:
+ * the sidecar, if already read.
+ */
+export const storeEntryCopied = (
+  storeEntry: string,
+  index = readStoreIndex(storeEntry),
+): boolean =>
+  !!index &&
+  (index.scripts ||
+    !!lstatSync(storeCopiedPath(storeEntry), noThrow)) &&
+  !!lstatSync(storeEntry, noThrow)?.isDirectory()
 
 /**
  * True if a file of the global store entry has another hardlink

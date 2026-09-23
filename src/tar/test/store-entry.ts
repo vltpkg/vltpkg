@@ -15,7 +15,10 @@ import { gzipSync } from 'node:zlib'
 import t from 'tap'
 import type { Test } from 'tap'
 import {
+  markStoreEntryCopied,
   removeStoreEntry,
+  storeCopiedPath,
+  storeEntryCopied,
   storeEntryLinked,
   storeEntryNames,
   storeEntryTime,
@@ -63,21 +66,25 @@ t.test('storeLayout does no IO', async t => {
 
 t.test('storeEntryNames', async t => {
   t.strictSame(storeEntryNames(t.testdirName + '/missing'), [])
-  const [a, b, c] = ['a', 'b', 'c'].map(x => x.repeat(128))
+  const [a, b, c, d] = ['a', 'b', 'c', 'd'].map(x => x.repeat(128))
   const store = t.testdir({
     [String(a)]: {},
     [`${a}.json`]: '{}',
+    [`${a}.copied`]: '',
     [`${b}.json`]: '{}',
     [String(c)]: {},
+    [`${d}.copied`]: '',
     '.tmp': {},
     'short.json': '{}',
+    'short.copied': '',
     [`${a}.json.1.2`]: '{}',
   })
-  t.strictSame(storeEntryNames(store), [a, b, c])
+  t.strictSame(storeEntryNames(store), [a, b, c, d])
 })
 
-t.test('removeStoreEntry, sidecar and dir', async t => {
+t.test('removeStoreEntry, sidecar, dir and marker', async t => {
   const { store, entry } = makeEntry(t)
+  markStoreEntryCopied(entry)
   removeStoreEntry(entry)
   t.strictSame(readdirSync(store), ['.tmp'])
   removeStoreEntry(entry)
@@ -112,6 +119,37 @@ t.test('storeEntryTime', async t => {
   t.equal(storeEntryTime(entry), 2_000_000, 'dir without sidecar')
   rmSync(entry, { recursive: true })
   t.equal(storeEntryTime(entry), 0, 'neither')
+})
+
+t.test('markStoreEntryCopied', async t => {
+  const { store, entry } = makeEntry(t)
+  const marker = storeCopiedPath(entry)
+  t.equal(marker, entry + '.copied')
+  markStoreEntryCopied(entry)
+  t.equal(readFileSync(marker, 'utf8'), '')
+  utimesSync(marker, 1000, 1000)
+  markStoreEntryCopied(entry)
+  t.equal(FS.statSync(marker).mtimeMs, 1_000_000, 'EEXIST: untouched')
+  // best effort
+  markStoreEntryCopied(resolve(store, 'nope/x'))
+  t.equal(existsSync(resolve(store, 'nope')), false)
+})
+
+t.test('storeEntryCopied', async t => {
+  const { entry, index } = makeEntry(t)
+  t.equal(storeEntryCopied(entry), false, 'fresh entry')
+  t.equal(
+    storeEntryCopied(entry, { ...index, scripts: true }),
+    true,
+    'install scripts',
+  )
+  markStoreEntryCopied(entry)
+  t.equal(storeEntryCopied(entry), true, 'marked')
+  rmSync(storeIndexPath(entry))
+  t.equal(storeEntryCopied(entry), false, 'no sidecar')
+  t.equal(storeEntryCopied(entry, index), true, 'index given')
+  rmSync(entry, { recursive: true })
+  t.equal(storeEntryCopied(entry, index), false, 'no entry dir')
 })
 
 t.test('storeEntryLinked', async t => {

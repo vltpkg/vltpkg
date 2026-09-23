@@ -11,7 +11,10 @@ import {
 import { dirname, sep } from 'node:path'
 import { debuglog } from 'node:util'
 import { rimrafSync } from 'rimraf'
-import { removeStoreEntry } from './store-entry.ts'
+import {
+  markStoreEntryCopied,
+  removeStoreEntry,
+} from './store-entry.ts'
 import { readStoreIndex } from './store-index.ts'
 import type { StoreIndex, StoreIndexFile } from './store-index.ts'
 import { tmpName } from './unpack.ts'
@@ -184,6 +187,8 @@ export const linkFromStore = (
     if (targetExists) renameSync(target, og)
     renameSync(tmp, target)
     if (targetExists) rimrafSync(og)
+    // nlink stays 1: tell prune-store it is used
+    if (copied || copyAll) markStoreEntryCopied(storeEntry)
     succeeded = true
     return copied || copyAll ? 'copy' : 'link'
   } finally {
