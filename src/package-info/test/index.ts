@@ -399,6 +399,9 @@ const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/octet-stream')
       res.setHeader('content-length', tgzAbbrev.byteLength)
       res.setHeader('repr-digest', `sha-512=:${'0'.repeat(86)}==:`)
+      // agrees with the bogus digest: a server-sent integrity header
+      // never stands in for hashing the body
+      res.setHeader('integrity', `sha512-${'0'.repeat(86)}==`)
       return res.end(tgzAbbrev)
     }
     case '/digest-missing/-/digest-missing-1.0.0.tgz': {
