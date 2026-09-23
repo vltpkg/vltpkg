@@ -35,7 +35,8 @@ BENCH_WARMUP="${BENCH_WARMUP:=2}"
 BENCH_RUNS="${BENCH_RUNS:=10}"
 BENCH_OUTPUT_FOLDER="$BENCH_RESULTS/$BENCH_FIXTURE/$BENCH_VARIATION"
 BENCH_BINARY="${BENCH_BINARY:=vlt}"
-BENCH_COMMAND_VLT="{binary} install --view=human --cache=.vlt-cache > $BENCH_OUTPUT_FOLDER/vlt-output-\${HYPERFINE_ITERATION}.log 2>&1"
+# $$: one log per run, also with several commands (BENCH_BINARY=a,b)
+BENCH_COMMAND_VLT="{binary} install --view=human --cache=.vlt-cache > $BENCH_OUTPUT_FOLDER/vlt-output-\${HYPERFINE_ITERATION}-\$\$.log 2>&1"
 
 # Clean up & create the results directory
 rm -rf "$BENCH_OUTPUT_FOLDER"
