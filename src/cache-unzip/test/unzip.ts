@@ -1,11 +1,13 @@
 import { Cache } from '@vltpkg/cache'
 import { spawnSync } from 'node:child_process'
+import { EventEmitter } from 'node:events'
+import * as os from 'node:os'
 import t from 'tap'
 import type { Test } from 'tap'
 import { gzipSync } from 'node:zlib'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../src/unzip.ts'
 import { createHash } from 'node:crypto'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, rmSync } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import type { Integrity } from '@vltpkg/types'
@@ -448,8 +450,30 @@ t.test('global store', async t => {
     )
     t.match(
       res.stderr,
-      /explode written=1 skipped=0 failed=0 bytes=\d+ ms=\d+/,
+      /explode written=1 skipped=0 ignored=0 failed=0 bytes=\d+ ms=\d+/,
     )
+  })
+
+  t.test('key with the integrity it is cached under', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'registry-client')
+    const store = resolve(dir, 'store/v1')
+    const integrity = integrityOf(tgz)
+    const cache = new Cache({ path })
+    cache.set('tgz', tgzEntry, { integrity })
+    await cache.promise()
+    rmSync(cache.path('tgz'))
+    rmSync(cache.path('tgz') + '.key')
+    const res = spawnSync(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME, path, store],
+      {
+        input: `tgz\t${integrity}\0`,
+        env: { ...ENV, VLT_STORE_LINKER: 'hardlink' },
+      },
+    )
+    t.equal(res.status, 0)
+    t.ok(existsSync(resolve(store, hex)))
   })
 
   t.test('VLT_CACHE_UNZIP=0 only explodes', async t => {
@@ -494,4 +518,56 @@ t.test('global store', async t => {
     t.equal(res.status, 1, 'still throws')
     t.ok(existsSync(resolve(store, hex)))
   })
+})
+
+t.test('lowest priority only with the global store on', async t => {
+  const cases: [string, string[], number[]][] = [
+    ['hardlink', ['/s'], [19]],
+    ['unpack', ['/s'], []],
+    ['hardlink', [], []],
+  ]
+  for (const [linker, store, want] of cases) {
+    const calls: number[] = []
+    const input = new EventEmitter()
+    input.on('newListener', (ev: string) => {
+      if (ev === 'end') process.nextTick(() => input.emit('end'))
+    })
+    t.intercept(process, 'stdin', { value: input })
+    t.intercept(process, 'title', {
+      value: process.title,
+      writable: true,
+    })
+    t.intercept(process, 'argv', {
+      value: [
+        process.execPath,
+        __CODE_SPLIT_SCRIPT_NAME,
+        t.testdirName,
+        ...store,
+      ],
+    })
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_STORE_LINKER: linker },
+    })
+    await t.mockImport<typeof import('../src/unzip.ts')>(
+      '../src/unzip.ts',
+      {
+        'node:os': {
+          ...os,
+          setPriority: (n: number) => calls.push(n),
+        },
+      },
+    )
+    t.strictSame(calls, want, `${linker} ${store.length}`)
+  }
+  const exits: number[] = []
+  t.intercept(process, 'exit', {
+    value: (c: number) => exits.push(c),
+  })
+  t.intercept(process, 'argv', {
+    value: [process.execPath, __CODE_SPLIT_SCRIPT_NAME],
+  })
+  await t.mockImport<typeof import('../src/unzip.ts')>(
+    '../src/unzip.ts',
+  )
+  t.strictSame(exits, [1], 'no path')
 })

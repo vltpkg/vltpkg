@@ -1,8 +1,9 @@
+import type { Integrity } from '@vltpkg/types'
 import { createHash } from 'node:crypto'
 import { Header } from 'tar'
 import type { HeaderData } from 'tar'
 
-export const integrityOf = (b: Buffer) =>
+export const integrityOf = (b: Buffer): Integrity =>
   `sha512-${createHash('sha512').update(b).digest('base64')}`
 
 export const hexOf = (b: Buffer) =>

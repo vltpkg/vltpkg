@@ -97,6 +97,15 @@ t.test('passes the global store root to the child', async t => {
   t.strictSame(state.written, ['key 1\0', 'key 2\0', 'key 3\0'])
 })
 
+t.test('passes an integrity next to its key', async t => {
+  const { register, beforeExit, state } = await mockUnzip(t)
+  register(t.testdirName, 'key 1', '/s', 'sha512-a')
+  register(t.testdirName, 'key 1', '/s')
+  register(t.testdirName, 'key 2', '/s')
+  beforeExit()
+  t.strictSame(state.written, ['key 1\tsha512-a\0', 'key 2\0'])
+})
+
 t.test('shares the compile cache dir with the worker', async t => {
   const { register, beforeExit, state } = await mockUnzip(t, {
     'node:module': {

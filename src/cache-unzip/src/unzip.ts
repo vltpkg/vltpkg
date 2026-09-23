@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
 import type { Integrity } from '@vltpkg/types'
 import type EventEmitter from 'node:events'
-import { explode } from './explode.ts'
+import { explode, storeEnabled } from './explode.ts'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
@@ -30,7 +30,8 @@ const isMain = (path?: string) =>
 /**
  * Rewrite the cache entries at the keys read from `input` un-gzipped
  * (unless `VLT_CACHE_UNZIP=0`), and explode tarballs into the global
- * store root `store`, if given.
+ * store root `store`, if given. Keys are `\0`-separated, each
+ * optionally followed by `\t` and the integrity it is cached under.
  */
 const main = async (
   path: undefined | string,
@@ -41,7 +42,7 @@ const main = async (
     return false
   }
 
-  const keys = await new Promise<string[]>(res => {
+  const items = await new Promise<string[]>(res => {
     const chunks: Buffer[] = []
     let chunkLen = 0
     input.on('data', (chunk: Buffer) => {
@@ -56,6 +57,12 @@ const main = async (
           .filter(i => !!i),
       )
     })
+  })
+  const integrities = new Map<string, Integrity>()
+  const keys = items.map(item => {
+    const [key, integrity] = item.split('\t') as [string, Integrity?]
+    if (integrity) integrities.set(key, integrity)
+    return key
   })
 
   if (!keys.length) {
@@ -213,7 +220,7 @@ const main = async (
   )
   // reads the rewritten entries back from memory
   const exploded =
-    store ? await explode(cache, store, keys) : undefined
+    store ? await explode(cache, store, keys, integrities) : undefined
   await cache.promise()
   for (const r of results) {
     if (r.status === 'rejected') throw r.reason
@@ -226,11 +233,14 @@ const main = async (
 
 if (isMain(process.argv[1])) {
   process.title = 'vlt-cache-unzip'
-  try {
-    setPriority(19)
-    /* c8 ignore next */
-  } catch {}
   const [, , path, store] = process.argv
+  // unzip-only children keep their priority
+  if (store && storeEnabled()) {
+    try {
+      setPriority(19)
+      /* c8 ignore next */
+    } catch {}
+  }
   const res = await main(path, process.stdin, store)
   if (!res) {
     process.exit(1)

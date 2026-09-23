@@ -2,6 +2,7 @@ import type { Cache } from '@vltpkg/cache'
 import { storeIndexPath } from '@vltpkg/tar/store-index'
 import { unpackToStoreSync } from '@vltpkg/tar/unpack'
 import { integrityHex } from '@vltpkg/types'
+import type { Integrity } from '@vltpkg/types'
 import {
   lstatSync,
   readdirSync,
@@ -18,12 +19,19 @@ const debug = debuglog('vlt')
 /** `store-linker` values that read from the global store. */
 const linkers = new Set(['auto', 'hardlink', 'copy'])
 
+/** True when `VLT_STORE_LINKER` enables the global store. */
+export const storeEnabled = () =>
+  linkers.has(process.env.VLT_STORE_LINKER ?? '')
+
 // a killed child leaves its tmp behind, and nothing else removes it
 const STALE_MS = 60 * 60 * 1000
 
 export type ExplodeSummary = {
   written: number
+  /** already in the store, or another writer won */
   skipped: number
+  /** missing, or not a tarball with a sha512 integrity */
+  ignored: number
   failed: number
   bytes: number
   ms: number
@@ -70,18 +78,18 @@ const sweep = (tmp: string) => {
 let seq = 0
 
 /**
- * Explode one cache entry into `store`. Returns the bytes written, or
- * undefined if skipped (no sha512 integrity, or already present).
- * Throws on a bad tarball.
+ * Explode one cache entry into `store`. Returns the bytes written,
+ * 'skipped' if already present, 'ignored' without a sha512
+ * integrity. Throws on a bad tarball.
  */
 const explodeEntry = (
   store: string,
   buf: Buffer,
-): number | undefined => {
+): number | 'skipped' | 'ignored' => {
   const hex = integrityHex(entryIntegrity(buf))
-  if (!hex) return undefined
+  if (!hex) return 'ignored'
   const entry = join(store, hex)
-  if (lstatSync(entry, { throwIfNoEntry: false })) return undefined
+  if (lstatSync(entry, { throwIfNoEntry: false })) return 'skipped'
   const n = `${process.pid}.${seq++}`
   const tmp = join(store, '.tmp', `${hex}.${n}`)
   const sideTmp = join(store, '.tmp', `${hex}.json.${n}`)
@@ -98,7 +106,7 @@ const explodeEntry = (
     rm(tmp)
     rm(sideTmp)
     // another writer won the rename
-    if (lstatSync(entry, { throwIfNoEntry: false })) return undefined
+    if (lstatSync(entry, { throwIfNoEntry: false })) return 'skipped'
     throw er
   }
   let bytes = 0
@@ -109,18 +117,21 @@ const explodeEntry = (
 /**
  * Explode the tarball cache entries at `keys` into the global store
  * root `store`, one `<integrity-hex>` dir plus sidecar index each.
- * No-op unless `VLT_STORE_LINKER` is a linker that reads the store.
+ * `integrities` maps keys to the integrity they may be cached under
+ * when their own entry is gone. No-op unless {@link storeEnabled}.
  */
 export const explode = async (
   cache: Cache,
   store: string,
   keys: string[],
+  integrities?: Map<string, Integrity>,
 ): Promise<ExplodeSummary | undefined> => {
-  if (!linkers.has(process.env.VLT_STORE_LINKER ?? '')) return
+  if (!storeEnabled()) return
   const start = performance.now()
   const s: ExplodeSummary = {
     written: 0,
     skipped: 0,
+    ignored: 0,
     failed: 0,
     bytes: 0,
     ms: 0,
@@ -131,20 +142,21 @@ export const explode = async (
     for (;;) {
       const key = keys[next++]
       if (key === undefined) return
-      const buf = await cache.fetch(key)
+      const buf = await cache.fetch(key, {
+        context: { integrity: integrities?.get(key) },
+      })
       // done with it; a pending disk write keeps its own reference
       cache.delete(key)
       if (!buf) {
-        s.skipped++
+        s.ignored++
         continue
       }
       try {
-        const bytes = explodeEntry(store, buf)
-        if (bytes === undefined) s.skipped++
-        else {
+        const res = explodeEntry(store, buf)
+        if (typeof res === 'number') {
           s.written++
-          s.bytes += bytes
-        }
+          s.bytes += res
+        } else s[res]++
       } catch (er) {
         s.failed++
         debug('global store: explode failed', key, er)
@@ -158,9 +170,10 @@ export const explode = async (
   await Promise.all(Array.from({ length: lanes }, lane))
   s.ms = Math.round(performance.now() - start)
   debug(
-    'global store: explode written=%d skipped=%d failed=%d bytes=%d ms=%d',
+    'global store: explode written=%d skipped=%d ignored=%d failed=%d bytes=%d ms=%d',
     s.written,
     s.skipped,
+    s.ignored,
     s.failed,
     s.bytes,
     s.ms,

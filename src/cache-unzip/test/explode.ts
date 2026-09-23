@@ -32,7 +32,7 @@ const tgz = gzipSync(pkgTar())
 const tar = pkgTar(' raw')
 const tgzHex = hexOf(tgz)
 const tarHex = hexOf(tar)
-const entry = (body: Buffer, integrity = integrityOf(body)) =>
+const entry = (body: Buffer, integrity: string = integrityOf(body)) =>
   encodeEntry(
     { 'content-type': 'application/octet-stream', integrity },
     body,
@@ -126,6 +126,7 @@ t.test('explodes gzipped and raw tarballs', async t => {
   )
 
   const pj = lstatSync(join(store, tgzHex, 'package.json'))
+  const side = lstatSync(join(store, `${tgzHex}.json`))
   t.match(
     await explode(cache, store, ['gz', 'raw']),
     { written: 0, skipped: 2, failed: 0 },
@@ -135,6 +136,11 @@ t.test('explodes gzipped and raw tarballs', async t => {
     lstatSync(join(store, tgzHex, 'package.json')).ino,
     pj.ino,
     'entry untouched',
+  )
+  t.equal(
+    lstatSync(join(store, `${tgzHex}.json`)).ino,
+    side.ino,
+    'sidecar untouched',
   )
 })
 
@@ -179,6 +185,10 @@ t.test('failed publish cleans up tmp', async t => {
     failed: 1,
   })
   t.equal(existsSync(join(store, tgzHex)), false)
+  t.ok(
+    existsSync(join(store, `${tgzHex}.json`)),
+    'sidecar published before the dir',
+  )
   t.strictSame(readdirSync(join(store, '.tmp')), [])
 })
 
@@ -209,7 +219,7 @@ t.test('bad entries are skipped, the rest still written', async t => {
       'missing',
       'gz',
     ]),
-    { written: 1, skipped: 3, failed: 4 },
+    { written: 1, skipped: 0, ignored: 3, failed: 4 },
   )
   t.strictSame(
     readdirSync(store).sort(),
@@ -221,6 +231,32 @@ t.test('bad entries are skipped, the rest still written', async t => {
   t.throws(() => unpackToStoreSync(bomb, join(store, 'b')), {
     message: 'tarball exceeds maximum unpacked size',
   })
+})
+
+t.test('reads entries cached only under their integrity', async t => {
+  const dir = t.testdir()
+  const path = resolve(dir, 'registry-client')
+  const store = resolve(dir, 'store/v1')
+  const integrity = integrityOf(tgz)
+  const c = new Cache({ path })
+  c.set('gz', entry(tgz), { integrity })
+  await c.promise()
+  rmSync(c.path('gz'))
+  rmSync(c.path('gz') + '.key')
+  t.match(await explode(new Cache({ path }), store, ['gz']), {
+    written: 0,
+    ignored: 1,
+  })
+  t.match(
+    await explode(
+      new Cache({ path }),
+      store,
+      ['gz'],
+      new Map([['gz', integrity]]),
+    ),
+    { written: 1, ignored: 0 },
+  )
+  t.ok(existsSync(join(store, tgzHex)))
 })
 
 t.test('gated on VLT_STORE_LINKER', async t => {

@@ -39,10 +39,12 @@ won't have to be unzipped.
 
 ## Global Store
 
-Pass the global store root as a third argument to `register()`:
+Pass the global store root as a third argument to `register()`, and
+optionally the tarball's integrity, for entries that may only be
+cached under it:
 
 ```js
-register(cachePath, myKey, storeRoot)
+register(cachePath, myKey, storeRoot, integrity)
 ```
 
 When `VLT_STORE_LINKER` is `auto`, `hardlink` or `copy`, the child
@@ -57,10 +59,10 @@ also explodes each tarball entry with a sha512 `integrity` header into
 - `VLT_CACHE_UNZIP=0` skips the un-gzip rewrite.
 - `VLT_CACHE_EXPLODE_CONCURRENCY` sets how many entries are read at
   once (default 1).
-- `NODE_DEBUG=vlt` prints a summary: entries written, skipped and
-  failed, bytes, ms.
+- `NODE_DEBUG=vlt` prints a summary: entries written, skipped (already
+  there), ignored (missing or not a tarball), failed, bytes, ms.
 
-The child runs at the lowest CPU priority.
+With the global store on, the child runs at the lowest CPU priority.
 
 ## Why Do This
 
