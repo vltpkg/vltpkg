@@ -450,7 +450,11 @@ t.test('register unzipping for gzip responses', async t => {
 t.test('register un-gzipped tarballs with an integrity', async t => {
   const rc = t.context.rc as RegistryClient
   t.equal(rc.cache.store, storeRoot(t.testdirName))
-  t.equal(storeRoot('/c'), resolve('/c/store/v1'))
+  t.equal(
+    new RC({ cache: '/c', storeRoot: '/s' }).cache.store,
+    '/s',
+    'explicit store root',
+  )
   const integrity = `sha512-${Buffer.alloc(64).toString('base64')}`
   const entry = (h: Record<string, string>, body = 'tarball') => {
     const ce = new CacheEntry(200, toRawHeaders(h))

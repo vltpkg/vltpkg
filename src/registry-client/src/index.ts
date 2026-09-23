@@ -51,6 +51,7 @@ import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { collectHeaders, readBody } from './response.ts'
+import { storeRoot } from './store-root.ts'
 import { oidc } from './oidc.ts'
 import type { OidcOptions } from './oidc.ts'
 
@@ -75,6 +76,7 @@ export {
   runtimeTokens,
   setRuntimeToken,
   setToken,
+  storeRoot,
   type ErrorResponse,
   type JSONObj,
   type OidcOptions,
@@ -107,6 +109,8 @@ export type RegistryClientOptions = {
    * Defaults to the XDG cache folder for `vlt/registry-client`
    */
   cache?: string
+  /** Global store root. Defaults to {@link storeRoot} of `cache`. */
+  storeRoot?: string
   /**
    * Number of retries to perform when encountering network errors or
    * likely-transient errors from git hosts.
@@ -268,10 +272,6 @@ const agentOptions: Agent.Options = {
 
 const xdg = new XDG('vlt')
 
-/** Global store root under the cache folder `cache`. */
-export const storeRoot = (cache: string) =>
-  resolve(cache, 'store', 'v1')
-
 const defaultCacheMaxSize = 256 * 1024 * 1024
 
 const parseCacheMaxSize = (raw: string | undefined): number => {
@@ -303,7 +303,7 @@ export class RegistryClient {
     this.identity = identity
     this.staleWhileRevalidateFactor = staleWhileRevalidateFactor
     const path = resolve(cache, 'registry-client')
-    const store = storeRoot(cache)
+    const store = options.storeRoot ?? storeRoot(cache)
     this.cache = new Cache({
       path,
       store,
