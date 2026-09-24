@@ -166,6 +166,22 @@ t.test('snapshots', async t => {
         },
       }),
     )
+    // a class instance with its own toString, which is what a Spec is
+    await testErr(
+      t,
+      'spec-instance',
+      error('missing tarball', {
+        code: 'ERESOLVE',
+        spec: new (class {
+          type = 'registry' as const
+          spec = 'y@2'
+          toString() {
+            return 'y@2'
+          }
+        })(),
+        response: { statusCode: 0 },
+      }),
+    )
     // a plain spec object (no custom toString) falls back to `format`.
     await testErr(
       t,

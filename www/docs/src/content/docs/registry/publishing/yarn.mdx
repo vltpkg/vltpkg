@@ -1,0 +1,245 @@
+---
+title: yarn
+description:
+  Configure Yarn for your vlt.io registries, and publish to main.
+sidebar:
+  label: yarn
+  order: 4
+---
+
+Verified against **Yarn 4.18** (Yarn Modern / Berry). For Yarn Classic
+1.x see [the bottom of this page](#yarn-classic-1x).
+
+## Quick start
+
+```sh
+export VLT_TOKEN=<your token>
+
+yarn config set npmRegistryServer "https://registry.vlt.io/acme/npm/"
+yarn config set npmAlwaysAuth true
+yarn config set npmAuthToken "\${VLT_TOKEN}"
+```
+
+Then `yarn install` as usual.
+
+## The config file
+
+Yarn keeps everything in `.yarnrc.yml` in your project root:
+
+```yaml
+# all public npm packages come from your account mirror
+npmRegistryServer: 'https://registry.vlt.io/acme/npm/'
+npmAlwaysAuth: true
+npmAuthToken: '${VLT_TOKEN}'
+
+# your own packages come from your main registry
+npmScopes:
+  acme:
+    npmRegistryServer: 'https://registry.vlt.io/acme/main/'
+    npmPublishRegistry: 'https://registry.vlt.io/acme/main/'
+    npmAlwaysAuth: true
+    npmAuthToken: '${VLT_TOKEN}'
+    npmMinimalAgeGate: 0
+```
+
+Notes on that file, all of which matter:
+
+- Scope keys under `npmScopes` are written **without** the `@`:
+  `acme`, not `@acme`.
+- `npmAlwaysAuth: true` is required — Yarn otherwise omits the token
+  on some requests and you get a `401`.
+- `npmRegistryServer` is used for **installing**. `npmPublishRegistry`
+  is used for **publishing**, and Yarn will not fall back to
+  `npmRegistryServer` for publishes. Set both.
+- `npmMinimalAgeGate: 0` is explained
+  [below](#brand-new-versions-are-hidden-for-24-hours) — you want it
+  on any registry you publish to.
+- `${VLT_TOKEN}` is expanded from the environment, so this file is
+  safe to commit.
+
+## Install from the npm mirror
+
+```sh
+yarn add abbrev
+```
+
+To move an existing project onto the mirror:
+
+```sh
+rm -rf yarn.lock
+yarn install
+```
+
+## Install from your `main` registry
+
+```sh
+yarn add @acme/my-package
+```
+
+### Public packages
+
+Public packages on `main` install without a token — the registry alone
+is enough, with no `npmAuthToken` or `npmAlwaysAuth`:
+
+```yaml
+npmScopes:
+  acme:
+    npmRegistryServer: 'https://registry.vlt.io/acme/main/'
+    npmMinimalAgeGate: 0
+```
+
+## Publish to `main`
+
+With `npmPublishRegistry` set as above:
+
+```sh
+yarn install       # yarn refuses to publish without an up-to-date lockfile
+yarn npm publish
+```
+
+Add `--access public` for a package anyone can install.
+
+The `yarn install` is not optional. Without a lockfile entry for your
+own workspace, `yarn npm publish` aborts before it uploads anything:
+
+```
+Internal Error: @acme/my-package@workspace:.: This package doesn't seem to be
+present in your lockfile; run "yarn install" to update the lockfile
+```
+
+With a personal token, every publish returns a one-time-password
+challenge with a `vlt.io` URL — open it, approve, re-run. A **service
+token** skips the prompt and is what you want in CI; see
+[CI & automation](/registry/publishing/ci).
+
+You can also target the registry from `package.json` instead of
+`.yarnrc.yml`:
+
+```json
+{
+  "name": "@acme/my-package",
+  "version": "1.0.0",
+  "publishConfig": {
+    "registry": "https://registry.vlt.io/acme/main/"
+  }
+}
+```
+
+## Log in instead of using a token
+
+```sh
+yarn npm login --web-login --always-auth
+```
+
+**Requires Yarn 4.12.0 or newer.** The `--web-login` flag is mandatory
+here: without it `yarn npm login` prompts for a username and password,
+which this registry does **not** support. Yarn only attempts web login
+automatically for npmjs itself.
+
+Useful variants:
+
+```sh
+yarn npm login --web-login --scope acme     # log in to the scope's registry
+yarn npm login --web-login --publish        # log in to the publish registry
+```
+
+`yarn npm login` writes the token to your **home** config, never to
+the project.
+
+On **Yarn 4.0–4.11, or Yarn 2 and 3**, there is no web login at all.
+Either upgrade (`yarn set version stable`) or put a token in
+`.yarnrc.yml` as shown above.
+
+If Yarn ever drops to a `Username:` prompt, the web handshake failed
+and it fell back to the legacy flow — that is not a prompt you can
+satisfy.
+
+## Brand-new versions are hidden for 24 hours
+
+Yarn 4 ships a supply-chain protection called `npmMinimalAgeGate`,
+defaulting to **1440 minutes (24 hours)**. Any version published more
+recently than that is skipped, so right after your first publish you
+get:
+
+```
+YN0016: The version for tag "latest" is quarantined, and no lower version is available
+```
+
+Set it to `0` for your own registry:
+
+```yaml
+npmScopes:
+  acme:
+    npmMinimalAgeGate: 0
+```
+
+**It must go under `npmScopes.<scope>`.** A top-level
+`npmMinimalAgeGate: 0` is ignored for scoped packages — verified.
+Scoping it this way also keeps the protection switched on for
+everything coming from the public npm mirror, which is what you want.
+
+## Selecting a Yarn version
+
+Use **4.12.0 or newer** — that is the floor for browser login.
+`stable` is well past it:
+
+```sh
+corepack use yarn@stable     # records packageManager in package.json
+```
+
+or set it directly:
+
+```json
+{ "packageManager": "yarn@4.18.0" }
+```
+
+`yarn set version stable` does the same thing without corepack. 4.18.0
+is the current release; there is no Yarn 5.
+
+## Gotchas
+
+- **`npmPublishRegistry` is mandatory for publishing.** With only
+  `npmRegistryServer` set, `yarn npm publish` goes to
+  `registry.yarnpkg.com` and fails with a 404.
+- **Run `yarn install` before `yarn npm publish`**, or Yarn errors
+  with `This package doesn't seem to be present in your lockfile`.
+- **`npmMinimalAgeGate` must be per-scope.** See above.
+- **An `npmScopes` entry without `npmRegistryServer` silently routes
+  that scope to `registry.yarnpkg.com`.** The key defaults to npmjs
+  rather than inheriting your top-level `npmRegistryServer`, so a
+  scope block that sets only `npmAuthToken` will fetch from the wrong
+  registry and report `Package not found`. Always set
+  `npmRegistryServer` inside every scope block.
+- **`npmAlwaysAuth` must live in the same block as the token.** A
+  top-level `npmAlwaysAuth: true` is ignored when the token comes from
+  an `npmScopes` or `npmRegistries` entry.
+- **Yarn Berry does not read `.npmrc` at all.** If you are migrating
+  from npm, the token in your `.npmrc` is invisible to Yarn 2+; it
+  must be in `.yarnrc.yml`.
+- **An unset variable is a hard error**, unlike npm: `${VLT_TOKEN}`
+  with nothing set fails with `Environment variable not found`. Use
+  `${VLT_TOKEN:-}` if you want it to fall back to empty. There is no
+  `${VAR:+...}` form.
+- `yarn config set` prints `Successfully set ... to undefined` when
+  writing nested `npmRegistries[...]` keys. The file is written
+  correctly — the message is just wrong.
+- Yarn blocks plain `http://` registries unless listed in
+  `unsafeHttpWhitelist`. Not an issue for `https://registry.vlt.io/`,
+  but it will bite you against a local registry.
+- Scope keys in `npmScopes` omit the leading `@`.
+
+## Yarn Classic (1.x)
+
+Yarn 1 is end-of-life; prefer Yarn 4. If you must:
+
+```sh
+yarn config set registry https://registry.vlt.io/acme/npm/
+yarn config set @acme:registry https://registry.vlt.io/acme/main/
+```
+
+Yarn Classic reads auth tokens from `.npmrc`, so add:
+
+```ini
+//registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}
+//registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
+```
