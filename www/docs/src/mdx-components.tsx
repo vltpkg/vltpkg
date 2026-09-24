@@ -6,8 +6,8 @@ import { CodeBlock, CodeTabs } from '@/components/code-block'
 import type { CodeSource } from '@/components/code-block'
 import { InlineCode } from '@/components/inline-code'
 import { TypeTable } from '@/components/type-table'
+import { SyncedTabs } from '@/components/synced-tabs'
 import {
-  Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
@@ -192,7 +192,9 @@ export const components: MDXComponents = {
     if (code.length && code.length === items.length)
       return <CodeTabs tabs={code} />
     return (
-      <Tabs defaultValue="0" className={flow}>
+      <SyncedTabs
+        labels={items.map(item => item.props.label)}
+        className={flow}>
         <TabsList
           variant="line"
           data-not-typeset
@@ -215,7 +217,7 @@ export const components: MDXComponents = {
             {item.props.children}
           </TabsContent>
         ))}
-      </Tabs>
+      </SyncedTabs>
     )
   },
   TabItem: ({ children }: TabItemProps) => <>{children}</>,

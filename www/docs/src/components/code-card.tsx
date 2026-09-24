@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   BracesIcon,
   CheckIcon,
@@ -17,6 +16,7 @@ import { Bun } from '@/components/icons/bun'
 import { Deno } from '@/components/icons/deno'
 import { Button } from '@/components/ui/button'
 import { useCopy } from '@/hooks/use-copy'
+import { usePackageManagerTabs } from '@/hooks/use-preferred-package-manager'
 
 const shells = new Set(['bash', 'sh', 'shell', 'zsh', 'console'])
 const names: Record<string, string> = {
@@ -119,8 +119,11 @@ export const CodeCard = ({
   className,
   ...props
 }: CodeCardProps) => {
-  const [value, setValue] = useState('0')
   const { copied, copy } = useCopy(1500)
+  // package-manager tabs follow the stored preference, so every card on every page opens on the same one
+  const { value, onValueChange } = usePackageManagerTabs(
+    tabs.map(tab => tab.title),
+  )
   const active = tabs[Number(value)] ?? tabs[0]
 
   const pre = (tab: CodeTab) => (
@@ -147,7 +150,9 @@ export const CodeCard = ({
           </figcaption>
           {pre(active)}
         </>
-      : <TabsPrimitive.Root value={value} onValueChange={setValue}>
+      : <TabsPrimitive.Root
+          value={value}
+          onValueChange={onValueChange}>
           <TabsPrimitive.List className="flex h-11 pr-9">
             {tabs.map((tab, i) => (
               <TabsPrimitive.Trigger
