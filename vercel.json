@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" \"$VERCEL_GIT_COMMIT_SHA\" -- www/docs/ || exit 1",
+  "installCommand": "npm i -g vlt@1.1.1 && \"$(npm prefix -g)/bin/vlt\" --version && \"$(npm prefix -g)/bin/vlt\" install",
   "outputDirectory": "www/docs/dist",
   "redirects": [
     {
