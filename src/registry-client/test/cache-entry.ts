@@ -839,3 +839,78 @@ t.test('decodeHead / encodeHead', t => {
   t.type(constructed.headSize, 'number')
   t.end()
 })
+
+t.test('digest header', async t => {
+  const b64 = 'A'.repeat(86) + '=='
+  const entry = (h: Record<string, string>) =>
+    new CacheEntry(200, toRawHeaders(h))
+  t.equal(
+    entry({ 'repr-digest': `sha-512=:${b64}:` }).digest,
+    `sha512-${b64}`,
+  )
+  t.equal(
+    entry({ 'content-digest': `sha-512=:${b64}:` }).digest,
+    `sha512-${b64}`,
+    'content-digest is accepted too',
+  )
+  t.equal(
+    entry({
+      'repr-digest': `sha-256=:${'B'.repeat(43)}=:, sha-512=:${b64}:`,
+    }).digest,
+    `sha512-${b64}`,
+    'picks the sha-512 member of a dictionary',
+  )
+  t.equal(
+    entry({ 'repr-digest': `sha-256=:${'B'.repeat(43)}=:` }).digest,
+    undefined,
+  )
+  t.equal(
+    entry({ 'repr-digest': 'sha-512=:nope:' }).digest,
+    undefined,
+  )
+  t.equal(entry({}).digest, undefined)
+})
+
+t.test('checkDigest', async t => {
+  const body = Buffer.from('some bytes')
+  const b64 = createHash('sha512').update(body).digest('base64')
+  const entry = (h: Record<string, string>) => {
+    const ce = new CacheEntry(200, toRawHeaders(h))
+    ce.addBody(body)
+    return ce
+  }
+  const labelled = entry({ 'repr-digest': `sha-512=:${b64}:` })
+  t.equal(labelled.checkDigest(true), `sha512-${b64}`)
+  t.throws(
+    () =>
+      entry({
+        'repr-digest': `sha-512=:${'0'.repeat(86)}==:`,
+      }).checkDigest(false),
+    {
+      cause: {
+        code: 'EINTEGRITY',
+        wanted: `sha512-${'0'.repeat(86)}==`,
+        found: `sha512-${b64}`,
+      },
+    },
+  )
+  t.equal(entry({}).checkDigest(false), `sha512-${b64}`, 'optional')
+  t.throws(() => entry({}).checkDigest(true), {
+    cause: {
+      code: 'EINTEGRITY',
+      wanted: undefined,
+      found: `sha512-${b64}`,
+    },
+  })
+})
+
+t.test('deleteHeader', async t => {
+  const ce = new CacheEntry(
+    200,
+    toRawHeaders({ a: '1', Integrity: 'x', b: '2' }),
+  )
+  ce.deleteHeader('integrity')
+  t.strictSame(ce.headers, toRawHeaders({ a: '1', b: '2' }))
+  ce.deleteHeader('nope')
+  t.strictSame(ce.headers, toRawHeaders({ a: '1', b: '2' }))
+})

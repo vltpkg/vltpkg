@@ -419,6 +419,33 @@ export class CacheEntry {
     return true
   }
 
+  /**
+   * Check the body against the RFC 9530 digest the server sent with it,
+   * for a response that had no expected integrity. A registry that omits
+   * `dist.integrity` labels every tarball, so a missing digest fails when
+   * `required`. Like {@link checkIntegrity}, only for an actual http
+   * response: cached bodies are un-gzipped in place.
+   *
+   * **Will throw** on a mismatch. Returns the hash of the body.
+   */
+  checkDigest(
+    required: boolean,
+    context: ErrorCauseOptions = {},
+  ): Integrity {
+    const computed = this.integrityActual
+    const { digest } = this
+    if (digest ? digest !== computed : required) {
+      throw error('Integrity check failure', {
+        code: 'EINTEGRITY',
+        response: this,
+        wanted: digest,
+        found: computed,
+        ...context,
+      })
+    }
+    return computed
+  }
+
   get integrityActual(): Integrity {
     if (this.#integrityActual) return this.#integrityActual
     const hash = createHash('sha512')
@@ -444,6 +471,20 @@ export class CacheEntry {
   }
 
   /**
+   * The sha-512 member of an RFC 9530 `Repr-Digest` (or `Content-Digest`)
+   * response header, as an SRI string. A registry that serves packuments
+   * without `dist.integrity` labels each tarball this way instead.
+   */
+  get digest(): Integrity | undefined {
+    const value =
+      this.getHeaderString('repr-digest') ??
+      this.getHeaderString('content-digest')
+    const m =
+      value && /(?:^|,)\s*sha-512=:([A-Za-z0-9+/]{86}==):/.exec(value)
+    return m ? `sha512-${m[1]}` : undefined
+  }
+
+  /**
    * Give it a key, and it'll return the buffer of that header value
    */
   getHeader(h: string): Uint8Array | undefined {
@@ -465,6 +506,20 @@ export class CacheEntry {
    */
   setHeader(h: string, value: Uint8Array | string) {
     this.#headers = setRawHeader(this.#headers, h, value)
+  }
+
+  /**
+   * Remove a header, if present
+   */
+  deleteHeader(h: string) {
+    const key = h.toLowerCase()
+    for (let i = 0; i < this.#headers.length; i += 2) {
+      const k = this.#headers[i]
+      if (k && getDecodedValue(k).toLowerCase() === key) {
+        this.#headers.splice(i, 2)
+        return
+      }
+    }
   }
 
   /**

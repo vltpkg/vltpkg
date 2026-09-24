@@ -83,7 +83,7 @@ export const vlxInstall = async (
     JSON.stringify(manifest, null, 2) + '\n',
   )
 
-  await install({
+  const { graph } = await install({
     ...options,
     packageInfo,
     projectRoot: dir,
@@ -92,6 +92,17 @@ export const vlxInstall = async (
     // allow lifecycle scripts but filter out malware via security archive
     allowScripts: ':scripts:not(:malware)',
   })
+
+  // an abbreviated packument carries no integrity; the install hashed
+  // the tarball it extracted, so pin that
+  const installed = graph.mainImporter.edgesOut.get(pkgSpec.name)?.to
+  if (!manifest.vlx.integrity && installed?.integrity) {
+    manifest.vlx.integrity = installed.integrity
+    await writeFile(
+      resolve(dir, 'package.json'),
+      JSON.stringify(manifest, null, 2) + '\n',
+    )
+  }
 
   return vlxInfo(dir, options, manifest)
 }

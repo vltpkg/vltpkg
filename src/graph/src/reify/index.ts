@@ -295,6 +295,17 @@ const reify_ = async (
   // updates package.json files if anything was added / removed
   saveImportersPackageJson?.()
 
+  // an integrity first learned while extracting -- a git or remote dep,
+  // or a registry tarball verified against the digest the registry sent
+  // with it -- was not known when lfData was captured above. pin it, so
+  // the next install checks the same bytes.
+  for (const node of diff.nodes.add) {
+    const lfNode = lfData.nodes[node.id]
+    if (lfNode && node.integrity && !lfNode[2]) {
+      lfNode[2] = node.integrity
+    }
+  }
+
   // write the ideal graph data to the lockfile
   saveData(lfData, scurry.resolve('vlt-lock.json'), false)
 

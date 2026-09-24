@@ -5,6 +5,8 @@ import { linkSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
+import { createHash } from 'node:crypto'
+import type { Integrity } from '@vltpkg/types'
 import t from 'tap'
 import type { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
@@ -309,6 +311,19 @@ const registry = createServer((req, res) => {
   if (req.url === '/abbrev') {
     resp = gzipSync(Buffer.from(JSON.stringify({ hello: 'world' })))
     res.setHeader('content-type', 'application/json')
+  } else if (req.url?.startsWith('/digest/')) {
+    // tarballs labelled with an RFC 9530 digest instead of dist.integrity
+    resp = gzipSync(Buffer.from('this is a tarball lets pretend'))
+    if (req.url === '/digest/gone/tarball') {
+      res.statusCode = 404
+      return res.end('{"error":"no such tarball"}')
+    }
+    const b64 =
+      req.url === '/digest/bad/tarball' ?
+        `${'0'.repeat(86)}==`
+      : createHash('sha512').update(resp).digest('base64')
+    res.setHeader('repr-digest', `sha-512=:${b64}:`)
+    res.setHeader('content-type', 'application/octet-stream')
   } else {
     resp = gzipSync(Buffer.from('this is a tarball lets pretend'))
     const ai = req.headers['accept-integrity']
@@ -432,13 +447,14 @@ t.test('register unzipping for gzip responses', async t => {
 
 t.test('integrity http header handling', async t => {
   const rc = t.context.rc as RegistryClient
-  const ok = await rc.request(`${registryURL}/some/tarball`, {
-    integrity:
-      'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
-  })
-  t.equal(
-    ok.integrity,
-    'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+  // the registry echoes the expected integrity in a header, but the
+  // body does not hash to it: a server header is never trusted
+  await t.rejects(
+    rc.request(`${registryURL}/some/tarball`, {
+      integrity:
+        'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+    }),
+    { cause: { code: 'EINTEGRITY' } },
   )
   const notOk = await rc.request(
     `${registryURL}/some/other/tarball`,
@@ -449,6 +465,99 @@ t.test('integrity http header handling', async t => {
   )
   t.match(notOk, { statusCode: 406 })
   await rc.cache.promise()
+})
+
+t.test('artifact with no expected integrity', async t => {
+  const dir = t.testdir()
+  const rc = new RC({ cache: dir })
+  const url = `${registryURL}/some/unlabelled/tarball`
+  const res = await rc.request(url)
+  const actual: Integrity = `sha512-${createHash('sha512')
+    .update(res.buffer())
+    .digest('base64')}`
+  t.equal(res.integrity, undefined, 'nothing was expected')
+  t.equal(
+    res.getHeaderString('integrity'),
+    actual,
+    'the server-sent integrity header is replaced by the real hash',
+  )
+  await rc.cache.promise()
+
+  // a fresh client reads it back from disk, content-addressed
+  const again = new RC({ cache: dir })
+  const found = again.cachedBody(url, { integrity: actual })
+  t.equal(found?.path, again.cache.integrityPath(actual))
+  t.equal(found?.integrity, actual, 'stored under its hash')
+})
+
+t.test('verifyDigest', async t => {
+  const dir = t.testdir()
+  const rc = new RC({ cache: dir })
+  const actual: Integrity = `sha512-${createHash('sha512')
+    .update(gzipSync(Buffer.from('this is a tarball lets pretend')))
+    .digest('base64')}`
+
+  const okUrl = `${registryURL}/digest/ok/tarball`
+  const ok = await rc.request(okUrl, { verifyDigest: 'required' })
+  t.equal(ok.statusCode, 200)
+  t.equal(ok.getHeaderString('integrity'), actual, 'hash recorded')
+
+  // a body that does not hash to its label is rejected
+  const badUrl = `${registryURL}/digest/bad/tarball`
+  await t.rejects(rc.request(badUrl, { verifyDigest: true }), {
+    cause: { code: 'EINTEGRITY', found: actual },
+  })
+
+  // an unlabelled body is fine, unless the digest is required
+  const noneUrl = `${registryURL}/some/unlabelled/tarball`
+  const none = await rc.request(noneUrl, { verifyDigest: true })
+  t.equal(none.statusCode, 200)
+  const missingUrl = `${registryURL}/some/unlabelled/tarball/too`
+  await t.rejects(
+    rc.request(missingUrl, { verifyDigest: 'required' }),
+    {
+      cause: { code: 'EINTEGRITY', wanted: undefined },
+    },
+  )
+
+  // only a 200 is held to it: the caller reports the status
+  const gone = await rc.request(
+    `${registryURL}/digest/gone/tarball`,
+    {
+      verifyDigest: 'required',
+    },
+  )
+  t.equal(gone.statusCode, 404)
+
+  // nothing to check against an expected integrity: that is checked
+  await t.rejects(
+    rc.request(badUrl, {
+      verifyDigest: 'required',
+      integrity: `sha512-${'1'.repeat(86)}==`,
+    }),
+    { cause: { code: 'EINTEGRITY', found: actual } },
+  )
+
+  await rc.cache.promise()
+
+  // the check ran before the cache write: a rejected body is never
+  // served from the cache on a later run
+  const again = new RC({ cache: dir })
+  t.ok(again.cachedBody(okUrl), 'verified body is cached')
+  t.equal(again.cachedBody(badUrl), undefined, 'mismatch not cached')
+  t.equal(
+    again.cachedBody(missingUrl),
+    undefined,
+    'unlabelled not cached',
+  )
+
+  // a cached body is not checked again: it was on the way in, and
+  // cache-unzip rewrites it un-gzipped so the digest could never match
+  const cached = await again.request(okUrl, {
+    verifyDigest: 'required',
+  })
+  t.equal(cached.fromCache, true)
+  t.equal(cached.getHeaderString('integrity'), actual)
 })
 
 t.test('follow redirects', { saveFixture: true }, async t => {
