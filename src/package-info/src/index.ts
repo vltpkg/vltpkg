@@ -1320,7 +1320,7 @@ export class PackageInfoClient {
     // Every registry failure here carries its response, so the advice is
     // attached once rather than at each throw site. The cast is because
     // `response` is typed loosely enough to include a `fetch` Response.
-    const advice = tokenRefusalAdvice(extra.response, extra.url)
+    const advice = spec.final.type === 'registry' ? tokenRefusalAdvice(extra.response, extra.url) : undefined
     const er = error(
       advice ? `${message}\n⚠️ ${advice}` : message,
       {
