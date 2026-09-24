@@ -4,7 +4,6 @@ import { Application } from 'typedoc'
 import type { TypeDocOptions } from 'typedoc'
 import { MarkdownPageEvent } from 'typedoc-plugin-markdown'
 import type { PluginOptions } from 'typedoc-plugin-markdown'
-// eslint-disable-next-line import/extensions -- shared with each src workspace's typedoc.mjs
 import typedocWorkspace from '../typedoc.workspace.mjs'
 
 const srcDir = resolve(import.meta.dirname, '../../../src')
