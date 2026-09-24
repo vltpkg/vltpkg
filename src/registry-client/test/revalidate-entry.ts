@@ -73,6 +73,7 @@ t.test('re-requests the representation it was given', async t => {
   await revalidateEntry(rc, 'GET', target)
   await revalidateEntry(rc, 'GET', target, 'application/json')
   t.strictSame(accepts, [undefined, 'application/json'])
+  await rc.cache.promise()
 })
 
 t.test('truncated cache file is a no-op', async t => {

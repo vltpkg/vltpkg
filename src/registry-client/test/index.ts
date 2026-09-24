@@ -372,13 +372,13 @@ t.beforeEach(t => {
   // verify that it works even if connections get dropped sometimes
   dropConnection = true
   tokensActions.length = 0
-  // create a registry client for each test based on its testdir
+  // create a registry client for each test based on its testdir, and
+  // flush its background cache writes before tap removes that dir. tap
+  // runs EOF hooks in registration order, so the flush has to be hooked
+  // before t.testdir() hooks the cleanup: an afterEach, or a teardown
+  // hooked after it, only runs once the dir is already gone
+  t.teardown(() => (t.context.rc as RegistryClient).cache.promise())
   t.context.rc = new RC({ cache: t.testdir() })
-})
-
-t.afterEach(async t => {
-  // always wait for the cache to resolve before trying to clean up
-  await (t.context.rc as RegistryClient).cache.promise()
 })
 
 const mockCacheUnzip = { register: unzipRegister }

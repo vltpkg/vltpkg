@@ -2452,8 +2452,20 @@ t.test('registry capabilities', async t => {
 })
 
 t.test('the ?stable packument filter', async t => {
-  const client = (t: Test) =>
-    new PackageInfoClient({ ...options, cache: t.testdir() })
+  const client = (t: Test) => {
+    // flush the background cache writes before tap removes the fixture
+    // dir, or the cleanup races them (ENOTEMPTY on macOS). tap runs EOF
+    // hooks in registration order, so this has to be hooked before
+    // t.testdir() hooks the cleanup
+    t.teardown(async () =>
+      (await pi.getRegistryClient()).cache.promise(),
+    )
+    const pi = new PackageInfoClient({
+      ...options,
+      cache: t.testdir(),
+    })
+    return pi
+  }
 
   const withoutFilter = capabilitiesDocument
   t.teardown(() => {
