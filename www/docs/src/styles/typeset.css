@@ -364,71 +364,15 @@
       margin-block-end: 0;
       margin-inline: 0;
     }
-    &:where(figcaption, caption) {
+    &:where(figcaption) {
       color: var(--typeset-muted);
       font-size: 0.875em;
       text-align: center;
       margin-block-start: calc(0.75em / 0.875);
     }
-    &:where(caption) {
-      caption-side: bottom;
-    }
-
-    /* Tables. Separators sit on cells, not tr:last-child: append-safe.
-       Bare tables stay real tables (keep their semantics) and wrap to fit. */
-    &:where(table) {
-      max-width: 100%;
-      font-size: 1em;
-      line-height: 1.5;
-      font-variant-numeric: tabular-nums;
-      border-collapse: separate;
-      border-spacing: 0;
-      border-block-end: 1px solid var(--typeset-rule);
-      margin-block-start: var(--typeset-flow);
-      margin-block-end: 0;
-    }
-
-    /* Horizontal scroll for any wide block. Wrap it and the wrapper owns the
-       flow margin. Tables shrink to fit, so widen the table to make it scroll
-       instead of compress. */
-    &:where(.typeset-scroll) {
-      overflow-x: auto;
-      margin-block-start: var(--typeset-flow);
-    }
-    &:where(.typeset-scroll > *) {
-      margin-block-start: 0;
-    }
-    &:where(.typeset-scroll table) {
-      width: max-content;
-      max-width: none;
-    }
-    &:where(thead th) {
-      font-weight: 500;
-      text-align: start;
-      white-space: nowrap;
-      padding: 0.65em 1em;
-    }
-    &:where(:is(tbody, tfoot) :is(td, th)) {
-      padding: 0.75em 1em;
-      text-align: start;
-      vertical-align: top;
-      border-block-start: 1px solid var(--typeset-rule);
-    }
-    &:where(tbody th, tfoot th) {
-      font-weight: 500;
-    }
-    &:where(th:first-child, td:first-child) {
-      padding-inline-start: 0;
-    }
-    &:where(th[align='center'], td[align='center']) {
-      text-align: center;
-    }
-    &:where(th[align='right'], td[align='right']) {
-      text-align: end;
-    }
 
     /* Blocks inside list items keep the list's tighter rhythm. */
-    &:where(li > blockquote, li > table, li > figure) {
+    &:where(li > blockquote, li > figure) {
       margin-block-start: 0.5em;
     }
     &:where(li > pre) {

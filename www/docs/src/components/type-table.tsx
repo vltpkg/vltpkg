@@ -1,4 +1,5 @@
 import { Children, isValidElement } from 'react'
+import { Table } from '@/components/ui/table'
 
 type Children = { children?: React.ReactNode }
 
@@ -22,25 +23,18 @@ const firstHeader = (children: React.ReactNode) => {
   return typeof text === 'string' ? text : undefined
 }
 
+// the card clips the header tint to its rounded corners; ui/table's own container does the scrolling
 const card =
-  'not-first:mt-(--typeset-flow) overflow-x-auto rounded-(--radius) border [&_thead_th]:bg-muted'
-const plain = `${card} [&_:is(th,td):first-child]:ps-[1em]`
-// generated API tables: smaller, muted, with the member name's code standing out
-const api = `${card} [&_:is(th,td)]:px-[0.75em] [&_td]:text-muted-foreground [&_td_code]:p-0 [&_td_code]:text-[1em] [&_td_code]:[background:none] [&_td:first-child_code:first-of-type]:font-medium [&_td:first-child_code:first-of-type]:text-foreground [&_thead_th]:text-muted-foreground`
+  'not-first:mt-(--typeset-flow) overflow-hidden rounded-(--radius) border [&_thead]:bg-muted'
+// generated API tables: muted, with the member name's code standing out
+const api = `${card} [&_td]:text-muted-foreground [&_td_code]:p-0 [&_td_code]:text-[1em] [&_td_code]:[background:none] [&_td:first-child_code:first-of-type]:font-medium [&_td:first-child_code:first-of-type]:text-foreground [&_th]:text-muted-foreground`
 
 // every markdown table becomes a bordered card that scrolls inside itself; generated API tables get TypeTable styling
-export const TypeTable = (props: React.ComponentProps<'table'>) => {
-  const isApi = apiHeaders.has(firstHeader(props.children) ?? '')
-  return (
-    <div className={isApi ? api : plain}>
-      <table
-        {...props}
-        className={
-          isApi ?
-            'm-0 w-full border-0 text-[0.875em]'
-          : 'm-0 w-full border-0'
-        }
-      />
-    </div>
-  )
-}
+export const TypeTable = (props: React.ComponentProps<'table'>) => (
+  <div
+    className={
+      apiHeaders.has(firstHeader(props.children) ?? '') ? api : card
+    }>
+    <Table {...props} />
+  </div>
+)

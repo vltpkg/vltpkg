@@ -1,4 +1,5 @@
 import { Heading } from '@/components/heading'
+import { cn } from 'cn'
 import { Children, isValidElement } from 'react'
 import { ArrowRightIcon, WorkflowIcon } from 'lucide-react'
 import { Book as BookCover } from '@/components/book'
@@ -14,6 +15,13 @@ import type { CodeSource } from '@/components/code-block'
 import { InlineCode } from '@/components/inline-code'
 import { TypeTable } from '@/components/type-table'
 import { SyncedTabs } from '@/components/synced-tabs'
+import {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   TabsContent,
   TabsList,
@@ -133,6 +141,24 @@ export const components: MDXComponents = {
     return isMedia ? <>{children}</> : <p {...props}>{children}</p>
   },
   table: ({ ref: _ref, ...props }) => <TypeTable {...props} />,
+  thead: TableHeader,
+  tbody: TableBody,
+  tr: TableRow,
+  th: ({ ref: _ref, className, ...props }) => (
+    <TableHead className={cn('px-3', className)} {...props} />
+  ),
+  // docs cells hold sentences, so they wrap (ui/table assumes one-line data) and rows top-align;
+  // inline code (flags, names) reads worse broken at its hyphens than scrolled, and a squeezed wide
+  // table would crush its last (description) column to a word per line
+  td: ({ ref: _ref, className, ...props }) => (
+    <TableCell
+      className={cn(
+        'px-3 py-2.5 align-top whitespace-normal last:min-w-40 [&_code]:whitespace-nowrap',
+        className,
+      )}
+      {...props}
+    />
+  ),
   Code,
   Aside: ({
     type = 'note',
