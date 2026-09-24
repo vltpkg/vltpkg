@@ -68,18 +68,47 @@ t.test('cannot auth if ipaddress rejected', async t => {
 })
 
 t.test('bearer www-authenticate prompts to log in', async t => {
-  await t.rejects(
-    otplease(mockClient, {}, {
-      headers: {
-        'www-authenticate': 'Bearer',
+  for (const bodyText of [
+    // no body at all, as npm's own registry answers its `/-/v1/` routes
+    undefined,
+    // a 401 the registry explained, but not as an expiry
+    '{"code":"UnauthorizedError","message":"Invalid token"}',
+    'not json',
+  ]) {
+    await t.rejects(
+      otplease(mockClient, {}, {
+        headers: {
+          'www-authenticate': 'Bearer',
+        },
+        ...(bodyText === undefined ? {} : { body: body(bodyText) }),
+      } as unknown as Dispatcher.ResponseData),
+      {
+        message:
+          'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
       },
-    } as unknown as Dispatcher.ResponseData),
-    {
-      message:
-        'Missing or invalid authentication token. Run `vlt login` or `vlt token add` to authenticate.',
-    },
-  )
+      String(bodyText),
+    )
+  }
 })
+
+t.test(
+  'an expired token is handed back, not thrown over',
+  async t => {
+    // the registry knows more than the generic line does, so the body is
+    // returned and rendered like any other 401
+    const expired = JSON.stringify({
+      code: 'TokenExpiredError',
+      message: 'Token expired.',
+    })
+    t.strictSame(
+      await otplease(mockClient, {}, {
+        headers: { 'www-authenticate': 'Bearer' },
+        body: body(expired),
+      } as unknown as Dispatcher.ResponseData),
+      { bodyConsumed: expired },
+    )
+  },
+)
 
 t.test('unknown www-authenticate challenges', async t => {
   await t.rejects(

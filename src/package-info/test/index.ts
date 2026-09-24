@@ -157,6 +157,18 @@ const server = createServer((req, res) => {
       )
       return res.end(tgzAbbrev)
     }
+    case '/acme/npm/expired': {
+      // what the vlt registry's edge answers when a token's `exp` has passed
+      const json = JSON.stringify({
+        code: 'TokenExpiredError',
+        message:
+          'Token expired. Authenticate again to get a new token.',
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      res.statusCode = 401
+      return res.end(json)
+    }
     case '/deleted': {
       const json = '{"error": "deleted"}'
       res.setHeader('content-length', json.length)
@@ -1446,6 +1458,26 @@ t.test('extraction failures', async t => {
     extract(`abbrev@${tgzFile}`, dir + '/file', options),
   )
 })
+
+t.test(
+  'an expired token is explained, not just reported',
+  async t => {
+    await t.rejects(
+      packument('expired@latest', {
+        ...options,
+        registry: `${defaultRegistry}acme/npm/`,
+      }),
+      {
+        message:
+          'failed to fetch packument: 401 Unauthorized — Token expired. ' +
+          'Authenticate again to get a new token.\n' +
+          '⚠️ Your token for the "acme" account has expired. Run ' +
+          '`vlt setup acme` to log in again.',
+        cause: { code: 'ERESOLVE' },
+      },
+    )
+  },
+)
 
 t.test('manifest must provide actual dist results', async t => {
   await t.rejects(resolve('deleted@latest', options))

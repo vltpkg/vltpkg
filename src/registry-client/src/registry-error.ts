@@ -37,10 +37,9 @@ const stripTags = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-// npm writes `{"error":"..."}`; the `-/npm/v1/*` endpoints and several
-// third-party registries write `{"message":"..."}`; a few nest it under
-// `error.message`.
-const detailFromJSON = (text: string): string | undefined => {
+const parseBody = (
+  text: string,
+): Record<string, unknown> | undefined => {
   let body: unknown
   try {
     body = JSON.parse(text)
@@ -48,8 +47,17 @@ const detailFromJSON = (text: string): string | undefined => {
     // A non-JSON body is itself the most useful detail.
     return undefined
   }
-  if (!body || typeof body !== 'object') return undefined
-  const rec = body as Record<string, unknown>
+  return !body || typeof body !== 'object' ?
+      undefined
+    : (body as Record<string, unknown>)
+}
+
+// npm writes `{"error":"..."}`; the `-/npm/v1/*` endpoints and several
+// third-party registries write `{"message":"..."}`; a few nest it under
+// `error.message`.
+const detailFromJSON = (text: string): string | undefined => {
+  const rec = parseBody(text)
+  if (!rec) return undefined
   const nested = rec.error as Record<string, unknown> | undefined
   for (const v of [rec.error, rec.message, nested?.message]) {
     if (typeof v === 'string' && v.trim()) return v.trim()
@@ -82,6 +90,60 @@ export const registryErrorMessage = (
   const detail =
     detailFromJSON(text) ?? (isHTML(text) ? stripTags(text) : text)
   return detail ? `${status} — ${truncate(detail)}` : status
+}
+
+/** What a vlt registry calls the two 401s a client can resolve on its own. */
+const refusals: Record<string, 'expired' | 'revoked'> = {
+  TokenExpiredError: 'expired',
+  TokenRevokedError: 'revoked',
+}
+
+/** vlt.io account and organization slugs, as the registry mints them. */
+const accountSlug = /^(?=.{3,63}$)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
+
+/** How a 401 says the token it refused died, if it does. */
+export const tokenRefusal = (
+  response: unknown,
+): 'expired' | 'revoked' | undefined => {
+  // a CacheEntry, a node:http message, or a bare object off an error's cause
+  // bag; `isObject` would refuse the class instances
+  const res = response as Partial<ErrorResponse> | null | undefined
+  if (typeof res !== 'object' || res?.statusCode !== 401)
+    return undefined
+  let text = ''
+  try {
+    if (typeof res.text === 'function') text = res.text()
+  } catch {
+    // an undecodable body (bad gzip) says nothing either way
+    return undefined
+  }
+  const code = parseBody(text)?.code
+  return typeof code === 'string' ? refusals[code] : undefined
+}
+
+/**
+ * What to do about a 401 that says the token expired or was revoked, or
+ * `undefined` for every other response. The account is the first path segment
+ * of any request to a vlt registry, and one token covers every registry on it.
+ */
+export const tokenRefusalAdvice = (
+  response: unknown,
+  url?: URL | string,
+): string | undefined => {
+  const gone = tokenRefusal(response)
+  if (!gone || url === undefined) return undefined
+  let account: string | undefined
+  try {
+    account = new URL(String(url)).pathname.split('/')[1]
+  } catch {
+    return undefined
+  }
+  if (!account || !accountSlug.test(account)) return undefined
+  return (
+    `Your token for the "${account}" account ` +
+    `${gone === 'expired' ? 'has expired' : 'was revoked'}. Run ` +
+    `\`vlt setup ${account}\` to log in again.`
+  )
 }
 
 export type AssertOkOptions = {
@@ -121,7 +183,9 @@ const registryError = (
 ): Error => {
   const { statusCode } = response
   const denied = statusCode === 401 || statusCode === 403
-  const extra = advice?.(statusCode)
+  // A diagnosis off the response stands in for the caller's generic 401 line.
+  const refused = tokenRefusalAdvice(response, url)
+  const extra = refused ?? advice?.(statusCode)
   const tips = (Array.isArray(extra) ? extra : [extra]).filter(
     (t): t is string => !!t,
   )

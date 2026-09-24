@@ -12,7 +12,10 @@ import type {
 } from '@vltpkg/registry-client'
 // subpath import: keeps the lazy `import('@vltpkg/registry-client')`
 // below from becoming an eager dependency on the whole client.
-import { registryErrorMessage } from '@vltpkg/registry-client/registry-error'
+import {
+  registryErrorMessage,
+  tokenRefusalAdvice,
+} from '@vltpkg/registry-client/registry-error'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { Pool } from '@vltpkg/tar'
@@ -1314,8 +1317,15 @@ export class PackageInfoClient {
     extra: ErrorCauseOptions = {},
   ) {
     const { from = this.#projectRoot } = options
+    // Every registry failure here carries its response, so the advice is
+    // attached once rather than at each throw site. The cast is because
+    // `response` is typed loosely enough to include a `fetch` Response.
+    const advice =
+      spec?.final.type === 'registry' ?
+        tokenRefusalAdvice(extra.response, extra.url)
+      : undefined
     const er = error(
-      message,
+      advice ? `${message}\n⚠️ ${advice}` : message,
       {
         code: 'ERESOLVE',
         spec,

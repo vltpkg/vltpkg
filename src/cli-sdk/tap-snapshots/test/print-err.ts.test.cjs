@@ -228,6 +228,29 @@ exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > basic > output no file
 Resolve Error: bloopy doop
 `
 
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-instance > file 1`] = `
+Error: missing tarball
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'ERESOLVE',
+    spec: { type: 'registry', spec: 'y@2' },
+    response: { statusCode: 0 }
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-instance > output 1`] = `
+Resolve Error: missing tarball
+  To satisfy: y@2
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-ERESOLVE-spec-instance/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-instance > output no file 1`] = `
+Resolve Error: missing tarball
+  To satisfy: y@2
+`
+
 exports[`test/print-err.ts > TAP > snapshots > ERESOLVE > spec-object > file 1`] = `
 Error: missing tarball
     at {STACK_LINE} {
@@ -304,7 +327,7 @@ Resolve Error: bloopy doop
   While fetching: https://x.y/
   To satisfy: x@1.x
   From: /home/base
-  Response: { statusCode: 200 }
+  Status: 200
 
 Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-ERESOLVE-url/vlt/error-logs/error-123.log
 `
@@ -314,7 +337,7 @@ Resolve Error: bloopy doop
   While fetching: https://x.y/
   To satisfy: x@1.x
   From: /home/base
-  Response: { statusCode: 200 }
+  Status: 200
 `
 
 exports[`test/print-err.ts > TAP > snapshots > error with a missing code > file 1`] = `

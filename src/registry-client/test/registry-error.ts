@@ -4,6 +4,8 @@ import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
 import {
   assertOk,
+  tokenRefusal,
+  tokenRefusalAdvice,
   registryErrorMessage,
   requestError,
 } from '../src/registry-error.ts'
@@ -282,13 +284,13 @@ t.test('requestError', t => {
       const thrown = error('Missing token.', {
         response: {
           statusCode: 401,
-          text: () => '{"error":"token expired"}',
+          text: () => '{"error":"token rejected"}',
         },
       })
       const e = requestError(thrown, { message: 'Failed', url })
       t.equal(
         e.message,
-        'Failed: 401 Unauthorized — token expired\n⚠️ Missing token.',
+        'Failed: 401 Unauthorized — token rejected\n⚠️ Missing token.',
       )
       // with caller advice too, nothing is lost: reason first, then tip
       const e2 = requestError(thrown, {
@@ -298,7 +300,7 @@ t.test('requestError', t => {
       })
       t.equal(
         e2.message,
-        'Failed: 401 Unauthorized — token expired\n' +
+        'Failed: 401 Unauthorized — token rejected\n' +
           '⚠️ Missing token.\n⚠️ Run `vlt login`.',
       )
       t.end()
@@ -359,6 +361,96 @@ t.test('requestError', t => {
     })
     t.equal(e.message, 'Failed: kaboom')
     t.match(e, { cause: { code: 'EREQUEST', method: 'GET' } })
+    t.end()
+  })
+
+  t.end()
+})
+
+t.test('token refusal', t => {
+  const expired = JSON.stringify({
+    code: 'TokenExpiredError',
+    message: 'Token expired. Authenticate again to get a new token.',
+  })
+  const revoked =
+    '{"code":"TokenRevokedError","message":"Token revoked."}'
+  const account = 'https://registry.vlt.io/acme/npm/react'
+  const setup = (gone: string) =>
+    `Your token for the "acme" account ${gone}. Run \`vlt setup acme\` to ` +
+    'log in again.'
+
+  t.test('reads the condition out of the code', t => {
+    t.equal(tokenRefusal(entry(401, expired)), 'expired')
+    t.equal(tokenRefusal(entry(401, revoked)), 'revoked')
+    const unreadable = entry(401, Buffer.from([0x1f, 0x8b, 0x00]), [
+      ['content-encoding', 'gzip'],
+    ])
+    for (const [label, response] of [
+      ['not a 401', entry(403, expired)],
+      ['no body', entry(401)],
+      ['not json', entry(401, 'token expired')],
+      ['another code', entry(401, '{"code":"UnauthorizedError"}')],
+      ['a code that is not a string', entry(401, '{"code":1}')],
+      ['an unreadable body', unreadable],
+      ['no body to read at all', { statusCode: 401 }],
+      ['not a response', undefined],
+    ] as [string, unknown][]) {
+      t.equal(tokenRefusal(response), undefined, label)
+    }
+    t.end()
+  })
+
+  t.test('advises re-authenticating the account', t => {
+    t.equal(
+      tokenRefusalAdvice(entry(401, expired), account),
+      setup('has expired'),
+    )
+    t.equal(
+      tokenRefusalAdvice(entry(401, revoked), account),
+      setup('was revoked'),
+    )
+    for (const [label, response, url] of [
+      [
+        'a rejected token',
+        entry(401, '{"code":"UnauthorizedError"}'),
+        account,
+      ],
+      ['no url', entry(401, expired), undefined],
+      ['a url that will not parse', entry(401, expired), 'not a url'],
+      [
+        'no account in the path',
+        entry(401, expired),
+        'https://registry.vlt.io/',
+      ],
+      [
+        'a path that is not an account',
+        entry(401, expired),
+        'https://registry.vlt.io/-/ping',
+      ],
+    ] as [string, unknown, string | undefined][]) {
+      t.equal(tokenRefusalAdvice(response, url), undefined, label)
+    }
+    t.end()
+  })
+
+  t.test('stands in for the advice the caller would give', t => {
+    t.throws(
+      () =>
+        assertOk(entry(401, expired), {
+          message: 'Failed to publish package',
+          url: account,
+          advice: statusCode =>
+            statusCode === 401 ?
+              'Not logged in. Run `vlt login` and try again.'
+            : undefined,
+        }),
+      {
+        message:
+          'Failed to publish package: 401 Unauthorized — Token expired. ' +
+          `Authenticate again to get a new token.\n⚠️ ${setup('has expired')}`,
+        cause: { code: 'ENEEDAUTH', status: 401 },
+      },
+    )
     t.end()
   })
 
