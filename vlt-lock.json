@@ -1689,7 +1689,6 @@
     "workspace~src+package-info @vltpkg/benchmark": "dev workspace:* workspace~infra+benchmark",
     "workspace~src+package-info @vltpkg/cache-unzip": "dev workspace:* workspace~src+cache-unzip",
     "workspace~src+package-info @vltpkg/vlt-json": "dev workspace:* workspace~src+vlt-json",
-    "workspace~src+package-info ssri": "prod catalog: ~npm~ssri@13.0.1",
     "workspace~src+package-info tar": "prod catalog: ~npm~tar@7.5.22",
     "workspace~src+package-info @vltpkg/error-cause": "prod workspace:* workspace~src+error-cause",
     "workspace~src+package-info @vltpkg/git": "prod workspace:* workspace~src+git",

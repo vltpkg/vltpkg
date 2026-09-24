@@ -6,6 +6,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import type {
+  CacheEntry,
   RegistryClient,
   RegistryClientOptions,
   RegistryClientRequestOptions,
@@ -21,7 +22,6 @@ import { Spec } from '@vltpkg/spec'
 import type { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument } from '@vltpkg/types'
-import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'node:crypto'
@@ -180,6 +180,25 @@ const isStableSelector = (f: Spec) => {
   // smaller packument.
   return !range.isAny && !range.raw.includes('-')
 }
+
+// the hash a response answers for. a network body's is the hash of its
+// bytes: the registry client already checked it against the expected
+// hash, or recorded it when there was none, and memoized it, so this
+// is no second pass.
+//
+// a cache hit answers with the hash the entry was stored under, never
+// a fresh one: cache-unzip rewrites cached bodies un-gzipped in place,
+// so hashing one again would pin a hash of bytes no other machine has.
+// an entry stored before that hash was recorded can still be hashed
+// while its body is the bytes that came off the wire, i.e. still
+// gzipped; once rewritten it cannot be verified at all.
+const storedIntegrity = (
+  response: CacheEntry,
+): Integrity | undefined =>
+  !response.fromCache ?
+    response.integrityActual
+  : (response.integrity ??
+    (response.isGzip ? response.integrityActual : undefined))
 
 export class PackageInfoClient {
   #registryClient?: RegistryClient
@@ -498,37 +517,63 @@ export class PackageInfoClient {
       }
 
       case 'remote': {
-        const response = await (
-          await this.getRegistryClient()
-        ).request(r.resolved)
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            `failed to fetch remote tarball: ${registryErrorMessage(response)}`,
-            {
-              url: r.resolved,
-              response,
-            },
-          )
+        const rc = await this.getRegistryClient()
+        const fetchTarball = async () => {
+          const response = await rc.request(r.resolved, {
+            integrity: r.integrity,
+          })
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
+              spec,
+              options,
+              `failed to fetch remote tarball: ${registryErrorMessage(response)}`,
+              {
+                url: r.resolved,
+                response,
+              },
+            )
+          }
+          return response
         }
 
-        const buf = response.buffer()
-
-        // Compute integrity for remote/git-with-tarball deps
-        const computed = ssri
-          .fromData(buf, { algorithms: ['sha512'] })
-          .toString()
-        if (r.integrity && r.integrity !== computed) {
+        let response = await fetchTarball()
+        let found = storedIntegrity(response)
+        // a cached entry that does not match the lockfile, or that
+        // cannot be verified any more: evict it and fetch again, once,
+        // so the cache converges on an entry that carries its hash.
+        // the link under r.integrity goes too: the lookup by it links
+        // the value file there when nothing was, so a refetch would
+        // just read the same entry back through it.
+        if (
+          response.fromCache &&
+          (!found || (r.integrity && r.integrity !== found))
+        ) {
+          // lazy for the same reason getRegistryClient() is
+          const { cacheKey } = await import('@vltpkg/registry-client')
+          const key = cacheKey('GET', new URL(r.resolved))
+          rc.cache.delete(key, true, found)
+          if (r.integrity) rc.cache.delete(key, true, r.integrity)
+          await rc.cache.promise()
+          response = await fetchTarball()
+          found = storedIntegrity(response)
+        }
+        /* c8 ignore start - defense in depth: the registry client checks
+         * every network body against r.integrity first, and records the
+         * hash of one it had no expectation for, so a refetch always
+         * answers with a hash that matches. only an entry still served
+         * from the cache after its eviction could land here. */
+        if (!found || (r.integrity && r.integrity !== found)) {
           throw error('Integrity check failure', {
             code: 'EINTEGRITY',
             spec,
             url: r.resolved,
             wanted: r.integrity,
-            found: computed,
+            found,
           })
         }
-        r.integrity = computed as Integrity
+        /* c8 ignore stop */
+        r.integrity = found
+        const buf = response.buffer()
 
         try {
           await (await this.getTarPool()).unpack(buf, target)
@@ -993,11 +1038,11 @@ export class PackageInfoClient {
             )
           }
           const buf = response.buffer()
-
-          // Compute integrity for remote/git-with-tarball deps
-          const computed = ssri
-            .fromData(buf, { algorithms: ['sha512'] })
-            .toString()
+          // the graph hands this back to extract() as the lockfile
+          // hash: the hash the entry is stored under, or none for an
+          // entry that cannot be verified, which extract() then
+          // fetches again and records
+          const integrity = storedIntegrity(response)
 
           try {
             await (await this.getTarPool()).unpack(buf, dir)
@@ -1010,9 +1055,8 @@ export class PackageInfoClient {
             )
           }
 
-          // return manifest with computed integrity
           const mani = this.#readExtracted(dir, s, options)
-          mani.dist = { integrity: computed as Integrity }
+          if (integrity) mani.dist = { integrity }
           return mani
         })
       }
