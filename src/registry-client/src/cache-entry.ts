@@ -419,6 +419,33 @@ export class CacheEntry {
     return true
   }
 
+  /**
+   * Check the body against the RFC 9530 digest the server sent with it,
+   * for a response that had no expected integrity. A registry that omits
+   * `dist.integrity` labels every tarball, so a missing digest fails when
+   * `required`. Like {@link checkIntegrity}, only for an actual http
+   * response: cached bodies are un-gzipped in place.
+   *
+   * **Will throw** on a mismatch. Returns the hash of the body.
+   */
+  checkDigest(
+    required: boolean,
+    context: ErrorCauseOptions = {},
+  ): Integrity {
+    const computed = this.integrityActual
+    const { digest } = this
+    if (digest ? digest !== computed : required) {
+      throw error('Integrity check failure', {
+        code: 'EINTEGRITY',
+        response: this,
+        wanted: digest,
+        found: computed,
+        ...context,
+      })
+    }
+    return computed
+  }
+
   get integrityActual(): Integrity {
     if (this.#integrityActual) return this.#integrityActual
     const hash = createHash('sha512')

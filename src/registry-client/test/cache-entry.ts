@@ -871,6 +871,39 @@ t.test('digest header', async t => {
   t.equal(entry({}).digest, undefined)
 })
 
+t.test('checkDigest', async t => {
+  const body = Buffer.from('some bytes')
+  const b64 = createHash('sha512').update(body).digest('base64')
+  const entry = (h: Record<string, string>) => {
+    const ce = new CacheEntry(200, toRawHeaders(h))
+    ce.addBody(body)
+    return ce
+  }
+  const labelled = entry({ 'repr-digest': `sha-512=:${b64}:` })
+  t.equal(labelled.checkDigest(true), `sha512-${b64}`)
+  t.throws(
+    () =>
+      entry({
+        'repr-digest': `sha-512=:${'0'.repeat(86)}==:`,
+      }).checkDigest(false),
+    {
+      cause: {
+        code: 'EINTEGRITY',
+        wanted: `sha512-${'0'.repeat(86)}==`,
+        found: `sha512-${b64}`,
+      },
+    },
+  )
+  t.equal(entry({}).checkDigest(false), `sha512-${b64}`, 'optional')
+  t.throws(() => entry({}).checkDigest(true), {
+    cause: {
+      code: 'EINTEGRITY',
+      wanted: undefined,
+      found: `sha512-${b64}`,
+    },
+  })
+})
+
 t.test('deleteHeader', async t => {
   const ce = new CacheEntry(
     200,

@@ -2775,7 +2775,8 @@ t.test('tarballs labelled with a digest', async t => {
     'extract verifies the digest and hands the hash back',
     async t => {
       const dir = t.testdir()
-      const p = pi()
+      const cache = `${dir}/cache`
+      const p = new PackageInfoClient({ ...options, cache })
       const res = await p.extract('digest@1.0.0', `${dir}/a`)
       t.equal(res.integrity, integrity)
       await (await p.getRegistryClient()).cache.promise()
@@ -2786,10 +2787,12 @@ t.test('tarballs labelled with a digest', async t => {
       t.equal(warm.integrity, integrity)
 
       // and a fresh client unpacks it straight off the cache file
-      const cold = new PackageInfoClient({
-        ...options,
-        cache: (await p.getRegistryClient()).cache.path(),
-      })
+      const cold = new PackageInfoClient({ ...options, cache })
+      const url = `${defaultRegistry}digest/-/digest-1.0.0.tgz`
+      t.ok(
+        (await cold.getRegistryClient()).cachedBody(url),
+        'on disk',
+      )
       const again = await cold.extract('digest@1.0.0', `${dir}/c`)
       t.equal(again.integrity, integrity)
     },
@@ -2800,6 +2803,37 @@ t.test('tarballs labelled with a digest', async t => {
     await t.rejects(pi().extract('digest-bad@1.0.0', dir), {
       cause: { code: 'EINTEGRITY', found: integrity },
     })
+  })
+
+  t.test('a rejected body does not survive in the cache', async t => {
+    const dir = t.testdir()
+    for (const name of ['digest-bad', 'digest-missing']) {
+      const cache = `${dir}/${name}`
+      const p = new PackageInfoClient({ ...options, cache })
+      const spec = `${name}@1.0.0`
+      await t.rejects(p.extract(spec, `${dir}/${name}-a`), {
+        cause: { code: 'EINTEGRITY' },
+      })
+      const client = await p.getRegistryClient()
+      await client.cache.promise()
+      const url = `${defaultRegistry}${name}/-/${name}-1.0.0.tgz`
+      t.equal(client.cachedBody(url), undefined, `${name} not cached`)
+
+      // a fresh client on the same cache has to reject it too, rather
+      // than unpack the leftover off the cache file and pin its hash
+      const cold = new PackageInfoClient({ ...options, cache })
+      t.equal(
+        (await cold.getRegistryClient()).cachedBody(url),
+        undefined,
+        `${name} not on disk`,
+      )
+      await t.rejects(cold.extract(spec, `${dir}/${name}-b`), {
+        cause: { code: 'EINTEGRITY' },
+      })
+      await t.rejects(cold.tarball(spec), {
+        cause: { code: 'EINTEGRITY' },
+      })
+    }
   })
 
   t.test(
@@ -2821,8 +2855,10 @@ t.test('tarballs labelled with a digest', async t => {
       t.equal((await p.resolve(spec)).digestRequired, true)
       // the manifest cache write is fire-and-forget
       await new Promise(resolve => setTimeout(resolve, 100))
+      const cachePath = p._manifestCachePath(spec, {})
+      if (!cachePath) throw new Error('spec is not cacheable')
       const cached = JSON.parse(
-        readFileSync(p._manifestCachePath(spec, {})!, 'utf8'),
+        readFileSync(cachePath, 'utf8'),
       ) as Record<string, unknown>
       t.equal(
         cached.__VLT_PACKUMENT,

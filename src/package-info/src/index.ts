@@ -6,7 +6,6 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import type {
-  CacheEntry,
   RegistryClient,
   RegistryClientOptions,
   RegistryClientRequestOptions,
@@ -393,6 +392,7 @@ export class PackageInfoClient {
           ).request(r.resolved, {
             integrity: r.integrity,
             trustIntegrity,
+            verifyDigest: r.digestRequired ? 'required' : true,
             ...(useCache === false ? { useCache } : {}),
           })
 
@@ -451,13 +451,11 @@ export class PackageInfoClient {
             // the hash the body was stored under
             r.integrity = response.integrity
           } else {
-            // no dist.integrity: check against the digest the registry
-            // sent with the tarball, and hand the hash back so the
-            // lockfile pins it from now on
-            r.integrity = verifiedDigest(response, r.digestRequired, {
-              spec,
-              url: r.resolved,
-            })
+            // no dist.integrity: the registry client checked the body
+            // against the digest the registry sent with it (verifyDigest
+            // above). hand the hash back so the lockfile pins it from
+            // now on
+            r.integrity = response.integrityActual
           }
 
           return buf
@@ -720,6 +718,12 @@ export class PackageInfoClient {
             ...options,
             integrity,
             trustIntegrity,
+            // no dist.integrity: checked against the digest the registry
+            // sent with it instead, before the client caches it
+            verifyDigest:
+              this.#vltPackuments.has(`${f.registry}${f.name}`) ?
+                'required'
+              : true,
             ...(useCache === false ? { useCache } : {}),
           })
           if (response.statusCode !== 200) {
@@ -761,12 +765,6 @@ export class PackageInfoClient {
               })
             }
             /* c8 ignore stop */
-          } else if (!integrity && !response.fromCache) {
-            verifiedDigest(
-              response,
-              this.#vltPackuments.has(`${f.registry}${f.name}`),
-              { spec, url: tarball },
-            )
           }
 
           return buf
@@ -1406,30 +1404,6 @@ export class PackageInfoClient {
     )
     return er
   }
-}
-
-/**
- * The sha512 of a network-delivered tarball whose manifest carried no
- * `dist.integrity`, checked against the RFC 9530 digest the registry sent
- * alongside it. A registry that omits `dist.integrity` labels every
- * tarball, so a missing digest fails when `required`.
- */
-const verifiedDigest = (
-  response: CacheEntry,
-  required: boolean | undefined,
-  context: ErrorCauseOptions,
-): Integrity => {
-  const computed = response.integrityActual
-  const { digest } = response
-  if (digest ? digest !== computed : required) {
-    throw error('Tarball integrity check failed', {
-      code: 'EINTEGRITY',
-      wanted: digest,
-      found: computed,
-      ...context,
-    })
-  }
-  return computed
 }
 
 // vlt packuments carry dist.tarball relative to the registry base

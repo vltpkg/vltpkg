@@ -172,6 +172,14 @@ export type RegistryClientRequestOptions = Omit<
   trustIntegrity?: boolean
 
   /**
+   * With no `integrity` to expect, check the body against the RFC 9530
+   * `Repr-Digest` the server sent with it. `'required'` also rejects a
+   * response that carries no digest. Runs before the response is cached,
+   * so a body that fails is never served from the cache later.
+   */
+  verifyDigest?: boolean | 'required'
+
+  /**
    * Follow up to 10 redirections by default. Set this to 0 to just return
    * the 3xx response. If the max redirections are expired, and we still get
    * a redirection response, then fail the request. Redirection cycles are
@@ -704,7 +712,7 @@ export class RegistryClient {
       staleWhileRevalidate = true,
       forceRevalidate = false,
     } = options
-    const { trustIntegrity } = options
+    const { trustIntegrity, verifyDigest } = options
 
     const m = isCacheableMethod(method) ? method : undefined
     const { useCache = !!m } = options
@@ -855,6 +863,17 @@ export class RegistryClient {
     if (!trustIntegrity && !result.fromCache) {
       result.deleteHeader('integrity')
       if (result.isGzip) result.checkIntegrity({ url })
+    }
+    // same for the digest the server labels an unlabelled artifact with.
+    // before the cache write below, or a rejected body would be served
+    // from the cache on the next run, unverified.
+    if (
+      verifyDigest &&
+      !integrity &&
+      !result.fromCache &&
+      result.statusCode === 200
+    ) {
+      result.checkDigest(verifyDigest === 'required', { url })
     }
     // a forced revalidation must never replace a cached entry with an
     // error response -- the flat 200-only rule revalidate-entry.ts has.
