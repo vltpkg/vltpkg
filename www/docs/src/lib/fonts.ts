@@ -14,4 +14,6 @@ export const geistMono = Geist_Mono({
 export const geistPixel = Geist_Pixel({
   variable: '--font-geist-pixel',
   subsets: ['latin'],
+  // next has no metrics for this face, so an explicit fallback stops turbopack trying (and warning) to size one
+  fallback: ['monospace'],
 })
