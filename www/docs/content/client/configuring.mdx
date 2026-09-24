@@ -1,0 +1,466 @@
+---
+title: Configuring the vlt CLI
+sidebar:
+  label: Configuring
+  order: 1
+---
+
+Usage:
+
+<Code
+  code="$ vlt [<options>] [<cmd> [<args> ...]]"
+  title="Terminal"
+  lang="bash"
+/>
+
+More documentation available at
+[https://docs.vlt.io](https://docs.vlt.io)
+
+## Subcommands
+
+```
+access, bugs, build, cache, ci, config, create, deprecate, dist-tag, docs, exec, exec-cache, exec-local, help, init, add, install, list, login, logout, pack, ping, pkg, profile, publish, query, registry, repo, run-script, run, run-exec, setup, token, uninstall, unpublish, update, version, view, whoami
+```
+
+Run `vlt <cmd> --help` for more information about a specific command
+
+## Configuration
+
+The `vlt.json` file in the XDG specified config directory is loaded
+first. Then, if a `vlt.json` file is present in the root of the
+current project, the `config` field in that file is layered on top of
+it. (The project file is also used to define workspaces and other
+`vlt` behaviors.)
+
+Scalar values are overridden by the innermost layer that sets them.
+Object type values are merged together key by key, with the project
+file winning on conflict. Set a field, or a key within an object
+field, to `null` in the JSON configuration to explicitly remove it:
+
+```json
+// ~/.config/vlt/vlt.json
+// User level config
+{
+  "config": {
+    "registries": { "npm": "https://a/", "old": "https://b/" }
+  }
+}
+```
+
+```json
+// ./vlt.json
+// Project level config
+{ "config": { "registries": { "npm": "https://c/", "old": null } } }
+```
+
+```json
+// Effective parsed config
+{ "registries": { "npm": "https://c/" } }
+```
+
+> Note: The user level config file uses XDG paths that are
+> OS-specific, the example `~/.config/vlt/vlt.json` path used here
+> might not be the same path used in your system, to learn what is the
+> user level config location for your system, run:
+> `vlt config location --config=user`
+
+Object type values given via `VLT_*` environment variables or on the
+command line are merged key by key over the config files, command line
+winning over environment. Other values replace them. List values in
+the environment are newline-delimited, e.g.
+`VLT_REGISTRIES=$'a=https://a/\nb=https://b/'`.
+
+### Registry selection across layers
+
+Registry selection is an exception to plain per-field layering,
+because `registry` outranks any `registries` alias. A layer that sets
+any of `registry`, `registries`, or `default-registry-alias` owns
+selection: the `registry` and `default-registry-alias` it does _not_
+set are dropped rather than inherited from an outer layer.
+
+So a project that configures its own registry is never quietly sent to
+the user-level one:
+
+```json
+// ~/.config/vlt/vlt.json
+// User level config
+{
+  "config": {
+    "registry": "https://user/",
+    "registries": { "main": "https://main/" }
+  }
+}
+```
+
+```json
+// ./vlt.json
+// Project level config
+{ "config": { "registries": { "npm": "https://project/" } } }
+```
+
+resolves to `https://project/`. The user's `main` alias is still
+addressable as `main:` in a specifier, or with
+`vlt registry main <cmd>`.
+
+`scoped-registries` and `jsr-registries` are purely additive, so they
+do not take over selection.
+
+Command-specific fields may be set in a nested `command` object that
+overrides any options defined at the top level, following the same
+rules.
+
+For information about catalog configuration and the `catalog:`
+protocol, see the [Catalogs documentation](/client/catalogs).
+
+### `-c --color`
+
+Use colors (Default for TTY)
+
+### `-C --no-color`
+
+Do not use colors (Default for non-TTY)
+
+### `--registry=<url>`
+
+Sets the registry for fetching packages, when no registry is
+explicitly set on a specifier.
+
+For example, `express@latest` will be resolved by looking up the
+metadata from this registry.
+
+There is **no default**. A registry must be configured in `vlt.json`,
+with this flag, or via the `VLT_REGISTRY` environment variable.
+Commands that need a registry fail with a config error when none is
+set; [`vlt setup`](/client/registries#getting-started-with-vlt-setup)
+or [`vlt login`](/client/commands/login) will configure one for you.
+See [Registries](/client/registries).
+
+Bare specifiers (like `express@latest`) resolve through the
+`--default-registry-alias` (default `npm`) when this scalar is not
+set.
+
+### `--default-registry-alias=<name>`
+
+The name of the entry in `--registries` that **bare specifiers** — and
+transitive dependencies without an explicit registry protocol —
+resolve through, when neither a `scoped-registries` entry nor the
+`--registry` scalar applies. Precedence is `scoped-registries` >
+`--registry` > `registries[<default-registry-alias>]`.
+
+Defaults to `npm`. The `npm` alias itself has **no built-in URL** — it
+must be configured (for example via
+[`vlt setup`](/client/registries#getting-started-with-vlt-setup)),
+otherwise bare specs cannot resolve. See
+[Registries](/client/registries).
+
+### `--registries=<name=url>`
+
+Specify named registry hosts by their prefix. To set the default
+registry used for non-namespaced specifiers, use the `--registry`
+option.
+
+Prefixes can be used as a package alias. For example:
+
+<Code
+  code="​​$ vlt --registries loc=http://reg.local install foo@loc:foo@1.x"
+  title="Terminal"
+  lang="bash"
+/>
+
+The `npm:` prefix is **not** pre-registered to any URL — configure it
+(for example with `vlt setup`) before bare specs or `npm:` aliases can
+resolve. The built-in `gh:` and `jsr:` prefixes are pre-registered but
+remain overridable here.
+
+Aliases given on the command line or in `VLT_REGISTRIES` merge with
+the configured ones, later sources winning per key. Pass
+[`--save-config`](#--save-config) to `vlt install`, `vlt add` or
+`vlt update` to save them to `vlt.json`. See
+[Registries](/client/registries#saving-registries-given-to-install).
+
+Can be set multiple times
+
+### `--scoped-registries=<@scope=url>`
+
+Map package name scopes to registry URLs.
+
+For example, `--scoped-registries @acme=https://registry.acme/` would
+tell vlt to fetch any packages named `@acme/...` from the
+`https://registry.acme/` registry.
+
+Note: this way of specifying registries is more ambiguous, compared
+with using the `--registries` field and explicit prefixes, because
+instead of failing when the configuration is absent, it will instead
+attempt to fetch from the default registry.
+
+By comparison, using `--registries acme=https://registry.acme/` and
+then specifying dependencies such as `"foo": "acme:foo@1.x"` means
+that regardless of the name, the package will be fetched from the
+explicitly named registry, or fail if no registry is defined with that
+name.
+
+However, custom registry aliases are not supported by other package
+managers.
+
+Can be set multiple times
+
+### `-G<name=template> --git-hosts=<name=template>`
+
+Map a shorthand name to a git remote URL template.
+
+The `template` may contain placeholders, which will be swapped with
+the relevant values.
+
+`$1`, `$2`, etc. are replaced with the appropriate n-th path portion.
+For example, `github:user/project` would replace the `$1` in the
+template with `user`, and `$2` with `project`.
+
+Can be set multiple times
+
+### `-A<name=template> --git-host-archives=<name=template>`
+
+Similar to the `--git-host <name>=<template>` option, this option can
+define a template string that will be expanded to provide the URL to
+download a pre-built tarball of the git repository.
+
+In addition to the n-th path portion expansions performed by
+`--git-host`, this field will also expand the string `$committish` in
+the template, replacing it with the resolved git committish value to
+be fetched.
+
+Can be set multiple times
+
+### `--cache=<path>`
+
+Location of the vlt on-disk cache. Defaults to the platform-specific
+directory recommended by the XDG specification.
+
+### `--store-linker=<auto | hardlink | copy | unpack>`
+
+How packages are placed in `node_modules`. Every linker but `unpack`
+fills a global store under `cache` in the background, then places
+packages from it.
+
+- auto: Default. On Linux, hardlink from the global store, copying any
+  file that cannot be linked. Elsewhere, same as `unpack`: a hardlink
+  is the slowest way to place a file on APFS, so macOS and Windows
+  unpack by default.
+- hardlink: Hardlink from the global store on every platform.
+- copy: Copy from the global store. Use this when editing files in
+  `node_modules` in place, since a hardlink shares its content with
+  every project.
+- unpack: Unpack each package tarball, skipping the global store.
+
+Packages with install scripts are always copied. An invalid
+`VLT_STORE_LINKER` warns and uses `unpack`. See
+[Global store](/client/commands/cache#global-store).
+
+Valid options: "auto", "hardlink", "copy", "unpack"
+
+### `--tag=<tag>`
+
+Default `dist-tag` to install
+
+### `--before=<date>`
+
+Do not install any packages published after this date
+
+### `--os=<os>`
+
+The operating system to use as the selector when choosing packages
+based on their `os` value.
+
+### `--arch=<arch>`
+
+CPU architecture to use as the selector when choosing packages based
+on their `cpu` value.
+
+### `--node-version=<version>`
+
+Node version to use when choosing packages based on their
+`engines.node` value.
+
+### `--git-shallow`
+
+Set to force `--depth=1` on all git clone actions. When set explicitly
+to false with --no-git-shallow, then `--depth=1` will not be used.
+
+When not set explicitly, `--depth=1` will be used for git hosts known
+to support this behavior.
+
+### `--fetch-retries=<n>`
+
+Number of retries to perform when encountering network errors or
+likely-transient errors from git hosts.
+
+### `--fetch-retry-factor=<n>`
+
+The exponential backoff factor to use when retrying requests due to
+network issues.
+
+### `--fetch-retry-mintimeout=<n>`
+
+Number of milliseconds before starting first retry
+
+### `--fetch-retry-maxtimeout=<n>`
+
+Maximum number of milliseconds between two retries
+
+### `-i<name> --identity=<name>`
+
+Provide a string to define an identity for storing auth information
+when logging into registries.
+
+Authentication tokens will be stored in the XDG data directory, in
+`vlt/auth/${identity}/keychain.json`.
+
+If no identity is provided, then the default `''` will be used,
+storing the file at `vlt/auth/keychain.json`.
+
+May only contain lowercase alphanumeric characters.
+
+### `-w<ws> --workspace=<ws>`
+
+Set to limit the spaces being worked on when working on workspaces.
+
+Can be paths or glob patterns matching paths.
+
+Specifying workspaces by package.json name is not supported.
+
+Can be set multiple times
+
+### `-g<workspace-group> --workspace-group=<workspace-group>`
+
+Specify named workspace group names to load and operate on when doing
+recursive operations on workspaces.
+
+Can be set multiple times
+
+### `-r --recursive`
+
+Run an operation across multiple workspaces.
+
+No effect when used in non-monorepo projects.
+
+Implied by setting --workspace or --workspace-group. If not set, then
+the action is run on the project root.
+
+### `-b --bail`
+
+When running scripts across multiple workspaces, stop on the first
+failure.
+
+### `-B --no-bail`
+
+When running scripts across multiple workspaces, continue on failure,
+running the script for all workspaces.
+
+### `--config=<all | user | project>`
+
+Specify which configuration to show or operate on when running
+`vlt config` commands.
+
+For read operations (`get`, `pick`, `list`): `all` shows merged
+configuration from both user and project files (default).
+
+For write operations (`set`, `delete`, `edit`): defaults to `project`.
+`user` shows/modifies only user-level configuration, `project`
+shows/modifies only project-level configuration.
+
+Valid options: "all", "user", "project"
+
+### `--editor=<program>`
+
+The blocking editor to use for `vlt config edit` and any other cases
+where a file should be opened for editing.
+
+Defaults to the `EDITOR` or `VISUAL` env if set, or `notepad.exe` on
+Windows, or `vi` elsewhere.
+
+### `--script-shell=<program>`
+
+The shell to use when executing `package.json#scripts` (either as
+lifecycle scripts or explicitly with `vlt run`) and `vlt exec`.
+
+If not set, defaults to `/bin/sh` on POSIX systems, and `cmd.exe` on
+Windows.
+
+When no argument is provided to `vlt exec`, the `SHELL` environment
+variable takes precedence if set.
+
+### `--fallback-command=<command>`
+
+The command to run when the first argument doesn't match any known
+commands.
+
+For pnpm-style behavior, set this to 'run-exec'. e.g:
+
+<Code
+  code="​​$ ​​vlt config set fallback-command=run-exec"
+  title="Terminal"
+  lang="bash"
+/>
+
+Valid options:
+
+```
+"cache", "config", "exec", "exec-local",
+"help", "init", "install", "login", "logout",
+"list", "ls", "pkg", "query", "run-exec", "run", "serve",
+"token", "uninstall", "exec-cache", "whoami"
+```
+
+### `--package=<p>`
+
+When running `vlt exec`, this allows you to explicitly set the package
+to search for bins. If not provided, then vlt will interpret the first
+argument as the package, and attempt to run the default executable.
+
+### `--view=<output>`
+
+Configures the output format for commands. Valid options: "human",
+"json", "mermaid", "count"
+
+### `--dashboard-root=<path>`
+
+The root directory to use for the dashboard browser-based UI. If not
+set, the user home directory is used.
+
+Can be set multiple times
+
+### `-D --save-dev`
+
+Save installed packages to a package.json file as devDependencies
+
+### `-O --save-optional`
+
+Save installed packages to a package.json file as optionalDependencies
+
+### `--save-peer`
+
+Save installed packages to a package.json file as peerDependencies
+
+### `-P --save-prod`
+
+Save installed packages into dependencies specifically. This is useful
+if a package already exists in devDependencies or
+optionalDependencies, but you want to move it to be a non-optional
+production dependency.
+
+### `--save-config`
+
+Save the registry and git host options given on the command line or
+via `VLT_*` env (`--registry`, `--registries`,
+`--default-registry-alias`, `--scoped-registries`, `--jsr-registries`,
+`--git-hosts`, `--git-host-archives`) to the project `vlt.json` (or
+the user one with `--config=user`) after a successful `install`, `add`
+or `update`. Values a config file already has are left alone. See
+[Registries](/client/registries#saving-registries-given-to-install).
+
+### `-v --version`
+
+Print the version
+
+### `-h --help`
+
+Print helpful information

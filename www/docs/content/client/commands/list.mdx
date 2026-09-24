@@ -1,0 +1,66 @@
+---
+title: vlt list
+sidebar:
+  label: list
+---
+
+Usage:
+
+<Code
+  code="$ vlt ls
+$ vlt ls <query> --view=[human | json | mermaid | svg | png | count]"
+  title="Terminal"
+  lang="bash"
+/>
+
+List installed dependencies matching the provided query. Defaults to
+listing direct dependencies of a project and any configured workspace.
+
+The graph being listed is the one built by `vlt install`. In a project
+installed by another client (an `npm install` or `pnpm install`
+`node_modules`) there is no such graph, so the command errors instead
+of reporting every dependency as missing. Run `vlt install` first.
+`:host()` queries are the exception, since they load their graph from
+somewhere else.
+
+## Examples
+
+List direct dependencies of the current project / workspace
+
+<Code code="$ vlt ls" title="Terminal" lang="bash" />
+
+List all dependencies for the current project / workspace
+
+<Code code="$ vlt ls *" title="Terminal" lang="bash" />
+
+List all dependencies named 'foo', 'bar', or 'baz'
+
+<Code code="$ vlt ls foo bar baz" title="Terminal" lang="bash" />
+
+Lists direct dependencies of a specific package
+
+<Code
+  code={`$ vlt ls '[name="@scoped/package"] > *'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+List all peer dependencies of all workspaces
+
+<Code
+  code={`$ vlt ls '*:workspace > *:peer'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Options
+
+### view
+
+Output format. Defaults to human-readable or json if no tty. Use `svg`
+or `png` to render the dependency graph as an image and open it
+automatically.
+
+```
+--view=[human | json | mermaid | svg | png | count]
+```

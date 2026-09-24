@@ -1,0 +1,94 @@
+---
+title: Dependency Selector Syntax
+sidebar:
+  label: Overview
+  order: 0
+---
+
+The vlt query syntax enables usage of CSS-selector-like strings to
+filter and select packages in your dependency graph.
+
+<Code
+  code="$ vlt query ':root > [name^=@vltpkg]'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Many of the common elements of the CSS language are available,
+notably:
+
+- `*` Universal selector — matches all selected items.
+- `&` Nesting selector — allows for nesting selectors.
+- `{}` Curly braces — when querying, can be used to nest selectors.
+
+## Quick Reference
+
+| Category                                                     | Examples                                      | Description                                      |
+| ------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------ |
+| [Attribute Selectors](/client/selectors/attribute-selectors) | `[name=foo]`, `[version^=2]`                  | Match by `package.json` metadata                 |
+| [Combinators](/client/selectors/combinators)                 | `>`, ` `, `~`                                 | Traverse the dependency graph                    |
+| [ID Selectors](/client/selectors/id-selectors)               | `#foo`                                        | Shortcut for `[name=foo]`                        |
+| [Pseudo-class Selectors](/client/selectors/pseudo-classes)   | `:has()`, `:outdated()`, `:semver()`          | Functional selectors with arguments              |
+| [Pseudo-state Selectors](/client/selectors/pseudo-states)    | `:root`, `:workspace`, `:dev`                 | State-based selectors                            |
+| [Security Insights](/client/selectors/security-insights)     | `:malware`, `:vuln()`, `:cve()`, `:license()` | Security data from [Socket](https://socket.dev/) |
+
+## Selector Categories
+
+<CardGrid>
+  <LinkCard
+    title="Attribute Selectors"
+    description="Match packages by package.json fields like name, version, or any custom property."
+    href="/client/selectors/attribute-selectors"
+  />
+  <LinkCard
+    title="Combinators"
+    description="Traverse the dependency graph with child, descendant, and sibling combinators."
+    href="/client/selectors/combinators"
+  />
+  <LinkCard
+    title="ID Selectors"
+    description="Quick shorthand to select packages by name."
+    href="/client/selectors/id-selectors"
+  />
+  <LinkCard
+    title="Pseudo-class Selectors"
+    description="Functional selectors like :has(), :outdated(), :semver(), :type(), and more."
+    href="/client/selectors/pseudo-classes"
+  />
+  <LinkCard
+    title="Pseudo-state Selectors"
+    description="State-based selectors like :root, :workspace, :dev, :prod, :private."
+    href="/client/selectors/pseudo-states"
+  />
+  <LinkCard
+    title="Security Insights"
+    description="Socket-powered security selectors for malware, CVEs, obfuscation, and more."
+    href="/client/selectors/security-insights"
+  />
+</CardGrid>
+
+## Examples
+
+Find all outdated direct dependencies:
+
+<Code
+  code="$ vlt query ':root > :outdated'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Find all packages that depend on a vulnerable package:
+
+<Code code="$ vlt query ':has(:cve)'" title="Terminal" lang="bash" />
+
+Find all dev-only dependencies that use eval:
+
+<Code code="$ vlt query ':dev:eval'" title="Terminal" lang="bash" />
+
+Combine multiple selectors:
+
+<Code
+  code="$ vlt query ':workspace > :type(git), :root > :outdated(major)'"
+  title="Terminal"
+  lang="bash"
+/>

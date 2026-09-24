@@ -1,0 +1,26 @@
+/* rules on the article's generated markup (typeset-docs); the mdx components style themselves */
+@layer components {
+  .typeset-docs {
+    /* clear the sticky navbar, plus breathing room */
+    & :where([id]) {
+      scroll-margin-block-start: calc(
+        var(--header-height) + --spacing(6)
+      );
+
+      /* below xl the mobile toc bar (h-12) pins under the navbar too */
+      @media (width < 80rem) {
+        scroll-margin-block-start: calc(
+          var(--header-height) + --spacing(12) + --spacing(6)
+        );
+      }
+    }
+
+    /* typeset's flow margins skip not-typeset blocks (code cards, media), so give them the same rhythm */
+    &
+      :where(figure[data-not-typeset], .not-typeset):not(
+        :first-child
+      ) {
+      margin-block-start: var(--typeset-flow);
+    }
+  }
+}
