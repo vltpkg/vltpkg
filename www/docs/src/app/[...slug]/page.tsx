@@ -77,6 +77,7 @@ const DocPage = async ({
           --toc-bar takes the bar's h-12 off the column's min-height below */}
       <div className="min-w-0 max-xl:has-[[data-toc-bar]]:[--toc-bar:--spacing(12)]">
         <TocBar toc={page.data.toc} />
+        <div aria-hidden className="page-fade page-fade-top" />
         {/* at least one screen tall (minus the navbar, the toc bar and the inset's py-8 / md:py-12), so on short pages
           the pagination's mt-auto pushes it to the bottom of the viewport instead of hugging the text */}
         <div className="mx-auto flex min-h-[calc(100svh-var(--header-height)-4rem-var(--toc-bar,0px))] w-full max-w-[37em] min-w-0 flex-col md:min-h-[calc(100svh-var(--header-height)-6rem-var(--toc-bar,0px))]">
@@ -114,6 +115,7 @@ const DocPage = async ({
             <PageNav url={page.url} />
           </div>
         </div>
+        <div aria-hidden className="page-fade page-fade-bottom" />
       </div>
       <TextSelection />
       {/* sit under the sticky navbar rather than the viewport top, and under the toc bar (h-12) below xl;
