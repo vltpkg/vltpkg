@@ -13,6 +13,7 @@ import { cn } from 'cn'
 import { SearchDialog, SearchTrigger } from '@/components/search'
 import type { SuggestionGroup } from '@/components/search'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { Rule } from '@/components/rule'
 import { Github } from '@/components/icons/github'
 import { Linkedin } from '@/components/icons/linkedin'
 import { TwitterX } from '@/components/icons/twitterx'
@@ -236,6 +237,7 @@ const View = ({
       {!folder ?
         toGroups(tree.children.filter(isVisible)).map((group, i) => (
           <SidebarGroup key={i} className="px-0">
+            {i > 0 && <Rule className="mb-2" />}
             {group.name && (
               <SidebarGroupLabel className="px-3">
                 {group.name}

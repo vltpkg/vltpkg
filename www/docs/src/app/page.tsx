@@ -2,6 +2,9 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import {
   ArrowRightLeftIcon,
+  GitBranchIcon,
+  RocketIcon,
+  ShieldAlertIcon,
   BookMarkedIcon,
   BookOpenIcon,
   BoxesIcon,
@@ -20,6 +23,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AgentPrompt } from '@/components/agent-prompt'
+import { Book } from '@/components/book'
 
 const lede =
   'Most registries treat your packages as files to store. vlt treats them as a dependency graph to understand.'
@@ -63,6 +67,68 @@ const cards: Card[] = [
     description:
       'An agent skill that composes and explains vlt query selectors, including Socket-powered security audits.',
     href: skill,
+  },
+]
+
+// task-shaped walkthroughs from the docs, shelved as books; descriptions paraphrase each page's intro
+const guides: (Card & { color: string })[] = [
+  {
+    icon: RocketIcon,
+    title: 'Set up your private registry',
+    description:
+      'Create an account and point your package manager at it.',
+    href: '/registry',
+    color: 'oklch(0.72 0.13 70)',
+  },
+  {
+    icon: UploadIcon,
+    title: 'Publish from CI',
+    description: 'Install and publish from CI with a service token.',
+    href: '/registry/publishing/ci',
+    color: 'oklch(0.72 0.13 250)',
+  },
+  {
+    icon: UsersIcon,
+    title: 'Control who can publish',
+    description: 'Give members roles and scope access to packages.',
+    href: '/registry/access',
+    color: 'oklch(0.72 0.13 155)',
+  },
+  {
+    icon: ArrowRightLeftIcon,
+    title: 'Migrate from npm, yarn, or pnpm',
+    description: 'Move your config, commands, and lockfile over.',
+    href: '/client/migration',
+    color: 'oklch(0.72 0.13 20)',
+  },
+  {
+    icon: ShieldAlertIcon,
+    title: 'Catch malware in your dependencies',
+    description: 'Find risky packages with Socket-powered selectors.',
+    href: '/client/security',
+    color: 'oklch(0.72 0.13 300)',
+  },
+  {
+    icon: BoxesIcon,
+    title: 'Run a monorepo with workspaces',
+    description: 'Define workspaces and run commands across them.',
+    href: '/client/workspaces',
+    color: 'oklch(0.72 0.13 200)',
+  },
+  {
+    icon: GitBranchIcon,
+    title: 'Test only what changed',
+    description:
+      'The workspace you touched, plus everything that depends on it.',
+    href: '/client/affected',
+    color: 'oklch(0.72 0.13 110)',
+  },
+  {
+    icon: TextSearchIcon,
+    title: 'Query your dependency graph',
+    description: 'Select packages with CSS-like queries.',
+    href: '/client/selectors',
+    color: 'oklch(0.72 0.13 340)',
   },
 ]
 
@@ -226,6 +292,32 @@ const Home = () => (
       <div className="mt-4">
         <CardGrid cards={cards} />
       </div>
+    </section>
+
+    <section className="mt-24">
+      <h2 className="text-2xl font-semibold tracking-tight">
+        Guides
+      </h2>
+      <p className="text-muted-foreground mt-3 max-w-[65ch] text-pretty">
+        Walkthroughs for the things teams set out to do first.
+      </p>
+      {/* two to a row on phones, four on desktop; each book shrinks with the breakpoint to fit */}
+      <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-4 md:gap-x-8">
+        {guides.map(
+          ({ icon: Icon, title, description, href, color }) => (
+            <li key={href} className="flex flex-col">
+              <Book
+                href={href}
+                title={title}
+                color={color}
+                icon={<Icon />}
+                width={{ xs: 150, sm: 160, md: 170, lg: 196 }}
+                description={description}
+              />
+            </li>
+          ),
+        )}
+      </ul>
     </section>
 
     {sections.map(section => (

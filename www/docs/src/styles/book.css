@@ -1,0 +1,295 @@
+/* a 3d book, a cover, a page block turned 90° off its
+   right edge, and a back cover pushed `--book-depth` behind; hover or focus swings it open a little.
+   sizes are unitless px in `--book-width` so the depth, gaps and type can all scale from the one number */
+.book {
+  --book-default-width: 196;
+  --book-color: var(--muted);
+  --book-depth: 29cqw;
+  --book-border-radius: 6px 4px 4px 6px;
+  /* the spine's crease and highlight, laid over the cover's left edge */
+  --book-bind:
+    linear-gradient(
+      90deg,
+      #fff0 0%,
+      #fff0 12%,
+      #ffffff40 29.25%,
+      #fff0 50.5%,
+      #fff0 75.25%,
+      #ffffff40 91%,
+      #fff0 100%
+    ),
+    linear-gradient(
+      90deg,
+      #00000008 0%,
+      #0000001a 12%,
+      #0000 30%,
+      #00000005 50%,
+      #0003 73.5%,
+      #00000080 75.25%,
+      #00000026 85.25%,
+      #0000 100%
+    );
+  display: inline-block;
+  width: fit-content;
+  perspective: 900px;
+  border-radius: var(--book-border-radius);
+  outline-offset: 4px;
+
+  /* responsive widths: `--{xs,sm,md,lg}-book-width` fall back to the next size down */
+  @media (width <=400px) {
+    --book-width: var(--xs-book-width, var(--sm-book-width));
+  }
+
+  @media (400px < width <=768px) {
+    --book-width: var(--sm-book-width);
+  }
+
+  @media (768px < width <=960px) {
+    --book-width: var(--md-book-width, var(--sm-book-width));
+  }
+
+  @media (width > 960px) {
+    --book-width: var(
+      --lg-book-width,
+      var(--md-book-width, var(--sm-book-width))
+    );
+  }
+}
+
+.book-inner {
+  position: relative;
+  aspect-ratio: 49 / 60;
+  width: fit-content;
+  min-width: calc(var(--book-width) * 1px);
+  container-type: inline-size;
+  transform-style: preserve-3d;
+  transform: rotate(0);
+  transition: transform 250ms ease-out;
+
+  .book:is(:hover, :focus-visible) & {
+    transform: rotateY(-20deg) scale(1.066) translateX(-8px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.book-cover {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: calc(var(--book-width) * 1px);
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--book-border-radius);
+  background: var(--card);
+  transform: translateZ(0);
+  box-shadow:
+    0 1px 1px #00000005,
+    0 4px 8px -4px #0000001a,
+    0 16px 24px -8px #00000008;
+
+  /* a hairline edge plus a lit top */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--border);
+    border-radius: inherit;
+    box-shadow: inset 0 1px 2px #ffffff4d;
+    pointer-events: none;
+  }
+
+  [data-theme='dark'] & {
+    background:
+      linear-gradient(#ffffff1a 0%, #fff0 50% 100%), var(--card);
+    box-shadow:
+      0 1.8px 3.6px #0000000d,
+      0 10.8px 21.6px #00000014,
+      inset 0 -0.9px #0000001a,
+      inset 0 1.8px 1.8px #ffffff1a,
+      inset 3.6px 0 3.6px #0000001a;
+
+    &::after {
+      border: none;
+    }
+  }
+}
+
+.book-bind {
+  width: 8.2%;
+  height: 100%;
+}
+
+.book-body {
+  display: flex;
+
+  .book-bind {
+    min-width: 8.2%;
+    background: var(--book-bind);
+    opacity: 0.2;
+  }
+}
+
+.book-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6.1%;
+  container-type: inline-size;
+}
+
+.book-title {
+  color: var(--book-text-color, var(--foreground));
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25em;
+  text-wrap: balance;
+}
+
+.book-icon svg {
+  display: block;
+  width: calc(
+    (16 / var(--book-default-width)) * var(--book-width) * 1px
+  );
+  height: auto;
+  color: var(--book-text-color, var(--foreground));
+}
+
+.book-description {
+  color: var(--muted-foreground);
+  font-size: max(13px, calc(var(--book-width) * 0.072px));
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+/* the page block: stood on its edge at the cover's right, then turned to face out */
+.book-pages {
+  position: absolute;
+  top: 3px;
+  width: calc(var(--book-depth) - 2px);
+  height: calc(100% - 6px);
+  background:
+    linear-gradient(90deg, #eaeaea 0%, #0000 70%),
+    linear-gradient(#fff, #fafafa);
+  transform: translateX(
+      calc(var(--book-width) * 1px - var(--book-depth) / 2 - 3px)
+    )
+    rotateY(90deg) translateX(calc(var(--book-depth) / 2));
+
+  &.book-textured {
+    background: repeating-linear-gradient(
+      90deg,
+      #fff,
+      #efefef 1px,
+      #fff 3px,
+      #9a9a9a 1px
+    );
+  }
+}
+
+.book-back {
+  position: absolute;
+  left: 0;
+  width: calc(var(--book-width) * 1px);
+  height: 100%;
+  border-radius: var(--book-border-radius);
+  transform: translateZ(calc(-1 * var(--book-depth)));
+}
+
+/* stripe: a band of the book's colour carrying the title (icon top right), over a plain lower cover
+   holding the description. the band takes a fixed share, so a shelf of books keeps its bands level */
+.book-stripe {
+  .book-title {
+    /* the band's colour doesn't flip with the theme, so neither does its text */
+    color: var(--book-text-color, oklch(0.205 0 0));
+    font-size: 10.5cqw;
+  }
+
+  .book-icon svg {
+    color: var(--book-text-color, oklch(0.205 0 0));
+  }
+
+  .book-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .book-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+  }
+
+  .book-back {
+    background: var(--muted);
+  }
+
+  .book-band {
+    position: relative;
+    flex: none;
+    height: 50%;
+    width: 100%;
+    overflow: hidden;
+    background: var(--book-color);
+    transform: translateZ(0);
+
+    .book-bind {
+      position: absolute;
+      inset-block: 0;
+      left: 0;
+      background: var(--book-bind);
+      mix-blend-mode: overlay;
+    }
+
+    /* clear of the spine on the left, like the lower cover's content */
+    .book-content {
+      position: absolute;
+      inset: 0 0 0 8.2%;
+      width: auto;
+      justify-content: space-between;
+    }
+
+    .book-icon {
+      align-self: flex-end;
+    }
+  }
+}
+
+/* simple: one colour over the whole cover, title at the top and the icon at the foot */
+.book-simple {
+  .book-cover {
+    background: var(--book-color);
+  }
+
+  .book-body {
+    width: 100%;
+    height: 100%;
+
+    .book-bind {
+      mix-blend-mode: overlay;
+      opacity: 1;
+    }
+  }
+
+  .book-content {
+    justify-content: space-between;
+    gap: calc((16px / var(--book-default-width)) * var(--book-width));
+  }
+
+  .book-title {
+    font-size: 12cqw;
+    text-shadow:
+      0 0.025em 0.5px
+        color-mix(in srgb, var(--book-color) 80%, white 20%),
+      -0.02em -0.02em 0.5px
+        color-mix(in srgb, var(--book-color) 80%, black 20%);
+  }
+
+  .book-back {
+    background: var(--book-color);
+  }
+}
