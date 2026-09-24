@@ -1,5 +1,6 @@
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
+import type { Test } from 'tap'
 import t from 'tap'
 import {
   PackageInfoClient,
@@ -53,8 +54,20 @@ t.teardown(() => server.close())
 const registry = () =>
   `http://127.0.0.1:${(server.address() as AddressInfo).port}/`
 
-const client = (cache: string) =>
-  new PackageInfoClient({ cache, registry: registry() })
+const client = (t: Test) => {
+  // flush the background cache writes before tap removes the fixture dir,
+  // or the cleanup races them (ENOTEMPTY on macOS). tap runs EOF hooks in
+  // registration order, so this has to be hooked before t.testdir() hooks
+  // the cleanup
+  t.teardown(async () =>
+    (await pi.getRegistryClient()).cache.promise(),
+  )
+  const pi = new PackageInfoClient({
+    cache: t.testdir(),
+    registry: registry(),
+  })
+  return pi
+}
 
 t.beforeEach(() => {
   resetCapabilities()
@@ -63,7 +76,7 @@ t.beforeEach(() => {
 })
 
 t.test('reads the document a vlt registry serves', async t => {
-  const pi = client(t.testdir())
+  const pi = client(t)
   t.strictSame(await pi.capabilities(registry()), {
     manifests: '0.1',
     resolve: '0.1',
@@ -78,7 +91,7 @@ t.test('reads the document a vlt registry serves', async t => {
 })
 
 t.test('concurrent asks coalesce into one request', async t => {
-  const pi = client(t.testdir())
+  const pi = client(t)
   delay = 20
   const [a, b] = await Promise.all([
     pi.capabilities(registry()),
@@ -90,22 +103,26 @@ t.test('concurrent asks coalesce into one request', async t => {
 
 t.test('a later process reads it out of the cache', async t => {
   const cache = t.testdir()
-  const first = client(cache)
+  const first = new PackageInfoClient({ cache, registry: registry() })
   const doc = await first.capabilities(registry())
   await (await first.getRegistryClient()).cache.promise()
   t.equal(requests, 1, 'cold miss')
 
   // a new client with the same cache dir stands in for a later `vlt` run
   resetCapabilities()
-  const second = client(cache)
+  const second = new PackageInfoClient({
+    cache,
+    registry: registry(),
+  })
   t.strictSame(await second.capabilities(registry()), doc)
   t.equal(requests, 1, 'served from the disk cache, not the registry')
+  await (await second.getRegistryClient()).cache.promise()
 })
 
 t.test(
   'a registry without the document has no extensions',
   async t => {
-    const pi = client(t.testdir())
+    const pi = client(t)
     body = undefined
     t.teardown(() => {
       body = '{}'
@@ -157,7 +174,7 @@ t.test('fields that arrive malformed are dropped', async t => {
     await t.test(name, async t => {
       resetCapabilities()
       body = served
-      const pi = client(t.testdir())
+      const pi = client(t)
       t.strictSame(await pi.capabilities(registry()), expected)
     })
   }
@@ -168,7 +185,7 @@ t.test('a body that does not parse answers empty', async t => {
     body = '{}'
   })
   body = 'not json at all'
-  const pi = client(t.testdir())
+  const pi = client(t)
   t.strictSame(
     await getCapabilities(await pi.getRegistryClient(), registry()),
     {},
@@ -176,7 +193,7 @@ t.test('a body that does not parse answers empty', async t => {
 })
 
 t.test('peek answers only once the document lands', async t => {
-  const pi = client(t.testdir())
+  const pi = client(t)
   const rc = await pi.getRegistryClient()
 
   t.equal(
@@ -194,7 +211,7 @@ t.test('peek answers only once the document lands', async t => {
 })
 
 t.test('reset clears the settled document too', async t => {
-  const pi = client(t.testdir())
+  const pi = client(t)
   const rc = await pi.getRegistryClient()
   await pi.capabilities(registry())
   t.not(peekCapabilities(rc, registry()), undefined, 'settled')
