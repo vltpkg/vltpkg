@@ -59,7 +59,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
-    "@types/react": "^18.3.27",
+    "@types/react": "^19",
     "@types/ssri": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
