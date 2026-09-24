@@ -857,12 +857,16 @@ export class RegistryClient {
       },
     )
 
-    // a server-sent integrity header is not evidence: only the caller's
-    // expectation, or a body read back from the cache, is trusted. the
-    // header is dropped so it can never be stored as the entry's hash.
-    if (!trustIntegrity && !result.fromCache) {
-      result.deleteHeader('integrity')
-      if (result.isGzip) result.checkIntegrity({ url })
+    // only a 200 is held to the caller's expectation; an error body is
+    // the caller's to report by status. gzipped or not: a body that is
+    // not checked here would be cached under the expected hash,
+    // unverified, and served by that hash from then on.
+    if (
+      !trustIntegrity &&
+      !result.fromCache &&
+      result.statusCode === 200
+    ) {
+      result.checkIntegrity({ url })
     }
     // same for the digest the server labels an unlabelled artifact with.
     // before the cache write below, or a rejected body would be served
@@ -953,6 +957,13 @@ export class RegistryClient {
         contentLength,
       },
     )
+
+    // a server-sent integrity header is not evidence: only the caller's
+    // expectation, or a body read back from the cache, is trusted. the
+    // header is dropped before the body is read so it can never be
+    // stored as the entry's hash, and so a nested request() for a
+    // redirect hands back an entry whose recorded hash survives.
+    if (!trustIntegrity) result.deleteHeader('integrity')
 
     if (isRedirect(result)) {
       response.body.resume()

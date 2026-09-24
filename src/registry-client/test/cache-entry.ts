@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { inspect } from 'node:util'
 import { gzipSync } from 'node:zlib'
 import t from 'tap'
+import type { Integrity } from '@vltpkg/types'
 import { CacheEntry } from '../src/cache-entry.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
@@ -548,6 +549,60 @@ t.test('isJSON without content-type uses first byte', t => {
   const emptyGz = new CacheEntry(200, [])
   emptyGz.addBody(gzipSync(Buffer.alloc(0)))
   t.equal(emptyGz.isJSON, false)
+  t.end()
+})
+
+t.test('the sniff records the hash of a gzipped network body', t => {
+  const sha512 = (b: Uint8Array): Integrity =>
+    `sha512-${createHash('sha512').update(b).digest('base64')}`
+  const gz = gzipSync(Buffer.from('hello'))
+
+  // the body is un-gzipped in place by the sniff, and the hash
+  // recorded is the one of the bytes as they came off the wire
+  const gzNot = new CacheEntry(200, [])
+  gzNot.addBody(gz)
+  t.equal(gzNot.isJSON, false)
+  t.equal(gzNot.isGzip, false, 'un-gzipped in place')
+  t.equal(gzNot.getHeaderString('integrity'), sha512(gz))
+  t.equal(gzNot.integrityActual, sha512(gz), 'memoized')
+
+  // a json body is not a tarball: nothing to record
+  const gzJson = new CacheEntry(200, [])
+  gzJson.addBody(gzipSync(Buffer.from('{"x":1}')))
+  t.equal(gzJson.isJSON, true)
+  t.equal(gzJson.getHeaderString('content-type'), 'text/json')
+  t.equal(gzJson.getHeaderString('integrity'), undefined)
+
+  // an identity body is not touched by the sniff, and is hashed as
+  // it is by whoever asks for integrityActual
+  const plain = new CacheEntry(200, [])
+  plain.addBody(Buffer.from('hello'))
+  t.equal(plain.isJSON, false)
+  t.equal(plain.getHeaderString('integrity'), undefined)
+  t.equal(plain.integrityActual, sha512(Buffer.from('hello')))
+
+  // an expectation checked first is what gets recorded, once
+  const checked = new CacheEntry(200, [], { integrity: sha512(gz) })
+  checked.addBody(gz)
+  t.equal(checked.checkIntegrity(), true)
+  t.equal(checked.isJSON, false)
+  t.equal(checked.getHeaderString('integrity'), sha512(gz))
+
+  // a body un-gzipped in memory before the sniff is not the wire
+  // bytes any more: no hash of it is recorded
+  const unzipped = new CacheEntry(200, [])
+  unzipped.addBody(gz)
+  t.equal(unzipped.unzip(), true)
+  t.equal(unzipped.isJSON, false)
+  t.equal(unzipped.getHeaderString('integrity'), undefined)
+
+  // a decoded entry is never hashed by the sniff: its body may have
+  // been rewritten un-gzipped in place since it was stored
+  const decoded = CacheEntry.decode(toRawEntry(200, {}, gz))
+  t.equal(decoded.fromCache, true)
+  t.equal(decoded.isJSON, false)
+  t.equal(decoded.getHeaderString('integrity'), undefined)
+  t.equal(decoded.integrity, undefined)
   t.end()
 })
 
