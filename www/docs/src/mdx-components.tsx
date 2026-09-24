@@ -1,6 +1,13 @@
 import { Heading } from '@/components/heading'
 import { Children, isValidElement } from 'react'
-import { ArrowRightIcon } from 'lucide-react'
+import { ArrowRightIcon, WorkflowIcon } from 'lucide-react'
+import { Book as BookCover } from '@/components/book'
+import { Vlt } from '@/components/icons/vlt'
+import { Npm } from '@/components/icons/npm'
+import { Pnpm } from '@/components/icons/pnpm'
+import { Yarn } from '@/components/icons/yarn'
+import { Bun } from '@/components/icons/bun'
+import { Deno } from '@/components/icons/deno'
 import type { MDXComponents } from 'mdx/types'
 import { CodeBlock, CodeTabs } from '@/components/code-block'
 import type { CodeSource } from '@/components/code-block'
@@ -85,6 +92,29 @@ const onlyCode = (
     return fence((only.props as Children).children)
 }
 
+// <Book icon="npm"> covers: the logo, over a pale tint of its brand colour so the logo still reads on it
+const bookCovers = {
+  vlt: { Icon: Vlt, color: 'oklch(0.9 0 0)' },
+  npm: {
+    Icon: Npm,
+    color: 'color-mix(in oklch, #c12127 22%, white)',
+  },
+  pnpm: {
+    Icon: Pnpm,
+    color: 'color-mix(in oklch, #f8ab00 30%, white)',
+  },
+  yarn: {
+    Icon: Yarn,
+    color: 'color-mix(in oklch, #2c8ebb 25%, white)',
+  },
+  bun: {
+    Icon: Bun,
+    color: 'color-mix(in oklch, #ccbea7 45%, white)',
+  },
+  deno: { Icon: Deno, color: 'oklch(0.88 0.01 250)' },
+  ci: { Icon: WorkflowIcon, color: 'oklch(0.9 0.05 155)' },
+}
+
 // minimal stand-ins for the Starlight components used by the content copied from www/docs
 export const components: MDXComponents = {
   pre: Pre,
@@ -149,6 +179,36 @@ export const components: MDXComponents = {
       )}
     </a>
   ),
+  // a shelf of <Book>s: two to a row, three once the article is wide enough (a container query, since the
+  // sidebar decides the article's width, not the viewport)
+  Bookshelf: ({ children }: Children) => (
+    <div data-not-typeset className={`${flow} @container`}>
+      <div className="grid grid-cols-2 justify-items-start gap-x-5 gap-y-8 @lg:grid-cols-3">
+        {children}
+      </div>
+    </div>
+  ),
+  Book: ({
+    icon,
+    ...props
+  }: {
+    title: string
+    href: string
+    description?: string
+    icon?: keyof typeof bookCovers
+  }) => {
+    const cover = icon && bookCovers[icon]
+    return (
+      <BookCover
+        {...props}
+        width={150}
+        // brand logos need more room than a glyph to read as themselves (~24px at this width)
+        className="[--book-icon-size:31]"
+        color={cover ? cover.color : undefined}
+        icon={cover ? <cover.Icon /> : undefined}
+      />
+    )
+  },
   CardGrid: ({ children }: Children) => (
     // repeat(2, 1fr), not grid-cols-2's minmax(0, 1fr): a long unbroken word widens its column
     <div

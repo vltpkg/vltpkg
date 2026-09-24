@@ -150,8 +150,10 @@
 
 .book-icon svg {
   display: block;
+  /* `--book-icon-size` is px at the default width, scaling with the book like everything else */
   width: calc(
-    (16 / var(--book-default-width)) * var(--book-width) * 1px
+    (var(--book-icon-size, 16) / var(--book-default-width)) *
+      var(--book-width) * 1px
   );
   height: auto;
   color: var(--book-text-color, var(--foreground));
