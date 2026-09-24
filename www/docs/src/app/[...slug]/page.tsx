@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { pageTitle, source } from '@/lib/source'
 import { components } from '@/mdx-components'
@@ -53,7 +54,17 @@ const editUrl = (path: string, url: string) =>
     `https://github.com/vltpkg/vltpkg/edit/main/www/docs/content/${path}`
   )
 
-const Page = async ({ params }: PageProps<'/[...slug]'>) => {
+// the App Shell is shared by every docs URL, so the slug read has to sit behind Suspense;
+// the layout's navbar and sidebar paint instantly and the page streams in
+const Page = ({ params }: PageProps<'/[...slug]'>) => (
+  <Suspense>
+    <DocPage params={params} />
+  </Suspense>
+)
+
+const DocPage = async ({
+  params,
+}: Pick<PageProps<'/[...slug]'>, 'params'>) => {
   const { slug } = await params
   const page = source.getPage(slug)
   if (!page) notFound()
