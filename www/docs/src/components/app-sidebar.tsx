@@ -341,6 +341,8 @@ export function AppSidebar({ tree, ...props }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const scroller = useRef<HTMLDivElement>(null)
+  // each view's scroll offset when drilled out of, restored on the way back
+  const scrolls = useRef(new Map<string, number>())
   const searchTrigger = useRef<HTMLButtonElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [stack, setStack] = useState(() =>
@@ -365,7 +367,17 @@ export function AppSidebar({ tree, ...props }: AppSidebarProps) {
   const go: Go = (next, dir) => {
     setPrev({ stack, dir })
     setStack(next)
-    scroller.current?.scrollTo({ top: 0 })
+    // restoring before the returning view mounts means its autofocused row is already in view,
+    // so focus doesn't scroll (and overshoot while the taller outgoing view still sets the height)
+    if (dir === 'forward')
+      scrolls.current.set(
+        keyOf(stack),
+        scroller.current?.scrollTop ?? 0,
+      )
+    scroller.current?.scrollTo({
+      top:
+        dir === 'back' ? (scrolls.current.get(keyOf(next)) ?? 0) : 0,
+    })
     // drilling in also opens the folder's first page, so it's one click not two
     const url = dir === 'forward' ? firstUrl(next.at(-1)) : undefined
     if (url && url !== pathname) router.push(url)
