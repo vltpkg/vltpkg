@@ -1,0 +1,31 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" \"$VERCEL_GIT_COMMIT_SHA\" -- www/docs/ || exit 1",
+  "builds": [
+    {
+      "src": "www/docs/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "installCommand": "npm i -g vlt@1.1.1 && \"$(npm prefix -g)/bin/vlt\" --version && \"$(npm prefix -g)/bin/vlt\" install",
+        "buildCommand": "npm run build"
+      }
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/migration/from-pnpm",
+      "destination": "/cli/migration/from-pnpm",
+      "permanent": true
+    },
+    {
+      "source": "/migration/from-yarn",
+      "destination": "/cli/migration/from-yarn",
+      "permanent": true
+    },
+    {
+      "source": "/migration/from-npm",
+      "destination": "/cli/migration/from-npm",
+      "permanent": true
+    }
+  ]
+}
