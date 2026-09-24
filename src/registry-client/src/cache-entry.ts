@@ -399,7 +399,9 @@ export class CacheEntry {
    *
    * Note that this will *usually* not be true if the value is coming out of
    * the cache, because the cache entries are un-gzipped in place. It should
-   * _only_ be called for artifacts that come from an actual http response.
+   * _only_ be called for artifacts that come from an actual http response,
+   * whatever its encoding: an identity body is hashed as it came, a gzipped
+   * one before anything un-gzips it in memory.
    *
    * Returns true if anything was actually verified.
    */
@@ -446,11 +448,15 @@ export class CacheEntry {
     return computed
   }
 
-  get integrityActual(): Integrity {
-    if (this.#integrityActual) return this.#integrityActual
+  #hash(): Integrity {
     const hash = createHash('sha512')
     hash.update(this._body)
-    const i: Integrity = `sha512-${hash.digest('base64')}`
+    return `sha512-${hash.digest('base64')}`
+  }
+
+  get integrityActual(): Integrity {
+    if (this.#integrityActual) return this.#integrityActual
+    const i = this.#hash()
     this.integrityActual = i
     return i
   }
@@ -547,12 +553,24 @@ export class CacheEntry {
     if (ct) return (this.#isJSON = /\bjson\b/.test(ct))
     // don't cache, because we might just not have it yet.
     if (!this._body.length) return false
+    // the sniff un-gzips the body in place. hash a gzipped network body
+    // first, so a tarball served without a content-type is recorded
+    // under the hash of the bytes every other fetch of it gets, not of
+    // the un-gzipped copy only this cache holds. an identity body is
+    // left as it is, and the cache write hashes it as it came; a body
+    // already un-gzipped in memory is not the wire bytes any more, so
+    // no hash of it is ever recorded.
+    const wire =
+      !this.#fromCache && !this.#integrityActual && this.isGzip ?
+        this.#hash()
+      : undefined
     this.unzip()
     const buf = this._body
     if (!buf.length) return false
     // all registry json starts with {, and no tarball ever can.
     this.#isJSON = buf[0] === 0x7b
     if (this.#isJSON) this.setHeader('content-type', 'text/json')
+    else if (wire) this.integrityActual = wire
     return this.#isJSON
   }
 

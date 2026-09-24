@@ -1,7 +1,7 @@
 import type { Cache } from '@vltpkg/cache'
 import { createServer } from 'http'
 import EventEmitter from 'node:events'
-import { linkSync, readFileSync } from 'node:fs'
+import { existsSync, linkSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
@@ -14,6 +14,7 @@ import type {
   RegistryClient,
   RegistryClientRequestOptions,
 } from '../src/index.ts'
+import { cacheKey } from '../src/index.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
 const PORT = (t.childId || 0) + 8080
@@ -276,6 +277,48 @@ const registry = createServer((req, res) => {
     return res.end(JSON.stringify({ name: 'retried' }))
   }
 
+  // remote tarball shapes: identity-encoded, an error body, a hop
+  // away, and one with no content-type at all
+  if (url === '/plain/tarball') {
+    const body = Buffer.from(
+      'this is a tarball lets pretend, not gzipped',
+    )
+    res.setHeader('content-type', 'application/octet-stream')
+    res.setHeader('content-length', body.length)
+    return res.end(body)
+  }
+  if (url === '/gone/tarball') {
+    const body = gzipSync(Buffer.from('{"error":"no such tarball"}'))
+    res.statusCode = 404
+    res.setHeader('content-type', 'application/json')
+    res.setHeader('content-encoding', 'gzip')
+    res.setHeader('content-length', body.length)
+    return res.end(body)
+  }
+  if (url === '/redirect/tarball') {
+    res.statusCode = 302
+    res.setHeader('location', '/redirected/tarball')
+    return res.end()
+  }
+  if (url === '/redirected/tarball') {
+    // labelled with a bogus integrity header, whatever was expected
+    const body = gzipSync(
+      Buffer.from('this is a tarball lets pretend'),
+    )
+    res.setHeader('content-type', 'application/octet-stream')
+    res.setHeader('content-encoding', 'gzip')
+    res.setHeader('content-length', body.length)
+    res.setHeader('integrity', `sha512-${'0'.repeat(86)}==`)
+    return res.end(body)
+  }
+  if (url === '/no-content-type/tarball') {
+    const body = gzipSync(
+      Buffer.from('this is a tarball lets pretend'),
+    )
+    res.setHeader('content-length', body.length)
+    return res.end(body)
+  }
+
   if (req.headers['if-none-match'] === etag) {
     res.statusCode = 304
     return res.end('not modified (and this is not valid json)')
@@ -488,6 +531,146 @@ t.test('artifact with no expected integrity', async t => {
   const found = again.cachedBody(url, { integrity: actual })
   t.equal(found?.path, again.cache.integrityPath(actual))
   t.equal(found?.integrity, actual, 'stored under its hash')
+})
+
+const sha512 = (body: Uint8Array): Integrity =>
+  `sha512-${createHash('sha512').update(body).digest('base64')}`
+const wrong: Integrity = `sha512-${'0'.repeat(86)}==`
+const entryAt = (rc: RegistryClient, url: string) =>
+  CacheEntry.decode(
+    readFileSync(rc.cache.path(cacheKey('GET', new URL(url)))),
+  )
+
+t.test('an identity-encoded body is checked too', async t => {
+  const dir = t.testdir()
+  const rc = new RC({ cache: dir })
+  const url = `${registryURL}/plain/tarball`
+  const actual = sha512(
+    Buffer.from('this is a tarball lets pretend, not gzipped'),
+  )
+
+  // a mismatch is rejected before anything is written: under its key,
+  // or under the hash it was expected to have
+  await t.rejects(rc.request(url, { integrity: wrong }), {
+    cause: { code: 'EINTEGRITY', wanted: wrong, found: actual },
+  })
+  await rc.cache.promise()
+  t.equal(
+    existsSync(rc.cache.path(cacheKey('GET', new URL(url)))),
+    false,
+    'nothing cached under the key',
+  )
+  const wrongPath = rc.cache.integrityPath(wrong)
+  if (!wrongPath) return t.fail('expected an integrity path')
+  t.equal(
+    existsSync(wrongPath),
+    false,
+    'nothing linked under the expected hash',
+  )
+
+  // a match is recorded and stored under its hash
+  const res = await rc.request(url, { integrity: actual })
+  t.equal(res.statusCode, 200)
+  t.equal(res.getHeaderString('integrity'), actual)
+  await rc.cache.promise()
+  const found = new RC({ cache: dir }).cachedBody(url, {
+    integrity: actual,
+  })
+  t.equal(found?.path, rc.cache.integrityPath(actual))
+  t.equal(found?.integrity, actual, 'stored under its hash')
+})
+
+t.test('an error body is not held to the expectation', async t => {
+  const dir = t.testdir()
+  const rc = new RC({ cache: dir })
+  const url = `${registryURL}/gone/tarball`
+  const integrity = sha512(
+    gzipSync(Buffer.from('this is a tarball lets pretend')),
+  )
+  // gzipped, with a hash it cannot match: the status is the answer
+  const res = await rc.request(url, { integrity })
+  t.equal(res.statusCode, 404)
+  t.equal(res.getHeaderString('integrity'), undefined, 'not hashed')
+  await rc.cache.promise()
+  t.equal(
+    new RC({ cache: dir }).cachedBody(url, { integrity }),
+    undefined,
+    'never served by hash',
+  )
+})
+
+t.test('a redirected fetch records the hash', async t => {
+  // the entry under the original url is the one the nested request()
+  // for the final url built, with the hash it recorded. the final url
+  // answers with a bogus integrity header, so the recorded hash is
+  // also proof that the server's was replaced, not kept
+  const url = `${registryURL}/redirect/tarball`
+  const final = `${registryURL}/redirected/tarball`
+  for (const expected of [undefined, 'actual'] as const) {
+    await t.test(expected ?? 'no expected hash', async t => {
+      const rc = t.context.rc as RegistryClient
+      const actual = sha512(
+        gzipSync(Buffer.from('this is a tarball lets pretend')),
+      )
+      const res = await rc.request(
+        url,
+        expected ? { integrity: actual } : {},
+      )
+      t.equal(res.statusCode, 200)
+      t.equal(sha512(res.buffer()), actual)
+      t.equal(res.getHeaderString('integrity'), actual)
+      await rc.cache.promise()
+      t.equal(
+        entryAt(rc, url).getHeaderString('integrity'),
+        actual,
+        'recorded under the original url',
+      )
+      t.equal(
+        entryAt(rc, final).getHeaderString('integrity'),
+        actual,
+        'and under the final one',
+      )
+    })
+  }
+})
+
+t.test('a body served without a content-type', async t => {
+  // the json sniff un-gzips such a body in memory before it is stored,
+  // but the hash recorded is that of the bytes off the wire: the one a
+  // lockfile can carry to a cold cache
+  const dir = t.testdir()
+  const rc = new RC({ cache: dir })
+  const url = `${registryURL}/no-content-type/tarball`
+  const plain = Buffer.from('this is a tarball lets pretend')
+  const actual = sha512(gzipSync(plain))
+  const res = await rc.request(url)
+  t.equal(res.statusCode, 200)
+  t.equal(res.isJSON, false)
+  t.equal(res.isGzip, false, 'un-gzipped in memory')
+  t.equal(res.getHeaderString('integrity'), actual)
+  t.equal(res.integrityActual, actual, 'memoized, not hashed again')
+  await rc.cache.promise()
+  const stored = entryAt(rc, url)
+  t.equal(stored.isGzip, false, 'stored un-gzipped')
+  t.strictSame(Buffer.from(stored.buffer()), plain)
+  t.equal(
+    stored.getHeaderString('integrity'),
+    actual,
+    'under the hash of the wire bytes',
+  )
+  t.equal(
+    new RC({ cache: dir }).cachedBody(url, { integrity: actual })
+      ?.path,
+    rc.cache.integrityPath(actual),
+    'found by that hash',
+  )
+
+  // which is what a cold cache gets, and checks it against
+  const cold = new RC({ cache: `${dir}/cold` })
+  const again = await cold.request(url, { integrity: actual })
+  t.equal(again.statusCode, 200)
+  t.equal(again.fromCache, false)
+  await cold.cache.promise()
 })
 
 t.test('verifyDigest', async t => {
