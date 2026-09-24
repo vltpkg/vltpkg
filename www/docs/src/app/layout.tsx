@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { Providers } from '@/providers'
 import { SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
@@ -28,11 +29,15 @@ const RootLayout = ({ children }: LayoutProps<'/'>) => {
         <Providers>
           <Navbar />
           <div className="flex flex-1">
-            {/* the sidebar is `fixed`, so it's pushed below the navbar explicitly */}
-            <AppSidebar
-              tree={source.pageTree}
-              className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
-            />
+            {/* the sidebar is `fixed`, so it's pushed below the navbar explicitly.
+                it reads usePathname(), which is only known at request time for urls that weren't prerendered
+                (a 404, a probe like /.well-known/…); Suspense lets those stream it in instead of blocking the shell */}
+            <Suspense>
+              <AppSidebar
+                tree={source.pageTree}
+                className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+              />
+            </Suspense>
             <SidebarInset className="px-4 py-8 md:px-16 md:py-12">
               {children}
             </SidebarInset>

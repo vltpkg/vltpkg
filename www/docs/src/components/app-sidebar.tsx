@@ -146,7 +146,7 @@ const Entry = ({ node, stack, go, returnTo, sub }: EntryProps) => {
   if (node.type === 'page') return <PageLink page={node} sub={sub} />
   if (node.type === 'separator')
     return (
-      <SidebarGroupLabel className="mt-3 px-3">
+      <SidebarGroupLabel className="font-pixel mt-3 px-3 font-normal">
         {node.name}
       </SidebarGroupLabel>
     )
@@ -239,7 +239,7 @@ const View = ({
           <SidebarGroup key={i} className="px-0">
             {i > 0 && <Rule className="mb-2" />}
             {group.name && (
-              <SidebarGroupLabel className="px-3">
+              <SidebarGroupLabel className="font-pixel px-3 font-normal">
                 {group.name}
               </SidebarGroupLabel>
             )}

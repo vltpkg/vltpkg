@@ -1,6 +1,7 @@
 import { defineDocs } from 'fumadocs-mdx/macro'
 import { applyMdxPreset } from 'fumadocs-mdx/config'
 import { loader } from 'fumadocs-core/source'
+import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb'
 import type { InferPageType } from 'fumadocs-core/source'
 import { pageSchema } from 'fumadocs-core/source/schema'
 
@@ -136,3 +137,27 @@ export const pageTitle = (page: InferPageType<typeof source>) => {
     source.getPage([section, folder, pkg])?.data.title ?? pkg
   return `${pkgTitle}: ${page.data.title}`
 }
+
+// content/meta.json spreads registry/ and client/ into the root under `---Registry---` separators, so those
+// sections are separators rather than folders; each links to the first page in its group (its quick start)
+const groupUrls = new Map(
+  source.pageTree.children.flatMap((node, i, nodes) => {
+    if (node.type !== 'separator') return []
+    const next = nodes.at(i + 1)
+    const url =
+      next?.type === 'page' ? next.url
+      : next?.type === 'folder' ? next.index?.url
+      : undefined
+    return url ? [[node.name, url] as const] : []
+  }),
+)
+
+// a page's place in the sidebar tree, e.g. Registry / Using Packages, ending with the page itself
+export const breadcrumbs = (url: string) =>
+  getBreadcrumbItems(url, source.pageTree, {
+    includePage: true,
+    includeSeparator: true,
+  }).map(item => ({
+    ...item,
+    url: item.url ?? groupUrls.get(item.name),
+  }))

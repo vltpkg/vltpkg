@@ -81,7 +81,7 @@ export const Toc = ({
           <nav
             aria-label="On this page"
             className="flex min-h-0 flex-col gap-3">
-            <p className="text-muted-foreground text-xs font-medium">
+            <p className="text-muted-foreground font-pixel text-xs">
               On this page
             </p>
             {/* px-2 gives the focus ring room inside the scroll container's clip */}

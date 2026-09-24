@@ -1,13 +1,22 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
+import { Fragment, Suspense } from 'react'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { pageTitle, source } from '@/lib/source'
+import { breadcrumbs, pageTitle, source } from '@/lib/source'
 import { components } from '@/mdx-components'
 import { Toc, TocBar } from '@/components/toc'
 import { PageNav } from '@/components/page-nav'
 import { CopyPage } from '@/components/copy-page'
 import { TextSelection } from '@/components/text-selection'
 import { ScrollToTop } from '@/components/scroll-to-top'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 export const generateStaticParams = () => source.generateParams()
 
@@ -70,6 +79,8 @@ const DocPage = async ({
   if (!page) notFound()
 
   const MDX = page.data.body
+  // top-level pages (why-vlt, use-cases, …) have no trail beyond themselves, so they show none
+  const trail = breadcrumbs(page.url)
   // the rail pins to the right edge; the article centres in whatever space is left of it
   return (
     <div className="grid gap-x-16 xl:grid-cols-[minmax(0,1fr)_auto]">
@@ -81,6 +92,28 @@ const DocPage = async ({
         {/* at least one screen tall (minus the navbar, the toc bar and the inset's py-8 / md:py-12), so on short pages
           the pagination's mt-auto pushes it to the bottom of the viewport instead of hugging the text */}
         <div className="mx-auto flex min-h-[calc(100svh-var(--header-height)-4rem-var(--toc-bar,0px))] w-full max-w-[37em] min-w-0 flex-col md:min-h-[calc(100svh-var(--header-height)-6rem-var(--toc-bar,0px))]">
+          {trail.length > 1 && (
+            <Breadcrumb className="font-pixel mb-8">
+              <BreadcrumbList>
+                {trail.map((item, i) => (
+                  <Fragment key={i}>
+                    {i > 0 && (
+                      <BreadcrumbSeparator>/</BreadcrumbSeparator>
+                    )}
+                    <BreadcrumbItem>
+                      {i === trail.length - 1 ?
+                        <BreadcrumbPage>{item.name}</BreadcrumbPage>
+                      : item.url ?
+                        <BreadcrumbLink asChild>
+                          <Link href={item.url}>{item.name}</Link>
+                        </BreadcrumbLink>
+                      : item.name}
+                    </BreadcrumbItem>
+                  </Fragment>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          )}
           <article className="typeset typeset-docs">
             <div className="flex items-start justify-between gap-4">
               {/* min-w-0 + anywhere-wrapping: long unbroken titles (@vltpkg/package-json) otherwise push Copy page off-screen */}
