@@ -6,8 +6,10 @@ sidebar:
 ---
 
 Access to a vlt account — its registries, packages, tokens, and
-settings — is managed through account membership. Permissions apply
-account-wide: there are no per-package or per-registry access lists.
+settings — is managed through account membership. Roles and token
+privileges apply account-wide; on top of that, individual packages
+carry a visibility level, and teams can be granted access to specific
+packages.
 
 ## Roles
 
@@ -49,9 +51,29 @@ never do more than the person who created it.
 
 - Members of an account can install from and publish to the account's
   `main` registry.
-- People outside the account have no access to its private packages.
+- People outside the account have no access to its **restricted**
+  packages.
+- Packages published as **public** are installable by anyone, without
+  a token — see
+  [Package visibility](/registry/publishing#package-visibility) for
+  how to set and change the level.
 - The account's `npm` mirror serves public packages and is readable by
   any authenticated account member.
+
+### Granting a team access to a package
+
+Beyond the account-wide roles, a team can be given access to
+individual packages:
+
+```bash
+$ vlt access grant read-only @acme:frontend @acme/utils
+$ vlt access revoke @acme:frontend @acme/utils
+```
+
+Permissions are `read-only` or `read-write`. Omit the package name to
+apply the grant to every package in the scope. Run these against your
+account registry — `vlt registry main access grant ...` if you have
+more than one configured.
 
 ## Two-factor enforcement
 

@@ -1,0 +1,185 @@
+---
+title: npm
+description:
+  Configure npm for your vlt.io registries, and publish to main.
+sidebar:
+  label: npm
+  order: 2
+---
+
+Verified against **npm 12**.
+
+## Quick start
+
+```sh
+export VLT_TOKEN=<your token>
+
+npm config set registry https://registry.vlt.io/acme/npm/ --location=project
+npm config set @acme:registry https://registry.vlt.io/acme/main/ --location=project
+npm config set //registry.vlt.io/acme/npm/:_authToken '${VLT_TOKEN}' --location=project
+npm config set //registry.vlt.io/acme/main/:_authToken '${VLT_TOKEN}' --location=project
+```
+
+That writes the `.npmrc` below. Then `npm install` as usual.
+
+## The config file
+
+Everything lives in `.npmrc`. Create it in your project root:
+
+```ini
+; all public npm packages come from your account mirror
+registry=https://registry.vlt.io/acme/npm/
+
+; your own packages come from your main registry
+@acme:registry=https://registry.vlt.io/acme/main/
+
+; auth — ${VLT_TOKEN} is read from the environment, so this file is safe to commit
+//registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}
+//registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
+```
+
+npm expands `${VLT_TOKEN}` from the environment at read time. Use the
+braces — bare `$VLT_TOKEN` is **not** expanded and gets sent
+literally.
+
+Drop the `@acme:registry` line if you only want the mirror, or the
+`registry` line if you only want your own packages.
+
+## Install from the npm mirror
+
+```sh
+npm install abbrev
+```
+
+Resolves through `https://registry.vlt.io/acme/npm/`. To move an
+existing project onto the mirror, delete the lockfile so the resolved
+URLs get rewritten:
+
+```sh
+rm -rf package-lock.json node_modules
+npm install
+```
+
+## Install from your `main` registry
+
+Anything matching `@acme/*` is routed to `main` by the
+`@acme:registry` line:
+
+```sh
+npm install @acme/my-package
+```
+
+### Public packages
+
+Public packages on `main` install without a token — the registry line
+alone is enough, with no auth line:
+
+```ini
+@acme:registry=https://registry.vlt.io/acme/main/
+```
+
+## Publish to `main`
+
+Point the package at the registry in `package.json`, so publishing can
+never go to the wrong place:
+
+```json
+{
+  "name": "@acme/my-package",
+  "version": "1.0.0",
+  "publishConfig": {
+    "registry": "https://registry.vlt.io/acme/main/"
+  }
+}
+```
+
+Then:
+
+```sh
+npm publish
+```
+
+Setting it in `package.json` keeps the destination with the package
+instead of depending on whoever's machine runs the publish.
+
+For a **scoped** package, npm resolves the publish registry in this
+order:
+
+1. `@acme:registry`
+2. `--registry=<url>` on the command line
+3. `publishConfig.registry`
+4. the default `registry`
+
+The surprise is that `@acme:registry` wins over an explicit
+`--registry` flag, so `--registry` will not redirect a scoped publish.
+In the setup above both point at `main`, so there is nothing to trip
+over — but don't rely on `--registry` to override it, and don't set
+`@acme:registry` and `publishConfig.registry` to different places.
+
+Add `--access public` to make the package readable without a token.
+Use `--dry-run` first to see exactly what would be uploaded and where.
+
+### The one-time password prompt
+
+With a **personal** token, every publish stops with:
+
+```
+npm error code EOTP
+npm error This operation requires a one-time password.
+npm error Open this URL in your browser to authenticate:
+npm error   https://www.vlt.io/auth/otp/...
+```
+
+Open the URL, approve, and re-run `npm publish`. This is expected —
+the registry requires an interactive confirmation for writes made with
+a personal token.
+
+A **service token** skips the prompt, which is how you publish from
+CI. Create one at [vlt.io → Tokens](https://www.vlt.io) by choosing
+_This is a service token_, with the `package:write` scope. Nothing
+else in this guide changes — it is a drop-in replacement for
+`VLT_TOKEN`. See [CI & automation](/registry/publishing/ci).
+
+## Log in instead of using a token
+
+```sh
+npm login --registry=https://registry.vlt.io/acme/main/
+```
+
+npm 12 defaults to `--auth-type=web`, so this opens the browser and
+stores a token in your **user** `.npmrc` — no token juggling. Add
+`--scope=@acme` to also record the scope-to-registry mapping.
+
+Two things to avoid:
+
+- **Don't pass `--otp` to `npm login`.** Supplying an `otp` config
+  forces `--auth-type=legacy`, and username/password login is **not**
+  supported by the registry.
+- **`--location` does not work with `npm login`.** It is accepted and
+  ignored; the token always lands in your user `.npmrc`. To write it
+  into the project file instead, use `--userconfig=./.npmrc`.
+
+If `npm login` ever prompts you for a _username_, it has fallen back
+to the legacy flow — that means it could not reach the registry's web
+login endpoint, not that you should type your credentials.
+
+## Useful checks
+
+```sh
+npm whoami --registry=https://registry.vlt.io/acme/main/   # who am I
+npm config list                                            # what is npm reading
+npm view @acme/my-package                                   # inspect a package
+```
+
+## Gotchas
+
+- **Trailing slashes matter.**
+  `//registry.vlt.io/acme/npm/:_authToken` must match the registry URL
+  exactly, slash included.
+- **Use `${VAR}`, not `$VAR`.** Only the braced form is expanded.
+- One auth line per registry. A host-wide
+  `//registry.vlt.io/:_authToken=${VLT_TOKEN}` does work for npm, but
+  it is not portable to bun, so prefer the explicit per-registry lines
+  above.
+- **Never commit a literal token.** Keep `${VLT_TOKEN}` in the file
+  and the real value in your environment.

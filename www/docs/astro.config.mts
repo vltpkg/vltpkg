@@ -172,7 +172,20 @@ export default defineConfig({
             'registry/access',
             'registry/dashboard',
             'registry/tokens',
-            'registry/publishing',
+            {
+              label: 'Publishing',
+              collapsed: true,
+              items: [
+                'registry/publishing',
+                'registry/publishing/vlt',
+                'registry/publishing/npm',
+                'registry/publishing/pnpm',
+                'registry/publishing/yarn',
+                'registry/publishing/bun',
+                'registry/publishing/deno',
+                'registry/publishing/ci',
+              ],
+            },
           ],
         },
         {

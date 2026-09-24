@@ -93,16 +93,17 @@ read-only token can install but never publish, no matter where it
 leaks. Provide it through the environment:
 
 <Code
-  code={`VLT_TOKEN_https_registry_vlt_io_acme_npm="<service token>" \\
-VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" \\
-vlt install`}
+  code={`VLT_REGISTRY=https://registry.vlt.io/acme/npm/ \\
+VLT_TOKEN="<service token>" vlt install`}
   title="Terminal"
   lang="bash"
 />
 
 The same token works for both registries because tokens belong to your
-account. See [Authentication & Tokens](/registry/tokens) for creating
-tokens and
+account. Per-registry `VLT_TOKEN_*` variables exist too, but they
+don't apply to registries mapped through `scoped-registries` —
+`VLT_TOKEN` with `VLT_REGISTRY` is the form that always works. See
+[Authentication & Tokens](/registry/tokens) for creating tokens and
 [Authentication — CI](/cli/auth#ci-and-other-headless-environments)
 for how the environment variables are named.
 
