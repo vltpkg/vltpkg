@@ -475,6 +475,18 @@ export class Config {
     // ok, applied cmd-specific defaults, do rest of the parse
     this.jack.applyDefaults(p)
 
+    // `auto` only hardlinks from the global store on linux: on APFS a
+    // hardlink is the slowest way to place a file, so darwin and win32
+    // unpack by default. the env layer is rewritten too, so `explicit`
+    // records the resolved value.
+    if (
+      p.values['store-linker'] === 'auto' &&
+      process.platform !== 'linux'
+    ) {
+      p.values['store-linker'] = 'unpack'
+      envValues['store-linker'] = 'unpack'
+    }
+
     // what was set on the cli or env for this run. record fields hold
     // only those pairs, env then cli, so later ones win per key.
     const values = p.values as RecordPairs
