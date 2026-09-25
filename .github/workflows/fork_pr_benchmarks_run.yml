@@ -60,26 +60,9 @@ jobs:
         run: |
           bash ./infra/cli-benchmarks/scripts/setup.sh
 
-      # benchmark only: a `bench-store-linker=<tracked>[,<control>]` line
-      # of its own in the PR body sets VLT_STORE_LINKER=<tracked> for
-      # every benchmarked install, warmups included. <control> runs as a
-      # second command on the same VM: in the artifact, job log and step
-      # summary, not in Bencher (results[0] only).
-      - name: Store linker override
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          node --experimental-strip-types --no-warnings ./infra/benchmark/src/store-linker-override.ts
-
       - name: Run Benchmarks variations
         run: |
           bash ./infra/cli-benchmarks/scripts/benchmark.sh ${{ matrix.fixture }} ${{ matrix.variation }}
-
-      - name: Control ratio
-        if: env.BENCH_BINARY
-        run: |
-          jq -r '.results | "\(.[0].command): \(.[0].mean * 1000 | round) ms, control \(.[1].mean * 1000 | round) ms, control/tracked \(.[1].mean / .[0].mean * 100 | round / 100)"' \
-            ./results/${{ matrix.fixture }}/${{ matrix.variation }}/benchmarks.json | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Benchmark Results
         uses: actions/upload-artifact@v4
