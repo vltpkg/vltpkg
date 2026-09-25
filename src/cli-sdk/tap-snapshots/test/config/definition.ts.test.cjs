@@ -544,7 +544,7 @@ Object {
     "description": String(
       How packages are placed in \`node_modules\`. Every linker but \`unpack\` fills a global store under \`cache\` in the background, then places packages from it.
       
-      - auto: Default. On Linux, hardlink from the global store, copying any file that cannot be linked. Elsewhere, same as \`unpack\`: a hardlink is the slowest way to place a file on APFS, so macOS and Windows keep unpacking until they get a linker of their own.
+      - auto: Default. On Linux, hardlink from the global store, copying any file that cannot be linked. Elsewhere, same as \`unpack\`: a hardlink is the slowest way to place a file on APFS, so macOS and Windows unpack by default.
       - hardlink: Hardlink from the global store on every platform.
       - copy: Copy from the global store. Use this when editing files in \`node_modules\` in place, since a hardlink shares its content with every project.
       - unpack: Unpack each package tarball, skipping the global store.

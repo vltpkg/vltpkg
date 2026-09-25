@@ -366,8 +366,7 @@ export const definition = j
                       store, copying any file that cannot be linked.
                       Elsewhere, same as \`unpack\`: a hardlink is the
                       slowest way to place a file on APFS, so macOS and
-                      Windows keep unpacking until they get a linker of
-                      their own.
+                      Windows unpack by default.
                     - hardlink: Hardlink from the global store on every
                       platform.
                     - copy: Copy from the global store. Use this when

@@ -477,8 +477,8 @@ export class Config {
 
     // `auto` only hardlinks from the global store on linux: on APFS a
     // hardlink is the slowest way to place a file, so darwin and win32
-    // keep unpacking until they get a linker of their own. the env
-    // layer is rewritten too, so `explicit` records the resolved value.
+    // unpack by default. the env layer is rewritten too, so `explicit`
+    // records the resolved value.
     if (
       p.values['store-linker'] === 'auto' &&
       process.platform !== 'linux'
