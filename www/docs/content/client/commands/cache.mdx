@@ -1,0 +1,171 @@
+---
+title: vlt cache
+sidebar:
+  label: cache
+---
+
+Usage:
+
+<Code
+  code="$ vlt cache <command> [flags]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Work with vlt cache folders
+
+## Subcommands
+
+### add
+
+Resolve the referenced package identifiers and ensure they are cached.
+
+<Code
+  code="$ vlt cache add <package-spec> [<package-spec>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### ls
+
+Show cache entries. If no keys are provided, then a list of available
+keys will be printed. If one or more keys are provided, then details
+will be shown for the specified items.
+
+<Code code="$ vlt cache ls [<key>...]" title="Terminal" lang="bash" />
+
+### info
+
+Print metadata details for the specified cache key to stderr, and the
+response body to stdout.
+
+<Code code="$ vlt cache info <key>" title="Terminal" lang="bash" />
+
+### clean
+
+Purge expired cache entries. If one or more keys are provided, then
+only those cache entries will be considered.
+
+<Code
+  code="$ vlt cache clean [<key>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### delete
+
+Purge items explicitly, whether expired or not. If one or more keys
+are provided, then only those cache entries will be considered.
+
+<Code
+  code="$ vlt cache delete <key> [<key>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### delete-before
+
+Purge all cache items from before a given date, and global store
+entries written before it. Date can be provided in any format that
+JavaScript can parse.
+
+<Code
+  code="$ vlt cache delete-before <date>"
+  title="Terminal"
+  lang="bash"
+/>
+
+### delete-all
+
+Delete the entire cache folder to make vlt slower.
+
+<Code code="$ vlt cache delete-all" title="Terminal" lang="bash" />
+
+### verify
+
+Check global store entries against their cached tarballs (file list,
+contents, exec bits) and remove any that differ or have no cached
+tarball, e.g. after a file in `node_modules` was edited in place.
+
+<Code
+  code={`$ vlt cache verify <package-spec> [<package-spec>...]
+$ vlt cache verify --all`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### prune-store
+
+Remove global store entries that no `node_modules` folder links to.
+Entries ever copied from (install scripts, `store-linker=copy`, a
+cache on another drive) stay: copies do not show use.
+
+<Code code="$ vlt cache prune-store" title="Terminal" lang="bash" />
+
+## Global store
+
+The global store holds cached registry package tarballs unpacked,
+under `<cache>/store`. A background process fills it after each
+install, and later installs hardlink package files from it instead of
+unpacking tarballs again. By default (`store-linker=auto`) this
+happens on Linux only: macOS and Windows unpack tarballs as before,
+unless `store-linker` is set to `hardlink` or `copy`. Packages with
+install scripts are always copied.
+
+When installed with `auto` on Linux or with `hardlink`, files in
+`node_modules` are hardlinks into the global store, so editing one in
+place changes it for every project on the machine. To edit
+`node_modules` in place (debugging, patching), set
+[`store-linker=copy`](/client/configuring#--store-linkerauto--hardlink--copy--unpack)
+and reinstall from scratch (remove `node_modules` first), so its files
+are copies. If files were already edited through a hardlink, run
+`vlt cache verify --all` to drop the changed entries, then remove
+`node_modules` and reinstall in every project that linked them: their
+files are still the edited ones. `store-linker=unpack` (or
+`VLT_STORE_LINKER=unpack`) skips the global store entirely.
+
+The global store is a cache: deleting it, whole or in part, never
+breaks an installed project. `delete`, `delete-before` and `clean`
+also remove the global store entries of the tarballs they remove,
+`delete-all` removes the whole global store, and `prune-store` removes
+entries no project links to and no install ever copied from.
+
+## Examples
+
+Show cache metadata for a given registry URL:
+
+<Code
+  code="$ vlt cache ls https://registry.npmjs.org/typescript"
+  title="Terminal"
+  lang="bash"
+/>
+
+Add a given package specifier to the cache by fetching its resolved
+value:
+
+<Code
+  code="$ vlt cache add eslint@latest"
+  title="Terminal"
+  lang="bash"
+/>
+
+Print the cache metadata to stderr, and write the tarball on stdout,
+redirecting to a file:
+
+<Code
+  code="$ vlt cache info https://registry.npmjs.org/eslint/-/eslint-9.25.1.tgz > eslint.tgz"
+  title="Terminal"
+  lang="bash"
+/>
+
+Delete all entries created before Jan 1, 2025:
+
+<Code
+  code="$ vlt cache delete-before 2025-01-01"
+  title="Terminal"
+  lang="bash"
+/>
+
+Check every global store entry:
+
+<Code code="$ vlt cache verify --all" title="Terminal" lang="bash" />

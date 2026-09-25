@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "why-vlt",
+    "use-cases",
+    "npm-interoperability",
+    "reference",
+    "concepts",
+    "---Registry---",
+    "...registry",
+    "---Client---",
+    "...client"
+  ]
+}

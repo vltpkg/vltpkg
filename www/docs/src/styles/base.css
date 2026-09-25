@@ -1,0 +1,31 @@
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  /* a translucent blue so selected text keeps its own colour (incl. syntax highlighting) */
+  ::selection {
+    background: oklch(0.62 0.19 255 / 0.25);
+  }
+
+  [data-theme='dark'] ::selection {
+    background: oklch(0.62 0.19 255 / 0.45);
+  }
+
+  /* trackpad rubber-banding drags the sticky navbar + content while the fixed sidebar stays put */
+  html {
+    overscroll-behavior-y: none;
+  }
+
+  /* in-page anchors (the toc); data-scroll-behavior on <html> keeps route changes instant */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+}

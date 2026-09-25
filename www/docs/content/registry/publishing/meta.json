@@ -1,0 +1,4 @@
+{
+  "title": "Publishing",
+  "pages": ["vlt", "npm", "pnpm", "yarn", "bun", "deno", "ci"]
+}

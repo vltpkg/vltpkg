@@ -5,11 +5,10 @@
  * neither ESLint nor prettier can see, and that otherwise only
  * surface as build/render-time errors (or silent misrendering):
  *
- * 1. Content escaping a Starlight `<Steps>` block. Steps requires
- *    its content to be a single ordered list; a line indented less
- *    than its step's content indent (like an `<img>` at column 0)
- *    becomes a sibling of the `<ol>` and fails the build with
- *    "expects its content to be a single ordered list".
+ * 1. Content escaping a `<Steps>` block. Steps renders only its
+ *    ordered list; a line indented less than its step's content
+ *    indent (like an `<img>` at column 0) becomes a sibling of the
+ *    `<ol>` and is silently dropped from the page.
  * 2. Collapsed aside directives like `:::note Some text :::` on the
  *    opening line — usually prettier's doing — which no longer parse
  *    as an aside. Content must start on the line after `:::type`.
@@ -18,19 +17,19 @@
  * a markdown AST intentionally abstracts away. Generated typedoc
  * content is excluded.
  *
- * Usage: npm run lint:mdx -- [files...]
- * With no arguments, scans src/content/docs (minus typedoc output).
+ * Usage: vlr lint:mdx [files...]
+ * With no arguments, scans content/ (minus typedoc output).
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { typedocBasePath } from '../typedoc/constants.mts'
 
 const docsRoot = resolve(
   fileURLToPath(import.meta.url),
-  '../../src/content/docs',
+  '../../content',
 )
+const typedocRoot = join(docsRoot, 'client/api-reference')
 
 /** A lint problem found in a file. */
 type Problem = {
@@ -51,7 +50,7 @@ const collectFiles = (dir: string): string[] => {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name)
     if (statSync(path).isDirectory()) {
-      if (path === join(docsRoot, typedocBasePath)) continue
+      if (path === typedocRoot) continue
       files.push(...collectFiles(path))
     } else if (/\.mdx?$/.test(name)) {
       files.push(path)
@@ -71,7 +70,7 @@ const MARKER = /^(\s*)(\d+[.)])(\s+)/
  * inside the ordered list, meaning each non-blank line is either a
  * list-item marker or indented at least as far as the current item's
  * content. Anything shallower (like a component at column 0) becomes
- * a sibling of the `<ol>` and breaks Starlight's Steps contract.
+ * a sibling of the `<ol>` and is dropped by the Steps component.
  */
 const checkSteps = (file: string, lines: string[]): Problem[] => {
   const problems: Problem[] = []

@@ -1,0 +1,187 @@
+---
+title: CI & automation
+description: Install and publish from CI with a vlt.io service token.
+sidebar:
+  label: CI & Automation
+  order: 7
+---
+
+Store your token as a secret named `VLT_TOKEN` and export it. Every
+config file in these guides reads the token from the environment, so
+nothing else changes between your laptop and CI.
+
+<Aside type="caution" title="If CI publishes, the token must be a service token">
+
+Personal tokens require an interactive browser confirmation on every
+publish and will fail with `EOTP`. See
+[Publishing from CI](#publishing-from-ci).
+
+</Aside>
+
+## GitHub Actions
+
+```yaml
+name: ci
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VLT_TOKEN: ${{ secrets.VLT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+```
+
+Commit the `.npmrc` / `bunfig.toml` / `.yarnrc.yml` from the relevant
+guide. Because they reference `${VLT_TOKEN}` rather than a literal
+token, they are safe in version control and need no rewriting step in
+CI.
+
+## Per package manager
+
+```sh
+# npm — commit .npmrc with ${VLT_TOKEN}
+npm ci
+
+# pnpm — pin to 11.26.0, and pass the token as a config env var (see below)
+env "pnpm_config_//registry.vlt.io/acme/npm/:_authToken=$VLT_TOKEN" \
+  pnpm install --frozen-lockfile
+
+# yarn — commit .yarnrc.yml with ${VLT_TOKEN}
+yarn install --immutable
+
+# bun — commit bunfig.toml with $VLT_TOKEN
+bun install --frozen-lockfile
+
+# deno — commit .npmrc with ${VLT_TOKEN}
+deno ci
+
+# vlt
+VLT_REGISTRY=https://registry.vlt.io/acme/npm/ vlt install --frozen-lockfile
+```
+
+### Generating `.npmrc` at runtime instead
+
+If you would rather not commit the file, write it in a step:
+
+```yaml
+- run: |
+    cat > .npmrc <<'EOF'
+    registry=https://registry.vlt.io/acme/npm/
+    @acme:registry=https://registry.vlt.io/acme/main/
+    //registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}
+    //registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
+    EOF
+```
+
+Keep the quotes on `<<'EOF'` so the shell leaves `${VLT_TOKEN}` intact
+for the package manager to expand.
+
+### pnpm needs a different approach
+
+pnpm ignores `${VLT_TOKEN}` in a project `.npmrc` on purpose, so the
+committed-file pattern above does not carry credentials for it. Commit
+only the routing, and supply the token as a config environment
+variable:
+
+```yaml
+- run:
+    env
+    "pnpm_config_//registry.vlt.io/acme/npm/:_authToken=$VLT_TOKEN"
+    pnpm install --frozen-lockfile
+```
+
+Use `env` rather than `export`: the variable name contains `/`, `:`
+and `.`, which the shell will not accept in an assignment. This needs
+**pnpm 11.6.0 or newer**; see
+[the pnpm guide](/registry/publishing/pnpm) for the full version
+matrix.
+
+Pin pnpm by exact version in `packageManager`, not by range. Corepack
+resolves a range against its local cache first, so `pnpm@11` can
+produce different versions on different runners.
+
+### Two notes on the other tools
+
+- **deno** — `deno ci` (Deno 2.8+) is the equivalent of `npm ci`: it
+  installs strictly from `deno.lock` and fails rather than updating
+  it.
+- **deno** — Deno's default 24-hour dependency-age gate will block a
+  package you published minutes earlier. If CI installs your own fresh
+  releases, configure `minimumDependencyAge` as shown in
+  [the deno guide](/registry/publishing/deno).
+
+## Publishing from CI
+
+**Use a service token.** When you create the token at
+[vlt.io → Tokens](https://www.vlt.io), choose _This is a service
+token_ rather than _This token is for myself_, and give it
+`package:read` and `package:write`.
+
+That choice is what makes unattended publishing work. A **personal**
+token answers every publish with a one-time-password challenge and
+fails in CI with:
+
+```
+npm error code EOTP
+npm error This operation requires a one-time password.
+```
+
+A **service** token has no such challenge — verified with npm, pnpm,
+yarn, bun and vlt, all publishing to `main` with no prompt.
+
+```yaml
+- run: npm publish
+  env:
+    VLT_TOKEN: ${{ secrets.VLT_TOKEN_CI }}
+```
+
+Nothing else about the config changes; a service token is a drop-in
+replacement in every snippet in these guides. Store it as a separate
+secret from your personal token so it is obvious which one CI uses.
+
+Three per-tool notes:
+
+- **yarn** needs `yarn install` before `yarn npm publish`, or it
+  aborts with
+  `This package doesn't seem to be present in your lockfile`.
+- **pnpm** needs `--no-git-checks` in CI, since the checkout is often
+  not on the publish branch.
+- **deno** publishes in two steps — `deno pack` then
+  `npm publish <tarball>`. Set `publish.include` in `deno.json` first,
+  or `deno pack` may bundle your `.npmrc` into the tarball. See
+  [the deno guide](/registry/publishing/deno).
+
+If you are stuck with a personal token, `vlt publish` can take a
+pre-obtained code:
+
+```sh
+VLT_OTP=<code> vlt publish
+```
+
+## Read-only installs of public packages
+
+A job that installs only public packages from `main` needs no secret
+at all — just the registry URL:
+
+```ini
+@acme:registry=https://registry.vlt.io/acme/main/
+```
+
+The npm mirror always requires a token, so this only helps if every
+one of your dependencies is a public package from `main`.
+
+## Checklist
+
+- `VLT_TOKEN` is set as a masked secret, not a plaintext variable.
+- The committed config uses `${VLT_TOKEN}` (or `$VLT_TOKEN` for
+  `bunfig.toml`) — never a literal token.
+- Lockfiles were regenerated after switching registries, so resolved
+  URLs point at `registry.vlt.io`.
+- Installs use the frozen-lockfile flag for the package manager.
