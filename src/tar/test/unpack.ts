@@ -13,7 +13,9 @@ import { brotliCompressSync, gzipSync } from 'node:zlib'
 import {
   checkFs,
   unpack as unpackAsync,
+  unpackFileParallel,
   unpackFileSync,
+  unpackParallel,
   unpackSync,
   unpackToStoreSync,
 } from '../src/unpack.ts'
@@ -114,8 +116,15 @@ const writers: [string, (m: UnpackModule) => Unpacker][] = [
     'sync',
     m => async (b, target, format) => m.unpackSync(b, target, format),
   ],
+  // async inflate + sync writes: the default. Runs the whole suite so
+  // the three paths cannot drift apart.
+  ['parallel', m => m.unpackParallel],
 ]
-const real = { unpack: unpackAsync, unpackSync } as UnpackModule
+const real = {
+  unpack: unpackAsync,
+  unpackSync,
+  unpackParallel,
+} as UnpackModule
 
 const makeFilesTar = (files: Record<string, string>) => {
   const chunks: (string | { path: string; size: number })[] = []
@@ -790,6 +799,35 @@ t.test('unpackFileSync, brotli', async t => {
     'brotli',
   )
   t.equal(readFileSync(resolve(d, 'offset/package.json'), 'utf8'), pj)
+})
+
+t.test('unpackFileParallel', async t => {
+  const head = Buffer.from('cache head bytes')
+  const br = brotliCompressSync(tarball)
+  const d = t.testdir({
+    'pkg.tgz': gzipped,
+    'pkg.tar.br': br,
+    'entry.bin': Buffer.concat([head, gzipped]),
+  })
+  await unpackFileParallel(resolve(d, 'pkg.tgz'), resolve(d, 'out'))
+  t.equal(readFileSync(resolve(d, 'out/package.json'), 'utf8'), pj)
+  await unpackFileParallel(
+    resolve(d, 'entry.bin'),
+    resolve(d, 'offset'),
+    head.length,
+  )
+  t.equal(readFileSync(resolve(d, 'offset/package.json'), 'utf8'), pj)
+  await unpackFileParallel(
+    resolve(d, 'pkg.tar.br'),
+    resolve(d, 'br'),
+    0,
+    'brotli',
+  )
+  t.equal(readFileSync(resolve(d, 'br/package.json'), 'utf8'), pj)
+  await t.rejects(
+    unpackFileParallel(resolve(d, 'nope.tgz'), resolve(d, 'out2')),
+    { code: 'ENOENT' },
+  )
 })
 
 t.test('sync errors do not leave garbage lying around', async t => {
