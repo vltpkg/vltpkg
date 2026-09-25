@@ -213,6 +213,12 @@ export class Node implements NodeLike {
   bins?: Record<string, string>
 
   /**
+   * True if the package has a root binding.gyp, when known without a
+   * disk check (placed from the global store). Not persisted.
+   */
+  bindingGyp?: boolean
+
+  /**
    * True if this node has been built as part of the reify step.
    */
   built = false

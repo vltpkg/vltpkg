@@ -66,7 +66,7 @@ Unpack the supplied Buffer of data into the target folder.
 
 Unpack a tarball read from `file`, skipping `offset` leading bytes.
 
-#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<'link' | 'copy' | false>`
+#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<{ how, index } | false>`
 
 #### `pool.unpackToStore(tarData, dir) => Promise<{ index }>`
 
@@ -94,17 +94,19 @@ valid package.json.
 
 The index has files (`[path, size, exec]`, sorted), every directory
 (shortest first), `scripts` (install scripts or a root `binding.gyp`),
-normalized `bins`, `name` and `version`.
+normalized `bins`, `name`, `version` and `manifest` (package.json as
+compact JSON text, if valid; lets reify skip reading it back).
 
 ### linkFromStore(storeEntry, target, { copy })
 
 Hardlink every file of a store entry into a sibling temp dir
-(package.json last), then rename it to `target`. Returns `'link'`, or
-`'copy'` when files were copied instead (see below). Returns `false`,
-creating nothing, if the sidecar is missing or invalid, the entry is
-not a directory, or the target's parent is a symlink. An entry with a
-missing file is removed and `false` returned. Two index paths that
-collide on a case-insensitive target (`EEXIST`) also return `false`.
+(package.json last), then rename it to `target`. Returns
+`{ how, index }`: `how` is `'link'`, or `'copy'` when files were
+copied instead (see below). Returns `false`, creating nothing, if the
+sidecar is missing or invalid, the entry is not a directory, or the
+target's parent is a symlink. An entry with a missing file is removed
+and `false` returned. Two index paths that collide on a
+case-insensitive target (`EEXIST`) also return `false`.
 
 `EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to copying
 (read + write into a fresh file); `ENOENT` while both the source and

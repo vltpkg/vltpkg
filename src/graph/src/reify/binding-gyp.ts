@@ -15,9 +15,9 @@ const onDisk = (dir: string) => {
 }
 
 /**
- * True if the package has a root binding.gyp (implicit install).
- * Checked on disk past the path cache, which may still hold ENOENT
- * from before the extraction.
+ * True if the package has a root binding.gyp (implicit install). Known
+ * from the global store index, else checked on disk past the path
+ * cache, which may still hold ENOENT from before the extraction.
  */
 export const hasBindingGyp = (node: Node, scurry: PathScurry) =>
-  onDisk(node.resolvedLocation(scurry))
+  node.bindingGyp ?? onDisk(node.resolvedLocation(scurry))

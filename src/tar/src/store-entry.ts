@@ -106,7 +106,8 @@ export const storeEntryLinked = (
       (lstatSync(join(storeEntry, p), noThrow)?.nlink ?? 1) > 1,
   )
 
-// v1 fields; optional fields added later stay unchecked
+// v1 fields; `manifest` only if present (older sidecars lack it);
+// optional fields added later stay unchecked
 const indexKeys = [
   'v',
   'files',
@@ -135,7 +136,11 @@ export const verifyStoreEntry = (
   const index = readStoreIndex(storeEntry)
   if (!index) return 'no index'
   if (
-    indexKeys.some(k => !isDeepStrictEqual(index[k], layout.index[k]))
+    indexKeys.some(
+      k => !isDeepStrictEqual(index[k], layout.index[k]),
+    ) ||
+    (index.manifest !== undefined &&
+      index.manifest !== layout.index.manifest)
   ) {
     return 'index differs'
   }

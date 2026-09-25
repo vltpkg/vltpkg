@@ -95,6 +95,17 @@ export type Resolution = {
   digestRequired?: boolean
 }
 
+/**
+ * {@link PackageInfoClient.extract} result. A global store link also
+ * carries what its index knows, so reify need not read it from disk.
+ */
+export type ExtractResolution = Resolution & {
+  /** the package.json as JSON text, if the index has it */
+  manifest?: string
+  /** true if the package has a root binding.gyp */
+  bindingGyp?: boolean
+}
+
 export type PackageInfoClientOptions = RegistryClientOptions &
   SpecOptions & {
     /** root of the project. Defaults to process.cwd() */
@@ -334,7 +345,7 @@ export class PackageInfoClient {
     spec: Spec | string,
     target: string,
     options: PackageInfoClientExtractOptions = {},
-  ): Promise<Resolution> {
+  ): Promise<ExtractResolution> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const {
@@ -405,16 +416,24 @@ export class PackageInfoClient {
             this.#storeHitRateLogged = true
             process.once('beforeExit', this.#logStoreHitRate)
           }
-          const how = await pool.linkFromStore(
+          const linked = await pool.linkFromStore(
             pathResolve(this.#storeRoot, hex),
             target,
             { copy },
           )
-          if (how) {
+          if (linked) {
+            const { how, index } = linked
             this.#storeHits[how]++
             // a copy is no link: report it as a cache hit
             logRequest(r.resolved, how === 'link' ? 'store' : 'cache')
-            return r
+            return {
+              ...r,
+              manifest: index.manifest,
+              // implies scripts, so most packages skip the scan
+              bindingGyp:
+                index.scripts &&
+                index.files.some(f => f[0] === 'binding.gyp'),
+            }
           }
           this.#storeMisses++
         }

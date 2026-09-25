@@ -10,11 +10,17 @@ const dir = t.testdir({
   plain: {},
   'x.tgz': '',
 })
-const node = (name: string) =>
+const node = (name: string, bindingGyp?: boolean) =>
   ({
+    bindingGyp,
     resolvedLocation: () => resolve(dir, name),
   }) as unknown as Node
 const scurry = new PathScurry(dir)
+
+t.test('known from the store index', async t => {
+  t.equal(hasBindingGyp(node('plain', true), scurry), true)
+  t.equal(hasBindingGyp(node('gyp', false), scurry), false)
+})
 
 t.test('checked on disk', async t => {
   t.equal(hasBindingGyp(node('gyp'), scurry), true)

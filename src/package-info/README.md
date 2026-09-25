@@ -51,5 +51,7 @@ Packages with install scripts are copied, never linked: when the store
 index says so, or with the `installScripts` extract option.
 
 A store link logs its request as `store`, a copy from the store as
-`cache`. With `NODE_DEBUG=vlt`, linked / copied / missed counts and
-the store hit rate are printed at exit.
+`cache`. Both also return `manifest` (the package.json as JSON text,
+if the index has it) and `bindingGyp`, so reify need not read them
+back from disk. With `NODE_DEBUG=vlt`, linked / copied / missed counts
+and the store hit rate are printed at exit.

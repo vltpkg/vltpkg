@@ -19,6 +19,7 @@ const valid: StoreIndex = {
   bins: { cli: 'bin/cli.js' },
   name: 'x',
   version: '1.0.0',
+  manifest: '{"name":"x","version":"1.0.0","bin":"bin/cli.js"}',
 }
 
 t.test('storeIndexPath', async t => {
@@ -61,6 +62,7 @@ t.test('malformed index is a miss', async t => {
     ['bins value', { ...valid, bins: { x: 1 } }],
     ['dirs', { ...valid, dirs: 'bin' }],
     ['files', { ...valid, files: {} }],
+    ['manifest object', { ...valid, manifest: {} }],
     ['file not array', { ...valid, files: ['a'] }],
     ['file length', { ...valid, files: [['a', 1]] }],
     ['file size', { ...valid, files: [['a', '1', 0]] }],
@@ -104,10 +106,29 @@ t.test('malformed index is a miss', async t => {
 t.test('storeIndexManifest', async t => {
   const pj = (o: unknown) => Buffer.from(JSON.stringify(o))
 
-  t.strictSame(storeIndexManifest(pj({}), false), { scripts: false })
+  t.strictSame(storeIndexManifest(pj({}), false), {
+    scripts: false,
+    manifest: '{}',
+  })
+  const full = {
+    name: 'a',
+    version: '1.2.3',
+    scripts: { test: 'x' },
+    author: 'someone',
+  }
+  t.strictSame(storeIndexManifest(pj(full), false), {
+    scripts: false,
+    name: 'a',
+    version: '1.2.3',
+    manifest: JSON.stringify(full),
+  })
   t.strictSame(
-    storeIndexManifest(pj({ name: 'a', version: '1.2.3' }), false),
-    { scripts: false, name: 'a', version: '1.2.3' },
+    storeIndexManifest(
+      pj({ name: 'a', dependencies: { b: 1 } }),
+      false,
+    ),
+    { scripts: false, name: 'a' },
+    'no manifest if not a valid one',
   )
   for (const s of ['install', 'preinstall', 'postinstall']) {
     t.equal(
@@ -175,7 +196,7 @@ t.test('storeIndexManifest', async t => {
       Buffer.from('\uFEFF' + JSON.stringify({ name: 'bom' })),
       false,
     ),
-    { scripts: false, name: 'bom' },
+    { scripts: false, name: 'bom', manifest: '{"name":"bom"}' },
     'leading BOM',
   )
   t.throws(() => storeIndexManifest(Buffer.from('{nope'), false), {
