@@ -890,9 +890,21 @@ export class RegistryClient {
     // a server-sent integrity header is not evidence: only the caller's
     // expectation, or a body read back from the cache, is trusted. the
     // header is dropped so it can never be stored as the entry's hash.
+    //
+    // the check has to happen here, before the cache write below, or a
+    // body that fails it is still stored under the hash it was supposed
+    // to have -- and served from there, unverified, on the next run.
+    // `!fromCache` is the whole precondition: only a cached entry can
+    // have been rewritten (cache-unzip un-gzips in place), so anything
+    // else is the bytes as they came off the wire and hashes as such.
+    // this used to also require `isGzip`, which was a proxy for that
+    // and silently exempted every artifact that is not gzip -- a
+    // `.tar.br` among them.
     if (!trustIntegrity && !result.fromCache) {
       result.deleteHeader('integrity')
-      if (result.isGzip) result.checkIntegrity({ url })
+      // 200 only: an error body is not the artifact and was never
+      // supposed to hash to it, and it is not what gets cached either.
+      if (result.statusCode === 200) result.checkIntegrity({ url })
     }
     // same for the digest the server labels an unlabelled artifact with.
     // before the cache write below, or a rejected body would be served

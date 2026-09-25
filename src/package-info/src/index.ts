@@ -569,16 +569,10 @@ export class PackageInfoClient {
             // Skip cache-served bodies: they were verified on the fetch that
             // populated the cache, and cache-unzip rewrites them un-gzipped
             // so the gzip-hash can never match. Skip lockfile-sourced
-            // integrity: it was verified on first install.
-            //
-            // Brotli is the exception to that last one. What makes it safe
-            // to skip for a `.tgz` is that the registry client hashes every
-            // gzip body it fetches (CacheEntry.isGzip -> checkIntegrity);
-            // a `.tar.br` is not gzip, so nothing else would ever check it.
-            if (
-              !response.fromCache &&
-              (!fromLockfile || format === 'brotli')
-            ) {
+            // integrity: it was verified on first install, and the registry
+            // client hashes every wire body against what we asked for
+            // anyway -- before it caches it, whatever the format.
+            if (!fromLockfile && !response.fromCache) {
               const hash = createHash('sha512')
               hash.update(buf)
               const computed: Integrity = `sha512-${hash.digest('base64')}`

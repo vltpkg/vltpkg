@@ -3477,13 +3477,34 @@ t.test('brotli tarballs', async t => {
     // the `.tgz` shortcut -- the registry client hashes every gzip body
     // it fetches -- does not reach a `.tar.br`, so extract() has to.
     const dir = t.testdir()
+    const cache = `${dir}/cache`
+    const wanted: Integrity = `sha512-${'0'.repeat(86)}==`
+    const p = pi({ cache })
     await t.rejects(
-      pi().extract('brotli@1.0.0', dir, {
+      p.extract('brotli@1.0.0', dir, {
         resolved: brURL,
-        integrity: `sha512-${'0'.repeat(86)}==`,
+        integrity: wanted,
         fromLockfile: true,
       }),
       { cause: { code: 'EINTEGRITY', found: brAbbrevIntegrity } },
+    )
+
+    // and the rejected bytes must not survive in the cache: they would
+    // be found under the pinned hash and unpacked unverified next time
+    const client = await p.getRegistryClient()
+    await client.cache.promise()
+    t.equal(
+      client.cachedBody(brURL, { integrity: wanted }),
+      undefined,
+      'not cached under the hash it failed to match',
+    )
+    const cold = pi({ cache })
+    t.equal(
+      (await cold.getRegistryClient()).cachedBody(brURL, {
+        integrity: wanted,
+      }),
+      undefined,
+      'nor on disk for the next run',
     )
   })
 
