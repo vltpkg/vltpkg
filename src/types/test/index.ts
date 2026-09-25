@@ -33,6 +33,8 @@ import {
   assertRecordStringT,
   dependencyTypes,
   integrityHex,
+  tarballFormat,
+  BROTLI_TARBALL_EXT,
   isErrorWithCause,
   isIntegrity,
   isKeyID,
@@ -236,6 +238,37 @@ t.test('integrity', t => {
   )
   t.equal(integrityHex('sha1-deadbeef'), undefined)
   t.equal(integrityHex(undefined), undefined)
+  t.end()
+})
+
+t.test('tarballFormat', t => {
+  t.equal(BROTLI_TARBALL_EXT, '.tar.br')
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tar.br'),
+    'brotli',
+  )
+  // a registry-client cache key is the url, so both read the same
+  t.equal(tarballFormat('foo-1.2.3.tar.br'), 'brotli')
+  // gzip and raw tar are sniffed from the bytes, so they say nothing
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tgz'),
+    undefined,
+  )
+  // query and fragment do not hide the extension
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tar.br?sig=abc'),
+    'brotli',
+  )
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tar.br#frag'),
+    'brotli',
+  )
+  // ...and neither do they invent one
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo.tgz?x=.tar.br'),
+    undefined,
+  )
+  t.equal(tarballFormat(''), undefined)
   t.end()
 })
 

@@ -68,26 +68,36 @@ export const LOCKFILE_VERSION = 1
 export const getFlagNumFromNode = (node: {
   optional?: boolean
   dev?: boolean
+  brotli?: boolean
 }) =>
-  node.optional && node.dev ? LockfileNodeFlagDevOptional
-  : node.optional ? LockfileNodeFlagOptional
-  : node.dev ? LockfileNodeFlagDev
-  : LockfileNodeFlagNone
+  ((node.optional ? LockfileNodeFlagOptional : 0) |
+    (node.dev ? LockfileNodeFlagDev : 0) |
+    (node.brotli ? LockfileNodeFlagBrotli : 0)) as LockfileNodeFlags
 
 export const getBooleanFlagsFromNum = (flags: LockfileNodeFlags) => ({
   dev: !!(flags & LockfileNodeFlagDev),
   optional: !!(flags & LockfileNodeFlagOptional),
+  brotli: !!(flags & LockfileNodeFlagBrotli),
 })
 
 export const LockfileNodeFlagNone = 0
 export const LockfileNodeFlagOptional = 1
 export const LockfileNodeFlagDev = 2
 export const LockfileNodeFlagDevOptional = 3
+/**
+ * This node's artifact is the registry's Brotli (`.tar.br`) tarball, so
+ * `integrity` is that artifact's hash. Carried as a flag bit rather than a
+ * field because a default-registry node writes no `resolved` at all --
+ * `Node.setResolved()` rebuilds the URL, and this is what tells it which
+ * extension to rebuild.
+ */
+export const LockfileNodeFlagBrotli = 4
 
 /**
- * Bit flags indicating whether a node is optional and/or dev.
+ * Bit flags indicating whether a node is optional, dev, and/or served as
+ * a Brotli tarball.
  */
-export type LockfileNodeFlags = 0 | 1 | 2 | 3
+export type LockfileNodeFlags = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 /**
  * Build state constants for lockfile nodes

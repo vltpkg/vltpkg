@@ -821,6 +821,19 @@ export const definition = j
       description:
         'Only update the lockfile (vlt-lock.json) and package.json files, skip all node_modules operations including package extraction and filesystem changes.',
     },
+    'brotli-tarballs': {
+      description: `Resolve to the Brotli (\`.tar.br\`) tarball when the
+                    registry advertises one for a version, transferring far
+                    less than the gzip \`.tgz\`.
+
+                    The \`.tar.br\` is its own artifact and hashes
+                    differently, so a version installed this way records that
+                    hash in \`vlt-lock.json\`. An existing lockfile keeps
+                    whichever artifact it already pinned; set
+                    \`--no-brotli-tarballs\` before resolving to pin the
+                    \`.tgz\` instead.`,
+      default: true,
+    },
   })
   .opt({
     'allow-scripts': {

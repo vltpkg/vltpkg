@@ -10,7 +10,7 @@ import {
   isNode,
   Node,
 } from '../src/node.ts'
-import type { GraphLike } from '@vltpkg/types'
+import type { Dist, GraphLike } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 
 t.cleanSnapshot = s =>
@@ -293,6 +293,156 @@ t.test('Node', async t => {
   t.matchSnapshot(
     String(regNoManifest),
     'should stringify manifest-less registry node',
+  )
+
+  const brotli = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+  )
+  t.equal(brotli.brotli, false, 'defaults off before resolving')
+  brotli.brotli = true
+  t.equal(
+    brotli.brotli,
+    true,
+    'the lockfile bit answers until there is a url',
+  )
+  brotli.setResolved()
+  t.strictSame(
+    brotli.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tar.br',
+    'should rebuild the .tar.br url from the lockfile flag alone',
+  )
+  t.equal(brotli.brotli, true, 'stays brotli once resolved')
+
+  // the manifest's own alternate is what a real install goes on: the
+  // node has to settle this at construction, before `integrity` is
+  // filled in from dist.integrity (which is the .tgz hash)
+  const fromManifest = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      dist: {
+        tarball: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        integrity: 'sha512-deadbeef',
+        alternates: [{ kind: 'tar.br', tarball: 'foo-1.0.0.tar.br' }],
+      },
+    },
+  )
+  t.equal(fromManifest.brotli, true, 'picked up dist.alternates')
+  fromManifest.setResolved()
+  t.strictSame(
+    fromManifest.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tar.br',
+    'resolved from the alternate reference',
+  )
+  t.equal(fromManifest.integrity, undefined)
+
+  const negatives: [string, Dist['alternates']][] = [
+    [
+      'another kind',
+      [{ kind: 'tar.zst', tarball: 'foo-1.0.0.tzst' }],
+    ],
+    ['an empty reference', [{ kind: 'tar.br', tarball: '' }]],
+    ['no alternates at all', undefined],
+  ]
+  for (const [what, alternates] of negatives) {
+    const n = new Node(
+      opts,
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          tarball: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+          integrity: 'sha512-deadbeef',
+          ...(alternates && { alternates }),
+        },
+      },
+    )
+    n.setResolved()
+    t.equal(n.brotli, false, what)
+    t.strictSame(
+      n.resolved,
+      'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+      `${what}: stays on the .tgz`,
+    )
+    t.equal(n.integrity, 'sha512-deadbeef', `${what}: keeps its hash`)
+  }
+
+  // a dist with alternates but no tarball of its own has no base to
+  // resolve them against
+  const noTarball = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      dist: {
+        alternates: [{ kind: 'tar.br', tarball: 'foo-1.0.0.tar.br' }],
+      },
+    },
+  )
+  t.equal(noTarball.brotli, false, 'no base url, no alternate')
+
+  const disabled = new Node(
+    { ...opts, 'brotli-tarballs': false },
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      dist: {
+        tarball: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        integrity: 'sha512-deadbeef',
+        alternates: [{ kind: 'tar.br', tarball: 'foo-1.0.0.tar.br' }],
+      },
+    },
+  )
+  disabled.setResolved()
+  t.equal(disabled.brotli, false, '--no-brotli-tarballs')
+  t.strictSame(
+    disabled.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+  )
+  t.equal(disabled.integrity, 'sha512-deadbeef')
+
+  const brotliMani = new Node(
+    opts,
+    joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']),
+    {
+      dist: {
+        tarball: 'https://c.io/foo/-/foo-1.0.0.tgz',
+        // describes the .tgz, so it must not be carried onto the
+        // .tar.br, which is a different artifact with a different hash
+        integrity: 'sha512-deadbeef',
+      },
+    },
+  )
+  brotliMani.brotli = true
+  brotliMani.setResolved()
+  t.strictSame(
+    brotliMani.resolved,
+    'https://c.io/foo/-/foo-1.0.0.tar.br',
+    'derives the alternate from the manifest tarball',
+  )
+  t.equal(
+    brotliMani.integrity,
+    undefined,
+    'does not inherit the .tgz integrity',
+  )
+
+  const notBrotli = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+  )
+  notBrotli.resolved =
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
+  notBrotli.brotli = true
+  t.equal(
+    notBrotli.brotli,
+    false,
+    'a set resolved url outranks the stored bit',
   )
 
   const remote = new Node(

@@ -15,6 +15,7 @@ import {
   LockfileNodeFlagOptional,
   LockfileNodeFlagDev,
   LockfileNodeFlagDevOptional,
+  LockfileNodeFlagBrotli,
   getBuildStateFromNode,
   getBuildStateFromNum,
   BuildStateNone,
@@ -90,8 +91,8 @@ t.test('lockfile type checks', t => {
   ln
   //@ts-expect-error - flags must be a number
   ln = ['invalid']
-  //@ts-expect-error - flags must be 0-3
-  ln = [5]
+  //@ts-expect-error - flags must be 0-7
+  ln = [8]
 
   // Valid LockfileNode variations
   ln = [0] // minimal
@@ -127,8 +128,8 @@ t.test('lockfile type checks', t => {
   ] // complete
 
   // LockfileNodeFlags type checks
-  //@ts-expect-error - must be 0, 1, 2, or 3
-  let lnf: LockfileNodeFlags = 4
+  //@ts-expect-error - must be 0 through 7
+  let lnf: LockfileNodeFlags = 8
   lnf
   //@ts-expect-error - must be a number
   lnf = 'invalid'
@@ -138,6 +139,11 @@ t.test('lockfile type checks', t => {
   lnf = 1
   lnf = 2
   lnf = 3
+  // brotli, alone and combined
+  lnf = 4
+  lnf = 5
+  lnf = 6
+  lnf = 7
 
   // LockfileEdges type checks
   let le: LockfileEdges = {}
@@ -219,28 +225,48 @@ t.test('lockfile flag utilities', t => {
       LockfileNodeFlagDev,
       'dev with explicit optional false',
     )
+    t.equal(
+      getFlagNumFromNode({ brotli: true }),
+      LockfileNodeFlagBrotli,
+      'brotli only',
+    )
+    t.equal(
+      getFlagNumFromNode({ dev: true, optional: true, brotli: true }),
+      LockfileNodeFlagDevOptional | LockfileNodeFlagBrotli,
+      'dev, optional and brotli',
+    )
   })
 
   t.test('getBooleanFlagsFromNum', async t => {
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagNone),
-      { dev: false, optional: false },
+      { dev: false, optional: false, brotli: false },
       'no flags',
     )
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagOptional),
-      { dev: false, optional: true },
+      { dev: false, optional: true, brotli: false },
       'optional only',
     )
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagDev),
-      { dev: true, optional: false },
+      { dev: true, optional: false, brotli: false },
       'dev only',
     )
     t.strictSame(
       getBooleanFlagsFromNum(LockfileNodeFlagDevOptional),
-      { dev: true, optional: true },
+      { dev: true, optional: true, brotli: false },
       'dev and optional',
+    )
+    t.strictSame(
+      getBooleanFlagsFromNum(LockfileNodeFlagBrotli),
+      { dev: false, optional: false, brotli: true },
+      'brotli only',
+    )
+    t.strictSame(
+      getBooleanFlagsFromNum(7),
+      { dev: true, optional: true, brotli: true },
+      'dev, optional and brotli',
     )
   })
 
@@ -249,14 +275,17 @@ t.test('lockfile flag utilities', t => {
     t.equal(LockfileNodeFlagOptional, 1, 'optional flag value')
     t.equal(LockfileNodeFlagDev, 2, 'dev flag value')
     t.equal(LockfileNodeFlagDevOptional, 3, 'dev optional flag value')
+    t.equal(LockfileNodeFlagBrotli, 4, 'brotli flag value')
   })
 
   t.test('roundtrip flag conversion', async t => {
     const testCases = [
-      { dev: false, optional: false },
-      { dev: true, optional: false },
-      { dev: false, optional: true },
-      { dev: true, optional: true },
+      { dev: false, optional: false, brotli: false },
+      { dev: true, optional: false, brotli: false },
+      { dev: false, optional: true, brotli: false },
+      { dev: true, optional: true, brotli: false },
+      { dev: false, optional: false, brotli: true },
+      { dev: true, optional: true, brotli: true },
     ]
 
     for (const testCase of testCases) {

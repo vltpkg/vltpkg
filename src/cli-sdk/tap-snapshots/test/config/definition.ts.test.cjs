@@ -103,6 +103,14 @@ Object {
     "hint": "date",
     "type": "string",
   },
+  "brotli-tarballs": Object {
+    "description": String(
+      Resolve to the Brotli (\`.tar.br\`) tarball when the registry advertises one for a version, transferring far less than the gzip \`.tgz\`.
+      
+      The \`.tar.br\` is its own artifact and hashes differently, so a version installed this way records that hash in \`vlt-lock.json\`. An existing lockfile keeps whichever artifact it already pinned; set \`--no-brotli-tarballs\` before resolving to pin the \`.tgz\` instead.
+    ),
+    "type": "boolean",
+  },
   "cache": Object {
     "description": "Location of the vlt on-disk cache. Defaults to the platform-specific directory recommended by the XDG specification.",
     "hint": "path",
@@ -653,6 +661,7 @@ Array [
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
+  "--brotli-tarballs",
   "--cache=<path>",
   "--call=<cmd>",
   "--color",
@@ -724,6 +733,7 @@ Array [
   "arch",
   "bail",
   "before",
+  "brotli-tarballs",
   "cache",
   "call",
   "color",
