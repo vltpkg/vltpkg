@@ -135,8 +135,15 @@ Array [
 ]
 `
 
+exports[`test/commands/cache.ts > TAP > logged by delete removes the global store entry 1`] = `
+Array []
+`
+
 exports[`test/commands/cache.ts > TAP > logged by delete-all 1`] = `
 Array [
+  Array [
+    "Deleted all cache entries.",
+  ],
   Array [
     "Deleted all cache entries.",
   ],

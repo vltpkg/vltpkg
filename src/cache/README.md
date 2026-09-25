@@ -26,6 +26,9 @@ const cache = new Cache({
   // on-disk folder will just keep everything
   // see @vltpkg/cache-manager for handling that
   max: 10_000,
+  // optional global store root: deleting an entry from disk with its
+  // integrity also removes <store>/<integrity-hex>{,.json}
+  store: '/path/to/store/v1',
 })
 
 // reading is always async, because it has to go to disk maybe

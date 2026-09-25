@@ -65,6 +65,12 @@ So,
 Thus, the `content-length` response header will _usually_ not match
 the actual byte length of the response body.
 
+Tarball entries with an `integrity` header, gzipped or not, are also
+passed to that child with the global store root (the `storeRoot`
+option, default `storeRoot(cache)`, i.e. `<cache>/store/v1`, also at
+`@vltpkg/registry-client/store-root`), so it can explode them there
+when `VLT_STORE_LINKER` enables the store.
+
 ## Proxies
 
 If `http_proxy` or `https_proxy` is set in the environment (either

@@ -737,6 +737,17 @@ export class CacheEntry {
   }
 
   /**
+   * Head-only check for a 200 non-JSON body with an integrity header,
+   * i.e. a tarball the global store can be built from.
+   */
+  static isTarballEntry(buffer: Uint8Array): boolean {
+    const parsed = CacheEntry.#parseHead(buffer)
+    if (parsed?.statusCode !== 200 || !parsed.integrity) return false
+    const ct = getRawHeader(parsed.headers, 'content-type')
+    return !ct || !/\bjson\b/.test(getDecodedValue(ct))
+  }
+
+  /**
    * Encode status + headers (no body) as they appear at the start of
    * an on-disk cache file.
    */

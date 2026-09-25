@@ -79,6 +79,33 @@ t.test('registering the beforeExit event', async t => {
   t.strictSame(state.written, ['key 1\0', 'key 2\0'])
 })
 
+t.test('passes the global store root to the child', async t => {
+  t.intercept(process, 'env', {
+    value: { ...process.env, VLT_STORE_LINKER: 'hardlink' },
+  })
+  const { register, beforeExit, state } = await mockUnzip(t)
+
+  register(t.testdirName, 'key 1')
+  register(t.testdirName, 'key 2', '/store/v1')
+  register(t.testdirName, 'key 3', '/other')
+  beforeExit()
+
+  t.equal(state.args.length, 3)
+  t.equal(state.args[1], t.testdirName)
+  t.equal(state.args[2], '/store/v1')
+  t.equal(state.opts.env.VLT_STORE_LINKER, 'hardlink')
+  t.strictSame(state.written, ['key 1\0', 'key 2\0', 'key 3\0'])
+})
+
+t.test('passes an integrity next to its key', async t => {
+  const { register, beforeExit, state } = await mockUnzip(t)
+  register(t.testdirName, 'key 1', '/s', 'sha512-a')
+  register(t.testdirName, 'key 1', '/s')
+  register(t.testdirName, 'key 2', '/s')
+  beforeExit()
+  t.strictSame(state.written, ['key 1\tsha512-a\0', 'key 2\0'])
+})
+
 t.test('shares the compile cache dir with the worker', async t => {
   const { register, beforeExit, state } = await mockUnzip(t, {
     'node:module': {

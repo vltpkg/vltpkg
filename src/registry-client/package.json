@@ -68,6 +68,11 @@
       "import": {
         "default": "./src/registry-error.ts"
       }
+    },
+    "./store-root": {
+      "import": {
+        "default": "./src/store-root.ts"
+      }
     }
   },
   "files": [

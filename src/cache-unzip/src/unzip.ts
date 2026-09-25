@@ -1,9 +1,11 @@
 import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
+import { setPriority } from 'node:os'
 import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
 import type { Integrity } from '@vltpkg/types'
 import type EventEmitter from 'node:events'
+import { explode, storeEnabled } from './explode.ts'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
@@ -25,15 +27,23 @@ const isMain = (path?: string) =>
   path === __CODE_SPLIT_SCRIPT_NAME ||
   path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
 
+/**
+ * Rewrite the cache entries at the keys read from `input` un-gzipped
+ * (unless `VLT_CACHE_UNZIP=0`), and explode tarballs into the global
+ * store root `store`, if given. Keys are `\0`-separated, each
+ * optionally followed by `\t` and the integrity it is cached under.
+ * False on no `path` or a failed explode; throws on a corrupt gzip.
+ */
 const main = async (
   path: undefined | string,
   input: EventEmitter = process.stdin,
+  store?: string,
 ) => {
   if (!path) {
     return false
   }
 
-  const keys = await new Promise<string[]>(res => {
+  const items = await new Promise<string[]>(res => {
     const chunks: Buffer[] = []
     let chunkLen = 0
     input.on('data', (chunk: Buffer) => {
@@ -49,9 +59,15 @@ const main = async (
       )
     })
   })
+  const integrities = new Map<string, Integrity>()
+  const keys = items.map(item => {
+    const [key, integrity] = item.split('\t') as [string, Integrity?]
+    if (integrity) integrities.set(key, integrity)
+    return key
+  })
 
   if (!keys.length) {
-    return false
+    return true
   }
 
   const cache = new Cache({ path })
@@ -80,10 +96,11 @@ const main = async (
     return (a << 24) | (b << 16) | (c << 8) | d
   }
 
-  const results = await Promise.all(
-    keys.map(async key => {
+  const unzip = process.env.VLT_CACHE_UNZIP !== '0'
+  const results = await Promise.allSettled(
+    (unzip ? keys : []).map(async key => {
       const buffer = await cache.fetch(key)
-      if (!buffer || buffer.length < 4) return null
+      if (!buffer || buffer.length < 4) return
       const headSizeOriginal = readSize(buffer, 0)
       const body = buffer.subarray(headSizeOriginal)
       if (body[0] === 0x1f && body[1] === 0x8b) {
@@ -102,7 +119,7 @@ const main = async (
           ) {
             throw er
           }
-          return null
+          return
         }
         const headersBuffer = buffer.subarray(7, headSizeOriginal)
         const headers: Buffer[] = []
@@ -199,18 +216,29 @@ const main = async (
           },
         )
       }
-      return true
     }),
   )
+  // reads the rewritten entries back from memory
+  const exploded =
+    store ? await explode(cache, store, keys, integrities) : undefined
   await cache.promise()
-  return results.some(Boolean)
+  for (const r of results) {
+    if (r.status === 'rejected') throw r.reason
+  }
+  return !exploded?.failed
 }
 
 if (isMain(process.argv[1])) {
   process.title = 'vlt-cache-unzip'
-  const path =
-    process.argv.length === 2 ? undefined : process.argv.at(-1)
-  const res = await main(path, process.stdin)
+  const [, , path, store] = process.argv
+  // unzip-only children keep their priority
+  if (store && storeEnabled()) {
+    try {
+      setPriority(19)
+      /* c8 ignore next */
+    } catch {}
+  }
+  const res = await main(path, process.stdin, store)
   if (!res) {
     process.exit(1)
   }

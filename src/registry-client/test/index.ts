@@ -356,9 +356,9 @@ const registry = createServer((req, res) => {
 
 const registryURL = `http://localhost:${PORT}`
 
-const unzipRegistered: [string, string][] = []
-const unzipRegister = (path: string, key: string) =>
-  unzipRegistered.push([path, key])
+const unzipRegistered: [string, string, string?][] = []
+const unzipRegister = (path: string, key: string, store?: string) =>
+  unzipRegistered.push([path, key, store])
 
 const revalRegistered: [string, 'GET' | 'HEAD', string | URL][] = []
 const revalRegister = (
@@ -396,6 +396,7 @@ const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
 // default ones to use for tests that don't need their own mocks
 const {
   RegistryClient: RC,
+  storeRoot,
   getKC,
   setRuntimeToken,
   clearRuntimeTokens,
@@ -441,6 +442,37 @@ t.test('register unzipping for gzip responses', async t => {
     [
       resolve(t.testdirName, 'registry-client'),
       String(new URL('/some/tarball', registryURL)),
+      resolve(t.testdirName, 'store/v1'),
+    ],
+  ])
+})
+
+t.test('register un-gzipped tarballs with an integrity', async t => {
+  const rc = t.context.rc as RegistryClient
+  t.equal(rc.cache.store, storeRoot(t.testdirName))
+  t.equal(
+    new RC({ cache: '/c', storeRoot: '/s' }).cache.store,
+    '/s',
+    'explicit store root',
+  )
+  const integrity = `sha512-${Buffer.alloc(64).toString('base64')}`
+  const entry = (h: Record<string, string>, body = 'tarball') => {
+    const ce = new CacheEntry(200, toRawHeaders(h))
+    ce.addBody(Buffer.from(body))
+    return ce.encode()
+  }
+  rc.cache.set('tgz', entry({ integrity }))
+  rc.cache.set('plain', entry({}))
+  rc.cache.set(
+    'json',
+    entry({ 'content-type': 'application/json', integrity }, '{}'),
+  )
+  await rc.cache.promise()
+  t.strictSame(unzipRegistered, [
+    [
+      resolve(t.testdirName, 'registry-client'),
+      'tgz',
+      resolve(t.testdirName, 'store/v1'),
     ],
   ])
 })

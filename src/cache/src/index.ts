@@ -38,6 +38,11 @@ export type CacheOptions = {
    */
   path: string
   /**
+   * global store root. Deleting an entry from disk with its integrity
+   * also removes the store entry and sidecar index for that integrity.
+   */
+  store?: string
+  /**
    * called whenever an item is written to disk.
    */
   onDiskWrite?: (path: string, key: string, data: Buffer) => any
@@ -73,6 +78,7 @@ export class Cache extends LRUCache<
   #pending = new Set<Promise<BooleanOrVoid>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
+  store?: string
 
   /**
    * A list of the actions currently happening in the background
@@ -94,6 +100,7 @@ export class Cache extends LRUCache<
       onDiskWrite,
       onDiskDelete,
       path,
+      store,
       fetchMethod: _,
       sizeCalculation = options.maxSize || options.maxEntrySize ?
         (v: Buffer, k: string) => v.length + k.length
@@ -121,6 +128,7 @@ export class Cache extends LRUCache<
     })
     this.onDiskWrite = onDiskWrite
     this.onDiskDelete = onDiskDelete
+    this.store = store
     this.#path = path
   }
 
@@ -329,16 +337,25 @@ export class Cache extends LRUCache<
   /* c8 ignore stop */
 
   /**
-   * Delete path and path + '.key'
+   * Delete path and path + '.key', and with an integrity, its
+   * integrity link and global store entry
    */
   async #diskDelete(
     path: string,
     integrity?: Integrity,
   ): Promise<boolean> {
-    const intPath = this.#maybeIntegrityPath(integrity)
     const paths = [path, path + '.key']
-    if (intPath) paths.push(intPath)
-    return await rimraf(paths)
+    const hex = integrityHex(integrity)
+    if (hex) paths.push(resolve(this.#path, hex))
+    const deleted = await rimraf(paths)
+    if (hex && this.store) {
+      // dir first: a sidecar without its dir is a plain store miss,
+      // a dir without its sidecar is never re-exploded
+      const entry = resolve(this.store, hex)
+      await rimraf(entry)
+      await rimraf(entry + '.json')
+    }
+    return deleted
   }
 
   #maybeIntegrityPath(i?: Integrity) {
