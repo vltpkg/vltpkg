@@ -15,6 +15,9 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
+# e.g. the repo's own install child
+bash ./infra/cli-benchmarks/scripts/clean-helpers.sh wait_vlt_children
+
 # Navigate to the fixture directory
 pushd "./infra/cli-benchmarks/fixtures/$1"
 
@@ -57,6 +60,11 @@ case "$2" in
 esac
 
 popd
+
+WAIT_LOG="./results/$1/$2/child-wait.log"
+if [ -f "$WAIT_LOG" ]; then
+    echo "vlt-cache children, ms waited per prepare/conclude: $(paste -sd' ' "$WAIT_LOG")"
+fi
 
 BENCHMARK_FILE="./results/$1/$2/benchmarks.json"
 if ! node --experimental-strip-types --no-warnings \

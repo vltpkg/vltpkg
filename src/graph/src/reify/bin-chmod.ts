@@ -1,4 +1,4 @@
-import { statSync, existsSync } from 'node:fs'
+import { statSync } from 'node:fs'
 import { chmod } from 'node:fs/promises'
 import type { PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
@@ -30,21 +30,18 @@ export const binChmod = async (
     const path = scurry.resolve(
       `${node.resolvedLocation(scurry)}/${bin}`,
     )
-    // only try to make executable if the file exists
-    if (existsSync(path)) {
-      chmods.push(makeExecutable(path))
+    let mode: number
+    try {
+      mode = statSync(path).mode
+    } catch {
+      // missing or unreadable (ENOENT, ELOOP, EACCES): skip
+      continue
     }
+    // a file linked from the global store is executable already, and
+    // chmod would change the store
+    if ((mode & 0o111) === 0o111) continue
+    // `| 0o111` keeps group-writable files at 0o775
+    chmods.push(chmod(path, (mode & 0o777) | 0o111))
   }
   await Promise.all(chmods)
-}
-
-// 0 is "not yet set"
-// This is defined by doing `0o111 | <mode>` so that systems
-// that create files group-writable result in 0o775 instead of 0o755
-let execMode = 0
-const makeExecutable = async (path: string) => {
-  if (!execMode) {
-    execMode = (statSync(path).mode & 0o777) | 0o111
-  }
-  await chmod(path, execMode)
 }

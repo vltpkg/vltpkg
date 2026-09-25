@@ -24,6 +24,7 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import { storeRoot } from '@vltpkg/registry-client/store-root'
 import { resetCaches } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { getOptions } from '@vltpkg/spec'
@@ -48,6 +49,7 @@ import {
   getCommand,
   isRecordField,
   recordFields,
+  storeLinkers,
 } from './definition.ts'
 import { merge } from './merge.ts'
 import { cloneLayer, mergeLayers } from './merge-layers.ts'
@@ -153,6 +155,7 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
             k === 'packageJson' ||
             k === 'monorepo' ||
             k === 'projectRoot' ||
+            k === 'storeRoot' ||
             k === 'packageInfo'
           ),
       )
@@ -268,6 +271,8 @@ export type ConfigOptions = ConfigOptionsNoExtras &
     packageJson: PackageJson
     scurry: PathScurry
     projectRoot: string
+    /** global store root, under `cache` */
+    storeRoot: string
     monorepo?: Monorepo
     packageInfo: PackageInfoClient
   }
@@ -319,6 +324,7 @@ export class Config {
     const asRecords = pairsToRecords(this.parse().values)
     const extras = {
       projectRoot: this.projectRoot,
+      storeRoot: storeRoot(asRecords.cache),
       scurry,
       packageJson,
       monorepo: Monorepo.maybeLoad(this.projectRoot, {
@@ -439,6 +445,13 @@ export class Config {
     // Store the original args for potential reload
     this.#originalArgs = [...args]
 
+    // an invalid env linker is treated as unpack
+    const badLinker = process.env.VLT_STORE_LINKER
+    const fixLinker =
+      badLinker !== undefined &&
+      !(storeLinkers as readonly string[]).includes(badLinker)
+    if (fixLinker) process.env.VLT_STORE_LINKER = 'unpack'
+
     const envKeys = Object.keys(defaultValues).filter(
       k => process.env[envKey(k)] !== undefined,
     )
@@ -511,6 +524,14 @@ export class Config {
     // always wins.
     if (p.values.verbose && p.values.loglevel === 'info') {
       p.values.loglevel = 'verbose'
+    }
+
+    const { loglevel } = p.values
+    if (fixLinker && loglevel !== 'silent' && loglevel !== 'error') {
+      // eslint-disable-next-line no-console
+      console.error(
+        `Warning: invalid VLT_STORE_LINKER ${JSON.stringify(badLinker)}, using ${p.values['store-linker']}`,
+      )
     }
 
     /* c8 ignore start - unpossible */

@@ -80,6 +80,10 @@ materialized by hardlinking files instead of unpacking the tarball
 again. Publishing entries atomically (sidecar, then rename the dir
 into place) is up to the caller.
 
+The vlt CLI keeps its global store under `<cache>/store/v1`, filled by
+a background process, and installs from it with the `store-linker`
+config (`auto`, `hardlink`, `copy`; `unpack` skips it).
+
 ### unpackToStoreSync(tarData, dir)
 
 Explode a gzipped or raw tarball into `dir` (must not exist) and

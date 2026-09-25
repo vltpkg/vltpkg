@@ -119,41 +119,37 @@ t.test('delete-all', async t => {
       },
     },
     store: { v1: { x: { 'package.json': '{}' } }, v0: {} },
+    custom: { root: { x: {} }, keep: {} },
   })
 
-  class MockRegistryClient {
-    cache = {
-      path: () => resolve(dir, 'cache'),
-      store: resolve(dir, 'store/v1'),
-    }
-  }
+  const deleteAll = (store?: string) =>
+    command({
+      positionals: ['delete-all'],
+      options: {
+        cache: dir,
+        packageInfo: {
+          getRegistryClient: async () => ({
+            cache: { path: () => resolve(dir, 'cache'), store },
+          }),
+        },
+      },
+    } as unknown as LoadedConfig)
 
   const { command, CacheView } = await mockCommand(t)
   new CacheView({}, {} as unknown as LoadedConfig)
-  await command({
-    positionals: ['delete-all'],
-    options: {
-      packageInfo: {
-        getRegistryClient: async () => new MockRegistryClient(),
-      },
-    },
-  } as unknown as LoadedConfig)
+  await deleteAll(resolve(dir, 'store/v1'))
   t.equal(statSync(resolve(dir, 'cache')).isDirectory(), true)
   t.throws(() => statSync(resolve(dir, 'cache', 'some')))
   t.throws(() => statSync(resolve(dir, 'cache', 'inhere')))
   t.throws(() => statSync(resolve(dir, 'store')))
 
+  // a store root outside the cache: only the root goes
+  await deleteAll(resolve(dir, 'custom/root'))
+  t.throws(() => statSync(resolve(dir, 'custom/root')))
+  t.equal(statSync(resolve(dir, 'custom/keep')).isDirectory(), true)
+
   // a cache without a global store
-  await command({
-    positionals: ['delete-all'],
-    options: {
-      packageInfo: {
-        getRegistryClient: async () => ({
-          cache: { path: () => resolve(dir, 'cache') },
-        }),
-      },
-    },
-  } as unknown as LoadedConfig)
+  await deleteAll()
   t.equal(statSync(resolve(dir, 'cache')).isDirectory(), true)
 })
 

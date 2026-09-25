@@ -131,6 +131,14 @@ export type RecordField = (typeof recordFields)[number]
 export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
+/** Valid `store-linker` values. */
+export const storeLinkers = [
+  'auto',
+  'hardlink',
+  'copy',
+  'unpack',
+] as const
+
 const j = jack({
   envPrefix: 'VLT',
   allowPositionals: true,
@@ -346,6 +354,27 @@ export const definition = j
         directory recommended by the XDG specification.
       `,
       default: cacheDir,
+    },
+    'store-linker': {
+      hint: 'auto | hardlink | copy | unpack',
+      description: `How packages are placed in \`node_modules\`. Every
+                    linker but \`unpack\` fills a global store under
+                    \`cache\` in the background, then places packages
+                    from it.
+
+                    - auto: Hardlink from the global store, copying any
+                      file that cannot be linked.
+                    - hardlink: Same as \`auto\`.
+                    - copy: Copy from the global store. Use this when
+                      editing files in \`node_modules\` in place, since
+                      a hardlink shares its content with every project.
+                    - unpack: Default. Unpack each package tarball.
+
+                    Packages with install scripts are always copied.
+                    An invalid \`VLT_STORE_LINKER\` warns and uses
+                    \`unpack\`.`,
+      validOptions: storeLinkers,
+      default: 'unpack',
     },
     tag: {
       description: `Default \`dist-tag\` to install or publish`,

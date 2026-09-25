@@ -1,13 +1,19 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
-import { Pool } from '@vltpkg/tar'
-import type { Manifest } from '@vltpkg/types'
+import { Pool, unpackToStoreSync } from '@vltpkg/tar'
+import type { StoreLinker } from '@vltpkg/tar'
+import { integrityHex } from '@vltpkg/types'
+import type { Integrity, Manifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Workspace } from '@vltpkg/workspaces'
 import {
+  existsSync,
   lstatSync,
   readFileSync,
   readlinkSync,
+  renameSync,
+  rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
 import { readdir, rm, utimes, writeFile } from 'node:fs/promises'
@@ -1450,6 +1456,240 @@ t.test('falls back when the cache file will not unpack', async t => {
     JSON.parse(readFileSync(dir + '/fallback/package.json', 'utf8')),
     { name: 'abbrev', version: '2.0.0' },
   )
+})
+
+t.test('global store', async t => {
+  const integrity: Integrity =
+    pakuAbbrev.versions['2.0.0'].dist.integrity
+  const hex = String(integrityHex(integrity))
+  const lockOpts = { resolved: tarballURL, integrity }
+
+  // what the background child writes
+  const populate = (store: string, scripts = false) => {
+    const tmp = pathResolve(store, '.tmp', hex)
+    const { index } = unpackToStoreSync(tgzAbbrev, tmp)
+    writeFileSync(
+      pathResolve(store, hex + '.json'),
+      JSON.stringify({ ...index, scripts }),
+    )
+    renameSync(tmp, pathResolve(store, hex))
+  }
+
+  const setup = async (t: Test) => {
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(dir)
+    unload()
+    const registered: unknown[][] = []
+    const states: string[] = []
+    const links: string[] = []
+    const { PackageInfoClient } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      '@vltpkg/cache-unzip': {
+        register: (...args: unknown[]) => registered.push(args),
+      },
+      '@vltpkg/tar': {
+        Pool: class TrackedPool extends Pool {
+          async linkFromStore(
+            ...args: Parameters<Pool['linkFromStore']>
+          ) {
+            links.push(args[0])
+            return super.linkFromStore(...args)
+          }
+        },
+      },
+      ...tarballLog(states),
+    })
+    const cache = dir + '/cache'
+    const store = pathResolve(cache, 'store/v1')
+    const client = async (
+      opts: PackageInfoClientOptions = {},
+      noTarball = false,
+    ) => {
+      const pi = new PackageInfoClient({ ...options, cache, ...opts })
+      if (noTarball) {
+        const rc = await pi.getRegistryClient()
+        rc.cachedBody = () => {
+          throw new Error('read the cached tarball')
+        }
+        rc.request = () => {
+          throw new Error('requested the tarball')
+        }
+      }
+      return pi
+    }
+    // cold install into the cache, with the store off
+    const prime = async () => {
+      const pi = await client()
+      await pi.extract('abbrev@2', dir + '/prime', lockOpts)
+      await (await pi.getRegistryClient()).cache.promise()
+      registered.length = 0
+      states.length = 0
+    }
+    return {
+      dir,
+      cache,
+      store,
+      registered,
+      states,
+      links,
+      client,
+      prime,
+    }
+  }
+
+  const nlink = (dir: string) => statSync(dir + '/package.json').nlink
+
+  t.test('populated store: linked, tarball never read', async t => {
+    const { dir, store, registered, states, client } = await setup(t)
+    populate(store)
+    let n = 1
+    for (const linker of ['auto', 'hardlink'] as const) {
+      const pi = await client({ 'store-linker': linker }, true)
+      await pi.extract('abbrev@2', `${dir}/${linker}`, lockOpts)
+      t.equal(nlink(`${dir}/${linker}`), ++n, linker)
+    }
+    t.strictSame(states, ['cache', 'cache'])
+    t.strictSame(registered, [])
+    t.match(
+      JSON.parse(readFileSync(`${dir}/auto/package.json`, 'utf8')),
+      { name: 'abbrev', version: '2.0.0' },
+    )
+  })
+
+  t.test('explicit store root', async t => {
+    const { dir, links, client } = await setup(t)
+    populate(dir + '/elsewhere')
+    const pi = await client(
+      { 'store-linker': 'hardlink', storeRoot: dir + '/elsewhere' },
+      true,
+    )
+    await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.equal(nlink(dir + '/t'), 2)
+    t.strictSame(links, [pathResolve(dir, 'elsewhere', hex)])
+  })
+
+  t.test(
+    'store miss, cache hit: unpacked and registered',
+    async t => {
+      const { dir, cache, store, registered, states, client, prime } =
+        await setup(t)
+      await prime()
+      const pi = await client({ 'store-linker': 'auto' })
+      await pi.extract('abbrev@2', dir + '/t', lockOpts)
+      t.equal(nlink(dir + '/t'), 1)
+      t.strictSame(states, ['cache'])
+      t.strictSame(registered, [
+        [
+          pathResolve(cache, 'registry-client'),
+          tarballURL,
+          store,
+          integrity,
+        ],
+      ])
+    },
+  )
+
+  t.test(
+    'damaged entry: discarded, unpacked, registered',
+    async t => {
+      const { dir, store, registered, client, prime } = await setup(t)
+      await prime()
+      populate(store)
+      rmSync(`${store}/${hex}/README.md`)
+      const pi = await client({ 'store-linker': 'hardlink' })
+      await pi.extract('abbrev@2', dir + '/t', lockOpts)
+      t.equal(nlink(dir + '/t'), 1)
+      t.equal(existsSync(`${store}/${hex}`), false, 'entry removed')
+      t.equal(registered.length, 1, 'queued to explode again')
+    },
+  )
+
+  t.test('store miss, cache miss: disk write registers', async t => {
+    const { dir, registered, states, client } = await setup(t)
+    const pi = await client({ 'store-linker': 'hardlink' })
+    await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    await (await pi.getRegistryClient()).cache.promise()
+    t.equal(nlink(dir + '/t'), 1)
+    t.equal(states[0], 'start', 'fetched')
+    // one registration, from the cache write, none from extract()
+    t.equal(registered.length, 1)
+  })
+
+  t.test('install scripts: copied, writable', async t => {
+    const { dir, store, client } = await setup(t)
+    populate(store, true)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.equal(nlink(dir + '/t'), 1)
+    writeFileSync(dir + '/t/package.json', '{}')
+    t.not(readFileSync(`${store}/${hex}/package.json`, 'utf8'), '{}')
+  })
+
+  t.test('manifest install scripts: copied', async t => {
+    const { dir, store, client } = await setup(t)
+    populate(store)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    await pi.extract('abbrev@2', dir + '/t', {
+      ...lockOpts,
+      installScripts: true,
+    })
+    t.equal(nlink(dir + '/t'), 1)
+  })
+
+  t.test('store-linker=copy', async t => {
+    const { dir, store, states, client } = await setup(t)
+    populate(store)
+    const pi = await client({ 'store-linker': 'copy' }, true)
+    await pi.extract('abbrev@2', dir + '/t', lockOpts)
+    t.equal(nlink(dir + '/t'), 1)
+    t.equal(nlink(`${store}/${hex}`), 1, 'store file not linked')
+    t.strictSame(states, ['cache'])
+  })
+
+  t.test('store-linker=unpack, or invalid: store unused', async t => {
+    const { dir, store, registered, links, client, prime } =
+      await setup(t)
+    await prime()
+    populate(store)
+    for (const linker of [undefined, 'unpack', 'bogus'] as const) {
+      const pi = await client({
+        'store-linker': linker as StoreLinker | undefined,
+      })
+      await pi.extract('abbrev@2', `${dir}/${linker}`, lockOpts)
+      t.equal(nlink(`${dir}/${linker}`), 1, String(linker))
+    }
+    t.strictSame(links, [])
+    t.strictSame(registered, [])
+  })
+
+  t.test('hosted git tarballs: store unused', async t => {
+    const { dir, store, links, registered, client, prime } =
+      await setup(t)
+    await prime()
+    populate(store)
+    const pi = await client({
+      'store-linker': 'hardlink',
+      'git-hosts': { fakey: `git+${pathToFileURL(repo)}#committish` },
+      'git-host-archives': { fakey: tarballURL },
+    })
+    await pi.extract('x@fakey:abbrev-2.0.0.tgz', dir + '/t', lockOpts)
+    t.equal(nlink(dir + '/t'), 1)
+    t.strictSame(links, [])
+    t.strictSame(registered, [])
+  })
+
+  t.test('git specs untouched', async t => {
+    const { dir, links, registered, client } = await setup(t)
+    const pi = await client({ 'store-linker': 'hardlink' })
+    await pi.extract(
+      'x@git+' + pathToFileURL(repo).toString(),
+      dir + '/git',
+    )
+    t.equal(existsSync(dir + '/git/package.json'), true)
+    t.strictSame(links, [])
+    t.strictSame(registered, [])
+  })
 })
 
 t.test('extraction failures', async t => {

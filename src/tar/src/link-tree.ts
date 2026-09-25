@@ -22,6 +22,12 @@ const noThrow = { throwIfNoEntry: false } as const
 // debug spot-check: linked package.json size must match the index
 const verify = process.env.VLT_STORE_VERIFY === '1'
 
+/**
+ * How reify places packages: `auto` and `hardlink` link from the global
+ * store, `copy` copies from it, `unpack` skips it.
+ */
+export type StoreLinker = 'auto' | 'hardlink' | 'copy' | 'unpack'
+
 export type LinkFromStoreOptions = {
   /**
    * copy every file instead of hardlinking. Implied when the index says

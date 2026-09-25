@@ -89,6 +89,8 @@ export {
 export type CachedBody = {
   /** the cache file it came from */
   path: string
+  /** the cache key of the request */
+  key: string
   /** the body, a view into the file's bytes */
   body: Buffer
   /** the hash the entry was stored under, if it has one */
@@ -698,6 +700,7 @@ export class RegistryClient {
         }
         return {
           path,
+          key,
           body: entry.buffer(),
           integrity: entry.integrity,
         }
@@ -705,6 +708,20 @@ export class RegistryClient {
       /* c8 ignore next */
     } catch {}
     return undefined
+  }
+
+  /**
+   * Queue the cached tarball at `key` (a {@link CachedBody} key) for the
+   * background child to explode into the global store. `integrity`
+   * finds it when only the integrity path holds it.
+   */
+  queueForStore(key: string, integrity?: Integrity) {
+    cacheUnzipRegister(
+      this.cache.path(),
+      key,
+      this.cache.store,
+      integrity,
+    )
   }
 
   async request(

@@ -84,11 +84,20 @@ export const extractNode = async (
     }
   }
 
+  // the registry manifest can declare install scripts that the
+  // tarball's package.json, read by the global store, lacks
+  const { scripts, hasInstallScript } = manifest
   const extractOptions = {
     from,
     integrity,
     resolved,
     fromLockfile: node.resolvedFromLockfile,
+    installScripts: !!(
+      hasInstallScript ||
+      scripts?.install ||
+      scripts?.preinstall ||
+      scripts?.postinstall
+    ),
   }
 
   try {

@@ -356,9 +356,9 @@ const registry = createServer((req, res) => {
 
 const registryURL = `http://localhost:${PORT}`
 
-const unzipRegistered: [string, string, string?][] = []
-const unzipRegister = (path: string, key: string, store?: string) =>
-  unzipRegistered.push([path, key, store])
+const unzipRegistered: string[][] = []
+const unzipRegister = (...args: (string | undefined)[]) =>
+  unzipRegistered.push(args.filter(a => a !== undefined))
 
 const revalRegistered: [string, 'GET' | 'HEAD', string | URL][] = []
 const revalRegister = (
@@ -473,6 +473,20 @@ t.test('register un-gzipped tarballs with an integrity', async t => {
       resolve(t.testdirName, 'registry-client'),
       'tgz',
       resolve(t.testdirName, 'store/v1'),
+    ],
+  ])
+})
+
+t.test('queueForStore', async t => {
+  const rc = t.context.rc as RegistryClient
+  const integrity: Integrity = `sha512-${Buffer.alloc(64).toString('base64')}`
+  rc.queueForStore('k', integrity)
+  t.strictSame(unzipRegistered, [
+    [
+      resolve(t.testdirName, 'registry-client'),
+      'k',
+      resolve(t.testdirName, 'store/v1'),
+      integrity,
     ],
   ])
 })
@@ -1575,6 +1589,7 @@ t.test('cachedBody', async t => {
     t.strictSame(found.body, tarball)
     t.strictSame(requests, [], 'the caller logs, not us')
     t.equal(found.path, rc.cache.path(url), 'found by key path')
+    t.equal(found.key, url, 'cache key')
   })
 
   t.test('normalizes the url like request() does', async t => {
@@ -1605,6 +1620,7 @@ t.test('cachedBody', async t => {
     linkSync(rc.cache.path(url), intPath)
     const found = rc.cachedBody(url, { integrity })
     t.equal(found?.path, intPath, 'preferred the integrity path')
+    t.equal(found?.key, url, 'still the request key')
     t.strictSame(found?.body, tarball)
   })
 

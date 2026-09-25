@@ -7,6 +7,7 @@
 'use strict'
 exports[`test/config/index.ts > TAP > load both configs, layers merge with project taking precedence > formatted options uses custom inspect 1`] = `
 {
+  cache: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-layers-merge-with-project-taking-precedence',
   'git-hosts': {
     github: 'https://github',
     bitbucket: 'git+ssh://git@bitbucket.org:$1/$2.git',
@@ -15,6 +16,7 @@ exports[`test/config/index.ts > TAP > load both configs, layers merge with proje
     asdfasdf: 'https://example.com'
   },
   projectRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-layers-merge-with-project-taking-precedence',
+  storeRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-layers-merge-with-project-taking-precedence/store/v1',
   catalog: undefined,
   catalogs: undefined,
   'jsr-registries': { jsr: 'https://npm.jsr.io/' },
