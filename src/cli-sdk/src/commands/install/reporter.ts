@@ -61,7 +61,11 @@ const App = ({ trailer }: { trailer?: string }) => {
     const updateRequests = ({ state }: Events['request']) => {
       if (state === 'start') {
         setRequests(p => p + 1)
-      } else if (state === 'cache' || state === 'stale') {
+      } else if (
+        state === 'cache' ||
+        state === 'stale' ||
+        state === 'store'
+      ) {
         setCacheHit(p => p + 1)
       }
     }

@@ -1494,6 +1494,7 @@
     "workspace~src+cli-sdk @vltpkg/run": "prod workspace:* workspace~src+run",
     "workspace~src+cli-sdk @vltpkg/security-archive": "prod workspace:* workspace~src+security-archive",
     "workspace~src+cli-sdk @vltpkg/spec": "prod workspace:* workspace~src+spec",
+    "workspace~src+cli-sdk @vltpkg/tar": "prod workspace:* workspace~src+tar",
     "workspace~src+cli-sdk @vltpkg/types": "prod workspace:* workspace~src+types",
     "workspace~src+cli-sdk @vltpkg/url-open": "prod workspace:* workspace~src+url-open",
     "workspace~src+cli-sdk @vltpkg/vlt-json": "prod workspace:* workspace~src+vlt-json",

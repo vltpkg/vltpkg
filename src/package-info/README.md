@@ -44,7 +44,12 @@ With the `store-linker` option set to `auto`, `hardlink` or `copy`,
 (`<storeRoot>/<integrity hex>`, `storeRoot` defaults to
 `<cache>/store/v1`) when there is one. On a miss it unpacks the cached
 tarball as usual and queues it for the background child, so the next
-install finds it in the global store.
+install finds it in the global store. Missing or unknown
+`store-linker` means `unpack` (the vlt CLI defaults to `auto`).
 
 Packages with install scripts are copied, never linked: when the store
 index says so, or with the `installScripts` extract option.
+
+A store link logs its request as `store`, a copy from the store as
+`cache`. With `NODE_DEBUG=vlt`, linked / copied / missed counts and
+the store hit rate are printed at exit.

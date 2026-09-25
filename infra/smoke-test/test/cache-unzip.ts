@@ -49,6 +49,20 @@ t.test(
           ),
           'all cache entries are ungzipped',
         )
+        // the child explodes after its unzip pass: poll, up to 10s
+        const populated = () => {
+          try {
+            return readdirSync(join(dirs.cache, 'vlt/store/v1')).some(
+              n => /^[0-9a-f]{128}$/.test(n),
+            )
+          } catch {
+            return false
+          }
+        }
+        for (let i = 0; i < 100 && !populated(); i++) {
+          await setTimeout(100)
+        }
+        t.ok(populated(), 'global store populated by default')
       },
     })
     t.equal(status, 0)

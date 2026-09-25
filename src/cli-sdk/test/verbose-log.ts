@@ -26,6 +26,7 @@ t.test('formatRequestEvent', async t => {
       /^cache\s+GET https:\/\/x\/$/,
     ],
     [{ url: 'https://x/', state: 'stale' }, /^stale\s+GET/],
+    [{ url: 'https://x/', state: 'store' }, /^store\s+GET/],
     [{ url: 'https://x/', state: '304' }, /^304\s+GET/],
     [{ url: 'https://x/', state: 'start' }, /^start\s+GET/],
     [

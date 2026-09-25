@@ -66,7 +66,7 @@ Unpack the supplied Buffer of data into the target folder.
 
 Unpack a tarball read from `file`, skipping `offset` leading bytes.
 
-#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<boolean>`
+#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<'link' | 'copy' | false>`
 
 #### `pool.unpackToStore(tarData, dir) => Promise<{ index }>`
 
@@ -82,7 +82,7 @@ into place) is up to the caller.
 
 The vlt CLI keeps its global store under `<cache>/store/v1`, filled by
 a background process, and installs from it with the `store-linker`
-config (`auto`, `hardlink`, `copy`; `unpack` skips it).
+config (`auto` by default, `hardlink`, `copy`; `unpack` skips it).
 
 ### unpackToStoreSync(tarData, dir)
 
@@ -99,7 +99,8 @@ normalized `bins`, `name` and `version`.
 ### linkFromStore(storeEntry, target, { copy })
 
 Hardlink every file of a store entry into a sibling temp dir
-(package.json last), then rename it to `target`. Returns `false`,
+(package.json last), then rename it to `target`. Returns `'link'`, or
+`'copy'` when files were copied instead (see below). Returns `false`,
 creating nothing, if the sidecar is missing or invalid, the entry is
 not a directory, or the target's parent is a symlink. An entry with a
 missing file is removed and `false` returned. Two index paths that
@@ -110,7 +111,8 @@ collide on a case-insensitive target (`EEXIST`) also return `false`.
 the target's parent exist (overlayfs cross-layer links) does the same.
 `EMLINK` copies that file only. Other link errors throw. Every file is
 copied with `copy: true` or when the index has `scripts`, so install
-scripts never write into the store.
+scripts never write into the store. A copy creates the entry's copied
+marker (`<entry>.copied`), once.
 
 `VLT_STORE_VERIFY=1` checks the linked package.json size against the
 index and removes the entry on a mismatch (debugging aid).
@@ -122,6 +124,25 @@ The sidecar index, or `undefined` if missing or invalid.
 ### storeIndexPath(storeEntry)
 
 Sidecar path: `<storeEntry>.json`.
+
+### Maintenance
+
+- `storeEntryNames(root)`: integrity hex names of the entries under a
+  store root (entry dir, sidecar or copied marker).
+- `verifyStoreEntry(storeEntry, tarData)`: compare an entry with its
+  tarball (sidecar, file list, bytes). Returns why it differs, or
+  `undefined`.
+- `storeEntryLinked(storeEntry, index?)`: true if any file has another
+  hardlink, i.e. some `node_modules` uses it.
+- `storeEntryCopied(storeEntry, index?)`: true if the entry has a
+  copied marker or install scripts (always copied), i.e. nlink cannot
+  show use.
+- `storeCopiedPath(storeEntry)`, `markStoreEntryCopied(storeEntry)`:
+  the copied marker, and its exclusive create.
+- `storeEntryTime(storeEntry)`: sidecar mtime in ms (dir mtime without
+  one, else 0).
+- `removeStoreEntry(storeEntry)`: remove the dir, then the sidecar and
+  copied marker.
 
 ## Caveats
 

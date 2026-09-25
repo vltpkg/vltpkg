@@ -1,5 +1,6 @@
 export { unpack, unpackToStoreSync } from './unpack.ts'
 export * from './link-tree.ts'
 export * from './pool.ts'
+export * from './store-entry.ts'
 export { readStoreIndex, storeIndexPath } from './store-index.ts'
 export type { StoreIndex, StoreIndexFile } from './store-index.ts'

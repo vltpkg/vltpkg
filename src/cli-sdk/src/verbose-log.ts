@@ -43,6 +43,7 @@ const tagStyle = (
   switch (state) {
     case 'cache':
     case 'stale':
+    case 'store':
     case '304':
       return 'green'
     case 'start':

@@ -1072,10 +1072,10 @@ t.test('store-linker and global store root', async t => {
   >('../../src/config/index.ts')
 
   const def = await Config.load(dir, ['install'], true)
-  t.equal(def.get('store-linker'), 'unpack', 'off by default')
+  t.equal(def.get('store-linker'), 'auto', 'on by default')
   t.equal(
     process.env.VLT_STORE_LINKER,
-    'unpack',
+    'auto',
     'exported for the background child',
   )
   t.equal(
@@ -1090,6 +1090,11 @@ t.test('store-linker and global store root', async t => {
   t.equal(env.get('store-linker'), 'hardlink', 'env overrides')
   t.equal(env.options['store-linker'], 'hardlink')
   t.equal(env.options.storeRoot, resolve('c/store/v1'))
+
+  clearEnv()
+  process.env.VLT_STORE_LINKER = 'unpack'
+  const off = await Config.load(dir, ['install'], true)
+  t.equal(off.get('store-linker'), 'unpack', 'env kill switch')
 
   clearEnv()
   process.env.VLT_STORE_LINKER = 'hardlink'

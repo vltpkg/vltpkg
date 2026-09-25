@@ -17,6 +17,10 @@ Array [
     "url": "https://example.com",
   },
   Object {
+    "state": "store",
+    "url": "https://example.com",
+  },
+  Object {
     "durationMs": 12,
     "method": "GET",
     "state": "complete",

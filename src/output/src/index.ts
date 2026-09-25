@@ -3,7 +3,8 @@ import EventEmitter from 'node:events'
 export type Events = {
   request: {
     url: URL | string
-    state: 'start' | 'complete' | '304' | 'cache' | 'stale'
+    /** `store`: hardlinked from the global store, no tarball read */
+    state: 'start' | 'complete' | '304' | 'cache' | 'stale' | 'store'
     /** HTTP method for the request, when known. */
     method?: string
     /** HTTP status code, set on `complete`/`304` completion events. */
