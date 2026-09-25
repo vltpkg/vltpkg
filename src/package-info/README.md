@@ -45,7 +45,10 @@ With the `store-linker` option set to `auto`, `hardlink` or `copy`,
 `<cache>/store/v1`) when there is one. On a miss it unpacks the cached
 tarball as usual and queues it for the background child, so the next
 install finds it in the global store. Missing or unknown
-`store-linker` means `unpack` (the vlt CLI defaults to `auto`).
+`store-linker` means `unpack` (the vlt CLI defaults to `auto`). A
+gzipped cached tarball that is not store-linked (`unpack`, git or
+remote tarballs, no sha512 integrity) is queued too, so the child
+un-gzips it.
 
 Packages with install scripts are copied, never linked: when the store
 index says so, or with the `installScripts` extract option.

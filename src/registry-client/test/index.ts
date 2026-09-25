@@ -1590,6 +1590,25 @@ t.test('cachedBody', async t => {
     t.strictSame(requests, [], 'the caller logs, not us')
     t.equal(found.path, rc.cache.path(url), 'found by key path')
     t.equal(found.key, url, 'cache key')
+    t.equal(found.gzip, false)
+  })
+
+  t.test('gzip is read off the bytes on disk', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const gz = gzipSync(tarball)
+    await write(rc, entry(tarHeaders, 200, gz))
+    const found = rc.cachedBody(url)
+    t.equal(found?.gzip, true)
+    t.strictSame(found?.body, gz)
+    // no content-type: decode un-gzips it in memory
+    const { 'content-type': _, ...noType } = tarHeaders
+    const head = new CacheEntry(200, toRawHeaders(noType), {
+      body: gz,
+    }).encodeHead()
+    await write(rc, Buffer.concat([head, gz]))
+    const bare = rc.cachedBody(url)
+    t.equal(bare?.gzip, true)
+    t.strictSame(bare?.body, tarball)
   })
 
   t.test('normalizes the url like request() does', async t => {

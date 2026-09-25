@@ -95,6 +95,8 @@ export type CachedBody = {
   body: Buffer
   /** the hash the entry was stored under, if it has one */
   integrity?: Integrity
+  /** the body on disk is gzipped (`body` may be un-gzipped) */
+  gzip: boolean
 }
 
 export type CacheableMethod = 'GET' | 'HEAD'
@@ -703,6 +705,7 @@ export class RegistryClient {
           key,
           body: entry.buffer(),
           integrity: entry.integrity,
+          gzip: CacheEntry.isGzipEntry(buf),
         }
       }
       /* c8 ignore next */
@@ -712,8 +715,9 @@ export class RegistryClient {
 
   /**
    * Queue the cached tarball at `key` (a {@link CachedBody} key) for the
-   * background child to explode into the global store. `integrity`
-   * finds it when only the integrity path holds it.
+   * background child: exploded into the global store when that is on,
+   * else un-gzipped. `integrity` finds it when only the integrity path
+   * holds it.
    */
   queueForStore(key: string, integrity?: Integrity) {
     cacheUnzipRegister(

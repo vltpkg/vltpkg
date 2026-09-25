@@ -1709,20 +1709,48 @@ t.test('global store', async t => {
     t.strictSame(states, ['cache'], 'not counted as linked')
   })
 
+  // what the child does to a gzipped entry it did not explode
+  const unzipCached = async (t: Test, pi: PackageInfoClient) => {
+    const file = String(
+      (await pi.getRegistryClient()).cache.integrityPath(integrity),
+    )
+    const entry = CacheEntry.decode(readFileSync(file))
+    t.equal(entry.unzip(), true, 'was gzipped')
+    writeFileSync(file, entry.encode())
+  }
+
   t.test('store-linker=unpack, or invalid: store unused', async t => {
-    const { dir, store, registered, links, client, prime } =
+    const { dir, cache, store, registered, links, client, prime } =
       await setup(t)
     await prime()
     populate(store)
-    for (const linker of [undefined, 'unpack', 'bogus'] as const) {
+    const linkers = [undefined, 'unpack', 'bogus'] as const
+    const extract = async (linker: (typeof linkers)[number]) => {
       const pi = await client({
         'store-linker': linker as StoreLinker | undefined,
       })
       await pi.extract('abbrev@2', `${dir}/${linker}`, lockOpts)
       t.equal(nlink(`${dir}/${linker}`), 1, String(linker))
+      return pi
     }
+    let pi: PackageInfoClient | undefined
+    for (const linker of linkers) pi = await extract(linker)
     t.strictSame(links, [])
-    t.strictSame(registered, [])
+    // gzipped, e.g. exploded while the store was on: queued to unzip
+    const queued = [
+      pathResolve(cache, 'registry-client'),
+      tarballURL,
+      store,
+      integrity,
+    ]
+    t.strictSame(registered, [queued, queued, queued])
+    registered.length = 0
+    await unzipCached(t, pi!)
+    for (const linker of linkers) {
+      rmSync(`${dir}/${linker}`, { recursive: true })
+      await extract(linker)
+    }
+    t.strictSame(registered, [], 'unzipped: nothing queued')
   })
 
   t.test('hosted git tarballs: store unused', async t => {
@@ -1738,6 +1766,14 @@ t.test('global store', async t => {
     await pi.extract('x@fakey:abbrev-2.0.0.tgz', dir + '/t', lockOpts)
     t.equal(nlink(dir + '/t'), 1)
     t.strictSame(links, [])
+    t.equal(registered.length, 1, 'gzipped: queued to unzip')
+    registered.length = 0
+    await unzipCached(t, pi)
+    await pi.extract(
+      'x@fakey:abbrev-2.0.0.tgz',
+      dir + '/t2',
+      lockOpts,
+    )
     t.strictSame(registered, [])
   })
 

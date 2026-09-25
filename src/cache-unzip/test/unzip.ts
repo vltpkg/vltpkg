@@ -22,6 +22,13 @@ const ENV = {
   NODE_OPTIONS: '--no-warnings --experimental-strip-types',
 }
 
+// is the body of the cache entry at `key` gzipped?
+const isGzipped = async (path: string, key: string) => {
+  const buf = await new Cache({ path }).fetch(key)
+  const body = buf?.subarray(buf.readUInt32BE(0))
+  return body?.[0] === 0x1f && body[1] === 0x8b
+}
+
 t.test('validate args', async t => {
   t.match(
     spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME], {
@@ -429,30 +436,116 @@ t.test('global store', async t => {
         env: { ...ENV, ...env },
       },
     )
-    const unzipped = await new Cache({ path }).fetch('tgz')
     return {
       dir,
       store,
       res,
-      gzipped: unzipped?.subarray(-tgz.length).equals(tgz),
+      gzipped: await isGzipped(path, 'tgz'),
     }
   }
 
-  t.test('explodes after unzipping', async t => {
+  t.test(
+    'explodes first, leaves exploded entries gzipped',
+    async t => {
+      const { store, res, gzipped } = await run(t, {
+        VLT_STORE_LINKER: 'hardlink',
+        NODE_DEBUG: 'vlt',
+      })
+      t.equal(res.status, 0)
+      t.equal(gzipped, true, 'cache entry left gzipped')
+      t.strictSame(
+        readdirSync(store).sort(),
+        ['.tmp', hex, `${hex}.json`].sort(),
+      )
+      t.match(
+        res.stderr,
+        /explode written=1 skipped=0 ignored=0 failed=0 bytes=\d+ ms=\d+/,
+      )
+      t.match(res.stderr, /cache-unzip: keys=1 exploded=1 unzipped=0/)
+    },
+  )
+
+  t.test('unzips what it did not explode', async t => {
+    const other = gzipSync(pkgTar(' other'))
+    const notTar = gzipSync(Buffer.from('not a tarball'))
+    const { dir, res } = await run(
+      t,
+      { VLT_STORE_LINKER: 'hardlink', NODE_DEBUG: 'vlt' },
+      {
+        tgz: tgzEntry,
+        noIntegrity: encodeEntry({ 'x-other': 'y' }, other),
+        sha1: encodeEntry(
+          { integrity: 'sha1-2jmj7l5rSw0yVb/vlWAYkK/YBwk=' },
+          other,
+        ),
+        failed: encodeEntry(
+          { integrity: integrityOf(notTar) },
+          notTar,
+        ),
+      },
+    )
+    t.equal(res.status, 1, 'failed explode')
+    t.match(
+      res.stderr,
+      /explode written=1 skipped=0 ignored=2 failed=1 /,
+    )
+    t.match(res.stderr, /cache-unzip: keys=4 exploded=1 unzipped=3/)
+    const path = resolve(dir, 'registry-client')
+    t.equal(await isGzipped(path, 'tgz'), true, 'exploded')
+    for (const k of ['noIntegrity', 'sha1', 'failed']) {
+      t.equal(await isGzipped(path, k), false, k)
+    }
+  })
+
+  t.test('unzips an entry already in the store', async t => {
+    const env = {
+      ...ENV,
+      VLT_STORE_LINKER: 'hardlink',
+      NODE_DEBUG: 'vlt',
+    }
+    const { dir, store, gzipped } = await run(t, env)
+    t.equal(gzipped, true)
+    // an install that read it instead of linking queues it again
+    const path = resolve(dir, 'registry-client')
+    const again = spawnSync(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME, path, store],
+      { input: 'tgz\0', encoding: 'utf8', env },
+    )
+    t.equal(again.status, 0)
+    t.match(again.stderr, /explode written=0 skipped=1 /)
+    t.equal(await isGzipped(path, 'tgz'), false, 'unzipped')
+  })
+
+  t.test('store turned off after exploding: unzips', async t => {
+    const { dir, store, gzipped } = await run(t, {
+      VLT_STORE_LINKER: 'auto',
+    })
+    t.equal(gzipped, true)
+    const path = resolve(dir, 'registry-client')
+    for (const linker of ['unpack', 'bogus']) {
+      await new Cache({ path }).set('tgz', tgzEntry).promise()
+      t.equal(await isGzipped(path, 'tgz'), true)
+      const res = spawnSync(
+        process.execPath,
+        [__CODE_SPLIT_SCRIPT_NAME, path, store],
+        { input: 'tgz\0', env: { ...ENV, VLT_STORE_LINKER: linker } },
+      )
+      t.equal(res.status, 0)
+      t.equal(await isGzipped(path, 'tgz'), false, linker)
+    }
+  })
+
+  t.test('VLT_CACHE_UNZIP=1 unzips exploded entries too', async t => {
     const { store, res, gzipped } = await run(t, {
       VLT_STORE_LINKER: 'hardlink',
+      VLT_CACHE_UNZIP: '1',
       NODE_DEBUG: 'vlt',
     })
     t.equal(res.status, 0)
     t.equal(gzipped, false, 'cache entry unzipped')
-    t.strictSame(
-      readdirSync(store).sort(),
-      ['.tmp', hex, `${hex}.json`].sort(),
-    )
-    t.match(
-      res.stderr,
-      /explode written=1 skipped=0 ignored=0 failed=0 bytes=\d+ ms=\d+/,
-    )
+    t.ok(existsSync(resolve(store, hex)))
+    t.match(res.stderr, /cache-unzip: keys=1 exploded=1 unzipped=1/)
   })
 
   t.test('key with the integrity it is cached under', async t => {
@@ -475,6 +568,36 @@ t.test('global store', async t => {
     )
     t.equal(res.status, 0)
     t.ok(existsSync(resolve(store, hex)))
+  })
+
+  t.test('unzips an entry cached only at its integrity', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'registry-client')
+    const store = resolve(dir, 'store/v1')
+    const integrity = integrityOf(tgz)
+    const cache = new Cache({ path })
+    // cached under another url
+    cache.set('old', tgzEntry, { integrity })
+    await cache.promise()
+    const intFile = String(cache.integrityPath(integrity))
+    const gzipped = async (file: string) => {
+      const buf = await readFile(file)
+      return buf[buf.readUInt32BE(0)] === 0x1f
+    }
+    const run = () =>
+      spawnSync(
+        process.execPath,
+        [__CODE_SPLIT_SCRIPT_NAME, path, store],
+        {
+          input: `new\t${integrity}\0`,
+          env: { ...ENV, VLT_STORE_LINKER: 'unpack' },
+        },
+      ).status
+    t.equal(run(), 0)
+    t.equal(await gzipped(cache.path('new')), true, 'linked')
+    t.equal(run(), 0)
+    t.equal(await gzipped(intFile), false, 'unzipped')
+    t.equal(await gzipped(cache.path('new')), false)
   })
 
   t.test('VLT_CACHE_UNZIP=0 only explodes', async t => {
@@ -524,6 +647,7 @@ t.test('global store', async t => {
     const envs: Record<string, string>[] = [
       {},
       { VLT_STORE_LINKER: 'unpack' },
+      { VLT_STORE_LINKER: 'bogus' },
     ]
     for (const env of envs) {
       const { dir, res, gzipped } = await run(t, env)
@@ -552,6 +676,56 @@ t.test('global store', async t => {
     t.equal(res.status, 1, 'still throws')
     t.ok(existsSync(resolve(store, hex)))
   })
+})
+
+t.test('explode runs first, unzip skips what it wrote', async t => {
+  const path = t.testdir()
+  const head10 = Buffer.alloc(10)
+  head10.writeUint32BE(10, 0)
+  const gz = Buffer.concat([head10, gzipSync(Buffer.from('gz'))])
+  const run = async (env: Record<string, string>) => {
+    const c = new Cache({ path })
+    c.set('a', gz)
+    c.set('b', gz)
+    await c.promise()
+    t.intercept(process, 'env', { value: { ...process.env, ...env } })
+    const seen: string[] = []
+    const { default: main } = await t.mockImport<
+      typeof import('../src/unzip.ts')
+    >('../src/unzip.ts', {
+      '../src/explode.ts': {
+        storeEnabled: () => true,
+        explode: async (cache: Cache, _: string, keys: string[]) => {
+          for (const k of keys) {
+            const b = await cache.fetch(k)
+            seen.push(`${k} ${b?.[10] === 0x1f ? 'gz' : 'unzipped'}`)
+          }
+          return { exploded: new Set(['a']), written: 1, failed: 0 }
+        },
+      },
+    })
+    const input = new EventEmitter()
+    process.nextTick(() => {
+      input.emit('data', Buffer.from('a\0b\0'))
+      input.emit('end')
+    })
+    t.equal(await main(path, input, '/store'), true)
+    return {
+      seen,
+      a: await isGzipped(path, 'a'),
+      b: await isGzipped(path, 'b'),
+    }
+  }
+  t.strictSame(await run({}), {
+    seen: ['a gz', 'b gz'],
+    a: true,
+    b: false,
+  })
+  t.strictSame(
+    await run({ VLT_CACHE_UNZIP: '1' }),
+    { seen: ['a unzipped', 'b unzipped'], a: false, b: false },
+    'VLT_CACHE_UNZIP=1: unzip first',
+  )
 })
 
 t.test('lowest priority only with the global store on', async t => {

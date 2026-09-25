@@ -59,7 +59,8 @@ So,
 - json responses will always be un-zipped, in the response and in the
   cache.
 - artifact responses _may_ be gzipped (and thus, have to be unzipped
-  by the unpack operation), but will eventually be cached as unzipped
+  by the unpack operation). Tarballs exploded into the global store
+  stay gzipped; the rest will eventually be cached as unzipped
   tarballs.
 
 Thus, the `content-length` response header will _usually_ not match
@@ -71,7 +72,8 @@ option, default `storeRoot(cache)`, i.e. `<cache>/store/v1`, also at
 `@vltpkg/registry-client/store-root`), so it can explode them there
 when `VLT_STORE_LINKER` enables the store.
 `queueForStore(key, integrity)` queues an already cached tarball (a
-`cachedBody()` hit) the same way.
+`cachedBody()` hit) the same way: exploded when the store is on, else
+un-gzipped.
 
 ## Proxies
 

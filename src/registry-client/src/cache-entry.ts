@@ -398,8 +398,9 @@ export class CacheEntry {
    * This method **will throw** if the integrity values do not match.
    *
    * Note that this will *usually* not be true if the value is coming out of
-   * the cache, because the cache entries are un-gzipped in place. It should
-   * _only_ be called for artifacts that come from an actual http response.
+   * the cache, because cache entries not exploded into the global store are
+   * un-gzipped in place. It should _only_ be called for artifacts that come
+   * from an actual http response.
    *
    * Returns true if anything was actually verified.
    */

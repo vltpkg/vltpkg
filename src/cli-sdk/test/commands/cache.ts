@@ -22,6 +22,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { resolve } from 'node:path'
+import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import t from 'tap'
 import { Header } from 'tar'
@@ -510,20 +511,29 @@ const makeTar = (files: Record<string, string>) => {
 }
 
 // cache a tarball under its integrity, and explode it into the store
-const storeFixture = (t: Test, names: string[]) => {
+const storeFixture = (t: Test, names: string[], gzip = false) => {
   const dir = t.testdir({ 'registry-client': {}, store: {} })
   const cachePath = resolve(dir, 'registry-client')
   const storeRoot = resolve(dir, 'store')
   const pkgs = Object.fromEntries(
     names.map(name => {
-      const tgz = makeTar({
+      const tar = makeTar({
         'package.json': JSON.stringify({ name, version: '1.0.0' }),
         'index.js': name,
       })
+      const tgz = gzip ? gzipSync(tar) : tar
       const hash = createHash('sha512').update(tgz).digest()
       const integrity: Integrity = `sha512-${hash.toString('base64')}`
       const hex = hash.toString('hex')
-      const entry = new CacheEntry(200, [], { integrity })
+      // a content-type, or encode() un-gzips it
+      const entry = new CacheEntry(
+        200,
+        [
+          Buffer.from('content-type'),
+          Buffer.from('application/octet-stream'),
+        ],
+        { integrity },
+      )
       entry.addBody(tgz)
       writeFileSync(resolve(cachePath, hex), entry.encode())
       const tmp = resolve(storeRoot, `.tmp/${hex}`)
@@ -631,6 +641,34 @@ t.test('verify --all', async t => {
       ['Checked 4 global store entries, removed 3'],
     ].sort(byStr),
   )
+})
+
+// the child leaves the entries it explodes gzipped
+t.test('verify gzipped cached tarballs', async t => {
+  const command = await verifyCommand(t)
+  const { cachePath, storeRoot, pkgs, packageInfo } = storeFixture(
+    t,
+    ['ok', 'edited'],
+    true,
+  )
+  const edited = pkg(pkgs, 'edited')
+  t.equal(
+    CacheEntry.isGzipEntry(
+      readFileSync(resolve(cachePath, edited.hex)),
+    ),
+    true,
+  )
+  writeFileSync(resolve(edited.entry, 'index.js'), 'x')
+  const result = await command({
+    positionals: ['verify'],
+    values: { all: true },
+    options: { packageInfo, storeRoot },
+  } as unknown as LoadedConfig)
+  t.strictSame(result, {
+    checked: 2,
+    removed: { [edited.hex]: 'modified index.js' },
+  })
+  t.equal(existsSync(pkg(pkgs, 'ok').entry), true)
 })
 
 t.test('verify specs', async t => {

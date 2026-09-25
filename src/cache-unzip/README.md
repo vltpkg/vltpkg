@@ -58,13 +58,20 @@ also explodes each tarball entry with a sha512 `integrity` header into
 - Entries are built in `<storeRoot>/.tmp/` and renamed into place,
   sidecar first. If another process wins the rename, its entry is
   kept. Leftovers older than one hour are removed.
-- `VLT_CACHE_UNZIP=0` skips the un-gzip rewrite.
+- Explode runs first. Entries it writes stay gzipped: installs link
+  them from the store. The rest are un-gzipped: store off, already in
+  the store, not a tarball, no sha512 integrity, failed. So a gzipped
+  entry registered again by an install that read it instead of linking
+  it (say, after switching to `store-linker=unpack`) is un-gzipped.
+- `VLT_CACHE_UNZIP=0` never un-gzips. `VLT_CACHE_UNZIP=1` un-gzips
+  every entry before exploding.
 - `VLT_CACHE_EXPLODE_CONCURRENCY` sets how many entries are read at
   once (default 1).
 - `NODE_DEBUG=vlt` prints a summary to stderr, seen only when the
-  child is run by hand (vlt ignores its output): entries written,
-  skipped (already there), ignored (missing or not a tarball), failed,
-  bytes, ms.
+  child is run by hand (vlt ignores its output): keys read, exploded
+  and un-gzipped, and with the store on, entries written, skipped
+  (already there), ignored (missing or not a tarball), failed, bytes,
+  ms.
 
 With the global store on, the child runs at the lowest CPU priority.
 

@@ -301,6 +301,19 @@ Array [
 ]
 `
 
+exports[`test/commands/cache.ts > TAP > logged by verify gzipped cached tarballs 1`] = `
+Array [
+  Array [
+    "-",
+    "edited@1.0.0",
+    "modified index.js",
+  ],
+  Array [
+    "Checked 2 global store entries, removed 1",
+  ],
+]
+`
+
 exports[`test/commands/cache.ts > TAP > logged by verify specs 1`] = `
 Array [
   Array [
