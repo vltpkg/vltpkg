@@ -151,38 +151,61 @@ t.test('brotli reaches every writer', async t => {
   }
 })
 
-t.test('VLT_TAR_SYNC=0 falls back to the async writer', async t => {
-  const prev = process.env.VLT_TAR_SYNC
-  process.env.VLT_TAR_SYNC = '0'
-  t.teardown(() => {
-    if (prev === undefined) delete process.env.VLT_TAR_SYNC
-    else process.env.VLT_TAR_SYNC = prev
+// every VLT_TAR_SYNC setting has to place the same bytes, gzip or
+// brotli, from a buffer or from a file -- only where the work runs
+// differs.
+for (const sync of ['0', '1', undefined] as const) {
+  const what =
+    sync === undefined ? 'unset: parallel inflate, sync write'
+    : sync === '1' ? 'VLT_TAR_SYNC=1: all on the main thread'
+    : 'VLT_TAR_SYNC=0: the async writers'
+  t.test(what, async t => {
+    const prev = process.env.VLT_TAR_SYNC
+    if (sync === undefined) delete process.env.VLT_TAR_SYNC
+    else process.env.VLT_TAR_SYNC = sync
+    t.teardown(() => {
+      if (prev === undefined) delete process.env.VLT_TAR_SYNC
+      else process.env.VLT_TAR_SYNC = prev
+    })
+    const { Pool } =
+      await t.mockImport<typeof import('../src/pool.ts')>(
+        '../src/pool.ts',
+      )
+    const p = new Pool()
+    const tarData = makePkg('async-pkg', '1.0.0')
+    const d = t.testdir()
+    const file = resolve(d, 'pkg.tgz')
+    writeFileSync(file, tarData)
+    const br = brotliCompressSync(tarData)
+    const brFile = resolve(d, 'pkg.tar.br')
+    writeFileSync(brFile, br)
+
+    await p.unpack(tarData, resolve(d, 'buf'))
+    await p.unpackFile(file, resolve(d, 'file'))
+    await p.unpack(br, resolve(d, 'buf-br'), 'brotli')
+    await p.unpackFile(brFile, resolve(d, 'file-br'), 0, 'brotli')
+    for (const out of ['buf', 'file', 'buf-br', 'file-br']) {
+      t.match(
+        JSON.parse(
+          readFileSync(resolve(d, out, 'package.json'), 'utf8'),
+        ),
+        { name: 'async-pkg' },
+      )
+    }
+
+    // where the work runs is observable: only the all-sync mode has
+    // finished writing by the time unpack() hands back its promise.
+    const out = resolve(d, 'timing')
+    const pending = p.unpack(tarData, out)
+    t.equal(
+      lstatSync(out, { throwIfNoEntry: false }) !== undefined,
+      sync === '1',
+      'wrote before yielding',
+    )
+    await pending
+    t.ok(lstatSync(out), 'and always after')
   })
-  const { Pool } =
-    await t.mockImport<typeof import('../src/pool.ts')>(
-      '../src/pool.ts',
-    )
-  const p = new Pool()
-  const tarData = makePkg('async-pkg', '1.0.0')
-  const d = t.testdir()
-  const file = resolve(d, 'pkg.tgz')
-  writeFileSync(file, tarData)
-  await p.unpack(tarData, resolve(d, 'buf'))
-  await p.unpackFile(file, resolve(d, 'file'))
-  const br = brotliCompressSync(tarData)
-  const brFile = resolve(d, 'pkg.tar.br')
-  writeFileSync(brFile, br)
-  await p.unpack(br, resolve(d, 'buf-br'), 'brotli')
-  await p.unpackFile(brFile, resolve(d, 'file-br'), 0, 'brotli')
-  for (const out of ['buf', 'file', 'buf-br', 'file-br']) {
-    t.match(
-      JSON.parse(
-        readFileSync(resolve(d, out, 'package.json'), 'utf8'),
-      ),
-      { name: 'async-pkg' },
-    )
-  }
-})
+}
 
 t.test('global store', async t => {
   const d = t.testdir()
