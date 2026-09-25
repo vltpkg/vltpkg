@@ -52,12 +52,11 @@ t.test('steps, requests and trailer', async t => {
   await setTimeout(50)
   t.match(out, 'resolving dependencies ✓')
   t.match(out, '2 cache hits')
-  t.notMatch(out, 'linked from')
   request('store')
   request('store')
   await setTimeout(50)
-  t.match(out, '2 linked from global store')
-  t.match(out, '2 cache hits', 'not counted as cache hits')
+  t.match(out, '4 cache hits', 'store links count as cache hits')
+  t.notMatch(out, 'store')
   await r.done(
     {
       buildQueue: [joinDepIDTuple(['registry', '', 'a@1.0.0'])],

@@ -42,7 +42,6 @@ const GraphStep = ({ text, step }: { text: string; step: Step }) => {
 const App = ({ trailer }: { trailer?: string }) => {
   const [requests, setRequests] = useState(0)
   const [cacheHit, setCacheHit] = useState(0)
-  const [linked, setLinked] = useState(0)
 
   const [steps, setSteps] = useState<
     Record<Events['graphStep']['step'], Step>
@@ -62,10 +61,12 @@ const App = ({ trailer }: { trailer?: string }) => {
     const updateRequests = ({ state }: Events['request']) => {
       if (state === 'start') {
         setRequests(p => p + 1)
-      } else if (state === 'cache' || state === 'stale') {
+      } else if (
+        state === 'cache' ||
+        state === 'stale' ||
+        state === 'store'
+      ) {
         setCacheHit(p => p + 1)
-      } else if (state === 'store') {
-        setLinked(p => p + 1)
       }
     }
     emitter.on('request', updateRequests)
@@ -108,9 +109,6 @@ const App = ({ trailer }: { trailer?: string }) => {
     ),
     cacheHit > 0 ?
       $(Text, null, `${cacheHit} cache hit${cacheHit > 1 ? 's' : ''}`)
-    : null,
-    linked > 0 ?
-      $(Text, null, `${linked} linked from global store`)
     : null,
     requests > 0 ?
       $(Text, null, `${requests} request${requests > 1 ? 's' : ''}`)
