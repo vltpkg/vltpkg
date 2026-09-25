@@ -109,12 +109,15 @@ cache on another drive) stay: copies do not show use.
 The global store holds cached registry package tarballs unpacked,
 under `<cache>/store`. A background process fills it after each
 install, and later installs hardlink package files from it instead of
-unpacking tarballs again. Packages with install scripts are always
-copied.
+unpacking tarballs again. By default (`store-linker=auto`) this
+happens on Linux only: macOS and Windows unpack tarballs as before,
+unless `store-linker` is set to `hardlink` or `copy`. Packages with
+install scripts are always copied.
 
-Files in `node_modules` are hardlinks into the global store, so
-editing one in place changes it for every project on the machine. To
-edit `node_modules` in place (debugging, patching), set
+When installed with `auto` on Linux or with `hardlink`, files in
+`node_modules` are hardlinks into the global store, so editing one in
+place changes it for every project on the machine. To edit
+`node_modules` in place (debugging, patching), set
 [`store-linker=copy`](/cli/configuring#--store-linkerauto--hardlink--copy--unpack)
 and reinstall from scratch (remove `node_modules` first), so its files
 are copies. If files were already edited through a hardlink, run

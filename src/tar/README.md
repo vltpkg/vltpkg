@@ -83,6 +83,7 @@ into place) is up to the caller.
 The vlt CLI keeps its global store under `<cache>/store/v1`, filled by
 a background process, and installs from it with the `store-linker`
 config (`auto` by default, `hardlink`, `copy`; `unpack` skips it).
+`auto` only links on Linux and means `unpack` everywhere else.
 
 ### unpackToStoreSync(tarData, dir)
 

@@ -1071,6 +1071,8 @@ t.test('store-linker and global store root', async t => {
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
 
+  // `auto` only stays `auto` on linux, see below
+  t.intercept(process, 'platform', { value: 'linux' })
   const def = await Config.load(dir, ['install'], true)
   t.equal(def.get('store-linker'), 'auto', 'on by default')
   t.equal(
@@ -1083,6 +1085,97 @@ t.test('store-linker and global store root', async t => {
     resolve(def.get('cache'), 'store/v1'),
     'under the cache',
   )
+
+  await t.test('auto means unpack off linux', async t => {
+    const errs = t.capture(console, 'error').args
+    const load = async (
+      platform: string,
+      argv: string[] = [],
+      env?: string,
+    ) => {
+      clearEnv()
+      if (env !== undefined) process.env.VLT_STORE_LINKER = env
+      t.intercept(process, 'platform', { value: platform })
+      return Config.load(dir, ['install', ...argv], true)
+    }
+
+    for (const platform of ['darwin', 'win32', 'sunos']) {
+      const c = await load(platform)
+      t.equal(c.get('store-linker'), 'unpack', `${platform} default`)
+      t.equal(c.options['store-linker'], 'unpack')
+      t.equal(
+        process.env.VLT_STORE_LINKER,
+        'unpack',
+        `${platform} child sees unpack`,
+      )
+    }
+
+    const linux = await load('linux')
+    t.equal(linux.get('store-linker'), 'auto', 'linux stays auto')
+    t.equal(process.env.VLT_STORE_LINKER, 'auto')
+
+    const cli = await load('darwin', ['--store-linker=auto'])
+    t.equal(cli.get('store-linker'), 'unpack', 'explicit cli auto')
+    t.equal(process.env.VLT_STORE_LINKER, 'unpack')
+    t.equal(cli.explicit['store-linker'], 'unpack', 'cli records it')
+
+    const env = await load('darwin', [], 'auto')
+    t.equal(env.get('store-linker'), 'unpack', 'explicit env auto')
+    t.equal(process.env.VLT_STORE_LINKER, 'unpack')
+    t.equal(env.explicit['store-linker'], 'unpack', 'env records it')
+
+    const hard = await load('darwin', [], 'hardlink')
+    t.equal(hard.get('store-linker'), 'hardlink', 'env opt-in kept')
+    t.equal(process.env.VLT_STORE_LINKER, 'hardlink')
+
+    const copy = await load('darwin', ['--store-linker=copy'])
+    t.equal(copy.get('store-linker'), 'copy', 'cli opt-in kept')
+    t.equal(process.env.VLT_STORE_LINKER, 'copy')
+
+    // one fixture: a second t.testdir() removes the first while the
+    // process is still inside it, which is EBUSY on windows
+    const fixtures = t.testdir({
+      file: {
+        'vlt.json': JSON.stringify({
+          config: { 'store-linker': 'auto' },
+        }),
+        '.git': {},
+      },
+      cmd: {
+        'vlt.json': JSON.stringify({
+          config: {
+            command: { install: { 'store-linker': 'auto' } },
+          },
+        }),
+        '.git': {},
+      },
+    })
+    const d = resolve(fixtures, 'file')
+    t.chdir(d)
+    unload()
+    const { Config: C } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    clearEnv()
+    t.intercept(process, 'platform', { value: 'darwin' })
+    const file = await C.load(d, ['install'], true)
+    t.equal(file.get('store-linker'), 'unpack', 'config file auto')
+    t.equal(process.env.VLT_STORE_LINKER, 'unpack')
+
+    const cd = resolve(fixtures, 'cmd')
+    t.chdir(cd)
+    unload()
+    const { Config: CC } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    clearEnv()
+    t.intercept(process, 'platform', { value: 'darwin' })
+    const cmd = await CC.load(cd, ['install'], true)
+    t.equal(cmd.get('store-linker'), 'unpack', 'command block auto')
+    t.equal(process.env.VLT_STORE_LINKER, 'unpack')
+
+    t.strictSame(errs(), [], 'never warns')
+  })
 
   clearEnv()
   process.env.VLT_STORE_LINKER = 'hardlink'
