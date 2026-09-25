@@ -125,9 +125,10 @@ const bookCovers = {
 
 // package-manager tabs get their logo; any other label renders bare
 const TabIcon = ({ label }: { label: string }) => {
-  const Icon =
-    bookCovers[label.toLowerCase() as keyof typeof bookCovers]?.Icon
-  return Icon ? <Icon aria-hidden /> : null
+  const key = label.toLowerCase()
+  if (!(key in bookCovers)) return null
+  const { Icon } = bookCovers[key as keyof typeof bookCovers]
+  return <Icon aria-hidden />
 }
 
 // minimal stand-ins for the Starlight components used by the content copied from www/docs
