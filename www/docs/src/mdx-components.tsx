@@ -123,6 +123,13 @@ const bookCovers = {
   ci: { Icon: WorkflowIcon, color: 'oklch(0.9 0.05 155)' },
 }
 
+// package-manager tabs get their logo; any other label renders bare
+const TabIcon = ({ label }: { label: string }) => {
+  const Icon =
+    bookCovers[label.toLowerCase() as keyof typeof bookCovers]?.Icon
+  return Icon ? <Icon aria-hidden /> : null
+}
+
 // minimal stand-ins for the Starlight components used by the content copied from www/docs
 export const components: MDXComponents = {
   pre: Pre,
@@ -290,6 +297,7 @@ export const components: MDXComponents = {
               key={i}
               value={String(i)}
               className="flex-none">
+              <TabIcon label={item.props.label} />
               {item.props.label}
             </TabsTrigger>
           ))}

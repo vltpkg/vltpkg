@@ -40,6 +40,7 @@
       position: absolute;
       inset-inline: 0;
       height: --spacing(8);
+      opacity: 0; /* inactive timeline (page doesn't scroll) skips the animation, so stay hidden */
       animation: page-fade linear both;
       animation-timeline: scroll(root);
     }
@@ -70,5 +71,8 @@
 @keyframes page-fade {
   from {
     opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
