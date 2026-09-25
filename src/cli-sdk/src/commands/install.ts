@@ -5,28 +5,18 @@ import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
-import type { DepID } from '@vltpkg/dep-id'
-import type { Diff, Graph } from '@vltpkg/graph'
+import type { InstallResult as GraphInstallResult } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
 /**
  * The resulting object of an install operation. To be used by the view impl.
+ *
+ * Note that `graph` is absent when the install short-circuited because
+ * nothing had changed, in which case no graph was ever loaded.
  */
-export type InstallResult = {
-  /**
-   * A queue of package IDs that need to be built after the install is complete.
-   */
-  buildQueue?: DepID[]
-  /**
-   * The resulting graph structure at the end of an install.
-   */
-  graph: Graph
-  /**
-   * The diff between the actual and ideal graphs, if available.
-   */
-  diff?: Diff
+export type InstallResult = GraphInstallResult & {
   /**
    * Spec config from the cli / env that was saved to a config file.
    */
@@ -196,7 +186,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     : ':not(*)'
   /* c8 ignore stop */
   const installStart = Date.now()
-  const { buildQueue, graph, diff } = await install(
+  const { buildQueue, graph, diff, nodeCount } = await install(
     {
       ...conf.options,
       frozenLockfile,
@@ -216,7 +206,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   try {
     trackInstall(
       {
-        dependency_count: graph.nodes.size,
+        dependency_count: graph?.nodes.size ?? nodeCount ?? 0,
         duration_ms: Date.now() - installStart,
       },
       conf.values.telemetry,
@@ -226,6 +216,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     buildQueue,
     graph,
     diff,
+    nodeCount,
     ...(persist ? { persistedConfig: persist } : null),
   }
 }

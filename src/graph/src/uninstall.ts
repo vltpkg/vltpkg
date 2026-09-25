@@ -8,8 +8,10 @@ import { reify } from './reify/index.ts'
 import { lockfile } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { existsSync, rmSync } from 'node:fs'
-import { resolve } from 'node:path'
+import {
+  removeHiddenLockfile,
+  removeInstallState,
+} from './install-state.ts'
 
 export type UninstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -63,6 +65,7 @@ export const uninstall = async (
           })
         : undefined
       saveImportersPackageJson?.()
+      removeInstallState(options.projectRoot)
       // see install.ts: never leave `.VLT.DELETE.*` behind
       remover.confirm()
       return { graph, diff: undefined }
@@ -77,20 +80,18 @@ export const uninstall = async (
       remover,
     })
 
+    // an uninstall may be `-w` filtered, and does not compute the
+    // unfiltered workspace set that the install fast path fingerprints
+    // over, so drop the record rather than write a partial one. The next
+    // install takes the regular path and records it again.
+    removeInstallState(options.projectRoot)
+
     return { graph, diff }
     /* c8 ignore start */
   } catch (err) {
     await remover.rollback().catch(() => {})
-    // Remove hidden lockfile on failure
-    try {
-      const hiddenLockfile = resolve(
-        options.projectRoot,
-        'node_modules/.vlt-lock.json',
-      )
-      if (existsSync(hiddenLockfile)) {
-        rmSync(hiddenLockfile, { force: true })
-      }
-    } catch {}
+    // Remove hidden lockfile and the recorded install state on failure
+    removeHiddenLockfile(options.projectRoot)
     throw err
   }
   /* c8 ignore stop */
