@@ -1,0 +1,149 @@
+---
+title: bun
+description:
+  Configure bun for your vlt.io registries, and publish to main.
+sidebar:
+  label: bun
+  order: 5
+---
+
+Verified against **bun 1.4**.
+
+## Quick start
+
+```sh
+export VLT_TOKEN=<your token>
+```
+
+Create `bunfig.toml` in your project root:
+
+```toml
+[install]
+registry = { url = "https://registry.vlt.io/acme/npm/", token = "$VLT_TOKEN" }
+
+[install.scopes]
+acme = { url = "https://registry.vlt.io/acme/main/", token = "$VLT_TOKEN" }
+```
+
+Then `bun install` as usual.
+
+<Aside type="caution" title="Use $VLT_TOKEN, not ${VLT_TOKEN}">
+
+In `bunfig.toml` bun expands only the unbraced form. The braced form
+is sent literally and you get a `401`. This is the opposite of every
+other package manager here — see [gotchas](#gotchas).
+
+</Aside>
+
+Because the token is a `$VAR` reference rather than a literal,
+`bunfig.toml` is safe to commit.
+
+## What each block does
+
+- `[install] registry` — where all public npm packages come from.
+  Points at your account mirror.
+- `[install.scopes]` — per-scope overrides. `acme` routes `@acme/*` to
+  your `main` registry. The scope key works with or without the `@`,
+  and `[install.scopes.acme]` as a table header is equivalent:
+
+  ```toml
+  [install.scopes.acme]
+  url = "https://registry.vlt.io/acme/main/"
+  token = "$VLT_TOKEN"
+  ```
+
+Use whichever reads better; all three forms are verified working.
+
+## Using `.npmrc` instead
+
+bun also reads `.npmrc`, which is handy if you want one file that npm,
+pnpm, deno and bun all share:
+
+```ini
+registry=https://registry.vlt.io/acme/npm/
+@acme:registry=https://registry.vlt.io/acme/main/
+
+//registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}
+//registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
+```
+
+In `.npmrc` the braced `${VLT_TOKEN}` form **is** expanded.
+
+If both files exist, `bunfig.toml` wins — but only on **bun 1.4 and
+newer**. Bun 1.3 and earlier gave `.npmrc` priority, so a project
+carrying both files changes behaviour across those versions. Pick one
+file and delete the other.
+
+## Install from the npm mirror
+
+```sh
+bun add abbrev
+```
+
+To move an existing project onto the mirror:
+
+```sh
+rm -rf bun.lock node_modules
+bun install
+```
+
+## Install from your `main` registry
+
+```sh
+bun add @acme/my-package
+```
+
+### Public packages
+
+Public packages on `main` install without a token — the URL alone is
+enough, with no `token`:
+
+```toml
+[install.scopes]
+acme = { url = "https://registry.vlt.io/acme/main/" }
+```
+
+## Publish to `main`
+
+```sh
+bun publish
+```
+
+bun resolves the publish registry from your scope config, so with the
+`[install.scopes]` block above, `@acme/my-package` goes to `main`
+automatically — no `publishConfig` needed.
+
+Add `--access public` for a package anyone can install, and
+`--dry-run` to preview.
+
+With a personal token, every publish returns a one-time-password
+challenge with a `vlt.io` URL — open it, approve, re-run. A **service
+token** skips the prompt and is what you want in CI; see
+[CI & automation](/registry/publishing/ci).
+
+## Gotchas
+
+- **Never omit the trailing slash.** In bun 1.4, a registry URL that
+  has a path and no trailing slash **silently loses its last path
+  segment** — `https://registry.vlt.io/acme/npm` resolves against
+  `https://registry.vlt.io/acme/`, and you get confusing 401s or 404s.
+  This affects `bunfig.toml`, `.npmrc` and `[install.scopes]` alike.
+  Our URLs all have paths, so this matters every time.
+- **`$VLT_TOKEN` in `bunfig.toml`, `${VLT_TOKEN}` in `.npmrc`.**
+  Getting this backwards produces a confusing `401` with a token that
+  "looks" configured. An unset variable is sent as a literal string
+  rather than failing, which looks the same from the registry's side.
+- **Quote the scope key if you include the `@`.** `"@acme" = { ... }`
+  is fine; unquoted `@acme = { ... }` is a hard
+  `SyntaxError: failed to load bunfig` that aborts the install.
+- **`publishConfig.registry` alone is not enough for `bun publish`.**
+  bun will find the URL but not the credentials, and fails with
+  `error: missing authentication (run `bunx npm login`)`. Set the
+  registry in `bunfig.toml` (or as `registry=` in `.npmrc`) so the
+  token travels with it.
+- **Auth paths must match exactly.** A host-wide
+  `//registry.vlt.io/:_authToken=...` works in npm and deno but
+  **not** in bun — bun needs the full registry path, trailing slash
+  included.
+- bun has no `login` command. Authentication comes from `bunfig.toml`,
+  `.npmrc`, or the environment.

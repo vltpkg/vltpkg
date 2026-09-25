@@ -1,0 +1,78 @@
+/* rules on the article's generated markup (typeset-docs); the mdx components style themselves */
+@layer components {
+  .typeset-docs {
+    /* clear the sticky navbar, plus breathing room */
+    & :where([id]) {
+      scroll-margin-block-start: calc(
+        var(--header-height) + --spacing(6)
+      );
+
+      /* below xl the mobile toc bar (h-12) pins under the navbar too */
+      @media (width < 80rem) {
+        scroll-margin-block-start: calc(
+          var(--header-height) + --spacing(12) + --spacing(6)
+        );
+      }
+    }
+
+    /* typeset's flow margins skip not-typeset blocks (code cards, media), so give them the same rhythm */
+    &
+      :where(figure[data-not-typeset], .not-typeset):not(
+        :first-child
+      ) {
+      margin-block-start: var(--typeset-flow);
+    }
+  }
+}
+
+/* the article scrolls with the page, so shadcn's scroll-fade (a mask on its own scroller) can't reach it.
+   instead, background-coloured edges pin under the navbar (and the mobile toc bar) and to the viewport's
+   bottom, fading in once the page leaves the top and out as it reaches the end */
+@supports (animation-timeline: scroll()) {
+  .page-fade {
+    position: sticky;
+    z-index: 30;
+    height: 0;
+    pointer-events: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      height: --spacing(8);
+      opacity: 0; /* inactive timeline (page doesn't scroll) skips the animation, so stay hidden */
+      animation: page-fade linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+
+  .page-fade-top {
+    top: calc(var(--header-height) + var(--toc-bar, 0px));
+
+    &::after {
+      top: 0;
+      background: linear-gradient(var(--background), transparent);
+      animation-range: 0 --spacing(24);
+    }
+  }
+
+  .page-fade-bottom {
+    bottom: 0;
+
+    &::after {
+      bottom: 0;
+      background: linear-gradient(transparent, var(--background));
+      animation-direction: reverse;
+      animation-range: calc(100% - --spacing(24)) 100%;
+    }
+  }
+}
+
+@keyframes page-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

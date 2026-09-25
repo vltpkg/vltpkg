@@ -308,15 +308,13 @@ export default [
     name: `${NAME}/docs`,
     files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {
+      // bundled by Next (moduleResolution: bundler), extensionless imports are fine
+      'import/extensions': 'off',
       'import/no-unresolved': [
         'error',
         {
           // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
-          ignore: [
-            'astro:content',
-            'virtual:starlight/user-config',
-            '^@\\/',
-          ],
+          ignore: ['^@\\/'],
         },
       ],
     },

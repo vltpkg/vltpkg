@@ -1,0 +1,45 @@
+---
+title: vlt token
+sidebar:
+  label: token
+---
+
+Usage:
+
+<Code
+  code="$ vlt token list
+$ vlt token add
+$ vlt token rm"
+  title="Terminal"
+  lang="bash"
+/>
+
+Manage registry authentication tokens in the vlt keychain.
+
+To target a specific configured registry by alias, use
+[`vlt registry <alias> token <subcommand>`](/client/commands/registry).
+See
+[Targeting a specific registry](/client/registries#targeting-a-specific-registry).
+
+## Subcommands
+
+### list
+
+List all tokens for configured registries. Queries each registry's
+token API and displays token metadata including key, creation date,
+and permissions.
+
+<Code code="$ vlt token list" title="Terminal" lang="bash" />
+
+### add
+
+Add a token for the specified registry. You will be prompted to paste
+the bearer token.
+
+<Code code="$ vlt token add" title="Terminal" lang="bash" />
+
+### rm
+
+Remove the stored token for the specified registry.
+
+<Code code="$ vlt token rm" title="Terminal" lang="bash" />

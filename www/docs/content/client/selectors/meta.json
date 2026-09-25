@@ -1,0 +1,11 @@
+{
+  "title": "Selectors",
+  "pages": [
+    "attribute-selectors",
+    "combinators",
+    "id-selectors",
+    "security-insights",
+    "pseudo-classes",
+    "pseudo-states"
+  ]
+}

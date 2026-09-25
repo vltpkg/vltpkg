@@ -67,6 +67,8 @@ tmp
 /www/**/*.d.ts.map
 /www/**/*.mjs
 /www/**/*.mjs.map
+!/www/docs/postcss.config.mjs
+!/www/docs/src/jsx.d.ts
 /www/**/*.d.mts
 /www/**/*.d.mts.map
 /www/*/node_modules

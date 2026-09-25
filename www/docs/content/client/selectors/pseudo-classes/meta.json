@@ -1,0 +1,20 @@
+{
+  "title": "Pseudo-classes",
+  "pages": [
+    "attr",
+    "has",
+    "dist",
+    "host",
+    "is",
+    "not",
+    "outdated",
+    "published",
+    "semver",
+    "spec",
+    "path",
+    "type",
+    "diff",
+    "hostname",
+    "registry"
+  ]
+}
