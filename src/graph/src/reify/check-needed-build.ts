@@ -3,7 +3,7 @@ import type { PackageJson } from '@vltpkg/package-json'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
 import type { NormalizedManifest } from '@vltpkg/types'
-import { join } from 'node:path'
+import { hasBindingGyp } from './binding-gyp.ts'
 import { scriptsManifest } from './scripts-manifest.ts'
 
 /**
@@ -76,11 +76,11 @@ const nodeNeedsBuild = (
   // "If there is a binding.gyp file in the root of your package and you
   // haven't defined your own install or preinstall scripts, npm will default
   // the install command to compile using node-gyp via node-gyp rebuild"
-  const hasBindingGyp =
-    scurry
-      .lstatSync(join(node.resolvedLocation(scurry), 'binding.gyp'))
-      ?.isFile() ?? false
-  if (hasBindingGyp && !scripts.install && !scripts.preinstall)
+  if (
+    hasBindingGyp(node, scurry) &&
+    !scripts.install &&
+    !scripts.preinstall
+  )
     return true
 
   // Check for prepare scripts on importers or git dependencies

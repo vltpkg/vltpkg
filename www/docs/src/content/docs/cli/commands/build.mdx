@@ -100,8 +100,8 @@ $ vlt build`} title="Terminal" lang="bash" />
 
 By default `vlt build` uses a target value of
 `:scripts:not(:built):not(:malware)` targetting only not build
-packages that have lifecycle scripts and do not have any malware
-alerts associated with it.
+packages that have lifecycle scripts (or a root `binding.gyp`) and do
+not have any malware alerts associated with it.
 
 ## Examples
 
