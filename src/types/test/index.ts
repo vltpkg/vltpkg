@@ -32,6 +32,7 @@ import {
   assertRecordStringString,
   assertRecordStringT,
   dependencyTypes,
+  integrityHex,
   isErrorWithCause,
   isIntegrity,
   isKeyID,
@@ -229,6 +230,12 @@ t.test('integrity', t => {
   // now it's ok
   const iAsserted: Integrity = intOK
   iAsserted
+  t.equal(
+    integrityHex(i),
+    'ebf9a1d44daed98804b021dd634631e685beeb581953ed6f5daa221c7ae929eb9134d805bd2fbf8ebc07890841e5aa407f9a01ed407b135f689764762ca1fc85',
+  )
+  t.equal(integrityHex('sha1-deadbeef'), undefined)
+  t.equal(integrityHex(undefined), undefined)
   t.end()
 })
 

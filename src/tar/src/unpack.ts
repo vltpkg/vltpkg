@@ -1,10 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'node:crypto'
 import {
+  chmodSync,
   lstatSync,
   mkdirSync,
   readFileSync,
   renameSync,
+  statSync,
   writeFileSync,
 } from 'node:fs'
 import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
@@ -12,6 +14,7 @@ import {
   basename,
   dirname,
   isAbsolute,
+  join,
   relative,
   resolve,
   sep,
@@ -22,6 +25,8 @@ import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
 import { unzip as unzipCB, unzipSync as unzipSyncCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
+import { storeIndexManifest } from './store-index.ts'
+import type { StoreIndex, StoreIndexFile } from './store-index.ts'
 
 // Matches node-tar's MAX_DECOMPRESSION_RATIO, which npm uses via pacote.
 const MAX_DECOMPRESSION_RATIO = 1000
@@ -84,9 +89,11 @@ let id = 1
 const tmp = randomBytes(6).toString('hex') + '.'
 const tmpSuffix = () => tmp + String(id++)
 
+/** A file parsed out of a tarball, at its destination path. */
 type FileEntry = {
   path: string
   body: Buffer
+  /** written with the exec bit: world-executable in the tar header */
   executable: boolean
   dir: false
 }
@@ -259,17 +266,21 @@ export const unpackFileSync = (
   offset = 0,
 ): void => unpackSync(readFileSync(file).subarray(offset), target)
 
-const tmpName = (target: string) =>
+/** Sibling temp path used to build `target` before renaming it in. */
+export const tmpName = (target: string) =>
   dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()
 
 /**
- * Walk the tar headers and collect what has to be written. No IO, so
- * both writers share it and cannot drift on path sanitization.
+ * What a tarball unpacks to under a root: every directory that holds an
+ * entry (ancestors excluded) and every file.
  */
-const parseTarball = (
-  buffer: Buffer,
-  tmp: string,
-): { dirs: Set<string>; files: FileEntry[] } => {
+type TarEntries = { dirs: Set<string>; files: FileEntry[] }
+
+/**
+ * Walk the tar headers and collect what has to be written. No IO, so
+ * all writers share it and cannot drift on path sanitization.
+ */
+const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
   /* c8 ignore start */
   const isGzip = buffer[0] === 0x1f && buffer[1] === 0x8b
   if (isGzip) {
@@ -485,5 +496,90 @@ const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
       /* c8 ignore stop */
       rimrafSync(tmp)
     }
+  }
+}
+
+/**
+ * Explode a gzipped or raw tarball into `dir` for the global store and
+ * return its sidecar index. Same parsing and path safety as
+ * {@link unpackSync}, written straight into `dir` (which must not exist;
+ * the caller renames it into place). Same modes as {@link unpackSync}
+ * followed by reify's bin chmod. Throws, writing nothing, if the
+ * tarball has no valid package.json. Removes `dir` on failure.
+ */
+export const unpackToStoreSync = (
+  tarData: Buffer,
+  dir: string,
+): { index: StoreIndex } => {
+  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
+  const { dirs, files } = parseTarball(
+    isGzip ? unzipSync(tarData) : tarData,
+    dir,
+  )
+  const rel = (p: string) => relative(dir, p).replace(/\\/g, '/')
+
+  const list = files.map(f => [rel(f.path), f] as const)
+  const pj = list.find(([p]) => p === 'package.json')?.[1]
+  if (!pj) throw error('no package.json in tarball', { path: dir })
+  const manifest = storeIndexManifest(
+    pj.body,
+    list.some(([p]) => p === 'binding.gyp'),
+  )
+  const bins = new Set(
+    Object.values(manifest.bins ?? {}).map(entryKey),
+  )
+  const indexFiles: StoreIndexFile[] = []
+  const binFiles: string[] = []
+  for (const [p, f] of list) {
+    if (bins.has(entryKey(p))) {
+      f.executable = true
+      binFiles.push(f.path)
+    }
+    indexFiles.push([p, f.body.length, f.executable ? 1 : 0])
+  }
+  const allDirs = new Set<string>()
+  for (const d of dirs) {
+    for (let p = rel(d); p && !allDirs.has(p);) {
+      allDirs.add(p)
+      p = p.slice(0, Math.max(0, p.lastIndexOf('/')))
+    }
+  }
+  // stable sort: lexical within each length
+  const indexDirs = [...allDirs]
+    .sort()
+    .sort((a, b) => a.length - b.length)
+
+  mkdirSync(dirname(dir), { recursive: true })
+  mkdirSync(dir, { mode: 0o777 })
+  let succeeded = false
+  try {
+    // recursive: tolerates dirs that differ only by case, like unpackSync
+    for (const d of indexDirs) {
+      mkdirSync(join(dir, d), { recursive: true, mode: 0o777 })
+    }
+    for (const f of files) {
+      writeFileSync(f.path, f.body, {
+        mode: f.executable ? 0o777 : 0o666,
+      })
+    }
+    // reify's bin chmod result (umask'd mode plus all exec bits), so it
+    // never has to chmod a store inode through a link
+    let binMode = 0
+    for (const p of binFiles) {
+      binMode ||= (statSync(p).mode & 0o777) | 0o111
+      chmodSync(p, binMode)
+    }
+    succeeded = true
+  } finally {
+    if (!succeeded) rimrafSync(dir)
+  }
+
+  return {
+    index: {
+      v: 1,
+      files: indexFiles.sort((a, b) => (a[0] < b[0] ? -1 : 1)),
+      dirs: indexDirs,
+      ...manifest,
+    },
   }
 }

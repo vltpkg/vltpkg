@@ -5,7 +5,8 @@
 A library for unpacking JavaScript package tarballs (gzip-compressed
 or raw) into a specified folder.
 
-**[Usage](#usage)** · **[Caveats](#caveats)**
+**[Usage](#usage)** · **[Global store](#global-store)** ·
+**[Caveats](#caveats)**
 
 ## Overview
 
@@ -50,7 +51,7 @@ straight out of a cache entry whose file starts with a header block.
 
 ### `class Pool`
 
-The interface the vlt CLI extracts through. Both methods are `async`
+The interface the vlt CLI extracts through. All methods are `async`
 for the caller's convenience; the work itself is synchronous and runs
 on the main thread.
 
@@ -64,6 +65,59 @@ Unpack the supplied Buffer of data into the target folder.
 #### `pool.unpackFile(file: string, target: string, offset = 0) => Promise<void>`
 
 Unpack a tarball read from `file`, skipping `offset` leading bytes.
+
+#### `pool.linkFromStore(storeEntry, target, opts?) => Promise<boolean>`
+
+#### `pool.unpackToStore(tarData, dir) => Promise<{ index }>`
+
+See [Global store](#global-store).
+
+## Global store
+
+A global store entry is a tarball exploded once into a directory, with
+a sidecar index at `<entry>.json` (`StoreIndex`). Packages are then
+materialized by hardlinking files instead of unpacking the tarball
+again. Publishing entries atomically (sidecar, then rename the dir
+into place) is up to the caller.
+
+### unpackToStoreSync(tarData, dir)
+
+Explode a gzipped or raw tarball into `dir` (must not exist) and
+return `{ index }`. Same parsing, path safety and modes as
+`unpackSync`; package.json `bin` targets also get every exec bit, so
+nothing has to chmod them later. Throws, writing nothing, without a
+valid package.json.
+
+The index has files (`[path, size, exec]`, sorted), every directory
+(shortest first), `scripts` (install scripts or a root `binding.gyp`),
+normalized `bins`, `name` and `version`.
+
+### linkFromStore(storeEntry, target, { copy })
+
+Hardlink every file of a store entry into a sibling temp dir
+(package.json last), then rename it to `target`. Returns `false`,
+creating nothing, if the sidecar is missing or invalid, the entry is
+not a directory, or the target's parent is a symlink. An entry with a
+missing file is removed and `false` returned. Two index paths that
+collide on a case-insensitive target (`EEXIST`) also return `false`.
+
+`EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to copying
+(read + write into a fresh file); `ENOENT` while both the source and
+the target's parent exist (overlayfs cross-layer links) does the same.
+`EMLINK` copies that file only. Other link errors throw. Every file is
+copied with `copy: true` or when the index has `scripts`, so install
+scripts never write into the store.
+
+`VLT_STORE_VERIFY=1` checks the linked package.json size against the
+index and removes the entry on a mismatch (debugging aid).
+
+### readStoreIndex(storeEntry)
+
+The sidecar index, or `undefined` if missing or invalid.
+
+### storeIndexPath(storeEntry)
+
+Sidecar path: `<storeEntry>.json`.
 
 ## Caveats
 

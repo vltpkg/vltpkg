@@ -1,4 +1,9 @@
-import { lstatSync, readFileSync, readdirSync } from 'node:fs'
+import {
+  existsSync,
+  lstatSync,
+  readFileSync,
+  readdirSync,
+} from 'node:fs'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
@@ -10,6 +15,7 @@ import {
   unpack as unpackAsync,
   unpackFileSync,
   unpackSync,
+  unpackToStoreSync,
 } from '../src/unpack.ts'
 import { findTarDir } from '../src/find-tar-dir.ts'
 import { makeTar } from './fixtures/make-tar.ts'
@@ -879,4 +885,240 @@ t.test('checkFs differential vs relative() impl', t => {
     }
   }
   t.end()
+})
+
+t.test('unpackToStoreSync', async t => {
+  const prevMask = process.umask(0o022)
+  t.teardown(() => {
+    process.umask(prevMask)
+  })
+  const isWin = process.platform === 'win32'
+  const mode = (p: string) => lstatSync(p).mode & 0o777
+  const tree = (dir: string) =>
+    readdirSync(dir, { recursive: true })
+      .map(f => {
+        const p = resolve(dir, String(f))
+        const st = lstatSync(p)
+        const body = st.isFile() ? readFileSync(p, 'utf8') : '/'
+        return `${String(f)} ${(st.mode & 0o777).toString(8)} ${body}`
+      })
+      .sort()
+
+  t.test('index, modes and bins', async t => {
+    const pj = JSON.stringify({
+      name: '@s/p',
+      version: '1.0.0',
+      bin: { p: './bin/p.js', q: 'lib/q' },
+    })
+    const tar = makeTar([
+      { path: 'package/package.json', size: pj.length },
+      pj,
+      { path: 'package/bin/p.js', size: 1, mode: 0o644 },
+      'p',
+      { path: 'package/lib/q', size: 1, mode: 0o644 },
+      'q',
+      { path: 'package/lib/deep/x/y.js', size: 1, mode: 0o755 },
+      'y',
+      // today's unpack only honors the world exec bit
+      { path: 'package/owner-exec', size: 1, mode: 0o744 },
+      'o',
+      { path: 'package/README', size: 2, mode: 0o644 },
+      'hi',
+      { path: 'package/lib/binding.gyp', size: 1, mode: 0o644 },
+      'g',
+      { path: 'package/empty/dir', type: 'Directory' },
+    ])
+    // parents of the tmp dir are created
+    const dir = resolve(t.testdir(), '.tmp/abc.1')
+    const { index } = unpackToStoreSync(gzipSync(tar), dir)
+    t.strictSame(index, {
+      v: 1,
+      files: [
+        ['README', 2, 0],
+        ['bin/p.js', 1, 1],
+        ['lib/binding.gyp', 1, 0],
+        ['lib/deep/x/y.js', 1, 1],
+        ['lib/q', 1, 1],
+        ['owner-exec', 1, 0],
+        ['package.json', pj.length, 0],
+      ],
+      dirs: [
+        'bin',
+        'lib',
+        'empty',
+        'lib/deep',
+        'empty/dir',
+        'lib/deep/x',
+      ],
+      // binding.gyp only counts at the package root
+      scripts: false,
+      bins: { p: 'bin/p.js', q: 'lib/q' },
+      name: '@s/p',
+      version: '1.0.0',
+    })
+    t.equal(
+      readFileSync(resolve(dir, 'lib/deep/x/y.js'), 'utf8'),
+      'y',
+    )
+    t.equal(lstatSync(resolve(dir, 'empty/dir')).isDirectory(), true)
+    if (!isWin) {
+      for (const [p, , exec] of index.files) {
+        t.equal(mode(resolve(dir, p)), exec ? 0o755 : 0o644, p)
+      }
+      for (const p of index.dirs) {
+        t.equal(mode(resolve(dir, p)), 0o755, p)
+      }
+    }
+  })
+
+  t.test(
+    'bins get the bin chmod mode under any umask',
+    { skip: isWin && 'no posix modes' },
+    async t => {
+      process.umask(0o027)
+      t.teardown(() => {
+        process.umask(0o022)
+      })
+      const pj = JSON.stringify({ bin: { a: 'a.js', b: 'b.js' } })
+      const tar = makeTar([
+        { path: 'package/package.json', size: pj.length },
+        pj,
+        { path: 'package/a.js', size: 1, mode: 0o644 },
+        'a',
+        { path: 'package/b.js', size: 1, mode: 0o755 },
+        'b',
+        { path: 'package/c.js', size: 1, mode: 0o755 },
+        'c',
+      ])
+      const dir = resolve(t.testdir(), 'x')
+      unpackToStoreSync(tar, dir)
+      // (mode & 0o777) | 0o111, as reify leaves an unpacked bin
+      t.equal(mode(resolve(dir, 'a.js')), 0o751)
+      t.equal(mode(resolve(dir, 'b.js')), 0o751)
+      // not a bin: as unpackSync writes it
+      t.equal(mode(resolve(dir, 'c.js')), 0o750)
+    },
+  )
+
+  t.test('dirs differing only by case', async t => {
+    // a case-insensitive fs on a case-folding platform
+    t.intercept(process, 'platform', { value: 'darwin' })
+    const FS = await import('node:fs')
+    const made = new Set<string>()
+    const { unpackToStoreSync } = await t.mockImport<UnpackModule>(
+      '../src/unpack.ts',
+      {
+        'node:fs': t.createMock(FS, {
+          mkdirSync: (p: string, o?: { recursive?: boolean }) => {
+            const k = p.toLowerCase()
+            if (made.has(k) && !o?.recursive) {
+              throw Object.assign(new Error('EEXIST'), {
+                code: 'EEXIST',
+              })
+            }
+            made.add(k)
+          },
+          writeFileSync: () => {},
+        }),
+      },
+    )
+    const { index } = unpackToStoreSync(
+      makeFilesTar({
+        'package.json': '{}',
+        'Lib/a.js': 'a',
+        'lib/b.js': 'b',
+      }),
+      resolve(t.testdir(), 'x'),
+    )
+    t.strictSame(index.dirs, ['Lib', 'lib'])
+  })
+
+  t.test('scripts', async t => {
+    const scripts = (files: Record<string, string>) =>
+      unpackToStoreSync(
+        makeFilesTar(files),
+        resolve(t.testdir(), 'x'),
+      ).index.scripts
+    t.equal(
+      scripts({ 'package.json': '{}', 'binding.gyp': '{}' }),
+      true,
+      'root binding.gyp',
+    )
+    t.equal(
+      scripts({
+        'package.json': JSON.stringify({
+          scripts: { postinstall: 'x' },
+        }),
+      }),
+      true,
+      'install script',
+    )
+    t.equal(scripts({ 'package.json': '{}' }), false, 'none')
+  })
+
+  t.test('same tree as unpackSync without bins', async t => {
+    const d = t.testdir()
+    unpackSync(tarball, resolve(d, 'u'))
+    const { index } = unpackToStoreSync(tarball, resolve(d, 's'))
+    t.strictSame(tree(resolve(d, 's')), tree(resolve(d, 'u')))
+    // ancestors of entries included, shortest first
+    t.strictSame(index.dirs, [
+      'dir',
+      'some',
+      'some/empty',
+      'some/empty/dir',
+    ])
+  })
+
+  t.test('rejects, writing nothing', async t => {
+    const d = t.testdir({ exists: { keep: 'me' } })
+    const tmp = resolve(d, 'tmp')
+    t.throws(
+      () => unpackToStoreSync(makeFilesTar({ 'a.js': 'a' }), tmp),
+      { message: 'no package.json in tarball' },
+    )
+    t.throws(
+      () =>
+        unpackToStoreSync(makeFilesTar({ 'package.json': '[' }), tmp),
+      { message: 'invalid package.json in tarball' },
+    )
+    t.throws(() => unpackToStoreSync(Buffer.alloc(10), tmp), {
+      message: 'Invalid tarball: length not divisible by 512',
+    })
+    t.equal(existsSync(tmp), false)
+    t.throws(
+      () =>
+        unpackToStoreSync(
+          makeFilesTar({ 'package.json': '{}' }),
+          resolve(d, 'exists'),
+        ),
+      { code: 'EEXIST' },
+    )
+    t.equal(readFileSync(resolve(d, 'exists/keep'), 'utf8'), 'me')
+  })
+
+  t.test('write failure removes dir', async t => {
+    const FS = await import('node:fs')
+    const poop = new Error('poop')
+    const { unpackToStoreSync } = await t.mockImport<UnpackModule>(
+      '../src/unpack.ts',
+      {
+        'node:fs': t.createMock(FS, {
+          writeFileSync: () => {
+            throw poop
+          },
+        }),
+      },
+    )
+    const d = t.testdir()
+    t.throws(
+      () =>
+        unpackToStoreSync(
+          makeFilesTar({ 'package.json': '{}' }),
+          resolve(d, 'x'),
+        ),
+      poop,
+    )
+    t.strictSame(readdirSync(d), [])
+  })
 })

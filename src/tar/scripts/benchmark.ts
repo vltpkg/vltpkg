@@ -1,9 +1,11 @@
 #!/usr/bin/env -S node --experimental-strip-types --no-warnings
 
-import { readFileSync } from 'node:fs'
+import { readFileSync, renameSync, writeFileSync } from 'node:fs'
 import pacote from 'pacote'
-import { resolve } from 'node:path'
+import { basename, resolve } from 'node:path'
+import { linkFromStore } from '../src/link-tree.ts'
 import { Pool } from '../src/pool.ts'
+import { storeIndexPath } from '../src/store-index.ts'
 import {
   convertNs,
   copyTarballs,
@@ -11,14 +13,41 @@ import {
   numToFixed,
   timePromises,
 } from '@vltpkg/benchmark'
-import { unpack, unpackSync } from '../src/unpack.ts'
+import {
+  unpack,
+  unpackSync,
+  unpackToStoreSync,
+} from '../src/unpack.ts'
 
 const DIRS = {
   source: resolve(import.meta.dirname, 'fixtures/artifacts'),
   target: resolve(import.meta.dirname, 'fixtures/extract'),
+  store: resolve(import.meta.dirname, 'fixtures/store'),
 }
 
 const artifacts = copyTarballs(DIRS.source)
+
+// global store entries, as the explode child writes them
+resetDir(DIRS.store)
+let storeFailures = 0
+for (const a of artifacts) {
+  const entry = resolve(DIRS.store, a.name)
+  try {
+    const { index } = unpackToStoreSync(
+      readFileSync(resolve(a.parentPath, a.name)),
+      entry + '.tmp',
+    )
+    writeFileSync(storeIndexPath(entry), JSON.stringify(index))
+    renameSync(entry + '.tmp', entry)
+  } catch {
+    storeFailures++
+  }
+}
+// missing entries would make the linkFromStore rows time fast misses
+if (storeFailures) {
+  console.log(`${storeFailures} artifacts not in the global store`)
+}
+const entryOf = (tgz: string) => resolve(DIRS.store, basename(tgz))
 
 const test = async (
   name: string,
@@ -46,6 +75,12 @@ await test('pool (sync)', async (tgz, target) =>
 
 await test('unpackSync', async (tgz, target) =>
   unpackSync(readFileSync(tgz), target))
+
+await test('linkFromStore', async (tgz, target) =>
+  linkFromStore(entryOf(tgz), target))
+
+await test('linkFromStore (copy)', async (tgz, target) =>
+  linkFromStore(entryOf(tgz), target, { copy: true }))
 
 await test('unpack (async)', async (tgz, target) =>
   unpack(readFileSync(tgz), target))

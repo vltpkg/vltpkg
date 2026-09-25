@@ -1030,6 +1030,15 @@ export const assertIntegrity: (
   asIntegrity(i)
 }
 
+/**
+ * Hex form of a sha512 integrity digest, or undefined if not a valid
+ * sha512 integrity. Names tarball cache and global store entries.
+ */
+export const integrityHex = (i: unknown): string | undefined =>
+  isIntegrity(i) ?
+    Buffer.from(i.slice(7), 'base64').toString('hex')
+  : undefined
+
 export const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
 export const isKeyID = (k: unknown): k is KeyID =>
   typeof k === 'string' && keyIDRE.test(k)

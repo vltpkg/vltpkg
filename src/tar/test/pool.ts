@@ -1,8 +1,15 @@
 import t from 'tap'
 import { Pool } from '../src/pool.ts'
 
-import { lstatSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  lstatSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { resolve } from 'node:path'
+import { storeIndexPath } from '../src/store-index.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
@@ -144,4 +151,27 @@ t.test('VLT_TAR_SYNC=0 falls back to the async writer', async t => {
       { name: 'async-pkg' },
     )
   }
+})
+
+t.test('global store', async t => {
+  const d = t.testdir()
+  const { index } = await p.unpackToStore(
+    makePkg('store-pkg', '1.0.0'),
+    resolve(d, 'tmp'),
+  )
+  t.match(index, { v: 1, name: 'store-pkg', scripts: false })
+  const entry = resolve(d, 'entry')
+  writeFileSync(storeIndexPath(entry), JSON.stringify(index))
+  renameSync(resolve(d, 'tmp'), entry)
+  t.equal(await p.linkFromStore(entry, resolve(d, 'nm/a')), true)
+  t.equal(statSync(resolve(d, 'nm/a/package.json')).nlink, 2)
+  t.equal(
+    await p.linkFromStore(entry, resolve(d, 'nm/b'), { copy: true }),
+    true,
+  )
+  t.equal(statSync(resolve(d, 'nm/b/package.json')).nlink, 1)
+  t.equal(
+    await p.linkFromStore(resolve(d, 'missing'), resolve(d, 'nm/c')),
+    false,
+  )
 })
