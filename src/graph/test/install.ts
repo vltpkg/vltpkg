@@ -89,7 +89,7 @@ t.test('install', async t => {
   )
 
   t.matchSnapshot(
-    objectLikeOutput(result.graph),
+    objectLikeOutput(result.graph!),
     'should return a graph',
   )
 
@@ -113,7 +113,7 @@ t.test('install', async t => {
   )
 
   t.matchSnapshot(
-    objectLikeOutput(result2.graph),
+    objectLikeOutput(result2.graph!),
     'should call build adding new dependency',
   )
 })
@@ -158,7 +158,7 @@ t.test('install with no package.json file in cwd', async t => {
   )
 
   t.matchSnapshot(
-    objectLikeOutput(graph),
+    objectLikeOutput(graph!),
     'should create a graph with the new dependency',
   )
 })
@@ -1896,7 +1896,7 @@ t.test('remote dependency integrity in lockfile', async t => {
 
       t.ok(result.graph, 'should return graph')
       // Verify integrity was loaded from lockfile
-      const node = result.graph.nodes.get(remoteDepId)
+      const node = result.graph!.nodes.get(remoteDepId)
       if (node) {
         t.equal(
           node.integrity,
@@ -2371,7 +2371,7 @@ t.test('a project with modifiers stays in sync', async t => {
 
   const { graph } = await install(opts())
   t.equal(
-    graph.mainImporter.edgesOut.get('abbrev')?.spec.bareSpec,
+    graph!.mainImporter.edgesOut.get('abbrev')?.spec.bareSpec,
     '2.0.0',
     'the modifier is applied',
   )

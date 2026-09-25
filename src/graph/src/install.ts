@@ -15,8 +15,17 @@ import type {
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { DepID } from '@vltpkg/dep-id'
-import { existsSync, rmSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { graphStep } from '@vltpkg/output'
+import {
+  isUnfilteredInstall,
+  removeHiddenLockfile,
+  removeInstallState,
+  saveInstallState,
+  unchangedInstallState,
+} from './install-state.ts'
+import type { Diff } from './diff.ts'
 import { load as loadVirtual, loadData } from './lockfile/load.ts'
 import { formatOptionsChange } from './lockfile/format-options-change.ts'
 import type { SpecCache } from './lockfile/types.ts'
@@ -34,10 +43,32 @@ export type InstallOptions = LoadOptions & {
   savePrefix?: string
 }
 
+export type InstallResult = {
+  /**
+   * The resulting graph structure at the end of an install. Absent when
+   * the install short-circuited because there was nothing to do, since
+   * then no graph was ever loaded.
+   */
+  graph?: Graph
+  /**
+   * The diff between the actual and ideal graphs, if one was computed.
+   */
+  diff?: Diff
+  /**
+   * Nodes that still need building (lifecycle scripts, bin linking).
+   */
+  buildQueue?: DepID[]
+  /**
+   * Number of nodes in the installed graph. Set when there is no `graph`
+   * to count, so that reporting still has the number.
+   */
+  nodeCount?: number
+}
+
 export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
-) => {
+): Promise<InstallResult> => {
   // Validate incompatible options
   if (options.lockfileOnly && options.cleanInstall) {
     throw error(
@@ -87,6 +118,61 @@ export const install = async (
   // against a config that includes them, and so that the check knows
   // which dependency specs the modifiers govern
   const modifiers = GraphModifier.maybeLoad(options)
+
+  // Not just the `modifiedDependencies` flag: an embedder can hand us a
+  // populated add map without it, and adding a dependency must never take
+  // the fast path.
+  const hasAdds =
+    !!add &&
+    (add.modifiedDependencies ||
+      [...add.values()].some(deps => deps.size > 0))
+
+  // A `-w`/`--workspace` filtered install only targets a subset of the
+  // project, so it neither takes the fast path nor gets to claim that the
+  // whole tree is in sync afterwards.
+  const unfiltered = isUnfilteredInstall(
+    options.monorepo,
+    fullMonorepo,
+  )
+  const installStateOptions = {
+    ...options,
+    modifiers,
+    monorepo: fullMonorepo,
+  }
+
+  // Nothing-to-do fast path. An install that left the tree in sync
+  // recorded a fingerprint of everything cheap to read that could
+  // invalidate it; while that still matches, loading the actual graph off
+  // the filesystem and rebuilding the ideal graph can only conclude that
+  // there is nothing to change, so skip both.
+  //
+  // Deliberately excluded:
+  // - an add, which has a package.json to write either way
+  // - `--lockfile-only`, which writes the lockfile without a node_modules
+  // - `ci` / `--clean-install`, which must delete and rebuild the tree
+  // - `--frozen-lockfile` / `--expect-lockfile`, whose validation has its
+  //   own error messages and must still run
+  if (
+    unfiltered &&
+    !hasAdds &&
+    !options.lockfileOnly &&
+    !options.cleanInstall &&
+    !options.frozenLockfile &&
+    !options.expectLockfile
+  ) {
+    const state = unchangedInstallState(installStateOptions)
+    if (state) {
+      // walk the reporter through the steps a regular no-op install
+      // takes, so that the human view looks the same as it always did
+      graphStep('build')()
+      graphStep('actual')()
+      graphStep('reify')()
+      return {
+        buildQueue: state.buildQueue,
+        nodeCount: state.nodeCount,
+      }
+    }
+  }
 
   if (options.frozenLockfile) {
     // validates no add/remove operations are requested
@@ -277,6 +363,9 @@ export const install = async (
         : undefined
       lockfile.save({ ...options, graph, modifiers })
       saveImportersPackageJson?.()
+      // the lockfile may now describe a tree that node_modules does not,
+      // so nothing recorded before this can be trusted
+      removeInstallState(options.projectRoot)
       // nothing is extracted or moved on this path, so nothing should be
       // parked; confirm anyway so an early return can never leave
       // `.VLT.DELETE.*` behind
@@ -284,7 +373,7 @@ export const install = async (
       return { graph, diff: undefined }
     }
 
-    const { diff, buildQueue } = await reify({
+    const { diff, buildQueue, pendingBuilds } = await reify({
       ...options,
       add,
       actual: act,
@@ -295,20 +384,23 @@ export const install = async (
       remover,
     })
 
+    // reify has written everything it is going to write, and the tree now
+    // matches the project: record that, so the next install can skip all
+    // of the above. The build queue recorded is every node still needing
+    // one, which is what an install with nothing to do reports.
+    if (unfiltered) {
+      saveInstallState(
+        { ...installStateOptions, graph },
+        pendingBuilds,
+      )
+    }
+
     return { buildQueue, graph, diff }
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
-    // Remove hidden lockfile on failure
-    try {
-      const hiddenLockfile = resolve(
-        options.projectRoot,
-        'node_modules/.vlt-lock.json',
-      )
-      if (existsSync(hiddenLockfile)) {
-        rmSync(hiddenLockfile, { force: true })
-      }
-    } catch {}
+    // Remove hidden lockfile and the recorded install state on failure
+    removeHiddenLockfile(options.projectRoot)
     throw err
   }
 }

@@ -6,7 +6,14 @@ import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
+import type { Graph } from '@vltpkg/graph'
 import type { InstallResult } from './install.ts'
+
+/**
+ * `vlt update` discards the lockfile and resolves from scratch, so it
+ * always has a graph to report.
+ */
+export type UpdateResult = InstallResult & { graph: Graph }
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -47,9 +54,9 @@ export const views = {
     async () =>
       (await import('./install/reporter.ts')).InstallReporter,
   ),
-} as const satisfies Views<InstallResult>
+} as const satisfies Views<UpdateResult>
 
-export const command: CommandFn<InstallResult> = async conf => {
+export const command: CommandFn<UpdateResult> = async conf => {
   // Throw error if any arguments are provided
   if (conf.positionals.length > 0) {
     throw error('Arguments are not yet supported for vlt update', {

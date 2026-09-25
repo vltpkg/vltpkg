@@ -110,6 +110,12 @@ export type ReifyResult = {
    * and binary linking) after the reification is complete.
    */
   buildQueue?: DepID[]
+  /**
+   * Every node in the reified tree that still needs building, not just the
+   * ones this reify added. This is what a later install with nothing to do
+   * would report, so it is what gets recorded for the install fast path.
+   */
+  pendingBuilds: DepID[]
 }
 
 /**
@@ -163,7 +169,7 @@ export const reify = async (
   const skipOptionalOnly = noModifiedDependencies && diff.optionalOnly
   const skippable =
     skipOptionalOnly && !options.update && hasLockfiles
-  const res: ReifyResult = { diff }
+  const res: ReifyResult = { diff, pendingBuilds: [] }
   if (!diff.hasChanges() || skippable) {
     // Even when there are no changes to reify, ensure lockfiles
     // exist on disk. This handles the case where a project has no
@@ -185,6 +191,7 @@ export const reify = async (
     const pending = [...actual.nodes.values()]
       .filter(n => n.buildState === 'needed')
       .map(n => n.id)
+    res.pendingBuilds = pending
     if (pending.length) {
       res.buildQueue = pending
     }
@@ -195,7 +202,7 @@ export const reify = async (
 
   let success = false
   try {
-    const { buildQueue } = await reify_(
+    const { buildQueue, pendingBuilds } = await reify_(
       options,
       diff,
       remover,
@@ -204,6 +211,7 @@ export const reify = async (
     remover.confirm()
     success = true
     res.buildQueue = buildQueue
+    res.pendingBuilds = pendingBuilds
   } finally {
     /* c8 ignore start */
     if (!success) {
@@ -223,7 +231,7 @@ const reify_ = async (
   remover: RollbackRemove,
   saveImportersPackageJson?: () => void,
 ): Promise<Omit<ReifyResult, 'diff'>> => {
-  const res: Omit<ReifyResult, 'diff'> = {}
+  const res: Omit<ReifyResult, 'diff'> = { pendingBuilds: [] }
   const { packageInfo, packageJson, scurry, allowScripts } = options
 
   // before anything else happens, grab the ideal tree as it was resolved
@@ -316,6 +324,11 @@ const reify_ = async (
       scurry.resolve('node_modules/.vlt/vlt.json'),
     )
   }
+
+  // everything still needing a build, for the install fast path to record
+  res.pendingBuilds = [...options.graph.nodes.values()]
+    .filter(node => node.buildState === 'needed')
+    .map(node => node.id)
 
   // returns the result object
   return res

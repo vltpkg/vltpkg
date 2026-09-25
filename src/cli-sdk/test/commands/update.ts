@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { InstallResult } from '../../src/commands/install.ts'
+import type { UpdateResult } from '../../src/commands/update.ts'
 import { isLazyView, loadLazyView } from '../../src/view.ts'
 
 const options = {}
@@ -102,7 +102,7 @@ t.test('views.json returns graph toJSON', t => {
     graph: {
       toJSON: () => ({ updated: true }),
     },
-  } as unknown as InstallResult
+  } as unknown as UpdateResult
 
   t.strictSame(Command.views.json(mockGraph), {
     graph: { updated: true },
