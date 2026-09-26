@@ -8,25 +8,42 @@ import type { StoreIndex } from './store-index.ts'
 import type { TarballFormat } from '@vltpkg/types'
 import {
   unpack,
+  unpackFileParallel,
   unpackFileSync,
+  unpackParallel,
   unpackSync,
   unpackToStoreSync,
 } from './unpack.ts'
 
-// Field kill switch: restores the async writer without a release.
-const syncUnpack = process.env.VLT_TAR_SYNC !== '0'
+/**
+ * Which decompress/write pair {@link Pool} uses, from `VLT_TAR_SYNC`.
+ * Both explicit values are field kill switches: either restores an
+ * older behaviour without a release.
+ *
+ * - unset (default): inflate on libuv's threadpool, write on the main
+ *   thread. Each half is the faster of its two options, and nothing
+ *   ties them together.
+ * - `1`: inflate and write on the main thread -- the pre-parallel
+ *   default, for a host where the threadpool hop costs more than the
+ *   overlap saves.
+ * - `0`: the fully async writers, off the main thread throughout.
+ */
+const mode = process.env.VLT_TAR_SYNC
 
 /**
  * Unpacks tarballs into place.
  *
- * Unpacking runs synchronously on the main thread, which is measurably
- * faster than the async writers (the libuv round trip per file costs
- * more than the IO).
+ * Decompression runs on libuv's threadpool, so packages inflate in
+ * parallel; the files are then written synchronously on the main
+ * thread, which is measurably faster than the async writers (the libuv
+ * round trip per file costs more than the IO). `VLT_TAR_SYNC` switches
+ * that pairing; see the constant above.
  *
  * There is no queue here. The only limiter is the caller's: reify caps
  * extraction at `Math.max(availableParallelism() - 1, 1) * 8` in flight
  * (`@vltpkg/graph`, `src/reify/index.ts`). A consumer that is not reify
- * is unbounded -- add your own cap.
+ * is unbounded -- add your own cap. How many inflate at once is capped
+ * lower and elsewhere, by `UV_THREADPOOL_SIZE` (4 by default).
  */
 export class Pool {
   /**
@@ -38,8 +55,9 @@ export class Pool {
     target: string,
     format?: TarballFormat,
   ): Promise<void> {
-    if (!syncUnpack) return unpack(tarData, target, format)
-    unpackSync(tarData, target, format)
+    if (mode === '0') return unpack(tarData, target, format)
+    if (mode === '1') return unpackSync(tarData, target, format)
+    return unpackParallel(tarData, target, format)
   }
 
   /**
@@ -53,14 +71,17 @@ export class Pool {
     offset = 0,
     format?: TarballFormat,
   ): Promise<void> {
-    if (!syncUnpack) {
+    if (mode === '0') {
       return unpack(
         (await readFile(file)).subarray(offset),
         target,
         format,
       )
     }
-    unpackFileSync(file, target, offset, format)
+    if (mode === '1') {
+      return unpackFileSync(file, target, offset, format)
+    }
+    return unpackFileParallel(file, target, offset, format)
   }
 
   /**

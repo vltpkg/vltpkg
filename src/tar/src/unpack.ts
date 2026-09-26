@@ -9,7 +9,13 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
+import {
+  lstat,
+  mkdir,
+  readFile,
+  rename,
+  writeFile,
+} from 'node:fs/promises'
 import {
   basename,
   dirname,
@@ -304,6 +310,44 @@ export const unpackSync = (
 ): void => {
   unpackUnzippedSync(decompressSync(tarData, format), target)
 }
+
+/**
+ * Inflate off the main thread, then write the files on it.
+ *
+ * zlib's async API hands the decompress to libuv's threadpool, so
+ * concurrent extractions inflate in parallel -- on `UV_THREADPOOL_SIZE`
+ * threads, 4 by default -- while the main thread stays free. The writes
+ * then take the sync path, which is faster than the async writers (a
+ * libuv round trip per file costs more than the IO itself).
+ *
+ * Splitting the two is the whole point: parallel decompression without
+ * giving up the fast writer. It matters most for brotli, whose inflate
+ * costs more CPU than gzip's, but it speeds up `.tgz` installs too.
+ */
+export const unpackParallel = async (
+  tarData: Buffer,
+  target: string,
+  format?: TarballFormat,
+): Promise<void> => {
+  unpackUnzippedSync(await decompress(tarData, format), target)
+}
+
+/**
+ * {@link unpackParallel} reading the tarball from a file, so the read
+ * comes off the main thread as well. See {@link unpackFileSync} for
+ * what `offset` is for.
+ */
+export const unpackFileParallel = async (
+  file: string,
+  target: string,
+  offset = 0,
+  format?: TarballFormat,
+): Promise<void> =>
+  unpackParallel(
+    (await readFile(file)).subarray(offset),
+    target,
+    format,
+  )
 
 /**
  * Unpack a tarball straight from a file on disk, skipping `offset`
