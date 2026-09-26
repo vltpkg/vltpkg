@@ -150,6 +150,12 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
      * keyed by URL alone, so the two representations never mix.
      */
     full?: boolean
+    /**
+     * A moving selector whose packument is still within max-age is
+     * served from it and revalidated after exit, not before use. Pinned
+     * specs are unaffected.
+     */
+    backgroundRevalidate?: boolean
   }
 
 export type PackageInfoClientExtractOptions =
@@ -189,11 +195,21 @@ const noRegistryError = (spec: Spec) =>
  * A selector that can point at a different version tomorrow: a dist tag,
  * or a range matching anything (`*`, empty string). Manifest results for
  * these are not cached to disk, and packument requests for them force a
- * revalidation of the registry client's cache entry.
+ * revalidation of the registry client's cache entry, in the background
+ * with the `backgroundRevalidate` option.
  *
  * Takes a *final* spec (`spec.final`), same as `pickManifest` sees.
  */
 const isMovingSelector = (f: Spec) => !!(f.distTag || f.range?.isAny)
+
+/** The registry client's `forceRevalidate` for a packument request. */
+const revalidateMode = (
+  f: Spec,
+  options: PackageInfoClientRequestOptions,
+) =>
+  !isMovingSelector(f) ? undefined
+  : options.backgroundRevalidate ? ('background' as const)
+  : true
 
 /**
  * A selector that cannot land on a prerelease, and so can be answered from
@@ -251,11 +267,11 @@ export class PackageInfoClient {
   // In-flight coalescing key is `${registry}${name}` — no representation
   // component. Safe only because every caller requests the same full
   // packument (see #fetchPackument). The one thing that does vary per
-  // caller is forceRevalidate, so record it and let a moving selector
-  // reuse a forced promise but never a non-forced one (see packument()).
+  // caller is forceRevalidate, so record how hard it revalidates and
+  // never let a request ride a weaker one (see #packument()).
   #packumentPromises = new Map<
     string,
-    { promise: Promise<Packument>; forced: boolean }
+    { promise: Promise<Packument>; rank: number }
   >()
   // unique temp file names for atomic manifest cache writes
   #manifestWriteRandom = randomBytes(6).toString('hex')
@@ -1246,30 +1262,34 @@ export class PackageInfoClient {
         // #fetchPackument).
         const fullKey = `${registry}${name}`
         const packumentKey = stable ? `${fullKey}?stable` : fullKey
-        const forced = isMovingSelector(f)
+        // 0 pinned, 1 background, 2 forced
+        const mode = revalidateMode(f, options)
+        const rank =
+          mode === true ? 2
+          : mode ? 1
+          : 0
         const inflight =
           this.#packumentPromises.get(packumentKey) ??
           // the full packument is a superset of the stable one, so an
           // in-flight full request answers a stable ask too, and a package
           // wanted both ways is still fetched once
           (stable ? this.#packumentPromises.get(fullKey) : undefined)
-        // a moving selector must not ride along on a non-forced request:
-        // that one can settle to a fresh-but-stale cache hit, which is
-        // exactly what forceRevalidate exists to avoid. the other
-        // direction is fine -- a forced result is never staler.
-        // costs at most one extra concurrent GET for the same packument
-        // when both shapes are asked for at once.
-        if (inflight && (!forced || inflight.forced))
-          return inflight.promise
+        // a request must not ride along on a weaker one: that can settle
+        // to a fresh-but-stale cache hit, which is exactly what
+        // forceRevalidate exists to avoid. the other direction is fine --
+        // a stronger result is never staler.
+        // costs at most one extra concurrent GET per stronger shape
+        // asked for at once.
+        if (inflight && inflight.rank >= rank) return inflight.promise
         // `?stable` is a distinct URL, so it gets its own disk cache entry
         const pakuURL = new URL(
           stable ? `${name}?stable` : name,
           registry,
         )
         const promise = this.#fetchPackument(spec, options, pakuURL)
-        const record = { promise, forced }
+        const record = { promise, rank }
         this.#packumentPromises.set(packumentKey, record)
-        // Clean up once settled so we don't leak memory, unless a forced
+        // Clean up once settled so we don't leak memory, unless a stronger
         // request has since taken the slot over.
         // Use .then/.catch instead of .finally to avoid creating
         // an unhandled rejection from the derived promise.
@@ -1309,6 +1329,7 @@ export class PackageInfoClient {
     // The RegistryClient disk cache key is method + URL only, so every
     // packument request must use this same accept header, and the SWR
     // revalidation child re-requests the representation it was given.
+    const mode = revalidateMode(spec.final, options)
     const response = await (
       await this.getRegistryClient()
     ).request(pakuURL, {
@@ -1318,12 +1339,11 @@ export class PackageInfoClient {
       ...(useCache === false || options.full ?
         { useCache: false }
       : {}),
-      // costs a conditional GET per moving selector on an otherwise warm
-      // cache, install included. 304s are cheap but not free; the
-      // alternative is serving a dist tag that moved (#1656).
-      ...(isMovingSelector(spec.final) ?
-        { forceRevalidate: true }
-      : {}),
+      // a moving selector pays a conditional GET before use, so a moved
+      // dist tag is seen at once (#1656). with backgroundRevalidate a
+      // packument still within max-age is served and revalidated after
+      // exit instead.
+      ...(mode === undefined ? {} : { forceRevalidate: mode }),
     })
     if (response.statusCode !== 200) {
       throw this.#resolveError(

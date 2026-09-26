@@ -227,9 +227,11 @@ export type RegistryClientRequestOptions = Omit<
   /**
    * Revalidate a cached response even when it is still within max-age.
    * Conditional request headers are still sent when available.
+   * `'background'`: serve an entry still within max-age and revalidate
+   * it after exit; older entries revalidate first.
    * @internal
    */
-  forceRevalidate?: boolean
+  forceRevalidate?: boolean | 'background'
 }
 
 /**
@@ -763,7 +765,16 @@ export class RegistryClient {
       : undefined
 
     const entry = buffer ? this.#decodeCached(buffer) : undefined
-    if (entry?.valid && !forceRevalidate) {
+    if (entry?.valid && forceRevalidate !== true) {
+      // 'background': serve it, revalidate after exit
+      if (forceRevalidate === 'background' && m) {
+        register(
+          dirname(this.cache.path()),
+          m,
+          url,
+          getHeader(options.headers, 'accept'),
+        )
+      }
       logRequest(url, 'cache', { method })
       return entry
     }
@@ -941,16 +952,16 @@ export class RegistryClient {
         (result.statusCode === 200 && !result.isJSON ?
           result.integrityActual
         : undefined)
-      const buffer = result.encode()
-      this.cache.set(
-        key,
-        Buffer.from(
-          buffer.buffer,
-          buffer.byteOffset,
-          buffer.byteLength,
-        ),
-        { integrity },
+      const encoded = result.encode()
+      const stored = Buffer.from(
+        encoded.buffer,
+        encoded.byteOffset,
+        encoded.byteLength,
       )
+      this.cache.set(key, stored, { integrity })
+      // a 304 keeps the parsed entry
+      if (result === entry && entry.isJSON)
+        this.#decoded.set(stored, entry)
     }
     return result
   }
