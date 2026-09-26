@@ -785,6 +785,36 @@ t.test('validity deadlines are re-evaluated over time', async t => {
   )
 })
 
+t.test('setting the date re-evaluates validity', t => {
+  const old = new Date(Date.now() - 20 * 60 * 1000).toUTCString()
+  const e = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/json',
+      date: old,
+      'cache-control': 'max-age=300',
+    }),
+  )
+  e.addBody(Buffer.from('{"a":1}'))
+  t.equal(e.valid, false)
+  t.equal(e.date?.toUTCString(), old)
+  const now = new Date().toUTCString()
+  e.setHeader('Date', now)
+  t.equal(e.valid, true, 'fresh after a date refresh')
+  t.equal(e.date?.toUTCString(), now)
+
+  // no date at all memoizes the answer, not a deadline
+  const undated = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-type': 'application/json' }),
+  )
+  undated.addBody(Buffer.from('{"a":1}'))
+  t.equal(undated.valid, false)
+  undated.setHeader('date', now)
+  t.equal(undated.valid, true)
+  t.end()
+})
+
 t.test('gunzip bomb rejected', t => {
   const c = new CacheEntry(
     200,

@@ -507,6 +507,13 @@ export class CacheEntry {
    */
   setHeader(h: string, value: Uint8Array | string) {
     this.#headers = setRawHeader(this.#headers, h, value)
+    // validity is memoized off the date header
+    if (h.toLowerCase() === 'date') {
+      this.#date = undefined
+      this.#valid = undefined
+      this.#validUntil = undefined
+      this.#staleUntil = undefined
+    }
   }
 
   /**
