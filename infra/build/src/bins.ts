@@ -1,8 +1,15 @@
 import module from 'node:module'
 import { resolve } from 'node:path'
+import { XDG } from '@vltpkg/xdg'
 import type { Commands } from '@vltpkg/cli-sdk/definition'
 
-module.enableCompileCache()
+// default dir (os tmpdir) can be unwritable, eg. created by another user
+if (
+  module.enableCompileCache().status ===
+  module.constants.compileCacheStatus.FAILED
+) {
+  module.enableCompileCache(new XDG('vlt').cache('compile-cache'))
+}
 
 export const BINS_DIR = resolve(import.meta.dirname, 'bins')
 

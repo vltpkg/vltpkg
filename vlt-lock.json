@@ -1346,6 +1346,7 @@
     "workspace~infra+build typescript": "dev catalog: ~npm~typescript@5.7.3",
     "workspace~infra+build esbuild": "prod ^0.27.1 ~npm~esbuild@0.27.7",
     "workspace~infra+build @vltpkg/cli-sdk": "prod workspace:* workspace~src+cli-sdk",
+    "workspace~infra+build @vltpkg/xdg": "prod workspace:* workspace~src+xdg",
     "workspace~infra+cli @vltpkg/infra-build": "dev workspace:* workspace~infra+build",
     "workspace~infra+cli-js @vltpkg/infra-build": "dev workspace:* workspace~infra+build",
     "workspace~infra+smoke-test @eslint/js": "dev catalog: ~npm~@eslint+js@9.39.5",
