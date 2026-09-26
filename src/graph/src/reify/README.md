@@ -39,6 +39,7 @@ const { diff, buildQueue } = await reify({
 4. Creates symlinks for new edges + bin links
 5. Hoists internal links to `node_modules/.vlt/node_modules/`
 6. Runs lifecycle scripts (`install`, `prepare`) on allowed nodes
+   (store links copied first)
 7. Saves lockfiles (`vlt-lock.json` + hidden)
 8. Updates `package.json` if `add`/`remove` modified dependencies
 9. Cleans up deleted nodes from store
@@ -62,6 +63,7 @@ type ReifyResult = {
 | `delete-edge.ts`                   | Remove symlinks + bin links  |
 | `internal-hoist.ts`                | Hoist preferred versions     |
 | `build.ts`                         | Run lifecycle scripts        |
+| `unshare.ts`                       | Copy store links pre-script  |
 | `rollback.ts`                      | Revert on failure            |
 | `optional-fail.ts`                 | Handle optional dep failures |
 | `update-importers-package-json.ts` | Update package.json files    |

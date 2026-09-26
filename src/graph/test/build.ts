@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, linkSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
@@ -555,3 +555,88 @@ t.test('build with optional dependencies that fail', async t => {
 
   t.end()
 })
+
+t.test(
+  'scripts of store-linked packages leave the store alone',
+  async t => {
+    const id = joinDepIDTuple(['registry', '', 's@1.0.0'])
+    const manifest = {
+      name: 's',
+      version: '1.0.0',
+      scripts: { postinstall: 'node w.js' },
+    }
+    const dir = t.testdir({
+      store: {
+        'package.json': JSON.stringify(manifest),
+        'index.js': 'index',
+        'w.js': `require('fs').appendFileSync('index.js', '//x')`,
+      },
+      proj: {
+        'package.json': JSON.stringify({
+          name: 'proj',
+          version: '1.0.0',
+          dependencies: { s: '1.0.0' },
+        }),
+        'vlt.json': JSON.stringify({}),
+        node_modules: {
+          s: t.fixture('symlink', `./.vlt/${id}/node_modules/s`),
+          '.vlt': { [id]: { node_modules: { s: {} } } },
+          '.vlt-lock.json': JSON.stringify({
+            lockfileVersion: 1,
+            options: {},
+            nodes: {
+              [joinDepIDTuple(['file', '.'])]: [0, 'proj'],
+              // buildState: needed
+              [id]: [
+                0,
+                's',
+                null,
+                null,
+                null,
+                manifest,
+                null,
+                null,
+                null,
+                1,
+              ],
+            },
+            edges: {
+              [`${joinDepIDTuple(['file', '.'])} s`]: `prod 1.0.0 ${id}`,
+            },
+          }),
+        },
+      },
+    })
+    const projectRoot = resolve(dir, 'proj')
+    const pkg = resolve(
+      projectRoot,
+      'node_modules/.vlt',
+      id,
+      'node_modules/s',
+    )
+    for (const f of ['package.json', 'index.js', 'w.js']) {
+      linkSync(resolve(dir, 'store', f), resolve(pkg, f))
+    }
+    const result = await build({
+      projectRoot,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      target: ':scripts',
+    })
+    t.strictSame(
+      result.success.map(n => n.name),
+      ['s'],
+    )
+    t.equal(
+      readFileSync(resolve(pkg, 'index.js'), 'utf8'),
+      'index//x',
+    )
+    t.equal(
+      readFileSync(resolve(dir, 'store/index.js'), 'utf8'),
+      'index',
+    )
+    for (const f of ['package.json', 'index.js', 'w.js']) {
+      t.equal(statSync(resolve(dir, 'store', f)).nlink, 1, f)
+    }
+  },
+)

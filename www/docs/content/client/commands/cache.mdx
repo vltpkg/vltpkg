@@ -109,8 +109,9 @@ under `<cache>/store`. A background process fills it after each
 install, and later installs hardlink package files from it instead of
 unpacking tarballs again. By default (`store-linker=auto`) this
 happens on Linux only: macOS and Windows unpack tarballs as before,
-unless `store-linker` is set to `hardlink` or `copy`. Packages with
-install scripts are always copied.
+unless `store-linker` is set to `hardlink` or `copy`. A package is
+copied right before its install scripts run, so they don't change its
+files in the store.
 
 When installed with `auto` on Linux or with `hardlink`, files in
 `node_modules` are hardlinks into the global store, so editing one in

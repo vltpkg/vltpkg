@@ -1686,7 +1686,7 @@ t.test('global store', async t => {
     t.equal(res.integrity, integrity)
   })
 
-  t.test('store copy: binding.gyp, older index', async t => {
+  t.test('store link: binding.gyp, older index', async t => {
     const { dir, store, states, client } = await setup(t)
     // a root binding.gyp implies scripts
     populate(store, true, (index, tmp) => {
@@ -1696,12 +1696,12 @@ t.test('global store', async t => {
     })
     const pi = await client({ 'store-linker': 'hardlink' }, true)
     const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
-    t.strictSame(states, ['cache'], 'copied')
+    t.strictSame(states, ['store'], 'linked')
     t.equal(res.manifest, undefined)
     t.equal(res.bindingGyp, true)
   })
 
-  t.test('store copy: install scripts, no binding.gyp', async t => {
+  t.test('store link: install scripts, no binding.gyp', async t => {
     const { dir, store, client } = await setup(t)
     populate(store, true)
     const pi = await client({ 'store-linker': 'hardlink' }, true)
@@ -1778,25 +1778,12 @@ t.test('global store', async t => {
     t.equal(registered.length, 1)
   })
 
-  t.test('install scripts: copied, writable', async t => {
+  t.test('install scripts: linked', async t => {
     const { dir, store, client } = await setup(t)
     populate(store, true)
     const pi = await client({ 'store-linker': 'hardlink' }, true)
     await pi.extract('abbrev@2', dir + '/t', lockOpts)
-    t.equal(nlink(dir + '/t'), 1)
-    writeFileSync(dir + '/t/package.json', '{}')
-    t.not(readFileSync(`${store}/${hex}/package.json`, 'utf8'), '{}')
-  })
-
-  t.test('manifest install scripts: copied', async t => {
-    const { dir, store, client } = await setup(t)
-    populate(store)
-    const pi = await client({ 'store-linker': 'hardlink' }, true)
-    await pi.extract('abbrev@2', dir + '/t', {
-      ...lockOpts,
-      installScripts: true,
-    })
-    t.equal(nlink(dir + '/t'), 1)
+    t.equal(nlink(dir + '/t'), 2)
   })
 
   t.test('store-linker=copy', async t => {
@@ -1888,10 +1875,7 @@ t.test('global store', async t => {
     populate(store)
     await pi.extract('abbrev@2', dir + '/hit', lockOpts)
     await pi.extract('abbrev@2', dir + '/hit2', lockOpts)
-    await pi.extract('abbrev@2', dir + '/copy', {
-      ...lockOpts,
-      installScripts: true,
-    })
+    await pi.extract('abbrev@2', dir + '/hit3', lockOpts)
     const rate = () =>
       debugged.filter(([f]) => String(f).includes('hit rate'))
     t.strictSame(rate(), [], 'nothing until exit')
@@ -1901,8 +1885,8 @@ t.test('global store', async t => {
     t.strictSame(rate(), [
       [
         'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
-        2,
-        1,
+        3,
+        0,
         1,
         '75.0',
       ],

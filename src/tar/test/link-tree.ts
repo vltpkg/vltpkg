@@ -170,14 +170,14 @@ t.test(
   },
 )
 
-t.test('install scripts imply copy', async t => {
+t.test('install scripts: linked', async t => {
   const { entry, index, target } = makeEntry(t)
   writeFileSync(
     storeIndexPath(entry),
     JSON.stringify({ ...index, scripts: true }),
   )
-  t.equal(how(linkFromStore(entry, target)), 'copy')
-  checkTree(t, entry, index, target, () => 1)
+  t.equal(how(linkFromStore(entry, target)), 'link')
+  checkTree(t, entry, index, target, () => 2)
 })
 
 t.test('store miss creates nothing', async t => {
@@ -260,6 +260,38 @@ t.test('EMLINK copies that file only', async t => {
     3,
     'no downgrade',
   )
+})
+
+t.test('package.json copied after a link: all copied', async t => {
+  const copied = (entry: string) => existsSync(storeCopiedPath(entry))
+  t.test('downgrade mid-package', async t => {
+    const { entry, index, target } = makeEntry(t)
+    let calls = 0
+    const { linkFromStore } = await mockFS(t, {
+      linkSync: (src: FS.PathLike, dst: FS.PathLike) => {
+        if (++calls === 2) throw errno('EPERM')
+        FS.linkSync(src, dst)
+      },
+    })
+    t.equal(how(linkFromStore(entry, target)), 'copy')
+    checkTree(t, entry, index, target, () => 1)
+    t.equal(copied(entry), true)
+    t.equal(calls, 2)
+  })
+  t.test('EMLINK on package.json', async t => {
+    const { entry, index, target } = makeEntry(t)
+    const { linkFromStore } = await mockFS(t, {
+      linkSync: (src: FS.PathLike, dst: FS.PathLike) => {
+        if (String(src).endsWith('package.json')) {
+          throw errno('EMLINK')
+        }
+        FS.linkSync(src, dst)
+      },
+    })
+    t.equal(how(linkFromStore(entry, target)), 'copy')
+    checkTree(t, entry, index, target, () => 1)
+    t.equal(copied(entry), true)
+  })
 })
 
 t.test('ENOENT', async t => {
