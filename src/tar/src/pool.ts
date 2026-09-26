@@ -36,8 +36,8 @@ const mode = process.env.VLT_TAR_SYNC
  * Decompression runs on libuv's threadpool, so packages inflate in
  * parallel; the files are then written synchronously on the main
  * thread, which is measurably faster than the async writers (the libuv
- * round trip per file costs more than the IO). See {@link mode} for
- * the switches.
+ * round trip per file costs more than the IO). `VLT_TAR_SYNC` switches
+ * that pairing; see the constant above.
  *
  * There is no queue here. The only limiter is the caller's: reify caps
  * extraction at `Math.max(availableParallelism() - 1, 1) * 8` in flight
