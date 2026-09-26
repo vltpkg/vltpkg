@@ -1,4 +1,4 @@
-import type { PathScurry } from 'path-scurry'
+import type { PathBase, PathScurry } from 'path-scurry'
 import {
   isPackageNameConfused,
   getId,
@@ -54,6 +54,7 @@ export class Node implements NodeLike {
 
   #options: NodeOptions
   #location?: string
+  #resolvedLoc?: { loc: string; cwd: PathBase; path: string }
   #rawManifest?: NormalizedManifest
 
   #optional = false
@@ -318,9 +319,16 @@ export class Node implements NodeLike {
 
   /**
    * The resolved location of the node in the file system.
+   * Memoized per location and scurry cwd.
    */
   resolvedLocation(scurry: PathScurry): string {
-    return scurry.cwd.resolve(this.location).fullpath()
+    const loc = this.location
+    const { cwd } = scurry
+    const m = this.#resolvedLoc
+    if (m?.loc === loc && m.cwd === cwd) return m.path
+    const path = cwd.resolve(loc).fullpath()
+    this.#resolvedLoc = { loc, cwd, path }
+    return path
   }
 
   /**
@@ -333,9 +341,11 @@ export class Node implements NodeLike {
    */
   nodeModules(scurry: PathScurry): string {
     const loc = this.resolvedLocation(scurry)
-    return this.inVltStore() ?
-        loc.substring(0, loc.length - this.name.length - 1)
-      : scurry.resolve(loc, 'node_modules')
+    if (this.inVltStore()) {
+      return loc.substring(0, loc.length - this.name.length - 1)
+    }
+    const { sep } = scurry.cwd
+    return (loc.endsWith(sep) ? loc : loc + sep) + 'node_modules'
   }
 
   constructor(

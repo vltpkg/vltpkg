@@ -61,6 +61,7 @@ type ReifyResult = {
 | `add-edge.ts`                      | Create symlinks + bin links  |
 | `delete-edge.ts`                   | Remove symlinks + bin links  |
 | `internal-hoist.ts`                | Hoist preferred versions     |
+| `symlink-sync.ts`                  | Sync symlink + mkdir parent  |
 | `build.ts`                         | Run lifecycle scripts        |
 | `rollback.ts`                      | Revert on failure            |
 | `optional-fail.ts`                 | Handle optional dep failures |

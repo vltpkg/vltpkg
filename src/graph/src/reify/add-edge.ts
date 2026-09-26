@@ -1,28 +1,29 @@
 import { cmdShimIfExists } from '@vltpkg/cmd-shim'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { mkdir, symlink } from 'node:fs/promises'
+import { symlinkSync } from 'node:fs'
+import type { symlink } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { Edge } from '../edge.ts'
+import { symlinkSyncMkdirp } from './symlink-sync.ts'
 
 const clobberSymlink = async (
   target: string,
   link: string,
   remover: RollbackRemove,
-  type = 'file',
+  type: symlink.Type = 'file',
 ) => {
   // On Windows, directory symlinks require elevated privileges.
   // Use junctions instead, which work without special permissions.
   // Junctions require absolute target paths, so resolve relative targets.
-  const symlinkType =
+  const symlinkType: symlink.Type =
     type === 'dir' && process.platform === 'win32' ? 'junction' : type
   const symlinkTarget =
     symlinkType === 'junction' ?
       resolve(dirname(link), target)
     : target
-  await mkdir(dirname(link), { recursive: true })
   try {
-    await symlink(symlinkTarget, link, symlinkType)
+    symlinkSyncMkdirp(symlinkTarget, link, symlinkType)
   } catch (er) {
     /* c8 ignore start */
     if ((er as NodeJS.ErrnoException).code !== 'EEXIST') {
@@ -35,7 +36,7 @@ const clobberSymlink = async (
 
     try {
       // then try to create it again
-      await symlink(symlinkTarget, link, symlinkType)
+      symlinkSync(symlinkTarget, link, symlinkType)
       /* c8 ignore start */
     } catch (er) {
       // if the symlink still exists, then multiple paths could be writing to it
@@ -60,14 +61,10 @@ export const addEdge = async (
   bins?: Record<string, string>,
 ) => {
   if (!edge.to) return
-  const binRoot = scurry.resolve(
-    edge.from.nodeModules(scurry),
-    '.bin',
-  )
-  const path = scurry.resolve(
-    edge.from.nodeModules(scurry),
-    edge.spec.name,
-  )
+  const { sep } = scurry.cwd
+  const nm = edge.from.nodeModules(scurry)
+  const binRoot = nm + sep + '.bin'
+  const path = nm + sep + edge.spec.name.replace('/', sep)
   const promises: Promise<unknown>[] = []
   const target = relative(
     dirname(path),
@@ -82,8 +79,8 @@ export const addEdge = async (
 
   if (bins) {
     for (const [key, val] of Object.entries(bins)) {
-      const link = scurry.resolve(binRoot, key)
-      const absTarget = scurry.resolve(path, val)
+      const link = resolve(binRoot, key)
+      const absTarget = resolve(path, val)
       const target = relative(binRoot, absTarget)
       // TODO: bash/cmd/ps1 shims on Windows
       promises.push(

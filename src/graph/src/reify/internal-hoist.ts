@@ -2,12 +2,13 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Version } from '@vltpkg/semver'
-import { mkdir, symlink } from 'node:fs/promises'
+import { mkdir } from 'node:fs/promises'
 import { dirname, relative } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
 import type { ReifyOptions } from './index.ts'
+import { symlinkSyncMkdirp } from './symlink-sync.ts'
 
 type InternalHoistOptions = Pick<
   ReifyOptions,
@@ -152,22 +153,16 @@ export const internalHoist = async (
   }
   await Promise.all(removes)
 
-  const symlinks: Promise<void>[] = []
+  const hoistPath = hoistDir.fullpath()
+  const vlt = scurry.resolve('node_modules/.vlt')
+  const { sep } = scurry.cwd
+  const native = (n: string) => n.replace('/', sep)
   for (const [name, { name: nodeName, id }] of links) {
-    const target = scurry.resolve(
-      `node_modules/.vlt/${id}/node_modules/${nodeName}`,
-    )
-    const path = scurry.resolve(
-      `node_modules/.vlt/node_modules/${name}`,
-    )
-    if (name.includes('/')) {
-      await mkdir(dirname(path), { recursive: true })
-    }
-    symlinks.push(
-      symlink(relative(dirname(path), target), path, 'dir'),
-    )
+    const target =
+      vlt + sep + id + sep + 'node_modules' + sep + native(nodeName)
+    const path = hoistPath + sep + native(name)
+    symlinkSyncMkdirp(relative(dirname(path), target), path, 'dir')
   }
-  await Promise.all(symlinks)
 }
 
 const checkExisting = async (
