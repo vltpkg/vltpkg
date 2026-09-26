@@ -1,6 +1,5 @@
 import { error } from '@vltpkg/error-cause'
 import { asError, isObject } from '@vltpkg/types'
-import { STATUS_CODES } from 'node:http'
 
 /**
  * The parts of a `CacheEntry` these helpers need.
@@ -15,6 +14,10 @@ export type ErrorResponse = {
   text?: () => string
   [k: number | string | symbol]: any
 }
+
+// read on use: a static node:http import loads undici, http2, tls at startup
+export const statusText = (code: number): string | undefined =>
+  process.getBuiltinModule('node:http').STATUS_CODES[code]
 
 /** longest registry-supplied detail spliced into an error message */
 const MAX_DETAIL_LENGTH = 512
@@ -75,7 +78,7 @@ const detailFromJSON = (text: string): string | undefined => {
 export const registryErrorMessage = (
   response: ErrorResponse,
 ): string => {
-  const statusMessage = STATUS_CODES[response.statusCode]
+  const statusMessage = statusText(response.statusCode)
   const status = `${response.statusCode}${statusMessage ? ` ${statusMessage}` : ''}`
 
   let text: string
