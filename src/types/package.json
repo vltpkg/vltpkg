@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/types",
   "description": "definitions for some of vlt's core types",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
