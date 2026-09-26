@@ -957,7 +957,7 @@ const processPlacementTasks = async (
  *
  * 1. Process all deps at the current level in parallel
  * 2. After each level, run `postPlacementPeerCheck` to handle peer contexts
- * 3. Collect child deps for the next level
+ * 3. Collect child deps for the next level, each node once
  * 4. Repeat until no more deps to process
  *
  * **Peer Context Isolation**: Each workspace importer gets its own peer context
@@ -1046,9 +1046,6 @@ export const appendNodes = async (
           peerContext,
           depth,
         }: AppendNodeEntry) => {
-          // Cycle prevention: mark as seen when starting to process
-          seen.add(node.id)
-
           // Fetch manifests and collect tasks (no graph mutations)
           const result = await fetchManifestsForDeps(
             packageInfo,
@@ -1155,17 +1152,15 @@ export const appendNodes = async (
     // ============================================================
     // STEP 3: COLLECT CHILD DEPS FOR NEXT LEVEL
     // ============================================================
+    /* c8 ignore next */
+    const nextDepth = (currentLevelDeps[0]?.depth ?? 0) + 1
     for (const childDepsToProcess of levelResults) {
       for (const childDep of childDepsToProcess) {
-        // Skip already-seen nodes (cycle prevention)
-        if (!seen.has(childDep.node.id)) {
-          /* c8 ignore next */
-          const currentDepth = currentLevelDeps[0]?.depth ?? 0
-          nextLevelDeps.push({
-            ...childDep,
-            depth: currentDepth + 1,
-          })
-        }
+        // seen at enqueue: skips cycles and same-level duplicates
+        // (first in sorted order wins)
+        if (seen.has(childDep.node.id)) continue
+        seen.add(childDep.node.id)
+        nextLevelDeps.push({ ...childDep, depth: nextDepth })
       }
     }
 
