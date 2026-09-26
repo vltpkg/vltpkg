@@ -32,6 +32,11 @@ const server = createServer((req, res) => {
   const respond = () => {
     if (body === undefined) {
       res.statusCode = 404
+      // an hour old: past the default 5 min a 404 is kept
+      res.setHeader(
+        'date',
+        new Date(Date.now() - 3_600_000).toUTCString(),
+      )
       res.setHeader('content-type', 'application/json')
       return res.end('{"error":"not found"}')
     }
@@ -130,6 +135,32 @@ t.test(
     t.strictSame(await pi.capabilities(registry()), {})
   },
 )
+
+t.test('a missing document is kept for a day', async t => {
+  body = undefined
+  t.teardown(() => {
+    body = '{}'
+  })
+  const cache = t.testdir()
+  const first = new PackageInfoClient({ cache, registry: registry() })
+  t.strictSame(await first.capabilities(registry()), {})
+  await (await first.getRegistryClient()).cache.promise()
+
+  resetCapabilities()
+  const second = new PackageInfoClient({
+    cache,
+    registry: registry(),
+  })
+  t.strictSame(await second.capabilities(registry()), {})
+  const rc = await second.getRegistryClient()
+  const res = await rc.request(
+    new URL('-/vlt/capabilities', registry()),
+  )
+  t.equal(res.statusCode, 404)
+  t.ok(res.fromCache && res.valid, 'still fresh')
+  t.equal(requests, 1, 'served from the disk cache')
+  await rc.cache.promise()
+})
 
 t.test('a registry that cannot be reached answers empty', async t => {
   const pi = new PackageInfoClient({ cache: t.testdir() })

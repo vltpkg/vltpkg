@@ -49,7 +49,7 @@ import {
 import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
 import type { Capabilities } from './capabilities.ts'
-import { getCapabilities, peekCapabilities } from './capabilities.ts'
+import { getCapabilities } from './capabilities.ts'
 import { rename } from './rename.ts'
 
 export type { Capabilities } from './capabilities.ts'
@@ -292,27 +292,14 @@ export class PackageInfoClient {
   /**
    * Whether the packument for `f` can be fetched with `?stable`: the
    * selector has to be one a prerelease cannot answer, and the registry
-   * must not have told us it does not serve the filter.
-   *
-   * Never waits on the capability document, which would put a round trip in
-   * front of the first packument of every cold install. Until that document
-   * arrives the answer is yes: a registry that does not know `?stable`
-   * ignores the parameter and serves the full packument, which resolution
-   * reads just as well. Once the document does arrive it is authoritative,
-   * so a registry that does not serve the filter stops being asked with it.
+   * must list the filter. Waits for the document: a registry without the
+   * filter serves `?stable` under its own cache key, which a later plain
+   * ask refetches. The document is disk-cached, so only a cold cache waits.
    */
-  #stable(f: Spec): boolean {
+  async #stable(f: Spec): Promise<boolean> {
     const { registry } = f
     if (!registry || !isStableSelector(f)) return false
-    const client = this.#registryClient
-    if (!client) {
-      // the registry client is built lazily, so the first caller starts it
-      // and the document along with it, and asks optimistically meanwhile
-      void this.capabilities(registry).catch(() => {})
-      return true
-    }
-    const caps = peekCapabilities(client, registry)
-    return !caps || !!caps['stable-filter']
+    return !!(await this.capabilities(registry))['stable-filter']
   }
 
   async getTarPool() {
@@ -1051,7 +1038,7 @@ export class PackageInfoClient {
         }
 
         const mani = pickManifest(
-          await this.#packument(f, options, this.#stable(f)),
+          await this.#packument(f, options, await this.#stable(f)),
           spec,
           options,
         )
@@ -1348,9 +1335,9 @@ export class PackageInfoClient {
     const { registry, name } = spec.final
     if (response.contentType.startsWith(VLT_PACKUMENT_MIME)) {
       this.#vltPackuments.add(`${registry}${name}`)
+      /* c8 ignore next - registry specs always have a registry */
+      if (registry) absolutizeTarballs(paku, registry)
     }
-    /* c8 ignore next - registry specs always have a registry */
-    if (registry) absolutizeTarballs(paku, registry)
     return paku
   }
 
@@ -1553,7 +1540,8 @@ export class PackageInfoClient {
 // vlt packuments carry dist.tarball relative to the registry base
 // (`foo/-/foo-1.0.0.tgz`), the form conventionalRegistryTarball builds.
 // Nothing downstream sees a relative URL: the manifest cache, the graph
-// and the lockfile all get the absolute one.
+// and the lockfile all get the absolute one. Other packuments carry
+// absolute URLs, so skip the walk for them.
 const absolutizeTarballs = (paku: Packument, registry: string) => {
   const base = registry.endsWith('/') ? registry : registry + '/'
   for (const { dist } of Object.values(paku.versions)) {

@@ -230,6 +230,12 @@ export type RegistryClientRequestOptions = Omit<
    * @internal
    */
   forceRevalidate?: boolean
+
+  /**
+   * Seconds a 404 sent without `cache-control` stays fresh in the cache.
+   * Default 5 min.
+   */
+  notFoundMaxAge?: number
 }
 
 /**
@@ -746,7 +752,7 @@ export class RegistryClient {
       staleWhileRevalidate = true,
       forceRevalidate = false,
     } = options
-    const { trustIntegrity, verifyDigest } = options
+    const { trustIntegrity, verifyDigest, notFoundMaxAge } = options
 
     const m = isCacheableMethod(method) ? method : undefined
     const { useCache = !!m } = options
@@ -941,6 +947,13 @@ export class RegistryClient {
         (result.statusCode === 200 && !result.isJSON ?
           result.integrityActual
         : undefined)
+      if (
+        notFoundMaxAge &&
+        result.statusCode === 404 &&
+        !result.getHeaderString('cache-control')
+      ) {
+        result.setHeader('cache-control', `max-age=${notFoundMaxAge}`)
+      }
       const buffer = result.encode()
       this.cache.set(
         key,

@@ -264,6 +264,19 @@ const registry = createServer((req, res) => {
     return res.end(JSON.stringify({ error: 'Not found' }))
   }
 
+  // an hour-old 404, `?cc` with the server's own cache-control
+  if (url.startsWith('/404-dated')) {
+    res.statusCode = 404
+    res.setHeader(
+      'date',
+      new Date(Date.now() - 3_600_000).toUTCString(),
+    )
+    if (url.endsWith('?cc'))
+      res.setHeader('cache-control', 'max-age=60')
+    res.setHeader('content-type', 'application/json')
+    return res.end(JSON.stringify({ error: 'Not found' }))
+  }
+
   if (url === '/412-packument') {
     if (req.headers['if-none-match']) {
       res.statusCode = 412
@@ -1339,6 +1352,41 @@ for (const maxAge of [3600, 300]) {
     },
   )
 }
+
+t.test('notFoundMaxAge keeps a 404 fresh', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  const stored = async (
+    path: string,
+    options: RegistryClientRequestOptions = {},
+  ) => {
+    const url = `${registryURL}${path}`
+    await rc.request(url, options)
+    await rc.cache.promise()
+    return CacheEntry.decode((await rc.cache.fetch(url))!)
+  }
+  const nf = { notFoundMaxAge: 86400 }
+
+  const kept = await stored('/404-dated', nf)
+  t.equal(kept.statusCode, 404)
+  t.equal(kept.getHeaderString('cache-control'), 'max-age=86400')
+  t.equal(kept.valid, true, 'fresh for a day')
+
+  const plain = await stored('/404-dated?plain')
+  t.equal(plain.getHeaderString('cache-control'), undefined)
+  t.equal(plain.valid, false, 'default 5 min')
+
+  const own = await stored('/404-dated?cc', nf)
+  t.equal(
+    own.getHeaderString('cache-control'),
+    'max-age=60',
+    'server cache-control wins',
+  )
+
+  const ok = await stored('/abbrev', nf)
+  t.equal(ok.statusCode, 200)
+  t.equal(ok.getHeaderString('cache-control'), undefined, '200 as is')
+})
 
 for (const maxAge of [3600, 300]) {
   t.test(
