@@ -182,11 +182,6 @@ export type PackageInfoClientExtractOptions =
      * Other network bodies are always checked.
      */
     fromLockfile?: boolean
-    /**
-     * The manifest declares install scripts: copy the package from the
-     * global store, never link it, even if its package.json has none.
-     */
-    installScripts?: boolean
   }
 
 // the maximum duration of a manifest cache file
@@ -437,7 +432,6 @@ export class PackageInfoClient {
       integrity,
       resolved,
       fromLockfile = false,
-      installScripts = false,
     } = options
     const f = spec.final
     // If the caller already provides both integrity and resolved
@@ -504,7 +498,7 @@ export class PackageInfoClient {
         // git tarballs keep the unpack path
         const storeOn =
           f.type === 'registry' && this.#storeLinker !== 'unpack'
-        const copy = this.#storeLinker === 'copy' || installScripts
+        const copy = this.#storeLinker === 'copy'
         // If we already have a hash, that is the store key. Some
         // tarballs arrive without one: a `.tar.br`, or anything a
         // registry serves with no `dist.integrity`. For those, read the

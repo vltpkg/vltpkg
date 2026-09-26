@@ -51,8 +51,8 @@ only ever sees `auto` from the CLI on Linux. A gzipped cached tarball
 that is not store-linked (`unpack`, git or remote tarballs, no sha512
 integrity) is queued too, so the child un-gzips it.
 
-Packages with install scripts are copied, never linked: when the store
-index says so, or with the `installScripts` extract option.
+Packages with install scripts are linked too; reify copies them in
+place right before their scripts run.
 
 A store link logs its request as `store`, a copy from the store as
 `cache`. Both also return `manifest` (the package.json as JSON text,
