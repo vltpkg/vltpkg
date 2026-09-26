@@ -151,11 +151,6 @@ export type PackageInfoClientExtractOptions =
      * Defaults to false — fresh installs always verify integrity.
      */
     fromLockfile?: boolean
-    /**
-     * The manifest declares install scripts: copy the package from the
-     * global store, never link it, even if its package.json has none.
-     */
-    installScripts?: boolean
   }
 
 // the maximum duration of a manifest cache file
@@ -353,7 +348,6 @@ export class PackageInfoClient {
       integrity,
       resolved,
       fromLockfile = false,
-      installScripts = false,
     } = options
     const f = spec.final
     // If the caller already provides both integrity and resolved
@@ -410,7 +404,7 @@ export class PackageInfoClient {
           f.type === 'registry' && this.#storeLinker !== 'unpack' ?
             integrityHex(r.integrity)
           : undefined
-        const copy = this.#storeLinker === 'copy' || installScripts
+        const copy = this.#storeLinker === 'copy'
         if (hex) {
           if (debug.enabled && !this.#storeHitRateLogged) {
             this.#storeHitRateLogged = true
