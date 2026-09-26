@@ -1,4 +1,7 @@
 import { error } from '@vltpkg/error-cause'
+import { spawnSync } from 'node:child_process'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
@@ -196,6 +199,35 @@ t.test('handles an unknown status code', t => {
     registryErrorMessage(entry(599, 'failure')),
     '599 — failure',
   )
+  t.end()
+})
+
+t.test('does not load node:http until needed', t => {
+  const mod = pathToFileURL(
+    resolve(import.meta.dirname, '../src/registry-error.ts'),
+  ).href
+  const code = `
+const has = () => process.moduleLoadList.includes('NativeModule http')
+const { registryErrorMessage } = await import(${JSON.stringify(mod)})
+console.log(JSON.stringify([
+  has(),
+  registryErrorMessage({ statusCode: 404 }),
+  has(),
+]))
+`
+  const { status, stdout, stderr } = spawnSync(
+    process.execPath,
+    ['--input-type=module', '-e', code],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        NODE_OPTIONS: '--no-warnings --experimental-strip-types',
+      },
+    },
+  )
+  t.equal(status, 0, stderr)
+  t.strictSame(JSON.parse(stdout), [false, '404 Not Found', true])
   t.end()
 })
 

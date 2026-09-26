@@ -10,6 +10,7 @@ import type { Integrity } from '@vltpkg/types'
 import t from 'tap'
 import type { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
+import * as registryError from '../src/registry-error.ts'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,
@@ -1739,6 +1740,30 @@ t.test(
         cause: { code: 'EREQUEST', status, url: String(url) },
       })
     }
+  },
+)
+
+t.test(
+  'status text comes from the registry-error helper',
+  async t => {
+    const { RegistryClient: LazyRC } = await mockIndex(t, {
+      '../src/registry-error.ts': {
+        ...registryError,
+        statusText: (code: number) => `s${code}`,
+      },
+    })
+    const rc = new LazyRC({
+      cache: dirname((t.context.rc as RegistryClient).cache.path()),
+    })
+    t.intercept(rc, 'request', {
+      value: async () => new CacheEntry(404, []),
+    })
+    await t.rejects(rc.scroll(registryURL), {
+      message: 'Failed to fetch paginated results: 404 s404',
+    })
+    await t.rejects(rc.login(registryURL), {
+      message: 'Failed to perform web login: 404 s404',
+    })
   },
 )
 
