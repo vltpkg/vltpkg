@@ -3083,6 +3083,112 @@ t.test('moving selector does not ride a pinned request', async t => {
   await (await pi2.getRegistryClient()).cache.promise()
 })
 
+t.test('backgroundRevalidate', async t => {
+  // no real revalidation child at exit
+  const registered: string[][] = []
+  const { PackageInfoClient: PIC } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '../../registry-client/src/cache-revalidate.ts': {
+      register: (
+        _: string,
+        method: string,
+        url: URL | string,
+        accept?: string,
+      ) => registered.push([method, String(url), String(accept)]),
+    },
+  })
+  const bg = { backgroundRevalidate: true }
+  const cache = t.testdir()
+  const client = async () => {
+    const pi = new PIC({ ...options, cache })
+    const rc = await pi.getRegistryClient()
+    const calls = { n: 0 }
+    const request = rc.request.bind(rc)
+    rc.request = (...args) => {
+      calls.n++
+      return request(...args)
+    }
+    t.teardown(() => rc.cache.promise())
+    return { pi, calls }
+  }
+  const latest = (
+    p: Promise<{ 'dist-tags': Record<string, string> }>,
+  ) => p.then(p => p['dist-tags'].latest)
+  const moving = `${defaultRegistry}moving`
+  movingRequests = 0
+  movingLatest = '1.0.0'
+  const warm = await client()
+  await latest(warm.pi.packument('moving@1.0.0'))
+  await (await warm.pi.getRegistryClient()).cache.promise()
+  // latest moves; the cached packument is still strictly valid
+  movingLatest = '2.0.0'
+
+  t.test('serves a fresh moving selector', async t => {
+    for (const spec of ['moving@latest', 'moving']) {
+      registered.length = 0
+      const { pi } = await client()
+      t.equal(await latest(pi.packument(spec, bg)), '1.0.0', spec)
+      t.equal(movingRequests, 1, 'no request before use')
+      t.strictSame(
+        registered,
+        [['GET', moving, PACKUMENT_ACCEPT]],
+        'revalidates after exit, same representation',
+      )
+    }
+  })
+
+  t.test('forced does not ride background', async t => {
+    registered.length = 0
+    const { pi, calls } = await client()
+    const [b, f] = await Promise.all([
+      latest(pi.packument('moving@*', bg)),
+      latest(pi.packument('moving@latest')),
+    ])
+    t.equal(b, '1.0.0')
+    t.equal(f, '2.0.0', 'forced got fresh')
+    t.equal(calls.n, 2)
+    t.equal(movingRequests, 2)
+    t.equal(registered.length, 1)
+  })
+
+  t.test('background rides forced', async t => {
+    registered.length = 0
+    const { pi, calls } = await client()
+    const [f, b] = await Promise.all([
+      latest(pi.packument('moving@latest')),
+      latest(pi.packument('moving@*', bg)),
+    ])
+    t.equal(f, '2.0.0')
+    t.equal(b, '2.0.0')
+    t.equal(calls.n, 1, 'one request')
+    t.equal(registered.length, 0)
+  })
+
+  t.test('background does not ride pinned', async t => {
+    registered.length = 0
+    const { pi, calls } = await client()
+    await Promise.all([
+      pi.packument('moving@1.0.0'),
+      pi.packument('moving@*', bg),
+    ])
+    t.equal(calls.n, 2)
+    t.equal(registered.length, 1)
+  })
+
+  t.test('pinned rides background', async t => {
+    registered.length = 0
+    const { pi, calls } = await client()
+    const [b, p] = await Promise.all([
+      pi.packument('moving@*', bg),
+      pi.packument('moving@1.0.0'),
+    ])
+    t.equal(b, p, 'shared one packument')
+    t.equal(calls.n, 1)
+    t.equal(registered.length, 1)
+  })
+})
+
 t.test('late parse failure refetches packument', async t => {
   const pi = new PackageInfoClient({
     ...options,
