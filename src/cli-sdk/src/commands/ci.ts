@@ -5,7 +5,7 @@ import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
 
-export type CIResult = Omit<InstallResult, 'buildQueue'>
+export type CIResult = Pick<InstallResult, 'buildQueue' | 'graph'>
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -14,10 +14,14 @@ export const usage: CommandUsage = () =>
   commandUsage({
     command: 'ci',
     usage: '',
-    description: `Clean install from lockfile. Deletes node_modules and installs 
-                  dependencies exactly as specified in vlt-lock.json. This is 
-                  similar to running 'vlt install --expect-lockfile' but performs 
-                  a clean install by removing node_modules first.`,
+    description: `Clean install from lockfile. Deletes node_modules and installs
+                  dependencies exactly as specified in vlt-lock.json. This is
+                  similar to running 'vlt install --expect-lockfile' but performs
+                  a clean install by removing node_modules first.
+
+                  Like install, runs no dependency lifecycle scripts unless
+                  allowed with --allow-scripts; run 'vlt build' afterwards to
+                  build packages.`,
     examples: {
       '': { description: 'Clean install from lockfile' },
     },
@@ -45,15 +49,14 @@ export const views = {
 export const command: CommandFn<CIResult> = async conf => {
   const ciOptions = {
     ...conf.options,
-    // allow scripts but filter out malware via security archive
-    allowScripts:
-      conf.get('allow-scripts') ?? ':scripts:not(:malware)',
+    // same default as install: no scripts
+    allowScripts: conf.get('allow-scripts') ?? ':not(*)',
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,
     lockfileOnly: conf.options['lockfile-only'],
   }
 
-  const { graph } = await install(ciOptions)
-  return { graph }
+  const { buildQueue, graph } = await install(ciOptions)
+  return { buildQueue, graph }
 }
