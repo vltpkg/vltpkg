@@ -33,17 +33,14 @@ const verify = process.env.VLT_STORE_VERIFY === '1'
 export type StoreLinker = 'auto' | 'hardlink' | 'copy' | 'unpack'
 
 /**
- * How a store entry was placed (`copy`: every file copied, for install
- * scripts, `copy` or a downgrade) and its index, or false on a miss.
+ * How a store entry was placed (`copy`: every file copied, for `copy`
+ * or a downgrade) and its index, or false on a miss.
  */
 export type StoreLinkResult =
   { how: 'link' | 'copy'; index: StoreIndex } | false
 
 export type LinkFromStoreOptions = {
-  /**
-   * copy every file instead of hardlinking. Implied when the index says
-   * the package runs install scripts, which must not write into the store.
-   */
+  /** copy every file instead of hardlinking */
   copy?: boolean
 }
 
@@ -62,11 +59,11 @@ const place = (
   dst: string,
   exec: 0 | 1,
   copy: boolean,
-): boolean => {
+): 'link' | 'copy' | false => {
   if (!copy && !copyAll) {
     try {
       linkSync(src, dst)
-      return true
+      return 'link'
     } catch (er) {
       const { code = '' } = er as NodeJS.ErrnoException
       if (code === 'ENOENT') {
@@ -98,20 +95,21 @@ const place = (
   writeFileSync(dst, body, { mode: exec ? 0o777 : 0o666, flag: 'wx' })
   // store bins have every exec bit, whatever the umask
   if (exec) chmodSync(dst, statSync(src).mode & 0o777)
-  return true
+  return 'copy'
 }
 
 /**
  * Fill `tmp` from the entry. 'damaged': a source file is gone (or,
  * with VLT_STORE_VERIFY=1, package.json changed size). 'clash': two
- * index paths map to one name on a case-insensitive target.
+ * index paths map to one name on a case-insensitive target. 'mixed':
+ * package.json copied after another file was linked.
  */
 const fill = (
   storeEntry: string,
   tmp: string,
   index: StoreIndex,
   copy: boolean,
-): 'damaged' | 'clash' | undefined => {
+): 'damaged' | 'clash' | 'mixed' | undefined => {
   // Index paths are validated relative '/'-paths: concatenation is
   // safe and much cheaper than join() on this per-file hot path.
   const native =
@@ -128,13 +126,21 @@ const fill = (
   try {
     for (const d of index.dirs) mkdirSync(tmp + sep + native(d))
     let pj: StoreIndexFile | undefined
+    let linked = false
     for (const f of index.files) {
-      if (f[0] === 'package.json') pj = f
-      else if (!put(f)) return 'damaged'
+      if (f[0] === 'package.json') {
+        pj = f
+        continue
+      }
+      const how = put(f)
+      if (!how) return 'damaged'
+      if (how === 'link') linked = true
     }
     if (!pj) return
     // last, so an interrupted tmp dir never looks complete
-    if (!put(pj)) return 'damaged'
+    const how = put(pj)
+    if (!how) return 'damaged'
+    if (how === 'copy' && linked) return 'mixed'
     if (verify && statSync(tmp + sep + pj[0]).size !== pj[1]) {
       return 'damaged'
     }
@@ -148,12 +154,13 @@ const fill = (
 /**
  * Materialize a global store entry at `target` from its sidecar index:
  * hardlink each file into a sibling temp dir (package.json last), then
- * rename it into place. Files that cannot be linked are copied, as is
- * every file of a package with install scripts. Returns how, with the
- * index, or false, leaving `target` untouched, on a store miss (no
- * valid index, entry not a directory, symlinked target parent), a name
- * clash on a case-insensitive target, or a damaged entry, which is
- * removed.
+ * rename it into place. Files that cannot be linked are copied; if
+ * package.json is copied after another file was linked, the whole
+ * package is copied, so a private package.json means nothing is shared.
+ * Returns how, with the index, or false, leaving `target` untouched, on
+ * a store miss (no valid index, entry not a directory, symlinked target
+ * parent), a name clash on a case-insensitive target, or a damaged
+ * entry, which is removed.
  */
 export const linkFromStore = (
   storeEntry: string,
@@ -173,8 +180,14 @@ export const linkFromStore = (
   let succeeded = false
   try {
     mkdirSync(tmp)
-    const copied = copy || index.scripts
-    const miss = fill(storeEntry, tmp, index, copied)
+    let copied = copy
+    let miss = fill(storeEntry, tmp, index, copied)
+    if (miss === 'mixed') {
+      rimrafSync(tmp)
+      mkdirSync(tmp)
+      copied = true
+      miss = fill(storeEntry, tmp, index, copied)
+    }
     if (miss === 'clash') {
       debug('global store: name clash in target', storeEntry)
       return false
