@@ -7,6 +7,7 @@ import { platformCheck } from '@vltpkg/pick-manifest'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { SpecOptions } from '@vltpkg/spec'
 import { asManifest, normalizeManifest } from '@vltpkg/types'
+import { lstatSync } from 'node:fs'
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
@@ -121,7 +122,10 @@ export const extractNode = async (
   }
 
   try {
-    await remover.rm(target)
+    // nothing to move away on a fresh tree
+    if (lstatSync(target, { throwIfNoEntry: false })) {
+      await remover.rm(target)
+    }
 
     if (removeOptionalFailedNode) {
       try {

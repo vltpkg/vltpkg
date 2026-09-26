@@ -85,7 +85,17 @@ t.test('successfully extract a node', async t => {
     resolvedFromLockfile: true,
   })
 
-  const scurry = new PathScurry(t.testdirName)
+  const scurry = new PathScurry(
+    t.testdir({
+      node_modules: {
+        '.vlt': {
+          [joinDepIDTuple(['registry', '', 'foo@1.2.3'])]: {
+            node_modules: { foo: {} },
+          },
+        },
+      },
+    }),
+  )
   const result = await extractNode(
     node,
     scurry,
@@ -126,6 +136,56 @@ t.test('successfully extract a node', async t => {
   )
   t.equal(options.fromLockfile, true, 'fromLockfile passed')
   t.equal(options.installScripts, false, 'no install scripts')
+})
+
+t.test('missing target is not removed', async t => {
+  const node = mockNode({
+    id: joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    location: './node_modules/foo',
+    name: 'foo',
+    manifest: { name: 'foo', version: '1.2.3' },
+  })
+  const result = await extractNode(
+    node,
+    new PathScurry(t.testdir({})),
+    mockRemover,
+    getOptions(configData),
+    mockPackageInfo,
+    mockDiff,
+  )
+  t.strictSame(result, { success: true, node })
+  t.strictSame(removed, [], 'nothing to remove')
+  t.equal(extracted.length, 1, 'still extracted')
+})
+
+t.test('dangling link at target is removed', async t => {
+  const id = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+  const node = mockNode({
+    id,
+    location: `./node_modules/.vlt/${id}/node_modules/foo`,
+    name: 'foo',
+    manifest: { name: 'foo', version: '1.2.3' },
+  })
+  const dir = t.testdir({
+    node_modules: {
+      '.vlt': {
+        [id]: {
+          node_modules: { foo: t.fixture('symlink', '../missing') },
+        },
+      },
+    },
+  })
+  await extractNode(
+    node,
+    new PathScurry(dir),
+    mockRemover,
+    getOptions(configData),
+    mockPackageInfo,
+    mockDiff,
+  )
+  t.strictSame(removed, [
+    resolve(dir, `node_modules/.vlt/${id}/node_modules/foo`),
+  ])
 })
 
 t.test('install scripts from the manifest', async t => {
