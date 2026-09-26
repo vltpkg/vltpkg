@@ -673,13 +673,17 @@ export class RegistryClient {
       // disk underneath it -- benign, tarball urls are immutable.)
       if (this.cache.peek(key)) return undefined
 
-      // same order as the cache's own disk read
+      // a pin reads only the integrity path: cache.set hardlinks every
+      // artifact under its hash, while the key holds whatever was last
+      // fetched from that url. nothing here hashes the body, so a miss
+      // -- which sends the caller to request(), which verifies -- is
+      // the safe answer.
       const paths = new Set<string>()
       try {
         const i = this.cache.integrityPath(integrity)
         if (i) paths.add(i)
       } catch {}
-      paths.add(this.cache.path(key))
+      if (!integrity) paths.add(this.cache.path(key))
 
       for (const path of paths) {
         let buf: Buffer
@@ -890,9 +894,21 @@ export class RegistryClient {
     // a server-sent integrity header is not evidence: only the caller's
     // expectation, or a body read back from the cache, is trusted. the
     // header is dropped so it can never be stored as the entry's hash.
+    //
+    // the check has to happen here, before the cache write below, or a
+    // body that fails it is still stored under the hash it was supposed
+    // to have -- and served from there, unverified, on the next run.
+    // `!fromCache` is the whole precondition: only a cached entry can
+    // have been rewritten (cache-unzip un-gzips in place), so anything
+    // else is the bytes as they came off the wire and hashes as such.
+    // this used to also require `isGzip`, which was a proxy for that
+    // and silently exempted every artifact that is not gzip -- a
+    // `.tar.br` among them.
     if (!trustIntegrity && !result.fromCache) {
       result.deleteHeader('integrity')
-      if (result.isGzip) result.checkIntegrity({ url })
+      // 200 only: an error body is not the artifact and was never
+      // supposed to hash to it, and it is not what gets cached either.
+      if (result.statusCode === 200) result.checkIntegrity({ url })
     }
     // same for the digest the server labels an unlabelled artifact with.
     // before the cache write below, or a rejected body would be served

@@ -1171,3 +1171,78 @@ t.test('round-trip a peer-suffixed node', async t => {
     'lockfile stores the peer suffix',
   )
 })
+
+t.test('brotli round trip', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0', bar: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  // a node the registry served as .tar.br: `resolved` and `integrity`
+  // both describe that artifact
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@^1.0.0'),
+    { name: 'foo', version: '1.0.0' },
+  )
+  if (!foo) throw new Error('Missing foo package')
+  foo.resolved = 'https://registry.npmjs.org/foo/-/foo-1.0.0.tar.br'
+  foo.integrity = 'sha512-brotlibrotlibrotli=='
+
+  const bar = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar@^1.0.0'),
+    { name: 'bar', version: '1.0.0' },
+  )
+  if (!bar) throw new Error('Missing bar package')
+  bar.setResolved()
+
+  save({ ...configData, graph })
+  const nodes = (
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    ) as { nodes: Record<string, [number, ...unknown[]]> }
+  ).nodes
+  const key = (name: string) =>
+    Object.keys(nodes).find(k => k.includes(name))!
+
+  t.equal(nodes[key('foo')]?.[0], 4, 'brotli bit set on foo')
+  t.equal(nodes[key('bar')]?.[0], 0, 'and not on the .tgz node')
+  t.equal(
+    nodes[key('foo')]?.[3],
+    undefined,
+    'still no resolved url: the bit is the whole cost',
+  )
+
+  // and back: the url is rebuilt from the bit alone
+  const loaded = load({ ...configData, projectRoot, mainManifest })
+  const fooOut = [...loaded.nodes.values()].find(
+    n => n.name === 'foo',
+  )
+  t.equal(fooOut?.brotli, true)
+  t.equal(
+    fooOut?.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tar.br',
+  )
+  t.equal(fooOut?.integrity, 'sha512-brotlibrotlibrotli==')
+  const barOut = [...loaded.nodes.values()].find(
+    n => n.name === 'bar',
+  )
+  t.equal(barOut?.brotli, false)
+  t.equal(
+    barOut?.resolved,
+    'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz',
+  )
+})

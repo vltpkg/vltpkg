@@ -8,8 +8,14 @@ import {
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
-import { expandNormalizedManifestSymbols } from '@vltpkg/types'
+import {
+  brotliTarballName,
+  brotliTarballUrl,
+  expandNormalizedManifestSymbols,
+  tarballFormat,
+} from '@vltpkg/types'
 import type {
+  Dist,
   Integrity,
   NormalizedManifest,
   DependencyTypeShort,
@@ -25,14 +31,28 @@ import type { GraphModifier } from './modifiers.ts'
 export type NodeOptions = SpecOptions & {
   projectRoot: string
   graph: GraphLike
+  /**
+   * Resolve to a version's Brotli (`.tar.br`) alternate when its manifest
+   * advertises one. Defaults to true; false always resolves to the `.tgz`.
+   */
+  'brotli-tarballs'?: boolean
 }
+
+/**
+ * The absolute URL of a version's Brotli (`.tar.br`) tarball. `dist`
+ * arrives here with an absolute `tarball`, so the alternate's relative
+ * reference resolves against it. See {@link brotliTarballUrl} for which
+ * references this client accepts.
+ */
+const brotliAlternate = (dist?: Dist): string | undefined =>
+  brotliTarballUrl(dist?.tarball, dist?.alternates)
 
 export class Node implements NodeLike {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
   }
 
-  #options: SpecOptions
+  #options: NodeOptions
   #location?: string
   #rawManifest?: NormalizedManifest
 
@@ -149,6 +169,34 @@ export class Node implements NodeLike {
    * The manifest this node represents in the graph.
    */
   manifest?: NormalizedManifest
+
+  /**
+   * Whether this node's artifact is the `.tar.br`: from the manifest's
+   * `dist.alternates` at construction, or overwritten by the lockfile's
+   * flag bit when the node came from one (so an existing lockfile keeps
+   * whichever artifact it pinned). Only consulted while `resolved` is
+   * still unset -- once there is a URL, it is the answer (see the
+   * getter).
+   */
+  #brotli = false
+
+  /**
+   * True when this node's artifact is the registry's Brotli (`.tar.br`)
+   * tarball rather than the gzip `.tgz`, which makes `integrity` that
+   * artifact's hash. `resolved` is authoritative whenever it is set, so
+   * the two can never drift; the stored bit only carries the lockfile's
+   * answer across to `setResolved()`, which has to know the extension
+   * before it can build the URL.
+   */
+  get brotli(): boolean {
+    return this.resolved ?
+        tarballFormat(this.resolved) === 'brotli'
+      : this.#brotli
+  }
+
+  set brotli(brotli: boolean) {
+    this.#brotli = brotli
+  }
 
   /**
    * Project where this node resides
@@ -315,6 +363,13 @@ export class Node implements NodeLike {
     }
     this.graph = options.graph as Graph
     this.manifest = manifest
+    // Settled here, not in setResolved(), because `integrity` is filled
+    // in from `dist.integrity` between the two -- and that hash is the
+    // `.tgz`'s. A node whose artifact is the `.tar.br` has to be able to
+    // turn that down before it arrives.
+    this.#brotli =
+      options['brotli-tarballs'] !== false &&
+      !!brotliAlternate(manifest?.dist)
 
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version
@@ -338,9 +393,27 @@ export class Node implements NodeLike {
 
   #registryNodeResolved(tuple: DepIDTuple) {
     const spec = hydrateTuple(tuple, this.#name, this.#options)
-    this.resolved =
-      this.manifest?.dist?.tarball || spec.conventionalRegistryTarball
-    this.integrity ??= this.manifest?.dist?.integrity
+    const dist = this.manifest?.dist
+    const tarball = dist?.tarball || spec.conventionalRegistryTarball
+    const brotli =
+      this.#brotli ?
+        // the manifest's own reference when there is one, and otherwise
+        // the registry's naming for it: same stem as the `.tgz`, a
+        // different extension. That convention is what lets a lockfile
+        // node -- which has no manifest -- spend one flag bit rather
+        // than a second URL.
+        (brotliAlternate(dist) ??
+        (tarball && brotliTarballName(tarball)))
+      : undefined
+    if (brotli) {
+      this.resolved = brotli
+      // `dist.integrity` describes the `.tgz`. The `.tar.br` is a
+      // different artifact with a different hash, pinned by its own
+      // `Repr-Digest` on the install that first fetches it.
+      return
+    }
+    this.resolved = tarball
+    this.integrity ??= dist?.integrity
   }
 
   get options() {

@@ -47,6 +47,18 @@ export type Dist = {
     keyid: KeyID
     sig: string
   }[]
+  /**
+   * Alternate tarball formats the registry offers for this version. A
+   * `tar.br` entry is a Brotli-recompressed tar whose `tarball` is a
+   * reference relative to this `dist`'s `tarball` (e.g. the bare filename
+   * `foo-1.2.3.tar.br`), resolved with `new URL(entry.tarball, tarball)`.
+   *
+   * An alternate is a *different artifact*, not a different encoding of the
+   * same bytes: it carries no `integrity` here and hashes differently from
+   * the `.tgz`. A client that downloads one pins that artifact's own hash,
+   * taken from the tarball response's RFC 9530 `Repr-Digest`.
+   */
+  alternates?: { kind: string; tarball: string }[]
 }
 
 /** An object used to mark some peerDeps as optional */
@@ -1039,6 +1051,80 @@ export const integrityHex = (i: unknown): string | undefined =>
     Buffer.from(i.slice(7), 'base64').toString('hex')
   : undefined
 
+/**
+ * How a tarball's bytes are compressed. `gzip` is sniffed from the two
+ * magic bytes (the `.tgz` and raw-tar cases), so it never has to be
+ * passed. Brotli has no magic-byte signature, so a `.tar.br` MUST be
+ * declared by the caller -- it can never be detected from the bytes.
+ */
+export type TarballFormat = 'gzip' | 'brotli'
+
+/** Filename extension of a Brotli-recompressed tarball. */
+export const BROTLI_TARBALL_EXT = '.tar.br'
+
+/**
+ * The {@link TarballFormat} a tarball URL (or a registry-client cache key,
+ * which is the URL) names, or undefined when the bytes can be sniffed.
+ *
+ * The extension is the only signal there is: brotli bytes are opaque, and
+ * the response carries no `Content-Encoding` (a `.tar.br` is an artifact in
+ * its own right, not a transfer encoding of the `.tgz`). Query and fragment
+ * are ignored so a signed or cache-busted URL still reads correctly.
+ */
+export const tarballFormat = (
+  url: string,
+): TarballFormat | undefined => {
+  // endsWith's second argument reads the string as if it ended there
+  const end = /[?#]/.exec(url)?.index ?? url.length
+  return url.endsWith(BROTLI_TARBALL_EXT, end) ? 'brotli' : undefined
+}
+
+/**
+ * `https://…/foo-1.2.3.tgz` -> `https://…/foo-1.2.3.tar.br`: the name a
+ * registry gives a version's Brotli alternate, same stem as the `.tgz`
+ * and a different extension.
+ */
+export const brotliTarballName = (tgz: string): string =>
+  tgz.replace(/\.tgz$/, BROTLI_TARBALL_EXT)
+
+/**
+ * The absolute URL of a version's Brotli (`.tar.br`) tarball, from the
+ * `tar.br` entry in its `dist.alternates` -- but only when that entry
+ * resolves to the `.tgz`'s own sibling, i.e. {@link brotliTarballName} of
+ * `tarball`. Anything else reads as no alternate at all.
+ *
+ * `alternates[].tarball` is a reference relative to `dist.tarball`, and
+ * the protocol lets a registry point it anywhere. This client uses only
+ * the conventional name, because two things downstream re-derive it and
+ * both would otherwise be wrong: the format is read back off the URL
+ * suffix (brotli bytes carry no signature to sniff), and a lockfile node
+ * spends a single flag bit instead of a second URL, rebuilding the
+ * address from the `.tgz` by this same convention. Narrowing here, at
+ * the one point where the alternate is chosen, is what makes both of
+ * those derivations sound -- and costs an unusual reference the
+ * optimization rather than the install.
+ */
+export const brotliTarballUrl = (
+  tarball: string | undefined,
+  alternates: Dist['alternates'],
+): string | undefined => {
+  if (!tarball) return undefined
+  const entry = alternates?.find(
+    a => a.kind === 'tar.br' && !!a.tarball,
+  )
+  if (!entry) return undefined
+  try {
+    const href = new URL(entry.tarball, tarball).href
+    return href === new URL(brotliTarballName(tarball)).href ?
+        href
+      : undefined
+    /* c8 ignore start - a malformed reference just means no brotli */
+  } catch {
+    return undefined
+  }
+  /* c8 ignore stop */
+}
+
 export const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
 export const isKeyID = (k: unknown): k is KeyID =>
   typeof k === 'string' && keyIDRE.test(k)
@@ -1602,6 +1688,14 @@ export type NodeLike = {
   integrity?: string | null
   resolved?: string | null
   resolvedFromLockfile?: boolean
+  /**
+   * This node's artifact is the registry's Brotli (`.tar.br`) tarball
+   * rather than the gzip `.tgz`, so `resolved` and `integrity` both
+   * describe that artifact. Persisted in the lockfile as a flag bit, which
+   * is what lets `setResolved()` rebuild the `.tar.br` URL for a node whose
+   * `resolved` is not written out.
+   */
+  brotli?: boolean
   importer: boolean
   graph: GraphLike
   mainImporter: boolean

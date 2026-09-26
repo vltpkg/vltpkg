@@ -21,6 +21,7 @@ import { createServer } from 'node:http'
 import { basename, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
+import { brotliCompressSync, gunzipSync } from 'node:zlib'
 import * as util from 'node:util'
 import type { Test } from 'tap'
 import t from 'tap'
@@ -96,6 +97,17 @@ const tgzAbbrevSha512 = createHash('sha512')
 const tgzFile = String(
   pathToFileURL(pathResolve(fixtures, 'abbrev-2.0.0.tgz')),
 )
+// the same package recompressed, the way the registry serves an
+// alternate: a distinct artifact with its own bytes and its own hash
+const brAbbrev = brotliCompressSync(tgzAbbrevUnzipped())
+const brAbbrevSha512 = createHash('sha512')
+  .update(brAbbrev)
+  .digest('base64')
+const brAbbrevIntegrity: Integrity = `sha512-${brAbbrevSha512}`
+
+function tgzAbbrevUnzipped() {
+  return gunzipSync(tgzAbbrev)
+}
 
 const shaRE = /^[0-9a-f]{40}$/
 
@@ -434,6 +446,93 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', tgzAbbrev.byteLength)
       return res.end(tgzAbbrev)
     }
+    // a vlt packument advertising a brotli alternate, and the artifact
+    // it points at. `brotli-404` advertises one the server does not have.
+    case '/brotli-odd': {
+      // an alternate the protocol allows but this client does not use:
+      // the reference is not the .tgz's sibling, so neither the format
+      // nor the lockfile url could be re-derived from it
+      const json = JSON.stringify({
+        name: 'brotli-odd',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'brotli-odd',
+            version: '1.0.0',
+            dist: {
+              tarball: 'brotli-odd/-/brotli-odd-1.0.0.tgz',
+              alternates: [{ kind: 'tar.br', tarball: './artifact' }],
+            },
+          },
+        },
+      })
+      res.setHeader(
+        'content-type',
+        'application/vnd.vlt.packument-v1+json',
+      )
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/brotli-odd/-/brotli-odd-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${tgzAbbrevSha512}:`)
+      return res.end(tgzAbbrev)
+    }
+    case '/brotli':
+    case '/brotli-404':
+    case '/brotli-nodigest':
+    case '/brotli-bad': {
+      const name = req.url.replace(/\?stable$/, '').slice(1)
+      const json = JSON.stringify({
+        name,
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name,
+            version: '1.0.0',
+            dist: {
+              tarball: `${name}/-/${name}-1.0.0.tgz`,
+              alternates: [
+                { kind: 'tar.br', tarball: `${name}-1.0.0.tar.br` },
+              ],
+            },
+          },
+        },
+      })
+      res.setHeader(
+        'content-type',
+        'application/vnd.vlt.packument-v1+json',
+      )
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/brotli/-/brotli-1.0.0.tar.br': {
+      brotliRequests++
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', brAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${brAbbrevSha512}:`)
+      return res.end(brAbbrev)
+    }
+    case '/brotli-nodigest/-/brotli-nodigest-1.0.0.tar.br': {
+      // no repr-digest at all: nothing pins these bytes
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', brAbbrev.byteLength)
+      return res.end(brAbbrev)
+    }
+    case '/brotli-bad/-/brotli-bad-1.0.0.tar.br': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', brAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${'0'.repeat(86)}==:`)
+      return res.end(brAbbrev)
+    }
+    case '/brotli/-/brotli-1.0.0.tgz':
+    case '/brotli-404/-/brotli-404-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${tgzAbbrevSha512}:`)
+      return res.end(tgzAbbrev)
+    }
     case '/-/vlt/capabilities': {
       capabilitiesRequests++
       const json = JSON.stringify(capabilitiesDocument)
@@ -476,6 +575,7 @@ let movingLatest = '1.0.0'
 let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
 let abbrevTgzRequests = 0
+let brotliRequests = 0
 let capabilitiesRequests = 0
 let stableRequests: string[] = []
 let stableDelay = 0
@@ -3320,5 +3420,255 @@ t.test('tarballs labelled with a digest', async t => {
     t.ok(paku.versions['2.0.0'])
     t.equal(coalescedPackumentAccept, 'application/json')
     t.equal(coalescedPackumentRequests, 1)
+  })
+})
+
+t.test('brotli tarballs', async t => {
+  const pi = (o?: PackageInfoClientOptions) =>
+    new PackageInfoClient({ ...options, cache: t.testdir(), ...o })
+  const brURL = `${defaultRegistry}brotli/-/brotli-1.0.0.tar.br`
+  const tgzURL = `${defaultRegistry}brotli/-/brotli-1.0.0.tgz`
+
+  t.test('resolve picks the advertised alternate', async t => {
+    // the `.tar.br` is the artifact, not a re-encoding of the `.tgz`:
+    // `resolved` names it and its own Repr-Digest is what pins it
+    t.match(await pi().resolve('brotli@1.0.0'), {
+      resolved: brURL,
+      integrity: undefined,
+      digestRequired: true,
+    })
+  })
+
+  t.test(
+    'an alternate that is not the .tgz sibling is ignored',
+    async t => {
+      // brotli bytes carry no signature, and a lockfile node rebuilds
+      // its url from the .tgz by convention -- so an alternate neither
+      // of those can re-derive is left alone rather than mis-unpacked
+      const dir = t.testdir()
+      const res = await pi({ cache: `${dir}/cache` }).extract(
+        'brotli-odd@1.0.0',
+        `${dir}/a`,
+      )
+      t.equal(
+        res.resolved,
+        `${defaultRegistry}brotli-odd/-/brotli-odd-1.0.0.tgz`,
+        'resolved to the gzip tarball',
+      )
+      t.equal(
+        JSON.parse(readFileSync(`${dir}/a/package.json`, 'utf8'))
+          .name,
+        'abbrev',
+        'and it unpacked',
+      )
+    },
+  )
+
+  t.test('--no-brotli-tarballs keeps the .tgz', async t => {
+    const res = await pi({ 'brotli-tarballs': false }).resolve(
+      'brotli@1.0.0',
+    )
+    t.match(res, { resolved: tgzURL, digestRequired: true })
+  })
+
+  t.test('extract unpacks it and pins its hash', async t => {
+    const dir = t.testdir()
+    const cache = `${dir}/cache`
+    const p = pi({ cache })
+    brotliRequests = 0
+    const res = await p.extract('brotli@1.0.0', `${dir}/a`)
+    t.equal(res.resolved, brURL)
+    t.equal(res.integrity, brAbbrevIntegrity)
+    t.equal(brotliRequests, 1)
+    t.equal(
+      JSON.parse(readFileSync(`${dir}/a/package.json`, 'utf8')).name,
+      'abbrev',
+      'the brotli bytes really did unpack',
+    )
+    await (await p.getRegistryClient()).cache.promise()
+
+    // and a fresh client unpacks it straight off the cache file,
+    // which nothing ever rewrote: still brotli, still declared by url
+    const cold = pi({ cache })
+    t.ok(
+      (await cold.getRegistryClient()).cachedBody(brURL),
+      'on disk',
+    )
+    const again = await cold.extract('brotli@1.0.0', `${dir}/b`)
+    t.equal(again.integrity, brAbbrevIntegrity)
+    t.equal(
+      JSON.parse(readFileSync(`${dir}/b/package.json`, 'utf8')).name,
+      'abbrev',
+    )
+    t.equal(brotliRequests, 1, 'served from the cache file')
+  })
+
+  t.test('a graph hands over the url alone', async t => {
+    // what reify passes on a first install: the node resolved to the
+    // `.tar.br` off the manifest's alternate, but its hash is not
+    // knowable until the bytes arrive, so only the url comes along.
+    const dir = t.testdir()
+    const res = await pi().extract('brotli@1.0.0', dir, {
+      resolved: brURL,
+    })
+    t.equal(res.resolved, brURL)
+    t.equal(res.digestRequired, true, 'so Repr-Digest is required')
+    t.equal(res.integrity, brAbbrevIntegrity, 'and pins that hash')
+    t.equal(
+      JSON.parse(readFileSync(`${dir}/package.json`, 'utf8')).name,
+      'abbrev',
+    )
+  })
+
+  t.test('an unlabelled alternate is refused', async t => {
+    // an alternate carries no packument integrity, so an unlabelled
+    // body has nothing to check against and is never trusted
+    await t.rejects(
+      pi().extract('brotli-nodigest@1.0.0', t.testdir()),
+      { cause: { code: 'EINTEGRITY', wanted: undefined } },
+    )
+  })
+
+  t.test('a lockfile install still hashes the body', async t => {
+    // the `.tgz` shortcut -- the registry client hashes every gzip body
+    // it fetches -- does not reach a `.tar.br`, so extract() has to.
+    const dir = t.testdir()
+    const cache = `${dir}/cache`
+    const wanted: Integrity = `sha512-${'0'.repeat(86)}==`
+    const p = pi({ cache })
+    await t.rejects(
+      p.extract('brotli@1.0.0', dir, {
+        resolved: brURL,
+        integrity: wanted,
+        fromLockfile: true,
+      }),
+      { cause: { code: 'EINTEGRITY', found: brAbbrevIntegrity } },
+    )
+
+    // and the rejected bytes must not survive in the cache: they would
+    // be found under the pinned hash and unpacked unverified next time
+    const client = await p.getRegistryClient()
+    await client.cache.promise()
+    t.equal(
+      client.cachedBody(brURL, { integrity: wanted }),
+      undefined,
+      'not cached under the hash it failed to match',
+    )
+    const cold = pi({ cache })
+    t.equal(
+      (await cold.getRegistryClient()).cachedBody(brURL, {
+        integrity: wanted,
+      }),
+      undefined,
+      'nor on disk for the next run',
+    )
+  })
+
+  t.test(
+    '...where a .tgz leaves the hashing to the client',
+    async t => {
+      // the contrast: same options, gzip body, and extract() does not
+      // hash it a second time -- the registry client already did.
+      const dir = t.testdir()
+      const res = await pi().extract('brotli@1.0.0', dir, {
+        resolved: tgzURL,
+        integrity: `sha512-${tgzAbbrevSha512}`,
+        fromLockfile: true,
+      })
+      t.equal(res.resolved, tgzURL)
+      t.equal(
+        JSON.parse(readFileSync(`${dir}/package.json`, 'utf8')).name,
+        'abbrev',
+      )
+    },
+  )
+
+  t.test('a cached body at the url is not the pin', async t => {
+    // the cache is keyed by url, the pin names an artifact: the
+    // url-keyed bytes are never proof of which one, and this path
+    // does not hash them
+    const dir = t.testdir()
+    const cache = `${dir}/cache`
+    const prime = pi({ cache })
+    await prime.extract('brotli@1.0.0', `${dir}/prime`)
+    const rc = await prime.getRegistryClient()
+    await rc.cache.promise()
+
+    const cold = await pi({ cache }).getRegistryClient()
+    t.ok(
+      cold.cachedBody(brURL, { integrity: brAbbrevIntegrity }),
+      'its own pin still takes the fast path',
+    )
+    t.equal(
+      cold.cachedBody(brURL, {
+        integrity: `sha512-${'0'.repeat(86)}==`,
+      }),
+      undefined,
+      'a different pin is not served the url-keyed body',
+    )
+
+    // with the link gone there is nothing left to trust, so the
+    // pinned read misses and request() re-fetches
+    const linked = rc.cache.integrityPath(brAbbrevIntegrity)
+    if (linked) rmSync(linked, { force: true })
+    const colder = await pi({ cache }).getRegistryClient()
+    t.equal(
+      colder.cachedBody(brURL, { integrity: brAbbrevIntegrity }),
+      undefined,
+      'no link, no fast path',
+    )
+    t.ok(
+      colder.cachedBody(brURL),
+      'an unpinned read still uses the url entry',
+    )
+  })
+
+  t.test('a mislabelled alternate is rejected', async t => {
+    await t.rejects(pi().extract('brotli-bad@1.0.0', t.testdir()), {
+      cause: { code: 'EINTEGRITY' },
+    })
+  })
+
+  t.test('an advertised alternate that 404s throws', async t => {
+    // nothing falls back: `resolved` is the artifact, and a registry
+    // that advertises one it cannot serve is broken, not a slow path
+    await t.rejects(pi().extract('brotli-404@1.0.0', t.testdir()), {
+      cause: { url: /brotli-404-1\.0\.0\.tar\.br$/ },
+    })
+  })
+
+  t.test('links from the global store', async t => {
+    // the store is content-addressed by the artifact's own hash, so a
+    // `.tar.br` gets its own entry -- exploded from brotli bytes, but
+    // holding the same files, and found by the same lookup.
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(dir)
+    unload()
+    const cache = `${dir}/cache`
+    const store = pathResolve(cache, 'store/v1')
+    const hex = String(integrityHex(brAbbrevIntegrity))
+    const tmp = pathResolve(store, '.tmp', hex)
+    const { index } = unpackToStoreSync(brAbbrev, tmp, 'brotli')
+    writeFileSync(
+      pathResolve(store, hex + '.json'),
+      JSON.stringify(index),
+    )
+    renameSync(tmp, pathResolve(store, hex))
+
+    const p = pi({ cache, 'store-linker': 'hardlink' })
+    const rc = await p.getRegistryClient()
+    rc.request = () => {
+      throw new Error('requested the tarball')
+    }
+    const res = await p.extract('brotli@1.0.0', `${dir}/a`, {
+      resolved: brURL,
+      integrity: brAbbrevIntegrity,
+    })
+    t.equal(statSync(`${dir}/a/package.json`).nlink, 2, 'linked')
+    t.match(
+      JSON.parse(String(res.manifest)),
+      { name: 'abbrev', version: '2.0.0' },
+      'and the index manifest came along',
+    )
   })
 })

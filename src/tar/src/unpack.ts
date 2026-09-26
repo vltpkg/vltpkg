@@ -23,10 +23,18 @@ import { rimraf, rimrafSync } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
-import { unzip as unzipCB, unzipSync as unzipSyncCB } from 'node:zlib'
+import {
+  brotliDecompress as brotliCB,
+  brotliDecompressSync as brotliSyncCB,
+  unzip as unzipCB,
+  unzipSync as unzipSyncCB,
+} from 'node:zlib'
+import type { TarballFormat } from '@vltpkg/types'
 import { findTarDir } from './find-tar-dir.ts'
 import { storeIndexManifest } from './store-index.ts'
 import type { StoreIndex, StoreIndexFile } from './store-index.ts'
+
+export type { TarballFormat }
 
 // Matches node-tar's MAX_DECOMPRESSION_RATIO, which npm uses via pacote.
 const MAX_DECOMPRESSION_RATIO = 1000
@@ -75,6 +83,48 @@ const unzipSync = (input: Buffer): Buffer => {
     throw unzipError(er, input.length, max)
   }
 }
+
+const isGzip = (b: Buffer) => b[0] === 0x1f && b[1] === 0x8b
+
+const brotli = async (input: Buffer) => {
+  const max = unzipMax(input.length)
+  return new Promise<Buffer>((res, rej) =>
+    brotliCB(input, { maxOutputLength: max }, (er, result) =>
+      er ? rej(unzipError(er, input.length, max)) : res(result),
+    ),
+  )
+}
+
+const brotliSync = (input: Buffer): Buffer => {
+  const max = unzipMax(input.length)
+  try {
+    return brotliSyncCB(input, { maxOutputLength: max })
+  } catch (er) {
+    throw unzipError(er, input.length, max)
+  }
+}
+
+/**
+ * Inflate a tarball body. `gzip` is sniffed from the magic bytes and
+ * anything unrecognized is taken for a raw tar, so only `brotli` has to
+ * be declared -- its bytes carry no signature of their own. Both paths
+ * share the decompression-ratio cap.
+ */
+const decompress = async (
+  input: Buffer,
+  format?: TarballFormat,
+): Promise<Buffer> =>
+  format === 'brotli' ? brotli(input)
+  : isGzip(input) ? unzip(input)
+  : input
+
+const decompressSync = (
+  input: Buffer,
+  format?: TarballFormat,
+): Buffer =>
+  format === 'brotli' ? brotliSync(input)
+  : isGzip(input) ? unzipSync(input)
+  : input
 
 const exists = async (path: string): Promise<boolean> => {
   try {
@@ -238,21 +288,21 @@ const write = async (
 export const unpack = async (
   tarData: Buffer,
   target: string,
+  format?: TarballFormat,
 ): Promise<void> => {
-  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
-  await unpackUnzipped(
-    isGzip ? await unzip(tarData) : tarData,
-    target,
-  )
+  await unpackUnzipped(await decompress(tarData, format), target)
 }
 
 /**
  * Same as {@link unpack}, but blocking. Faster: the async writers pay a
  * libuv round trip per file, which costs more than the IO itself.
  */
-export const unpackSync = (tarData: Buffer, target: string): void => {
-  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
-  unpackUnzippedSync(isGzip ? unzipSync(tarData) : tarData, target)
+export const unpackSync = (
+  tarData: Buffer,
+  target: string,
+  format?: TarballFormat,
+): void => {
+  unpackUnzippedSync(decompressSync(tarData, format), target)
 }
 
 /**
@@ -264,7 +314,9 @@ export const unpackFileSync = (
   file: string,
   target: string,
   offset = 0,
-): void => unpackSync(readFileSync(file).subarray(offset), target)
+  format?: TarballFormat,
+): void =>
+  unpackSync(readFileSync(file).subarray(offset), target, format)
 
 /** Sibling temp path used to build `target` before renaming it in. */
 export const tmpName = (target: string) =>
@@ -282,10 +334,9 @@ type TarEntries = { dirs: Set<string>; files: FileEntry[] }
  */
 const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
   /* c8 ignore start */
-  const isGzip = buffer[0] === 0x1f && buffer[1] === 0x8b
-  if (isGzip) {
+  if (isGzip(buffer)) {
     throw error('still gzipped after unzipping', {
-      found: isGzip,
+      found: true,
       wanted: false,
     })
   }
@@ -500,18 +551,19 @@ const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
 }
 
 /**
- * What a gzipped or raw tarball explodes to in the global store at
- * `dir`: its sidecar index, files and package.json `bin` target paths.
- * Same parsing and path safety as {@link unpackSync}. No IO. Throws if
- * the tarball has no valid package.json.
+ * What a tarball explodes to in the global store at `dir`: its sidecar
+ * index, files and package.json `bin` target paths. Same parsing and
+ * path safety as {@link unpackSync}, and the same `format` rule -- only
+ * brotli has to be declared. No IO. Throws if the tarball has no valid
+ * package.json.
  */
 export const storeLayout = (
   tarData: Buffer,
   dir: string,
+  format?: TarballFormat,
 ): { index: StoreIndex; files: FileEntry[]; binFiles: string[] } => {
-  const isGzip = tarData[0] === 0x1f && tarData[1] === 0x8b
   const { dirs, files } = parseTarball(
-    isGzip ? unzipSync(tarData) : tarData,
+    decompressSync(tarData, format),
     dir,
   )
   const rel = (p: string) => relative(dir, p).replace(/\\/g, '/')
@@ -560,7 +612,7 @@ export const storeLayout = (
 }
 
 /**
- * Explode a gzipped or raw tarball into `dir` for the global store and
+ * Explode a tarball into `dir` for the global store and
  * return its sidecar index (see {@link storeLayout}), written straight
  * into `dir` (which must not exist; the caller renames it into place).
  * Same modes as {@link unpackSync} followed by reify's bin chmod.
@@ -570,8 +622,9 @@ export const storeLayout = (
 export const unpackToStoreSync = (
   tarData: Buffer,
   dir: string,
+  format?: TarballFormat,
 ): { index: StoreIndex } => {
-  const { index, files, binFiles } = storeLayout(tarData, dir)
+  const { index, files, binFiles } = storeLayout(tarData, dir, format)
   mkdirSync(dirname(dir), { recursive: true })
   mkdirSync(dir, { mode: 0o777 })
   let succeeded = false

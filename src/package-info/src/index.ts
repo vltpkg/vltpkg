@@ -21,7 +21,12 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { Pool, StoreLinker } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
-import { asPackument, integrityHex } from '@vltpkg/types'
+import {
+  asPackument,
+  brotliTarballUrl,
+  integrityHex,
+  tarballFormat,
+} from '@vltpkg/types'
 import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -126,6 +131,13 @@ export type PackageInfoClientOptions = RegistryClientOptions &
      * tarball, anything else goes through the global store first.
      */
     'store-linker'?: StoreLinker
+
+    /**
+     * Resolve to the registry's Brotli (`.tar.br`) tarball when it
+     * advertises one in `dist.alternates`. Defaults to true; set false to
+     * always resolve to the gzip `.tgz`.
+     */
+    'brotli-tarballs'?: boolean
   }
 
 export type PackageInfoClientRequestOptions = PickManifestOptions &
@@ -314,6 +326,21 @@ export class PackageInfoClient {
     return this.#tarPoolPromise
   }
 
+  /**
+   * The absolute URL of a version's Brotli (`.tar.br`) tarball, or
+   * undefined when the registry advertised none, advertised one this
+   * client does not use (see {@link brotliTarballUrl}), or
+   * `--no-brotli-tarballs` is set. `dist.tarball` is already absolute
+   * here -- see `absolutizeTarballs`.
+   */
+  #brotliTarball(
+    tarball: string,
+    alternates: Exclude<Manifest['dist'], undefined>['alternates'],
+  ): string | undefined {
+    if (this.options['brotli-tarballs'] === false) return undefined
+    return brotliTarballUrl(tarball, alternates)
+  }
+
   constructor(options: PackageInfoClientOptions = {}) {
     this.options = options
     this.#projectRoot = options.projectRoot || process.cwd()
@@ -357,11 +384,20 @@ export class PackageInfoClient {
     } = options
     const f = spec.final
     // If the caller already provides both integrity and resolved
-    // (from lockfile or prior resolution), skip re-resolving.
-    const alreadyResolved = !!(integrity && resolved)
-    const r =
-      alreadyResolved ?
-        { resolved, integrity, spec }
+    // (from lockfile or prior resolution), skip re-resolving. A
+    // `.tar.br` needs only the URL: its hash is not knowable before the
+    // download, so the graph can never hand one over, and `Repr-Digest`
+    // is what pins it -- `required`, so a registry that serves the
+    // alternate unlabelled is rejected rather than trusted.
+    const brotli = !!resolved && tarballFormat(resolved) === 'brotli'
+    const r: Resolution =
+      resolved && (integrity || brotli) ?
+        {
+          resolved,
+          integrity,
+          spec,
+          ...(brotli && !integrity ? { digestRequired: true } : {}),
+        }
       : await this.resolve(spec, options)
 
     switch (f.type) {
@@ -405,6 +441,9 @@ export class PackageInfoClient {
 
       case 'registry': {
         const pool = await this.getTarPool()
+        // brotli bytes carry no signature of their own, so every unpack
+        // below has to be told; gzip and raw tar are sniffed.
+        const format = tarballFormat(r.resolved)
         // git tarballs keep the unpack path
         const hex =
           f.type === 'registry' && this.#storeLinker !== 'unpack' ?
@@ -449,12 +488,14 @@ export class PackageInfoClient {
         })
         if (cached) {
           try {
-            await pool.unpack(cached.body, target)
+            await pool.unpack(cached.body, target, format)
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
             // a warm install writes nothing to the cache, so queue the
             // store miss here or an existing cache never converges,
-            // and a gzipped body with no store link, to unzip it
+            // and a gzipped body with no store link, to unzip it.
+            // (a brotli body is never rewritten: cache-unzip only
+            // un-gzips, and leaving it compressed keeps the cache small.)
             if (hex || cached.gzip) {
               rc.queueForStore(cached.key, r.integrity)
             }
@@ -517,7 +558,9 @@ export class PackageInfoClient {
             // Skip cache-served bodies: they were verified on the fetch that
             // populated the cache, and cache-unzip rewrites them un-gzipped
             // so the gzip-hash can never match. Skip lockfile-sourced
-            // integrity: it was verified on first install.
+            // integrity: it was verified on first install, and the registry
+            // client hashes every wire body against what we asked for
+            // anyway -- before it caches it, whatever the format.
             if (!fromLockfile && !response.fromCache) {
               const hash = createHash('sha512')
               hash.update(buf)
@@ -570,7 +613,7 @@ export class PackageInfoClient {
         }
 
         try {
-          await (await this.getTarPool()).unpack(buf, target)
+          await pool.unpack(buf, target, format)
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -1364,15 +1407,21 @@ export class PackageInfoClient {
       case 'registry': {
         const mani = await this.manifest(spec, options)
         if (mani.dist) {
-          const { integrity, tarball, signatures } = mani.dist
+          const { integrity, tarball, signatures, alternates } =
+            mani.dist
           if (tarball) {
-            const r: Resolution = {
-              resolved: tarball,
-              integrity,
-              signatures,
-              spec,
-            }
+            // A `.tar.br` is a distinct artifact, not a re-encoding of the
+            // `.tgz`: it hashes differently, so `dist.integrity` and the
+            // signatures over it describe the wrong bytes and are dropped.
+            // What pins it instead is its own `Repr-Digest`, which the
+            // registry that advertised it always sends -- hence `required`.
+            const brotli = this.#brotliTarball(tarball, alternates)
+            const r: Resolution =
+              brotli ?
+                { resolved: brotli, spec, digestRequired: true }
+              : { resolved: tarball, integrity, signatures, spec }
             if (
+              !brotli &&
               !integrity &&
               this.#vltPackuments.has(`${f.registry}${f.name}`)
             ) {

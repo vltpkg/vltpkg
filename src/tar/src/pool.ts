@@ -5,6 +5,7 @@ import type {
   StoreLinkResult,
 } from './link-tree.ts'
 import type { StoreIndex } from './store-index.ts'
+import type { TarballFormat } from '@vltpkg/types'
 import {
   unpack,
   unpackFileSync,
@@ -32,9 +33,13 @@ export class Pool {
    * Provide the tardata to be unpacked, and the location where it's to be
    * placed. Resolves when the tarball has been extracted.
    */
-  async unpack(tarData: Buffer, target: string): Promise<void> {
-    if (!syncUnpack) return unpack(tarData, target)
-    unpackSync(tarData, target)
+  async unpack(
+    tarData: Buffer,
+    target: string,
+    format?: TarballFormat,
+  ): Promise<void> {
+    if (!syncUnpack) return unpack(tarData, target, format)
+    unpackSync(tarData, target, format)
   }
 
   /**
@@ -46,11 +51,16 @@ export class Pool {
     file: string,
     target: string,
     offset = 0,
+    format?: TarballFormat,
   ): Promise<void> {
     if (!syncUnpack) {
-      return unpack((await readFile(file)).subarray(offset), target)
+      return unpack(
+        (await readFile(file)).subarray(offset),
+        target,
+        format,
+      )
     }
-    unpackFileSync(file, target, offset)
+    unpackFileSync(file, target, offset, format)
   }
 
   /**
@@ -73,7 +83,8 @@ export class Pool {
   async unpackToStore(
     tarData: Buffer,
     dir: string,
+    format?: TarballFormat,
   ): Promise<{ index: StoreIndex }> {
-    return unpackToStoreSync(tarData, dir)
+    return unpackToStoreSync(tarData, dir, format)
   }
 }

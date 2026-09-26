@@ -257,6 +257,24 @@ Packages with install scripts are always copied. An invalid
 
 Valid options: "auto", "hardlink", "copy", "unpack"
 
+### `--brotli-tarballs`
+
+Resolve to the Brotli (`.tar.br`) tarball when the registry advertises
+one for a version, transferring far less than the gzip `.tgz`. On by
+default; `--no-brotli-tarballs` always resolves to the `.tgz`.
+
+A `.tar.br` is its own artifact, not a re-encoding of the `.tgz`: it
+hashes differently, and the registry labels it with its own RFC 9530
+`Repr-Digest`, which is what verifies the download. So a version
+installed this way records _that_ hash in `vlt-lock.json`, alongside a
+flag marking which artifact the entry describes.
+
+An existing lockfile keeps whichever artifact it already pinned, the
+same as any other resolved URL — set `--no-brotli-tarballs` before the
+versions are resolved to pin `.tgz` files instead.
+
+Registries that advertise no alternates are unaffected.
+
 ### `--tag=<tag>`
 
 Default `dist-tag` to install

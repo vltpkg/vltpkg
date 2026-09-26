@@ -1,4 +1,5 @@
 export { unpack, unpackToStoreSync } from './unpack.ts'
+export type { TarballFormat } from './unpack.ts'
 export * from './link-tree.ts'
 export * from './pool.ts'
 export * from './store-entry.ts'

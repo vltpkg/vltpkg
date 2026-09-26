@@ -569,7 +569,11 @@ export class Graph implements GraphLike {
           toFoundNode.manifest = manifest
           this.manifests.set(toFoundNode.id, manifest)
         }
-        toFoundNode.integrity ??= manifest.dist?.integrity
+        // never onto a node resolved to a `.tar.br`: `dist.integrity`
+        // is the `.tgz` hash, a different artifact's bytes
+        if (!toFoundNode.brotli) {
+          toFoundNode.integrity ??= manifest.dist?.integrity
+        }
       }
 
       return toFoundNode
@@ -595,7 +599,9 @@ export class Graph implements GraphLike {
     toNode.dev = flags.dev
     toNode.optional = flags.optional
     if (samePackage) copyPackageMetadata(toNode, samePackage)
-    toNode.integrity ??= manifest?.dist?.integrity
+    // not onto a node bound for the `.tar.br`: `dist.integrity` is the
+    // `.tgz` hash, and that is a different artifact's bytes
+    if (!toNode.brotli) toNode.integrity ??= manifest?.dist?.integrity
     // split extra into modifier and peerSetHash
     if (extra) {
       const { modifier, peerSetHash } = splitExtra(extra)

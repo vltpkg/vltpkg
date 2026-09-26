@@ -33,6 +33,10 @@ import {
   assertRecordStringT,
   dependencyTypes,
   integrityHex,
+  tarballFormat,
+  brotliTarballName,
+  brotliTarballUrl,
+  BROTLI_TARBALL_EXT,
   isErrorWithCause,
   isIntegrity,
   isKeyID,
@@ -236,6 +240,82 @@ t.test('integrity', t => {
   )
   t.equal(integrityHex('sha1-deadbeef'), undefined)
   t.equal(integrityHex(undefined), undefined)
+  t.end()
+})
+
+t.test('tarballFormat', t => {
+  t.equal(BROTLI_TARBALL_EXT, '.tar.br')
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tar.br'),
+    'brotli',
+  )
+  // a registry-client cache key is the url, so both read the same
+  t.equal(tarballFormat('foo-1.2.3.tar.br'), 'brotli')
+  // gzip and raw tar are sniffed from the bytes, so they say nothing
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tgz'),
+    undefined,
+  )
+  // query and fragment do not hide the extension
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tar.br?sig=abc'),
+    'brotli',
+  )
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo-1.2.3.tar.br#frag'),
+    'brotli',
+  )
+  // ...and neither do they invent one
+  t.equal(
+    tarballFormat('https://reg.io/foo/-/foo.tgz?x=.tar.br'),
+    undefined,
+  )
+  t.equal(tarballFormat(''), undefined)
+  t.end()
+})
+
+t.test('brotliTarballUrl', t => {
+  const tgz = 'https://reg.io/foo/-/foo-1.2.3.tgz'
+  const br = 'https://reg.io/foo/-/foo-1.2.3.tar.br'
+  t.equal(brotliTarballName(tgz), br)
+
+  const alt = (tarball: string, kind = 'tar.br') => [
+    { kind, tarball },
+  ]
+  // the conventional sibling, however it is referenced
+  t.equal(brotliTarballUrl(tgz, alt('foo-1.2.3.tar.br')), br)
+  t.equal(brotliTarballUrl(tgz, alt('./foo-1.2.3.tar.br')), br)
+  t.equal(brotliTarballUrl(tgz, alt(br)), br)
+
+  // anything else is not used: the format is read back off the suffix
+  // and the lockfile rebuilds the url by this convention, so a
+  // reference we cannot re-derive costs the optimization, not the
+  // install
+  t.equal(brotliTarballUrl(tgz, alt('./artifact')), undefined)
+  t.equal(
+    brotliTarballUrl(tgz, alt('/other/foo-1.2.3.tar.br')),
+    undefined,
+  )
+  t.equal(
+    brotliTarballUrl(tgz, alt('https://cdn.io/foo-1.2.3.tar.br')),
+    undefined,
+  )
+  t.equal(
+    brotliTarballUrl(tgz, alt('foo-1.2.3.tar.br', 'tar.zst')),
+    undefined,
+  )
+  t.equal(brotliTarballUrl(tgz, alt('')), undefined)
+  t.equal(brotliTarballUrl(tgz, []), undefined)
+  t.equal(brotliTarballUrl(tgz, undefined), undefined)
+  t.equal(brotliTarballUrl(undefined, alt('x.tar.br')), undefined)
+  // a dist.tarball that is not a .tgz has no sibling to match
+  t.equal(
+    brotliTarballUrl(
+      'https://reg.io/foo/-/foo-1.2.3.zip',
+      alt('foo-1.2.3.tar.br'),
+    ),
+    undefined,
+  )
   t.end()
 })
 

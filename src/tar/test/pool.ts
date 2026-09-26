@@ -9,6 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { resolve } from 'node:path'
+import { brotliCompressSync } from 'node:zlib'
 import { storeIndexPath } from '../src/store-index.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
@@ -125,6 +126,31 @@ t.test('unpackFile', async t => {
   )
 })
 
+t.test('brotli reaches every writer', async t => {
+  const d = t.testdir()
+  const tarData = makePkg('br-pkg', '1.0.0')
+  const br = brotliCompressSync(tarData)
+  const file = resolve(d, 'pkg.tar.br')
+  writeFileSync(file, br)
+
+  await p.unpack(br, resolve(d, 'buf'), 'brotli')
+  await p.unpackFile(file, resolve(d, 'file'), 0, 'brotli')
+  const { index } = await p.unpackToStore(
+    br,
+    resolve(d, 'store'),
+    'brotli',
+  )
+  t.match(index, { v: 1, name: 'br-pkg' })
+  for (const out of ['buf', 'file', 'store']) {
+    t.match(
+      JSON.parse(
+        readFileSync(resolve(d, out, 'package.json'), 'utf8'),
+      ),
+      { name: 'br-pkg' },
+    )
+  }
+})
+
 t.test('VLT_TAR_SYNC=0 falls back to the async writer', async t => {
   const prev = process.env.VLT_TAR_SYNC
   process.env.VLT_TAR_SYNC = '0'
@@ -143,7 +169,12 @@ t.test('VLT_TAR_SYNC=0 falls back to the async writer', async t => {
   writeFileSync(file, tarData)
   await p.unpack(tarData, resolve(d, 'buf'))
   await p.unpackFile(file, resolve(d, 'file'))
-  for (const out of ['buf', 'file']) {
+  const br = brotliCompressSync(tarData)
+  const brFile = resolve(d, 'pkg.tar.br')
+  writeFileSync(brFile, br)
+  await p.unpack(br, resolve(d, 'buf-br'), 'brotli')
+  await p.unpackFile(brFile, resolve(d, 'file-br'), 0, 'brotli')
+  for (const out of ['buf', 'file', 'buf-br', 'file-br']) {
     t.match(
       JSON.parse(
         readFileSync(resolve(d, out, 'package.json'), 'utf8'),

@@ -9,7 +9,7 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { Pax } from 'tar'
 import type { HeaderData } from 'tar'
-import { gzipSync } from 'node:zlib'
+import { brotliCompressSync, gzipSync } from 'node:zlib'
 import {
   checkFs,
   unpack as unpackAsync,
@@ -17,6 +17,7 @@ import {
   unpackSync,
   unpackToStoreSync,
 } from '../src/unpack.ts'
+import type { TarballFormat } from '../src/unpack.ts'
 import { findTarDir } from '../src/find-tar-dir.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
@@ -101,11 +102,18 @@ const gzipped = gzipSync(tarball)
 
 // every case that is pure unpack behavior runs through both writers, so
 // the sync path cannot drift from the async one.
-type Unpacker = (tarData: Buffer, target: string) => Promise<void>
+type Unpacker = (
+  tarData: Buffer,
+  target: string,
+  format?: TarballFormat,
+) => Promise<void>
 type UnpackModule = typeof import('../src/unpack.ts')
 const writers: [string, (m: UnpackModule) => Unpacker][] = [
   ['async', m => m.unpack],
-  ['sync', m => async (b, target) => m.unpackSync(b, target)],
+  [
+    'sync',
+    m => async (b, target, format) => m.unpackSync(b, target, format),
+  ],
 ]
 const real = { unpack: unpackAsync, unpackSync } as UnpackModule
 
@@ -149,6 +157,21 @@ for (const [writer, get] of writers) {
         const d = t.testdir()
         await unpack(gzipSync(tar), d)
         check(t, d)
+      })
+
+      t.test('brotli, declared', async t => {
+        const d = t.testdir()
+        await unpack(brotliCompressSync(tar), d, 'brotli')
+        check(t, d)
+      })
+
+      t.test('brotli is never sniffed', async t => {
+        // no magic bytes to find: an undeclared .tar.br reads as a raw
+        // tar, which is exactly why the format has to be passed in.
+        await t.rejects(
+          () => unpack(brotliCompressSync(tar), t.testdir()),
+          { message: /Invalid tarball/ },
+        )
       })
 
       t.end()
@@ -512,6 +535,21 @@ for (const [writer, get] of writers) {
       })
     })
 
+    t.test('brotli decompression ratio cap', async t => {
+      const bomb = brotliCompressSync(Buffer.alloc(8 * 1024 * 1024))
+      await t.rejects(() => unpack(bomb, t.testdir(), 'brotli'), {
+        message: 'tarball exceeds maximum unpacked size',
+      })
+    })
+
+    t.test('non-bomb brotli errors pass through', async t => {
+      await t.rejects(
+        () =>
+          unpack(Buffer.from('not brotli'), t.testdir(), 'brotli'),
+        { code: /^ERR_/ },
+      )
+    })
+
     t.test('gzip absolute unpacked size ceiling', async t => {
       const prev = process.env.VLT_TAR_MAX_UNPACKED_BYTES
       process.env.VLT_TAR_MAX_UNPACKED_BYTES = '4096'
@@ -729,6 +767,29 @@ t.test('unpackFileSync', async t => {
       unpackFileSync(resolve(d, 'pkg.tgz'), resolve(d, 'out3'), 1e9),
     { message: 'Invalid tarball: not terminated by 1024 null bytes' },
   )
+})
+
+t.test('unpackFileSync, brotli', async t => {
+  const head = Buffer.from('cache head bytes')
+  const br = brotliCompressSync(tarball)
+  const d = t.testdir({
+    'pkg.tar.br': br,
+    'entry.bin': Buffer.concat([head, br]),
+  })
+  unpackFileSync(
+    resolve(d, 'pkg.tar.br'),
+    resolve(d, 'out'),
+    0,
+    'brotli',
+  )
+  t.equal(readFileSync(resolve(d, 'out/package.json'), 'utf8'), pj)
+  unpackFileSync(
+    resolve(d, 'entry.bin'),
+    resolve(d, 'offset'),
+    head.length,
+    'brotli',
+  )
+  t.equal(readFileSync(resolve(d, 'offset/package.json'), 'utf8'), pj)
 })
 
 t.test('sync errors do not leave garbage lying around', async t => {
@@ -1032,6 +1093,19 @@ t.test('unpackToStoreSync', async t => {
       resolve(t.testdir(), 'x'),
     )
     t.strictSame(index.dirs, ['Lib', 'lib'])
+  })
+
+  t.test('brotli', async t => {
+    // the store writer is told the same way unpack() is: nothing in the
+    // bytes says brotli, and a cache entry's key (its url) is the signal.
+    const dir = resolve(t.testdir(), 'br')
+    const { index } = unpackToStoreSync(
+      brotliCompressSync(makeFilesTar({ 'package.json': pj })),
+      dir,
+      'brotli',
+    )
+    t.strictSame(index.files, [['package.json', pj.length, 0]])
+    t.equal(readFileSync(resolve(dir, 'package.json'), 'utf8'), pj)
   })
 
   t.test('scripts', async t => {

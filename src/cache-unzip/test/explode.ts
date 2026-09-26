@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { gzipSync } from 'node:zlib'
+import { brotliCompressSync, gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import t from 'tap'
 import { explode } from '../src/explode.ts'
@@ -143,6 +143,40 @@ t.test('explodes gzipped and raw tarballs', async t => {
     side.ino,
     'sidecar untouched',
   )
+})
+
+t.test('explodes a brotli tarball, keyed by its url', async t => {
+  // brotli bytes carry no signature, so the key -- which is the url the
+  // entry was fetched from -- is the only thing that says `.tar.br`.
+  const br = brotliCompressSync(pkgTar(' brotli'))
+  const brHex = hexOf(br)
+  const key = 'https://reg.io/x/-/x-1.0.0.tar.br'
+  const { dir, store, cache } = await setup(t, { [key]: entry(br) })
+  t.match(await explode(cache, store, [key]), {
+    written: 1,
+    failed: 0,
+  })
+  t.strictSame(
+    JSON.parse(readFileSync(join(store, `${brHex}.json`), 'utf8')),
+    unpackToStoreSync(br, join(dir, 'x'), 'brotli').index,
+  )
+  t.strictSame(
+    tree(join(store, brHex)).map(([f]) => f),
+    tree(join(dir, 'x')).map(([f]) => f),
+  )
+})
+
+t.test('a brotli entry at a .tgz key cannot explode', async t => {
+  // defense in depth for a registry that renamed an artifact: without
+  // the extension nothing declares brotli, so the body reads as a raw
+  // tar and is rejected rather than written as garbage.
+  const br = brotliCompressSync(pkgTar(' brotli'))
+  const key = 'https://reg.io/x/-/x-1.0.0.tgz'
+  const { store, cache } = await setup(t, { [key]: entry(br) })
+  t.match(await explode(cache, store, [key]), {
+    written: 0,
+    failed: 1,
+  })
 })
 
 t.test('redoes an entry without a valid sidecar', async t => {

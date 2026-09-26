@@ -116,10 +116,13 @@ export const loadNodes = (
       }
     }
 
-    const { dev, optional } = getBooleanFlagsFromNum(flags)
+    const { dev, optional, brotli } = getBooleanFlagsFromNum(flags)
     node.options = options
     node.dev = dev
     node.optional = optional
+    // before setResolved(), which needs it to pick the extension for a
+    // node whose `resolved` the lockfile left out
+    node.brotli = brotli
     node.integrity = integrity ?? referenceNode?.integrity
     node.resolved =
       type === 'remote' ? filepath : (

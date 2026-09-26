@@ -4,8 +4,8 @@ import {
   storeIndexPath,
 } from '@vltpkg/tar/store-index'
 import { unpackToStoreSync } from '@vltpkg/tar/unpack'
-import { integrityHex } from '@vltpkg/types'
-import type { Integrity } from '@vltpkg/types'
+import { integrityHex, tarballFormat } from '@vltpkg/types'
+import type { Integrity, TarballFormat } from '@vltpkg/types'
 import {
   lstatSync,
   readdirSync,
@@ -87,10 +87,15 @@ let seq = 0
  * 'skipped' if already present, 'ignored' without a sha512
  * integrity. An entry dir without a valid sidecar is redone. Throws on
  * a bad tarball.
+ *
+ * `format` comes from the entry's key, which is its URL: brotli bytes
+ * carry no signature, so a `.tar.br` would otherwise be mistaken for a
+ * raw tar and explode to garbage.
  */
 const explodeEntry = (
   store: string,
   buf: Buffer,
+  format?: TarballFormat,
 ): number | 'skipped' | 'ignored' => {
   const hex = integrityHex(entryIntegrity(buf))
   if (!hex) return 'ignored'
@@ -106,6 +111,7 @@ const explodeEntry = (
   const { index } = unpackToStoreSync(
     buf.subarray(buf.readUInt32BE(0)),
     tmp,
+    format,
   )
   try {
     // sidecar first: an entry dir without one is a store miss
@@ -163,7 +169,7 @@ export const explode = async (
         continue
       }
       try {
-        const res = explodeEntry(store, buf)
+        const res = explodeEntry(store, buf, tarballFormat(key))
         if (typeof res === 'number') {
           s.exploded.add(key)
           s.written++
