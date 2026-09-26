@@ -690,6 +690,127 @@ t.test('failure of optional node just deletes it', async t => {
   t.equal(extractCalled, false, 'still no extraction')
 })
 
+t.test('unsupported optional subtree is never placed', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { minipass: '^7.1.2' },
+        optionalDependencies: { glob: '11' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const opts = {
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  }
+  const graph = await ideal.build({
+    ...opts,
+    packageInfo: mockPackageInfo,
+    remover: new RollbackRemove(),
+  })
+  const glob = graph.mainImporter.edgesOut.get('glob')?.to
+  const minipass = graph.mainImporter.edgesOut.get('minipass')?.to
+  if (!glob || !minipass) throw new Error('missing glob or minipass')
+  glob.platform = { cpu: ['wasm32'] }
+  const optional = new Set(
+    [...graph.nodes.values()]
+      .filter(n => n.optional)
+      .map(n => n.name),
+  )
+  t.ok(optional.has('path-scurry'), 'glob brings optional deps')
+  t.notOk(optional.has('minipass'), 'shared dep is not optional')
+
+  const extracted: string[] = []
+  const remover = new RollbackRemove()
+  const rm = remover.rm.bind(remover)
+  const existing: string[] = []
+  remover.rm = async (path: string) => {
+    if (lstatSync(path, { throwIfNoEntry: false }))
+      existing.push(path)
+    return rm(path)
+  }
+  await reify({
+    ...opts,
+    packageInfo: createMockPackageInfo({
+      async extract(
+        spec: Spec | string,
+        target: string,
+        options: PackageInfoClientRequestOptions = {},
+      ): Promise<Resolution> {
+        extracted.push(Spec.parse(String(spec)).name)
+        return mockPackageInfo.extract(spec, target, options)
+      },
+    }),
+    graph,
+    allowScripts: ':not(*)',
+    remover,
+  })
+
+  t.strictSame(
+    extracted.filter(n => optional.has(n)),
+    [],
+    'no optional subtree node extracted',
+  )
+  t.ok(
+    existsSync(
+      resolve(
+        projectRoot,
+        'node_modules/.vlt',
+        minipass.id,
+        'node_modules/minipass/package.json',
+      ),
+    ),
+    'shared dep in store',
+  )
+  t.ok(statSync(resolve(projectRoot, 'node_modules/minipass')))
+  t.throws(() => lstatSync(resolve(projectRoot, 'node_modules/glob')))
+  t.throws(() =>
+    lstatSync(resolve(projectRoot, 'node_modules/.vlt', glob.id)),
+  )
+  const hoisted = resolve(
+    projectRoot,
+    'node_modules/.vlt/node_modules',
+  )
+  const links = readdirSync(hoisted).flatMap(n =>
+    n.startsWith('@') ?
+      readdirSync(resolve(hoisted, n)).map(s => `${n}/${s}`)
+    : [n],
+  )
+  t.strictSame(links, ['minipass'], 'only the shared dep hoisted')
+  t.ok(statSync(resolve(hoisted, 'minipass')), 'hoist link resolves')
+  t.strictSame(existing, [], 'nothing on disk moved away')
+
+  const lockfile = JSON.parse(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+  ) as LockfileData
+  t.ok(lockfile.nodes[glob.id], 'lockfile keeps glob')
+  t.ok(
+    lockfile.edges[`${glob.id} path-scurry`],
+    'lockfile keeps glob edges',
+  )
+  const hidden = JSON.parse(
+    readFileSync(
+      resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+      'utf8',
+    ),
+  ) as LockfileData
+  t.notOk(hidden.nodes[glob.id], 'hidden lockfile drops glob')
+  t.notOk(
+    hidden.edges[`${glob.id} path-scurry`],
+    'hidden lockfile drops glob edges',
+  )
+})
+
 t.test('early termination when no changes are needed', async t => {
   const dir = t.testdir({
     cache: {},

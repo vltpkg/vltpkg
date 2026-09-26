@@ -25,6 +25,7 @@ import { deleteEdges } from './delete-edges.ts'
 import { checkNeededBuild } from './check-needed-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
+import { pruneUnsupportedOptional } from './optional-fail.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
@@ -231,6 +232,10 @@ const reify_ = async (
   // any failed/removed optional deps are not reflected in the lockfile
   // data as it is saved.
   const lfData = lockfileData(options)
+
+  // unsupported optional deps are dropped only after that, so the
+  // lockfile keeps them for other platforms
+  pruneUnsupportedOptional(diff)
 
   const actions: (() => Promise<unknown>)[] = addNodes(
     diff,
