@@ -1,8 +1,9 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
-import { statSync } from 'node:fs'
+import { readlinkSync, statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { Edge } from '../../src/edge.ts'
@@ -134,4 +135,64 @@ t.test('reify an edge', async t => {
   await addEdge(rootEdge, scurry, mockRemover, barNode.bins)
   statSync(projectRoot + '/node_modules/bar')
   statSync(projectRoot + '/node_modules/.bin/bar')
+})
+
+t.test('reify a scoped edge', async t => {
+  const fooId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+  const bazId = joinDepIDTuple(['registry', '', '@s/baz@1.0.0'])
+  const bazManifest = {
+    name: '@s/baz',
+    version: '1.0.0',
+    bin: { baz: 'baz.js' },
+  }
+  const projectRoot = t.testdir({
+    node_modules: {
+      '.vlt': {
+        [fooId]: {
+          node_modules: {
+            foo: { 'package.json': JSON.stringify(fooManifest) },
+          },
+        },
+        [bazId]: {
+          node_modules: {
+            '@s': {
+              baz: {
+                'package.json': JSON.stringify(bazManifest),
+                'baz.js': '#!/usr/bin/env node\n',
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  const opts = { projectRoot, graph: {} as GraphLike }
+  const scurry = new PathScurry(projectRoot)
+  const fooNode = new Node(opts, fooId, fooManifest)
+  const bazNode = new Node(opts, bazId, bazManifest)
+  bazNode.bins = { baz: 'baz.js' }
+  const rootNode = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  rootNode.location = '.'
+  const bazPath = bazNode.resolvedLocation(scurry)
+  const linked = (link: string) =>
+    resolve(dirname(link), readlinkSync(link))
+
+  t.intercept(process, 'platform', { value: 'darwin' })
+  for (const from of [fooNode, rootNode]) {
+    const edge = new Edge(
+      'prod',
+      Spec.parse('@s/baz@'),
+      from,
+      bazNode,
+    )
+    await addEdge(edge, scurry, mockRemover, bazNode.bins)
+    const nm = from.nodeModules(scurry)
+    const link = resolve(nm, '@s', 'baz')
+    t.equal(linked(link), bazPath, 'dep link')
+    t.equal(
+      linked(resolve(nm, '.bin', 'baz')),
+      resolve(link, 'baz.js'),
+      'bin link',
+    )
+  }
 })

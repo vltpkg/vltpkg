@@ -1,5 +1,6 @@
 import { statSync } from 'node:fs'
 import { chmod } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
 
@@ -27,9 +28,7 @@ export const binChmod = async (
   const chmods: Promise<void>[] = []
   if (!node.bins) return
   for (const bin of Object.values(node.bins)) {
-    const path = scurry.resolve(
-      `${node.resolvedLocation(scurry)}/${bin}`,
-    )
+    const path = join(node.resolvedLocation(scurry), bin)
     let mode: number
     try {
       mode = statSync(path).mode

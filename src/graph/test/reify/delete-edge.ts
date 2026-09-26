@@ -3,6 +3,7 @@ import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
 import { statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Test } from 'tap'
@@ -185,4 +186,31 @@ t.test('win32', async t => {
   // these not touched, because not windows
   t.throws(() => statSync(fooNM + '/.bin/bar.cmd'))
   t.throws(() => statSync(fooNM + '/.bin/bar.ps1'))
+})
+
+t.test('scoped', async t => {
+  const { deleteEdge } = await t.mockImport<
+    typeof import('../../src/reify/delete-edge.ts')
+  >('../../src/reify/delete-edge.ts')
+  const bazId = joinDepIDTuple(['registry', '', '@s/baz@1.0.0'])
+  const projectRoot = t.testdir({
+    node_modules: {
+      '@s': { baz: { 'package.json': '{}' }, other: {} },
+      '.bin': { baz: 'bin' },
+    },
+  })
+  const opts = { projectRoot, graph: {} as GraphLike }
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  root.location = '.'
+  const baz = new Node(opts, bazId, {
+    name: '@s/baz',
+    version: '1.0.0',
+  })
+  baz.bins = { baz: 'baz.js' }
+  const edge = new Edge('prod', Spec.parse('@s/baz@'), root, baz)
+  await deleteEdge(edge, new PathScurry(projectRoot), mockRemover)
+  const nm = resolve(projectRoot, 'node_modules')
+  t.throws(() => statSync(resolve(nm, '@s', 'baz')))
+  t.throws(() => statSync(resolve(nm, '.bin', 'baz')))
+  statSync(resolve(nm, '@s', 'other'))
 })

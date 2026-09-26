@@ -1,6 +1,7 @@
 import { delimiter, getId, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { resolve } from 'node:path'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
@@ -401,6 +402,67 @@ t.test('nodeModules path and inVltStore flag', t => {
     scurry.resolve(opts.projectRoot, './some/path/node_modules'),
   )
   t.end()
+})
+
+t.test('resolvedLocation memo', async t => {
+  const projectRoot = t.testdir()
+  const opts = { ...options, projectRoot, graph: {} as GraphLike }
+  const scurry = new PathScurry(projectRoot)
+  const id = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+  const node = new Node(opts, id, { name: 'foo', version: '1.2.3' })
+  const expect = (loc: string, s = scurry) =>
+    s.cwd.resolve(loc).fullpath()
+  const def = expect(node.location)
+  const calls = t.capture(scurry.cwd, 'resolve', scurry.cwd.resolve)
+  t.equal(node.resolvedLocation(scurry), def)
+  t.equal(node.resolvedLocation(scurry), def, 'memoized')
+  t.equal(calls().length, 1, 'resolved once')
+  calls.restore()
+
+  node.location = './node_modules/other'
+  t.equal(
+    node.resolvedLocation(scurry),
+    expect('./node_modules/other'),
+    'location setter',
+  )
+  node.setDefaultLocation()
+  t.equal(node.resolvedLocation(scurry), def, 'setDefaultLocation')
+
+  const peerId = joinDepIDTuple([
+    'registry',
+    '',
+    'foo@1.2.3',
+    'peer.aaaaaaaaaaaaaaaa',
+  ])
+  node.setPeerIdentity(peerId, 'peer.aaaaaaaaaaaaaaaa')
+  t.equal(
+    node.resolvedLocation(scurry),
+    expect(`./node_modules/.vlt/${peerId}/node_modules/foo`),
+    'setPeerIdentity',
+  )
+
+  node.setImporterLocation('./ws')
+  t.equal(
+    node.resolvedLocation(scurry),
+    expect('./ws'),
+    'setImporterLocation',
+  )
+
+  const other = new PathScurry(resolve(projectRoot, 'other'))
+  t.equal(
+    node.resolvedLocation(other),
+    expect('./ws', other),
+    'other scurry',
+  )
+  t.equal(node.resolvedLocation(scurry), expect('./ws'))
+
+  const root = scurry.cwd.root.fullpath()
+  node.location = root
+  t.equal(
+    node.nodeModules(scurry),
+    scurry.resolve(root, 'node_modules'),
+    'nodeModules at fs root',
+  )
 })
 
 t.test('optional flag is contagious', t => {
