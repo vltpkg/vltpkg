@@ -3583,6 +3583,46 @@ t.test('brotli tarballs', async t => {
     },
   )
 
+  t.test('a cached body at the url is not the pin', async t => {
+    // the cache is keyed by url, the pin names an artifact: the
+    // url-keyed bytes are never proof of which one, and this path
+    // does not hash them
+    const dir = t.testdir()
+    const cache = `${dir}/cache`
+    const prime = pi({ cache })
+    await prime.extract('brotli@1.0.0', `${dir}/prime`)
+    const rc = await prime.getRegistryClient()
+    await rc.cache.promise()
+
+    const cold = await pi({ cache }).getRegistryClient()
+    t.ok(
+      cold.cachedBody(brURL, { integrity: brAbbrevIntegrity }),
+      'its own pin still takes the fast path',
+    )
+    t.equal(
+      cold.cachedBody(brURL, {
+        integrity: `sha512-${'0'.repeat(86)}==`,
+      }),
+      undefined,
+      'a different pin is not served the url-keyed body',
+    )
+
+    // with the link gone there is nothing left to trust, so the
+    // pinned read misses and request() re-fetches
+    const linked = rc.cache.integrityPath(brAbbrevIntegrity)
+    if (linked) rmSync(linked, { force: true })
+    const colder = await pi({ cache }).getRegistryClient()
+    t.equal(
+      colder.cachedBody(brURL, { integrity: brAbbrevIntegrity }),
+      undefined,
+      'no link, no fast path',
+    )
+    t.ok(
+      colder.cachedBody(brURL),
+      'an unpinned read still uses the url entry',
+    )
+  })
+
   t.test('a mislabelled alternate is rejected', async t => {
     await t.rejects(pi().extract('brotli-bad@1.0.0', t.testdir()), {
       cause: { code: 'EINTEGRITY' },

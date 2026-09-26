@@ -673,13 +673,17 @@ export class RegistryClient {
       // disk underneath it -- benign, tarball urls are immutable.)
       if (this.cache.peek(key)) return undefined
 
-      // same order as the cache's own disk read
+      // a pin reads only the integrity path: cache.set hardlinks every
+      // artifact under its hash, while the key holds whatever was last
+      // fetched from that url. nothing here hashes the body, so a miss
+      // -- which sends the caller to request(), which verifies -- is
+      // the safe answer.
       const paths = new Set<string>()
       try {
         const i = this.cache.integrityPath(integrity)
         if (i) paths.add(i)
       } catch {}
-      paths.add(this.cache.path(key))
+      if (!integrity) paths.add(this.cache.path(key))
 
       for (const path of paths) {
         let buf: Buffer

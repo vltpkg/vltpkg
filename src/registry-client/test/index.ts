@@ -1643,13 +1643,25 @@ t.test('cachedBody', async t => {
     t.strictSame(found?.body, tarball)
   })
 
-  t.test('malformed integrity falls back to the key', async t => {
+  t.test('a pin is never answered from the key', async t => {
     const rc = new RC({ cache: t.testdir() })
     await write(rc, entry(tarHeaders))
-    const found = rc.cachedBody(url, {
-      integrity: 'sha512-nope',
-    })
-    t.equal(found?.path, rc.cache.path(url))
+    // the url entry is there, but proves nothing about which artifact
+    t.equal(
+      rc.cachedBody(url, { integrity: `sha512-${'0'.repeat(86)}==` }),
+      undefined,
+      'a pin we have no link for misses',
+    )
+    t.equal(
+      rc.cachedBody(url, { integrity: 'sha512-nope' }),
+      undefined,
+      'a malformed pin misses too',
+    )
+    t.equal(
+      rc.cachedBody(url)?.path,
+      rc.cache.path(url),
+      'only an unpinned read uses the key',
+    )
   })
 
   t.test('misses', async t => {
