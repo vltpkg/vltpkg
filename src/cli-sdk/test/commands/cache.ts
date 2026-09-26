@@ -715,7 +715,7 @@ t.test('prune-store', async t => {
   // marked, but its dir is gone
   writeFileSync(storeCopiedPath(gone.entry), '')
   rmSync(gone.entry, { recursive: true })
-  // install scripts: always copied, so kept
+  // install scripts: may be copied, so kept
   const buildIndex = storeIndexPath(build.entry)
   writeFileSync(
     buildIndex,

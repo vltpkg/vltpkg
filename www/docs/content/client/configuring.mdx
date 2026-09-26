@@ -251,8 +251,9 @@ packages from it.
   every project.
 - unpack: Unpack each package tarball, skipping the global store.
 
-Packages with install scripts are always copied. An invalid
-`VLT_STORE_LINKER` warns and uses `unpack`. See
+A package is copied right before its install scripts run, so they
+don't change its files in the store. An invalid `VLT_STORE_LINKER`
+warns and uses `unpack`. See
 [Global store](/client/commands/cache#global-store).
 
 Valid options: "auto", "hardlink", "copy", "unpack"

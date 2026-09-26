@@ -375,7 +375,9 @@ export const definition = j
                     - unpack: Unpack each package tarball, skipping the
                       global store.
 
-                    Packages with install scripts are always copied.
+                    A package is copied right before its install
+                    scripts run, so they don't change its files in the
+                    store.
                     An invalid \`VLT_STORE_LINKER\` warns and uses
                     \`unpack\`.`,
       validOptions: storeLinkers,
