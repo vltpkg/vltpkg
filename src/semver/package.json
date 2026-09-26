@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/semver",
   "description": "The semantic version parser used by vlt",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
