@@ -113,9 +113,9 @@ case-insensitive target (`EEXIST`) also return `false`.
 (read + write into a fresh file); `ENOENT` while both the source and
 the target's parent exist (overlayfs cross-layer links) does the same.
 `EMLINK` copies that file only. Other link errors throw. Every file is
-copied with `copy: true` or when the index has `scripts`, so install
-scripts never write into the store. A copy creates the entry's copied
-marker (`<entry>.copied`), once.
+copied with `copy: true`, or when package.json is copied after another
+file was linked: a private package.json means nothing is shared. A
+copy creates the entry's copied marker (`<entry>.copied`), once.
 
 `VLT_STORE_VERIFY=1` checks the linked package.json size against the
 index and removes the entry on a mismatch (debugging aid).
@@ -138,8 +138,8 @@ Sidecar path: `<storeEntry>.json`.
 - `storeEntryLinked(storeEntry, index?)`: true if any file has another
   hardlink, i.e. some `node_modules` uses it.
 - `storeEntryCopied(storeEntry, index?)`: true if the entry has a
-  copied marker or install scripts (always copied), i.e. nlink cannot
-  show use.
+  copied marker or install scripts (copied before they run), i.e.
+  nlink cannot show use.
 - `storeCopiedPath(storeEntry)`, `markStoreEntryCopied(storeEntry)`:
   the copied marker, and its exclusive create.
 - `storeEntryTime(storeEntry)`: sidecar mtime in ms (dir mtime without

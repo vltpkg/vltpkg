@@ -79,8 +79,8 @@ export const storeEntryTime = (storeEntry: string): number =>
 
 /**
  * True if the global store entry has a valid sidecar and dir, and was
- * copied from (marker) or has install scripts (always copied). `index`:
- * the sidecar, if already read.
+ * copied from (marker) or has install scripts (copied before they
+ * run). `index`: the sidecar, if already read.
  */
 export const storeEntryCopied = (
   storeEntry: string,
