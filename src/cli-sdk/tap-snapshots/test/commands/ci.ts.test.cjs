@@ -6,7 +6,7 @@
  */
 'use strict'
 exports[`test/commands/ci.ts > TAP > command execution > should call install with expectLockfile and cleanInstall true 1`] = `
-install expectLockfile=true cleanInstall=true
+install expectLockfile=true cleanInstall=true allowScripts=:not(*)
 
 `
 
@@ -17,6 +17,9 @@ Usage:
 Clean install from lockfile. Deletes node_modules and installs dependencies
 exactly as specified in vlt-lock.json. This is similar to running 'vlt install
 --expect-lockfile' but performs a clean install by removing node_modules first.
+
+Like install, runs no dependency lifecycle scripts unless allowed with
+--allow-scripts; run 'vlt build' afterwards to build packages.
 
   Examples
 

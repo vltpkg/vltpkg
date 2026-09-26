@@ -12,9 +12,10 @@ const Command = await t.mockImport<
 >('../../src/commands/ci.ts', {
   '@vltpkg/graph': {
     async install(opts: any) {
-      log += `install expectLockfile=${opts.expectLockfile} cleanInstall=${opts.cleanInstall}\n`
+      log += `install expectLockfile=${opts.expectLockfile} cleanInstall=${opts.cleanInstall} allowScripts=${opts.allowScripts}\n`
       return {
         graph: {},
+        buildQueue: ['··a@1.0.0'],
       }
     },
   },
@@ -27,7 +28,7 @@ t.test('usage', t => {
 })
 
 t.test('command execution', async t => {
-  await Command.command({
+  const result = await Command.command({
     positionals: [],
     values: {},
     options,
@@ -37,6 +38,22 @@ t.test('command execution', async t => {
     log,
     'should call install with expectLockfile and cleanInstall true',
   )
+  t.strictSame(
+    result.buildQueue,
+    ['··a@1.0.0'],
+    'passes buildQueue through',
+  )
+})
+
+t.test('allow-scripts option overrides default', async t => {
+  await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    get: (k: string) =>
+      k === 'allow-scripts' ? ':root > *' : undefined,
+  } as unknown as LoadedConfig)
+  t.match(log, /allowScripts=:root > \*/)
 })
 
 t.test('views', async t => {
@@ -78,6 +95,7 @@ t.test('command description and examples', t => {
     usageStr.includes('--expect-lockfile'),
     'mentions expect-lockfile',
   )
+  t.ok(usageStr.includes('vlt build'), 'mentions vlt build')
 
   t.end()
 })
