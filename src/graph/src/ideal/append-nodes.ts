@@ -597,7 +597,13 @@ const fetchManifestsForDeps = async (
         // this is the entry point to fetch calls to retrieve manifests
         // from the build ideal graph point of view
       : packageInfo
-          .manifest(spec, { from })
+          // an explicit tag add revalidates before use
+          .manifest(
+            spec,
+            isExplicit ?
+              { from }
+            : { from, backgroundRevalidate: true },
+          )
           .then(manifest => manifest as Manifest | undefined)
           .catch((er: unknown) => {
             // optional deps ignored if inaccessible, but a dep that tried
