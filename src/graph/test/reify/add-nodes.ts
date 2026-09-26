@@ -177,7 +177,24 @@ const diff = {
   },
 } as unknown as Diff
 
-const scurry = new PathScurry(t.testdirName)
+// existing targets get moved away first
+const target = (name: string) => ({
+  [joinDepIDTuple(['registry', '', `${name}@1.2.3`])]: {
+    node_modules: { [name]: {} },
+  },
+})
+const scurry = new PathScurry(
+  t.testdir({
+    node_modules: {
+      '.vlt': {
+        ...target('foo'),
+        ...target('bar'),
+        ...target('failer'),
+        ...target('already-extracted'),
+      },
+    },
+  }),
+)
 
 await Promise.all(
   addNodes(
