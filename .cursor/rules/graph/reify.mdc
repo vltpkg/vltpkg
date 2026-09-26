@@ -14,7 +14,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 1. Load Actual (if not provided) with `loadManifests: true`
 2. Compute `Diff(actual, ideal)` — return early if no changes
 3. Prepare `RollbackRemove` for reversibility
-4. **Extract nodes**: `addNodes()` → fetch/extract into `.vlt` store. Optional deps use `optionalFail()` to prune subgraphs instead of failing
+4. **Extract nodes**: `pruneUnsupportedOptional()` first (after lockfile data captured) drops optional adds failing platform/deprecated check + `gc()`, so they're never extracted/linked. Then `addNodes()` → fetch/extract into `.vlt` store (existing targets moved away first). Optional deps use `optionalFail()` to prune subgraphs instead of failing
 5. **Delete edges**: `deleteEdges()` → remove outdated links + bins
 6. Run extraction+deletion via `callLimit(actions, { limit })` where `limit = Math.max(availableParallelism()-1, 1) * 8`
 7. **Add edges**: `addEdges()` → create symlinks + bin links (Windows: `@vltpkg/cmd-shim`)
@@ -31,7 +31,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 - `delete-edge.ts`/`delete-edges.ts` — remove links + `.bin` entries
 - `internal-hoist.ts` — preferred candidate selection + symlinks
 - `build.ts` — lifecycle scripts, chmod bins
-- `optional-fail.ts` — `removeOptionalSubgraph`, flags `diff.hadOptionalFailures`
+- `optional-fail.ts` — `removeOptionalSubgraph`, flags `diff.hadOptionalFailures`; `pruneUnsupportedOptional` pre-extract platform pass
 - `rollback.ts` — best-effort revert
 - `update-importers-package-json.ts`/`calculate-save-value.ts` — save deps to importers
 

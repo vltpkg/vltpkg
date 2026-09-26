@@ -3,7 +3,6 @@ import type {
   ExtractResolution,
   PackageInfoClient,
 } from '@vltpkg/package-info'
-import { platformCheck } from '@vltpkg/pick-manifest'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { SpecOptions } from '@vltpkg/spec'
 import { asManifest, normalizeManifest } from '@vltpkg/types'
@@ -11,7 +10,7 @@ import { lstatSync } from 'node:fs'
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'
 import type { Node } from '../node.ts'
-import { optionalFail } from './optional-fail.ts'
+import { isUnsupported, optionalFail } from './optional-fail.ts'
 import { removeOptionalSubgraph } from '../remove-optional-subgraph.ts'
 
 /**
@@ -66,21 +65,8 @@ export const extractNode = async (
   )
   const { integrity, resolved } = node
 
-  // Use platform data from node if available (from lockfile), otherwise fall back to manifest
-  const platformData = node.platform ?? manifest
-
-  // Check if we should skip this node due to platform incompatibility or deprecation
-  if (
-    removeOptionalFailedNode &&
-    (manifest.deprecated ||
-      !platformCheck(
-        platformData,
-        process.version,
-        process.platform,
-        process.arch,
-        // libc is auto-detected by platformCheck when not provided
-      ))
-  ) {
+  // skip optional nodes that are deprecated or can't run here
+  if (removeOptionalFailedNode && isUnsupported(node)) {
     removeOptionalFailedNode()
     return {
       success: false,
