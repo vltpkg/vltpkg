@@ -448,6 +448,37 @@ const server = createServer((req, res) => {
     }
     // a vlt packument advertising a brotli alternate, and the artifact
     // it points at. `brotli-404` advertises one the server does not have.
+    case '/brotli-odd': {
+      // an alternate the protocol allows but this client does not use:
+      // the reference is not the .tgz's sibling, so neither the format
+      // nor the lockfile url could be re-derived from it
+      const json = JSON.stringify({
+        name: 'brotli-odd',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'brotli-odd',
+            version: '1.0.0',
+            dist: {
+              tarball: 'brotli-odd/-/brotli-odd-1.0.0.tgz',
+              alternates: [{ kind: 'tar.br', tarball: './artifact' }],
+            },
+          },
+        },
+      })
+      res.setHeader(
+        'content-type',
+        'application/vnd.vlt.packument-v1+json',
+      )
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/brotli-odd/-/brotli-odd-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${tgzAbbrevSha512}:`)
+      return res.end(tgzAbbrev)
+    }
     case '/brotli':
     case '/brotli-404':
     case '/brotli-nodigest':
@@ -3407,6 +3438,31 @@ t.test('brotli tarballs', async t => {
       digestRequired: true,
     })
   })
+
+  t.test(
+    'an alternate that is not the .tgz sibling is ignored',
+    async t => {
+      // brotli bytes carry no signature, and a lockfile node rebuilds
+      // its url from the .tgz by convention -- so an alternate neither
+      // of those can re-derive is left alone rather than mis-unpacked
+      const dir = t.testdir()
+      const res = await pi({ cache: `${dir}/cache` }).extract(
+        'brotli-odd@1.0.0',
+        `${dir}/a`,
+      )
+      t.equal(
+        res.resolved,
+        `${defaultRegistry}brotli-odd/-/brotli-odd-1.0.0.tgz`,
+        'resolved to the gzip tarball',
+      )
+      t.equal(
+        JSON.parse(readFileSync(`${dir}/a/package.json`, 'utf8'))
+          .name,
+        'abbrev',
+        'and it unpacked',
+      )
+    },
+  )
 
   t.test('--no-brotli-tarballs keeps the .tgz', async t => {
     const res = await pi({ 'brotli-tarballs': false }).resolve(

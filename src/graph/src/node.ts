@@ -9,7 +9,8 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import {
-  BROTLI_TARBALL_EXT,
+  brotliTarballName,
+  brotliTarballUrl,
   expandNormalizedManifestSymbols,
   tarballFormat,
 } from '@vltpkg/types'
@@ -38,27 +39,13 @@ export type NodeOptions = SpecOptions & {
 }
 
 /**
- * The absolute URL of a version's Brotli (`.tar.br`) tarball, from the
- * `tar.br` entry in its `dist.alternates`. The entries are references
- * relative to `dist.tarball`, which is absolute by the time a manifest
- * reaches the graph, so a bare filename resolves correctly for scoped and
- * unscoped names alike.
+ * The absolute URL of a version's Brotli (`.tar.br`) tarball. `dist`
+ * arrives here with an absolute `tarball`, so the alternate's relative
+ * reference resolves against it. See {@link brotliTarballUrl} for which
+ * references this client accepts.
  */
-const brotliAlternate = (dist?: Dist): string | undefined => {
-  const { tarball, alternates } = dist ?? {}
-  if (!tarball) return undefined
-  const entry = alternates?.find(
-    a => a.kind === 'tar.br' && !!a.tarball,
-  )
-  if (!entry) return undefined
-  /* c8 ignore start - a malformed reference just means no brotli */
-  try {
-    return new URL(entry.tarball, tarball).href
-  } catch {
-    return undefined
-  }
-  /* c8 ignore stop */
-}
+const brotliAlternate = (dist?: Dist): string | undefined =>
+  brotliTarballUrl(dist?.tarball, dist?.alternates)
 
 export class Node implements NodeLike {
   get [Symbol.toStringTag]() {
@@ -416,7 +403,7 @@ export class Node implements NodeLike {
         // node -- which has no manifest -- spend one flag bit rather
         // than a second URL.
         (brotliAlternate(dist) ??
-        tarball?.replace(/\.tgz$/, BROTLI_TARBALL_EXT))
+        (tarball && brotliTarballName(tarball)))
       : undefined
     if (brotli) {
       this.resolved = brotli

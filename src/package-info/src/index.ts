@@ -23,6 +23,7 @@ import type { Pool, StoreLinker } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import {
   asPackument,
+  brotliTarballUrl,
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
@@ -327,29 +328,17 @@ export class PackageInfoClient {
 
   /**
    * The absolute URL of a version's Brotli (`.tar.br`) tarball, or
-   * undefined when the registry advertised none or `--no-brotli-tarballs`
-   * is set.
-   *
-   * `dist.alternates` entries are references relative to `dist.tarball`
-   * (which is already absolute here, see `absolutizeTarballs`), so a bare
-   * filename resolves correctly for scoped and unscoped names alike.
+   * undefined when the registry advertised none, advertised one this
+   * client does not use (see {@link brotliTarballUrl}), or
+   * `--no-brotli-tarballs` is set. `dist.tarball` is already absolute
+   * here -- see `absolutizeTarballs`.
    */
   #brotliTarball(
     tarball: string,
     alternates: Exclude<Manifest['dist'], undefined>['alternates'],
   ): string | undefined {
     if (this.options['brotli-tarballs'] === false) return undefined
-    const entry = alternates?.find(
-      a => a.kind === 'tar.br' && !!a.tarball,
-    )
-    if (!entry) return undefined
-    /* c8 ignore start - a malformed reference just means no brotli */
-    try {
-      return new URL(entry.tarball, tarball).href
-    } catch {
-      return undefined
-    }
-    /* c8 ignore stop */
+    return brotliTarballUrl(tarball, alternates)
   }
 
   constructor(options: PackageInfoClientOptions = {}) {

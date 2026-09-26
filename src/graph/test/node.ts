@@ -346,6 +346,22 @@ t.test('Node', async t => {
     ],
     ['an empty reference', [{ kind: 'tar.br', tarball: '' }]],
     ['no alternates at all', undefined],
+    // the protocol allows these; this client does not use them,
+    // because setResolved() rebuilds the url from the .tgz by
+    // convention and could not reproduce either one
+    [
+      'a reference with no .tar.br suffix',
+      [{ kind: 'tar.br', tarball: './artifact' }],
+    ],
+    [
+      'a .tar.br somewhere else',
+      [
+        {
+          kind: 'tar.br',
+          tarball: 'https://cdn.example.com/foo-1.0.0.tar.br',
+        },
+      ],
+    ],
   ]
   for (const [what, alternates] of negatives) {
     const n = new Node(

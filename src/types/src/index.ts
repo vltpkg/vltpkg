@@ -1079,6 +1079,52 @@ export const tarballFormat = (
   return url.endsWith(BROTLI_TARBALL_EXT, end) ? 'brotli' : undefined
 }
 
+/**
+ * `https://…/foo-1.2.3.tgz` -> `https://…/foo-1.2.3.tar.br`: the name a
+ * registry gives a version's Brotli alternate, same stem as the `.tgz`
+ * and a different extension.
+ */
+export const brotliTarballName = (tgz: string): string =>
+  tgz.replace(/\.tgz$/, BROTLI_TARBALL_EXT)
+
+/**
+ * The absolute URL of a version's Brotli (`.tar.br`) tarball, from the
+ * `tar.br` entry in its `dist.alternates` -- but only when that entry
+ * resolves to the `.tgz`'s own sibling, i.e. {@link brotliTarballName} of
+ * `tarball`. Anything else reads as no alternate at all.
+ *
+ * `alternates[].tarball` is a reference relative to `dist.tarball`, and
+ * the protocol lets a registry point it anywhere. This client uses only
+ * the conventional name, because two things downstream re-derive it and
+ * both would otherwise be wrong: the format is read back off the URL
+ * suffix (brotli bytes carry no signature to sniff), and a lockfile node
+ * spends a single flag bit instead of a second URL, rebuilding the
+ * address from the `.tgz` by this same convention. Narrowing here, at
+ * the one point where the alternate is chosen, is what makes both of
+ * those derivations sound -- and costs an unusual reference the
+ * optimization rather than the install.
+ */
+export const brotliTarballUrl = (
+  tarball: string | undefined,
+  alternates: Dist['alternates'],
+): string | undefined => {
+  if (!tarball) return undefined
+  const entry = alternates?.find(
+    a => a.kind === 'tar.br' && !!a.tarball,
+  )
+  if (!entry) return undefined
+  try {
+    const href = new URL(entry.tarball, tarball).href
+    return href === new URL(brotliTarballName(tarball)).href ?
+        href
+      : undefined
+    /* c8 ignore start - a malformed reference just means no brotli */
+  } catch {
+    return undefined
+  }
+  /* c8 ignore stop */
+}
+
 export const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
 export const isKeyID = (k: unknown): k is KeyID =>
   typeof k === 'string' && keyIDRE.test(k)
