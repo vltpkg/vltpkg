@@ -1292,9 +1292,9 @@ export class PackageInfoClient {
     const { registry, name } = spec.final
     if (response.contentType.startsWith(VLT_PACKUMENT_MIME)) {
       this.#vltPackuments.add(`${registry}${name}`)
+      /* c8 ignore next - registry specs always have a registry */
+      if (registry) absolutizeTarballs(paku, registry)
     }
-    /* c8 ignore next - registry specs always have a registry */
-    if (registry) absolutizeTarballs(paku, registry)
     return paku
   }
 
@@ -1491,7 +1491,8 @@ export class PackageInfoClient {
 // vlt packuments carry dist.tarball relative to the registry base
 // (`foo/-/foo-1.0.0.tgz`), the form conventionalRegistryTarball builds.
 // Nothing downstream sees a relative URL: the manifest cache, the graph
-// and the lockfile all get the absolute one.
+// and the lockfile all get the absolute one. Other packuments carry
+// absolute URLs, so skip the walk for them.
 const absolutizeTarballs = (paku: Packument, registry: string) => {
   const base = registry.endsWith('/') ? registry : registry + '/'
   for (const { dist } of Object.values(paku.versions)) {

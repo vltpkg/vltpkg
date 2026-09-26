@@ -408,6 +408,23 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
+    // a plain packument is served as is, tarball path included
+    case '/plain-relative': {
+      const json = JSON.stringify({
+        name: 'plain-relative',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'plain-relative',
+            version: '1.0.0',
+            dist: { tarball: 'plain-relative/-/x.tgz' },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     case '/digest/-/digest-1.0.0.tgz': {
       res.setHeader('content-type', 'application/octet-stream')
       res.setHeader('content-length', tgzAbbrev.byteLength)
@@ -3163,6 +3180,15 @@ t.test('no registry configured', async t => {
   await t.rejects(manifest('abbrev@2.0.0', noRegistry), {
     cause: { code: 'ECONFIG' },
   })
+})
+
+t.test('only vlt packuments get absolute tarballs', async t => {
+  const pi = new PackageInfoClient({ ...options, cache: t.testdir() })
+  t.teardown(async () =>
+    (await pi.getRegistryClient()).cache.promise(),
+  )
+  const mani = await pi.manifest('plain-relative@1.0.0')
+  t.equal(mani.dist?.tarball, 'plain-relative/-/x.tgz')
 })
 
 t.test('tarballs labelled with a digest', async t => {
