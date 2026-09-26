@@ -30,6 +30,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 - `add-edge.ts`/`add-edges.ts` — symlinks + bin links
 - `delete-edge.ts`/`delete-edges.ts` — remove links + `.bin` entries
 - `internal-hoist.ts` — preferred candidate selection + symlinks
+- `symlink-sync.ts` — `symlinkSync`, mkdir parent on ENOENT + retry
 - `build.ts` — lifecycle scripts, chmod bins
 - `optional-fail.ts` — `removeOptionalSubgraph`, flags `diff.hadOptionalFailures`
 - `rollback.ts` — best-effort revert
