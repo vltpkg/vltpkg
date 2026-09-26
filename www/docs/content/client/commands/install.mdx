@@ -320,8 +320,11 @@ For more details, see the
   from `package.json`
 - The lockfile (`vlt-lock.json`) ensures reproducible installs across
   environments
-- Use `vlt ci` as a shorthand for `vlt install --expect-lockfile` in
-  CI pipelines
+- Use [`vlt ci`](/client/commands/ci) in CI pipelines: removes
+  `node_modules`, installs exactly from `vlt-lock.json` (like
+  `--expect-lockfile`) and, like `vlt install`, runs no dependency
+  lifecycle scripts unless `--allow-scripts` is set; run `vlt build`
+  after to build packages
 - Peer dependencies are handled automatically with context isolation
   when version conflicts arise
 

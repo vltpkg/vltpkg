@@ -1,0 +1,38 @@
+---
+title: vlt ci
+sidebar:
+  label: ci
+---
+
+Usage:
+
+<Code code="$ vlt ci" title="Terminal" lang="bash" />
+
+Clean install for CI pipelines. Removes `node_modules` and installs
+dependencies exactly as specified in `vlt-lock.json`, failing if the
+lockfile is missing or out of date.
+
+## Lifecycle scripts
+
+Like [`vlt install`](/client/commands/install), `vlt ci` runs **no
+lifecycle scripts** of dependencies by default. To opt in:
+
+<Code
+  code={`# Allow scripts for specific packages
+$ vlt ci --allow-scripts="#esbuild"
+
+# Persist the query for ci in vlt.json
+
+$ vlt config set "command.ci.allow-scripts=#esbuild"
+
+# Or build after install (skips packages with malware alerts)
+
+$ vlt ci && vlt build`} title="Terminal" lang="bash" />
+
+See [`vlt build`](/client/commands/build) for build targets.
+
+## Options
+
+| Flag                      | Description                                      |
+| ------------------------- | ------------------------------------------------ |
+| `--allow-scripts=<query>` | Allow matching packages to run lifecycle scripts |
