@@ -60,14 +60,10 @@ export const addEdge = async (
   bins?: Record<string, string>,
 ) => {
   if (!edge.to) return
-  const binRoot = scurry.resolve(
-    edge.from.nodeModules(scurry),
-    '.bin',
-  )
-  const path = scurry.resolve(
-    edge.from.nodeModules(scurry),
-    edge.spec.name,
-  )
+  const { sep } = scurry.cwd
+  const nm = edge.from.nodeModules(scurry)
+  const binRoot = nm + sep + '.bin'
+  const path = nm + sep + edge.spec.name.replace('/', sep)
   const promises: Promise<unknown>[] = []
   const target = relative(
     dirname(path),
@@ -82,8 +78,8 @@ export const addEdge = async (
 
   if (bins) {
     for (const [key, val] of Object.entries(bins)) {
-      const link = scurry.resolve(binRoot, key)
-      const absTarget = scurry.resolve(path, val)
+      const link = resolve(binRoot, key)
+      const absTarget = resolve(path, val)
       const target = relative(binRoot, absTarget)
       // TODO: bash/cmd/ps1 shims on Windows
       promises.push(

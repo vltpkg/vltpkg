@@ -152,14 +152,15 @@ export const internalHoist = async (
   }
   await Promise.all(removes)
 
+  const hoistPath = hoistDir.fullpath()
+  const vlt = scurry.resolve('node_modules/.vlt')
+  const { sep } = scurry.cwd
+  const native = (n: string) => n.replace('/', sep)
   const symlinks: Promise<void>[] = []
   for (const [name, { name: nodeName, id }] of links) {
-    const target = scurry.resolve(
-      `node_modules/.vlt/${id}/node_modules/${nodeName}`,
-    )
-    const path = scurry.resolve(
-      `node_modules/.vlt/node_modules/${name}`,
-    )
+    const target =
+      vlt + sep + id + sep + 'node_modules' + sep + native(nodeName)
+    const path = hoistPath + sep + native(name)
     if (name.includes('/')) {
       await mkdir(dirname(path), { recursive: true })
     }
