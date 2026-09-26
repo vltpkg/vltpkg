@@ -360,12 +360,23 @@ const unzipRegistered: string[][] = []
 const unzipRegister = (...args: (string | undefined)[]) =>
   unzipRegistered.push(args.filter(a => a !== undefined))
 
-const revalRegistered: [string, 'GET' | 'HEAD', string | URL][] = []
+const revalRegistered: [
+  string,
+  'GET' | 'HEAD',
+  string | URL,
+  (string | string[])?,
+][] = []
 const revalRegister = (
   path: string,
   method: 'GET' | 'HEAD',
   url: string | URL,
-) => revalRegistered.push([path, method, url])
+  accept?: string | string[],
+) =>
+  revalRegistered.push(
+    accept === undefined ?
+      [path, method, url]
+    : [path, method, url, accept],
+  )
 
 t.beforeEach(t => {
   unzipRegistered.length = 0
@@ -1314,6 +1325,45 @@ t.test(
   },
 )
 
+t.test(
+  'forceRevalidate background serves a fresh entry, revalidates later',
+  async t => {
+    dropConnection = false
+    revalRegistered.length = 0
+    const rc = t.context.rc as RegistryClient
+    const key = `${registryURL}/abbrev`
+    await seed(rc, key, '{"cached":true}', '"old-etag"')
+
+    const result = await rc.request(key, {
+      forceRevalidate: 'background',
+      headers: { accept: 'application/x-test' },
+    })
+    t.strictSame(result.json(), { cached: true }, 'served from cache')
+    t.strictSame(
+      revalRegistered,
+      [[dirname(rc.cache.path()), 'GET', key, 'application/x-test']],
+      'revalidated after exit, same representation',
+    )
+  },
+)
+
+t.test(
+  'forceRevalidate background revalidates a stale entry now',
+  async t => {
+    dropConnection = false
+    revalRegistered.length = 0
+    const rc = t.context.rc as RegistryClient
+    const key = `${registryURL}/abbrev`
+    await seed(rc, key, '{"cached":true}', '"old-etag"', 300)
+
+    const result = await rc.request(key, {
+      forceRevalidate: 'background',
+    })
+    t.strictSame(result.json(), { hello: 'world' }, 'got fresh')
+    t.strictSame(revalRegistered, [], 'nothing left for later')
+  },
+)
+
 t.test('a 304 keeps the parsed entry', async t => {
   dropConnection = false
   revalRegistered.length = 0
@@ -1346,16 +1396,22 @@ t.test('a 304 does not memoize a non-JSON entry', async t => {
 
 // 3600: still strictly valid. 300: stale but inside the swr window, the
 // state forceRevalidate skips past and the common one on a warm cache.
-for (const maxAge of [3600, 300]) {
+// 'background' only differs from true within max-age.
+const forcedCases = [
+  [3600, true],
+  [300, true],
+  [300, 'background'],
+] as const
+for (const [maxAge, force] of forcedCases) {
   t.test(
-    `forceRevalidate does not clobber on a non-200 (max-age=${maxAge})`,
+    `forceRevalidate does not clobber on a non-200 (max-age=${maxAge}, ${force})`,
     async t => {
       dropConnection = false
       const rc = t.context.rc as RegistryClient
       const key = `${registryURL}/404-packument`
       await seed(rc, key, '{"cached":true}', '"old-etag"', maxAge)
 
-      const res = await rc.request(key, { forceRevalidate: true })
+      const res = await rc.request(key, { forceRevalidate: force })
       t.equal(res.statusCode, 404, 'the 404 is what the caller sees')
 
       // the good entry survived on disk, for this process and the next
@@ -1371,9 +1427,9 @@ for (const maxAge of [3600, 300]) {
   )
 }
 
-for (const maxAge of [3600, 300]) {
+for (const [maxAge, force] of forcedCases) {
   t.test(
-    `forceRevalidate falls back to cache when offline (max-age=${maxAge})`,
+    `forceRevalidate falls back to cache when offline (max-age=${maxAge}, ${force})`,
     async t => {
       dropConnection = false
       const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
@@ -1381,7 +1437,7 @@ for (const maxAge of [3600, 300]) {
       const key = 'http://localhost:1/abbrev'
       await seed(rc, key, '{"cached":true}', '"old-etag"', maxAge)
 
-      const result = await rc.request(key, { forceRevalidate: true })
+      const result = await rc.request(key, { forceRevalidate: force })
       t.strictSame(
         result.json(),
         { cached: true },
@@ -1390,7 +1446,7 @@ for (const maxAge of [3600, 300]) {
 
       await t.rejects(
         rc.request('http://localhost:1/nothing-cached', {
-          forceRevalidate: true,
+          forceRevalidate: force,
         }),
         { cause: { code: 'EREQUEST' } },
         'still throws with nothing to fall back on',
