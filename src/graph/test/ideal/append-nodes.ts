@@ -1,7 +1,10 @@
 import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
-import type { PackageInfoClient } from '@vltpkg/package-info'
+import type {
+  PackageInfoClient,
+  PackageInfoClientRequestOptions,
+} from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { parse as parseVersion } from '@vltpkg/semver'
@@ -4213,7 +4216,8 @@ t.test(
 
 /**
  * Graph with a locked `foo@1.2.3` and a packageInfo that resolves the
- * `latest` dist-tag to `foo@2.0.0`, recording every fetched spec.
+ * `latest` dist-tag to `foo@2.0.0`, recording every fetched spec and
+ * its options.
  */
 const distTagFixture = (t: Test) => {
   const mainManifest = {
@@ -4239,9 +4243,14 @@ const distTagFixture = (t: Test) => {
   graph.resetEdges()
 
   const fetched: string[] = []
+  const fetchOpts: PackageInfoClientRequestOptions[] = []
   const packageInfo = {
-    async manifest(spec: Spec) {
+    async manifest(
+      spec: Spec,
+      opts: PackageInfoClientRequestOptions,
+    ) {
       fetched.push(String(spec))
+      fetchOpts.push(opts)
       if (spec.final.distTag !== 'latest') {
         throw new Error(`unexpected manifest fetch: ${spec}`)
       }
@@ -4254,7 +4263,7 @@ const distTagFixture = (t: Test) => {
     type: 'prod',
   })
 
-  return { graph, foo, fetched, packageInfo, fooDep }
+  return { graph, foo, fetched, fetchOpts, packageInfo, fooDep }
 }
 
 t.test(
@@ -4317,7 +4326,7 @@ t.test(
 t.test(
   'an explicit dist-tag add re-resolves the tag even when a lock fits',
   async t => {
-    const { graph, foo, fetched, packageInfo, fooDep } =
+    const { graph, foo, fetched, fetchOpts, packageInfo, fooDep } =
       distTagFixture(t)
 
     await appendNodes(
@@ -4341,12 +4350,42 @@ t.test(
     )
 
     t.strictSame(fetched, ['foo@latest'], 'the tag was resolved')
+    t.strictSame(
+      fetchOpts,
+      [{ from: t.testdirName }],
+      'revalidated before use',
+    )
     t.equal(
       graph.mainImporter.edgesOut.get('foo')?.to?.version,
       '2.0.0',
     )
     graph.gc()
     t.notOk(graph.nodes.get(foo.id), 'the locked copy is gone')
+  },
+)
+
+t.test(
+  'a non-explicit dist-tag fetch revalidates in the background',
+  async t => {
+    const { graph, foo, fetched, fetchOpts, packageInfo, fooDep } =
+      distTagFixture(t)
+    // nothing to reuse
+    graph.removeNode(foo)
+
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+    )
+
+    t.strictSame(fetched, ['foo@latest'])
+    t.strictSame(fetchOpts, [
+      { from: t.testdirName, backgroundRevalidate: true },
+    ])
   },
 )
 
