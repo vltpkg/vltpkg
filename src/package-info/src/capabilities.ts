@@ -87,9 +87,10 @@ const fetchCapabilities = async (
     // No `useCache: false`: the registry serves this with a day of
     // max-age, so the RegistryClient disk cache answers it for the rest
     // of the day, including from later processes. One GET per registry
-    // per day, not one per install.
+    // per day, not one per install. A 404 is kept a day too.
     const response = await client.request(url, {
       headers: { accept: 'application/json' },
+      notFoundMaxAge: 86_400,
     })
     if (response.statusCode !== 200) return none
     return asCapabilities(response.json())
