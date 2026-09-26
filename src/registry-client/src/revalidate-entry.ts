@@ -6,7 +6,10 @@ import { userAgent } from '@vltpkg/user-agent'
 import { addHeader } from './add-header.ts'
 import { getTokenByURL } from './auth.ts'
 import { CacheEntry } from './cache-entry.ts'
-import { handleCacheHitResponse } from './handle-304-response.ts'
+import {
+  handleCacheHitResponse,
+  refreshDate,
+} from './handle-304-response.ts'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,
@@ -51,6 +54,17 @@ const readHead = async (
   const entry = CacheEntry.decodeHead(headBuf)
   return entry.statusCode ? entry : undefined
 }
+
+// a 404 answering a cached 404 kept for a set max-age is unchanged:
+// refresh its date like a 304, so that max-age rolls
+const notFoundAgain = (
+  response: Dispatcher.ResponseData,
+  entry: CacheEntry,
+) =>
+  response.statusCode === 404 &&
+  entry.statusCode === 404 &&
+  !!entry.getHeaderString('cache-control') &&
+  refreshDate(response, entry)
 
 export const revalidateEntry = async (
   rc: RegistryClient,
@@ -103,7 +117,10 @@ export const revalidateEntry = async (
         options as Dispatcher.RequestOptions,
       )
 
-      if (handleCacheHitResponse(response, entry)) {
+      if (
+        handleCacheHitResponse(response, entry) ||
+        notFoundAgain(response, entry)
+      ) {
         const newHead = entry.encodeHead()
         if (newHead.byteLength === origHeadSize) {
           await fh.write(newHead, 0, newHead.byteLength, 0)

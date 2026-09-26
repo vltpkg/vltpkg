@@ -452,3 +452,87 @@ t.test('304 without date header uses now', async t => {
   const d = new Date(dec.getHeaderString('date') ?? 0).getTime()
   t.ok(d >= before - 1000, 'date bumped to now')
 })
+
+const notFoundEntry = (date?: string, cc = true) => {
+  const e = new CacheEntry(
+    404,
+    toRawHeaders({
+      'content-type': 'application/json',
+      ...(cc && { 'cache-control': 'max-age=86400' }),
+      ...(date && { date }),
+    }),
+  )
+  e.addBody(Buffer.from('{"error":"Not found"}'))
+  return e
+}
+
+const notFound = (date?: string) =>
+  listen(t, (_req, res) => {
+    res.statusCode = 404
+    if (date) res.setHeader('date', date)
+    else res.sendDate = false
+    res.setHeader('content-type', 'application/json')
+    res.end('{"error":"Not found"}')
+  })
+
+t.test('404 for a cached 404 refreshes its date', async t => {
+  const newDate = new Date('2025-06-01T00:00:00.000Z').toUTCString()
+  const { url } = await notFound(newDate)
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const target = `${url}/-/vlt/capabilities`
+  const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString()
+  await seed(rc, 'GET', target, notFoundEntry(oldDate))
+  const file = rc.cache.path(cacheKey('GET', target))
+  const before = await readFile(file)
+  await revalidateEntry(rc, 'GET', target)
+  const after = await readFile(file)
+  t.equal(after.length, before.length, 'patched in place')
+  const dec = CacheEntry.decode(after)
+  t.equal(dec.statusCode, 404)
+  t.equal(dec.getHeaderString('date'), newDate)
+  t.equal(dec.getHeaderString('cache-control'), 'max-age=86400')
+})
+
+t.test('404 without date refreshes a cached 404 to now', async t => {
+  const { url } = await notFound()
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const target = `${url}/-/vlt/capabilities`
+  const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString()
+  await seed(rc, 'GET', target, notFoundEntry(oldDate))
+  const before = Date.now()
+  await revalidateEntry(rc, 'GET', target)
+  const dec = CacheEntry.decode(
+    await readFile(rc.cache.path(cacheKey('GET', target))),
+  )
+  const d = new Date(dec.getHeaderString('date') ?? 0).getTime()
+  t.ok(d >= before - 1000, 'date bumped to now')
+})
+
+t.test('404 for a cached 200 leaves the entry untouched', async t => {
+  const { url } = await notFound(new Date().toUTCString())
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const target = `${url}/pkg`
+  await seed(
+    rc,
+    'GET',
+    target,
+    jsonEntry({ date: new Date('2020-01-01').toUTCString() }),
+  )
+  const file = rc.cache.path(cacheKey('GET', target))
+  const before = await readFile(file)
+  await revalidateEntry(rc, 'GET', target)
+  t.strictSame(await readFile(file), before)
+})
+
+t.test('404 for a cached 404 without max-age leaves it', async t => {
+  // a default-TTL 404 (e.g. a name not published yet) must age out
+  const { url } = await notFound(new Date().toUTCString())
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const target = `${url}/pkg`
+  const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString()
+  await seed(rc, 'GET', target, notFoundEntry(oldDate, false))
+  const file = rc.cache.path(cacheKey('GET', target))
+  const before = await readFile(file)
+  await revalidateEntry(rc, 'GET', target)
+  t.strictSame(await readFile(file), before)
+})
