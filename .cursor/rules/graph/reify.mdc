@@ -19,7 +19,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 6. Run extraction+deletion via `callLimit(actions, { limit })` where `limit = Math.max(availableParallelism()-1, 1) * 8`
 7. **Add edges**: `addEdges()` → create symlinks + bin links (Windows: `@vltpkg/cmd-shim`)
 8. **Hoist**: `internalHoist()` → `node_modules/.vlt/node_modules/<name>` symlinks. Preference: importer deps > registry > highest version > lexicographic DepID
-9. **Build**: `build()` → lifecycle scripts (preinstall/install/postinstall/prepare), chmod bins
+9. **Build**: `build()` → lifecycle scripts (preinstall/install/postinstall/prepare), chmod bins. Store-linked packages get private copies (`unshare()`) before their scripts run
 10. **Lockfiles**: save main `vlt-lock.json` (`saveData()`), hidden `node_modules/.vlt-lock.json` (`saveHidden()`)
 11. **Cleanup**: gc if optional failures, delete removed nodes, update importer `package.json` if `add/remove` changed deps, confirm rollback
 
@@ -31,6 +31,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 - `delete-edge.ts`/`delete-edges.ts` — remove links + `.bin` entries
 - `internal-hoist.ts` — preferred candidate selection + symlinks
 - `build.ts` — lifecycle scripts, chmod bins
+- `unshare.ts` — replace hardlinked files by private copies before a script runs
 - `optional-fail.ts` — `removeOptionalSubgraph`, flags `diff.hadOptionalFailures`
 - `rollback.ts` — best-effort revert
 - `update-importers-package-json.ts`/`calculate-save-value.ts` — save deps to importers

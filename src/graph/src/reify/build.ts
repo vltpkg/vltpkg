@@ -14,6 +14,7 @@ import { optionalFail } from './optional-fail.ts'
 import { binChmod } from './bin-chmod.ts'
 import { hasBindingGyp } from './binding-gyp.ts'
 import { scriptsManifest } from './scripts-manifest.ts'
+import { unshare } from './unshare.ts'
 
 /**
  * Returns an object mapping registries to the names of the packages built.
@@ -126,17 +127,6 @@ const visit = async (
   // if it has install script or binding.gyp (implicit install), run it
   const runInstall =
     !!(install || preinstall || postinstall) || hasImplicitInstall
-  if (runInstall) {
-    await run({
-      signal,
-      arg0: 'install',
-      ignoreMissing: true,
-      packageJson,
-      cwd: node.resolvedLocation(scurry),
-      projectRoot: node.projectRoot,
-      manifest,
-    })
-  }
 
   // if it's an importer or git, run prepare
   const prepable =
@@ -144,13 +134,29 @@ const visit = async (
   const runPrepare =
     !!(prepare || preprepare || postprepare) && prepable
 
+  // store links share inodes with the global store
+  if ((runInstall || runPrepare) && node.inVltStore())
+    await unshare(dir)
+
+  if (runInstall) {
+    await run({
+      signal,
+      arg0: 'install',
+      ignoreMissing: true,
+      packageJson,
+      cwd: dir,
+      projectRoot: node.projectRoot,
+      manifest,
+    })
+  }
+
   if (runPrepare) {
     await run({
       signal,
       arg0: 'prepare',
       ignoreMissing: true,
       packageJson,
-      cwd: node.resolvedLocation(scurry),
+      cwd: dir,
       projectRoot: node.projectRoot,
       manifest,
     })

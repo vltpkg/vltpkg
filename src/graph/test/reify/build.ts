@@ -864,3 +864,120 @@ t.test('binding.gyp known from the global store index', async t => {
     [['install', 'gyp']],
   )
 })
+
+t.test('scripts leave their store files alone', async t => {
+  const seen: [string, number][] = []
+  const { build } = await t.mockImport<
+    typeof import('../../src/reify/build.ts')
+  >('../../src/reify/build.ts', {
+    '@vltpkg/run': {
+      run: async ({ cwd }: RunOptions) => {
+        const pj = resolve(cwd, 'package.json')
+        seen.push([basename(cwd), FS.statSync(pj).nlink])
+        if (basename(cwd) !== 's') return
+        // a script writing into its own package
+        FS.writeFileSync(resolve(cwd, 'index.js'), 'changed')
+        FS.appendFileSync(pj, '\n')
+      },
+    },
+  })
+  const [sid, lid] = ['s', 'l'].map(n =>
+    joinDepIDTuple(['registry', '', `${n}@1.0.0`]),
+  ) as [DepID, DepID]
+  const scripts = { postinstall: 'x' }
+  const pkg = (name: string) => ({
+    'package.json': JSON.stringify({
+      name,
+      version: '1.0.0',
+      scripts,
+    }),
+    'index.js': 'index',
+  })
+  const dir = t.testdir({
+    store: { s: pkg('s'), l: pkg('l') },
+    proj: {
+      'package.json': JSON.stringify({
+        name: 'proj',
+        version: '1.0.0',
+        dependencies: { s: '1.0.0', l: '1.0.0' },
+        scripts,
+      }),
+      node_modules: {
+        s: t.fixture('symlink', `./.vlt/${sid}/node_modules/s`),
+        l: t.fixture('symlink', `./.vlt/${lid}/node_modules/l`),
+        '.vlt': {
+          [sid]: { node_modules: { s: {} } },
+          [lid]: { node_modules: { l: {} } },
+        },
+      },
+    },
+  })
+  const projectRoot = resolve(dir, 'proj')
+  const at = (id: DepID, name: string, f: string) =>
+    resolve(
+      projectRoot,
+      'node_modules/.vlt',
+      id,
+      'node_modules',
+      name,
+      f,
+    )
+  for (const [id, name] of [
+    [sid, 's'],
+    [lid, 'l'],
+  ] as const) {
+    for (const f of ['package.json', 'index.js']) {
+      FS.linkSync(resolve(dir, 'store', name, f), at(id, name, f))
+    }
+  }
+  // importers are never copied
+  FS.linkSync(
+    resolve(projectRoot, 'package.json'),
+    resolve(dir, 'pj'),
+  )
+  const load = () =>
+    actual.load({
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      projectRoot,
+      loadManifests: true,
+    })
+  const after = load()
+  const before = load()
+  before.removeNode(before.nodes.get(sid)!)
+  before.removeNode(before.nodes.get(lid)!)
+  const ino = (p: string) => FS.statSync(p, { bigint: true }).ino
+
+  await build(
+    new Diff(before, after),
+    new PackageJson(),
+    new PathScurry(projectRoot),
+    new Set([sid]),
+  )
+
+  t.strictSame(seen.sort(), [
+    ['proj', 2],
+    ['s', 1],
+  ])
+  const store = (f: string) => resolve(dir, 'store/s', f)
+  t.equal(FS.readFileSync(store('index.js'), 'utf8'), 'index')
+  t.equal(
+    FS.readFileSync(at(sid, 's', 'index.js'), 'utf8'),
+    'changed',
+  )
+  t.equal(
+    FS.readFileSync(store('package.json'), 'utf8'),
+    JSON.stringify({ name: 's', version: '1.0.0', scripts }),
+  )
+  for (const f of ['package.json', 'index.js']) {
+    t.equal(FS.statSync(store(f)).nlink, 1, `store ${f}`)
+    t.not(ino(store(f)), ino(at(sid, 's', f)), `private ${f}`)
+    t.equal(
+      FS.statSync(at(lid, 'l', f)).nlink,
+      2,
+      `no script, still linked: ${f}`,
+    )
+  }
+  t.equal(FS.statSync(resolve(dir, 'pj')).nlink, 2)
+})
