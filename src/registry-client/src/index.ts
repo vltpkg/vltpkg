@@ -255,12 +255,13 @@ export { userAgent }
 // CDN throttling beyond what reify can consume.
 // HTTP/2 (allowH2) is untested and unjustified while transport CPU is ~1/4
 // of body handling.
+// keepAliveTimeoutThreshold: undici default. Values >= the server's
+// Keep-Alive hint (Node http: timeout=5) reset the socket every response.
 const agentOptions: Agent.Options = {
   bodyTimeout: 600_000,
   headersTimeout: 600_000,
   keepAliveMaxTimeout: 1_200_000,
   keepAliveTimeout: 600_000,
-  keepAliveTimeoutThreshold: 30_000,
   connect: {
     timeout: 600_000,
     keepAlive: true,

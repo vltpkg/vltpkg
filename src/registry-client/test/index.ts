@@ -2,6 +2,7 @@ import type { Cache } from '@vltpkg/cache'
 import { createServer } from 'http'
 import EventEmitter from 'node:events'
 import { linkSync, readFileSync } from 'node:fs'
+import type { AddressInfo } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
@@ -1542,6 +1543,34 @@ t.test('per-request options omit agent knobs', async t => {
   }
   t.equal(second.headersTimeout, 12_345)
   t.equal(second.bodyTimeout, 54_321)
+})
+
+t.test('reuses connections on a short keep-alive hint', async t => {
+  let connections = 0
+  const server = createServer((_req, res) => {
+    res.setHeader('content-type', 'application/json')
+    res.end('{}')
+  })
+  server.keepAliveTimeout = 5_000
+  server.on('connection', () => connections++)
+  await new Promise<void>(res =>
+    server.listen(0, '127.0.0.1', () => res()),
+  )
+  t.teardown(() => {
+    server.closeAllConnections()
+    server.close()
+  })
+  const { port } = server.address() as AddressInfo
+  const rc = t.context.rc as RegistryClient
+  for (let i = 0; i < 5; i++) {
+    const res = await rc.request(`http://127.0.0.1:${port}/x`, {
+      useCache: false,
+    })
+    t.equal(res.statusCode, 200)
+    t.match(res.getHeaderString('keep-alive'), /timeout=5/)
+  }
+  // 2nd request can race the 1st socket's release
+  t.ok(connections <= 2, `${connections} connections for 5 requests`)
 })
 
 t.test('cachedBody', async t => {
