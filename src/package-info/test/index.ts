@@ -127,6 +127,7 @@ const server = createServer((req, res) => {
   if (stablePaku) {
     const [, name = '', filtered] = stablePaku
     stableRequests.push(req.url ?? '')
+    requestOrder.push(req.url ?? '')
     const at = (version: string): Manifest => ({
       name,
       version,
@@ -155,8 +156,7 @@ const server = createServer((req, res) => {
     return res.end(json)
   }
   // Everything below is a registry that does not serve the filter, and so
-  // ignores the unknown parameter and answers the full packument -- what
-  // the client counts on while the capability document is still in flight.
+  // ignores the unknown parameter and answers the full packument.
   switch (req.url?.replace(/\?stable$/, '')) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       abbrevTgzRequests++
@@ -436,6 +436,11 @@ const server = createServer((req, res) => {
     }
     case '/-/vlt/capabilities': {
       capabilitiesRequests++
+      requestOrder.push(req.url)
+      if (!capabilitiesDocument) {
+        res.statusCode = 404
+        return res.end(JSON.stringify({ error: 'not found' }))
+      }
       const json = JSON.stringify(capabilitiesDocument)
       res.setHeader('content-type', 'application/json')
       res.setHeader('cache-control', 'public, max-age=86400')
@@ -478,11 +483,13 @@ let coalescedPackumentAccept: string | undefined
 let abbrevTgzRequests = 0
 let capabilitiesRequests = 0
 let stableRequests: string[] = []
+// capability and `stable-*` packument GETs, in arrival order
+let requestOrder: string[] = []
 let stableDelay = 0
 // No `stable-filter`: most registries serve none, and the packument
 // fixtures here answer the full shape. The suite covering that filter
 // turns it on for its own subtests.
-let capabilitiesDocument: Record<string, unknown> = {
+let capabilitiesDocument: Record<string, unknown> | undefined = {
   manifests: '0.1',
   resolve: '0.1',
   mimeTypes: [
@@ -2848,6 +2855,7 @@ t.test('the ?stable packument filter', async t => {
       'stable-filter': '1.0',
     }
     stableRequests = []
+    requestOrder = []
     stableDelay = 0
   })
 
@@ -2860,6 +2868,11 @@ t.test('the ?stable packument filter', async t => {
         '1.1.0',
       )
       t.strictSame(stableRequests, ['/stable-range?stable'])
+      t.strictSame(
+        requestOrder,
+        ['/-/vlt/capabilities', '/stable-range?stable'],
+        'asked for the document first, once',
+      )
     },
   )
 
@@ -2877,14 +2890,41 @@ t.test('the ?stable packument filter', async t => {
     async t => {
       capabilitiesDocument = withoutFilter
       const pi = client(t)
-      // settle the document first: until it lands the client asks
-      // optimistically, which the next subtest covers
-      await pi.capabilities(defaultRegistry)
       t.equal(
         (await pi.manifest('stable-nofilter@^1.0.0')).version,
         '1.1.0',
       )
-      t.strictSame(stableRequests, ['/stable-nofilter'])
+      t.strictSame(
+        requestOrder,
+        ['/-/vlt/capabilities', '/stable-nofilter'],
+        'waited for the document',
+      )
+    },
+  )
+
+  await t.test(
+    'never asks a registry that 404s the document',
+    async t => {
+      capabilitiesDocument = undefined
+      const pi = client(t)
+      await pi.manifest('stable-first@^1.0.0')
+      await pi.manifest('stable-second@^1.0.0')
+      t.strictSame(stableRequests, [
+        '/stable-first',
+        '/stable-second',
+      ])
+    },
+  )
+
+  await t.test(
+    'plain and stable asks share one fetch without the filter',
+    async t => {
+      capabilitiesDocument = withoutFilter
+      const pi = client(t)
+      const mani = await pi.manifest('stable-both@^1.0.0')
+      const paku = await pi.packument('stable-both@^1.0.0')
+      t.strictSame(mani, paku.versions['1.1.0'], 'same document')
+      t.strictSame(stableRequests, ['/stable-both'], 'fetched once')
     },
   )
 
@@ -2906,6 +2946,7 @@ t.test('the ?stable packument filter', async t => {
         await t.test(name, async t => {
           resetCapabilities()
           stableRequests = []
+          requestOrder = []
           const pi = client(t)
           t.equal((await pi.manifest(spec)).version, version)
           t.notMatch(
@@ -2913,40 +2954,12 @@ t.test('the ?stable packument filter', async t => {
             /stable$/,
             'asked for the full packument',
           )
+          t.notOk(
+            requestOrder.includes('/-/vlt/capabilities'),
+            'did not wait on the document',
+          )
         })
       }
-    },
-  )
-
-  await t.test(
-    'asks optimistically before the document lands',
-    async t => {
-      // no round trip in front of the first packument of a cold install:
-      // a registry that does not know `?stable` ignores it and serves the
-      // full packument, which resolves just as well
-      capabilitiesDocument = withoutFilter
-      const pi = client(t)
-      t.equal(
-        (await pi.manifest('stable-optimistic@^1.0.0')).version,
-        '1.1.0',
-      )
-      t.strictSame(stableRequests, ['/stable-optimistic?stable'])
-    },
-  )
-
-  await t.test(
-    'stops asking once the registry says it has no filter',
-    async t => {
-      capabilitiesDocument = withoutFilter
-      const pi = client(t)
-      // first ask is optimistic, and settles the document behind it
-      await pi.manifest('stable-first@^1.0.0')
-      await pi.capabilities(defaultRegistry)
-      await pi.manifest('stable-second@^1.0.0')
-      t.strictSame(stableRequests, [
-        '/stable-first?stable',
-        '/stable-second',
-      ])
     },
   )
 
