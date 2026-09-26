@@ -65,7 +65,7 @@ If first satisfying node fails peer check, lazy-load `graph.nodesByName.get(name
 ## Error Handling
 
 - **Optional deps**: `removeOptionalSubgraph()` if parent is optional; skip if edge is optional; throw if required
-- **Cycles**: `seen` Set checked before queueing children
+- **Cycles / duplicates**: `seen` marked at enqueue; a node placed by several parents in one level is queued once (first in sorted order)
 - **Nameless deps**: `fixupAddedNames()` for specs like `github:foo/bar`
 
 ## Modifier Integration

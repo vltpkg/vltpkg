@@ -331,6 +331,57 @@ t.test('append different type of dependencies', async t => {
   )
 })
 
+t.test('a shared subtree is expanded once', async t => {
+  // a, b, c -> shared -> mid -> leaf
+  const child: Record<string, string> = {
+    a: 'shared',
+    b: 'shared',
+    c: 'shared',
+    shared: 'mid',
+    mid: 'leaf',
+  }
+  const fetched: Record<string, number> = {}
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      fetched[spec.name] = (fetched[spec.name] ?? 0) + 1
+      const dep = child[spec.name]
+      return {
+        name: spec.name,
+        version: '1.0.0',
+        dependencies: dep ? { [dep]: '^1' } : {},
+      }
+    },
+  } as PackageInfoClient
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: asNormalizedManifest({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { a: '^1', b: '^1', c: '^1' },
+    }),
+  })
+  const deps = ['a', 'b', 'c'].map(name =>
+    asDependency({ spec: Spec.parse(name, '^1'), type: 'prod' }),
+  )
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    deps,
+    new PathScurry(t.testdirName),
+    configData,
+    new Set<DepID>(),
+  )
+  t.equal(fetched.mid, 1, 'mid fetched once')
+  t.equal(fetched.leaf, 1, 'leaf fetched once')
+  t.equal(graph.nodes.size, 7)
+  for (const [from, to] of Object.entries(child)) {
+    const node = [...graph.nodesByName.get(from)!][0]!
+    t.equal(node.edgesOut.get(to)?.to?.name, to, `${from} -> ${to}`)
+  }
+})
+
 t.test('append file type of nodes', async t => {
   const fooManifest = {
     name: 'foo',
