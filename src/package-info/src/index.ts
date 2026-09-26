@@ -159,8 +159,8 @@ export type PackageInfoClientExtractOptions =
     /**
      * When true, indicates that integrity + resolved came from a
      * lockfile (i.e. they were already verified on first install).
-     * Skips the client-side tarball integrity check.
-     * Defaults to false — fresh installs always verify integrity.
+     * Skips re-hashing a refetched body of an already verified url.
+     * Other network bodies are always checked.
      */
     fromLockfile?: boolean
     /**
@@ -540,11 +540,12 @@ export class PackageInfoClient {
             )
           }
 
-          // if it's not trusted already, but valid, start trusting
-          if (
+          // checkIntegrity() hashes the body unless its url is trusted
+          const verified =
             !trustIntegrity &&
             response.checkIntegrity({ spec, url: resolved })
-          ) {
+          // if it's not trusted already, but valid, start trusting
+          if (verified) {
             this.#trustedIntegrities.set(
               r.resolved,
               response.integrity,
@@ -554,19 +555,12 @@ export class PackageInfoClient {
           const buf = response.buffer()
 
           if (r.integrity) {
-            // Verify network-delivered tarball bytes against dist.integrity.
-            // Skip cache-served bodies: they were verified on the fetch that
-            // populated the cache, and cache-unzip rewrites them un-gzipped
-            // so the gzip-hash can never match. Skip lockfile-sourced
-            // integrity: it was verified on first install, and the registry
-            // client hashes every wire body against what we asked for
-            // anyway -- before it caches it, whatever the format.
-            if (!fromLockfile && !response.fromCache) {
+            // hash only network bytes checkIntegrity() skipped (trusted
+            // url). cache bodies were verified when cached.
+            if (!verified && !fromLockfile && !response.fromCache) {
               const hash = createHash('sha512')
               hash.update(buf)
               const computed: Integrity = `sha512-${hash.digest('base64')}`
-              /* c8 ignore start - defense-in-depth: registry client's
-               * checkIntegrity() usually catches mismatches first. */
               if (computed !== r.integrity) {
                 throw error('Tarball integrity check failed', {
                   code: 'EINTEGRITY',
@@ -576,7 +570,6 @@ export class PackageInfoClient {
                   found: computed,
                 })
               }
-              /* c8 ignore stop */
             }
           } else if (response.fromCache) {
             // the hash the body was stored under
@@ -869,23 +862,22 @@ export class PackageInfoClient {
             )
           }
 
-          // if we don't already trust it, but it's valid, start
-          // trusting it
-          if (
+          const verified =
             !trustIntegrity &&
             response.checkIntegrity({ spec, url: tarball })
-          ) {
+          // if we don't already trust it, but it's valid, start
+          // trusting it
+          if (verified) {
             this.#trustedIntegrities.set(tarball, response.integrity)
           }
 
           const buf = response.buffer()
 
-          // Same as extract(): only hash network-delivered bodies.
-          if (integrity && !response.fromCache) {
+          // Same as extract()
+          if (integrity && !verified && !response.fromCache) {
             const hash = createHash('sha512')
             hash.update(buf)
             const computed: Integrity = `sha512-${hash.digest('base64')}`
-            /* c8 ignore start - defense-in-depth (see extract) */
             if (computed !== integrity) {
               throw error('Tarball integrity check failed', {
                 code: 'EINTEGRITY',
@@ -895,7 +887,6 @@ export class PackageInfoClient {
                 found: computed,
               })
             }
-            /* c8 ignore stop */
           }
 
           return buf

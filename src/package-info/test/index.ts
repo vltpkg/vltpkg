@@ -94,6 +94,10 @@ const tgzAbbrev = readFileSync(fixtures + '/abbrev-2.0.0.tgz')
 const tgzAbbrevSha512 = createHash('sha512')
   .update(tgzAbbrev)
   .digest('base64')
+const tarAbbrev = tgzAbbrevUnzipped()
+const tarAbbrevSha512 = createHash('sha512')
+  .update(tarAbbrev)
+  .digest('base64')
 const tgzFile = String(
   pathToFileURL(pathResolve(fixtures, 'abbrev-2.0.0.tgz')),
 )
@@ -321,9 +325,7 @@ const server = createServer((req, res) => {
       return res.end(json)
     }
     case '/corrupted-no-header/-/corrupted-no-header-1.0.0.tgz': {
-      // Serve a corrupted tarball WITHOUT an integrity response
-      // header. The registry client won't verify integrity at its
-      // level, but the client-side sha512 check will catch it.
+      // corrupted, no integrity header: checked against dist.integrity
       const corrupted = Buffer.from(tgzAbbrev)
       corrupted[100] = (corrupted[100]! ^ 0xff) & 0xff
       corrupted[101] = (corrupted[101]! ^ 0xff) & 0xff
@@ -396,6 +398,43 @@ const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/json')
       res.setHeader('content-length', json.length)
       return res.end(json)
+    }
+    // flaky: corrupt body while flakyCorrupt is set. plain: uncompressed tar
+    case '/flaky':
+    case '/plain': {
+      const name = req.url.replace(/\?stable$/, '').slice(1)
+      const json = JSON.stringify({
+        name,
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name,
+            version: '1.0.0',
+            dist: {
+              tarball: `${defaultRegistry}${name}/-/${name}-1.0.0.tgz`,
+              integrity:
+                name === 'plain' ?
+                  `sha512-${tarAbbrevSha512}`
+                : pakuAbbrev.versions['2.0.0'].dist.integrity,
+            },
+          },
+        },
+      })
+      res.setHeader('content-type', 'application/json')
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/flaky/-/flaky-1.0.0.tgz': {
+      const body = Buffer.from(tgzAbbrev)
+      if (flakyCorrupt) body[100] = (body[100]! ^ 0xff) & 0xff
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', body.byteLength)
+      return res.end(body)
+    }
+    case '/plain/-/plain-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tarAbbrev.byteLength)
+      return res.end(tarAbbrev)
     }
     // vlt packuments: no dist.integrity, registry-relative tarball paths
     case '/digest':
@@ -570,6 +609,7 @@ const server = createServer((req, res) => {
 
 const notFoundURLs: string[] = []
 let corruptedOnceServed = 0
+let flakyCorrupt = false
 let movingRequests = 0
 let movingLatest = '1.0.0'
 let coalescedPackumentRequests = 0
@@ -1224,10 +1264,7 @@ t.test('registry tarball integrity verification', async t => {
         ...options,
         cache: dir + '/cache',
       })
-      // The tarball retry may cause the final error to come from
-      // the registry client's checkIntegrity (which throws
-      // "Integrity check failure") rather than our client-side
-      // sha512 check ("Tarball integrity check failed").
+      // rejected by the registry client's checkIntegrity()
       await t.rejects(tb.tarball('corrupted@1.0.0'), {
         cause: { code: 'EINTEGRITY' },
       })
@@ -1238,12 +1275,9 @@ t.test('registry tarball integrity verification', async t => {
   )
 
   await t.test(
-    'extract throws EINTEGRITY via client-side sha512 check',
+    'extract throws EINTEGRITY without integrity header',
     async t => {
-      // The corrupted-no-header endpoint does NOT send an integrity
-      // response header, so the registry client's checkIntegrity()
-      // has nothing to check. The client-side sha512 check in
-      // extract() catches the mismatch instead.
+      // no integrity header: checked against dist.integrity anyway
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
       unload()
@@ -1257,14 +1291,14 @@ t.test('registry tarball integrity verification', async t => {
           dir + '/corrupted-no-header',
         ),
         { cause: { code: 'EINTEGRITY' } },
-        'should throw EINTEGRITY via sha512 check',
+        'should throw EINTEGRITY',
       )
       await (await pi.getRegistryClient()).cache.promise()
     },
   )
 
   await t.test(
-    'tarball() throws EINTEGRITY via client-side sha512 check',
+    'tarball() throws EINTEGRITY without integrity header',
     async t => {
       const dir = t.testdir()
       const tb = new PackageInfoClient({
@@ -1323,11 +1357,8 @@ t.test('registry tarball integrity verification', async t => {
   )
 
   await t.test(
-    'extract skips integrity check when fromLockfile is true',
+    'extract with fromLockfile skips only a trusted refetch hash',
     async t => {
-      // When fromLockfile is explicitly set, the client-side sha512
-      // check is skipped because the integrity was already verified
-      // on first install.
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
       unload()
@@ -1466,6 +1497,130 @@ t.test('registry tarball integrity verification', async t => {
       await (await pi.getRegistryClient()).cache.promise()
     },
   )
+})
+
+t.test('network tarball hashed once', async t => {
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  // byteLength of each sha512 input
+  const hashed: number[] = []
+  const crypto = await import('node:crypto')
+  const countingHash = (alg: string) => {
+    const h = crypto.createHash(alg)
+    return {
+      update(d: string | NodeJS.ArrayBufferView) {
+        if (alg === 'sha512' && typeof d !== 'string')
+          hashed.push(d.byteLength)
+        h.update(d)
+        return this
+      },
+      digest: (enc: 'base64' | 'hex') => h.digest(enc),
+    }
+  }
+  const { PackageInfoClient } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    'node:crypto': { ...crypto, createHash: countingHash },
+  })
+  // hashes of a `len` bytes body since the last call
+  const count = (len: number) => {
+    const n = hashed.filter(l => l === len).length
+    hashed.length = 0
+    return n
+  }
+  const clients: InstanceType<typeof PackageInfoClient>[] = []
+  const client = () => {
+    const c = new PackageInfoClient({
+      ...options,
+      cache: `${dir}/cache${clients.length}`,
+    })
+    clients.push(c)
+    return c
+  }
+
+  await client().extract('abbrev@2', dir + '/extract')
+  t.equal(count(tgzAbbrev.byteLength), 1, 'extract')
+
+  await client().tarball('abbrev@2')
+  t.equal(count(tgzAbbrev.byteLength), 1, 'tarball')
+
+  const re = client()
+  await re.tarball('abbrev@2', { useCache: false })
+  t.equal(count(tgzAbbrev.byteLength), 1, 'first fetch')
+  t.strictSame(
+    await re.tarball('abbrev@2', { useCache: false }),
+    tgzAbbrev,
+  )
+  t.equal(count(tgzAbbrev.byteLength), 1, 'trusted refetch')
+
+  await client().extract('plain@1.0.0', dir + '/plain')
+  t.equal(count(tarAbbrev.byteLength), 1, 'uncompressed body')
+  t.match(
+    JSON.parse(readFileSync(dir + '/plain/package.json', 'utf8')),
+    { name: 'abbrev', version: '2.0.0' },
+  )
+
+  for (const c of clients)
+    await (await c.getRegistryClient()).cache.promise()
+})
+
+t.test('trusted refetch is verified', async t => {
+  t.afterEach(() => {
+    flakyCorrupt = false
+  })
+  const failed = {
+    message: 'Tarball integrity check failed',
+    cause: { code: 'EINTEGRITY' },
+  }
+  // verified and trusted, but not cached: the next fetch is trusted
+  const trusted = async (t: Test) => {
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(dir)
+    unload()
+    const pi = new PackageInfoClient({
+      ...options,
+      cache: dir + '/cache',
+    })
+    t.strictSame(
+      await pi.tarball('flaky@1.0.0', { useCache: false }),
+      tgzAbbrev,
+    )
+    return { dir, pi }
+  }
+
+  t.test('extract', async t => {
+    const { dir, pi } = await trusted(t)
+    await pi.extract('flaky@1.0.0', dir + '/ok')
+    t.match(
+      JSON.parse(readFileSync(dir + '/ok/package.json', 'utf8')),
+      { name: 'abbrev', version: '2.0.0' },
+    )
+    await (await pi.getRegistryClient()).cache.promise()
+  })
+
+  t.test('extract corrupt', async t => {
+    const { dir, pi } = await trusted(t)
+    flakyCorrupt = true
+    await t.rejects(pi.extract('flaky@1.0.0', dir + '/bad'), failed)
+    await (await pi.getRegistryClient()).cache.promise()
+  })
+
+  t.test('tarball', async t => {
+    const { pi } = await trusted(t)
+    t.strictSame(
+      await pi.tarball('flaky@1.0.0', { useCache: false }),
+      tgzAbbrev,
+    )
+    await (await pi.getRegistryClient()).cache.promise()
+  })
+
+  t.test('tarball corrupt', async t => {
+    const { pi } = await trusted(t)
+    flakyCorrupt = true
+    await t.rejects(pi.tarball('flaky@1.0.0'), failed)
+    await (await pi.getRegistryClient()).cache.promise()
+  })
 })
 
 const tarballURL = `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`
