@@ -925,16 +925,16 @@ export class RegistryClient {
         (result.statusCode === 200 && !result.isJSON ?
           result.integrityActual
         : undefined)
-      const buffer = result.encode()
-      this.cache.set(
-        key,
-        Buffer.from(
-          buffer.buffer,
-          buffer.byteOffset,
-          buffer.byteLength,
-        ),
-        { integrity },
+      const encoded = result.encode()
+      const stored = Buffer.from(
+        encoded.buffer,
+        encoded.byteOffset,
+        encoded.byteLength,
       )
+      this.cache.set(key, stored, { integrity })
+      // a 304 keeps the parsed entry
+      if (result === entry && entry.isJSON)
+        this.#decoded.set(stored, entry)
     }
     return result
   }

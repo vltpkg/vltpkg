@@ -1236,11 +1236,12 @@ const seed = async (
   body: string,
   etagHeader: string,
   maxAge = 3600,
+  contentType = 'application/json',
 ) => {
   const entry = new CacheEntry(
     200,
     toRawHeaders({
-      'content-type': 'application/json',
+      'content-type': contentType,
       date: new Date(Date.now() - 20 * 60 * 1000).toUTCString(),
       'cache-control': `max-age=${maxAge}`,
       etag: etagHeader,
@@ -1312,6 +1313,36 @@ t.test(
     )
   },
 )
+
+t.test('a 304 keeps the parsed entry', async t => {
+  dropConnection = false
+  revalRegistered.length = 0
+  const rc = t.context.rc as RegistryClient
+  const key = `${registryURL}/abbrev`
+  // stale, and matches the mock's etag, so the conditional GET 304s
+  await seed(rc, key, '{"cached":true}', etag, 300)
+
+  const r1 = await rc.request(key, { forceRevalidate: true })
+  t.strictSame(r1.json(), { cached: true })
+  const r2 = await rc.request(key)
+  t.equal(r2, r1, 'rewritten buffer was not decoded again')
+  t.equal(r2.valid, true, 'fresh after the 304')
+  t.strictSame(revalRegistered, [], 'served, not stale')
+})
+
+t.test('a 304 does not memoize a non-JSON entry', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+  const key = `${registryURL}/abbrev`
+  await seed(rc, key, 'not json', etag, 300, 'text/plain')
+
+  const r1 = await rc.request(key, { forceRevalidate: true })
+  t.equal(r1.text(), 'not json')
+  const r2 = await rc.request(key)
+  t.not(r2, r1, 'decoded again, like any non-JSON hit')
+  t.equal(r2.text(), 'not json')
+  t.equal(r2.valid, true, 'fresh after the 304')
+})
 
 // 3600: still strictly valid. 300: stale but inside the swr window, the
 // state forceRevalidate skips past and the common one on a warm cache.
