@@ -425,6 +425,7 @@ jobs:
         run: |
           commit="$(git rev-parse HEAD~1)"
           VLT="$(pwd)/scripts/bins/vlt"
+          failed=()
           for dir in $(git diff --name-only "$commit" HEAD | grep -oP '^(src|infra)/[^/]+' | sort -u); do
             if [[ -f "$dir/package.json" ]]; then
               is_private=$(jq -r '.private // false' "$dir/package.json")
@@ -442,7 +443,25 @@ jobs:
                 renamed=true
               fi
               echo "Publishing $dir to vlt registry..."
-              (cd "$dir" && $VLT publish --access=public)
+              # This job is rerun by hand when the mirror fails, and a rerun
+              # re-walks every changed workspace, so whatever an earlier attempt
+              # got through comes back as a 409: that is the mirror already
+              # holding what we were about to send, which is the outcome we
+              # wanted. Keep going either way -- under `bash -e` a bare failure
+              # here aborts the loop, and since the CLI sorts first, one stale
+              # 409 on it used to skip every workspace behind it.
+              log="$(mktemp)"
+              if (cd "$dir" && $VLT publish --access=public) > "$log" 2>&1; then
+                cat "$log"
+              elif grep -qE '409 Conflict|already exists' "$log"; then
+                cat "$log"
+                echo "Already mirrored, skipping: $package_name"
+              else
+                cat "$log"
+                echo "::error::Failed to publish $package_name to the vlt registry"
+                failed+=("$package_name")
+              fi
+              rm -f "$log"
               if [[ "$renamed" == "true" ]]; then
                 echo "Restoring original package name: $package_name"
                 jq --arg n "$package_name" '.name = $n' "$dir/package.json" > "$dir/package.json.tmp"
@@ -450,6 +469,10 @@ jobs:
               fi
             fi
           done
+          if (( ${#failed[@]} )); then
+            echo "Failed to publish to the vlt registry: ${failed[*]}"
+            exit 1
+          fi
         env:
           # VLT_REGISTRY sets the publish target and VLT_TOKEN is used for
           # auth when VLT_REGISTRY matches the request origin (see auth.ts)
