@@ -14,7 +14,8 @@ import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
 import assert from 'node:assert'
 import type { NormalizedManifest } from '@vltpkg/types'
-import { dirname, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
 import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
@@ -211,6 +212,32 @@ const getPublishConfig = (
   return undefined
 }
 
+/**
+ * The readme fields npm's CLI puts in a publish payload, read out of the
+ * files that were just packed. Registries serve this as the package's front
+ * page, so a payload without it leaves the page blank even though the readme
+ * is sitting inside the tarball.
+ *
+ * npm takes the readme at the package root and prefers the markdown one; a
+ * package without a readme gets no fields at all.
+ */
+const readPublishReadme = (
+  packDir: string,
+  files: string[],
+): { readme: string; readmeFilename: string } | undefined => {
+  const readmes = files.filter(file =>
+    /^readme(\.[^.]*)?$/i.test(file),
+  )
+  const readmeFilename =
+    readmes.find(file => /\.m?a?r?k?d?o?w?n?$/i.test(file)) ??
+    readmes[0]
+  if (!readmeFilename) return undefined
+  return {
+    readme: readFileSync(join(packDir, readmeFilename), 'utf8'),
+    readmeFilename,
+  }
+}
+
 const commandSingle = async (
   location: string,
   conf: LoadedConfig,
@@ -277,6 +304,7 @@ const commandSingle = async (
     integrity,
     shasum,
     resolvedManifest,
+    packDir,
   } = await packTarball(updatedManifest, manifestDir, conf)
 
   await run({
@@ -299,6 +327,7 @@ const commandSingle = async (
     versions: {
       [version]: {
         ...resolvedManifest,
+        ...readPublishReadme(packDir, files),
         _id: `${name}@${version}`,
         _nodeVersion: process.versions.node,
         dist: {
