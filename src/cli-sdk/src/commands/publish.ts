@@ -212,6 +212,10 @@ const getPublishConfig = (
   return undefined
 }
 
+/** Of several readmes at the package root, npm prefers the markdown one. */
+const README_MARKDOWN_EXTENSION =
+  /\.(?:md|markdown|mdown|mdwn|mkd|mkdn)$/i
+
 /**
  * The readme fields npm's CLI puts in a publish payload, read out of the
  * files that were just packed. Registries serve this as the package's front
@@ -229,7 +233,7 @@ const readPublishReadme = (
     /^readme(\.[^.]*)?$/i.test(file),
   )
   const readmeFilename =
-    readmes.find(file => /\.m?a?r?k?d?o?w?n?$/i.test(file)) ??
+    readmes.find(file => README_MARKDOWN_EXTENSION.test(file)) ??
     readmes[0]
   if (!readmeFilename) return undefined
   return {
