@@ -1,8 +1,9 @@
 import fs, {
+  fstatSync,
+  openSync,
   readFileSync,
   renameSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from 'node:fs'
 import { resolve } from 'node:path'
@@ -63,9 +64,9 @@ t.test(
     >('../src/store-index.ts', {
       'node:fs': {
         ...fs,
-        readFileSync: (file: string) => {
+        readFileSync: (file: string | number, enc?: string) => {
           reads++
-          return readFileSync(file, 'utf8')
+          return readFileSync(file, enc as 'utf8')
         },
       },
     })
@@ -81,6 +82,8 @@ t.test(
     t.strictSame(second, valid)
     second.files.length = 0
     t.strictSame(cache.read(entry), valid)
+    // The identity check still opens and fstats the sidecar, but a
+    // hit never re-reads or re-parses its bytes.
     t.equal(reads, 1)
   },
 )
@@ -94,9 +97,9 @@ t.test(
     >('../src/store-index.ts', {
       'node:fs': {
         ...fs,
-        readFileSync: (file: string) => {
+        readFileSync: (file: string | number, enc?: string) => {
           reads++
-          return readFileSync(file, 'utf8')
+          return readFileSync(file, enc as 'utf8')
         },
       },
     })
@@ -106,7 +109,9 @@ t.test(
       'b.json': text,
       'c.json': text,
     })
-    const cache = new StoreIndexCache(Buffer.byteLength(text) * 2)
+    const cache = new StoreIndexCache(
+      BigInt(Buffer.byteLength(text)) * 2n,
+    )
     for (const name of ['a', 'b', 'c', 'c', 'b', 'a']) {
       t.strictSame(cache.read(resolve(d, name)), valid)
     }
@@ -119,14 +124,9 @@ t.test(
 )
 
 t.test(
-  'cache handles stat failures and concurrent publication',
+  'cache handles open failures and concurrent publication',
   async t => {
-    for (const mode of [
-      'first-error',
-      'after-error',
-      'after-missing',
-      'changed',
-    ]) {
+    for (const mode of ['first-error', 'changed']) {
       await t.test(mode, async t => {
         let calls = 0
         const { StoreIndexCache } = await t.mockImport<
@@ -134,21 +134,22 @@ t.test(
         >('../src/store-index.ts', {
           'node:fs': {
             ...fs,
-            statSync: (file: string) => {
+            openSync: (file: string, flags: string) => {
               calls++
-              if (
-                mode === 'first-error' ||
-                (mode === 'after-error' && calls % 2 === 0)
-              ) {
-                throw Object.assign(new Error('stat failed'), {
+              if (mode === 'first-error' && calls === 1) {
+                throw Object.assign(new Error('open failed'), {
                   code: 'EACCES',
                 })
               }
-              if (mode === 'after-missing' && calls % 2 === 0)
-                return undefined
-              const stat = statSync(file, { bigint: true })
-              return mode === 'changed' && calls % 2 === 0 ?
-                  { ...stat, ino: stat.ino + 1n }
+              return openSync(file, flags)
+            },
+            fstatSync: (fd: number) => {
+              const stat = fstatSync(fd, { bigint: true })
+              // A different identity every other read means the
+              // cache can never serve the second read from the
+              // first read's retained bytes.
+              return mode === 'changed' ?
+                  { ...stat, ino: stat.ino + BigInt(calls) }
                 : stat
             },
           },
@@ -157,7 +158,7 @@ t.test(
         const cache = new StoreIndexCache()
         t.strictSame(cache.read(resolve(d, 'entry')), valid)
         t.strictSame(cache.read(resolve(d, 'entry')), valid)
-        t.equal(calls, mode === 'first-error' ? 2 : 4)
+        t.equal(calls, 2)
       })
     }
   },

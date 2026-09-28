@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { isManifest, normalizeBinPaths } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
-import { readFileSync, statSync } from 'node:fs'
+import { closeSync, fstatSync, openSync, readFileSync } from 'node:fs'
 import type { BigIntStats } from 'node:fs'
 import { debuglog } from 'node:util'
 
@@ -117,6 +117,28 @@ const copyIndex = (index: StoreIndex): StoreIndex => ({
   ...(index.bins ? { bins: { ...index.bins } } : {}),
 })
 
+/**
+ * Read and validate a sidecar from bytes; shared by the path reader
+ * and the fd-based cache reader.
+ */
+const parseStoreIndex = (
+  text: string,
+  storeEntry: string,
+): StoreIndex | undefined => {
+  let index: unknown
+  try {
+    index = JSON.parse(text)
+  } catch (er) {
+    if ((er as NodeJS.ErrnoException).code !== 'ENOENT') {
+      debug('global store: invalid index', storeEntry)
+    }
+    return undefined
+  }
+  if (isStoreIndex(index)) return index
+  debug('global store: invalid index', storeEntry)
+  return undefined
+}
+
 /** Reuse validated sidecars while their file identity is unchanged. */
 export class StoreIndexCache {
   #entries = new Map<
@@ -131,43 +153,43 @@ export class StoreIndexCache {
     this.#maxBytes = BigInt(maxBytes)
   }
 
+  /**
+   * Open, fstat, and read the sidecar through one descriptor, so the
+   * identity stamp and the bytes always come from the same file even
+   * if a publisher swaps or restores sidecars mid-read.
+   */
   read(storeEntry: string): StoreIndex | undefined {
-    let stat: BigIntStats | undefined
+    let fd: number
     try {
-      stat = statSync(storeIndexPath(storeEntry), {
-        bigint: true,
-        throwIfNoEntry: false,
-      })
+      fd = openSync(storeIndexPath(storeEntry), 'r')
     } catch {
       this.#delete(storeEntry)
       return readStoreIndex(storeEntry)
     }
-    const cached = this.#entries.get(storeEntry)
-    if (stat && cached && sameFile(stat, cached.stat)) {
-      return copyIndex(cached.index)
-    }
-    this.#delete(storeEntry)
-    const index = readStoreIndex(storeEntry)
-    if (!stat || !index || stat.size > this.#maxBytes) return index
-
-    // A concurrent publisher must not associate new bytes with an old stamp.
-    let after: BigIntStats | undefined
     try {
-      after = statSync(storeIndexPath(storeEntry), {
-        bigint: true,
-        throwIfNoEntry: false,
-      })
-    } catch {
-      return index
+      const stat = fstatSync(fd, { bigint: true })
+      const cached = this.#entries.get(storeEntry)
+      if (cached && sameFile(stat, cached.stat)) {
+        return copyIndex(cached.index)
+      }
+      this.#delete(storeEntry)
+      const index = parseStoreIndex(
+        readFileSync(fd, 'utf8'),
+        storeEntry,
+      )
+      if (!index || stat.size > this.#maxBytes) return index
+      for (const key of this.#entries.keys()) {
+        if (this.#bytes + stat.size <= this.#maxBytes) break
+        this.#delete(key)
+      }
+      this.#entries.set(storeEntry, { stat, index })
+      this.#bytes += stat.size
+      return copyIndex(index)
+    } finally {
+      try {
+        closeSync(fd)
+      } catch {}
     }
-    if (!after || !sameFile(stat, after)) return index
-    for (const key of this.#entries.keys()) {
-      if (this.#bytes + stat.size <= this.#maxBytes) break
-      this.#delete(key)
-    }
-    this.#entries.set(storeEntry, { stat, index })
-    this.#bytes += stat.size
-    return copyIndex(index)
   }
 
   #delete(storeEntry: string) {
