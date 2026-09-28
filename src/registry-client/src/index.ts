@@ -8,7 +8,6 @@ import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
-import { STATUS_CODES } from 'node:http'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
@@ -43,6 +42,7 @@ import {
   assertOk,
   registryErrorMessage,
   requestError,
+  statusText,
 } from './registry-error.ts'
 import type { ErrorResponse } from './registry-error.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
@@ -361,7 +361,7 @@ export class RegistryClient {
       } catch {
         // Registries and proxies can return plain text or HTML errors.
       }
-      const status = STATUS_CODES[statusCode]
+      const status = statusText(statusCode)
       throw error(
         `Failed to fetch paginated results: ${statusCode}${
           status ? ` ${status}` : ''
@@ -533,7 +533,7 @@ export class RegistryClient {
     }
     // TODO: fall back to username/password login, and/or couchdb PUT login
     const { statusCode } = response
-    const status = STATUS_CODES[statusCode]
+    const status = statusText(statusCode)
     throw error(
       `Failed to perform web login: ${statusCode}${
         status ? ` ${status}` : ''
