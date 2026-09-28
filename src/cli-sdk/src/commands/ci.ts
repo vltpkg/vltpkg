@@ -1,11 +1,19 @@
 import { install } from '@vltpkg/graph'
+import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
+import type { Graph } from '@vltpkg/graph'
 import type { InstallResult } from './install.ts'
 
-export type CIResult = Omit<InstallResult, 'buildQueue'>
+/**
+ * `ci` always does a clean install, so it never takes the install fast
+ * path and always has a graph to report.
+ */
+export type CIResult = Omit<InstallResult, 'buildQueue' | 'graph'> & {
+  graph: Graph
+}
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -55,5 +63,7 @@ export const command: CommandFn<CIResult> = async conf => {
   }
 
   const { graph } = await install(ciOptions)
+  /* c8 ignore next - a clean install always builds a graph */
+  if (!graph) throw error('ci install produced no graph')
   return { graph }
 }

@@ -79,6 +79,6 @@ t.test('steps, requests and trailer', async t => {
 
 t.test('no start, no persisted config', async t => {
   const r = reporter()
-  t.equal(await r.done({} as InstallResult, { time: 1 }), undefined)
+  t.equal(await r.done({}, { time: 1 }), undefined)
   r.error(new Error('x'))
 })

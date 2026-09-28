@@ -95,7 +95,7 @@ export const vlxInstall = async (
 
   // an abbreviated packument carries no integrity; the install hashed
   // the tarball it extracted, so pin that
-  const installed = graph.mainImporter.edgesOut.get(pkgSpec.name)?.to
+  const installed = graph?.mainImporter.edgesOut.get(pkgSpec.name)?.to
   if (!manifest.vlx.integrity && installed?.integrity) {
     manifest.vlx.integrity = installed.integrity
     await writeFile(
