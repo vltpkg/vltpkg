@@ -87,20 +87,16 @@ const isStoreIndex = (x: unknown): x is StoreIndex =>
 export const readStoreIndex = (
   storeEntry: string,
 ): StoreIndex | undefined => {
-  let index: unknown
+  let text: string
   try {
-    index = JSON.parse(
-      readFileSync(storeIndexPath(storeEntry), 'utf8'),
-    )
+    text = readFileSync(storeIndexPath(storeEntry), 'utf8')
   } catch (er) {
     if ((er as NodeJS.ErrnoException).code !== 'ENOENT') {
       debug('global store: invalid index', storeEntry)
     }
     return undefined
   }
-  if (isStoreIndex(index)) return index
-  debug('global store: invalid index', storeEntry)
-  return undefined
+  return parseStoreIndex(text, storeEntry)
 }
 
 const sameFile = (a: BigIntStats, b: BigIntStats) =>
@@ -128,10 +124,8 @@ const parseStoreIndex = (
   let index: unknown
   try {
     index = JSON.parse(text)
-  } catch (er) {
-    if ((er as NodeJS.ErrnoException).code !== 'ENOENT') {
-      debug('global store: invalid index', storeEntry)
-    }
+  } catch {
+    debug('global store: invalid index', storeEntry)
     return undefined
   }
   if (isStoreIndex(index)) return index
@@ -173,10 +167,16 @@ export class StoreIndexCache {
         return copyIndex(cached.index)
       }
       this.#delete(storeEntry)
-      const index = parseStoreIndex(
-        readFileSync(fd, 'utf8'),
-        storeEntry,
-      )
+      let text: string
+      try {
+        text = readFileSync(fd, 'utf8')
+      } catch (er) {
+        if ((er as NodeJS.ErrnoException).code !== 'ENOENT') {
+          debug('global store: invalid index', storeEntry)
+        }
+        return undefined
+      }
+      const index = parseStoreIndex(text, storeEntry)
       if (!index || stat.size > this.#maxBytes) return index
       for (const key of this.#entries.keys()) {
         if (this.#bytes + stat.size <= this.#maxBytes) break

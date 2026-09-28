@@ -1,5 +1,6 @@
 import fs, {
   fstatSync,
+  mkdirSync,
   openSync,
   readFileSync,
   renameSync,
@@ -196,6 +197,29 @@ t.test('a close failure still returns the index', async t => {
   t.strictSame(cache.read(resolve(d, 'entry')), valid)
 })
 
+t.test('a read failure is a store miss', async t => {
+  const { StoreIndexCache } = await t.mockImport<
+    typeof import('../src/store-index.ts')
+  >('../src/store-index.ts', {
+    'node:fs': {
+      ...fs,
+      readFileSync: (file: string | number, enc?: string) => {
+        // Only the cache reads through a descriptor; the miss
+        // fallback re-reads by path and must stay real.
+        if (typeof file === 'number') {
+          throw Object.assign(new Error('read failed'), {
+            code: 'EIO',
+          })
+        }
+        return readFileSync(file, enc as 'utf8')
+      },
+    },
+  })
+  const d = t.testdir({ 'entry.json': JSON.stringify(valid) })
+  const cache = new StoreIndexCache()
+  t.equal(cache.read(resolve(d, 'entry')), undefined)
+})
+
 t.test('cache supports indexes without optional fields', async t => {
   const index = { v: 1, files: [], dirs: [], scripts: false }
   const d = t.testdir({ 'entry.json': JSON.stringify(index) })
@@ -224,6 +248,10 @@ t.test('readStoreIndex', async t => {
   })
   t.equal(readStoreIndex(resolve(d, 'missing')), undefined)
   t.equal(readStoreIndex(resolve(d, 'bad')), undefined)
+  // A sidecar that cannot be read at all is also a miss.
+  const dir = t.testdir()
+  mkdirSync(resolve(dir, 'entry.json'))
+  t.equal(readStoreIndex(resolve(dir, 'entry')), undefined)
 })
 
 t.test('malformed index is a miss', async t => {
