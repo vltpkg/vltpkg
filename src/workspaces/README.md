@@ -79,6 +79,24 @@ type VltProject = {
 }
 ```
 
+If `vlt.json` has no `workspaces` field, the npm/yarn-style
+`workspaces` field of the project root's `package.json` is used
+instead, so an existing npm or yarn monorepo works without a
+`vlt.json`. Only the shapes npm and yarn understand are accepted there
+-- a glob string, an array of them, or `{packages: [...]}` (plus
+yarn-classic's `nohoist`, which is parsed and ignored). Named groups
+are rejected in `package.json`, because a `package.json` using them
+would be meaningless to every other package manager.
+
+Note the precedence is keyed on the _field_, not the file: a
+`vlt.json` that exists but says nothing about workspaces still falls
+through to `package.json`. The two are never merged.
+
+In either file, a pattern beginning with `!` excludes the paths it
+matches, following npm's semantics: `!a/b` excludes only that
+directory, `!a/b/**` excludes the subtree, and a later positive
+pattern overrides an earlier exclusion.
+
 If it's an object, each key is a group name, and each value is a path,
 glob, or array of paths and globs, which specify the location of the
 workspace projects. Glob matches are only considered if they are a

@@ -66,6 +66,33 @@ t.test('infer workspace', async t => {
   t.strictSame(config.get('workspace'), ['src/foo'])
 })
 
+t.test('infer workspace from package.json workspaces', async t => {
+  // an ordinary npm monorepo: no vlt.json at all. The `.git` entry stops
+  // vlt-json's find() from walking up out of the fixture.
+  const dir = t.testdir({
+    '.git': {},
+    'package.json': JSON.stringify({
+      name: '@acme/root',
+      private: true,
+      workspaces: ['packages/*', '!packages/legacy'],
+    }),
+    packages: {
+      foo: { 'package.json': JSON.stringify({ name: '@acme/foo' }) },
+      legacy: {
+        'package.json': JSON.stringify({ name: '@acme/legacy' }),
+      },
+    },
+  })
+  t.chdir(join(dir, 'packages/foo'))
+  const { config } = await run(t)
+  t.strictSame(config.get('workspace'), ['packages/foo'])
+  t.strictSame(
+    new Set([...(config.options.monorepo?.names() ?? [])]),
+    new Set(['@acme/foo']),
+    'the negated workspace is not loaded',
+  )
+})
+
 t.test('print version', async t => {
   const { logs } = await run(t, { argv: ['-v'] })
   t.matchOnly(logs[0], /^\d\.\d\.\d/)

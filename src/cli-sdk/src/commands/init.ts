@@ -4,7 +4,11 @@ import { minimatch } from 'minimatch'
 import { init } from '@vltpkg/init'
 import { install } from '@vltpkg/graph'
 import { load, save } from '@vltpkg/vlt-json'
-import { assertWSConfig, asWSConfig } from '@vltpkg/workspaces'
+import {
+  assertWSConfig,
+  resolveWSConfig,
+  splitNegatedPatterns,
+} from '@vltpkg/workspaces'
 import { commandUsage } from '../config/usage.ts'
 import type { InitFileResults } from '@vltpkg/init'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -67,8 +71,22 @@ export const command: CommandFn<
   /* c8 ignore stop */
 
   if (conf.values.workspace?.length) {
-    const workspacesConfig = load('workspaces', assertWSConfig)
-    const parsedWSConfig = asWSConfig(workspacesConfig ?? {})
+    // the *effective* config, which may come from the root package.json
+    // rather than vlt.json
+    const { config: parsedWSConfig, source } = resolveWSConfig(
+      conf.options.projectRoot,
+      conf.options.packageJson,
+    )
+    // what gets written back to vlt.json. The raw vlt.json value is
+    // reused as-is so its existing shape is preserved. When the
+    // definitions live in package.json instead, seed vlt.json with them
+    // first -- otherwise adding a `workspaces` field here would shadow
+    // every workspace package.json already declares.
+    const workspacesConfig =
+      load('workspaces', assertWSConfig) ??
+      (source === 'package.json' ?
+        Object.values(parsedWSConfig).flat()
+      : undefined)
     const results: InitFileResults[] = []
     const addToConfig: string[] = []
 
@@ -86,9 +104,11 @@ export const command: CommandFn<
 
       // Check if this workspace path is covered by existing workspace patterns
       const isMatched = Object.values(parsedWSConfig).some(
-        (patterns: string[]) => {
-          return patterns.some(pattern =>
-            minimatch(workspace, pattern),
+        (group: string[]) => {
+          const { patterns, ignore } = splitNegatedPatterns(group)
+          return (
+            patterns.some(pattern => minimatch(workspace, pattern)) &&
+            !ignore.some(pattern => minimatch(workspace, pattern))
           )
         },
       )

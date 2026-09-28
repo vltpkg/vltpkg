@@ -74,6 +74,71 @@ Or even:
 }
 ```
 
+### Using npm/yarn workspaces from package.json
+
+If your project already declares workspaces the npm or yarn way, in
+the `workspaces` field of the root `package.json`, vlt reads them
+as-is. An existing npm or yarn monorepo works with vlt without a
+`vlt.json` file at all:
+
+```json
+{
+  "name": "my-monorepo",
+  "private": true,
+  "workspaces": ["packages/*"]
+}
+```
+
+The yarn-classic object form is also understood, including the
+`nohoist` key, which vlt parses and ignores:
+
+```json
+{
+  "workspaces": {
+    "packages": ["packages/*"]
+  }
+}
+```
+
+`vlt.json` takes precedence: if it has a `workspaces` field, that is
+the definition vlt uses and the `package.json` field is ignored
+entirely. The two are **not** merged. Note that this is keyed on the
+field, not the file — a `vlt.json` that exists but says nothing about
+workspaces still falls through to `package.json`.
+
+Named groups are a `vlt.json` feature. They are deliberately rejected
+in `package.json`, because a `package.json` using them would be
+meaningless to every other package manager:
+
+```json
+{
+  "workspaces": {
+    "apps": "apps/*"
+  }
+}
+```
+
+Putting that in `package.json` is an error; put it in `vlt.json`
+instead.
+
+### Excluding paths
+
+A pattern beginning with `!` excludes the paths it matches, in both
+`vlt.json` and `package.json`:
+
+```json
+{
+  "workspaces": ["packages/*", "!packages/legacy"]
+}
+```
+
+Following npm's behavior, `!packages/legacy` excludes only that
+directory, while `!packages/legacy/**` excludes everything beneath it
+as well. A later positive pattern overrides an earlier exclusion, so
+`["packages/**", "!packages/b/**", "packages/b/a"]` keeps
+`packages/b/a`. To match a directory whose name genuinely begins with
+`!`, escape it as `\!`.
+
 ## Working with Workspaces
 
 The simplest way to peform an option on a single workspace is to just

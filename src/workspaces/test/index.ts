@@ -3,7 +3,13 @@ import type { DepResults } from '@vltpkg/graph-run'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Workspace } from '../src/index.ts'
-import { asWSConfig, Monorepo } from '../src/index.ts'
+import {
+  asManifestWSConfig,
+  asWSConfig,
+  Monorepo,
+  resolveWSConfig,
+  splitNegatedPatterns,
+} from '../src/index.ts'
 
 t.test('load some workspaces', async t => {
   const dir = t.testdir({
@@ -499,3 +505,380 @@ t.test('duplicate workspace names are not allowed', t => {
 
   t.end()
 })
+
+// NOTE: every fixture below needs a `.git` entry. Without it,
+// @vltpkg/vlt-json's find() walks up out of the tap fixture dir and
+// lands on this repo's own vlt.json, so `load('workspaces')` would
+// return vltpkg's workspaces and the package.json fallback would never
+// be exercised.
+const pkg = (name: string, extra: Record<string, unknown> = {}) =>
+  JSON.stringify({ name, version: '1.0.0', ...extra })
+
+t.test('splitNegatedPatterns', t => {
+  t.strictSame(splitNegatedPatterns(['a/*']), {
+    patterns: ['a/*'],
+    ignore: [],
+  })
+  t.strictSame(splitNegatedPatterns(['a/*', '!a/b']), {
+    patterns: ['a/*'],
+    ignore: ['a/b'],
+  })
+  t.strictSame(
+    splitNegatedPatterns(['!!a/*']),
+    { patterns: ['a/*'], ignore: [] },
+    'even number of ! is a positive pattern',
+  )
+  t.strictSame(
+    splitNegatedPatterns(['./a/*', '/b/*']),
+    { patterns: ['a/*', 'b/*'], ignore: [] },
+    'leading ./ and / are stripped',
+  )
+  t.strictSame(
+    splitNegatedPatterns(['a/**', '!a/b/**', 'a/b/c']),
+    { patterns: ['a/**', 'a/b/c'], ignore: [] },
+    'a later positive pattern un-negates an earlier negation',
+  )
+  t.strictSame(splitNegatedPatterns(['!a']), {
+    patterns: [],
+    ignore: ['a'],
+  })
+  t.end()
+})
+
+t.test('asManifestWSConfig', t => {
+  const p = '/x/package.json'
+  t.strictSame(asManifestWSConfig(['p/*'], p), { packages: ['p/*'] })
+  t.strictSame(asManifestWSConfig('p/*', p), { packages: ['p/*'] })
+  t.strictSame(asManifestWSConfig({ packages: ['p/*'] }, p), {
+    packages: ['p/*'],
+  })
+  t.strictSame(asManifestWSConfig({ packages: 'p/*' }, p), {
+    packages: ['p/*'],
+  })
+  t.strictSame(
+    asManifestWSConfig({ packages: ['p/*'], nohoist: ['**/x'] }, p),
+    { packages: ['p/*'] },
+    'yarn-classic nohoist is parsed and ignored',
+  )
+  t.strictSame(
+    asManifestWSConfig({ nohoist: ['**/x'] }, p),
+    {},
+    'nohoist alone declares no workspaces',
+  )
+  t.throws(
+    () => asManifestWSConfig({ apps: ['a/*'] }, p),
+    { message: /Named workspace groups are not supported/ },
+    'vlt named groups are rejected in package.json',
+  )
+  t.throws(
+    () => asManifestWSConfig({ packages: ['a'], apps: [] }, p),
+    {
+      message: /Named workspace groups are not supported/,
+    },
+  )
+  t.throws(() => asManifestWSConfig(null, p), {
+    message: /Invalid workspace definition/,
+  })
+  t.throws(() => asManifestWSConfig({ packages: 1 }, p), {
+    message: /Invalid workspace definition/,
+  })
+  t.end()
+})
+
+t.test('package.json array form, no vlt.json', async t => {
+  const dir = t.testdir({
+    '.git': {},
+    'package.json': JSON.stringify({
+      name: 'root',
+      private: true,
+      workspaces: ['packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': pkg('a', { dependencies: { b: '^1.0.0' } }),
+      },
+      b: { 'package.json': pkg('b') },
+    },
+  })
+  t.chdir(dir)
+  unload()
+  const m = Monorepo.maybeLoad(dir)
+  t.ok(m, 'an npm monorepo is recognized as a monorepo')
+  t.equal(m?.size, 2)
+  t.strictSame(new Set([...(m?.names() ?? [])]), new Set(['a', 'b']))
+})
+
+t.test('package.json {packages} and bare string forms', async t => {
+  for (const [name, workspaces] of [
+    ['yarn-classic object', { packages: ['packages/*'] }],
+    ['bare string', 'packages/*'],
+  ] as const) {
+    t.test(name, async t => {
+      const dir = t.testdir({
+        '.git': {},
+        'package.json': JSON.stringify({ name: 'root', workspaces }),
+        packages: {
+          a: { 'package.json': pkg('a') },
+          b: { 'package.json': pkg('b') },
+        },
+      })
+      t.chdir(dir)
+      unload()
+      t.equal(Monorepo.maybeLoad(dir)?.size, 2)
+    })
+  }
+})
+
+t.test('vlt.json wins over package.json', async t => {
+  const dir = t.testdir({
+    '.git': {},
+    'vlt.json': JSON.stringify({ workspaces: ['apps/*'] }),
+    'package.json': JSON.stringify({
+      name: 'root',
+      workspaces: ['packages/*'],
+    }),
+    apps: { web: { 'package.json': pkg('web') } },
+    packages: { a: { 'package.json': pkg('a') } },
+  })
+  t.chdir(dir)
+  unload()
+  const m = Monorepo.maybeLoad(dir)
+  t.strictSame(new Set([...(m?.names() ?? [])]), new Set(['web']))
+  t.equal(resolveWSConfig(dir).source, 'vlt.json')
+})
+
+t.test(
+  'vlt.json without a workspaces field falls through',
+  async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'vlt.json': JSON.stringify({ config: { registry: 'x' } }),
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: { a: { 'package.json': pkg('a') } },
+    })
+    t.chdir(dir)
+    unload()
+    t.equal(Monorepo.maybeLoad(dir)?.size, 1)
+    t.equal(resolveWSConfig(dir).source, 'package.json')
+  },
+)
+
+t.test('not a monorepo', async t => {
+  await t.test('root package.json has no workspaces', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': pkg('solo'),
+    })
+    t.chdir(dir)
+    unload()
+    t.equal(Monorepo.maybeLoad(dir), undefined)
+    t.strictSame(resolveWSConfig(dir), { config: {} })
+  })
+
+  await t.test('root package.json is unreadable', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': '{ not json',
+    })
+    t.chdir(dir)
+    unload()
+    t.equal(Monorepo.maybeLoad(dir), undefined)
+  })
+})
+
+t.test('maybeLoad honors a supplied config', async t => {
+  const dir = t.testdir({
+    '.git': {},
+    'package.json': pkg('solo'),
+    packages: { a: { 'package.json': pkg('a') } },
+  })
+  t.chdir(dir)
+  unload()
+  const m = Monorepo.maybeLoad(dir, {
+    config: { packages: ['packages/*'] },
+    load: {},
+  })
+  t.equal(m?.size, 1, 'short-circuits both files')
+})
+
+t.test('negation', async t => {
+  const tree = {
+    '.git': {},
+    packages: {
+      a: { 'package.json': pkg('a') },
+      legacy: {
+        'package.json': pkg('legacy'),
+        inner: { 'package.json': pkg('inner') },
+      },
+    },
+  }
+
+  await t.test('declared in the root manifest', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*', '!packages/legacy'],
+      }),
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(
+      new Set([...(Monorepo.maybeLoad(dir)?.names() ?? [])]),
+      new Set(['a']),
+    )
+  })
+
+  await t.test('from vlt.json', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'vlt.json': JSON.stringify({
+        workspaces: { apps: ['packages/*', '!packages/legacy'] },
+      }),
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(
+      new Set([...(Monorepo.maybeLoad(dir)?.names() ?? [])]),
+      new Set(['a']),
+    )
+  })
+
+  await t.test('bare negation still walks into the dir', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'vlt.json': JSON.stringify({
+        workspaces: ['packages/**', '!packages/legacy'],
+      }),
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(
+      new Set([...(Monorepo.maybeLoad(dir)?.names() ?? [])]),
+      new Set(['a', 'inner']),
+      'packages/legacy is excluded but its children are still found',
+    )
+  })
+
+  await t.test('/** negation prunes the subtree', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'vlt.json': JSON.stringify({
+        workspaces: ['packages/**', '!packages/legacy/**'],
+      }),
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(
+      new Set([...(Monorepo.maybeLoad(dir)?.names() ?? [])]),
+      new Set(['a']),
+    )
+  })
+
+  await t.test(
+    'all-negative pattern list matches nothing',
+    async t => {
+      const dir = t.testdir({
+        ...tree,
+        'vlt.json': JSON.stringify({ workspaces: ['!packages/a'] }),
+      })
+      t.chdir(dir)
+      unload()
+      t.equal(Monorepo.maybeLoad(dir)?.size, 0)
+    },
+  )
+
+  await t.test('negation in the workspace path filter', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    })
+    t.chdir(dir)
+    unload()
+    const m = Monorepo.load(dir, {
+      load: { paths: ['packages/*', '!packages/a'] },
+    })
+    t.strictSame(
+      new Set([...m.names()]),
+      new Set(['legacy']),
+      '-w packages/* -w !packages/a excludes a',
+    )
+
+    // a filter of *only* negations has no positive pattern to match,
+    // so it selects nothing -- the same as any other non-matching -w
+    const none = Monorepo.load(dir, {
+      load: { paths: ['!packages/a'] },
+    })
+    t.equal(none.size, 0)
+  })
+})
+
+t.test('getDeps follows bare semver workspace deps', async t => {
+  const dir = t.testdir({
+    '.git': {},
+    'package.json': JSON.stringify({
+      name: 'root',
+      workspaces: ['packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': pkg('a', {
+          dependencies: {
+            b: '^1.0.0',
+            // not a local workspace: aliases a different package
+            c: 'npm:other@1',
+            d: 'file:../elsewhere',
+          },
+        }),
+      },
+      b: { 'package.json': pkg('b') },
+      c: { 'package.json': pkg('c') },
+      d: { 'package.json': pkg('d') },
+    },
+  })
+  t.chdir(dir)
+  unload()
+  const m = Monorepo.load(dir)
+  const a = m.get('a')
+  t.ok(a)
+  t.strictSame(
+    m.getDeps(a!).map(w => w.name),
+    ['b'],
+    'bare semver links, other protocols do not',
+  )
+  // b must be visited before a
+  const order = [...m].map(w => w.name)
+  t.ok(
+    order.indexOf('b') < order.indexOf('a'),
+    'topological order respects the bare semver dep',
+  )
+})
+
+t.test(
+  'a workspace path matching a dep name is not a dep',
+  async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: {
+        // path is `packages/thing`, package name is `renamed`
+        thing: { 'package.json': pkg('renamed') },
+        a: {
+          'package.json': pkg('a', {
+            dependencies: { 'packages/thing': '^1.0.0' },
+          }),
+        },
+      },
+    })
+    t.chdir(dir)
+    unload()
+    const m = Monorepo.load(dir)
+    t.strictSame(m.getDeps(m.get('a')!), [], 'matched by name only')
+  },
+)

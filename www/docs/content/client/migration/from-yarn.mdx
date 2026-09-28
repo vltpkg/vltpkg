@@ -298,21 +298,35 @@ yarn v2+ is similar but also supports the `workspaces` field in
 
 ### vlt
 
-vlt defines workspaces in `vlt.json`:
+**Your existing yarn workspaces just work.** vlt reads the
+`workspaces` field of the root `package.json`, in both the array form
+above and the object form, where the `nohoist` key is parsed and
+ignored:
 
 <Code
   code={JSON.stringify(
     {
-      workspaces: ['packages/*'],
+      private: true,
+      workspaces: {
+        packages: ['packages/*'],
+        nohoist: ['**/react-native'],
+      },
     },
     null,
     2,
   )}
-  title="vlt.json"
+  title="package.json (yarn v1, object form)"
   lang="json"
 />
 
-vlt also supports **named workspace groups** for targeted operations:
+Exclusion patterns such as `!packages/legacy` are honored too. The
+`workspaces` field of `.yarnrc.yml` is not read, so any yarn v2+
+filtering defined there needs to move.
+
+You only need to define workspaces in `vlt.json` if you want vlt's
+**named workspace groups** for targeted operations. If `vlt.json` has
+a `workspaces` field it wins outright, and the `package.json` field is
+ignored rather than merged:
 
 <Code
   code={JSON.stringify(
