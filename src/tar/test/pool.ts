@@ -10,7 +10,10 @@ import {
 } from 'node:fs'
 import { resolve } from 'node:path'
 import { brotliCompressSync } from 'node:zlib'
-import { storeIndexPath } from '../src/store-index.ts'
+import {
+  StoreIndexCache,
+  storeIndexPath,
+} from '../src/store-index.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
@@ -230,5 +233,11 @@ t.test('global store', async t => {
   t.equal(
     await p.linkFromStore(resolve(d, 'missing'), resolve(d, 'nm/c')),
     false,
+  )
+  t.match(
+    await p.linkFromStore(entry, resolve(d, 'nm/d'), {
+      indexCache: new StoreIndexCache(),
+    }),
+    { how: 'link', index },
   )
 })

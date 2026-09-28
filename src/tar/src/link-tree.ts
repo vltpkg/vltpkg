@@ -16,7 +16,11 @@ import {
   removeStoreEntry,
 } from './store-entry.ts'
 import { readStoreIndex } from './store-index.ts'
-import type { StoreIndex, StoreIndexFile } from './store-index.ts'
+import type {
+  StoreIndex,
+  StoreIndexCache,
+  StoreIndexFile,
+} from './store-index.ts'
 import { tmpName } from './unpack.ts'
 
 const debug = debuglog('vlt')
@@ -45,6 +49,7 @@ export type LinkFromStoreOptions = {
    * the package runs install scripts, which must not write into the store.
    */
   copy?: boolean
+  indexCache?: StoreIndexCache
 }
 
 // Process-wide: once links fail for a reason that will not go away
@@ -158,9 +163,12 @@ const fill = (
 export const linkFromStore = (
   storeEntry: string,
   target: string,
-  { copy = false }: LinkFromStoreOptions = {},
+  { copy = false, indexCache }: LinkFromStoreOptions = {},
 ): StoreLinkResult => {
-  const index = readStoreIndex(storeEntry)
+  const index =
+    indexCache ?
+      indexCache.read(storeEntry)
+    : readStoreIndex(storeEntry)
   if (!index || !lstatSync(storeEntry, noThrow)?.isDirectory()) {
     return false
   }

@@ -5,6 +5,7 @@ import type {
   StoreLinkResult,
 } from './link-tree.ts'
 import type { StoreIndex } from './store-index.ts'
+import { StoreIndexCache } from './store-index.ts'
 import type { TarballFormat } from '@vltpkg/types'
 import {
   unpack,
@@ -46,6 +47,7 @@ const mode = process.env.VLT_TAR_SYNC
  * lower and elsewhere, by `UV_THREADPOOL_SIZE` (4 by default).
  */
 export class Pool {
+  #storeIndexCache?: StoreIndexCache
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
    * placed. Resolves when the tarball has been extracted.
@@ -94,7 +96,12 @@ export class Pool {
     target: string,
     opts?: LinkFromStoreOptions,
   ): Promise<StoreLinkResult> {
-    return linkFromStore(storeEntry, target, opts)
+    return linkFromStore(storeEntry, target, {
+      ...opts,
+      indexCache:
+        opts?.indexCache ??
+        (this.#storeIndexCache ??= new StoreIndexCache()),
+    })
   }
 
   /**

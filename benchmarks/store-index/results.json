@@ -1,0 +1,586 @@
+{
+  "scope": "Production sidecar reader and actual file materialization. A new cache per group; cache setup, stat validation and owned result copies included. No network, graph resolution or whole-install timing.",
+  "node": "v26.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cpu": "Apple M3 Max",
+  "logicalCpus": 14,
+  "unit": "milliseconds per group",
+  "pairs": 12,
+  "date": "2026-09-28T19:13:30.583Z",
+  "head": "0968685bb3513c0fb5a65fcf0034cf573047f1d8",
+  "sourceSha256": {
+    "store-index.ts": "325ddb7921b76e610d2cbb5d3db9d0db6d9d9d6beb2bc444d7538a2f17cf8374",
+    "link-tree.ts": "2a61e67878f955279106ea720a3a9fc788a133b5ed5e428cc5f604517959d68f"
+  },
+  "results": [
+    {
+      "kind": "reader",
+      "files": 64,
+      "placements": 1,
+      "groups": 16,
+      "baseline": 0.06597134375000024,
+      "candidate": 0.06341924999999993,
+      "reductionPercent": 3.8684883540822335,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 0.10339581250000052,
+          "candidate": 0.4230468749999998
+        },
+        {
+          "pair": 1,
+          "candidate": 0.055799499999999114,
+          "baseline": 0.09296618750000007
+        },
+        {
+          "pair": 2,
+          "baseline": 0.05697393750000046,
+          "candidate": 0.0993046875000001
+        },
+        {
+          "pair": 3,
+          "candidate": 0.11525781250000122,
+          "baseline": 0.07496875000000003
+        },
+        {
+          "pair": 4,
+          "baseline": 0.10314325000000046,
+          "candidate": 0.1121432500000008
+        },
+        {
+          "pair": 5,
+          "candidate": 0.06663025000000111,
+          "baseline": 0.08283593749999874
+        },
+        {
+          "pair": 6,
+          "baseline": 0.08242187499999964,
+          "candidate": 0.0605806874999999
+        },
+        {
+          "pair": 7,
+          "candidate": 0.05537237499999925,
+          "baseline": 0.04745831249999988
+        },
+        {
+          "pair": 8,
+          "baseline": 0.04107549999999982,
+          "candidate": 0.0537447499999999
+        },
+        {
+          "pair": 9,
+          "candidate": 0.05290106250000015,
+          "baseline": 0.04832550000000069
+        },
+        {
+          "pair": 10,
+          "baseline": 0.047411437500000986,
+          "candidate": 0.05838018750000096
+        },
+        {
+          "pair": 11,
+          "candidate": 0.06625781249999996,
+          "baseline": 0.043648437499999915
+        }
+      ]
+    },
+    {
+      "kind": "reader",
+      "files": 64,
+      "placements": 8,
+      "groups": 16,
+      "baseline": 0.40422653124999997,
+      "candidate": 0.09470181249999943,
+      "reductionPercent": 76.57209381899041,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 0.4047134999999997,
+          "candidate": 0.09404687500000009
+        },
+        {
+          "pair": 1,
+          "candidate": 0.24249999999999972,
+          "baseline": 0.43163024999999955
+        },
+        {
+          "pair": 2,
+          "baseline": 0.5659166874999997,
+          "candidate": 0.1208437499999988
+        },
+        {
+          "pair": 3,
+          "candidate": 0.08606512500000107,
+          "baseline": 0.4037395625000002
+        },
+        {
+          "pair": 4,
+          "baseline": 0.41147918749999945,
+          "candidate": 0.0908828125000003
+        },
+        {
+          "pair": 5,
+          "candidate": 0.09487756250000068,
+          "baseline": 0.36420056250000066
+        },
+        {
+          "pair": 6,
+          "baseline": 0.3887317500000016,
+          "candidate": 0.08919012500000001
+        },
+        {
+          "pair": 7,
+          "candidate": 0.10015625000000128,
+          "baseline": 0.40609375000000014
+        },
+        {
+          "pair": 8,
+          "baseline": 0.37979949999999896,
+          "candidate": 0.09304687500000242
+        },
+        {
+          "pair": 9,
+          "candidate": 0.1621927499999991,
+          "baseline": 0.3968229375000014
+        },
+        {
+          "pair": 10,
+          "baseline": 0.5092213124999994,
+          "candidate": 0.09452606249999818
+        },
+        {
+          "pair": 11,
+          "candidate": 0.12622400000000056,
+          "baseline": 0.3638619375000012
+        }
+      ]
+    },
+    {
+      "kind": "reader",
+      "files": 64,
+      "placements": 32,
+      "groups": 16,
+      "baseline": 1.7869205937500006,
+      "candidate": 0.1798476562499971,
+      "reductionPercent": 89.93533026151029,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 2.0412526249999985,
+          "candidate": 0.22485937499999764
+        },
+        {
+          "pair": 1,
+          "candidate": 0.21890887500000034,
+          "baseline": 2.083513
+        },
+        {
+          "pair": 2,
+          "baseline": 1.6346041875000026,
+          "candidate": 0.3066197499999994
+        },
+        {
+          "pair": 3,
+          "candidate": 0.48835937499999815,
+          "baseline": 2.9619479374999997
+        },
+        {
+          "pair": 4,
+          "baseline": 1.9392369999999985,
+          "candidate": 0.191242187499995
+        },
+        {
+          "pair": 5,
+          "candidate": 0.4784739999999985,
+          "baseline": 3.7495495000000005
+        },
+        {
+          "pair": 6,
+          "baseline": 1.2750286249999974,
+          "candidate": 0.16219012500000218
+        },
+        {
+          "pair": 7,
+          "candidate": 0.1476588125000049,
+          "baseline": 1.181739562499999
+        },
+        {
+          "pair": 8,
+          "baseline": 1.2286119999999983,
+          "candidate": 0.15636981249999593
+        },
+        {
+          "pair": 9,
+          "candidate": 0.16522137500000156,
+          "baseline": 1.213364624999997
+        },
+        {
+          "pair": 10,
+          "baseline": 1.1588619999999992,
+          "candidate": 0.1684531249999992
+        },
+        {
+          "pair": 11,
+          "candidate": 0.1613490000000013,
+          "baseline": 4.700164062500001
+        }
+      ]
+    },
+    {
+      "kind": "reader",
+      "files": 1024,
+      "placements": 1,
+      "groups": 16,
+      "baseline": 0.2053203124999996,
+      "candidate": 0.2346354062500069,
+      "reductionPercent": -14.277736768010897,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 0.1833671875000107,
+          "candidate": 0.21189062500000944
+        },
+        {
+          "pair": 1,
+          "candidate": 0.29339587500000164,
+          "baseline": 0.20185675000000458
+        },
+        {
+          "pair": 2,
+          "baseline": 0.24292450000000088,
+          "candidate": 0.21766925000000015
+        },
+        {
+          "pair": 3,
+          "candidate": 0.3090833124999932,
+          "baseline": 0.17763281250000773
+        },
+        {
+          "pair": 4,
+          "baseline": 0.23554949999999053,
+          "candidate": 0.20936199999999872
+        },
+        {
+          "pair": 5,
+          "candidate": 0.2559426874999957,
+          "baseline": 0.3055703125000093
+        },
+        {
+          "pair": 6,
+          "baseline": 0.20878387499999462,
+          "candidate": 0.24939843750000534
+        },
+        {
+          "pair": 7,
+          "candidate": 0.19245049999999253,
+          "baseline": 0.17769268749999867
+        },
+        {
+          "pair": 8,
+          "baseline": 0.26915625000000887,
+          "candidate": 0.25502081250000685
+        },
+        {
+          "pair": 9,
+          "candidate": 0.21987237500000845,
+          "baseline": 0.23601825000000076
+        },
+        {
+          "pair": 10,
+          "baseline": 0.1757109374999999,
+          "candidate": 0.20083331249999503
+        },
+        {
+          "pair": 11,
+          "candidate": 0.25655468749999955,
+          "baseline": 0.199895812500003
+        }
+      ]
+    },
+    {
+      "kind": "reader",
+      "files": 1024,
+      "placements": 8,
+      "groups": 16,
+      "baseline": 1.761329406249999,
+      "candidate": 0.43248049999999694,
+      "reductionPercent": 75.44579120377148,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 1.8029192500000022,
+          "candidate": 0.7147708749999993
+        },
+        {
+          "pair": 1,
+          "candidate": 0.779809874999998,
+          "baseline": 3.1497239374999992
+        },
+        {
+          "pair": 2,
+          "baseline": 1.7162161250000025,
+          "candidate": 0.48960937500000057
+        },
+        {
+          "pair": 3,
+          "candidate": 0.435005249999989,
+          "baseline": 1.6281145625000022
+        },
+        {
+          "pair": 4,
+          "baseline": 1.7907369375000002,
+          "candidate": 0.42995575000000485
+        },
+        {
+          "pair": 5,
+          "candidate": 0.3330573125000029,
+          "baseline": 1.7319218749999976
+        },
+        {
+          "pair": 6,
+          "baseline": 1.9052499999999952,
+          "candidate": 0.3819322500000055
+        },
+        {
+          "pair": 7,
+          "candidate": 0.5910781250000099,
+          "baseline": 2.2354817500000053
+        },
+        {
+          "pair": 8,
+          "baseline": 1.8360781250000002,
+          "candidate": 0.3231015624999998
+        },
+        {
+          "pair": 9,
+          "candidate": 0.3080598749999979,
+          "baseline": 1.567458375000001
+        },
+        {
+          "pair": 10,
+          "baseline": 1.6376354374999949,
+          "candidate": 0.5101015624999974
+        },
+        {
+          "pair": 11,
+          "candidate": 0.34316662500000916,
+          "baseline": 1.5912786874999938
+        }
+      ]
+    },
+    {
+      "kind": "reader",
+      "files": 1024,
+      "placements": 32,
+      "groups": 16,
+      "baseline": 5.339785156250002,
+      "candidate": 0.6758463437500097,
+      "reductionPercent": 87.34319220766852,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 6.352359374999992,
+          "candidate": 0.7426926875000106
+        },
+        {
+          "pair": 1,
+          "candidate": 0.9246693125000149,
+          "baseline": 7.080833312500005
+        },
+        {
+          "pair": 2,
+          "baseline": 8.217718750000017,
+          "candidate": 0.7902317500000038
+        },
+        {
+          "pair": 3,
+          "candidate": 0.6709453125000095,
+          "baseline": 5.297101562499989
+        },
+        {
+          "pair": 4,
+          "baseline": 5.33933593750001,
+          "candidate": 0.6542265625000141
+        },
+        {
+          "pair": 5,
+          "candidate": 0.6804661250000095,
+          "baseline": 5.340234374999994
+        },
+        {
+          "pair": 6,
+          "baseline": 5.296041625000015,
+          "candidate": 0.6922500000000014
+        },
+        {
+          "pair": 7,
+          "candidate": 0.67122656250001,
+          "baseline": 5.236278624999983
+        },
+        {
+          "pair": 8,
+          "baseline": 5.3015156250000075,
+          "candidate": 0.7712994999999978
+        },
+        {
+          "pair": 9,
+          "candidate": 0.49036974999998506,
+          "baseline": 5.892770812500004
+        },
+        {
+          "pair": 10,
+          "baseline": 7.337799500000017,
+          "candidate": 0.48541143750000515
+        },
+        {
+          "pair": 11,
+          "candidate": 0.47866143749999424,
+          "baseline": 5.2567890624999905
+        }
+      ]
+    },
+    {
+      "kind": "materialize",
+      "files": 256,
+      "placements": 1,
+      "groups": 1,
+      "baseline": 95.52962500000012,
+      "candidate": 96.6446249999999,
+      "reductionPercent": -1.167177197649183,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 158.26591699999972,
+          "candidate": 197.60804200000075
+        },
+        {
+          "pair": 1,
+          "candidate": 174.58600000000024,
+          "baseline": 132.27779099999952
+        },
+        {
+          "pair": 2,
+          "baseline": 170.05012500000066,
+          "candidate": 133.1978339999996
+        },
+        {
+          "pair": 3,
+          "candidate": 127.89908300000025,
+          "baseline": 146.58787500000017
+        },
+        {
+          "pair": 4,
+          "baseline": 100.75437500000044,
+          "candidate": 102.94170800000029
+        },
+        {
+          "pair": 5,
+          "candidate": 97.40099999999984,
+          "baseline": 93.12016700000004
+        },
+        {
+          "pair": 6,
+          "baseline": 93.21399999999994,
+          "candidate": 93.47691699999996
+        },
+        {
+          "pair": 7,
+          "candidate": 92.48950000000059,
+          "baseline": 91.58616699999948
+        },
+        {
+          "pair": 8,
+          "baseline": 92.5015000000003,
+          "candidate": 93.44333300000017
+        },
+        {
+          "pair": 9,
+          "candidate": 95.88824999999997,
+          "baseline": 94.92283300000054
+        },
+        {
+          "pair": 10,
+          "baseline": 94.13458299999911,
+          "candidate": 94.06937499999913
+        },
+        {
+          "pair": 11,
+          "candidate": 93.37125000000015,
+          "baseline": 96.13641699999971
+        }
+      ]
+    },
+    {
+      "kind": "materialize",
+      "files": 256,
+      "placements": 8,
+      "groups": 1,
+      "baseline": 752.5817079999979,
+      "candidate": 746.3991875000011,
+      "reductionPercent": 0.8215082075841318,
+      "pairs": [
+        {
+          "pair": 0,
+          "baseline": 775.4966249999998,
+          "candidate": 745.324208
+        },
+        {
+          "pair": 1,
+          "candidate": 746.4941250000011,
+          "baseline": 745.7953750000015
+        },
+        {
+          "pair": 2,
+          "baseline": 746.2931250000001,
+          "candidate": 746.304250000001
+        },
+        {
+          "pair": 3,
+          "candidate": 743.2447920000013,
+          "baseline": 751.0031249999993
+        },
+        {
+          "pair": 4,
+          "baseline": 758.9574169999978,
+          "candidate": 751.0094590000008
+        },
+        {
+          "pair": 5,
+          "candidate": 769.4954590000016,
+          "baseline": 756.8525420000005
+        },
+        {
+          "pair": 6,
+          "baseline": 765.3661250000005,
+          "candidate": 743.5970840000009
+        },
+        {
+          "pair": 7,
+          "candidate": 745.7954580000005,
+          "baseline": 756.1182919999992
+        },
+        {
+          "pair": 8,
+          "baseline": 751.1731250000012,
+          "candidate": 765.3172919999997
+        },
+        {
+          "pair": 9,
+          "candidate": 742.8248749999984,
+          "baseline": 748.9695419999989
+        },
+        {
+          "pair": 10,
+          "baseline": 753.2107909999977,
+          "candidate": 792.5833339999954
+        },
+        {
+          "pair": 11,
+          "candidate": 777.7623340000064,
+          "baseline": 751.9526249999981
+        }
+      ]
+    }
+  ]
+}

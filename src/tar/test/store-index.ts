@@ -1,8 +1,15 @@
-import { writeFileSync } from 'node:fs'
+import fs, {
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import {
   readStoreIndex,
+  StoreIndexCache,
   storeIndexManifest,
   storeIndexPath,
 } from '../src/store-index.ts'
@@ -22,8 +29,150 @@ const valid: StoreIndex = {
   manifest: '{"name":"x","version":"1.0.0","bin":"bin/cli.js"}',
 }
 
+t.test(
+  'cached indexes observe replacement, deletion and malformed writes',
+  async t => {
+    const d = t.testdir()
+    const entry = resolve(d, 'entry')
+    const file = storeIndexPath(entry)
+    const cache = new StoreIndexCache()
+    t.equal(cache.read(entry), undefined)
+    writeFileSync(file, JSON.stringify(valid))
+    t.strictSame(cache.read(entry), valid)
+    const replacement = { ...valid, scripts: true, name: 'y' }
+    writeFileSync(file + '.new', JSON.stringify(replacement))
+    renameSync(file + '.new', file)
+    t.strictSame(cache.read(entry), replacement)
+    rmSync(file)
+    t.equal(cache.read(entry), undefined)
+    writeFileSync(file, JSON.stringify(valid))
+    t.strictSame(cache.read(entry), valid)
+    writeFileSync(file, '{invalid')
+    t.equal(cache.read(entry), undefined)
+    writeFileSync(file, JSON.stringify(replacement))
+    t.strictSame(cache.read(entry), replacement)
+  },
+)
+
+t.test(
+  'cache avoids reads and retains no caller mutations',
+  async t => {
+    let reads = 0
+    const { StoreIndexCache } = await t.mockImport<
+      typeof import('../src/store-index.ts')
+    >('../src/store-index.ts', {
+      'node:fs': {
+        ...fs,
+        readFileSync: (file: string) => {
+          reads++
+          return readFileSync(file, 'utf8')
+        },
+      },
+    })
+    const d = t.testdir({ 'entry.json': JSON.stringify(valid) })
+    const entry = resolve(d, 'entry')
+    const cache = new StoreIndexCache()
+    const first = cache.read(entry)!
+    first.files[0]![0] = '../escape'
+    first.dirs.push('../escape')
+    first.bins!.cli = '../escape'
+    first.scripts = true
+    const second = cache.read(entry)!
+    t.strictSame(second, valid)
+    second.files.length = 0
+    t.strictSame(cache.read(entry), valid)
+    t.equal(reads, 1)
+  },
+)
+
+t.test(
+  'cache evicts to its byte limit and skips oversized indexes',
+  async t => {
+    let reads = 0
+    const { StoreIndexCache } = await t.mockImport<
+      typeof import('../src/store-index.ts')
+    >('../src/store-index.ts', {
+      'node:fs': {
+        ...fs,
+        readFileSync: (file: string) => {
+          reads++
+          return readFileSync(file, 'utf8')
+        },
+      },
+    })
+    const text = JSON.stringify(valid)
+    const d = t.testdir({
+      'a.json': text,
+      'b.json': text,
+      'c.json': text,
+    })
+    const cache = new StoreIndexCache(Buffer.byteLength(text) * 2)
+    for (const name of ['a', 'b', 'c', 'c', 'b', 'a']) {
+      t.strictSame(cache.read(resolve(d, name)), valid)
+    }
+    t.equal(reads, 4)
+    const tiny = new StoreIndexCache(0)
+    tiny.read(resolve(d, 'a'))
+    tiny.read(resolve(d, 'a'))
+    t.equal(reads, 6)
+  },
+)
+
+t.test(
+  'cache handles stat failures and concurrent publication',
+  async t => {
+    for (const mode of [
+      'first-error',
+      'after-error',
+      'after-missing',
+      'changed',
+    ]) {
+      await t.test(mode, async t => {
+        let calls = 0
+        const { StoreIndexCache } = await t.mockImport<
+          typeof import('../src/store-index.ts')
+        >('../src/store-index.ts', {
+          'node:fs': {
+            ...fs,
+            statSync: (file: string) => {
+              calls++
+              if (
+                mode === 'first-error' ||
+                (mode === 'after-error' && calls % 2 === 0)
+              ) {
+                throw Object.assign(new Error('stat failed'), {
+                  code: 'EACCES',
+                })
+              }
+              if (mode === 'after-missing' && calls % 2 === 0)
+                return undefined
+              const stat = statSync(file, { bigint: true })
+              return mode === 'changed' && calls % 2 === 0 ?
+                  { ...stat, ino: stat.ino + 1n }
+                : stat
+            },
+          },
+        })
+        const d = t.testdir({ 'entry.json': JSON.stringify(valid) })
+        const cache = new StoreIndexCache()
+        t.strictSame(cache.read(resolve(d, 'entry')), valid)
+        t.strictSame(cache.read(resolve(d, 'entry')), valid)
+        t.equal(calls, mode === 'first-error' ? 2 : 4)
+      })
+    }
+  },
+)
+
 t.test('storeIndexPath', async t => {
   t.equal(storeIndexPath('/s/v1/abc'), '/s/v1/abc.json')
+})
+
+t.test('cache supports indexes without optional fields', async t => {
+  const index = { v: 1, files: [], dirs: [], scripts: false }
+  const d = t.testdir({ 'entry.json': JSON.stringify(index) })
+  const cache = new StoreIndexCache()
+  t.strictSame(cache.read(resolve(d, 'entry')), index)
+  t.strictSame(cache.read(resolve(d, 'entry')), index)
 })
 
 t.test('readStoreIndex', async t => {

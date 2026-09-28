@@ -14,7 +14,10 @@ import type { Test } from 'tap'
 import { linkFromStore } from '../src/link-tree.ts'
 import type { StoreLinkResult } from '../src/link-tree.ts'
 import { storeCopiedPath } from '../src/store-entry.ts'
-import { storeIndexPath } from '../src/store-index.ts'
+import {
+  StoreIndexCache,
+  storeIndexPath,
+} from '../src/store-index.ts'
 import type { StoreIndex } from '../src/store-index.ts'
 import { unpackToStoreSync } from '../src/unpack.ts'
 import { makeTar } from './fixtures/make-tar.ts'
@@ -76,6 +79,42 @@ const makeEntry = (t: Test, symlink = false) => {
 
 const errno = (code: string) =>
   Object.assign(new Error(code), { code }) as NodeJS.ErrnoException
+
+t.test(
+  'cached indexes retain per-placement checks and damage recovery',
+  async t => {
+    const { entry, index, target } = makeEntry(t)
+    const indexCache = new StoreIndexCache()
+    t.strictSame(linkFromStore(entry, target, { indexCache }), {
+      how: 'link',
+      index,
+    })
+    t.strictSame(
+      linkFromStore(entry, target + '-second', { indexCache }),
+      { how: 'link', index },
+    )
+    rmSync(resolve(entry, 'index.js'))
+    t.equal(
+      linkFromStore(entry, target + '-damaged', { indexCache }),
+      false,
+    )
+    t.equal(existsSync(entry), false)
+    const repaired = unpackToStoreSync(tar, entry + '.repair').index
+    writeFileSync(
+      storeIndexPath(entry),
+      JSON.stringify({ ...repaired, scripts: true }),
+    )
+    renameSync(entry + '.repair', entry)
+    t.match(
+      linkFromStore(entry, target + '-repaired', { indexCache }),
+      { how: 'copy', index: { scripts: true } },
+    )
+    t.equal(
+      readFileSync(resolve(target + '-repaired', 'index.js'), 'utf8'),
+      'index',
+    )
+  },
+)
 
 const mockFS = (t: Test, mocks: Partial<typeof FS>) =>
   t.mockImport<LinkTree>('../src/link-tree.ts', {

@@ -1,7 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import { isManifest, normalizeBinPaths } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
+import type { BigIntStats } from 'node:fs'
 import { debuglog } from 'node:util'
 
 const debug = debuglog('vlt')
@@ -100,6 +101,82 @@ export const readStoreIndex = (
   if (isStoreIndex(index)) return index
   debug('global store: invalid index', storeEntry)
   return undefined
+}
+
+const sameFile = (a: BigIntStats, b: BigIntStats) =>
+  a.dev === b.dev &&
+  a.ino === b.ino &&
+  a.size === b.size &&
+  a.mtimeNs === b.mtimeNs &&
+  a.ctimeNs === b.ctimeNs
+
+const copyIndex = (index: StoreIndex): StoreIndex => ({
+  ...index,
+  files: index.files.map(([path, size, exec]) => [path, size, exec]),
+  dirs: [...index.dirs],
+  ...(index.bins ? { bins: { ...index.bins } } : {}),
+})
+
+/** Reuse validated sidecars while their file identity is unchanged. */
+export class StoreIndexCache {
+  #entries = new Map<
+    string,
+    { stat: BigIntStats; index: StoreIndex }
+  >()
+  #bytes = 0n
+  // Bound retained JSON bytes, including sidecars from previous operations.
+  #maxBytes: bigint
+
+  constructor(maxBytes = 16 * 1024 * 1024) {
+    this.#maxBytes = BigInt(maxBytes)
+  }
+
+  read(storeEntry: string): StoreIndex | undefined {
+    let stat: BigIntStats | undefined
+    try {
+      stat = statSync(storeIndexPath(storeEntry), {
+        bigint: true,
+        throwIfNoEntry: false,
+      })
+    } catch {
+      this.#delete(storeEntry)
+      return readStoreIndex(storeEntry)
+    }
+    const cached = this.#entries.get(storeEntry)
+    if (stat && cached && sameFile(stat, cached.stat)) {
+      return copyIndex(cached.index)
+    }
+    this.#delete(storeEntry)
+    const index = readStoreIndex(storeEntry)
+    if (!stat || !index || stat.size > this.#maxBytes) return index
+
+    // A concurrent publisher must not associate new bytes with an old stamp.
+    let after: BigIntStats | undefined
+    try {
+      after = statSync(storeIndexPath(storeEntry), {
+        bigint: true,
+        throwIfNoEntry: false,
+      })
+    } catch {
+      return index
+    }
+    if (!after || !sameFile(stat, after)) return index
+    for (const key of this.#entries.keys()) {
+      if (this.#bytes + stat.size <= this.#maxBytes) break
+      this.#delete(key)
+    }
+    this.#entries.set(storeEntry, { stat, index })
+    this.#bytes += stat.size
+    return copyIndex(index)
+  }
+
+  #delete(storeEntry: string) {
+    const cached = this.#entries.get(storeEntry)
+    if (cached) {
+      this.#bytes -= cached.stat.size
+      this.#entries.delete(storeEntry)
+    }
+  }
 }
 
 /**
