@@ -23,6 +23,8 @@ export type PackTarballResult = {
   shasum?: string
   /** The manifest used for packing (may differ from input when publishConfig.directory is set). */
   resolvedManifest: NormalizedManifest
+  /** The directory that was packed (differs from input when publishConfig.directory is set). */
+  packDir: string
 }
 
 /**
@@ -425,6 +427,7 @@ export const packTarball = async (
       integrity,
       shasum,
       resolvedManifest: processedManifest,
+      packDir,
     }
   } finally {
     // Restore the original package.json to the pack directory

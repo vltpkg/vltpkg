@@ -1,4 +1,5 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import type { CommandResultSingle } from '../../src/commands/publish.ts'
@@ -1794,5 +1795,134 @@ t.test('human view with arrays', async t => {
     t.match(output, /test-b@2\.0\.0/)
     t.match(output, /🏷️ Tag: latest/)
     t.match(output, /📡 Registry: https:\/\/registry\.npmjs\.org/)
+  })
+})
+
+t.test('readme in publish metadata', async t => {
+  /** Publish `files` from a testdir and hand back the version manifest sent. */
+  const publishedManifest = async (
+    t: Test,
+    files: Record<string, string | Record<string, string>>,
+    values?: Record<string, unknown>,
+  ) => {
+    const dir = t.testdir({ 'vlt.json': '{}', ...files })
+    t.chdir(dir)
+
+    let publishBody: string | undefined
+    const tempRequest = RegistryClient.prototype.request
+    RegistryClient.prototype.request = (async (
+      _url: URL | string,
+      opts?: { body?: string },
+    ) => {
+      publishBody = opts?.body
+      return {
+        statusCode: 201,
+        text: () => '{"ok":true}',
+        json: () => ({ ok: true }),
+        getHeader: () => undefined,
+        getHeaderString: () => undefined,
+      }
+    }) as unknown as typeof tempRequest
+    t.teardown(() => {
+      RegistryClient.prototype.request = tempRequest
+    })
+
+    await command(
+      makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          registry: 'https://registry.npmjs.org',
+        },
+        positionals: ['publish'],
+        values,
+      }),
+    )
+
+    t.ok(publishBody, 'should have sent a request body')
+    return JSON.parse(publishBody!).versions['1.0.0']
+  }
+
+  t.test('sends the readme alongside the manifest', async t => {
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: '1.0.0',
+      }),
+      'README.md': '# my-package',
+    })
+    t.equal(manifest.readme, '# my-package')
+    t.equal(manifest.readmeFilename, 'README.md')
+  })
+
+  t.test('prefers the markdown readme', async t => {
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: '1.0.0',
+      }),
+      README: 'plain',
+      'README.markdown': '# markdown',
+    })
+    t.equal(manifest.readme, '# markdown')
+    t.equal(manifest.readmeFilename, 'README.markdown')
+  })
+
+  t.test('falls back to a non-markdown readme', async t => {
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: '1.0.0',
+      }),
+      'README.txt': 'plain text',
+    })
+    t.equal(manifest.readme, 'plain text')
+    t.equal(manifest.readmeFilename, 'README.txt')
+  })
+
+  t.test('sends no readme fields when there is none', async t => {
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: '1.0.0',
+      }),
+      'index.js': '// test file',
+    })
+    t.equal(manifest.readme, undefined)
+    t.equal(manifest.readmeFilename, undefined)
+  })
+
+  t.test('ignores a readme below the package root', async t => {
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: '1.0.0',
+      }),
+      docs: { 'README.md': '# nested' },
+    })
+    t.equal(manifest.readme, undefined)
+    t.equal(manifest.readmeFilename, undefined)
+  })
+
+  t.test('reads the readme from the publish directory', async t => {
+    const manifest = await publishedManifest(
+      t,
+      {
+        'package.json': JSON.stringify({
+          name: 'my-package',
+          version: '1.0.0',
+        }),
+        'README.md': '# source',
+        dist: {
+          'package.json': JSON.stringify({
+            name: 'my-package',
+            version: '1.0.0',
+          }),
+          'README.md': '# published',
+        },
+      },
+      { 'publish-directory': 'dist' },
+    )
+    t.equal(manifest.readme, '# published')
   })
 })
