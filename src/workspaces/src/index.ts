@@ -2,10 +2,11 @@ import type { DepID } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
+import { parseRange, satisfies } from '@vltpkg/semver'
 import type { NormalizedManifest } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type { GlobOptionsWithFileTypesFalse } from 'glob'
-import { globSync } from 'glob'
+import { globSync, Ignore } from 'glob'
 import type { DepResults } from '@vltpkg/graph-run'
 import { graphRun, graphRunSync } from '@vltpkg/graph-run'
 import { minimatch } from 'minimatch'
@@ -146,6 +147,125 @@ export const assertWSConfig: (
   })
 }
 
+/**
+ * Keys that yarn-classic allows alongside `packages` in the
+ * `workspaces` field of a `package.json`, which vlt parses and ignores
+ * rather than rejecting an otherwise valid yarn v1 project.
+ */
+const manifestWSIgnoredKeys = new Set(['nohoist'])
+
+/**
+ * Turn the `workspaces` field of a root `package.json` into a
+ * {@link WorkspaceConfigObject}.
+ *
+ * Only the shapes npm and yarn-classic actually understand are
+ * accepted: a glob string, an array of them, or `{packages: [...]}`.
+ * vlt's named workspace groups are deliberately *not* accepted here --
+ * a `package.json` using them would be meaningless to every other
+ * package manager, so they have to live in `vlt.json`.
+ */
+export const asManifestWSConfig = (
+  conf: unknown,
+  path: string,
+): WorkspaceConfigObject => {
+  if (conf && typeof conf === 'object' && !Array.isArray(conf)) {
+    const groups = Object.keys(conf).filter(
+      k => k !== 'packages' && !manifestWSIgnoredKeys.has(k),
+    )
+    if (groups.length) {
+      throw error(
+        'Named workspace groups are not supported in package.json. ' +
+          'Move them to the "workspaces" field of vlt.json to use them.',
+        {
+          path,
+          found: groups,
+          wanted: 'string | string[] | { packages: string[] }',
+        },
+      )
+    }
+    const { packages } = conf as { packages?: unknown }
+    if (packages === undefined) return {}
+    return asWSConfig({ packages }, path)
+  }
+  return asWSConfig(conf, path)
+}
+
+/**
+ * Which file a project's workspace definitions came from.
+ */
+export type WorkspaceConfigSource = 'vlt.json' | 'package.json'
+
+export type ResolvedWorkspaceConfig = {
+  config: WorkspaceConfigObject
+  /**
+   * The file the config came from, or `undefined` when neither
+   * `vlt.json` nor the root `package.json` declares any workspaces at
+   * all -- ie, when the project is not a monorepo.
+   */
+  source?: WorkspaceConfigSource
+}
+
+/**
+ * Resolve the effective workspace definitions for a project.
+ *
+ * `vlt.json` wins whenever it has a `workspaces` field; otherwise the
+ * npm/yarn-style `workspaces` field of the project root's
+ * `package.json` is used. Note the precedence is keyed on the *field*,
+ * not the file: a `vlt.json` that exists but says nothing about
+ * workspaces still falls through to `package.json`.
+ */
+export const resolveWSConfig = (
+  projectRoot: string,
+  packageJson: PackageJson = new PackageJson(),
+): ResolvedWorkspaceConfig => {
+  const fromVltJson = load('workspaces', assertWSConfig)
+  if (fromVltJson !== undefined) {
+    return { config: asWSConfig(fromVltJson), source: 'vlt.json' }
+  }
+  // maybeRead, because a project root need not have a package.json at
+  // all, and an unreadable one is not this module's error to report.
+  const workspaces = packageJson.maybeRead(projectRoot)?.workspaces
+  if (workspaces === undefined) return { config: {} }
+  return {
+    config: asManifestWSConfig(
+      workspaces,
+      resolve(projectRoot, 'package.json'),
+    ),
+    source: 'package.json',
+  }
+}
+
+/**
+ * Split a list of glob patterns into the positive patterns and the
+ * npm-compatible `!`-negated ones, which become ignore patterns.
+ *
+ * Follows npm's `map-workspaces` rules: an even number of leading `!`
+ * is a positive pattern (`!!foo` means `foo`), a leading `./` or `/` is
+ * stripped, and a later positive pattern un-negates any earlier
+ * negation it matches, so `['a/**', '!a/b/**', 'a/b/c']` keeps
+ * `a/b/c`.
+ */
+export const splitNegatedPatterns = (
+  all: string[],
+): { patterns: string[]; ignore: string[] } => {
+  const patterns: string[] = []
+  let ignore: string[] = []
+  for (const orig of all) {
+    const excl = /^!+/.exec(orig)
+    const stripped = excl ? orig.slice(excl[0].length) : orig
+    // `./foo` and `/foo` both just mean `foo`
+    const pattern = stripped.replace(/^\.?\/+/, '')
+    if (excl && excl[0].length % 2 === 1) {
+      ignore.push(pattern)
+      continue
+    }
+    // a positive pattern un-negates any earlier negation matching it
+    ignore = ignore.filter(ign => !minimatch(pattern, ign))
+    patterns.push(pattern)
+  }
+  return { patterns, ignore }
+}
+
 export type MonorepoOptions = {
   /**
    * A {@link PackageJson} object, for sharing manifest caches
@@ -156,8 +276,9 @@ export type MonorepoOptions = {
    */
   scurry?: PathScurry
   /**
-   * Parsed normalized contents of the workspaces from a `vlt.json`
-   * file
+   * Parsed normalized contents of the workspaces, from either a
+   * `vlt.json` or a `package.json` file. If set, the file is not read
+   * again.
    */
   config?: WorkspaceConfigObject
   /**
@@ -202,9 +323,9 @@ export class Monorepo {
   }
 
   /**
-   * Load the workspace definitions from vlt.json,
-   * canonicalizing the result into the effective `{[group:string]:string[]}`
-   * form.
+   * Load the workspace definitions from vlt.json, or from the root
+   * package.json when vlt.json declares none, canonicalizing the result
+   * into the effective `{[group:string]:string[]}` form.
    *
    * Eg:
    * - `"src/*"` => `{packages:["src/*"]}`
@@ -212,9 +333,10 @@ export class Monorepo {
    */
   get config(): WorkspaceConfigObject {
     if (this.#config) return this.#config
-    this.#config = asWSConfig(
-      load('workspaces', assertWSConfig) ?? {},
-    )
+    this.#config = resolveWSConfig(
+      this.projectRoot,
+      this.packageJson,
+    ).config
     return this.#config
   }
 
@@ -333,6 +455,7 @@ export class Monorepo {
   // but still worthwhile to have it defined in one place
   #globOptions(
     matches: Set<string>,
+    ignore?: Ignore,
     parseErrors?: Map<string, unknown>,
   ): GlobOptionsWithFileTypesFalse {
     // if the entry or any of its parent dirs are already matched,
@@ -354,12 +477,19 @@ export class Monorepo {
       ignore: {
         childrenIgnored: p =>
           basename(p.relativePosix()) === 'node_modules' ||
+          // only prunes the subtree for a `!foo/**` style negation,
+          // matching npm -- a bare `!foo` still gets walked into
+          !!ignore?.childrenIgnored(p) ||
           inMatches(p),
         // ignore if fails to load package.json
         ignored: p => {
           p.lstatSync()
           const rel = p.relativePosix()
           if (!rel) return true
+          // checked before the `matches` bookkeeping below, so a negated
+          // path never lands in `matches` and therefore never suppresses
+          // its own descendants
+          if (ignore?.ignored(p)) return true
           const maybeDelete: string[] = []
           for (const m of matches) {
             if (rel.startsWith(m + '/')) return true
@@ -392,10 +522,22 @@ export class Monorepo {
     }
   }
 
-  #glob(pattern: string[] | string) {
+  // patterns are always an array: asWSConfig normalizes every
+  // WorkspaceConfig shape to string[], and the path filter is a Set
+  #glob(pattern: string[]) {
+    const { patterns, ignore } = splitNegatedPatterns(pattern)
     const matches = new Set<string>()
+    // nothing but negations can never match anything
+    if (!patterns.length) return matches
     const parseErrors = new Map<string, unknown>()
-    globSync(pattern, this.#globOptions(matches, parseErrors))
+    globSync(
+      patterns,
+      this.#globOptions(
+        matches,
+        ignore.length ? new Ignore(ignore, {}) : undefined,
+        parseErrors,
+      ),
+    )
 
     // After the glob completes, check for JSON parse errors in paths
     // that are NOT nested inside an already-matched workspace.
@@ -432,6 +574,12 @@ export class Monorepo {
    * This does *not* get the full set of dependencies, or expand any
    * `workspace:` dependencies that are not loaded.
    *
+   * Bare semver specs are matched by name, and linked only when the
+   * local workspace version satisfies the range -- the same test
+   * `@vltpkg/satisfies` applies at resolution time, so the two agree on
+   * which deps are local. Specs that aren't parseable ranges, such as
+   * dist-tags, still match by name alone.
+   *
    * Call with the `forceLoad` param set to `true` to attempt a full
    * load if any deps are not currently loaded.
    */
@@ -450,15 +598,39 @@ export class Monorepo {
       const deps = manifest[depType]
       if (!deps) continue
       for (const [dep, spec] of Object.entries(deps)) {
-        if (spec.startsWith('workspace:')) {
+        // `workspace:` specs, plus any spec with no protocol -- bare
+        // semver ranges and dist-tags, which are how npm/yarn monorepos
+        // reference each other. Anything with a protocol (`npm:`,
+        // `file:`, `git:`, `catalog:`, ...) names something other than a
+        // local workspace, or aliases a different package entirely.
+        if (spec.startsWith('workspace:') || !spec.includes(':')) {
           let depWS = this.#workspaces.get(dep)
+          // #workspaces is keyed by name *and* path, so a path that
+          // happens to equal a dependency name is not a match
+          if (depWS && depWS.name !== dep) depWS = undefined
           if (!depWS) {
             if (!forceLoad) continue
             if (didForceLoad) continue
             didForceLoad = true
             this.load()
             depWS = this.#workspaces.get(dep)
-            if (!depWS) continue
+            if (depWS?.name !== dep) continue
+          }
+          // A bare spec only refers to the local workspace when its
+          // version actually satisfies the range -- otherwise the dep
+          // resolves to the registry, and linking it here would add an
+          // edge that isn't real. That matters beyond ordering: paired
+          // with a genuine dep the other way it fabricates a cycle,
+          // and onCycle drops an edge to break it. Ranges we can't
+          // parse (dist-tags, `user/repo` shorthands) keep matching by
+          // name, as before.
+          const range =
+            spec.includes(':') ? undefined : parseRange(spec)
+          if (
+            range &&
+            !satisfies(depWS.manifest.version ?? '', range)
+          ) {
+            continue
           }
           depWorkspaces.push(depWS)
         }
@@ -648,16 +820,25 @@ export class Monorepo {
 
   /**
    * Convenience method to instantiate and load in one call.
-   * Returns undefined if the project is not a monorepo workspaces
-   * root, otherwise returns the loaded Monorepo.
+   * Returns undefined if the project is not a monorepo workspaces root,
+   * meaning neither `vlt.json` nor the root `package.json` declares any
+   * workspaces. Otherwise returns the loaded Monorepo.
    */
   static maybeLoad(
     projectRoot: string,
     options: MonorepoOptions = { load: {} },
   ) {
-    const config = load('workspaces', assertWSConfig)
-    if (!config) return
-    return new Monorepo(projectRoot, { load: {}, ...options })
+    if (options.config) {
+      return new Monorepo(projectRoot, { load: {}, ...options })
+    }
+    const { config, source } = resolveWSConfig(
+      projectRoot,
+      options.packageJson,
+    )
+    if (!source) return
+    // hand the resolved config to the instance so the file that
+    // declared it isn't read a second time
+    return new Monorepo(projectRoot, { load: {}, ...options, config })
   }
 
   /**

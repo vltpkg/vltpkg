@@ -422,3 +422,84 @@ t.test('human output array', t => {
   )
   t.end()
 })
+
+t.test('workspaces declared in package.json', async t => {
+  await t.test('covered by an existing pattern', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+    })
+    t.chdir(dir)
+    delete vltJsonData.workspaces
+    inited.length = 0
+
+    await command({
+      values: { workspace: ['packages/a'] },
+      options: { projectRoot: dir },
+      get: () => undefined,
+    } as unknown as LoadedConfig)
+
+    t.strictSame(inited, [resolve(dir, 'packages/a')])
+    t.equal(
+      vltJsonData.workspaces,
+      undefined,
+      'nothing written to vlt.json: package.json already covers it',
+    )
+  })
+
+  await t.test('not covered: seeds vlt.json first', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+    })
+    t.chdir(dir)
+    delete vltJsonData.workspaces
+    inited.length = 0
+
+    await command({
+      values: { workspace: ['apps/b'] },
+      options: { projectRoot: dir },
+      get: () => undefined,
+    } as unknown as LoadedConfig)
+
+    t.strictSame(
+      vltJsonData.workspaces,
+      ['packages/*', 'apps/b'],
+      'package.json patterns are carried over, so they are not shadowed',
+    )
+  })
+
+  await t.test(
+    'negated patterns do not count as covered',
+    async t => {
+      const dir = t.testdir({
+        '.git': {},
+        'package.json': JSON.stringify({
+          name: 'root',
+          workspaces: ['packages/*', '!packages/a'],
+        }),
+      })
+      t.chdir(dir)
+      delete vltJsonData.workspaces
+      inited.length = 0
+
+      await command({
+        values: { workspace: ['packages/a'] },
+        options: { projectRoot: dir },
+        get: () => undefined,
+      } as unknown as LoadedConfig)
+
+      t.strictSame(vltJsonData.workspaces, [
+        'packages/*',
+        '!packages/a',
+        'packages/a',
+      ])
+    },
+  )
+})

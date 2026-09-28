@@ -331,7 +331,9 @@ See [`vlt build`](/client/commands/build) for full details.
 
 ## Workspaces
 
-npm workspaces are defined in the root `package.json`:
+**Your existing npm workspaces just work.** vlt reads the `workspaces`
+field of the root `package.json`, so a monorepo like this needs no
+changes at all:
 
 <Code
   code={JSON.stringify(
@@ -341,29 +343,15 @@ npm workspaces are defined in the root `package.json`:
     null,
     2,
   )}
-  title="package.json (npm)"
+  title="package.json"
   lang="json"
 />
 
-vlt workspaces are defined in `vlt.json`:
+Exclusion patterns such as `!packages/legacy` are honored too.
 
-<Code
-  code={JSON.stringify(
-    {
-      workspaces: ['packages/*'],
-    },
-    null,
-    2,
-  )}
-  title="vlt.json"
-  lang="json"
-/>
-
-### Key Differences
-
-- **Definition location** — `vlt.json` instead of `package.json`
-- **Named groups** — vlt supports grouping workspaces for targeted
-  operations:
+You only need to define workspaces in `vlt.json` if you want vlt's
+named groups, which let you run operations against a subset of your
+workspaces:
 
 <Code
   code={JSON.stringify(
@@ -379,6 +367,14 @@ vlt workspaces are defined in `vlt.json`:
   title="vlt.json"
   lang="json"
 />
+
+### Key Differences
+
+- **Precedence** — if `vlt.json` has a `workspaces` field it wins
+  outright, and the `package.json` field is ignored rather than
+  merged. Keep the list in one place.
+- **Named groups** — supported only in `vlt.json`, since a
+  `package.json` using them would be meaningless to npm.
 
 ### Workspace Commands
 
@@ -436,10 +432,11 @@ match the same dependency.
 ## Migration Checklist
 
 1. Install vlt: `npm install -g vlt`
-2. In your project root, create `vlt.json` with your registry and
-   workspace config (or use `vlt config set`)
+2. In your project root, create `vlt.json` with your registry config
+   (or use `vlt config set`)
 3. Move any scoped registry config from `.npmrc` to `vlt.json`
-4. Move workspace definitions from `package.json` to `vlt.json`
+4. Leave your `workspaces` field in `package.json` — vlt reads it
+   as-is. Move it to `vlt.json` only if you want named groups
 5. Move `overrides` from `package.json` to `modifiers` in `vlt.json`
 6. Run `vlt install` then `vlt build`
 7. Commit `vlt-lock.json`

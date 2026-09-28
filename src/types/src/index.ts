@@ -920,6 +920,17 @@ export type Manifest = {
   contributors?: Person[]
   /** the license of the package */
   license?: string
+  /**
+   * npm/yarn-style workspace globs. Honored by vlt as a fallback when
+   * `vlt.json` has no `workspaces` field of its own. Only the npm
+   * (`string[]`) and yarn-classic (`{packages}`) forms are accepted;
+   * vlt's named workspace groups are a `vlt.json` feature. yarn's
+   * `nohoist` is parsed and ignored.
+   */
+  workspaces?:
+    | string[]
+    | { packages?: string[] | string; nohoist?: string[] }
+    | string
 }
 
 export type NormalizedFields = {
