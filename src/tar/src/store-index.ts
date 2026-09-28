@@ -161,7 +161,13 @@ export class StoreIndexCache {
       return readStoreIndex(storeEntry)
     }
     try {
-      const stat = fstatSync(fd, { bigint: true })
+      let stat: BigIntStats
+      try {
+        stat = fstatSync(fd, { bigint: true })
+      } catch {
+        this.#delete(storeEntry)
+        return readStoreIndex(storeEntry)
+      }
       const cached = this.#entries.get(storeEntry)
       if (cached && sameFile(stat, cached.stat)) {
         return copyIndex(cached.index)

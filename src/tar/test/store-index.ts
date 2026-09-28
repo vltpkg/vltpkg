@@ -220,6 +220,24 @@ t.test('a read failure is a store miss', async t => {
   t.equal(cache.read(resolve(d, 'entry')), undefined)
 })
 
+t.test('a stat failure is a store miss', async t => {
+  const { StoreIndexCache } = await t.mockImport<
+    typeof import('../src/store-index.ts')
+  >('../src/store-index.ts', {
+    'node:fs': {
+      ...fs,
+      fstatSync: () => {
+        throw Object.assign(new Error('stat failed'), {
+          code: 'EIO',
+        })
+      },
+    },
+  })
+  const d = t.testdir({ 'entry.json': JSON.stringify(valid) })
+  const cache = new StoreIndexCache()
+  t.strictSame(cache.read(resolve(d, 'entry')), valid)
+})
+
 t.test('cache supports indexes without optional fields', async t => {
   const index = { v: 1, files: [], dirs: [], scripts: false }
   const d = t.testdir({ 'entry.json': JSON.stringify(index) })
