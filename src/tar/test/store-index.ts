@@ -168,6 +168,34 @@ t.test('storeIndexPath', async t => {
   t.equal(storeIndexPath('/s/v1/abc'), '/s/v1/abc.json')
 })
 
+t.test('cache treats malformed sidecars as misses', async t => {
+  const d = t.testdir({
+    'bad.json': '{not json',
+    'wrong.json': JSON.stringify({ ...valid, v: 2 }),
+  })
+  const cache = new StoreIndexCache()
+  t.equal(cache.read(resolve(d, 'bad')), undefined)
+  t.equal(cache.read(resolve(d, 'bad')), undefined)
+  t.equal(cache.read(resolve(d, 'wrong')), undefined)
+  t.equal(cache.read(resolve(d, 'wrong')), undefined)
+})
+
+t.test('a close failure still returns the index', async t => {
+  const { StoreIndexCache } = await t.mockImport<
+    typeof import('../src/store-index.ts')
+  >('../src/store-index.ts', {
+    'node:fs': {
+      ...fs,
+      closeSync: () => {
+        throw new Error('close failed')
+      },
+    },
+  })
+  const d = t.testdir({ 'entry.json': JSON.stringify(valid) })
+  const cache = new StoreIndexCache()
+  t.strictSame(cache.read(resolve(d, 'entry')), valid)
+})
+
 t.test('cache supports indexes without optional fields', async t => {
   const index = { v: 1, files: [], dirs: [], scripts: false }
   const d = t.testdir({ 'entry.json': JSON.stringify(index) })
