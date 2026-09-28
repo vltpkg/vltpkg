@@ -432,10 +432,11 @@ match the same dependency.
 ## Migration Checklist
 
 1. Install vlt: `npm install -g vlt`
-2. In your project root, create `vlt.json` with your registry and
-   workspace config (or use `vlt config set`)
+2. In your project root, create `vlt.json` with your registry config
+   (or use `vlt config set`)
 3. Move any scoped registry config from `.npmrc` to `vlt.json`
-4. Move workspace definitions from `package.json` to `vlt.json`
+4. Leave your `workspaces` field in `package.json` — vlt reads it
+   as-is. Move it to `vlt.json` only if you want named groups
 5. Move `overrides` from `package.json` to `modifiers` in `vlt.json`
 6. Run `vlt install` then `vlt build`
 7. Commit `vlt-lock.json`

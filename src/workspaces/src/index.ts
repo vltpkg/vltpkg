@@ -2,6 +2,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
+import { parseRange, satisfies } from '@vltpkg/semver'
 import type { NormalizedManifest } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type { GlobOptionsWithFileTypesFalse } from 'glob'
@@ -573,10 +574,11 @@ export class Monorepo {
    * This does *not* get the full set of dependencies, or expand any
    * `workspace:` dependencies that are not loaded.
    *
-   * Bare semver specs are matched by name only, with no version check.
-   * This is deliberate: the result is used for run *ordering*, where an
-   * extra edge is harmless, and actual resolution goes through
-   * `@vltpkg/satisfies`, which does compare the range.
+   * Bare semver specs are matched by name, and linked only when the
+   * local workspace version satisfies the range -- the same test
+   * `@vltpkg/satisfies` applies at resolution time, so the two agree on
+   * which deps are local. Specs that aren't parseable ranges, such as
+   * dist-tags, still match by name alone.
    *
    * Call with the `forceLoad` param set to `true` to attempt a full
    * load if any deps are not currently loaded.
@@ -601,8 +603,6 @@ export class Monorepo {
         // reference each other. Anything with a protocol (`npm:`,
         // `file:`, `git:`, `catalog:`, ...) names something other than a
         // local workspace, or aliases a different package entirely.
-        // A protocol-less shorthand like `user/repo` can slip through
-        // and add a spurious ordering edge, which is harmless here.
         if (spec.startsWith('workspace:') || !spec.includes(':')) {
           let depWS = this.#workspaces.get(dep)
           // #workspaces is keyed by name *and* path, so a path that
@@ -615,6 +615,22 @@ export class Monorepo {
             this.load()
             depWS = this.#workspaces.get(dep)
             if (depWS?.name !== dep) continue
+          }
+          // A bare spec only refers to the local workspace when its
+          // version actually satisfies the range -- otherwise the dep
+          // resolves to the registry, and linking it here would add an
+          // edge that isn't real. That matters beyond ordering: paired
+          // with a genuine dep the other way it fabricates a cycle,
+          // and onCycle drops an edge to break it. Ranges we can't
+          // parse (dist-tags, `user/repo` shorthands) keep matching by
+          // name, as before.
+          const range =
+            spec.includes(':') ? undefined : parseRange(spec)
+          if (
+            range &&
+            !satisfies(depWS.manifest.version ?? '', range)
+          ) {
+            continue
           }
           depWorkspaces.push(depWS)
         }

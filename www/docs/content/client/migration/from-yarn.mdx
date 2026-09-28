@@ -432,10 +432,11 @@ Some yarn-specific features don't have direct equivalents:
 ## Migration Checklist
 
 1. Install vlt: `npm install -g vlt`
-2. Create `vlt.json` with registry and workspace configuration
+2. Create `vlt.json` with your registry configuration
 3. Move scoped registry config from `.yarnrc.yml` / `.npmrc` to
    `vlt.json`
-4. Move workspace definitions from `package.json` to `vlt.json`
+4. Leave your `workspaces` field in `package.json` — vlt reads it
+   as-is. Move it to `vlt.json` only if you want named groups
 5. Move `resolutions` from `package.json` to `modifiers` in `vlt.json`
 6. If using PnP, remove `.pnp.cjs`, `.pnp.loader.mjs`, and related
    `.yarnrc.yml` settings

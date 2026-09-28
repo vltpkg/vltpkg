@@ -882,3 +882,122 @@ t.test(
     t.strictSame(m.getDeps(m.get('a')!), [], 'matched by name only')
   },
 )
+
+t.test('getDeps checks bare semver ranges', async t => {
+  await t.test('range not satisfied: no edge', async t => {
+    // `a` wants b@^2, but the local b is 1.0.0, so that dep resolves to
+    // the registry rather than the workspace. Paired with b's real dep
+    // on `a`, linking it anyway would fabricate a cycle.
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: {
+        a: {
+          'package.json': pkg('a', { dependencies: { b: '^2.0.0' } }),
+        },
+        b: {
+          'package.json': pkg('b', { dependencies: { a: '^1.0.0' } }),
+        },
+      },
+    })
+    t.chdir(dir)
+    unload()
+    const m = Monorepo.load(dir)
+    t.strictSame(
+      m.getDeps(m.get('a')!),
+      [],
+      'an unsatisfied range is not a local workspace dep',
+    )
+    t.strictSame(
+      m.getDeps(m.get('b')!).map(w => w.name),
+      ['a'],
+      'the satisfied dep in the other direction still links',
+    )
+    // with no fabricated cycle, the real ordering constraint survives
+    const order = [...m].map(w => w.name)
+    t.ok(order.indexOf('a') < order.indexOf('b'))
+  })
+
+  await t.test('unparseable ranges match by name', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: {
+        a: {
+          'package.json': pkg('a', {
+            dependencies: { b: 'latest', c: 'user/repo' },
+          }),
+        },
+        b: { 'package.json': pkg('b') },
+        c: { 'package.json': pkg('c') },
+      },
+    })
+    t.chdir(dir)
+    unload()
+    const m = Monorepo.load(dir)
+    t.strictSame(
+      m
+        .getDeps(m.get('a')!)
+        .map(w => w.name)
+        .sort(),
+      ['b', 'c'],
+      'dist-tags and shorthands still match by name alone',
+    )
+  })
+
+  await t.test('workspace: specs are not range-checked', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: {
+        a: {
+          'package.json': pkg('a', {
+            dependencies: { b: 'workspace:^9.0.0' },
+          }),
+        },
+        b: { 'package.json': pkg('b') },
+      },
+    })
+    t.chdir(dir)
+    unload()
+    const m = Monorepo.load(dir)
+    t.strictSame(
+      m.getDeps(m.get('a')!).map(w => w.name),
+      ['b'],
+      'the workspace: protocol keeps its existing behavior',
+    )
+  })
+
+  await t.test('a workspace with no version', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: {
+        a: {
+          'package.json': pkg('a', { dependencies: { b: '^1.0.0' } }),
+        },
+        b: { 'package.json': JSON.stringify({ name: 'b' }) },
+      },
+    })
+    t.chdir(dir)
+    unload()
+    const m = Monorepo.load(dir)
+    t.strictSame(
+      m.getDeps(m.get('a')!),
+      [],
+      'an unversioned workspace cannot satisfy a range',
+    )
+  })
+})

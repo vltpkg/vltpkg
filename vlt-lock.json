@@ -1901,6 +1901,7 @@
     "workspace~src+workspaces @vltpkg/error-cause": "prod workspace:* workspace~src+error-cause",
     "workspace~src+workspaces @vltpkg/graph-run": "prod workspace:* workspace~src+graph-run",
     "workspace~src+workspaces @vltpkg/package-json": "prod workspace:* workspace~src+package-json",
+    "workspace~src+workspaces @vltpkg/semver": "prod workspace:* workspace~src+semver",
     "workspace~src+workspaces @vltpkg/types": "prod workspace:* workspace~src+types",
     "workspace~src+workspaces @vltpkg/vlt-json": "prod workspace:* workspace~src+vlt-json",
     "workspace~src+xdg @eslint/js": "dev catalog: ~npm~@eslint+js@9.39.5",

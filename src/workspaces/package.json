@@ -13,6 +13,7 @@
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/graph-run": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/semver": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
     "glob": "^13.0.0",
