@@ -1,5 +1,6 @@
 import * as FS from 'node:fs'
 import {
+  cpSync,
   existsSync,
   readFileSync,
   readdirSync,
@@ -81,6 +82,27 @@ const mockFS = (t: Test, mocks: Partial<typeof FS>) =>
   t.mockImport<LinkTree>('../src/link-tree.ts', {
     'node:fs': t.createMock(FS, mocks),
   })
+
+// clonefile(2) is darwin-only: what it does, or the errno it fails with
+const mockClone = async (
+  t: Test,
+  fail: (src: string, dst: string) => string | undefined = () =>
+    undefined,
+) => {
+  const clones: string[] = []
+  const mod = await t.mockImport<LinkTree>('../src/link-tree.ts', {
+    '../src/clonefile.ts': {
+      cloneDir: (src: string, dst: string) => {
+        const code = fail(src, dst)
+        if (code) return code
+        clones.push(dst)
+        cpSync(src, dst, { recursive: true })
+        return true
+      },
+    },
+  })
+  return { ...mod, clones }
+}
 
 const checkTree = (
   t: Test,
@@ -178,6 +200,162 @@ t.test('install scripts imply copy', async t => {
   )
   t.equal(how(linkFromStore(entry, target)), 'copy')
   checkTree(t, entry, index, target, () => 1)
+})
+
+t.test('clone option clones the entry', async t => {
+  const { entry, index, target } = makeEntry(t)
+  const { linkFromStore, clones } = await mockClone(t)
+  t.strictSame(linkFromStore(entry, target, { clone: true }), {
+    how: 'clone',
+    index,
+  })
+  checkTree(t, entry, index, target, () => 1)
+  t.equal(clones.length, 1, 'one clone')
+  t.equal(dirname(String(clones[0])), dirname(target), 'sibling tmp')
+  // nlink cannot show a clone: marked like a copy
+  t.equal(existsSync(storeCopiedPath(entry)), true)
+
+  t.test('copy and install scripts need no copy on top', async t => {
+    const { entry, index, target } = makeEntry(t)
+    const { linkFromStore, clones } = await mockClone(t)
+    t.equal(
+      how(linkFromStore(entry, target, { clone: true, copy: true })),
+      'clone',
+    )
+    writeFileSync(
+      storeIndexPath(entry),
+      JSON.stringify({ ...index, scripts: true }),
+    )
+    t.match(linkFromStore(entry, target + '2', { clone: true }), {
+      how: 'clone',
+      index: { scripts: true },
+    })
+    t.equal(clones.length, 2)
+  })
+
+  t.test('not asked: never tried', async t => {
+    const { entry, target } = makeEntry(t)
+    const { linkFromStore, clones } = await mockClone(t)
+    t.equal(how(linkFromStore(entry, target)), 'link')
+    t.strictSame(clones, [])
+  })
+
+  t.test('a failed clone places the files instead', async t => {
+    const { entry, index, target } = makeEntry(t)
+    let code: string | undefined = 'ENOENT'
+    const { linkFromStore, clones } = await mockClone(t, () => code)
+    t.equal(
+      how(linkFromStore(entry, target, { clone: true })),
+      'link',
+    )
+    checkTree(t, entry, index, target, () => 2)
+    t.equal(existsSync(storeCopiedPath(entry)), false)
+    // still tried, still clones
+    code = undefined
+    const other = resolve(dirname(target), 'other')
+    t.equal(
+      how(linkFromStore(entry, other, { clone: true })),
+      'clone',
+    )
+    t.strictSame(clones, [clones[0]])
+  })
+
+  t.test('a clone that cannot work stops cloning', async t => {
+    for (const fatal of ['ENOTSUP', 'EXDEV', 'EPERM', 'EACCES']) {
+      const { entry, target } = makeEntry(t)
+      let code: string | undefined = fatal
+      const { linkFromStore, clones } = await mockClone(t, () => code)
+      t.equal(
+        how(linkFromStore(entry, target, { clone: true })),
+        'link',
+        fatal,
+      )
+      code = undefined
+      const other = resolve(dirname(target), 'other')
+      t.equal(
+        how(linkFromStore(entry, other, { clone: true })),
+        'link',
+      )
+      t.strictSame(clones, [], 'never again')
+    }
+  })
+
+  t.test('a damaged entry is found and discarded', async t => {
+    const damaged = async (
+      t: Test,
+      damage: (entry: string, index: StoreIndex) => void,
+    ) => {
+      const { entry, index, target } = makeEntry(t)
+      const { linkFromStore } = await mockClone(t)
+      damage(entry, index)
+      t.equal(linkFromStore(entry, target, { clone: true }), false)
+      noTrace(t, target)
+      t.equal(existsSync(entry), false, 'entry removed')
+      t.equal(existsSync(storeIndexPath(entry)), false)
+    }
+    t.test('missing file', async t => {
+      await damaged(t, entry => rmSync(resolve(entry, 'lib/a.js')))
+    })
+    t.test('extra file', async t => {
+      await damaged(t, entry =>
+        writeFileSync(resolve(entry, 'lib/extra.js'), 'x'),
+      )
+    })
+    t.test('missing directory', async t => {
+      await damaged(t, entry =>
+        rmSync(resolve(entry, 'lib/deep'), { recursive: true }),
+      )
+    })
+    t.test('directory that is a file', async t => {
+      await damaged(t, entry => {
+        rmSync(resolve(entry, 'lib/deep'), { recursive: true })
+        writeFileSync(resolve(entry, 'lib/deep'), 'x')
+      })
+    })
+    t.test('index names a directory it does not list', async t => {
+      await damaged(t, (entry, index) =>
+        writeFileSync(
+          storeIndexPath(entry),
+          JSON.stringify({
+            ...index,
+            files: [...index.files, ['other/x.js', 1, 0]],
+          }),
+        ),
+      )
+    })
+  })
+
+  t.test('VLT_STORE_VERIFY=1 checks package.json', async t => {
+    process.env.VLT_STORE_VERIFY = '1'
+    t.teardown(() => {
+      delete process.env.VLT_STORE_VERIFY
+    })
+    const { entry, index, target } = makeEntry(t)
+    const { linkFromStore } = await mockClone(t)
+    t.equal(
+      how(linkFromStore(entry, target, { clone: true })),
+      'clone',
+    )
+    writeFileSync(
+      storeIndexPath(entry),
+      JSON.stringify({
+        ...index,
+        files: index.files.filter(f => f[0] !== 'package.json'),
+      }),
+    )
+    rmSync(resolve(entry, 'package.json'))
+    const other = resolve(dirname(target), 'other')
+    t.equal(
+      how(linkFromStore(entry, other, { clone: true })),
+      'clone',
+      'none to check',
+    )
+    writeFileSync(storeIndexPath(entry), JSON.stringify(index))
+    writeFileSync(resolve(entry, 'package.json'), '{}')
+    const changed = resolve(dirname(target), 'changed')
+    t.equal(linkFromStore(entry, changed, { clone: true }), false)
+    t.equal(existsSync(entry), false, 'entry removed')
+  })
 })
 
 t.test('store miss creates nothing', async t => {

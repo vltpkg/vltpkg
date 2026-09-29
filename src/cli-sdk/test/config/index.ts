@@ -1067,9 +1067,14 @@ t.test('store-linker and global store root', async t => {
   const dir = t.testdir({ 'vlt.json': '{}', '.git': {} })
   t.chdir(dir)
   unload()
+  // clonefile(2) through node:ffi: darwin on a recent node only
+  let cloneable = false
+  const clonefile = {
+    '@vltpkg/tar/clonefile': { cloneAvailable: () => cloneable },
+  }
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
-  >('../../src/config/index.ts')
+  >('../../src/config/index.ts', clonefile)
 
   // `auto` only stays `auto` on linux, see below
   t.intercept(process, 'platform', { value: 'linux' })
@@ -1155,7 +1160,7 @@ t.test('store-linker and global store root', async t => {
     unload()
     const { Config: C } = await t.mockImport<
       typeof import('../../src/config/index.ts')
-    >('../../src/config/index.ts')
+    >('../../src/config/index.ts', clonefile)
     clearEnv()
     t.intercept(process, 'platform', { value: 'darwin' })
     const file = await C.load(d, ['install'], true)
@@ -1167,7 +1172,7 @@ t.test('store-linker and global store root', async t => {
     unload()
     const { Config: CC } = await t.mockImport<
       typeof import('../../src/config/index.ts')
-    >('../../src/config/index.ts')
+    >('../../src/config/index.ts', clonefile)
     clearEnv()
     t.intercept(process, 'platform', { value: 'darwin' })
     const cmd = await CC.load(cd, ['install'], true)
@@ -1176,6 +1181,58 @@ t.test('store-linker and global store root', async t => {
 
     t.strictSame(errs(), [], 'never warns')
   })
+
+  await t.test(
+    'auto means clone on darwin with node:ffi',
+    async t => {
+      cloneable = true
+      t.teardown(() => {
+        cloneable = false
+      })
+      // a fresh module: loadEnvDefaults() leaves the env of earlier
+      // loads in the shared jack instance
+      t.chdir(dir)
+      unload()
+      const { Config } = await t.mockImport<
+        typeof import('../../src/config/index.ts')
+      >('../../src/config/index.ts', clonefile)
+      const load = async (
+        platform: string,
+        argv: string[] = [],
+        env?: string,
+      ) => {
+        clearEnv()
+        if (env !== undefined) process.env.VLT_STORE_LINKER = env
+        t.intercept(process, 'platform', { value: platform })
+        return Config.load(dir, ['install', ...argv], true)
+      }
+
+      const c = await load('darwin')
+      t.equal(c.get('store-linker'), 'clone', 'darwin default')
+      t.equal(c.options['store-linker'], 'clone')
+      t.equal(
+        process.env.VLT_STORE_LINKER,
+        'clone',
+        'darwin child sees clone',
+      )
+
+      const linux = await load('linux')
+      t.equal(linux.get('store-linker'), 'auto', 'linux stays auto')
+
+      const cli = await load('darwin', ['--store-linker=auto'])
+      t.equal(cli.explicit['store-linker'], 'clone', 'cli records it')
+
+      const env = await load('darwin', [], 'auto')
+      t.equal(env.explicit['store-linker'], 'clone', 'env records it')
+
+      const hard = await load('darwin', [], 'hardlink')
+      t.equal(hard.get('store-linker'), 'hardlink', 'env opt-in kept')
+
+      const opted = await load('linux', ['--store-linker=clone'])
+      t.equal(opted.get('store-linker'), 'clone', 'cli opt-in kept')
+      t.equal(process.env.VLT_STORE_LINKER, 'clone')
+    },
+  )
 
   clearEnv()
   process.env.VLT_STORE_LINKER = 'hardlink'

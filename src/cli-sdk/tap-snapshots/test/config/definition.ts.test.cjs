@@ -552,18 +552,20 @@ Object {
     "description": String(
       How packages are placed in \`node_modules\`. Every linker but \`unpack\` fills a global store under \`cache\` in the background, then places packages from it.
       
-      - auto: Default. On Linux, hardlink from the global store, copying any file that cannot be linked. Elsewhere, same as \`unpack\`: a hardlink is the slowest way to place a file on APFS, so macOS and Windows unpack by default.
+      - auto: Default. On Linux, hardlink from the global store, copying any file that cannot be linked. On macOS, clone from it, on a Node with \`node:ffi\` (26.1 and later); a hardlink is the slowest way to place a file on APFS, so an older Node there, and Windows, unpack by default.
       - hardlink: Hardlink from the global store on every platform.
+      - clone: Clone each package directory from the global store copy-on-write (\`clonefile\`, macOS on APFS). Files share storage with the store until edited, so editing in place is safe. Hardlinks, then copies, where cloning fails.
       - copy: Copy from the global store. Use this when editing files in \`node_modules\` in place, since a hardlink shares its content with every project.
       - unpack: Unpack each package tarball, skipping the global store.
       
-      Packages with install scripts are always copied. An invalid \`VLT_STORE_LINKER\` warns and uses \`unpack\`.
+      Packages with install scripts are always copied or cloned. An invalid \`VLT_STORE_LINKER\` warns and uses \`unpack\`.
     ),
-    "hint": "auto | hardlink | copy | unpack",
+    "hint": "auto | hardlink | clone | copy | unpack",
     "type": "string",
     "validOptions": Array [
       "auto",
       "hardlink",
+      "clone",
       "copy",
       "unpack",
     ],
@@ -712,7 +714,7 @@ Array [
   "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
   "--stale-while-revalidate-factor=<n>",
-  "--store-linker=<auto | hardlink | copy | unpack>",
+  "--store-linker=<auto | hardlink | clone | copy | unpack>",
   "--tag=<tag>",
   "--target=<query>",
   "--telemetry",
