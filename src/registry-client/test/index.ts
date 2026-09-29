@@ -1,7 +1,7 @@
 import type { Cache } from '@vltpkg/cache'
 import { createServer } from 'http'
 import EventEmitter from 'node:events'
-import { linkSync, readFileSync } from 'node:fs'
+import { linkSync, readFileSync, writeFileSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
@@ -12,6 +12,7 @@ import t from 'tap'
 import type { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
 import * as registryError from '../src/registry-error.ts'
+import { cacheKey } from '../src/index.ts'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,
@@ -1604,6 +1605,74 @@ t.test('cachedBody', async t => {
     rc.cache.delete(key)
   }
 
+  t.test('cachedIntegrity reads only the head', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const withHash = {
+      ...tarHeaders,
+      integrity,
+    }
+    await write(rc, entry(withHash))
+    t.equal(rc.cachedIntegrity(url), integrity, 'the recorded hash')
+    t.equal(
+      rc.cachedIntegrity(new URL(url), { method: 'GET' }),
+      integrity,
+      'a URL object and an explicit method read the same entry',
+    )
+
+    // An entry with no hash cannot be a store key.
+    await write(rc, entry(tarHeaders), `${url}/plain`)
+    t.equal(rc.cachedIntegrity(`${url}/plain`), undefined)
+
+    // Neither can a packument or an error response.
+    await write(
+      rc,
+      entry(
+        { ...withHash, 'content-type': 'application/json' },
+        200,
+        Buffer.from('{"hello":"world"}'),
+      ),
+      `${url}/json`,
+    )
+    t.equal(rc.cachedIntegrity(`${url}/json`), undefined)
+    await write(rc, entry(withHash, 404), `${url}/gone`)
+    t.equal(rc.cachedIntegrity(`${url}/gone`), undefined)
+
+    t.equal(
+      rc.cachedIntegrity(`${url}/nothing-here`),
+      undefined,
+      'no file at all',
+    )
+
+    // The in-memory copy can be newer than disk, same as cachedBody.
+    rc.cache.set(url, entry(withHash))
+    t.equal(rc.cachedIntegrity(url), undefined, 'deferred to request')
+    rc.cache.delete(url)
+
+    // A corrupt head length must not cause a huge allocation.
+    const bad = new RC({ cache: t.testdir() })
+    await write(bad, entry(withHash))
+    const path = bad.cache.path(cacheKey('GET', new URL(url)))
+    const buf = readFileSync(path)
+    buf.writeUInt32BE(0xffffffff, 0)
+    writeFileSync(path, buf)
+    t.equal(bad.cachedIntegrity(url), undefined, 'absurd head size')
+    buf.writeUInt32BE(2, 0)
+    writeFileSync(path, buf)
+    t.equal(
+      bad.cachedIntegrity(url),
+      undefined,
+      'head size too small',
+    )
+    // A believable length, but the file ends before it.
+    const short = buf.subarray(0, 64)
+    short.writeUInt32BE(5000, 0)
+    writeFileSync(path, short)
+    t.equal(bad.cachedIntegrity(url), undefined, 'truncated head')
+    // Too small to even hold the length itself.
+    writeFileSync(path, Buffer.from([0, 0]))
+    t.equal(bad.cachedIntegrity(url), undefined, 'stub of a file')
+  })
+
   t.test('hit by key', async t => {
     const requests: [string, string][] = []
     const { RegistryClient } = await mockIndex(t, {
@@ -1676,7 +1745,8 @@ t.test('cachedBody', async t => {
   t.test('a pin is never answered from the key', async t => {
     const rc = new RC({ cache: t.testdir() })
     await write(rc, entry(tarHeaders))
-    // the url entry is there, but proves nothing about which artifact
+    // The URL entry exists, but it proves nothing about which artifact
+    // it holds.
     t.equal(
       rc.cachedBody(url, { integrity: `sha512-${'0'.repeat(86)}==` }),
       undefined,

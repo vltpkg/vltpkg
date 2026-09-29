@@ -487,6 +487,40 @@ const server = createServer((req, res) => {
     }
     // a vlt packument advertising a brotli alternate, and the artifact
     // it points at. `brotli-404` advertises one the server does not have.
+    case '/brotli-pinned': {
+      const json = JSON.stringify({
+        name: 'brotli-pinned',
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name: 'brotli-pinned',
+            version: '1.0.0',
+            dist: {
+              tarball: 'brotli-pinned/-/brotli-pinned-1.0.0.tgz',
+              alternates: [
+                {
+                  kind: 'tar.br',
+                  tarball: 'brotli-pinned-1.0.0.tar.br',
+                  integrity: brAbbrevIntegrity,
+                },
+              ],
+            },
+          },
+        },
+      })
+      res.setHeader(
+        'content-type',
+        'application/vnd.vlt.packument-v1+json',
+      )
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/brotli-pinned/-/brotli-pinned-1.0.0.tar.br': {
+      // No Repr-Digest header here. The packument's hash is the check.
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', brAbbrev.byteLength)
+      return res.end(brAbbrev)
+    }
     case '/brotli-odd': {
       // an alternate the protocol allows but this client does not use:
       // the reference is not the .tgz's sibling, so neither the format
@@ -3594,6 +3628,47 @@ t.test('brotli tarballs', async t => {
     })
   })
 
+  t.test('an advertised integrity is pinned', async t => {
+    const dir = t.testdir()
+    const res = await pi({ cache: `${dir}/cache` }).resolve(
+      'brotli-pinned@1.0.0',
+    )
+    t.match(res, {
+      resolved: `${defaultRegistry}brotli-pinned/-/brotli-pinned-1.0.0.tar.br`,
+      integrity: brAbbrevIntegrity,
+      digestRequired: undefined,
+    })
+  })
+
+  t.test('a pinned alternate addresses the store cold', async t => {
+    // This is what advertising the hash buys: there is no cache entry
+    // and nothing is downloaded, but the packument alone is enough to
+    // find the package in the store.
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(dir)
+    unload()
+    const cache = `${dir}/cache`
+    const store = pathResolve(cache, 'store/v1')
+    const hex = String(integrityHex(brAbbrevIntegrity))
+    const tmp = pathResolve(store, '.tmp', hex)
+    const { index } = unpackToStoreSync(brAbbrev, tmp, 'brotli')
+    writeFileSync(
+      pathResolve(store, hex + '.json'),
+      JSON.stringify(index),
+    )
+    renameSync(tmp, pathResolve(store, hex))
+
+    const p = pi({ cache, 'store-linker': 'hardlink' })
+    const res = await p.extract('brotli-pinned@1.0.0', `${dir}/a`)
+    t.equal(res.integrity, brAbbrevIntegrity)
+    t.equal(statSync(`${dir}/a/package.json`).nlink, 2, 'linked')
+    t.match(
+      JSON.parse(String(res.manifest)),
+      { name: 'abbrev', version: '2.0.0' },
+      'came from the store index',
+    )
+  })
+
   t.test(
     'an alternate that is not the .tgz sibling is ignored',
     async t => {
@@ -3739,9 +3814,9 @@ t.test('brotli tarballs', async t => {
   )
 
   t.test('a cached body at the url is not the pin', async t => {
-    // the cache is keyed by url, the pin names an artifact: the
-    // url-keyed bytes are never proof of which one, and this path
-    // does not hash them
+    // The cache is keyed by URL, but the pin names a specific artifact.
+    // Whatever is stored under that URL is no proof of which artifact it
+    // is, and this code path does not hash it.
     const dir = t.testdir()
     const cache = `${dir}/cache`
     const prime = pi({ cache })
@@ -3762,8 +3837,8 @@ t.test('brotli tarballs', async t => {
       'a different pin is not served the url-keyed body',
     )
 
-    // with the link gone there is nothing left to trust, so the
-    // pinned read misses and request() re-fetches
+    // With the link gone there is nothing left to trust, so the pinned
+    // read misses and request() fetches it again.
     const linked = rc.cache.integrityPath(brAbbrevIntegrity)
     if (linked) rmSync(linked, { force: true })
     const colder = await pi({ cache }).getRegistryClient()
@@ -3793,9 +3868,9 @@ t.test('brotli tarballs', async t => {
   })
 
   t.test('links from the global store', async t => {
-    // the store is content-addressed by the artifact's own hash, so a
-    // `.tar.br` gets its own entry -- exploded from brotli bytes, but
-    // holding the same files, and found by the same lookup.
+    // The store is addressed by each artifact's own hash, so a `.tar.br`
+    // gets its own entry. It is unpacked from brotli bytes but holds the
+    // same files, and the same lookup finds it.
     const dir = t.testdir({ 'vlt.json': '{}' })
     t.chdir(dir)
     unload()
@@ -3824,6 +3899,46 @@ t.test('brotli tarballs', async t => {
       JSON.parse(String(res.manifest)),
       { name: 'abbrev', version: '2.0.0' },
       'and the index manifest came along',
+    )
+  })
+
+  t.test('links from the store with no hash to go on', async t => {
+    // An install with no lockfile resolves a `.tar.br` without any
+    // integrity, so the store key has to come from the cache entry,
+    // which recorded the hash when those bytes were verified. Without
+    // that, the store is never checked and every warm run inflates the
+    // tarball again.
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(dir)
+    unload()
+    const cache = `${dir}/cache`
+    const store = pathResolve(cache, 'store/v1')
+
+    // Install once so the tarball ends up in the cache.
+    const cold = pi({ cache })
+    await cold.extract('brotli@1.0.0', `${dir}/cold`)
+    await (await cold.getRegistryClient()).cache.promise()
+
+    // Write the store entry the background child would have written.
+    const hex = String(integrityHex(brAbbrevIntegrity))
+    const tmp = pathResolve(store, '.tmp', hex)
+    const { index } = unpackToStoreSync(brAbbrev, tmp, 'brotli')
+    writeFileSync(
+      pathResolve(store, hex + '.json'),
+      JSON.stringify(index),
+    )
+    renameSync(tmp, pathResolve(store, hex))
+
+    // Resolve from scratch: no resolved URL, no integrity, nothing
+    // pinned.
+    const p = pi({ cache, 'store-linker': 'hardlink' })
+    const res = await p.extract('brotli@1.0.0', `${dir}/a`)
+    t.equal(res.resolved, brURL)
+    t.equal(statSync(`${dir}/a/package.json`).nlink, 2, 'linked')
+    t.match(
+      JSON.parse(String(res.manifest)),
+      { name: 'abbrev', version: '2.0.0' },
+      'the index manifest came along, so it really was the store',
     )
   })
 })

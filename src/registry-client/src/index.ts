@@ -7,7 +7,7 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { closeSync, openSync, readFileSync, readSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
@@ -102,6 +102,10 @@ export type CachedBody = {
 export type CacheableMethod = 'GET' | 'HEAD'
 export const isCacheableMethod = (m: unknown): m is CacheableMethod =>
   m === 'GET' || m === 'HEAD'
+
+// A head is about a kilobyte. This limit exists only so that a corrupt
+// length cannot make us allocate something enormous.
+const maxHeadSize = 1024 * 1024
 
 export const cacheKey = (method: string, url: URL | string): string =>
   `${method !== 'GET' ? method + ' ' : ''}${url}`
@@ -635,6 +639,52 @@ export class RegistryClient {
       status: response.statusCode,
       response,
     })
+  }
+
+  /**
+   * The hash the cache recorded for `url`. This reads only the entry's
+   * head, which is about a kilobyte, rather than the body, which can be a
+   * megabyte. A caller that is about to look the package up in the global
+   * store needs nothing else, and if the store misses it can still read
+   * the body afterwards.
+   *
+   * Returns undefined if there is no entry, or if the entry is not a
+   * tarball. This never reads the body, so if `cache-unzip` rewrote the
+   * entry underneath us the worst case is a stale hash. That misses in the
+   * store; it cannot return the wrong bytes.
+   */
+  cachedIntegrity(
+    url: URL | string,
+    options: { method?: CacheableMethod } = {},
+  ): Integrity | undefined {
+    const { method = 'GET' } = options
+    try {
+      const key = cacheKey(
+        method,
+        typeof url === 'string' ? new URL(url) : url,
+      )
+      // The in-memory copy can be newer than the file on disk, so let
+      // request() serve those. Same rule as cachedBody.
+      if (this.cache.peek(key)) return undefined
+      const fd = openSync(this.cache.path(key), 'r')
+      try {
+        const size = Buffer.allocUnsafe(4)
+        if (readSync(fd, size, 0, 4, 0) < 4) return undefined
+        const headSize = size.readUInt32BE(0)
+        // Reject a length we do not believe, so a corrupt file cannot
+        // make us allocate a huge buffer.
+        if (headSize < 7 || headSize > maxHeadSize) return undefined
+        const head = Buffer.allocUnsafe(headSize)
+        if (readSync(fd, head, 0, headSize, 0) < headSize) {
+          return undefined
+        }
+        return CacheEntry.tarballIntegrity(head)
+      } finally {
+        closeSync(fd)
+      }
+      /* c8 ignore next */
+    } catch {}
+    return undefined
   }
 
   /**

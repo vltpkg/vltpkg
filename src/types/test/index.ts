@@ -282,16 +282,47 @@ t.test('brotliTarballUrl', t => {
   const alt = (tarball: string, kind = 'tar.br') => [
     { kind, tarball },
   ]
+  const url = (a: Dist['alternates']) =>
+    brotliTarballUrl(tgz, a)?.tarball
   // the conventional sibling, however it is referenced
-  t.equal(brotliTarballUrl(tgz, alt('foo-1.2.3.tar.br')), br)
-  t.equal(brotliTarballUrl(tgz, alt('./foo-1.2.3.tar.br')), br)
-  t.equal(brotliTarballUrl(tgz, alt(br)), br)
+  t.equal(url(alt('foo-1.2.3.tar.br')), br)
+  t.equal(url(alt('./foo-1.2.3.tar.br')), br)
+  t.equal(url(alt(br)), br)
+
+  // Integrity is optional. Carry it when the registry sends one, and
+  // leave it out otherwise.
+  const hash: Integrity = `sha512-${'a'.repeat(86)}==`
+  t.strictSame(
+    brotliTarballUrl(tgz, [
+      {
+        kind: 'tar.br',
+        tarball: 'foo-1.2.3.tar.br',
+        integrity: hash,
+      },
+    ]),
+    { tarball: br, integrity: hash },
+  )
+  t.strictSame(brotliTarballUrl(tgz, alt('foo-1.2.3.tar.br')), {
+    tarball: br,
+  })
+  // A hash we cannot parse is no hash at all. Pinning it could never
+  // match.
+  t.strictSame(
+    brotliTarballUrl(tgz, [
+      {
+        kind: 'tar.br',
+        tarball: 'foo-1.2.3.tar.br',
+        integrity: 'sha1-nope' as Integrity,
+      },
+    ]),
+    { tarball: br },
+  )
 
   // anything else is not used: the format is read back off the suffix
   // and the lockfile rebuilds the url by this convention, so a
   // reference we cannot re-derive costs the optimization, not the
   // install
-  t.equal(brotliTarballUrl(tgz, alt('./artifact')), undefined)
+  t.equal(url(alt('./artifact')), undefined)
   t.equal(
     brotliTarballUrl(tgz, alt('/other/foo-1.2.3.tar.br')),
     undefined,
