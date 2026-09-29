@@ -2792,6 +2792,35 @@ t.test('cache manifests', async t => {
     t.equal(filesAfterAgain.length, 1, 'cache directory was created')
   })
 
+  await t.test('repeated reads reuse the parse and are isolated', async t => {
+    const xdgDir = t.testdirName
+    const opts = {
+      ...options,
+      cache: xdgDir,
+    }
+    await rm(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+      force: true,
+    }).catch(() => {})
+
+    const pi = new PackageInfoClient(opts)
+    const mani1 = await pi.manifest('abbrev@2.0.0')
+    t.strictSame(mani1, pakuAbbrev.versions['2.0.0'])
+
+    // A caller mutation of the returned manifest must not leak into
+    // later reads of the same cache entry.
+    mani1.description = 'mutated'
+    const mani2 = await pi.manifest('abbrev@2.0.0')
+    t.equal(
+      mani2.description,
+      pakuAbbrev.versions['2.0.0'].description,
+      'later reads do not observe caller mutations',
+    )
+    // The second read revalidated with one stat: the parse result was
+    // reused, and the cache file was not read or rewritten again.
+    t.strictSame(mani2, pakuAbbrev.versions['2.0.0'])
+  })
+
   await t.test('legacy cache entry format', async t => {
     // clean up current cache directory
     await rm(pathResolve(xdgDir, 'package-info'), {
