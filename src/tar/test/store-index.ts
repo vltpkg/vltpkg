@@ -111,7 +111,7 @@ t.test(
       'c.json': text,
     })
     const cache = new StoreIndexCache(
-      BigInt(Buffer.byteLength(text)) * 2n,
+      Buffer.byteLength(text) * 2,
     )
     for (const name of ['a', 'b', 'c', 'c', 'b', 'a']) {
       t.strictSame(cache.read(resolve(d, name)), valid)
