@@ -83,7 +83,7 @@ vlt cache verify --all
 
 ### prune-store
 
-Remove global store entries that no \`node_modules\` folder links to. Entries ever copied from (install scripts, \`store-linker=copy\`, a cache on another drive) stay: copies do not show use.
+Remove global store entries that no \`node_modules\` folder links to. Entries ever copied or cloned from (install scripts, \`store-linker=copy\`, macOS, a cache on another drive) stay: copies do not show use.
 
 \`\`\`
 vlt cache prune-store

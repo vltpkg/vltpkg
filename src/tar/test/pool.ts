@@ -231,4 +231,11 @@ t.test('global store', async t => {
     await p.linkFromStore(resolve(d, 'missing'), resolve(d, 'nm/c')),
     false,
   )
+  // a clone needs darwin and node:ffi: links where it cannot work
+  t.match(
+    await p.linkFromStore(entry, resolve(d, 'nm/d'), { clone: true }),
+    {
+      how: process.platform === 'darwin' ? /^(clone|link)$/ : 'link',
+    },
+  )
 })

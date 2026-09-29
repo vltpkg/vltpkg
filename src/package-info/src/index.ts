@@ -217,7 +217,12 @@ const isStableSelector = (f: Spec) => {
 }
 
 // anything else, eg an unvalidated env value, means `unpack`
-const storeLinkers = new Set<string>(['auto', 'hardlink', 'copy'])
+const storeLinkers = new Set<string>([
+  'auto',
+  'hardlink',
+  'clone',
+  'copy',
+])
 
 export class PackageInfoClient {
   #registryClient?: RegistryClient
@@ -234,18 +239,19 @@ export class PackageInfoClient {
   #cachePath: string
   #storeRoot: string
   #storeLinker: StoreLinker
-  #storeHits = { link: 0, copy: 0 }
+  #storeHits = { link: 0, clone: 0, copy: 0 }
   #storeMisses = 0
   #storeHitRateLogged = false
   #logStoreHitRate = () => {
-    const { link, copy } = this.#storeHits
-    const n = Math.max(1, link + copy + this.#storeMisses)
+    const { link, clone, copy } = this.#storeHits
+    const n = Math.max(1, link + clone + copy + this.#storeMisses)
     debug(
-      'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
+      'global store: linked=%d cloned=%d copied=%d missed=%d hit rate=%s%%',
       link,
+      clone,
       copy,
       this.#storeMisses,
-      (((link + copy) / n) * 100).toFixed(1),
+      (((link + clone + copy) / n) * 100).toFixed(1),
     )
   }
   // In-flight coalescing key is `${registry}${name}` — no representation
@@ -450,6 +456,7 @@ export class PackageInfoClient {
             integrityHex(r.integrity)
           : undefined
         const copy = this.#storeLinker === 'copy' || installScripts
+        const clone = this.#storeLinker === 'clone'
         if (hex) {
           if (debug.enabled && !this.#storeHitRateLogged) {
             this.#storeHitRateLogged = true
@@ -458,13 +465,13 @@ export class PackageInfoClient {
           const linked = await pool.linkFromStore(
             pathResolve(this.#storeRoot, hex),
             target,
-            { copy },
+            { copy, clone },
           )
           if (linked) {
             const { how, index } = linked
             this.#storeHits[how]++
             // a copy is no link: report it as a cache hit
-            logRequest(r.resolved, how === 'link' ? 'store' : 'cache')
+            logRequest(r.resolved, how === 'copy' ? 'cache' : 'store')
             return {
               ...r,
               manifest: index.manifest,

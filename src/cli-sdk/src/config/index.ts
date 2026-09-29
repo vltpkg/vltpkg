@@ -25,6 +25,7 @@ import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { storeRoot } from '@vltpkg/registry-client/store-root'
+import { cloneAvailable } from '@vltpkg/tar/clonefile'
 import { resetCaches } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { getOptions } from '@vltpkg/spec'
@@ -476,15 +477,18 @@ export class Config {
     this.jack.applyDefaults(p)
 
     // `auto` only hardlinks from the global store on linux: on APFS a
-    // hardlink is the slowest way to place a file, so darwin and win32
-    // unpack by default. the env layer is rewritten too, so `explicit`
-    // records the resolved value.
+    // hardlink is the slowest way to place a file, so darwin clones
+    // instead, when its node has `node:ffi` to call clonefile(2) with,
+    // and win32 (and an older node on darwin) unpack by default. the
+    // env layer is rewritten too, so `explicit` records the resolved
+    // value.
     if (
       p.values['store-linker'] === 'auto' &&
       process.platform !== 'linux'
     ) {
-      p.values['store-linker'] = 'unpack'
-      envValues['store-linker'] = 'unpack'
+      const linker = cloneAvailable() ? 'clone' : 'unpack'
+      p.values['store-linker'] = linker
+      envValues['store-linker'] = linker
     }
 
     // what was set on the cli or env for this run. record fields hold
