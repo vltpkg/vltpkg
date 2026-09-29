@@ -53,12 +53,23 @@ export type Dist = {
    * reference relative to this `dist`'s `tarball` (e.g. the bare filename
    * `foo-1.2.3.tar.br`), resolved with `new URL(entry.tarball, tarball)`.
    *
-   * An alternate is a *different artifact*, not a different encoding of the
-   * same bytes: it carries no `integrity` here and hashes differently from
-   * the `.tgz`. A client that downloads one pins that artifact's own hash,
-   * taken from the tarball response's RFC 9530 `Repr-Digest`.
+   * An alternate is a different artifact, not a re-encoding of the same
+   * bytes. It hashes differently from the `.tgz`, so `dist.integrity` does
+   * not describe it.
+   *
+   * The `integrity` field here is the alternate's own hash. It is optional,
+   * because a hash does not compress and a registry may prefer to keep
+   * packuments small. If a registry does send it, the client pins it like
+   * any other integrity, and can look the package up in the global store
+   * without downloading anything first. If it does not, the client verifies
+   * the download against the tarball response's RFC 9530 `Repr-Digest`
+   * header and learns the hash from there.
    */
-  alternates?: { kind: string; tarball: string }[]
+  alternates?: {
+    kind: string
+    tarball: string
+    integrity?: Integrity
+  }[]
 }
 
 /** An object used to mark some peerDeps as optional */
@@ -1115,10 +1126,17 @@ export const brotliTarballName = (tgz: string): string =>
  * those derivations sound -- and costs an unusual reference the
  * optimization rather than the install.
  */
+export type BrotliAlternate = {
+  /** The absolute URL of the `.tar.br`. */
+  tarball: string
+  /** The alternate's own hash, if the registry sent one. */
+  integrity?: Integrity
+}
+
 export const brotliTarballUrl = (
   tarball: string | undefined,
   alternates: Dist['alternates'],
-): string | undefined => {
+): BrotliAlternate | undefined => {
   if (!tarball) return undefined
   const entry = alternates?.find(
     a => a.kind === 'tar.br' && !!a.tarball,
@@ -1126,9 +1144,17 @@ export const brotliTarballUrl = (
   if (!entry) return undefined
   try {
     const href = new URL(entry.tarball, tarball).href
-    return href === new URL(brotliTarballName(tarball)).href ?
-        href
-      : undefined
+    if (href !== new URL(brotliTarballName(tarball)).href) {
+      return undefined
+    }
+    // Ignore a hash we cannot parse. Pinning it would fail every check,
+    // so it is better to fall back to the Repr-Digest.
+    return {
+      tarball: href,
+      ...(isIntegrity(entry.integrity) && {
+        integrity: entry.integrity,
+      }),
+    }
     /* c8 ignore start - a malformed reference just means no brotli */
   } catch {
     return undefined

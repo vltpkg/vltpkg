@@ -20,7 +20,12 @@ import { storeRoot } from '@vltpkg/registry-client/store-root'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { Pool, StoreLinker } from '@vltpkg/tar'
-import type { Integrity, Manifest, Packument } from '@vltpkg/types'
+import type {
+  BrotliAlternate,
+  Integrity,
+  Manifest,
+  Packument,
+} from '@vltpkg/types'
 import {
   asPackument,
   brotliTarballUrl,
@@ -327,16 +332,17 @@ export class PackageInfoClient {
   }
 
   /**
-   * The absolute URL of a version's Brotli (`.tar.br`) tarball, or
-   * undefined when the registry advertised none, advertised one this
-   * client does not use (see {@link brotliTarballUrl}), or
-   * `--no-brotli-tarballs` is set. `dist.tarball` is already absolute
-   * here -- see `absolutizeTarballs`.
+   * A version's Brotli (`.tar.br`) alternate: its absolute URL, plus its
+   * hash if the registry sent one. Returns undefined if the version has no
+   * alternate, if it has one this client does not use (see
+   * {@link brotliTarballUrl}), or if `--no-brotli-tarballs` is set.
+   * `dist.tarball` is already absolute by this point; see
+   * `absolutizeTarballs`.
    */
   #brotliTarball(
     tarball: string,
     alternates: Exclude<Manifest['dist'], undefined>['alternates'],
-  ): string | undefined {
+  ): BrotliAlternate | undefined {
     if (this.options['brotli-tarballs'] === false) return undefined
     return brotliTarballUrl(tarball, alternates)
   }
@@ -445,11 +451,23 @@ export class PackageInfoClient {
         // below has to be told; gzip and raw tar are sniffed.
         const format = tarballFormat(r.resolved)
         // git tarballs keep the unpack path
-        const hex =
-          f.type === 'registry' && this.#storeLinker !== 'unpack' ?
-            integrityHex(r.integrity)
-          : undefined
+        const storeOn =
+          f.type === 'registry' && this.#storeLinker !== 'unpack'
         const copy = this.#storeLinker === 'copy' || installScripts
+        // If we already have a hash, that is the store key. Some
+        // tarballs arrive without one: a `.tar.br`, or anything a
+        // registry serves with no `dist.integrity`. For those, read the
+        // hash off the cache entry, which recorded it when the bytes
+        // were verified. Installs that do have a hash skip all of this,
+        // so a store hit still never builds a registry client.
+        const hex =
+          !storeOn ? undefined
+          : r.integrity ? integrityHex(r.integrity)
+          : integrityHex(
+              (await this.getRegistryClient()).cachedIntegrity(
+                r.resolved,
+              ),
+            )
         if (hex) {
           if (debug.enabled && !this.#storeHitRateLogged) {
             this.#storeHitRateLogged = true
@@ -491,12 +509,13 @@ export class PackageInfoClient {
             await pool.unpack(cached.body, target, format)
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
-            // a warm install writes nothing to the cache, so queue the
-            // store miss here or an existing cache never converges,
-            // and a gzipped body with no store link, to unzip it.
-            // (a brotli body is never rewritten: cache-unzip only
-            // un-gzips, and leaving it compressed keeps the cache small.)
-            if (hex || cached.gzip) {
+            // A warm install writes nothing to the cache, so queue the
+            // store miss here. Without this an existing cache would
+            // never catch up. Also queue a gzipped body that did not
+            // come from the store, so it gets un-gzipped. A brotli body
+            // is left alone: cache-unzip only handles gzip, and keeping
+            // it compressed keeps the cache small.
+            if (storeOn || cached.gzip) {
               rc.queueForStore(cached.key, r.integrity)
             }
             return r
@@ -1409,7 +1428,19 @@ export class PackageInfoClient {
             const brotli = this.#brotliTarball(tarball, alternates)
             const r: Resolution =
               brotli ?
-                { resolved: brotli, spec, digestRequired: true }
+                {
+                  resolved: brotli.tarball,
+                  spec,
+                  // Pin the alternate's own hash if the registry sent
+                  // one. That also means we can look the package up in
+                  // the global store before downloading it. If there is
+                  // no hash, the Repr-Digest header is the only check we
+                  // get, so require it instead of treating it as
+                  // optional.
+                  ...(brotli.integrity ?
+                    { integrity: brotli.integrity }
+                  : { digestRequired: true }),
+                }
               : { resolved: tarball, integrity, signatures, spec }
             if (
               !brotli &&

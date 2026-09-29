@@ -742,10 +742,22 @@ export class CacheEntry {
    * i.e. a tarball the global store can be built from.
    */
   static isTarballEntry(buffer: Uint8Array): boolean {
+    return !!CacheEntry.tarballIntegrity(buffer)
+  }
+
+  /**
+   * The hash recorded on such an entry, or undefined if this is not one.
+   * {@link isTarballEntry} is built on this, and both only need the head.
+   */
+  static tarballIntegrity(buffer: Uint8Array): Integrity | undefined {
     const parsed = CacheEntry.#parseHead(buffer)
-    if (parsed?.statusCode !== 200 || !parsed.integrity) return false
+    if (parsed?.statusCode !== 200 || !parsed.integrity) {
+      return undefined
+    }
     const ct = getRawHeader(parsed.headers, 'content-type')
-    return !ct || !/\bjson\b/.test(getDecodedValue(ct))
+    return !ct || !/\bjson\b/.test(getDecodedValue(ct)) ?
+        parsed.integrity
+      : undefined
   }
 
   /**

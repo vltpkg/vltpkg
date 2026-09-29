@@ -44,7 +44,7 @@ export type NodeOptions = SpecOptions & {
  * reference resolves against it. See {@link brotliTarballUrl} for which
  * references this client accepts.
  */
-const brotliAlternate = (dist?: Dist): string | undefined =>
+const brotliAlternate = (dist?: Dist) =>
   brotliTarballUrl(dist?.tarball, dist?.alternates)
 
 export class Node implements NodeLike {
@@ -395,21 +395,22 @@ export class Node implements NodeLike {
     const spec = hydrateTuple(tuple, this.#name, this.#options)
     const dist = this.manifest?.dist
     const tarball = dist?.tarball || spec.conventionalRegistryTarball
+    // Use the manifest's own reference if there is one. Otherwise build
+    // the URL the way the registry names these: the same stem as the
+    // `.tgz` with a different extension. Relying on that convention is
+    // what lets a lockfile node, which has no manifest, store one flag
+    // bit instead of a second URL.
+    const alt = this.#brotli ? brotliAlternate(dist) : undefined
     const brotli =
       this.#brotli ?
-        // the manifest's own reference when there is one, and otherwise
-        // the registry's naming for it: same stem as the `.tgz`, a
-        // different extension. That convention is what lets a lockfile
-        // node -- which has no manifest -- spend one flag bit rather
-        // than a second URL.
-        (brotliAlternate(dist) ??
-        (tarball && brotliTarballName(tarball)))
+        (alt?.tarball ?? (tarball && brotliTarballName(tarball)))
       : undefined
     if (brotli) {
       this.resolved = brotli
-      // `dist.integrity` describes the `.tgz`. The `.tar.br` is a
-      // different artifact with a different hash, pinned by its own
-      // `Repr-Digest` on the install that first fetches it.
+      // `dist.integrity` belongs to the `.tgz`, so never copy it here.
+      // Use the alternate's own hash if the registry sent one. If not,
+      // the first fetch learns it from the Repr-Digest header.
+      if (alt?.integrity) this.integrity ??= alt.integrity
       return
     }
     this.resolved = tarball

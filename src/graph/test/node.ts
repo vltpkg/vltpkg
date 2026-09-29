@@ -448,6 +448,38 @@ t.test('Node', async t => {
     'does not inherit the .tgz integrity',
   )
 
+  // A hash the registry sent for the alternate is pinned onto the node.
+  // The `.tgz`'s own integrity is still never copied across.
+  const pinnedAlt = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      dist: {
+        tarball: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        integrity: 'sha512-deadbeef',
+        alternates: [
+          {
+            kind: 'tar.br',
+            tarball: 'foo-1.0.0.tar.br',
+            integrity: `sha512-${'a'.repeat(86)}==`,
+          },
+        ],
+      },
+    },
+  )
+  pinnedAlt.setResolved()
+  t.strictSame(
+    pinnedAlt.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tar.br',
+  )
+  t.equal(
+    pinnedAlt.integrity,
+    `sha512-${'a'.repeat(86)}==`,
+    "the alternate's own hash, not the .tgz's",
+  )
+
   const notBrotli = new Node(
     opts,
     joinDepIDTuple(['registry', '', 'foo@1.0.0']),
