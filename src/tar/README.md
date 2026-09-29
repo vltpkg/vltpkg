@@ -76,14 +76,16 @@ See [Global store](#global-store).
 
 A global store entry is a tarball exploded once into a directory, with
 a sidecar index at `<entry>.json` (`StoreIndex`). Packages are then
-materialized by hardlinking files instead of unpacking the tarball
-again. Publishing entries atomically (sidecar, then rename the dir
-into place) is up to the caller.
+materialized by hardlinking files, or cloning the directory, instead
+of unpacking the tarball again. Publishing entries atomically
+(sidecar, then rename the dir into place) is up to the caller.
 
 The vlt CLI keeps its global store under `<cache>/store/v1`, filled by
 a background process, and installs from it with the `store-linker`
-config (`auto` by default, `hardlink`, `copy`; `unpack` skips it).
-`auto` only links on Linux and means `unpack` everywhere else.
+config (`auto` by default, `hardlink`, `clone`, `copy`; `unpack` skips
+it). `auto` links on Linux, clones on macOS where
+[`cloneAvailable()`](#cloneavailable) is true, and means `unpack`
+everywhere else.
 
 ### unpackToStoreSync(tarData, dir)
 
@@ -98,16 +100,17 @@ The index has files (`[path, size, exec]`, sorted), every directory
 normalized `bins`, `name`, `version` and `manifest` (package.json as
 compact JSON text, if valid; lets reify skip reading it back).
 
-### linkFromStore(storeEntry, target, { copy })
+### linkFromStore(storeEntry, target, { copy, clone })
 
 Hardlink every file of a store entry into a sibling temp dir
 (package.json last), then rename it to `target`. Returns
-`{ how, index }`: `how` is `'link'`, or `'copy'` when files were
-copied instead (see below). Returns `false`, creating nothing, if the
-sidecar is missing or invalid, the entry is not a directory, or the
-target's parent is a symlink. An entry with a missing file is removed
-and `false` returned. Two index paths that collide on a
-case-insensitive target (`EEXIST`) also return `false`.
+`{ how, index }`: `how` is `'link'`, `'clone'` when the directory was
+cloned, or `'copy'` when files were copied instead (see below).
+Returns `false`, creating nothing, if the sidecar is missing or
+invalid, the entry is not a directory, or the target's parent is a
+symlink. An entry with a missing file is removed and `false` returned.
+Two index paths that collide on a case-insensitive target (`EEXIST`)
+also return `false`.
 
 `EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to copying
 (read + write into a fresh file); `ENOENT` while both the source and
@@ -117,8 +120,29 @@ copied with `copy: true`, or when package.json is copied after another
 file was linked: a private package.json means nothing is shared. A
 copy creates the entry's copied marker (`<entry>.copied`), once.
 
+With `clone: true` the whole entry directory is cloned copy-on-write
+into the temp dir in one `clonefile(2)` call instead (see
+[`cloneDir`](#clonefile)). A clone is checked against the index (the
+names in every directory, since a clone holds whatever the entry
+holds), and, sharing no inode with the store, marks the entry copied.
+Nothing written into a clone reaches the store, so `copy` changes
+nothing about it, and install scripts need no copy before they run.
+Where a clone fails the files are linked or copied as without the
+option; `ENOTSUP`, `EXDEV`, `EPERM` and `EACCES` stop cloning for the
+rest of the process.
+
 `VLT_STORE_VERIFY=1` checks the linked package.json size against the
 index and removes the entry on a mismatch (debugging aid).
+
+### clonefile
+
+`cloneAvailable()` is true on macOS with a Node that has `node:ffi`
+(26.1 and later), which is what `cloneDir(src, dst)` calls
+`clonefile(2)` through: it clones the directory `src` to `dst`, which
+must not exist, and returns `true` or the errno code of the failure
+(`ENOTSUP` wherever it is unavailable: another platform, no
+`node:ffi`, a filesystem without clones). `node:ffi` is loaded on the
+first call, once, and its experimental warning is swallowed.
 
 ### readStoreIndex(storeEntry)
 

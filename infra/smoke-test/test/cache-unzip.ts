@@ -1,5 +1,6 @@
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import { readdirSync, readFileSync } from 'node:fs'
+import { isBuiltin } from 'node:module'
 import { join } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
@@ -86,17 +87,21 @@ const unpackTest = async (t: Test, dirs: { cache: string }) => {
   t.notOk(c.store, 'global store not populated')
 }
 
-// `auto` hardlinks from the global store on linux only, and means
-// `unpack` everywhere else
-t.test('default: store on linux, unpack elsewhere', async t => {
-  const { status } = await runMultiple(t, ['i', 'abbrev'], {
-    test: async ({ t, dirs }) =>
-      process.platform === 'linux' ?
-        storeTest(t, dirs)
-      : unpackTest(t, dirs),
-  })
-  t.equal(status, 0)
-})
+// `auto` hardlinks from the global store on linux, clones from it on
+// darwin when node has `node:ffi`, and means `unpack` everywhere else
+t.test(
+  'default: store on linux and darwin, unpack elsewhere',
+  async t => {
+    const store =
+      process.platform === 'linux' ||
+      (process.platform === 'darwin' && isBuiltin('node:ffi'))
+    const { status } = await runMultiple(t, ['i', 'abbrev'], {
+      test: async ({ t, dirs }) =>
+        store ? storeTest(t, dirs) : unpackTest(t, dirs),
+    })
+    t.equal(status, 0)
+  },
+)
 
 t.test(
   'store-linker=hardlink: explodes tarballs, leaves them gzipped',

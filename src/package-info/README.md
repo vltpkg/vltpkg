@@ -39,20 +39,23 @@ const { resolved, integrity } = await resolve('bar@latest')
 
 ## Global store
 
-With the `store-linker` option set to `auto`, `hardlink` or `copy`,
-`extract()` places a registry package from its global store entry
-(`<storeRoot>/<integrity hex>`, `storeRoot` defaults to
+With the `store-linker` option set to `auto`, `hardlink`, `clone` or
+`copy`, `extract()` places a registry package from its global store
+entry (`<storeRoot>/<integrity hex>`, `storeRoot` defaults to
 `<cache>/store/v1`) when there is one. On a miss it unpacks the cached
 tarball as usual and queues it for the background child, so the next
 install finds it in the global store. Missing or unknown
 `store-linker` means `unpack`. The vlt CLI defaults to `auto`, which
-it resolves to `unpack` on platforms other than Linux, so `extract()`
-only ever sees `auto` from the CLI on Linux. A gzipped cached tarball
-that is not store-linked (`unpack`, git or remote tarballs, no sha512
-integrity) is queued too, so the child un-gzips it.
+it resolves to `clone` on macOS with a Node that has `node:ffi` and to
+`unpack` on other platforms than Linux, so `extract()` only ever sees
+`auto` from the CLI on Linux. A gzipped cached tarball that is not
+store-linked (`unpack`, git or remote tarballs, no sha512 integrity)
+is queued too, so the child un-gzips it.
 
 Packages with install scripts are linked too; reify copies them in
-place right before their scripts run.
+place right before their scripts run. A clone is copy-on-write, so
+with `clone` they are cloned like any other package, and reify finds
+nothing to copy.
 
 A store link logs its request as `store`, a copy from the store as
 `cache`. Both also return `manifest` (the package.json as JSON text,

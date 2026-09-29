@@ -731,6 +731,7 @@ t.test('explode runs first, unzip skips what it wrote', async t => {
 t.test('lowest priority only with the global store on', async t => {
   const cases: [string, string[], number[]][] = [
     ['hardlink', ['/s'], [19]],
+    ['clone', ['/s'], [19]],
     ['unpack', ['/s'], []],
     ['hardlink', [], []],
   ]
