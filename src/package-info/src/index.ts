@@ -1035,6 +1035,9 @@ export class PackageInfoClient {
       )
     }
 
+    // The selected object is shared by design: `packument()` returns
+    // the coalesced packument document, and callers (and tests) rely
+    // on that identity.
     return mani
   }
 
