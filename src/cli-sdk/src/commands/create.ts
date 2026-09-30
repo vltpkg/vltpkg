@@ -2,15 +2,43 @@ import { exec, execFG } from '@vltpkg/run'
 import type { PromptFn } from '@vltpkg/vlx'
 import * as vlx from '@vltpkg/vlx'
 import { homedir } from 'node:os'
+import { resolve } from 'node:path'
 import { createInterface } from 'node:readline/promises'
 import { commandUsage } from '../config/usage.ts'
 import type { ExecResult } from '../exec-command.ts'
-import { ExecCommand } from '../exec-command.ts'
+import { ExecCommand, views as execViews } from '../exec-command.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { styleTextStdout } from '../output.ts'
-export { views } from '../exec-command.ts'
+import { stdout, styleTextStdout } from '../output.ts'
+import { createPkgExample } from '../pkg-example.ts'
+import {
+  hasConfiguredRegistry,
+  missingRegistryError,
+} from '../require-registry.ts'
+import type { Views } from '../view.ts'
 
-export const needsRegistry = true
+export type PkgExampleResult = { targetDir: string }
+
+const isPkgExampleResult = (
+  result: ExecResult | PkgExampleResult,
+): result is PkgExampleResult => 'targetDir' in result
+
+export const views = {
+  human: result => {
+    if (isPkgExampleResult(result)) {
+      stdout(`Created package in ${prettyPath(result.targetDir)}`)
+      return
+    }
+    return execViews.human(result)
+  },
+  json: result =>
+    isPkgExampleResult(result) ? result : execViews.json(result),
+} as const satisfies Views<ExecResult | PkgExampleResult>
+
+// The generic create-* flow needs a registry (checked below, once we
+// know the initializer isn't `pkg-example`), but `pkg-example` scaffolds
+// from GitHub and must stay usable by beginners with no registry
+// configured -- so this can't be a static needsRegistry pre-check.
+export const needsRegistry = false
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -33,6 +61,10 @@ export const usage: CommandUsage = () =>
                   data directory.
     `,
     examples: {
+      'pkg-example my-package': {
+        description:
+          'Scaffold a minimal publishable package for the "publish your first package" tutorial',
+      },
       'react-app my-app': {
         description: 'Create a new React app using create-react-app',
       },
@@ -87,13 +119,25 @@ Is this ok? (y) `,
   return response
 }
 
-export const command: CommandFn<ExecResult> = async conf => {
+export const command: CommandFn<
+  ExecResult | PkgExampleResult
+> = async conf => {
   const [initializer, ...args] = conf.positionals
 
   if (!initializer) {
     throw new Error(
       'Missing required argument: <initializer>\n\nUsage: vlt create <initializer> [args...]',
     )
+  }
+
+  if (initializer === 'pkg-example') {
+    const targetDir = resolve(args[0] ?? '.')
+    await createPkgExample(targetDir)
+    return { targetDir }
+  }
+
+  if (!hasConfiguredRegistry(conf)) {
+    throw missingRegistryError()
   }
 
   // Transform the initializer to a create-* package name
