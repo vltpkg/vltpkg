@@ -1,5 +1,10 @@
+import module from 'node:module'
 import t from 'tap'
 import type { Test } from 'tap'
+import { XDG } from '@vltpkg/xdg'
+
+const { FAILED, ENABLED, ALREADY_ENABLED, DISABLED } =
+  module.constants.compileCacheStatus
 
 const mockBins = (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../src/bins.ts')>(
@@ -16,12 +21,40 @@ t.test('basic', async t => {
   t.notOk(isBin('vltt'))
 })
 
-t.test('enables compile cache', async t => {
-  const enableCompileCache = t.captureFn(() => {})
+const mockCompileCache = async (t: Test, statuses: number[]) => {
+  const enableCompileCache = t.captureFn(() => ({
+    status: statuses.shift(),
+  }))
   await mockBins(t, {
-    'node:module': { default: { enableCompileCache } },
+    'node:module': {
+      default: { enableCompileCache, constants: module.constants },
+    },
   })
-  t.strictSame(enableCompileCache.args(), [[]])
+  return enableCompileCache.args()
+}
+
+t.test('enables compile cache', async t => {
+  for (const status of [ENABLED, ALREADY_ENABLED, DISABLED]) {
+    t.strictSame(
+      await mockCompileCache(t, [status]),
+      [[]],
+      `status ${status}`,
+    )
+  }
+})
+
+t.test('falls back to vlt cache dir', async t => {
+  const dir = new XDG('vlt').cache('compile-cache')
+  t.strictSame(
+    await mockCompileCache(t, [FAILED, ENABLED]),
+    [[], [dir]],
+    'retry in vlt cache dir',
+  )
+  t.strictSame(
+    await mockCompileCache(t, [FAILED, FAILED]),
+    [[], [dir]],
+    'no 3rd attempt',
+  )
 })
 
 t.test('changes argv', async t => {
