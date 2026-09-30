@@ -437,6 +437,43 @@ const server = createServer((req, res) => {
       return res.end(tarAbbrev)
     }
     // vlt packuments: no dist.integrity, registry-relative tarball paths
+    // v2 packuments: dist.tarball is the basename, in the package's
+    // `/-/` directory
+    case '/v2':
+    case '/@scope/v2': {
+      const name = req.url.slice(1)
+      const scoped = name.startsWith('@')
+      const json = JSON.stringify({
+        name,
+        'dist-tags': { latest: '1.0.0' },
+        versions: {
+          '1.0.0': {
+            name,
+            version: '1.0.0',
+            dist: {
+              tarball: 'v2-1.0.0.tgz',
+              ...(scoped && {
+                alternates: [
+                  { kind: 'tar.br', tarball: 'v2-1.0.0.tar.br' },
+                ],
+              }),
+            },
+          },
+        },
+      })
+      res.setHeader(
+        'content-type',
+        'application/vnd.vlt.packument-v2+json',
+      )
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
+    case '/v2/-/v2-1.0.0.tgz': {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader('repr-digest', `sha-512=:${tgzAbbrevSha512}:`)
+      return res.end(tgzAbbrev)
+    }
     case '/digest':
     case '/digest-bad':
     case '/digest-missing': {
@@ -3609,6 +3646,58 @@ t.test('tarballs labelled with a digest', async t => {
     t.ok(paku.versions['2.0.0'])
     t.equal(coalescedPackumentAccept, 'application/json')
     t.equal(coalescedPackumentRequests, 1)
+  })
+})
+
+t.test('v2 packuments carry tarball basenames', async t => {
+  const pi = (o?: PackageInfoClientOptions) =>
+    new PackageInfoClient({ ...options, cache: t.testdir(), ...o })
+  const tgzURL = `${defaultRegistry}v2/-/v2-1.0.0.tgz`
+
+  t.test(
+    "a basename resolves in the package's /-/ directory",
+    async t => {
+      t.match(await pi().resolve('v2@1.0.0'), {
+        resolved: tgzURL,
+        integrity: undefined,
+        digestRequired: true,
+      })
+    },
+  )
+
+  t.test(
+    'resolve against a registry without a trailing slash',
+    async t => {
+      const res = await pi({
+        registry: defaultRegistry.replace(/\/$/, ''),
+      }).resolve('v2@1.0.0')
+      t.equal(res.resolved, tgzURL)
+    },
+  )
+
+  t.test('a scoped basename keeps the scope in the path', async t => {
+    const mani = await pi({ 'brotli-tarballs': false }).manifest(
+      '@scope/v2@1.0.0',
+    )
+    t.equal(
+      mani.dist?.tarball,
+      `${defaultRegistry}@scope/v2/-/v2-1.0.0.tgz`,
+    )
+  })
+
+  t.test('an alternate resolves beside the tarball', async t => {
+    t.match(await pi().resolve('@scope/v2@1.0.0'), {
+      resolved: `${defaultRegistry}@scope/v2/-/v2-1.0.0.tar.br`,
+    })
+  })
+
+  t.test('extract verifies the digest', async t => {
+    const dir = t.testdir()
+    const res = await pi({ cache: `${dir}/cache` }).extract(
+      'v2@1.0.0',
+      `${dir}/out`,
+    )
+    t.equal(res.integrity, `sha512-${tgzAbbrevSha512}`)
   })
 })
 

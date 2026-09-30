@@ -79,9 +79,17 @@ export const VLT_PACKUMENT_MIME =
   'application/vnd.vlt.packument-v1+json'
 
 /**
+ * {@link VLT_PACKUMENT_MIME} with each `dist.tarball` reduced to the
+ * tarball's basename (`foo-1.0.0.tgz`), which resolves against the
+ * package's `{registry}{name}/-/` directory.
+ */
+export const VLT_PACKUMENT_V2_MIME =
+  'application/vnd.vlt.packument-v2+json'
+
+/**
  * Accept header for packument requests. Prefers vlt's abbreviated
- * packument and falls back to the full one on registries that do not
- * know the type. See `PackageInfoClient.#fetchPackument`.
+ * packument, v2 over v1, and falls back to the full one on registries
+ * that know neither. See `PackageInfoClient.#fetchPackument`.
  *
  * The trailing wildcard range carries an explicit `q=0.1` so that it stays
  * below `application/json`. A media range with no `q` defaults to `q=1.0`
@@ -91,7 +99,7 @@ export const VLT_PACKUMENT_MIME =
  * only so a registry that rejects what it cannot satisfy exactly still
  * has something to match.
  */
-export const PACKUMENT_ACCEPT = `${VLT_PACKUMENT_MIME}; q=1.0, application/json; q=0.8, */*; q=0.1`
+export const PACKUMENT_ACCEPT = `${VLT_PACKUMENT_V2_MIME}; q=1.0, ${VLT_PACKUMENT_MIME}; q=0.9, application/json; q=0.8, */*; q=0.1`
 
 export type Resolution = {
   resolved: string
@@ -233,7 +241,7 @@ export class PackageInfoClient {
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
-  // `${registry}${name}` of every packument served as VLT_PACKUMENT_MIME
+  // `${registry}${name}` of every packument served as a vlt packument type
   #vltPackuments = new Set<string>()
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
@@ -1301,7 +1309,8 @@ export class PackageInfoClient {
     useCache?: false,
   ): Promise<Packument> {
     // Request vlt's abbreviated packument, falling back to the full one:
-    //   accept: application/vnd.vlt.packument-v1+json; q=1.0,
+    //   accept: application/vnd.vlt.packument-v2+json; q=1.0,
+    //           application/vnd.vlt.packument-v1+json; q=0.9,
     //           application/json; q=0.8, */*; q=0.1
     //
     // npm's corgi (`application/vnd.npm.install-v1+json`) is never
@@ -1356,11 +1365,16 @@ export class PackageInfoClient {
       throw er
     }
     const { registry, name } = spec.final
-    if (response.contentType.startsWith(VLT_PACKUMENT_MIME)) {
+    const { contentType } = response
+    const v2 = contentType.startsWith(VLT_PACKUMENT_V2_MIME)
+    if (v2 || contentType.startsWith(VLT_PACKUMENT_MIME)) {
       this.#vltPackuments.add(`${registry}${name}`)
     }
     /* c8 ignore next - registry specs always have a registry */
-    if (registry) absolutizeTarballs(paku, registry)
+    if (registry) {
+      const base = registry.endsWith('/') ? registry : registry + '/'
+      absolutizeTarballs(paku, v2 ? `${base}${name}/-/` : base)
+    }
     return paku
   }
 
@@ -1572,12 +1586,12 @@ export class PackageInfoClient {
   }
 }
 
-// vlt packuments carry dist.tarball relative to the registry base
-// (`foo/-/foo-1.0.0.tgz`), the form conventionalRegistryTarball builds.
+// vlt packuments carry dist.tarball relative to `base`: the registry base
+// for v1 (`foo/-/foo-1.0.0.tgz`, the form conventionalRegistryTarball
+// builds), the package's `/-/` directory for v2 (`foo-1.0.0.tgz`).
 // Nothing downstream sees a relative URL: the manifest cache, the graph
 // and the lockfile all get the absolute one.
-const absolutizeTarballs = (paku: Packument, registry: string) => {
-  const base = registry.endsWith('/') ? registry : registry + '/'
+const absolutizeTarballs = (paku: Packument, base: string) => {
   for (const { dist } of Object.values(paku.versions)) {
     const tarball = dist?.tarball
     if (tarball && !/^[a-z][a-z0-9+.-]*:/i.test(tarball)) {

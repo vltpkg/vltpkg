@@ -879,7 +879,8 @@ export type Manifest = {
   /**
    * Set in place of `scripts` by abbreviated registry manifests (npm's
    * `application/vnd.npm.install-v1+json` and vlt's
-   * `application/vnd.vlt.packument-v1+json`) when the package has an
+   * `application/vnd.vlt.packument-v1+json` and
+   * `application/vnd.vlt.packument-v2+json`) when the package has an
    * install, preinstall, or postinstall script.
    */
   hasInstallScript?: boolean
