@@ -100,3 +100,17 @@ t.test('bundled', async t => {
     ['LICENSE', 'README.md', 'package.json'].sort(),
   )
 })
+
+t.test('always publishes type module', async t => {
+  const dir = 'outdir'
+  const { readPkg } = await mockCli(t, {
+    workspaceName: 'cli',
+    pkg: {
+      type: 'commonjs',
+      publishConfig: {
+        directory: dir,
+      },
+    },
+  })
+  t.equal(readPkg(dir).type, 'module')
+})
