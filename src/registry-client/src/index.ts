@@ -1015,15 +1015,18 @@ export class RegistryClient {
       // only this cache holds, and recorded here it would be trusted
       // as the entry's from then on. integrityActual also records the
       // hash in the entry's headers, so it runs before encode().
+      const artifact =
+        !result.fromCache &&
+        result.statusCode === 200 &&
+        !result.isJSON
       const integrity =
         result.integrity ??
-        ((
-          !result.fromCache &&
-          result.statusCode === 200 &&
-          !result.isJSON
-        ) ?
-          result.integrityActual
-        : undefined)
+        (artifact ? result.integrityActual : undefined)
+      // the hash an artifact is stored under was checked or recorded
+      // just now, as the hash of its bytes as served. label one that
+      // came with no content-type to say so, see
+      // CacheEntry#labelArtifact.
+      if (artifact) result.labelArtifact()
       const encoded = result.encode()
       const stored = Buffer.from(
         encoded.buffer,

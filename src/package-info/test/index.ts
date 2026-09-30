@@ -35,6 +35,8 @@ import type {
 import { cacheKey } from '@vltpkg/registry-client'
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import unzipMain from '@vltpkg/cache-unzip/unzip'
+// not exported: what the background revalidation child runs
+import { revalidateEntry } from '../../registry-client/src/revalidate-entry.ts'
 import {
   PackageInfoClient,
   PACKUMENT_ACCEPT,
@@ -667,6 +669,12 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', tgzAbbrev.byteLength)
       return res.end(tgzAbbrev)
     }
+    case '/no-type/-/no-type-1.0.0.tar': {
+      // the same, not gzipped
+      noTypeTarRequests++
+      res.setHeader('content-length', tarAbbrev.byteLength)
+      return res.end(tarAbbrev)
+    }
     case '/-/vlt/capabilities': {
       capabilitiesRequests++
       const json = JSON.stringify(capabilitiesDocument)
@@ -714,6 +722,7 @@ let redirectTgzRequests = 0
 let brotliRequests = 0
 let plainTarRequests = 0
 let noTypeRequests = 0
+let noTypeTarRequests = 0
 let capabilitiesRequests = 0
 let stableRequests: string[] = []
 let stableDelay = 0
@@ -1857,6 +1866,362 @@ t.test('remote tarballs', async t => {
       ),
       { name: 'abbrev', version: '2.0.0' },
     )
+  })
+
+  // an empty cache of its own for `url`, and what the server was asked
+  // for it so far
+  const empty = async (
+    t: Test,
+    url: string,
+    requests: () => number,
+  ) => {
+    const spec = `abbrev@${url}`
+    const key = cacheKey('GET', new URL(url))
+    const dir = t.testdir()
+    const cache = `${dir}/cache`
+    const fresh = () => new PackageInfoClient({ ...options, cache })
+    const flush = async (p: PackageInfoClient) =>
+      (await p.getRegistryClient()).cache.promise()
+    const rc = await fresh().getRegistryClient()
+    const stored = () =>
+      CacheEntry.decode(readFileSync(rc.cache.path(key)))
+
+    // an extract by a fresh client, flushed: the hash it reported and
+    // the number of requests it made
+    const extract = async (target: string, integrity?: Integrity) => {
+      const before = requests()
+      const p = fresh()
+      const res = await p.extract(spec, `${dir}/${target}`, {
+        resolved: url,
+        integrity,
+      })
+      await flush(p)
+      t.match(
+        JSON.parse(
+          readFileSync(`${dir}/${target}/package.json`, 'utf8'),
+        ),
+        { name: 'abbrev', version: '2.0.0' },
+        `${target} unpacked`,
+      )
+      return {
+        integrity: res.integrity,
+        requests: requests() - before,
+      }
+    }
+
+    // the same for one that fails the check: the requests it made
+    const rejects = async (
+      integrity: Integrity,
+      found: Integrity,
+    ) => {
+      const before = requests()
+      const p = fresh()
+      await t.rejects(
+        p.extract(spec, `${dir}/rejected`, {
+          resolved: url,
+          integrity,
+        }),
+        { cause: { code: 'EINTEGRITY', wanted: integrity, found } },
+      )
+      await flush(p)
+      return requests() - before
+    }
+
+    // put a doctored copy of the entry in its place, linked under `link`
+    // if any, and nothing under the hash it was stored with
+    const tamper = async (
+      edit: (entry: CacheEntry) => void,
+      link?: Integrity,
+    ) => {
+      const entry = stored()
+      rc.cache.delete(key, true, entry.integrity)
+      await rc.cache.promise()
+      edit(entry)
+      rc.cache.set(key, entry.encode(), { integrity: link })
+      await rc.cache.promise()
+    }
+
+    // rewrite the entry un-gzipped in place, like the cache-unzip child
+    const unzip = async () => {
+      const input = new EventEmitter()
+      const done = unzipMain(rc.cache.path(), input)
+      input.emit('data', Buffer.from(`${key}\0`))
+      input.emit('end')
+      t.equal(await done, true, 'rewritten')
+      t.equal(stored().isGzip, false, 'un-gzipped on disk')
+    }
+
+    // what the background revalidation stores on a 200: the requests
+    // it made
+    const revalidate = async () => {
+      const before = requests()
+      await revalidateEntry(rc, 'GET', url)
+      await rc.cache.promise()
+      return requests() - before
+    }
+
+    return {
+      fresh,
+      flush,
+      stored,
+      extract,
+      rejects,
+      tamper,
+      unzip,
+      revalidate,
+    }
+  }
+
+  // the hash of the tar the tarball un-gzips to
+  const unzipped: Integrity = `sha512-${tarAbbrevSha512}`
+  const noType = `${defaultRegistry}no-type/-/no-type-1.0.0.tgz`
+
+  t.test('a lockfile that pins the tarball un-gzipped', async t => {
+    // v1.2.0 to v1.3.3 hashed a remote tarball after the registry client
+    // had un-gzipped it: always, for a body served with no content-type,
+    // and on a cache hit once cache-unzip had rewritten the entry. that
+    // hash pins the same tar, so a body that un-gzips to it is accepted,
+    // and reported and stored under the hash of the bytes as served.
+    // the lockfile keeps its hash, so every install from it is checked
+    // this way, and every one after the first is a cache hit.
+    const shapes = [
+      ['with a content-type', url, () => abbrevTgzRequests],
+      ['with no content-type', noType, () => noTypeRequests],
+    ] as const
+    for (const [name, url, requests] of shapes) {
+      await t.test(name, async t => {
+        const { extract, rejects, stored, unzip } = await empty(
+          t,
+          url,
+          requests,
+        )
+        // a hash that is neither is rejected, and nothing is stored
+        t.equal(await rejects(bogus, integrity), 1)
+
+        t.strictSame(
+          await extract('cold', unzipped),
+          { integrity, requests: 1 },
+          'the hash of the gzipped bytes',
+        )
+        t.equal(stored().integrity, integrity, 'stored under it')
+        t.strictSame(
+          await extract('warm', unzipped),
+          { integrity, requests: 0 },
+          'served from cache',
+        )
+        if (stored().isGzip) {
+          await unzip()
+          t.strictSame(
+            await extract('rewritten', unzipped),
+            { integrity, requests: 0 },
+            'served from cache, rewritten',
+          )
+        }
+        t.strictSame(
+          await extract('locked', integrity),
+          { integrity, requests: 0 },
+          'and from a lockfile with the hash of the gzipped bytes',
+        )
+
+        // and a hash that is neither still fails: the entry is evicted,
+        // fetched again, and the bytes fail the check
+        t.equal(await rejects(bogus, integrity), 1)
+      })
+    }
+
+    await t.test('a url that redirects', async t => {
+      // the registry client rejects the final url's body, and the one
+      // accepted is stored under the url the lockfile names, where the
+      // next install finds it. a fetch is a request to each url
+      const from = `${defaultRegistry}redirect/abbrev-2.0.0.tgz`
+      const { extract, rejects, stored } = await empty(
+        t,
+        from,
+        () => redirectTgzRequests + abbrevTgzRequests,
+      )
+      t.equal(await rejects(bogus, integrity), 2)
+      t.strictSame(
+        await extract('cold', unzipped),
+        { integrity, requests: 2 },
+        'the hash of the gzipped bytes',
+      )
+      t.equal(stored().integrity, integrity, 'stored under it')
+      for (const [target, lock] of [
+        ['warm', unzipped],
+        ['locked', integrity],
+        ['unlocked', undefined],
+      ] as const) {
+        t.strictSame(
+          await extract(target, lock),
+          { integrity, requests: 0 },
+          'served from cache',
+        )
+      }
+      t.equal(await rejects(bogus, integrity), 2)
+    })
+
+    await t.test('a body that does not un-gzip', async t => {
+      // rejected like any other that does not match, not with the
+      // error un-gzipping it threw
+      const url = `${defaultRegistry}corrupted/-/corrupted-1.0.0.tgz`
+      const corrupted = Buffer.from(tgzAbbrev)
+      corrupted[100] = (corrupted[100]! ^ 0xff) & 0xff
+      corrupted[101] = (corrupted[101]! ^ 0xff) & 0xff
+      t.throws(() => gunzipSync(corrupted))
+      const { rejects } = await empty(t, url, () => 0)
+      await rejects(
+        unzipped,
+        `sha512-${createHash('sha512').update(corrupted).digest('base64')}`,
+      )
+    })
+  })
+
+  t.test('a legacy entry with no content-type', async t => {
+    // v1.2.0 to v1.3.3 stored a tarball served with no content-type
+    // un-gzipped, under the hash of the un-gzipped bytes, which no
+    // cold cache reproduces. the registry client labels such a body
+    // when it stores it now, so an entry with no content-type is from
+    // before, and its stored hash is not trusted: it is fetched once
+    // more and stored under the hash of the bytes as served.
+    for (const lock of [undefined, unzipped]) {
+      await t.test(
+        lock ? 'from a lockfile' : 'no lockfile',
+        async t => {
+          const { extract, fresh, flush, stored, tamper } =
+            await empty(t, noType, () => noTypeRequests)
+          t.strictSame(await extract('cold'), {
+            integrity,
+            requests: 1,
+          })
+          t.equal(
+            stored().contentType,
+            'application/octet-stream',
+            'labelled',
+          )
+          await tamper(entry => {
+            entry.deleteHeader('content-type')
+            entry.setHeader('integrity', unzipped)
+          }, unzipped)
+          t.equal(stored().contentType, '', 'as v1.3.1 stored it')
+          t.equal(stored().integrity, unzipped)
+
+          // nothing for manifest() to hand the graph either
+          const before = noTypeRequests
+          const p = fresh()
+          t.equal(
+            (await p.manifest(`abbrev@${noType}`)).dist?.integrity,
+            undefined,
+            'manifest() reports no hash',
+          )
+          await flush(p)
+          t.equal(noTypeRequests - before, 0, 'served from cache')
+
+          t.strictSame(
+            await extract('refetched', lock),
+            { integrity, requests: 1 },
+            'fetched again',
+          )
+          t.equal(stored().integrity, integrity, 'stored under it')
+          t.equal(stored().contentType, 'application/octet-stream')
+          for (const target of ['again', 'and-again']) {
+            t.strictSame(
+              await extract(target, lock),
+              { integrity, requests: 0 },
+              'served from cache',
+            )
+          }
+        },
+      )
+    }
+  })
+
+  t.test(
+    'a tarball served un-gzipped with no content-type',
+    async t => {
+      // the hash of its bytes as served is the hash of its bytes stored,
+      // just like the hash v1.2.0 to v1.3.3 recorded for a gzipped one:
+      // the label is what tells a legacy entry apart, not the hash.
+      const url = `${defaultRegistry}no-type/-/no-type-1.0.0.tar`
+      const { extract, stored, tamper } = await empty(
+        t,
+        url,
+        () => noTypeTarRequests,
+      )
+      const integrity = unzipped
+      t.strictSame(await extract('cold'), { integrity, requests: 1 })
+      t.equal(stored().contentType, 'application/octet-stream')
+      for (const [i, lock] of [
+        undefined,
+        integrity,
+        undefined,
+        integrity,
+      ].entries()) {
+        t.strictSame(
+          await extract(`warm-${i}`, lock),
+          { integrity, requests: 0 },
+          'served from cache',
+        )
+      }
+
+      // stored by v1.3.1: fetched once more, then served from cache
+      await tamper(
+        entry => entry.deleteHeader('content-type'),
+        integrity,
+      )
+      t.strictSame(
+        await extract('refetched', integrity),
+        { integrity, requests: 1 },
+        'fetched again',
+      )
+      t.equal(stored().contentType, 'application/octet-stream')
+      for (const lock of [undefined, integrity]) {
+        t.strictSame(
+          await extract(
+            `again-${lock ? 'locked' : 'unlocked'}`,
+            lock,
+          ),
+          { integrity, requests: 0 },
+          'served from cache',
+        )
+      }
+    },
+  )
+
+  t.test('an entry the background revalidation rewrote', async t => {
+    // only request() labels an entry, as it stores it under the hash it
+    // checked or recorded. one any other write leaves with no
+    // content-type, like a 200 the background revalidation stores, is
+    // fetched once more by the next install, and a labelled cache hit
+    // on every one after that
+    const { extract, revalidate, stored } = await empty(
+      t,
+      noType,
+      () => noTypeRequests,
+    )
+    t.strictSame(await extract('cold'), { integrity, requests: 1 })
+    t.equal(stored().contentType, 'application/octet-stream')
+
+    t.equal(await revalidate(), 1, 'a 200')
+    t.equal(stored().contentType, '', 'stored unlabelled')
+
+    t.strictSame(
+      await extract('refetched'),
+      { integrity, requests: 1 },
+      'fetched again',
+    )
+    t.equal(stored().contentType, 'application/octet-stream')
+    t.equal(stored().integrity, integrity, 'stored under its hash')
+    for (const [target, lock] of [
+      ['again', undefined],
+      ['locked', integrity],
+      ['and-again', undefined],
+    ] as const) {
+      t.strictSame(
+        await extract(target, lock),
+        { integrity, requests: 0 },
+        'served from cache',
+      )
+    }
   })
 })
 

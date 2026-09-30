@@ -325,6 +325,11 @@ const registry = createServer((req, res) => {
     res.setHeader('content-length', body.length)
     return res.end(body)
   }
+  if (url === '/no-content-type/gone') {
+    res.statusCode = 404
+    return res.end('Not Found')
+  }
+  if (url === '/no-content-type/empty') return res.end()
 
   if (req.headers['if-none-match'] === etag) {
     res.statusCode = 304
@@ -840,6 +845,7 @@ t.test('a body served without a content-type', async t => {
   await rc.cache.promise()
   const stored = entryAt(rc, url)
   t.equal(stored.isGzip, false, 'stored un-gzipped')
+  t.equal(stored.contentType, 'application/octet-stream', 'labelled')
   t.strictSame(Buffer.from(stored.buffer()), plain)
   t.equal(
     stored.getHeaderString('integrity'),
@@ -859,6 +865,38 @@ t.test('a body served without a content-type', async t => {
   t.equal(again.statusCode, 200)
   t.equal(again.fromCache, false)
   await cold.cache.promise()
+})
+
+t.test('only a body request() fetched is labelled', async t => {
+  dropConnection = false
+  const rc = t.context.rc as RegistryClient
+
+  // not an error body: labelled, it would be immutable, where one with
+  // no content-type goes stale like any other
+  const gone = `${registryURL}/no-content-type/gone`
+  t.equal((await rc.request(gone)).statusCode, 404)
+  await rc.cache.promise()
+  t.equal(entryAt(rc, gone).contentType, '', 'an error body')
+
+  // nor an empty body, which is no artifact
+  const empty = `${registryURL}/no-content-type/empty`
+  t.equal((await rc.request(empty)).statusCode, 200)
+  await rc.cache.promise()
+  t.equal(entryAt(rc, empty).contentType, '', 'an empty body')
+
+  // nor an entry stored with none, written back on a 304
+  const url = `${registryURL}/some/tarball`
+  const unlabelled = new CacheEntry(200, toRawHeaders({ etag }))
+  unlabelled.addBody(plainTarball)
+  rc.cache.set(cacheKey('GET', new URL(url)), unlabelled.encode())
+  await rc.cache.promise()
+  t.equal(entryAt(rc, url).contentType, '', 'encoded unlabelled')
+  const res = await rc.request(url, { forceRevalidate: true })
+  t.equal(res.fromCache, true, 'the cached entry, revalidated')
+  await rc.cache.promise()
+  const stored = entryAt(rc, url)
+  t.ok(stored.getHeaderString('date'), 'written back')
+  t.equal(stored.contentType, '', 'and not labelled')
 })
 
 t.test('verifyDigest', async t => {
