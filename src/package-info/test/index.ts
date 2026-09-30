@@ -177,6 +177,14 @@ const server = createServer((req, res) => {
   // ignores the unknown parameter and answers the full packument -- what
   // the client counts on while the capability document is still in flight.
   switch (req.url?.replace(/\?stable$/, '')) {
+    case '/redirect/abbrev-2.0.0.tgz': {
+      // a remote url that redirects to the bytes, the way GitHub
+      // archive and release asset urls do
+      redirectTgzRequests++
+      res.statusCode = 302
+      res.setHeader('location', '/abbrev/-/abbrev-2.0.0.tgz')
+      return res.end()
+    }
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       abbrevTgzRequests++
       res.setHeader('content-type', 'application/octet-stream')
@@ -702,6 +710,7 @@ let movingLatest = '1.0.0'
 let coalescedPackumentRequests = 0
 let coalescedPackumentAccept: string | undefined
 let abbrevTgzRequests = 0
+let redirectTgzRequests = 0
 let brotliRequests = 0
 let plainTarRequests = 0
 let noTypeRequests = 0
@@ -1316,8 +1325,10 @@ t.test('remote tarballs', async t => {
   const integrity: Integrity = `sha512-${tgzAbbrevSha512}`
   const bogus: Integrity = `sha512-${'0'.repeat(86)}==`
 
-  // a cache of its own, primed with one fetch of the tarball
-  const primed = async (t: Test) => {
+  // a cache of its own, primed with one fetch of the tarball, from
+  // `from` if that is a url that redirects to it
+  const primed = async (t: Test, from = url) => {
+    const spec = `abbrev@${from}`
     const dir = t.testdir()
     const cache = `${dir}/cache`
     const fresh = () => new PackageInfoClient({ ...options, cache })
@@ -1333,7 +1344,8 @@ t.test('remote tarballs', async t => {
     await flush(p)
     const rc = await p.getRegistryClient()
     const path = rc.cache.path(key)
-    const stored = () => CacheEntry.decode(readFileSync(path))
+    const stored = (k = key) =>
+      CacheEntry.decode(readFileSync(rc.cache.path(k)))
 
     // an extract by a fresh client on that cache, flushed
     const extract = async (
@@ -1359,24 +1371,26 @@ t.test('remote tarballs', async t => {
     const tamper = async (
       edit: (entry: CacheEntry) => void,
       link?: Integrity,
+      k = key,
     ) => {
-      const entry = stored()
+      const entry = stored(k)
       edit(entry)
-      rc.cache.delete(key, true, integrity)
+      rc.cache.delete(k, true, integrity)
       await rc.cache.promise()
-      rc.cache.set(key, entry.encode(), { integrity: link })
+      rc.cache.set(k, entry.encode(), { integrity: link })
       await rc.cache.promise()
     }
 
     // rewrite the entry un-gzipped in place, the way the cache-unzip
     // child does once an install is over
-    const unzip = async () => {
+    const unzip = async (k = key) => {
+      const { integrity } = stored(k)
       const input = new EventEmitter()
       const done = unzipMain(rc.cache.path(), input)
-      input.emit('data', Buffer.from(`${key}\0`))
+      input.emit('data', Buffer.from(`${k}\0`))
       input.emit('end')
       t.equal(await done, true, 'rewritten')
-      const entry = stored()
+      const entry = stored(k)
       t.equal(entry.isGzip, false, 'un-gzipped on disk')
       t.equal(entry.integrity, integrity, 'the stored hash survived')
     }
@@ -1542,6 +1556,107 @@ t.test('remote tarballs', async t => {
         },
       )
     }
+  })
+
+  t.test('a legacy entry behind a redirect', async t => {
+    // a remote url that redirects has an entry under the final url
+    // too, just as legacy. the refetch reads neither back: served
+    // from the cache, the final url's entry would be recorded under
+    // the original with a hash of its rewritten body, and never
+    // replaced by the bytes the server sends
+    const from = `${defaultRegistry}redirect/abbrev-2.0.0.tgz`
+    const fromKey = cacheKey('GET', new URL(from))
+    const requests = () => [redirectTgzRequests, abbrevTgzRequests]
+    const since = (before: number[]) =>
+      requests().map((n, i) => n - (before[i] ?? 0))
+    for (const lock of [undefined, integrity]) {
+      await t.test(
+        lock ? 'from a lockfile' : 'no lockfile',
+        async t => {
+          const { extract, stored, tamper, unzip } = await primed(
+            t,
+            from,
+          )
+          // stored with no hash, and un-gzipped since, under both urls
+          for (const k of [fromKey, key]) {
+            await tamper(
+              entry => entry.deleteHeader('integrity'),
+              undefined,
+              k,
+            )
+            await unzip(k)
+            t.equal(stored(k).integrity, undefined, 'no stored hash')
+          }
+
+          let before = requests()
+          const refetched = await extract('refetched', {
+            resolved: from,
+            integrity: lock,
+          })
+          t.equal(
+            refetched.integrity,
+            integrity,
+            'the hash of the gzipped bytes',
+          )
+          t.strictSame(
+            since(before),
+            [1, 1],
+            'both urls fetched again',
+          )
+          for (const k of [fromKey, key]) {
+            t.equal(stored(k).integrity, integrity, 'stored under it')
+            t.equal(stored(k).isGzip, true, 'the bytes as served')
+          }
+
+          before = requests()
+          const again = await extract('again', {
+            resolved: from,
+            integrity: lock,
+          })
+          t.equal(again.integrity, integrity)
+          t.strictSame(since(before), [0, 0], 'served from cache')
+        },
+      )
+    }
+
+    await t.test('only under the final url', async t => {
+      // a first fetch that finds no entry of its own reaches the final
+      // url's through the redirect. manifest() makes one: no hash is
+      // recorded for what it read, or extract() would read that back
+      // as the stored hash and pin it
+      const { extract, fresh, flush, stored, tamper, unzip } =
+        await primed(t, from)
+      await tamper(entry => entry.deleteHeader('integrity'))
+      await unzip()
+      const rc = await fresh().getRegistryClient()
+      rc.cache.delete(fromKey, true)
+      await rc.cache.promise()
+
+      let before = requests()
+      const p = fresh()
+      t.equal(
+        (await p.manifest(`abbrev@${from}`)).dist?.integrity,
+        undefined,
+        'manifest() reports no hash',
+      )
+      await flush(p)
+      t.equal(stored(fromKey).integrity, undefined, 'nor records one')
+      t.strictSame(since(before), [1, 0], 'the final url cached')
+
+      before = requests()
+      const refetched = await extract('refetched', { resolved: from })
+      t.equal(
+        refetched.integrity,
+        integrity,
+        'the hash of the gzipped bytes',
+      )
+      t.strictSame(since(before), [1, 1], 'both urls fetched again')
+
+      before = requests()
+      const again = await extract('again', { resolved: from })
+      t.equal(again.integrity, integrity)
+      t.strictSame(since(before), [0, 0], 'served from cache')
+    })
   })
 
   t.test('a legacy entry, still gzipped', async t => {

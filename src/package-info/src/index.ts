@@ -682,9 +682,10 @@ export class PackageInfoClient {
 
       case 'remote': {
         const rc = await this.getRegistryClient()
-        const fetchTarball = async () => {
+        const fetchTarball = async (readCache?: false) => {
           const response = await rc.request(r.resolved, {
             integrity: r.integrity,
+            ...(readCache === false ? { readCache } : {}),
           })
           if (response.statusCode !== 200) {
             throw this.#resolveError(
@@ -706,8 +707,12 @@ export class PackageInfoClient {
         // cannot be verified any more: evict it and fetch again, once,
         // so the cache converges on an entry that carries its hash.
         // the link under r.integrity goes too: the lookup by it links
-        // the value file there when nothing was, so a refetch would
-        // just read the same entry back through it.
+        // the value file there when nothing was, and the disk write
+        // trusts an integrity file it finds, so it would link the old
+        // bytes back over the new ones. the refetch reads nothing from
+        // the cache, on this url or any it redirects to: a url that
+        // redirects has an entry under the final url too, stored by
+        // the same fetch and out of the eviction's reach.
         if (
           response.fromCache &&
           (!found || (r.integrity && r.integrity !== found))
@@ -718,14 +723,15 @@ export class PackageInfoClient {
           rc.cache.delete(key, true, found)
           if (r.integrity) rc.cache.delete(key, true, r.integrity)
           await rc.cache.promise()
-          response = await fetchTarball()
+          response = await fetchTarball(false)
           found = storedIntegrity(response)
         }
-        /* c8 ignore start - defense in depth: the registry client checks
-         * every network body against r.integrity first, and records the
-         * hash of one it had no expectation for, so a refetch always
-         * answers with a hash that matches. only an entry still served
-         * from the cache after its eviction could land here. */
+        /* c8 ignore start - defense in depth: anything but a cache hit
+         * that matched is a network body, the refetch included, since
+         * it reads nothing from the cache on any redirect hop. the
+         * registry client checks every network body against
+         * r.integrity before anything is written, and records the hash
+         * of one it had no expectation for. */
         if (!found || (r.integrity && r.integrity !== found)) {
           throw error('Integrity check failure', {
             code: 'EINTEGRITY',

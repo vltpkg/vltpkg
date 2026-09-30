@@ -213,6 +213,19 @@ export type RegistryClientRequestOptions = Omit<
   useCache?: false
 
   /**
+   * Set to `false` to fetch from the network without looking in the
+   * cache first, on this url and on every url it redirects to, while
+   * still storing the result. No cached entry is served, stale or
+   * not, or revalidated, so nothing is sent conditionally either.
+   *
+   * Meant for an entry that cannot be trusted any more:
+   * `forceRevalidate` would still hand it back on a 304, and evicting
+   * it does not stop a redirect from reading the entry under the final
+   * url back instead.
+   */
+  readCache?: false
+
+  /**
    * Set to pass an `npm-otp` header on the request.
    *
    * This should not be set except by the RegistryClient itself, when
@@ -802,7 +815,7 @@ export class RegistryClient {
     const { trustIntegrity, verifyDigest } = options
 
     const m = isCacheableMethod(method) ? method : undefined
-    const { useCache = !!m } = options
+    const { useCache = !!m, readCache = true } = options
 
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
@@ -811,7 +824,7 @@ export class RegistryClient {
     // response representation for the same URL.
     const key = cacheKey(method, u)
     const buffer =
-      useCache ?
+      useCache && readCache ?
         await this.cache.fetch(key, { context: { integrity } })
       : undefined
 
@@ -996,11 +1009,19 @@ export class RegistryClient {
     if (useCache && !clobbersCachedEntry) {
       // content-address an artifact the caller had no expected hash for,
       // so a later lookup by hash still finds it; packuments are not
-      // worth hashing. integrityActual also records the hash in the
-      // entry's headers, so it runs before encode().
+      // worth hashing. never a body read back from the cache -- a 304,
+      // or the entry a redirect's nested request() served -- which
+      // cache-unzip may have rewritten un-gzipped: its hash is of bytes
+      // only this cache holds, and recorded here it would be trusted
+      // as the entry's from then on. integrityActual also records the
+      // hash in the entry's headers, so it runs before encode().
       const integrity =
         result.integrity ??
-        (result.statusCode === 200 && !result.isJSON ?
+        ((
+          !result.fromCache &&
+          result.statusCode === 200 &&
+          !result.isJSON
+        ) ?
           result.integrityActual
         : undefined)
       const encoded = result.encode()

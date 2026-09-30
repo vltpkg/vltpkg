@@ -698,6 +698,130 @@ t.test('a redirected fetch records the hash', async t => {
   }
 })
 
+// a tarball entry the way cache-unzip leaves one that was stored before
+// its hash was recorded: un-gzipped, with no integrity header
+const plainTarball = Buffer.from('this is a tarball lets pretend')
+const legacyEntry = (headers: Record<string, string> = {}) => {
+  const entry = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/octet-stream',
+      ...headers,
+    }),
+  )
+  entry.addBody(plainTarball)
+  return entry.encode()
+}
+
+t.test('a body read back from the cache is never hashed', async t => {
+  // cache-unzip may have rewritten it: its hash is of bytes only this
+  // cache holds, and recorded it would be trusted as the entry's
+  const rewritten = sha512(plainTarball)
+
+  t.test('the entry a redirect hop served', async t => {
+    const rc = t.context.rc as RegistryClient
+    const url = `${registryURL}/redirect/tarball`
+    const final = `${registryURL}/redirected/tarball`
+    rc.cache.set(cacheKey('GET', new URL(final)), legacyEntry())
+    await rc.cache.promise()
+    const res = await rc.request(url)
+    t.equal(res.statusCode, 200)
+    t.equal(res.fromCache, true, 'served from the final url entry')
+    t.equal(res.getHeaderString('integrity'), undefined)
+    await rc.cache.promise()
+    t.equal(
+      entryAt(rc, url).getHeaderString('integrity'),
+      undefined,
+      'nothing recorded under the original url',
+    )
+    t.equal(
+      existsSync(rc.cache.integrityPath(rewritten) ?? ''),
+      false,
+      'nor linked under the hash of the rewritten body',
+    )
+  })
+
+  t.test('a 304', async t => {
+    dropConnection = false
+    const rc = t.context.rc as RegistryClient
+    const url = `${registryURL}/some/tarball`
+    // matches the mock's etag, so the conditional GET 304s
+    rc.cache.set(cacheKey('GET', new URL(url)), legacyEntry({ etag }))
+    await rc.cache.promise()
+    const res = await rc.request(url, { forceRevalidate: true })
+    t.equal(res.statusCode, 200)
+    t.equal(res.fromCache, true, 'the cached entry, revalidated')
+    t.equal(res.getHeaderString('integrity'), undefined)
+    await rc.cache.promise()
+    const stored = entryAt(rc, url)
+    t.ok(stored.getHeaderString('date'), 'written back')
+    t.equal(stored.getHeaderString('integrity'), undefined)
+    t.equal(
+      existsSync(rc.cache.integrityPath(rewritten) ?? ''),
+      false,
+      'not linked under the hash of the rewritten body',
+    )
+  })
+})
+
+t.test('readCache: false', async t => {
+  t.test('reads nothing on any redirect hop', async t => {
+    // legacy entries under both urls: the refetch must replace them
+    // with the bytes the server sends, under the hash of those
+    const rc = t.context.rc as RegistryClient
+    const url = `${registryURL}/redirect/tarball`
+    const final = `${registryURL}/redirected/tarball`
+    const actual = sha512(gzipSync(plainTarball))
+    for (const u of [url, final]) {
+      rc.cache.set(cacheKey('GET', new URL(u)), legacyEntry())
+    }
+    await rc.cache.promise()
+    t.equal(
+      (await rc.request(url)).fromCache,
+      true,
+      'served from the cache without it',
+    )
+
+    const seen = authSeen.length
+    const res = await rc.request(url, {
+      integrity: actual,
+      readCache: false,
+    })
+    t.equal(res.statusCode, 200)
+    t.equal(res.fromCache, false)
+    t.equal(sha512(res.buffer()), actual, 'the bytes as served')
+    t.strictSame(
+      authSeen.slice(seen).map(([u]) => u),
+      ['/redirect/tarball', '/redirected/tarball'],
+      'both urls fetched',
+    )
+    await rc.cache.promise()
+    for (const u of [url, final]) {
+      const stored = entryAt(rc, u)
+      t.equal(stored.getHeaderString('integrity'), actual, u)
+      t.equal(sha512(stored.buffer()), actual, 'stored as served')
+    }
+  })
+
+  t.test('reads nothing on an otp retry', async t => {
+    const rc = t.context.rc as RegistryClient
+    const url = `${registryURL}/-/401`
+    const cached = new CacheEntry(
+      200,
+      toRawHeaders({
+        'content-type': 'application/json',
+        'cache-control': 'immutable',
+      }),
+    )
+    cached.addBody(Buffer.from('{"cached":true}'))
+    rc.cache.set(cacheKey('GET', new URL(url)), cached.encode())
+    await rc.cache.promise()
+    t.strictSame((await rc.request(url)).json(), { cached: true })
+    const res = await rc.request(url, { readCache: false })
+    t.strictSame(res.json(), { status: 'ok' }, 'retried on the wire')
+  })
+})
+
 t.test('a body served without a content-type', async t => {
   // the json sniff un-gzips such a body in memory before it is stored,
   // but the hash recorded is that of the bytes off the wire: the one a
