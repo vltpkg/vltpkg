@@ -1137,7 +1137,7 @@ t.test('build() double-rebuild is a lockfile fixpoint', async t => {
       return manifests[spec.final.name]
     },
     prefetchResolve() {},
-  } as PackageInfoClient
+  } as unknown as PackageInfoClient
 
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({
@@ -1195,7 +1195,7 @@ t.test(
         return manifests[spec.final.name]
       },
       prefetchResolve() {},
-    } as PackageInfoClient
+    } as unknown as PackageInfoClient
 
     // a single fixture with one subdir per project: calling t.testdir()
     // again mid-test would rmdir the fixture while it is the cwd, which
@@ -1267,7 +1267,7 @@ t.test(
         return manifests[spec.final.name]
       },
       prefetchResolve() {},
-    } as PackageInfoClient
+    } as unknown as PackageInfoClient
 
     const projectRoot = t.testdir({
       'package.json': JSON.stringify({
@@ -1339,7 +1339,7 @@ t.test('workspace add keeps existing peer hashes', async t => {
       return manifests[spec.final.name]
     },
     prefetchResolve() {},
-  } as PackageInfoClient
+  } as unknown as PackageInfoClient
 
   // single fixture with one subdir per project: a second t.testdir()
   // call would rmdir the cwd and fail with EBUSY on Windows
