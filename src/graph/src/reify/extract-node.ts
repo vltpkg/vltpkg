@@ -55,7 +55,6 @@ export const extractNode = async (
   diff?: Diff,
 ): Promise<ExtractResult> => {
   node.extracted = true
-  const { manifest = {} } = node
   const target = node.resolvedLocation(scurry)
   const from = scurry.resolve('')
   const spec = hydrate(node.id, node.name, options)
@@ -75,20 +74,11 @@ export const extractNode = async (
     }
   }
 
-  // the registry manifest can declare install scripts that the
-  // tarball's package.json, read by the global store, lacks
-  const { scripts, hasInstallScript } = manifest
   const extractOptions = {
     from,
     integrity,
     resolved,
     fromLockfile: node.resolvedFromLockfile,
-    installScripts: !!(
-      hasInstallScript ||
-      scripts?.install ||
-      scripts?.preinstall ||
-      scripts?.postinstall
-    ),
   }
 
   const extracted = (r: ExtractResolution): ExtractResult => {
