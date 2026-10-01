@@ -322,6 +322,16 @@ export class PackageInfoClient {
   // needed. entries are removed when the on-disk file is invalidated
   // so the refreshed manifest can be written again.
   #manifestWritePaths = new Set<string>()
+  // validated manifest reads, keyed by manifest cache path (which
+  // encodes the spec and every varying request option). a repeated
+  // read re-stats the file and reuses the parsed manifest only while
+  // the file's identity is unchanged, so external rewrites and the
+  // client's own invalidation still take effect. callers get owned
+  // copies, because manifests are mutable objects.
+  #manifestReads = new Map<
+    string,
+    { mtimeMs: number; size: number; manifest: Manifest }
+  >()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -1147,6 +1157,46 @@ export class PackageInfoClient {
     }
   }
 
+  /**
+   * Read the manifest for a registry spec from the packument: the
+   * fetch is already coalesced; the pick is not memoized because the
+   * on-disk cache file remains the source of truth between calls.
+   */
+  async #packumentManifest(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+    cachePath: string | undefined,
+  ): Promise<Manifest> {
+    const f = spec.final
+    const mani = pickManifest(
+      await this.#packument(f, options, this.#stable(f)),
+      spec,
+      options,
+    )
+    if (!mani) throw this.#resolveError(spec, options)
+
+    // Cache the manifest data. Skip paths already written this
+    // run — first writer wins, avoiding duplicate serialization
+    // and racing writers for the same path.
+    if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
+      this.#manifestWritePaths.add(cachePath)
+      const vlt = this.#vltPackuments.has(
+        `${f.registry}${f.name}`,
+      )
+      void this.#writeManifestCache(
+        cachePath,
+        JSON.stringify(
+          vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
+        ),
+      )
+    }
+
+    // The selected object is shared by design: `packument()` returns
+    // the coalesced packument document, and callers (and tests) rely
+    // on that identity.
+    return mani
+  }
+
   async manifest(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
@@ -1162,14 +1212,22 @@ export class PackageInfoClient {
         const cachePath = this._manifestCachePath(spec, options)
         if (cachePath) {
           try {
+            // Reuse the previous validated read only while the file is
+            // unchanged on disk; one stat is cheaper than a read plus
+            // a parse plus a pick.
+            const memo = this.#manifestReads.get(cachePath)
+            const st = await stat(cachePath)
+            if (
+              st.mtimeMs === memo?.mtimeMs &&
+              st.size === memo?.size
+            ) {
+              return structuredClone(memo.manifest)
+            }
             // Cache file exists, read and return it. Freshness is
             // tracked via the file's mtime, so the file content is
             // the manifest, plus a marker when it came from a vlt
             // packument, and can be returned as parsed.
-            const [st, cached] = await Promise.all([
-              stat(cachePath),
-              readFile(cachePath, 'utf8'),
-            ])
+            const cached = await readFile(cachePath, 'utf8')
             const json = JSON.parse(cached) as Manifest & {
               __VLT_MANIFEST_CACHE_TIMESTAMP?: number
               __VLT_PACKUMENT?: boolean
@@ -1191,35 +1249,18 @@ export class PackageInfoClient {
               this.#vltPackuments.add(`${f.registry}${f.name}`)
               delete json.__VLT_PACKUMENT
             }
-            return json
+            this.#manifestReads.set(cachePath, {
+              mtimeMs: st.mtimeMs,
+              size: st.size,
+              manifest: json,
+            })
+            return structuredClone(json)
           } catch {
             // Cache miss, fetch from packument
           }
         }
 
-        const mani = pickManifest(
-          await this.#packument(f, options, this.#stable(f)),
-          spec,
-          options,
-        )
-        if (!mani) throw this.#resolveError(spec, options)
-
-        // Cache the manifest data. Skip paths already written this
-        // run — first writer wins, avoiding duplicate serialization
-        // and racing writers for the same path.
-        if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
-          this.#manifestWritePaths.add(cachePath)
-          const vlt = this.#vltPackuments.has(
-            `${f.registry}${f.name}`,
-          )
-          void this.#writeManifestCache(
-            cachePath,
-            JSON.stringify(
-              vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
-            ),
-          )
-        }
-
+        const mani = await this.#packumentManifest(spec, options, cachePath)
         return mani
       }
 
