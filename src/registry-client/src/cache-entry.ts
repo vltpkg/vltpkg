@@ -400,7 +400,9 @@ export class CacheEntry {
    * Note that this will *usually* not be true if the value is coming out of
    * the cache, because cache entries not exploded into the global store are
    * un-gzipped in place. It should _only_ be called for artifacts that come
-   * from an actual http response.
+   * from an actual http response, whatever its encoding: an identity body
+   * is hashed as it came, a gzipped one before anything un-gzips it in
+   * memory.
    *
    * Returns true if anything was actually verified.
    */
@@ -447,11 +449,28 @@ export class CacheEntry {
     return computed
   }
 
+  #hash(body: Uint8Array = this._body): Integrity {
+    const hash = createHash('sha512')
+    hash.update(body)
+    return `sha512-${hash.digest('base64')}`
+  }
+
+  /**
+   * The hash of the body un-gzipped, or of the body itself if it is not
+   * gzipped, without un-gzipping the entry. Bounded like {@link unzip},
+   * and throws like it on a body that will not un-gzip.
+   *
+   * Never the hash to record for an artifact, which is the hash of its
+   * bytes as served. It pins the same content, though, and is what a
+   * body hashed after something un-gzipped it was pinned with.
+   */
+  unzippedIntegrity(): Integrity {
+    return this.#hash(this.isGzip ? this.#gunzip() : this._body)
+  }
+
   get integrityActual(): Integrity {
     if (this.#integrityActual) return this.#integrityActual
-    const hash = createHash('sha512')
-    hash.update(this._body)
-    const i: Integrity = `sha512-${hash.digest('base64')}`
+    const i = this.#hash()
     this.integrityActual = i
     return i
   }
@@ -555,13 +574,57 @@ export class CacheEntry {
     if (ct) return (this.#isJSON = /\bjson\b/.test(ct))
     // don't cache, because we might just not have it yet.
     if (!this._body.length) return false
+    // the sniff un-gzips the body in place. hash a gzipped network body
+    // first, so a tarball served without a content-type is recorded
+    // under the hash of the bytes every other fetch of it gets, not of
+    // the un-gzipped copy only this cache holds. an identity body is
+    // left as it is, and the cache write hashes it as it came; a body
+    // already un-gzipped in memory is not the wire bytes any more, so
+    // no hash of it is ever recorded.
+    const wire =
+      !this.#fromCache && !this.#integrityActual && this.isGzip ?
+        this.#hash()
+      : undefined
     this.unzip()
     const buf = this._body
     if (!buf.length) return false
     // all registry json starts with {, and no tarball ever can.
     this.#isJSON = buf[0] === 0x7b
     if (this.#isJSON) this.setHeader('content-type', 'text/json')
+    else if (wire) this.integrityActual = wire
     return this.#isJSON
+  }
+
+  /**
+   * Label a 200 network body that is not json and came with no
+   * content-type `application/octet-stream`, the way the json sniff
+   * labels json `text/json`.
+   *
+   * The label says the hash the entry is stored under is the hash of
+   * its bytes as served, checked or recorded by
+   * `RegistryClient.request()`. So it is applied only where that is
+   * known, right before such an entry is stored, and never by the
+   * sniff: an entry with no content-type read back from the cache is
+   * not known to be one.
+   *
+   * A decoded entry, an error body, an empty body, json, and a body
+   * served with a content-type are left as they are. Not an error body
+   * or an empty one: a content-type that is not json makes an entry
+   * immutable (see {@link valid}), which neither was when served with
+   * none, and no artifact is empty. The length is checked after the
+   * sniff, which un-gzips a body with no content-type.
+   */
+  labelArtifact() {
+    if (
+      this.#fromCache ||
+      this.#statusCode !== 200 ||
+      this.isJSON ||
+      this.getHeaderString('content-type') ||
+      !this.#bodyLength
+    ) {
+      return
+    }
+    this.setHeader('content-type', 'application/octet-stream')
   }
 
   #isGzip?: boolean
@@ -581,6 +644,34 @@ export class CacheEntry {
     return this.#isGzip
   }
 
+  // the body un-gzipped, for a body known to be gzipped
+  #gunzip(): Buffer {
+    // we know that if we know it's gzip, that the body has been
+    // flattened to a single buffer, so save the extra call.
+    /* c8 ignore start */
+    if (this._body.length === 0)
+      throw error('Invalid buffer, cant unzip')
+    /* c8 ignore stop */
+    const max = Math.min(
+      maxUnpackedBytes,
+      this._body.length * MAX_DECOMPRESSION_RATIO,
+    )
+    try {
+      return gunzipSync(this._body, { maxOutputLength: max })
+    } catch (er) {
+      throw (
+          (er as NodeJS.ErrnoException).code ===
+            'ERR_BUFFER_TOO_LARGE'
+        ) ?
+          error('cache entry exceeds maximum unpacked size', {
+            found: this._body.length,
+            max,
+            cause: er,
+          })
+        : er
+    }
+  }
+
   /**
    * Un-gzip encode the body.
    * Returns true if it was previously gzip (so something was done), otherwise
@@ -588,31 +679,7 @@ export class CacheEntry {
    */
   unzip() {
     if (this.isGzip) {
-      // we know that if we know it's gzip, that the body has been
-      // flattened to a single buffer, so save the extra call.
-      /* c8 ignore start */
-      if (this._body.length === 0)
-        throw error('Invalid buffer, cant unzip')
-      /* c8 ignore stop */
-      const max = Math.min(
-        maxUnpackedBytes,
-        this._body.length * MAX_DECOMPRESSION_RATIO,
-      )
-      let b: Buffer
-      try {
-        b = gunzipSync(this._body, { maxOutputLength: max })
-      } catch (er) {
-        throw (
-            (er as NodeJS.ErrnoException).code ===
-              'ERR_BUFFER_TOO_LARGE'
-          ) ?
-            error('cache entry exceeds maximum unpacked size', {
-              found: this._body.length,
-              max,
-              cause: er,
-            })
-          : er
-      }
+      const b = this.#gunzip()
       this.setHeader('content-encoding', 'identity')
       const u8 = new Uint8Array(b.buffer, b.byteOffset, b.byteLength)
       this.#body = u8

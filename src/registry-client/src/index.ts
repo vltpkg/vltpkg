@@ -213,6 +213,19 @@ export type RegistryClientRequestOptions = Omit<
   useCache?: false
 
   /**
+   * Set to `false` to fetch from the network without looking in the
+   * cache first, on this url and on every url it redirects to, while
+   * still storing the result. No cached entry is served, stale or
+   * not, or revalidated, so nothing is sent conditionally either.
+   *
+   * Meant for an entry that cannot be trusted any more:
+   * `forceRevalidate` would still hand it back on a 304, and evicting
+   * it does not stop a redirect from reading the entry under the final
+   * url back instead.
+   */
+  readCache?: false
+
+  /**
    * Set to pass an `npm-otp` header on the request.
    *
    * This should not be set except by the RegistryClient itself, when
@@ -802,7 +815,7 @@ export class RegistryClient {
     const { trustIntegrity, verifyDigest } = options
 
     const m = isCacheableMethod(method) ? method : undefined
-    const { useCache = !!m } = options
+    const { useCache = !!m, readCache = true } = options
 
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
@@ -811,7 +824,7 @@ export class RegistryClient {
     // response representation for the same URL.
     const key = cacheKey(method, u)
     const buffer =
-      useCache ?
+      useCache && readCache ?
         await this.cache.fetch(key, { context: { integrity } })
       : undefined
 
@@ -953,10 +966,6 @@ export class RegistryClient {
       },
     )
 
-    // a server-sent integrity header is not evidence: only the caller's
-    // expectation, or a body read back from the cache, is trusted. the
-    // header is dropped so it can never be stored as the entry's hash.
-    //
     // the check has to happen here, before the cache write below, or a
     // body that fails it is still stored under the hash it was supposed
     // to have -- and served from there, unverified, on the next run.
@@ -965,12 +974,16 @@ export class RegistryClient {
     // else is the bytes as they came off the wire and hashes as such.
     // this used to also require `isGzip`, which was a proxy for that
     // and silently exempted every artifact that is not gzip -- a
-    // `.tar.br` among them.
-    if (!trustIntegrity && !result.fromCache) {
-      result.deleteHeader('integrity')
-      // 200 only: an error body is not the artifact and was never
-      // supposed to hash to it, and it is not what gets cached either.
-      if (result.statusCode === 200) result.checkIntegrity({ url })
+    // `.tar.br` among them. 200 only: an error body is not the artifact
+    // and was never supposed to hash to it; it is the caller's to report
+    // by status. the server-sent integrity header is already gone, see
+    // #handleResponse.
+    if (
+      !trustIntegrity &&
+      !result.fromCache &&
+      result.statusCode === 200
+    ) {
+      result.checkIntegrity({ url })
     }
     // same for the digest the server labels an unlabelled artifact with.
     // before the cache write below, or a rejected body would be served
@@ -996,13 +1009,24 @@ export class RegistryClient {
     if (useCache && !clobbersCachedEntry) {
       // content-address an artifact the caller had no expected hash for,
       // so a later lookup by hash still finds it; packuments are not
-      // worth hashing. integrityActual also records the hash in the
-      // entry's headers, so it runs before encode().
+      // worth hashing. never a body read back from the cache -- a 304,
+      // or the entry a redirect's nested request() served -- which
+      // cache-unzip may have rewritten un-gzipped: its hash is of bytes
+      // only this cache holds, and recorded here it would be trusted
+      // as the entry's from then on. integrityActual also records the
+      // hash in the entry's headers, so it runs before encode().
+      const artifact =
+        !result.fromCache &&
+        result.statusCode === 200 &&
+        !result.isJSON
       const integrity =
         result.integrity ??
-        (result.statusCode === 200 && !result.isJSON ?
-          result.integrityActual
-        : undefined)
+        (artifact ? result.integrityActual : undefined)
+      // the hash an artifact is stored under was checked or recorded
+      // just now, as the hash of its bytes as served. label one that
+      // came with no content-type to say so, see
+      // CacheEntry#labelArtifact.
+      if (artifact) result.labelArtifact()
       const encoded = result.encode()
       const stored = Buffer.from(
         encoded.buffer,
@@ -1061,6 +1085,13 @@ export class RegistryClient {
         contentLength,
       },
     )
+
+    // a server-sent integrity header is not evidence: only the caller's
+    // expectation, or a body read back from the cache, is trusted. the
+    // header is dropped before the body is read so it can never be
+    // stored as the entry's hash, and so a nested request() for a
+    // redirect hands back an entry whose recorded hash survives.
+    if (!trustIntegrity) result.deleteHeader('integrity')
 
     if (isRedirect(result)) {
       response.body.resume()

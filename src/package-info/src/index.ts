@@ -6,6 +6,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import type {
+  CacheEntry,
   RegistryClient,
   RegistryClientOptions,
   RegistryClientRequestOptions,
@@ -32,7 +33,6 @@ import {
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
-import ssri from 'ssri'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'node:crypto'
@@ -247,6 +247,33 @@ const isStableSelector = (f: Spec) => {
 
 // anything else, eg an unvalidated env value, means `unpack`
 const storeLinkers = new Set<string>(['auto', 'hardlink', 'copy'])
+
+// the hash a response answers for. a network body's is the hash of its
+// bytes: the registry client already checked it against the expected
+// hash, or recorded it when there was none, and memoized it, so this
+// is no second pass.
+//
+// a cache hit answers with the hash the entry was stored under, never
+// a fresh one: cache-unzip rewrites cached bodies un-gzipped in place,
+// so hashing one again would pin a hash of bytes no other machine has.
+// an entry stored before that hash was recorded can still be hashed
+// while its body is the bytes that came off the wire, i.e. still
+// gzipped; once rewritten it cannot be verified at all.
+//
+// nor can an entry with no content-type. request() labels a body
+// served without one as it stores it under the hash it checked or
+// recorded, so an entry with none was not stored that way. it may be
+// from v1.2.0 to v1.3.3, which un-gzipped a gzipped one in memory and
+// only then hashed it: its stored hash may be of that copy, which no
+// cold cache reproduces. a body served un-gzipped hashes the same
+// either way, so there is no telling which, and none is trusted.
+const storedIntegrity = (
+  response: CacheEntry,
+): Integrity | undefined =>
+  !response.fromCache ? response.integrityActual
+  : !response.contentType ? undefined
+  : (response.integrity ??
+    (response.isGzip ? response.integrityActual : undefined))
 
 export class PackageInfoClient {
   #registryClient?: RegistryClient
@@ -662,37 +689,123 @@ export class PackageInfoClient {
       }
 
       case 'remote': {
-        const response = await (
-          await this.getRegistryClient()
-        ).request(r.resolved)
-        if (response.statusCode !== 200) {
-          throw this.#resolveError(
-            spec,
-            options,
-            `failed to fetch remote tarball: ${registryErrorMessage(response)}`,
-            {
-              url: r.resolved,
-              response,
-            },
-          )
+        const rc = await this.getRegistryClient()
+        // lazy for the same reason getRegistryClient() is
+        const { CacheEntry: Entry, cacheKey } =
+          await import('@vltpkg/registry-client')
+        const key = cacheKey('GET', new URL(r.resolved))
+        // v1.2.0 to v1.3.3 hashed a remote tarball after the registry
+        // client had un-gzipped it: always, for one served with no
+        // content-type, and on a cache hit once cache-unzip had
+        // rewritten the entry, so a lockfile they wrote may pin that
+        // hash. it pins the same tar: a body that un-gzips to it is
+        // accepted, and r.integrity re-pinned to the hash the body is
+        // stored under, the one reported. the graph keeps the hash a
+        // node was locked with, so the lockfile is never rewritten and
+        // every install from it takes this path. a body that will not
+        // un-gzip is no match.
+        const unzipped = (entry: CacheEntry) => {
+          try {
+            return entry.unzippedIntegrity() === r.integrity
+          } catch {
+            return false
+          }
+        }
+        const fetchTarball = async (readCache?: false) => {
+          let response: CacheEntry
+          try {
+            response = await rc.request(r.resolved, {
+              integrity: r.integrity,
+              ...(readCache === false ? { readCache } : {}),
+            })
+          } catch (er) {
+            // the registry client rejects a network body that does not
+            // hash to r.integrity before anything is written. store one
+            // that un-gzips to it the way the client would have: under
+            // the hash of its bytes it recorded for the check, labelled
+            // like one it stores (see storedIntegrity), and for a url
+            // that redirects, under the url the lockfile names only,
+            // all a cache hit needs.
+            const cause = (er as { cause?: ErrorCauseOptions }).cause
+            if (
+              cause?.code !== 'EINTEGRITY' ||
+              !(cause.response instanceof Entry) ||
+              !unzipped(cause.response)
+            ) {
+              throw er
+            }
+            response = cause.response
+            r.integrity = response.integrityActual
+            response.labelArtifact()
+            rc.cache.set(key, response.encode(), {
+              integrity: r.integrity,
+            })
+          }
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
+              spec,
+              options,
+              `failed to fetch remote tarball: ${registryErrorMessage(response)}`,
+              {
+                url: r.resolved,
+                response,
+              },
+            )
+          }
+          return response
         }
 
-        const buf = response.buffer()
-
-        // Compute integrity for remote/git-with-tarball deps
-        const computed = ssri
-          .fromData(buf, { algorithms: ['sha512'] })
-          .toString()
-        if (r.integrity && r.integrity !== computed) {
+        let response = await fetchTarball()
+        let found = storedIntegrity(response)
+        // a cache hit that un-gzips to the lockfile hash, see above
+        if (
+          response.fromCache &&
+          found &&
+          r.integrity &&
+          r.integrity !== found &&
+          unzipped(response)
+        ) {
+          r.integrity = found
+        }
+        // a cached entry that does not match the lockfile, or that
+        // cannot be verified any more: evict it and fetch again, once,
+        // so the cache converges on an entry that carries its hash.
+        // the link under r.integrity goes too: the lookup by it links
+        // the value file there when nothing was, and the disk write
+        // trusts an integrity file it finds, so it would link the old
+        // bytes back over the new ones. the refetch reads nothing from
+        // the cache, on this url or any it redirects to: a url that
+        // redirects has an entry under the final url too, stored by
+        // the same fetch and out of the eviction's reach.
+        if (
+          response.fromCache &&
+          (!found || (r.integrity && r.integrity !== found))
+        ) {
+          rc.cache.delete(key, true, found)
+          if (r.integrity) rc.cache.delete(key, true, r.integrity)
+          await rc.cache.promise()
+          response = await fetchTarball(false)
+          found = storedIntegrity(response)
+        }
+        /* c8 ignore start - defense in depth: anything but a cache hit
+         * that matched is a network body, the refetch included, since
+         * it reads nothing from the cache on any redirect hop. the
+         * registry client checks every network body against
+         * r.integrity before anything is written, and records the hash
+         * of one it had no expectation for; one it rejected is only
+         * here with r.integrity re-pinned to its hash. */
+        if (!found || (r.integrity && r.integrity !== found)) {
           throw error('Integrity check failure', {
             code: 'EINTEGRITY',
             spec,
             url: r.resolved,
             wanted: r.integrity,
-            found: computed,
+            found,
           })
         }
-        r.integrity = computed as Integrity
+        /* c8 ignore stop */
+        r.integrity = found
+        const buf = response.buffer()
 
         try {
           await (await this.getTarPool()).unpack(buf, target)
@@ -1155,11 +1268,11 @@ export class PackageInfoClient {
             )
           }
           const buf = response.buffer()
-
-          // Compute integrity for remote/git-with-tarball deps
-          const computed = ssri
-            .fromData(buf, { algorithms: ['sha512'] })
-            .toString()
+          // the graph hands this back to extract() as the lockfile
+          // hash: the hash the entry is stored under, or none for an
+          // entry that cannot be verified, which extract() then
+          // fetches again and records
+          const integrity = storedIntegrity(response)
 
           try {
             await (await this.getTarPool()).unpack(buf, dir)
@@ -1172,9 +1285,8 @@ export class PackageInfoClient {
             )
           }
 
-          // return manifest with computed integrity
           const mani = this.#readExtracted(dir, s, options)
-          mani.dist = { integrity: computed as Integrity }
+          if (integrity) mani.dist = { integrity }
           return mani
         })
       }

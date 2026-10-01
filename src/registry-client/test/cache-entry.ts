@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { inspect } from 'node:util'
 import { gzipSync } from 'node:zlib'
 import t from 'tap'
+import type { Integrity } from '@vltpkg/types'
 import { CacheEntry } from '../src/cache-entry.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
@@ -577,6 +578,166 @@ t.test('isJSON without content-type uses first byte', t => {
   const emptyGz = new CacheEntry(200, [])
   emptyGz.addBody(gzipSync(Buffer.alloc(0)))
   t.equal(emptyGz.isJSON, false)
+  t.end()
+})
+
+t.test('the sniff records the hash of a gzipped network body', t => {
+  const sha512 = (b: Uint8Array): Integrity =>
+    `sha512-${createHash('sha512').update(b).digest('base64')}`
+  const gz = gzipSync(Buffer.from('hello'))
+
+  // the body is un-gzipped in place by the sniff, and the hash
+  // recorded is the one of the bytes as they came off the wire
+  const gzNot = new CacheEntry(200, [])
+  gzNot.addBody(gz)
+  t.equal(gzNot.isJSON, false)
+  t.equal(gzNot.isGzip, false, 'un-gzipped in place')
+  t.equal(gzNot.getHeaderString('integrity'), sha512(gz))
+  t.equal(gzNot.integrityActual, sha512(gz), 'memoized')
+
+  // a json body is not a tarball: nothing to record
+  const gzJson = new CacheEntry(200, [])
+  gzJson.addBody(gzipSync(Buffer.from('{"x":1}')))
+  t.equal(gzJson.isJSON, true)
+  t.equal(gzJson.getHeaderString('content-type'), 'text/json')
+  t.equal(gzJson.getHeaderString('integrity'), undefined)
+
+  // an identity body is not touched by the sniff, and is hashed as
+  // it is by whoever asks for integrityActual
+  const plain = new CacheEntry(200, [])
+  plain.addBody(Buffer.from('hello'))
+  t.equal(plain.isJSON, false)
+  t.equal(plain.getHeaderString('integrity'), undefined)
+  t.equal(plain.integrityActual, sha512(Buffer.from('hello')))
+
+  // an expectation checked first is what gets recorded, once
+  const checked = new CacheEntry(200, [], { integrity: sha512(gz) })
+  checked.addBody(gz)
+  t.equal(checked.checkIntegrity(), true)
+  t.equal(checked.isJSON, false)
+  t.equal(checked.getHeaderString('integrity'), sha512(gz))
+
+  // a body un-gzipped in memory before the sniff is not the wire
+  // bytes any more: no hash of it is recorded
+  const unzipped = new CacheEntry(200, [])
+  unzipped.addBody(gz)
+  t.equal(unzipped.unzip(), true)
+  t.equal(unzipped.isJSON, false)
+  t.equal(unzipped.getHeaderString('integrity'), undefined)
+
+  // a decoded entry is never hashed by the sniff: its body may have
+  // been rewritten un-gzipped in place since it was stored
+  const decoded = CacheEntry.decode(toRawEntry(200, {}, gz))
+  t.equal(decoded.fromCache, true)
+  t.equal(decoded.isJSON, false)
+  t.equal(decoded.getHeaderString('integrity'), undefined)
+  t.equal(decoded.integrity, undefined)
+  t.end()
+})
+
+t.test('labelArtifact', t => {
+  const gz = gzipSync(Buffer.from('hello'))
+  const label = (entry: CacheEntry) => {
+    entry.labelArtifact()
+    return entry.getHeaderString('content-type')
+  }
+
+  // the sniff labels nothing: a body with no content-type stored by
+  // anything but RegistryClient.request() is stored without one
+  const sniffed = new CacheEntry(200, [])
+  sniffed.addBody(gz)
+  t.equal(sniffed.isJSON, false)
+  t.equal(sniffed.getHeaderString('content-type'), undefined)
+  t.equal(CacheEntry.decode(sniffed.encode()).contentType, '')
+
+  // a 200 network body with no content-type, gzipped or not
+  const gzNot = new CacheEntry(200, [])
+  gzNot.addBody(gz)
+  t.equal(label(gzNot), 'application/octet-stream')
+  t.equal(gzNot.isJSON, false)
+  const plain = new CacheEntry(200, [])
+  plain.addBody(Buffer.from('hello'))
+  t.equal(label(plain), 'application/octet-stream')
+
+  // stored, it is not sniffed again, and like any other body with a
+  // content-type that is not json it is an immutable tarball
+  const stored = CacheEntry.decode(gzNot.encode())
+  t.equal(stored.contentType, 'application/octet-stream')
+  t.equal(stored.isJSON, false)
+  t.equal(stored.valid, true)
+
+  // a decoded entry is not labelled, nor stored back labelled
+  const decoded = CacheEntry.decode(toRawEntry(200, {}, gz))
+  t.equal(label(decoded), undefined)
+  t.equal(CacheEntry.decode(decoded.encode()).contentType, '')
+
+  // nor json, nor a body that came with a content-type
+  const json = new CacheEntry(200, [])
+  json.addBody(Buffer.from('{"hello":"world"}'))
+  t.equal(label(json), 'text/json')
+  const typed = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-type': 'application/x-tar' }),
+  )
+  typed.addBody(gz)
+  t.equal(label(typed), 'application/x-tar')
+
+  // nor an error body: labelled, it would be immutable, where one with
+  // no content-type goes stale like any other
+  const notFound = new CacheEntry(
+    404,
+    toRawHeaders({ date: new Date('2020-01-01').toUTCString() }),
+  )
+  notFound.addBody(Buffer.from('Not Found'))
+  t.equal(label(notFound), undefined)
+  t.equal(CacheEntry.decode(notFound.encode()).valid, false)
+
+  // nor an empty body, or one that un-gzips to nothing: no artifact is
+  // empty, and one with no content-type goes stale like any other
+  const empty = new CacheEntry(
+    200,
+    toRawHeaders({ date: new Date('2020-01-01').toUTCString() }),
+  )
+  t.equal(label(empty), undefined)
+  t.equal(CacheEntry.decode(empty.encode()).valid, false)
+  const gzEmpty = new CacheEntry(200, [])
+  gzEmpty.addBody(gzipSync(Buffer.alloc(0)))
+  t.equal(label(gzEmpty), undefined)
+  t.end()
+})
+
+t.test('unzippedIntegrity', t => {
+  const sha512 = (b: Uint8Array): Integrity =>
+    `sha512-${createHash('sha512').update(b).digest('base64')}`
+  const tar = Buffer.from('this is a tarball lets pretend')
+  const gz = gzipSync(tar)
+
+  // the hash of what a gzipped body un-gzips to, the entry untouched
+  const zipped = new CacheEntry(200, [])
+  zipped.addBody(gz)
+  t.equal(zipped.unzippedIntegrity(), sha512(tar))
+  t.equal(zipped.isGzip, true, 'not un-gzipped')
+  t.strictSame(zipped.buffer(), gz)
+  t.equal(
+    zipped.getHeaderString('integrity'),
+    undefined,
+    'not recorded',
+  )
+
+  // of any other body, the hash of the body
+  const plain = new CacheEntry(200, [])
+  plain.addBody(tar)
+  t.equal(plain.unzippedIntegrity(), sha512(tar))
+
+  // bounded like unzip()
+  const bomb = new CacheEntry(
+    200,
+    toRawHeaders({ 'content-encoding': 'gzip' }),
+  )
+  bomb.addBody(gzipSync(Buffer.alloc(2 * 1024 * 1024)))
+  t.throws(() => bomb.unzippedIntegrity(), {
+    message: 'cache entry exceeds maximum unpacked size',
+  })
   t.end()
 })
 
