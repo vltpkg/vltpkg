@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto'
 import { closeSync, openSync, readFileSync, readSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
+import { pipeline } from 'node:stream'
 import type { Readable } from 'node:stream'
 import { setTimeout } from 'node:timers/promises'
 import { createGunzip } from 'node:zlib'
@@ -855,11 +856,15 @@ export class RegistryClient {
     const encoding = response.headers['content-encoding']
     const gzipped =
       typeof encoding === 'string' && /\bgzip\b/.test(encoding)
-    return {
-      statusCode: response.statusCode,
-      body:
-        gzipped ? response.body.pipe(createGunzip()) : response.body,
+    let body: Readable = response.body
+    if (gzipped) {
+      // a pipeline, so an error on the connection reaches whoever is
+      // reading the gunzipped body
+      const gunzip = createGunzip()
+      pipeline(response.body, gunzip, () => {})
+      body = gunzip
     }
+    return { statusCode: response.statusCode, body }
   }
 
   async request(

@@ -104,17 +104,31 @@ t.test('with the flag on', async t => {
     )
   })
 
-  t.test('puts scoped-registry scopes in stop', async t => {
-    const seen: [string, ResolveRequest][] = []
-    const graph = graphOf([
-      importer({ dependencies: { a: '^1.0.0' } }),
-    ])
-    prefetchResolve(graph, packageInfo(seen), {
-      ...options,
-      'scoped-registries': { '@corp': 'https://corp.example/' },
-    })
-    t.strictSame(seen[0]![1].stop, { scopes: ['@corp'] })
-  })
+  t.test(
+    'keeps scoped-registry names out, and their scopes in stop',
+    async t => {
+      const seen: [string, ResolveRequest][] = []
+      const graph = graphOf(
+        [
+          importer({
+            dependencies: { a: '^1.0.0', '@corp/ui': '^2.0.0' },
+          }),
+        ],
+        [
+          { name: '@corp/util', version: '1.0.0', manifest: {} },
+          { name: 'x', version: '1.0.0', manifest: {} },
+        ],
+      )
+      prefetchResolve(graph, packageInfo(seen), {
+        ...options,
+        'scoped-registries': { '@corp': 'https://corp.example/' },
+      })
+      const request = seen[0]![1]
+      t.strictSame(request.roots, [{ name: 'a', spec: '^1.0.0' }])
+      t.strictSame(request.have, ['x@1.0.0'])
+      t.strictSame(request.stop, { scopes: ['@corp'] })
+    },
+  )
 
   t.test('sends held versions as have', async t => {
     const seen: [string, ResolveRequest][] = []
