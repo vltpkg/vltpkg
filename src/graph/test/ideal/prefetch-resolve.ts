@@ -32,23 +32,7 @@ const packageInfo = (seen: [string, ResolveRequest][]) =>
 
 const importer = (manifest: Record<string, unknown>) => ({ manifest })
 
-t.test('does nothing at all when the flag is off', async t => {
-  t.intercept(process, 'env', { value: { ...process.env } })
-  delete (process.env as Record<string, string>).VLT_BATCH_RESOLVE
-  const seen: [string, ResolveRequest][] = []
-  const graph = graphOf([importer({ dependencies: { a: '^1.0.0' } })])
-
-  t.equal(prefetchResolve(graph, packageInfo(seen), options), 0)
-  t.strictSame(seen, [], 'the client is never touched')
-})
-
-t.test('with the flag on', async t => {
-  t.beforeEach(t =>
-    t.intercept(process, 'env', {
-      value: { ...process.env, VLT_BATCH_RESOLVE: '1' },
-    }),
-  )
-
+t.test('prefetchResolve', async t => {
   t.test('collects deps of every importer, deduplicated', async t => {
     const seen: [string, ResolveRequest][] = []
     const graph = graphOf([

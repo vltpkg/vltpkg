@@ -20,12 +20,6 @@ export const prefetchResolve = (
   packageInfo: PackageInfoClient,
   options: SpecOptions & { modifiers?: unknown },
 ): number => {
-  // same flag the client checks; read here as well so a disabled run never
-  // walks the graph or touches the client (whose test doubles may not
-  // carry prefetchResolve). a value import would force the real
-  // package-info module graph onto every consumer that stubs it, so the
-  // check is local.
-  if (process.env.VLT_BATCH_RESOLVE !== '1') return 0
   // a modifier can swap any spec mid-graph, taking the server's whole
   // closure off the client's real one; those installs resolve locally
   if (options.modifiers) return 0

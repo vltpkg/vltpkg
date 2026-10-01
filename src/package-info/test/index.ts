@@ -5103,7 +5103,7 @@ t.test('prefetchResolve', async t => {
       registry: defaultRegistry,
       cache: t.testdir(),
     })
-  t.beforeEach(t => {
+  t.beforeEach(() => {
     resetCapabilities()
     capabilitiesDocument = { resolve: '0.1' }
     resolveRequests.length = 0
@@ -5118,19 +5118,6 @@ t.test('prefetchResolve', async t => {
       },
       { end: true, status: 200, returned: 1, unresolved: 0 },
     ]
-    t.intercept(process, 'env', {
-      value: { ...process.env, VLT_BATCH_RESOLVE: '1' },
-    })
-  })
-
-  t.test('is a no-op when the flag is off', async t => {
-    const env = { ...process.env }
-    delete env.VLT_BATCH_RESOLVE
-    t.intercept(process, 'env', { value: env })
-    const pi = freshClient(t)
-    pi.prefetchResolve(defaultRegistry, { roots })
-    t.equal(pi.resolvedManifestCount, 0)
-    t.strictSame(resolveRequests, [], 'no request went out')
   })
 
   t.test('is a no-op for an empty root list', async t => {
@@ -5294,7 +5281,6 @@ t.test('prefetchResolve', async t => {
       t.intercept(process, 'env', {
         value: {
           ...process.env,
-          VLT_BATCH_RESOLVE: '1',
           VLT_BATCH_RESOLVE_WAIT_MS: '0',
         },
       })
@@ -5337,7 +5323,6 @@ t.test('prefetchResolve', async t => {
     t.intercept(process, 'env', {
       value: {
         ...process.env,
-        VLT_BATCH_RESOLVE: '1',
         VLT_BATCH_RESOLVE_WAIT_MS: '100',
       },
     })
@@ -5357,7 +5342,6 @@ t.test('prefetchResolve', async t => {
     t.intercept(process, 'env', {
       value: {
         ...process.env,
-        VLT_BATCH_RESOLVE: '1',
         VLT_BATCH_RESOLVE_WAIT_MS: '5000',
       },
     })
