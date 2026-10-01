@@ -107,6 +107,7 @@ t.test(
       async extract(spec: Spec) {
         return { resolved: '', spec }
       },
+      prefetchResolve() {},
     } as unknown as PackageInfoClient
 
     const projectRoot = t.testdir({

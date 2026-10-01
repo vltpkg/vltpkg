@@ -1,7 +1,7 @@
 import t from 'tap'
 import { Readable } from 'node:stream'
 import type { RegistryClient } from '@vltpkg/registry-client'
-import { fetchResolve, resolveEnabled } from '../src/resolve-batch.ts'
+import { fetchResolve } from '../src/resolve-batch.ts'
 import type { ResolveRecord } from '../src/resolve-batch.ts'
 
 const registry = 'https://registry.vlt.io/acme/npm/'
@@ -42,13 +42,6 @@ const keysOf = (records: ResolveRecord[]): string[] =>
   ])
 
 const roots = [{ name: 'a', spec: '^1.0.0' }]
-
-t.test('resolveEnabled follows the env flag', async t => {
-  t.intercept(process, 'env', { value: {} })
-  t.equal(resolveEnabled(), false, 'off when unset')
-  t.intercept(process, 'env', { value: { VLT_BATCH_RESOLVE: '1' } })
-  t.equal(resolveEnabled(), true, 'on for 1')
-})
 
 t.test('fetchResolve', async t => {
   t.test(

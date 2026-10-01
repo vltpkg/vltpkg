@@ -4,7 +4,7 @@ import { createInterface } from 'node:readline'
 
 /**
  * Server-side range resolution against a vlt registry's `/-/vlt/resolve`
- * endpoint, behind `VLT_BATCH_RESOLVE=1` while it settles.
+ * endpoint.
  *
  * One request resolves many `name@range` pairs and streams back the chosen
  * manifests for the whole dependency closure. Records reach the caller as
@@ -16,10 +16,6 @@ import { createInterface } from 'node:readline'
  * parse all leave the caller with fewer manifests than it asked for, and
  * the per-name path fills the rest in.
  */
-
-/** Opt in while the endpoint is experimental. */
-export const resolveEnabled = (): boolean =>
-  process.env.VLT_BATCH_RESOLVE === '1'
 
 /** The request body `/-/vlt/resolve` takes. */
 export type ResolveRequest = {

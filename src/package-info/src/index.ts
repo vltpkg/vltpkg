@@ -33,7 +33,7 @@ import {
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
-import { fetchResolve, resolveEnabled } from './resolve-batch.ts'
+import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -1201,11 +1201,11 @@ export class PackageInfoClient {
    * return without waiting. `manifest()` answers from what has arrived,
    * and blocks on the request only when it needs a key that has not.
    *
-   * A no-op unless `VLT_BATCH_RESOLVE=1` and the registry says it serves
-   * the endpoint. Anything it does not deliver is left to `manifest()`.
+   * A no-op unless the registry says it serves the endpoint. Anything it
+   * does not deliver is left to `manifest()`.
    */
   prefetchResolve(registry: string, request: ResolveRequest): void {
-    if (!resolveEnabled() || !request.roots.length) return
+    if (!request.roots.length) return
     // keyed the way a spec names its registry, with the trailing slash
     if (!registry.endsWith('/')) registry += '/'
     const sent = `${registry} ${JSON.stringify(request)}`
