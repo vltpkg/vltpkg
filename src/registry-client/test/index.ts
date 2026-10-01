@@ -2455,3 +2455,121 @@ t.test('logout() reports revocation failures', async t => {
     )
   })
 })
+
+t.test('requestStream', async t => {
+  const { gzipSync: gz } = await import('node:zlib')
+  const STREAM_PORT = PORT + 100
+
+  /** The last request the stream server saw, for asserting what was sent. */
+  let seen: {
+    method?: string
+    url?: string
+    headers: Record<string, string | string[] | undefined>
+    body: string
+  } = { headers: {}, body: '' }
+
+  const streamServer = createServer((req, res) => {
+    let body = ''
+    req.on('data', (c: Buffer) => (body += String(c)))
+    req.on('end', () => {
+      seen = {
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        body,
+      }
+      const { url = '' } = req
+      if (url.startsWith('/gzip')) {
+        res.statusCode = 200
+        res.setHeader('content-encoding', 'gzip')
+        res.setHeader('content-type', 'application/x-ndjson')
+        return res.end(gz(Buffer.from('{"a":1}\n{"a":2}\n')))
+      }
+      if (url.startsWith('/missing')) {
+        res.statusCode = 404
+        return res.end('nope')
+      }
+      if (url.startsWith('/boom')) {
+        res.statusCode = 500
+        return res.end('down')
+      }
+      res.statusCode = 207
+      res.setHeader('content-type', 'application/x-ndjson')
+      res.end('{"a":1}\n{"a":2}\n')
+    })
+  })
+  await new Promise<void>(r => streamServer.listen(STREAM_PORT, r))
+  t.teardown(() => streamServer.close())
+
+  const read = async (
+    body: NodeJS.ReadableStream,
+  ): Promise<string> => {
+    let text = ''
+    for await (const chunk of body) text += String(chunk)
+    return text
+  }
+  const base = `http://localhost:${STREAM_PORT}`
+
+  t.test('streams an identity body', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const { statusCode, body } = await rc.requestStream(
+      `${base}/-/vlt/resolve`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{"roots":[]}',
+      },
+    )
+    t.equal(statusCode, 207)
+    t.equal(await read(body), '{"a":1}\n{"a":2}\n')
+    t.equal(seen.method, 'POST')
+    t.equal(seen.url, '/-/vlt/resolve')
+    t.equal(seen.body, '{"roots":[]}')
+    t.match(
+      seen.headers['user-agent'],
+      /@vltpkg\/registry-client/,
+      'identifies itself the way request() does',
+    )
+    t.ok(seen.headers['npm-session'], 'carries the session id')
+  })
+
+  t.test('gunzips a compressed body', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const { statusCode, body } = await rc.requestStream(
+      `${base}/gzip`,
+    )
+    t.equal(statusCode, 200)
+    t.equal(
+      await read(body),
+      '{"a":1}\n{"a":2}\n',
+      'the caller reads what the server serialized',
+    )
+    t.equal(seen.method, 'GET', 'GET by default')
+  })
+
+  t.test('hands back a non-2xx as it is', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const { statusCode, body } = await rc.requestStream(
+      `${base}/missing`,
+    )
+    t.equal(statusCode, 404)
+    t.equal(await read(body), 'nope')
+  })
+
+  t.test(
+    'rejects a status the agent retries, as request() does',
+    async t => {
+      const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
+      await t.rejects(rc.requestStream(`${base}/boom`))
+    },
+  )
+
+  t.test('keeps the query string', async t => {
+    const rc = new RC({ cache: t.testdir() })
+    const { body } = await rc.requestStream(
+      new URL(`${base}/-/vlt/resolve?x=1`),
+    )
+    body.resume()
+    t.equal(seen.url, '/-/vlt/resolve?x=1')
+  })
+})
