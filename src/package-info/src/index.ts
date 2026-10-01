@@ -33,11 +33,7 @@ import {
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
-import {
-  fetchResolve,
-  resolveEnabled,
-  supportsResolve,
-} from './resolve-batch.ts'
+import { fetchResolve, resolveEnabled } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -58,6 +54,7 @@ import {
   resolve as pathResolve,
   relative,
 } from 'node:path'
+import { setTimeout } from 'node:timers/promises'
 import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
 import type { Capabilities } from './capabilities.ts'
@@ -177,6 +174,19 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
      */
     backgroundRevalidate?: boolean
   }
+
+/**
+ * How long `manifest()` waits for an in-flight resolve to deliver one key
+ * before giving up on it and fetching the packument itself. The wait is
+ * short because the alternative is not failure, it is the request the
+ * client would have made anyway.
+ */
+const resolveWaitMs = (): number => {
+  const configured = Number(process.env.VLT_BATCH_RESOLVE_WAIT_MS)
+  return Number.isFinite(configured) && configured >= 0 ?
+      configured
+    : 1000
+}
 
 // request options that change which manifest is picked, or how; a batch
 // entry never went through pickManifest under them, so they bypass it
@@ -339,10 +349,21 @@ export class PackageInfoClient {
   // `${registry}${name}@${range}` for every spec that chose a version and
   // `${registry}${name}@${version}` for the version itself.
   #resolvedManifests = new Map<string, Manifest>()
-  // One in-flight resolve per registry. `manifest()` waits on it only when
-  // it needs a key that has not arrived, so the request overlaps whatever
-  // the graph build does before it asks for its first manifest.
-  #resolvePromises = new Map<string, Promise<void>>()
+  // The resolves still streaming, per registry, each settling when its
+  // stream ends. The requests overlap whatever the graph build does before
+  // it asks for its first manifest.
+  #resolveInflight = new Map<string, Set<Promise<void>>>()
+  // Requests already sent, so the same ask is not repeated. Keyed on the
+  // request rather than the registry: a later step asking for a different
+  // root set is a different question.
+  #resolveSent = new Set<string>()
+  // Keys `manifest()` is waiting for, each woken by the record that carries
+  // it. Waiting per key rather than on the whole response is what lets a
+  // build place level N while the server still walks level N+1.
+  #resolveWaiters = new Map<
+    string,
+    Set<(manifest: Manifest) => void>
+  >()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -1177,16 +1198,18 @@ export class PackageInfoClient {
    */
   prefetchResolve(registry: string, request: ResolveRequest): void {
     if (!resolveEnabled() || !request.roots.length) return
-    if (this.#resolvePromises.has(registry)) return
+    const sent = `${registry} ${JSON.stringify(request)}`
+    if (this.#resolveSent.has(sent)) return
+    this.#resolveSent.add(sent)
+
     const promise = this.#runResolve(registry, request)
-    this.#resolvePromises.set(registry, promise)
-    // clear once settled, unless a later run has taken the slot, so a
-    // later prefetch can ask again and manifest() stops waiting on it
-    const clear = () => {
-      if (this.#resolvePromises.get(registry) === promise) {
-        this.#resolvePromises.delete(registry)
-      }
-    }
+    let inflight = this.#resolveInflight.get(registry)
+    if (!inflight)
+      this.#resolveInflight.set(registry, (inflight = new Set()))
+    inflight.add(promise)
+    // dropped once settled, so manifest() stops waiting on a request that
+    // has already delivered everything it is going to
+    const clear = () => inflight.delete(promise)
     promise.then(clear, clear)
   }
 
@@ -1196,21 +1219,75 @@ export class PackageInfoClient {
     request: ResolveRequest,
   ): Promise<void> {
     try {
+      if ((await this.capabilities(registry)).resolve === undefined)
+        return
       const client = await this.getRegistryClient()
-      if (!(await supportsResolve(client, registry))) return
-      const { byRange, byExact } = await fetchResolve(
-        client,
-        registry,
-        request,
-      )
-      for (const [key, manifest] of byRange) {
-        this.#resolvedManifests.set(`${registry}${key}`, manifest)
-      }
-      for (const [key, manifest] of byExact) {
-        this.#resolvedManifests.set(`${registry}${key}`, manifest)
-      }
+      await fetchResolve(client, registry, request, record => {
+        // Indexed both ways: by the ranges that chose the version, which
+        // is what the graph build asks for, and by the exact version, for
+        // a lookup that already knows it.
+        for (const spec of record.requested) {
+          this.#deliverResolved(
+            `${registry}${record.name}@${spec}`,
+            record.manifest,
+          )
+        }
+        this.#deliverResolved(
+          `${registry}${record.name}@${record.version}`,
+          record.manifest,
+        )
+      })
     } catch {
       // The per-name path still has every spec.
+    }
+  }
+
+  /** Record an arrived manifest and wake whoever was waiting for it. */
+  #deliverResolved(key: string, manifest: Manifest): void {
+    this.#resolvedManifests.set(key, manifest)
+    const waiters = this.#resolveWaiters.get(key)
+    if (waiters) {
+      this.#resolveWaiters.delete(key)
+      for (const wake of waiters) wake(manifest)
+    }
+  }
+
+  /**
+   * The manifest an in-flight resolve is expected to carry for `key`, or
+   * undefined if the wait was not worth continuing: every request settled
+   * without it, or it took longer than the per-name path would have.
+   *
+   * Waiting for whole responses instead would serialize the install behind
+   * the slowest package in the closure; waiting for this one key, briefly,
+   * costs at worst a packument fetch that was already the alternative.
+   */
+  async #awaitResolved(
+    registry: string,
+    key: string,
+  ): Promise<Manifest | undefined> {
+    const inflight = this.#resolveInflight.get(registry)
+    if (!inflight?.size) return undefined
+
+    let wake!: (manifest: Manifest) => void
+    const arrival = new Promise<Manifest | undefined>(res => {
+      wake = res
+    })
+    let waiters = this.#resolveWaiters.get(key)
+    if (!waiters) this.#resolveWaiters.set(key, (waiters = new Set()))
+    waiters.add(wake)
+
+    try {
+      return await Promise.race([
+        arrival,
+        Promise.all([...inflight]).then(() =>
+          this.#resolvedManifests.get(key),
+        ),
+        // unref'd: a pending wait must never be what keeps the process up
+        setTimeout(resolveWaitMs(), undefined, { ref: false }),
+      ])
+    } finally {
+      waiters.delete(wake)
+      if (!waiters.size) this.#resolveWaiters.delete(key)
     }
   }
 
@@ -1236,15 +1313,11 @@ export class PackageInfoClient {
           const key = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
           const resolved = this.#resolvedManifests.get(key)
           if (resolved) return resolved
-          // Not here yet: wait for the resolve that would carry it rather
-          // than racing it with a packument fetch for the same manifest.
-          const inflight =
-            f.registry ?
-              this.#resolvePromises.get(f.registry)
-            : undefined
-          if (inflight) {
-            await inflight
-            const arrived = this.#resolvedManifests.get(key)
+          // Not here yet: give the in-flight resolve a bounded moment to
+          // deliver this one key rather than fetching a packument for a
+          // manifest that is probably already on its way.
+          if (f.registry) {
+            const arrived = await this.#awaitResolved(f.registry, key)
             if (arrived) return arrived
           }
         }

@@ -10,7 +10,9 @@ import { randomUUID } from 'node:crypto'
 import { closeSync, openSync, readFileSync, readSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
+import type { Readable } from 'node:stream'
 import { setTimeout } from 'node:timers/promises'
+import { createGunzip } from 'node:zlib'
 import type { Agent, Dispatcher } from 'undici'
 import { RetryAgent } from 'undici'
 import { userAgent } from '@vltpkg/user-agent'
@@ -796,6 +798,61 @@ export class RegistryClient {
       this.cache.store,
       integrity,
     )
+  }
+
+  /**
+   * Make a request and hand back the response body as it arrives, instead of
+   * buffering it into a {@link CacheEntry}. For a body a caller acts on line
+   * by line — the NDJSON the batch endpoints stream — waiting for the last
+   * byte is the difference between using the first record now and using it
+   * once the server has finished computing the last one.
+   *
+   * The body is gunzipped here when the registry compressed it, so a caller
+   * always reads what the server serialized. Nothing is cached and nothing is
+   * retried: a caller that loses the stream falls back to the requests it was
+   * avoiding.
+   */
+  async requestStream(
+    url: URL | string,
+    options: RegistryClientRequestOptions = {},
+  ): Promise<{ statusCode: number; body: Readable }> {
+    const u = typeof url === 'string' ? new URL(url) : url
+    const o = {
+      ...options,
+      method: options.method ?? 'GET',
+      path: u.pathname.replace(/\/+$/, '') + u.search,
+      origin: u.origin,
+      headers: addHeader(
+        addHeader(
+          addHeader(
+            options.headers,
+            'accept-encoding',
+            'gzip;q=1.0, identity;q=0.5',
+          ),
+          'user-agent',
+          userAgent,
+        ),
+        'npm-session',
+        this.#session,
+      ),
+    }
+    o.headers = addHeader(
+      o.headers,
+      'authorization',
+      await getTokenByURL(String(u), this.identity),
+    )
+
+    const response = await this.agent.request(
+      o as Dispatcher.RequestOptions,
+    )
+    const encoding = response.headers['content-encoding']
+    const gzipped =
+      typeof encoding === 'string' && /\bgzip\b/.test(encoding)
+    return {
+      statusCode: response.statusCode,
+      body:
+        gzipped ? response.body.pipe(createGunzip()) : response.body,
+    }
   }
 
   async request(

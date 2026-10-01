@@ -1,15 +1,20 @@
 import type { RegistryClient } from '@vltpkg/registry-client'
 import type { Manifest } from '@vltpkg/types'
+import { createInterface } from 'node:readline'
 
 /**
  * Server-side range resolution against a vlt registry's `/-/vlt/resolve`
  * endpoint, behind `VLT_BATCH_RESOLVE=1` while it settles.
  *
  * One request resolves many `name@range` pairs and streams back the chosen
- * manifests for the whole dependency closure. Everything here fails soft: a
- * registry that does not answer, a request that errors, and a record that
- * does not parse all leave the caller with fewer manifests than it asked
- * for, and the per-name path fills the rest in.
+ * manifests for the whole dependency closure. Records reach the caller as
+ * each line arrives, in the breadth-first order the server emits them, so
+ * the graph build can place level N while the server still walks level N+1.
+ *
+ * Everything here fails soft: a registry that does not answer, a request
+ * that errors, a stream that dies mid-body, and a record that does not
+ * parse all leave the caller with fewer manifests than it asked for, and
+ * the per-name path fills the rest in.
  */
 
 /** Opt in while the endpoint is experimental. */
@@ -31,62 +36,37 @@ export type ResolveRequest = {
   closure?: boolean
 }
 
-/** What one resolve response delivered. */
-export type ResolveResult = {
-  /** `name@spec` (the range as requested) -> manifest */
-  byRange: Map<string, Manifest>
-  /** `name@version` (the resolved version) -> manifest */
-  byExact: Map<string, Manifest>
-}
-
-// Registries answer the capability document once per process. A registry
-// that does not support resolution must not be asked again on every
-// install step, so failures memoize as `false` too.
-const capabilities = new Map<string, Promise<boolean>>()
-
-/** Forget every memoized probe. Exposed for tests. */
-export const resetResolveCapabilities = () => capabilities.clear()
-
-/**
- * Whether `registry` serves the resolve endpoint. A 404, 405 or 501, a
- * network error, or a document without a `resolve` key all mean no.
- */
-export const supportsResolve = async (
-  client: RegistryClient,
-  registry: string,
-): Promise<boolean> => {
-  const seen = capabilities.get(registry)
-  if (seen) return seen
-  const probe = probeCapabilities(client, registry)
-  capabilities.set(registry, probe)
-  return probe
+/** One resolved version, as the caller receives it. */
+export type ResolveRecord = {
+  name: string
+  version: string
+  /** every spec of its level that chose this version */
+  requested: string[]
+  manifest: Manifest
 }
 
 /**
- * Resolve `request` against `registry` and index what came back. Specs the
- * server did not resolve are absent, as is everything when the request
- * fails.
+ * Resolve `request` against `registry`, calling `onRecord` for each version
+ * the server resolves, as its line arrives. Settles when the stream ends,
+ * however it ends: a caller waiting on a record that never came learns that
+ * from the request settling, not from an error.
  */
 export const fetchResolve = async (
   client: RegistryClient,
   registry: string,
   request: ResolveRequest,
-): Promise<ResolveResult> => {
-  const result: ResolveResult = {
-    byRange: new Map(),
-    byExact: new Map(),
-  }
-  if (!request.roots.length) return result
+  onRecord: (record: ResolveRecord) => void,
+): Promise<void> => {
+  if (!request.roots.length) return
 
-  let body: string
+  let body
   try {
-    const response = await client.request(
+    const response = await client.requestStream(
       new URL('-/vlt/resolve', registry),
       {
         // POST, not QUERY: CloudFront's allowed-method sets are fixed and
         // none includes QUERY. The registry answers both.
         method: 'POST',
-        useCache: false,
         headers: {
           'content-type': 'application/json',
           accept: 'application/x-ndjson',
@@ -94,56 +74,30 @@ export const fetchResolve = async (
         body: JSON.stringify(request),
       },
     )
-    if (response.statusCode !== 207) return result
-    body = response.text()
-  } catch {
-    return result
-  }
-
-  for (const l of body.split('\n')) {
-    if (!l) continue
-    const record = parseRecord(l)
-    if (!record) continue
-    result.byExact.set(
-      `${record.name}@${record.version}`,
-      record.manifest,
-    )
-    for (const spec of record.requested) {
-      result.byRange.set(`${record.name}@${spec}`, record.manifest)
+    if (response.statusCode !== 207) {
+      response.body.resume()
+      return
     }
+    body = response.body
+  } catch {
+    return
   }
-  return result
-}
 
-const probeCapabilities = async (
-  client: RegistryClient,
-  registry: string,
-): Promise<boolean> => {
   try {
-    const response = await client.request(
-      // TEMP benchmark-only: bust the edge cache; the deployed capability
-      // doc is younger than its 24h TTL
-      new URL(`-/vlt/capabilities?t=${Date.now()}`, registry),
-      { headers: { accept: 'application/json' } },
-    )
-    if (response.statusCode !== 200) return false
-    const doc = response.json() as { resolve?: unknown }
-    return typeof doc.resolve === 'string'
+    // One record per line, so lines are the unit of work: a partial line
+    // left by a dead stream is simply never emitted.
+    for await (const line of createInterface({ input: body })) {
+      const record = parseRecord(line)
+      if (record) onRecord(record)
+    }
   } catch {
-    return false
+    // A stream that died mid-body leaves the records it did not carry to
+    // the per-name path, the same as specs the server did not resolve.
+    body.destroy()
   }
 }
 
-const parseRecord = (
-  l: string,
-):
-  | {
-      name: string
-      version: string
-      requested: string[]
-      manifest: Manifest
-    }
-  | undefined => {
+const parseRecord = (l: string): ResolveRecord | undefined => {
   // parsed wire data: nothing about its shape can be assumed
   let record: {
     status?: unknown
@@ -169,5 +123,10 @@ const parseRecord = (
   // version it resolved to: these entries are handed out by key, so a
   // registry mixup would poison the lookup
   if (mani.name !== name || typeof mani.version !== 'string') return
-  return { name, version: mani.version, requested, manifest: mani }
+  return {
+    name,
+    version: mani.version,
+    requested: requested,
+    manifest: mani,
+  }
 }

@@ -687,7 +687,8 @@ const server = createServer((req, res) => {
         res.setHeader('content-length', ndjson.length)
         // held open, so a test can look at what manifest() does while a
         // resolve is still streaming
-        if (resolveHoldMs) setTimeout(() => res.end(ndjson), resolveHoldMs)
+        if (resolveHoldMs)
+          setTimeout(() => res.end(ndjson), resolveHoldMs)
         else res.end(ndjson)
       })
       return
@@ -5121,6 +5122,18 @@ t.test('prefetchResolve', async t => {
     const pi = freshClient(t)
     pi.prefetchResolve(defaultRegistry, { roots: [] })
     t.equal(pi.resolvedManifestCount, 0)
+  })
+
+  t.test('sends the same request only once', async t => {
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    pi.prefetchResolve(defaultRegistry, { roots })
+    await pi.manifest('abbrev@^2.0.0')
+    t.equal(
+      resolveRequests.length,
+      1,
+      'the second ask was the same question',
+    )
   })
 
   t.test('a range lookup reads the resolved manifest', async t => {
