@@ -176,10 +176,10 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   }
 
 /**
- * How long `manifest()` waits for an in-flight resolve to deliver one key
- * before giving up on it and fetching the packument itself. The wait is
- * short because the alternative is not failure, it is the request the
- * client would have made anyway.
+ * How long `manifest()` waits on an in-flight resolve that is not delivering
+ * anything before fetching the packument itself. A stream that keeps
+ * delivering records is waited on for as long as it does; one that goes
+ * quiet for this long is left to finish on its own.
  */
 const resolveWaitMs = (): number => {
   const configured = Number(process.env.VLT_BATCH_RESOLVE_WAIT_MS)
@@ -187,6 +187,10 @@ const resolveWaitMs = (): number => {
       configured
     : 1000
 }
+
+// what a resolve wait's timer resolves to, so it cannot be mistaken for a
+// manifest
+const stalled = Symbol('stalled')
 
 // request options that change which manifest is picked, or how; a batch
 // entry never went through pickManifest under them, so they bypass it
@@ -364,6 +368,10 @@ export class PackageInfoClient {
     string,
     Set<(manifest: Manifest) => void>
   >()
+  // When each registry's resolve last delivered a record, which is what a
+  // waiter checks to tell a stream that is still coming from one that has
+  // stalled.
+  #resolveLastRecordAt = new Map<string, number>()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -1198,6 +1206,8 @@ export class PackageInfoClient {
    */
   prefetchResolve(registry: string, request: ResolveRequest): void {
     if (!resolveEnabled() || !request.roots.length) return
+    // keyed the way a spec names its registry, with the trailing slash
+    if (!registry.endsWith('/')) registry += '/'
     const sent = `${registry} ${JSON.stringify(request)}`
     if (this.#resolveSent.has(sent)) return
     this.#resolveSent.add(sent)
@@ -1222,7 +1232,18 @@ export class PackageInfoClient {
       if ((await this.capabilities(registry)).resolve === undefined)
         return
       const client = await this.getRegistryClient()
+      this.#resolveLastRecordAt.set(registry, Date.now())
       await fetchResolve(client, registry, request, record => {
+        this.#resolveLastRecordAt.set(registry, Date.now())
+        // A resolve record is a vlt manifest: `dist.tarball` is the
+        // tarball's basename, resolved against the package's `/-/`
+        // directory like a v2 packument's, and a tarball without a hash
+        // must carry a Repr-Digest.
+        absolutizeTarball(
+          record.manifest,
+          `${registry}${record.name}/-/`,
+        )
+        this.#vltPackuments.add(`${registry}${record.name}`)
         // Indexed both ways: by the ranges that chose the version, which
         // is what the graph build asks for, and by the exact version, for
         // a lookup that already knows it.
@@ -1244,6 +1265,7 @@ export class PackageInfoClient {
 
   /** Record an arrived manifest and wake whoever was waiting for it. */
   #deliverResolved(key: string, manifest: Manifest): void {
+    debug('resolve delivered %s', key)
     this.#resolvedManifests.set(key, manifest)
     const waiters = this.#resolveWaiters.get(key)
     if (waiters) {
@@ -1254,12 +1276,12 @@ export class PackageInfoClient {
 
   /**
    * The manifest an in-flight resolve is expected to carry for `key`, or
-   * undefined if the wait was not worth continuing: every request settled
-   * without it, or it took longer than the per-name path would have.
+   * undefined once waiting stopped being worth it: every request settled
+   * without the key, or no record of any kind arrived for a whole wait.
    *
-   * Waiting for whole responses instead would serialize the install behind
-   * the slowest package in the closure; waiting for this one key, briefly,
-   * costs at worst a packument fetch that was already the alternative.
+   * A stream that is still delivering is worth waiting on, since its records
+   * come in the order the build needs them; one that has stalled is not, and
+   * the packument fetch was the alternative anyway.
    */
   async #awaitResolved(
     registry: string,
@@ -1276,15 +1298,23 @@ export class PackageInfoClient {
     if (!waiters) this.#resolveWaiters.set(key, (waiters = new Set()))
     waiters.add(wake)
 
+    const settled = Promise.all([...inflight]).then(() =>
+      this.#resolvedManifests.get(key),
+    )
+    const waitMs = resolveWaitMs()
     try {
-      return await Promise.race([
-        arrival,
-        Promise.all([...inflight]).then(() =>
-          this.#resolvedManifests.get(key),
-        ),
-        // unref'd: a pending wait must never be what keeps the process up
-        setTimeout(resolveWaitMs(), undefined, { ref: false }),
-      ])
+      for (;;) {
+        const outcome = await Promise.race([
+          arrival,
+          settled,
+          // unref'd: a pending wait must never be what keeps the process up
+          setTimeout(waitMs, stalled, { ref: false }),
+        ])
+        if (outcome !== stalled) return outcome
+        const lastRecordAt =
+          this.#resolveLastRecordAt.get(registry) ?? 0
+        if (Date.now() - lastRecordAt >= waitMs) return undefined
+      }
     } finally {
       waiters.delete(wake)
       if (!waiters.size) this.#resolveWaiters.delete(key)
@@ -1319,6 +1349,7 @@ export class PackageInfoClient {
           if (f.registry) {
             const arrived = await this.#awaitResolved(f.registry, key)
             if (arrived) return arrived
+            debug('resolve miss %s', key)
           }
         }
 
@@ -1888,10 +1919,15 @@ export class PackageInfoClient {
 // Nothing downstream sees a relative URL: the manifest cache, the graph
 // and the lockfile all get the absolute one.
 const absolutizeTarballs = (paku: Packument, base: string) => {
-  for (const { dist } of Object.values(paku.versions)) {
-    const tarball = dist?.tarball
-    if (tarball && !/^[a-z][a-z0-9+.-]*:/i.test(tarball)) {
-      dist.tarball = String(new URL(tarball, base))
-    }
+  for (const manifest of Object.values(paku.versions)) {
+    absolutizeTarball(manifest, base)
+  }
+}
+
+/** Resolve a relative `dist.tarball` against `base`; an absolute one stays. */
+const absolutizeTarball = (manifest: Manifest, base: string) => {
+  const dist = manifest.dist
+  if (dist?.tarball && !/^[a-z][a-z0-9+.-]*:/i.test(dist.tarball)) {
+    dist.tarball = String(new URL(dist.tarball, base))
   }
 }
