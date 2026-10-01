@@ -2527,7 +2527,7 @@ t.test('requestStream', async t => {
     t.equal(seen.body, '{"roots":[]}')
     t.match(
       seen.headers['user-agent'],
-      /@vltpkg\/registry-client/,
+      /^vlt\//,
       'identifies itself the way request() does',
     )
     t.ok(seen.headers['npm-session'], 'carries the session id')

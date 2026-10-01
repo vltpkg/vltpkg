@@ -842,9 +842,16 @@ export class RegistryClient {
       await getTokenByURL(String(u), this.identity),
     )
 
+    logRequest(url, 'start', { method: o.method })
+    const requestStart = Date.now()
     const response = await this.agent.request(
       o as Dispatcher.RequestOptions,
     )
+    logRequest(url, 'complete', {
+      method: o.method,
+      statusCode: response.statusCode,
+      durationMs: Date.now() - requestStart,
+    })
     const encoding = response.headers['content-encoding']
     const gzipped =
       typeof encoding === 'string' && /\bgzip\b/.test(encoding)

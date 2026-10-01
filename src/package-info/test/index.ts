@@ -686,8 +686,20 @@ const server = createServer((req, res) => {
         res.setHeader('content-type', 'application/x-ndjson')
         res.setHeader('content-length', ndjson.length)
         // held open, so a test can look at what manifest() does while a
-        // resolve is still streaming
-        if (resolveHoldMs)
+        // resolve is still streaming; or trickled, one record per interval,
+        // for a stream that keeps delivering
+        if (resolveTrickleMs) {
+          res.removeHeader('content-length')
+          lines.forEach((line, i) =>
+            setTimeout(
+              () => {
+                res.write(line + '\n')
+                if (i === lines.length - 1) res.end()
+              },
+              resolveTrickleMs * (i + 1),
+            ),
+          )
+        } else if (resolveHoldMs)
           setTimeout(() => res.end(ndjson), resolveHoldMs)
         else res.end(ndjson)
       })
@@ -748,6 +760,8 @@ const resolveRequests: Record<string, unknown>[] = []
 let resolveRecords: Record<string, unknown>[] = []
 // ms the resolve endpoint withholds its body for; 0 answers immediately
 let resolveHoldMs = 0
+// ms between records when the endpoint trickles them; 0 sends them at once
+let resolveTrickleMs = 0
 let stableRequests: string[] = []
 let stableDelay = 0
 // No `stable-filter`: most registries serve none, and the packument
@@ -5094,6 +5108,7 @@ t.test('prefetchResolve', async t => {
     capabilitiesDocument = { resolve: '0.1' }
     resolveRequests.length = 0
     resolveHoldMs = 0
+    resolveTrickleMs = 0
     resolveRecords = [
       {
         status: 200,
@@ -5123,6 +5138,87 @@ t.test('prefetchResolve', async t => {
     pi.prefetchResolve(defaultRegistry, { roots: [] })
     t.equal(pi.resolvedManifestCount, 0)
   })
+
+  t.test(
+    'a basename tarball resolves against the package',
+    async t => {
+      resolveRecords = [
+        {
+          status: 200,
+          name: 'abbrev',
+          requested: ['^2.0.0'],
+          manifest: {
+            name: 'abbrev',
+            version: '2.0.0',
+            dist: {
+              tarball: 'abbrev-2.0.0.tgz',
+              alternates: [
+                { kind: 'tar.br', tarball: 'abbrev-2.0.0.tar.br' },
+              ],
+            },
+          },
+        },
+        { end: true, status: 200, returned: 1, unresolved: 0 },
+      ]
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.equal(
+        mani.dist?.tarball,
+        `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+        'resolved against the package directory, as a v2 packument is',
+      )
+      // the brotli alternate resolves against the absolute tarball, and a
+      // tarball the record carries no hash for must bring a Repr-Digest
+      const res = await pi.resolve('abbrev@^2.0.0')
+      t.match(res, {
+        resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tar.br`,
+        digestRequired: true,
+      })
+    },
+  )
+
+  t.test('an absolute tarball is left alone', async t => {
+    resolveRecords = [
+      {
+        status: 200,
+        name: 'abbrev',
+        requested: ['^2.0.0'],
+        manifest: {
+          name: 'abbrev',
+          version: '2.0.0',
+          dist: {
+            tarball: 'https://elsewhere.invalid/abbrev-2.0.0.tgz',
+          },
+        },
+      },
+      { end: true, status: 200, returned: 1, unresolved: 0 },
+    ]
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.equal(
+      mani.dist?.tarball,
+      'https://elsewhere.invalid/abbrev-2.0.0.tgz',
+    )
+  })
+
+  t.test(
+    'a registry without a trailing slash keys the same',
+    async t => {
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry.replace(/\/$/, ''), {
+        roots,
+      })
+      const mani = await pi.manifest('abbrev@^2.0.0')
+      t.strictSame(mani, { name: 'abbrev', version: '2.0.0' })
+      t.equal(
+        resolveRequests.length,
+        1,
+        'served by the resolve, not fetched',
+      )
+    },
+  )
 
   t.test('sends the same request only once', async t => {
     const pi = freshClient(t)
@@ -5212,6 +5308,48 @@ t.test('prefetchResolve', async t => {
       )
     },
   )
+
+  t.test('keeps waiting while records keep arriving', async t => {
+    // each record lands inside the wait, though the one wanted lands well
+    // after a single wait has passed
+    resolveRecords = [
+      {
+        status: 200,
+        name: 'other',
+        requested: ['^1'],
+        manifest: { name: 'other', version: '1.0.0' },
+      },
+      {
+        status: 200,
+        name: 'other2',
+        requested: ['^1'],
+        manifest: { name: 'other2', version: '1.0.0' },
+      },
+      {
+        status: 200,
+        name: 'abbrev',
+        requested: ['^2.0.0'],
+        manifest: { name: 'abbrev', version: '2.0.0' },
+      },
+      { end: true, status: 200, returned: 3, unresolved: 0 },
+    ]
+    resolveTrickleMs = 60
+    t.intercept(process, 'env', {
+      value: {
+        ...process.env,
+        VLT_BATCH_RESOLVE: '1',
+        VLT_BATCH_RESOLVE_WAIT_MS: '100',
+      },
+    })
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.strictSame(
+      mani,
+      { name: 'abbrev', version: '2.0.0' },
+      'the resolve record, 180ms in, on a 100ms wait',
+    )
+  })
 
   t.test('waits the configured number of ms', async t => {
     // long enough that the held resolve still wins the race
