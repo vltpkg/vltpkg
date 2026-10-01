@@ -2480,14 +2480,15 @@ t.test('requestStream', async t => {
       }
       const { url = '' } = req
       if (url.startsWith('/gzip-cut')) {
-        // a compressed body the connection drops partway through
+        // a compressed body the connection drops partway through, once
+        // the headers and the first bytes have gone out
         res.statusCode = 200
         res.setHeader('content-encoding', 'gzip')
         res.setHeader('content-type', 'application/x-ndjson')
         res.write(
           gz(Buffer.from('{"a":1}\n{"a":2}\n')).subarray(0, 8),
         )
-        res.socket?.destroy()
+        setTimeout(() => res.socket?.destroy(), 50)
         return
       }
       if (url.startsWith('/gzip')) {
@@ -2562,9 +2563,13 @@ t.test('requestStream', async t => {
     'a dropped connection errors the gunzipped body',
     async t => {
       const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
-      const { body } = await rc.requestStream(`${base}/gzip-cut`)
+      // the drop lands after the headers, so it is the body that errors;
+      // a drop before them rejects the request itself, and either way
+      // the reader is told rather than left waiting
       await t.rejects(
-        read(body),
+        rc
+          .requestStream(`${base}/gzip-cut`)
+          .then(({ body }) => read(body)),
         'the reader learns the body was cut short',
       )
     },
