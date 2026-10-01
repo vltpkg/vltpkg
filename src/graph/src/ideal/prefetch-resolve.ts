@@ -34,6 +34,10 @@ export const prefetchResolve = (
   if (!registry) return 0
 
   const scopes = Object.keys(options['scoped-registries'] ?? {})
+  // a name under a scoped registry is that registry's; it is not sent to
+  // this one at all, and `stop` keeps the server from walking into it
+  const scoped = (name: string) =>
+    scopes.some(scope => name.startsWith(`${scope}/`))
   const roots: ResolveRequest['roots'] = []
   const seen = new Set<string>()
   for (const importer of graph.importers) {
@@ -48,9 +52,8 @@ export const prefetchResolve = (
       if (!deps) continue
       for (const [name, spec] of Object.entries(deps)) {
         if (typeof spec !== 'string') continue
-        // protocols, workspace and file specs are the client's to resolve;
-        // scoped-registry scopes go in `stop` below
-        if (spec.includes(':')) continue
+        // protocols, workspace and file specs are the client's to resolve
+        if (spec.includes(':') || scoped(name)) continue
         const key = `${name}@${spec}`
         if (seen.has(key)) continue
         seen.add(key)
@@ -62,7 +65,12 @@ export const prefetchResolve = (
 
   const have: string[] = []
   for (const node of graph.nodes.values()) {
-    if (node.manifest && node.name && node.version) {
+    if (
+      node.manifest &&
+      node.name &&
+      node.version &&
+      !scoped(node.name)
+    ) {
       have.push(`${node.name}@${node.version}`)
     }
   }

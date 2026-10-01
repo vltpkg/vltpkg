@@ -2479,6 +2479,17 @@ t.test('requestStream', async t => {
         body,
       }
       const { url = '' } = req
+      if (url.startsWith('/gzip-cut')) {
+        // a compressed body the connection drops partway through
+        res.statusCode = 200
+        res.setHeader('content-encoding', 'gzip')
+        res.setHeader('content-type', 'application/x-ndjson')
+        res.write(
+          gz(Buffer.from('{"a":1}\n{"a":2}\n')).subarray(0, 8),
+        )
+        res.socket?.destroy()
+        return
+      }
       if (url.startsWith('/gzip')) {
         res.statusCode = 200
         res.setHeader('content-encoding', 'gzip')
@@ -2546,6 +2557,18 @@ t.test('requestStream', async t => {
     )
     t.equal(seen.method, 'GET', 'GET by default')
   })
+
+  t.test(
+    'a dropped connection errors the gunzipped body',
+    async t => {
+      const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
+      const { body } = await rc.requestStream(`${base}/gzip-cut`)
+      await t.rejects(
+        read(body),
+        'the reader learns the body was cut short',
+      )
+    },
+  )
 
   t.test('hands back a non-2xx as it is', async t => {
     const rc = new RC({ cache: t.testdir() })
