@@ -57,16 +57,12 @@ import {
 import { setTimeout } from 'node:timers/promises'
 import { debuglog } from 'node:util'
 import { create as tarC } from 'tar'
-import type { Capabilities } from './capabilities.ts'
-import { getCapabilities, peekCapabilities } from './capabilities.ts'
+import type { Capabilities } from './registry.ts'
+import { Registry } from './registry.ts'
 import { rename } from './rename.ts'
 
-export type { Capabilities } from './capabilities.ts'
-export {
-  getCapabilities,
-  peekCapabilities,
-  resetCapabilities,
-} from './capabilities.ts'
+export type { Capabilities } from './registry.ts'
+export { Registry } from './registry.ts'
 
 const debug = debuglog('vlt')
 
@@ -303,6 +299,8 @@ const storedIntegrity = (
 
 export class PackageInfoClient {
   #registryClient?: RegistryClient
+  /** the registries this client talks to, one object per registry */
+  #registries = new Map<string, Registry>()
   #projectRoot: string
   #tarPool?: Pool
   options: PackageInfoClientOptions
@@ -398,12 +396,22 @@ export class PackageInfoClient {
   }
 
   /**
-   * The vlt extensions `registry` serves, from its
-   * `GET /-/vlt/capabilities` document. A registry that does not answer
-   * one reads as an empty document, so a missing key means unsupported.
+   * The registry at `url`: the same object for every spelling of it, so
+   * its capabilities are asked for once and its keys agree.
    */
-  async capabilities(registry: string): Promise<Capabilities> {
-    return getCapabilities(await this.getRegistryClient(), registry)
+  registry(url: string): Registry {
+    const key = Registry.key(url)
+    let registry = this.#registries.get(key)
+    if (!registry) {
+      registry = new Registry(url, () => this.getRegistryClient())
+      this.#registries.set(key, registry)
+    }
+    return registry
+  }
+
+  /** The vlt extensions the registry at `url` serves. */
+  async capabilities(url: string): Promise<Capabilities> {
+    return this.registry(url).capabilities()
   }
 
   /**
@@ -419,17 +427,9 @@ export class PackageInfoClient {
    * so a registry that does not serve the filter stops being asked with it.
    */
   #stable(f: Spec): boolean {
-    const { registry } = f
-    if (!registry || !isStableSelector(f)) return false
-    const client = this.#registryClient
-    if (!client) {
-      // the registry client is built lazily, so the first caller starts it
-      // and the document along with it, and asks optimistically meanwhile
-      void this.capabilities(registry).catch(() => {})
-      return true
-    }
-    const caps = peekCapabilities(client, registry)
-    return !caps || !!caps['stable-filter']
+    if (!f.registry || !isStableSelector(f)) return false
+    const registry = this.registry(f.registry)
+    return !registry.known || registry.hasCapability('stable-filter')
   }
 
   async getTarPool() {
@@ -1060,10 +1060,7 @@ export class PackageInfoClient {
             trustIntegrity,
             // no dist.integrity: checked against the digest the registry
             // sent with it instead, before the client caches it
-            verifyDigest:
-              this.#vltPackuments.has(`${f.registry}${f.name}`) ?
-                'required'
-              : true,
+            verifyDigest: this.#vltPackument(f) ? 'required' : true,
             ...(useCache === false ? { useCache } : {}),
           })
           if (response.statusCode !== 200) {
@@ -1220,14 +1217,10 @@ export class PackageInfoClient {
    * released it, the stream is ended, so an install never waits on a
    * stream nothing will read. The records it delivered stay answerable.
    */
-  prefetchResolve(
-    registry: string,
-    request: ResolveRequest,
-  ): () => void {
+  prefetchResolve(url: string, request: ResolveRequest): () => void {
     if (!request.roots.length) return () => {}
-    // keyed the way a spec names its registry, with the trailing slash
-    if (!registry.endsWith('/')) registry += '/'
-    const sent = `${registry} ${JSON.stringify(request)}`
+    const registry = this.registry(url)
+    const sent = `${registry.key} ${JSON.stringify(request)}`
     // the same question already in flight is read, not asked again
     const owned = this.#resolveOwners.get(sent)
     if (owned) {
@@ -1239,10 +1232,10 @@ export class PackageInfoClient {
 
     const owner = { controller: new AbortController(), readers: 1 }
     this.#resolveOwners.set(sent, owner)
-    let inflight = this.#resolveInflight.get(registry)
+    let inflight = this.#resolveInflight.get(registry.key)
     if (!inflight) {
       inflight = { requests: new Set(), lastRecordAt: 0 }
-      this.#resolveInflight.set(registry, inflight)
+      this.#resolveInflight.set(registry.key, inflight)
     }
     // the stream's grace runs from the moment it is asked for
     inflight.lastRecordAt = Date.now()
@@ -1281,51 +1274,51 @@ export class PackageInfoClient {
     owner.controller.abort()
   }
 
-  /** Never rejects: a resolve that fails leaves every spec to manifest(). */
+  /**
+   * Settles when the stream ends. A registry that does not serve the
+   * endpoint, or cannot be asked whether it does, settles at once, and a
+   * stream that fails settles with what it carried: every spec it did not
+   * deliver is manifest()'s to fetch.
+   */
   async #runResolve(
-    registry: string,
+    registry: Registry,
     request: ResolveRequest,
     signal: AbortSignal,
     inflight: { lastRecordAt: number },
   ): Promise<void> {
-    try {
-      if ((await this.capabilities(registry)).resolve === undefined)
-        return
-      const client = await this.getRegistryClient()
-      await fetchResolve(
-        client,
-        registry,
-        request,
-        record => {
-          inflight.lastRecordAt = Date.now()
-          // A resolve record is a vlt manifest: `dist.tarball` is the
-          // tarball's basename, resolved against the package's `/-/`
-          // directory like a v2 packument's, and a tarball without a hash
-          // must carry a Repr-Digest.
-          absolutizeTarball(
-            record.manifest,
-            `${registry}${record.name}/-/`,
-          )
-          this.#vltPackuments.add(`${registry}${record.name}`)
-          // Indexed both ways: by the ranges that chose the version, which
-          // is what the graph build asks for, and by the exact version, for
-          // a lookup that already knows it.
-          for (const spec of record.requested) {
-            this.#deliverResolved(
-              `${registry}${record.name}@${spec}`,
-              record.manifest,
-            )
-          }
+    if (!(await registry.capabilities()).resolve) return
+    const client = await this.getRegistryClient()
+    await fetchResolve(
+      client,
+      registry,
+      request,
+      record => {
+        inflight.lastRecordAt = Date.now()
+        // A resolve record is a vlt manifest: `dist.tarball` is the
+        // tarball's basename, resolved against the package's `/-/`
+        // directory like a v2 packument's, and a tarball without a hash
+        // must carry a Repr-Digest.
+        absolutizeTarball(
+          record.manifest,
+          registry.tarballDirectory(record.name),
+        )
+        this.#vltPackuments.add(registry.packageKey(record.name))
+        // Indexed both ways: by the ranges that chose the version, which
+        // is what the graph build asks for, and by the exact version, for
+        // a lookup that already knows it.
+        for (const spec of record.requested) {
           this.#deliverResolved(
-            `${registry}${record.name}@${record.version}`,
+            registry.manifestKey(record.name, spec),
             record.manifest,
           )
-        },
-        signal,
-      )
-    } catch {
-      // The per-name path still has every spec.
-    }
+        }
+        this.#deliverResolved(
+          registry.manifestKey(record.name, record.version),
+          record.manifest,
+        )
+      },
+      signal,
+    )
   }
 
   /** Record an arrived manifest and wake whoever was waiting for it. */
@@ -1352,11 +1345,11 @@ export class PackageInfoClient {
    * fails while the stream is still open waits for the stream's verdict.
    */
   async #awaitResolved(
-    registry: string,
+    registry: Registry,
     key: string,
     fetch: () => Promise<Manifest>,
   ): Promise<Manifest | undefined> {
-    const inflight = this.#resolveInflight.get(registry)
+    const inflight = this.#resolveInflight.get(registry.key)
     if (!inflight?.requests.size) return undefined
 
     let wake!: (manifest: Manifest) => void
@@ -1425,8 +1418,10 @@ export class PackageInfoClient {
         const selecting = SELECTION_OPTIONS.some(
           k => options[k] !== undefined,
         )
-        const resolveKey = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
-        if (!selecting) {
+        const registry =
+          f.registry ? this.registry(f.registry) : undefined
+        const resolveKey = registry?.manifestKey(f.name, f.bareSpec)
+        if (!selecting && resolveKey) {
           const resolved = this.#resolvedManifests.get(resolveKey)
           if (resolved) return resolved
         }
@@ -1461,7 +1456,8 @@ export class PackageInfoClient {
             }
             // the tarball digest stays required across processes
             if (json.__VLT_PACKUMENT) {
-              this.#vltPackuments.add(`${f.registry}${f.name}`)
+              if (registry)
+                this.#vltPackuments.add(registry.packageKey(f.name))
               delete json.__VLT_PACKUMENT
             }
             return json
@@ -1483,9 +1479,7 @@ export class PackageInfoClient {
           // and racing writers for the same path.
           if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
             this.#manifestWritePaths.add(cachePath)
-            const vlt = this.#vltPackuments.has(
-              `${f.registry}${f.name}`,
-            )
+            const vlt = this.#vltPackument(f)
             void this.#writeManifestCache(
               cachePath,
               JSON.stringify(
@@ -1498,9 +1492,9 @@ export class PackageInfoClient {
 
         // Nothing local: the in-flight resolve is probably carrying this
         // key, so it gets a moment before the packument is fetched too
-        if (!selecting && f.registry) {
+        if (!selecting && registry && resolveKey) {
           const resolved = await this.#awaitResolved(
-            f.registry,
+            registry,
             resolveKey,
             fromPackument,
           )
@@ -1663,20 +1657,21 @@ export class PackageInfoClient {
       }
 
       case 'registry': {
-        const { registry, name } = f
-        if (!registry) throw noRegistryError(spec)
+        const { name } = f
+        if (!f.registry) throw noRegistryError(spec)
+        const registry = this.registry(f.registry)
         // a full representation neither reads nor feeds the coalescing
         // map, which holds the abbreviated one
         if (options.full)
           return this.#fetchPackument(
             spec,
             options,
-            new URL(name, registry),
+            registry.packumentUrl(name),
           )
         // The only representation component of the coalescing key is
         // `?stable`; everything else about the request is fixed (see
         // #fetchPackument).
-        const fullKey = `${registry}${name}`
+        const fullKey = registry.packageKey(name)
         const packumentKey = stable ? `${fullKey}?stable` : fullKey
         // 0 pinned, 1 background, 2 forced
         const mode = revalidateMode(f, options)
@@ -1698,10 +1693,7 @@ export class PackageInfoClient {
         // asked for at once.
         if (inflight && inflight.rank >= rank) return inflight.promise
         // `?stable` is a distinct URL, so it gets its own disk cache entry
-        const pakuURL = new URL(
-          stable ? `${name}?stable` : name,
-          registry,
-        )
+        const pakuURL = registry.packumentUrl(name, stable)
         const promise = this.#fetchPackument(spec, options, pakuURL)
         const record = { promise, rank }
         this.#packumentPromises.set(packumentKey, record)
@@ -1782,18 +1774,36 @@ export class PackageInfoClient {
       }
       throw er
     }
-    const { registry, name } = spec.final
+    const { name } = spec.final
+    /* c8 ignore next - registry specs always have a registry */
+    const registry =
+      spec.final.registry && this.registry(spec.final.registry)
     const { contentType } = response
     const v2 = contentType.startsWith(VLT_PACKUMENT_V2_MIME)
-    if (v2 || contentType.startsWith(VLT_PACKUMENT_MIME)) {
-      this.#vltPackuments.add(`${registry}${name}`)
+    if (
+      registry &&
+      (v2 || contentType.startsWith(VLT_PACKUMENT_MIME))
+    ) {
+      this.#vltPackuments.add(registry.packageKey(name))
     }
     /* c8 ignore next - registry specs always have a registry */
     if (registry) {
-      const base = registry.endsWith('/') ? registry : registry + '/'
-      absolutizeTarballs(paku, v2 ? `${base}${name}/-/` : base)
+      absolutizeTarballs(
+        paku,
+        v2 ? registry.tarballDirectory(name) : registry.url,
+      )
     }
     return paku
+  }
+
+  /** Whether `f` names a package served as a vlt packument. */
+  #vltPackument(f: Spec): boolean {
+    return (
+      !!f.registry &&
+      this.#vltPackuments.has(
+        this.registry(f.registry).packageKey(f.name),
+      )
+    )
   }
 
   async resolve(
@@ -1874,11 +1884,7 @@ export class PackageInfoClient {
                   : { digestRequired: true }),
                 }
               : { resolved: tarball, integrity, signatures, spec }
-            if (
-              !brotli &&
-              !integrity &&
-              this.#vltPackuments.has(`${f.registry}${f.name}`)
-            ) {
+            if (!brotli && !integrity && this.#vltPackument(f)) {
               r.digestRequired = true
             }
             this.#resolutions.set(memoKey, r)

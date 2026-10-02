@@ -2,15 +2,10 @@ import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import type { Test } from 'tap'
 import t from 'tap'
-import {
-  PackageInfoClient,
-  getCapabilities,
-  peekCapabilities,
-  resetCapabilities,
-} from '../src/index.ts'
+import { PackageInfoClient, Registry } from '../src/index.ts'
 
 // What the server answers next, and what it was asked along the way.
-let body: string | undefined = JSON.stringify({
+const full = JSON.stringify({
   manifests: '0.1',
   resolve: '0.1',
   'stable-filter': '1.0',
@@ -20,6 +15,7 @@ let body: string | undefined = JSON.stringify({
     'application/json',
   ],
 })
+let body: string | undefined = full
 let requests = 0
 let delay = 0
 
@@ -51,7 +47,7 @@ t.before(
 )
 t.teardown(() => server.close())
 
-const registry = () =>
+const url = () =>
   `http://127.0.0.1:${(server.address() as AddressInfo).port}/`
 
 const client = (t: Test) => {
@@ -64,20 +60,67 @@ const client = (t: Test) => {
   )
   const pi = new PackageInfoClient({
     cache: t.testdir(),
-    registry: registry(),
+    registry: url(),
   })
   return pi
 }
 
 t.beforeEach(() => {
-  resetCapabilities()
+  body = full
   requests = 0
   delay = 0
 })
 
+t.test('urls and keys', async t => {
+  const r = new Registry('https://registry.vlt.io/acme/npm', () =>
+    Promise.reject(new Error('not asked')),
+  )
+  t.equal(r.url, 'https://registry.vlt.io/acme/npm/', 'one slash')
+  t.equal(r.key, 'https://registry.vlt.io/acme/npm', 'no slash')
+  t.equal(String(r), r.url)
+  t.equal(
+    Registry.key('https://registry.vlt.io/acme/npm///'),
+    r.key,
+    'however many slashes',
+  )
+  t.equal(
+    r.resolve('-/vlt/resolve').href,
+    'https://registry.vlt.io/acme/npm/-/vlt/resolve',
+  )
+  t.equal(
+    r.packumentUrl('@scope/pkg').href,
+    'https://registry.vlt.io/acme/npm/@scope/pkg',
+  )
+  t.equal(
+    r.packumentUrl('pkg', true).href,
+    'https://registry.vlt.io/acme/npm/pkg?stable',
+  )
+  t.equal(
+    r.tarballDirectory('pkg'),
+    'https://registry.vlt.io/acme/npm/pkg/-/',
+  )
+  t.equal(r.packageKey('pkg'), 'https://registry.vlt.io/acme/npm/pkg')
+  t.equal(
+    r.manifestKey('pkg', '^1.0.0'),
+    'https://registry.vlt.io/acme/npm/pkg@^1.0.0',
+  )
+})
+
+t.test('one object per registry, however it is spelled', async t => {
+  const pi = client(t)
+  const r = pi.registry(url())
+  t.equal(
+    pi.registry(url().replace(/\/$/, '')),
+    r,
+    'without the slash',
+  )
+  t.equal(pi.registry(`${url()}/`), r, 'with two')
+  t.not(pi.registry('https://registry.npmjs.org/'), r)
+})
+
 t.test('reads the document a vlt registry serves', async t => {
   const pi = client(t)
-  t.strictSame(await pi.capabilities(registry()), {
+  t.strictSame(await pi.capabilities(url()), {
     manifests: '0.1',
     resolve: '0.1',
     'stable-filter': '1.0',
@@ -94,8 +137,8 @@ t.test('concurrent asks coalesce into one request', async t => {
   const pi = client(t)
   delay = 20
   const [a, b] = await Promise.all([
-    pi.capabilities(registry()),
-    pi.capabilities(registry()),
+    pi.capabilities(url()),
+    pi.capabilities(url()),
   ])
   t.equal(a, b, 'both asks got the same document')
   t.equal(requests, 1, 'asked the registry once')
@@ -103,18 +146,14 @@ t.test('concurrent asks coalesce into one request', async t => {
 
 t.test('a later process reads it out of the cache', async t => {
   const cache = t.testdir()
-  const first = new PackageInfoClient({ cache, registry: registry() })
-  const doc = await first.capabilities(registry())
+  const first = new PackageInfoClient({ cache, registry: url() })
+  const doc = await first.capabilities(url())
   await (await first.getRegistryClient()).cache.promise()
   t.equal(requests, 1, 'cold miss')
 
   // a new client with the same cache dir stands in for a later `vlt` run
-  resetCapabilities()
-  const second = new PackageInfoClient({
-    cache,
-    registry: registry(),
-  })
-  t.strictSame(await second.capabilities(registry()), doc)
+  const second = new PackageInfoClient({ cache, registry: url() })
+  t.strictSame(await second.capabilities(url()), doc)
   t.equal(requests, 1, 'served from the disk cache, not the registry')
   await (await second.getRegistryClient()).cache.promise()
 })
@@ -127,7 +166,7 @@ t.test(
     t.teardown(() => {
       body = '{}'
     })
-    t.strictSame(await pi.capabilities(registry()), {})
+    t.strictSame(await pi.capabilities(url()), {})
   },
 )
 
@@ -172,10 +211,9 @@ t.test('fields that arrive malformed are dropped', async t => {
 
   for (const [name, served, expected] of cases) {
     await t.test(name, async t => {
-      resetCapabilities()
       body = served
       const pi = client(t)
-      t.strictSame(await pi.capabilities(registry()), expected)
+      t.strictSame(await pi.capabilities(url()), expected)
     })
   }
 })
@@ -186,40 +224,36 @@ t.test('a body that does not parse answers empty', async t => {
   })
   body = 'not json at all'
   const pi = client(t)
-  t.strictSame(
-    await getCapabilities(await pi.getRegistryClient(), registry()),
-    {},
-  )
+  t.strictSame(await pi.capabilities(url()), {})
 })
 
-t.test('peek answers only once the document lands', async t => {
-  const pi = client(t)
-  const rc = await pi.getRegistryClient()
+t.test(
+  'hasCapability answers only once the document lands',
+  async t => {
+    const pi = client(t)
+    const r = pi.registry(url())
 
-  t.equal(
-    peekCapabilities(rc, registry()),
-    undefined,
-    'no answer yet, and asking started the request',
-  )
-  const doc = await pi.capabilities(registry())
-  t.strictSame(
-    peekCapabilities(rc, registry()),
-    doc,
-    'the document, once it has landed',
-  )
-  t.equal(requests, 1, 'the peek started the only request')
-})
+    t.equal(r.known, false)
+    t.equal(
+      r.hasCapability('resolve'),
+      false,
+      'no answer yet, and asking started the request',
+    )
+    await r.capabilities()
+    t.equal(r.known, true)
+    t.equal(r.hasCapability('resolve'), true, 'served')
+    t.equal(r.hasCapability('mimeTypes'), true, 'served')
+    t.equal(requests, 1, 'the first ask started the only request')
+  },
+)
 
-t.test('reset clears the settled document too', async t => {
-  const pi = client(t)
-  const rc = await pi.getRegistryClient()
-  await pi.capabilities(registry())
-  t.not(peekCapabilities(rc, registry()), undefined, 'settled')
-
-  resetCapabilities()
-  t.equal(
-    peekCapabilities(rc, registry()),
-    undefined,
-    'forgotten, so the next run asks again',
-  )
+t.test('a registry without the document has nothing', async t => {
+  body = undefined
+  t.teardown(() => {
+    body = '{}'
+  })
+  const r = client(t).registry(url())
+  await r.capabilities()
+  t.equal(r.known, true, 'the answer is known')
+  t.equal(r.hasCapability('resolve'), false)
 })
