@@ -57,7 +57,11 @@ workspaces
 
 Only check the dependencies named `react` and `react-dom`
 
-<Code code="$ vlt outdated react react-dom" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt outdated react react-dom"
+  title="Terminal"
+  lang="bash"
+/>
 
 Only check the dependencies of a single workspace
 
@@ -69,7 +73,11 @@ Only check the dependencies of a single workspace
 
 Check every dependency in the graph, transitive ones included
 
-<Code code={`$ vlt outdated --target="*"`} title="Terminal" lang="bash" />
+<Code
+  code={`$ vlt outdated --target="*"`}
+  title="Terminal"
+  lang="bash"
+/>
 
 Only check the dev dependencies of the project root
 
@@ -89,7 +97,11 @@ Only check dependencies with known vulnerabilities
 
 Print the report as JSON
 
-<Code code="$ vlt outdated --view=json" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt outdated --view=json"
+  title="Terminal"
+  lang="bash"
+/>
 
 ## Output
 
@@ -99,17 +111,16 @@ security changes between the installed version and the wanted or
 latest one (high and critical severity alerts fixed or added, and
 score drops), the dependents holding a transitive package back, and
 the engine or peer requirements of the latest version that are not
-met.
-The commands that perform the upgrades follow the table: `vlt update`
-for versions within the declared ranges, `vlt install` with new ranges
-for the rest, and the catalog entries to edit.
+met. The commands that perform the upgrades follow the table:
+`vlt update` for versions within the declared ranges, `vlt install`
+with new ranges for the rest, and the catalog entries to edit.
 
 The JSON view is an array of entries with these fields:
 
 - `name`, `spec`, `type`: the dependency as declared by its dependent
 - `current`, `wanted`, `latest`: the installed version (absent when
-  missing), the highest version satisfying the spec, and the registry's
-  `latest`
+  missing), the highest version satisfying the spec, and the
+  registry's `latest`
 - `dependent`, `location`: the importer name, or `name@version` of a
   transitive dependent, and its location
 - `kind`: `missing`, `major`, `minor`, `patch` or `prerelease`
