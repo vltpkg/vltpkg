@@ -23,14 +23,35 @@ const graphOf = (
   }) as unknown as Graph
 
 /** A PackageInfoClient stub that records what it was asked to resolve. */
-const packageInfo = (seen: [string, ResolveRequest][]) =>
+const packageInfo = (
+  seen: [string, ResolveRequest][],
+  ended: string[] = [],
+) =>
   ({
     prefetchResolve: (registry: string, request: ResolveRequest) => {
       seen.push([registry, request])
     },
+    abortResolve: () => {
+      ended.push('abort')
+    },
   }) as unknown as PackageInfoClient
 
-const importer = (manifest: Record<string, unknown>) => ({ manifest })
+/** An importer, with the edges its starting graph already has. */
+const importer = (
+  manifest: Record<string, unknown>,
+  edges: Record<string, unknown>[] = [],
+) => ({
+  manifest,
+  edgesOut: new Map(edges.map(e => [e.name as string, e])),
+})
+
+/** An importer edge that resolves `name@spec` to a node, or to nothing. */
+const edge = (
+  name: string,
+  spec: string,
+  to?: { name: string; version: string },
+  valid = true,
+) => ({ name, spec: { bareSpec: spec }, to, valid: () => valid })
 
 t.test('prefetchResolve', async t => {
   t.test('collects deps of every importer, deduplicated', async t => {
@@ -44,7 +65,8 @@ t.test('prefetchResolve', async t => {
       importer({ dependencies: { a: '^1.0.0', d: 'latest' } }),
     ])
 
-    t.equal(prefetchResolve(graph, packageInfo(seen), options), 4)
+    prefetchResolve(graph, packageInfo(seen), options)
+    t.equal(seen.length, 1, 'one request')
     const [registry, request] = seen[0]!
     t.equal(registry, options.registry)
     t.strictSame(request.roots, [
@@ -114,6 +136,105 @@ t.test('prefetchResolve', async t => {
     },
   )
 
+  t.test(
+    'leaves out a root the starting graph satisfies',
+    async t => {
+      const seen: [string, ResolveRequest][] = []
+      const a = { name: 'a', version: '1.2.0', manifest: {} }
+      const graph = graphOf(
+        [
+          importer({ dependencies: { a: '^1.0.0', b: '^2.0.0' } }, [
+            edge('a', '^1.0.0', a),
+          ]),
+        ],
+        [a],
+      )
+      prefetchResolve(graph, packageInfo(seen), options)
+      t.strictSame(
+        seen[0]![1].roots,
+        [{ name: 'b', spec: '^2.0.0' }],
+        'only the root the graph has nothing for',
+      )
+      t.strictSame(seen[0]![1].have, ['a@1.2.0'])
+    },
+  )
+
+  t.test(
+    'sends nothing for a graph that satisfies every root',
+    async t => {
+      const seen: [string, ResolveRequest][] = []
+      const a = { name: 'a', version: '1.2.0' }
+      const graph = graphOf(
+        [
+          importer({ dependencies: { a: '^1.0.0' } }, [
+            edge('a', '^1.0.0', a),
+          ]),
+        ],
+        [a],
+      )
+      const end = prefetchResolve(graph, packageInfo(seen), options)
+      t.strictSame(
+        seen,
+        [],
+        'a lockfile install asks the server nothing',
+      )
+      t.doesNotThrow(end, 'and there is nothing to end')
+    },
+  )
+
+  t.test(
+    'sends a root whose spec moved on from its edge',
+    async t => {
+      const seen: [string, ResolveRequest][] = []
+      const a = { name: 'a', version: '1.2.0' }
+      const graph = graphOf(
+        [
+          importer({ dependencies: { a: '^2.0.0' } }, [
+            edge('a', '^1.0.0', a),
+          ]),
+        ],
+        [a],
+      )
+      prefetchResolve(graph, packageInfo(seen), options)
+      t.strictSame(seen[0]![1].roots, [{ name: 'a', spec: '^2.0.0' }])
+    },
+  )
+
+  t.test('sends a root whose edge is missing or invalid', async t => {
+    const seen: [string, ResolveRequest][] = []
+    const a = { name: 'a', version: '1.2.0', manifest: {} }
+    const graph = graphOf(
+      [
+        importer({ dependencies: { a: '^1.0.0', b: '^1.0.0' } }, [
+          edge('a', '^1.0.0', a, false),
+          edge('b', '^1.0.0', undefined),
+        ]),
+      ],
+      [a],
+    )
+    prefetchResolve(graph, packageInfo(seen), options)
+    t.strictSame(seen[0]![1].roots, [
+      { name: 'a', spec: '^1.0.0' },
+      { name: 'b', spec: '^1.0.0' },
+    ])
+  })
+
+  t.test('hands back the function that ends the resolve', async t => {
+    const seen: [string, ResolveRequest][] = []
+    const ended: string[] = []
+    const graph = graphOf([
+      importer({ dependencies: { a: '^1.0.0' } }),
+    ])
+    const end = prefetchResolve(
+      graph,
+      packageInfo(seen, ended),
+      options,
+    )
+    t.strictSame(ended, [], 'not ended by starting it')
+    end()
+    t.strictSame(ended, ['abort'])
+  })
+
   t.test('sends held versions as have', async t => {
     const seen: [string, ResolveRequest][] = []
     const graph = graphOf(
@@ -132,14 +253,12 @@ t.test('prefetchResolve', async t => {
     const graph = graphOf([
       importer({ dependencies: { a: '^1.0.0' } }),
     ])
-    t.equal(
-      prefetchResolve(graph, packageInfo(seen), {
-        ...options,
-        modifiers: {},
-      }),
-      0,
-    )
+    const end = prefetchResolve(graph, packageInfo(seen), {
+      ...options,
+      modifiers: {},
+    })
     t.strictSame(seen, [])
+    t.doesNotThrow(end)
   })
 
   t.test('skips when there are no registry roots', async t => {
@@ -147,7 +266,7 @@ t.test('prefetchResolve', async t => {
     const graph = graphOf([
       importer({ dependencies: { g: 'github:o/r' } }),
     ])
-    t.equal(prefetchResolve(graph, packageInfo(seen), options), 0)
+    prefetchResolve(graph, packageInfo(seen), options)
     t.strictSame(seen, [])
   })
 
@@ -156,18 +275,18 @@ t.test('prefetchResolve', async t => {
     const graph = graphOf([
       importer({ dependencies: { a: '^1.0.0' } }),
     ])
-    t.equal(
-      prefetchResolve(graph, packageInfo(seen), {
-        registries: {},
-      }),
-      0,
-    )
+    prefetchResolve(graph, packageInfo(seen), {
+      registries: {},
+    })
     t.strictSame(seen, [])
   })
 
   t.test('skips an importer with no manifest', async t => {
     const seen: [string, ResolveRequest][] = []
-    const graph = graphOf([{ manifest: undefined }])
-    t.equal(prefetchResolve(graph, packageInfo(seen), options), 0)
+    const graph = graphOf([
+      { manifest: undefined, edgesOut: new Map() },
+    ])
+    prefetchResolve(graph, packageInfo(seen), options)
+    t.strictSame(seen, [])
   })
 })

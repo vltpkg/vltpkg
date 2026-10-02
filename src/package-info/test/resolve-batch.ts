@@ -43,6 +43,14 @@ const keysOf = (records: ResolveRecord[]): string[] =>
 
 const roots = [{ name: 'a', spec: '^1.0.0' }]
 
+const record = (name: string, version: string, spec: string) =>
+  JSON.stringify({
+    status: 200,
+    name,
+    requested: [spec],
+    manifest: { name, version },
+  })
+
 t.test('fetchResolve', async t => {
   t.test(
     'sends the request and indexes 200 records both ways',
@@ -218,5 +226,45 @@ t.test('fetchResolve', async t => {
       ['good'],
       'only the record whose manifest matches its name and has a version',
     )
+  })
+})
+
+t.test('the abort signal', async t => {
+  t.test('reaches the request', async t => {
+    let seen: AbortSignal | undefined
+    const c = client((_, options) => {
+      seen = options.signal
+      return ndjson([record('a', '1.0.0', '^1.0.0')])
+    })
+    const ac = new AbortController()
+    await fetchResolve(c, registry, { roots }, () => {}, ac.signal)
+    t.equal(seen, ac.signal)
+  })
+
+  t.test('ends the stream, keeping what arrived', async t => {
+    // a body that delivers one record and then stays open until the
+    // signal destroys it, the way an aborted request's body ends
+    const c = client((_, options) => {
+      const body = new Readable({ read() {} })
+      body.push(record('a', '1.0.0', '^1.0.0') + '\n')
+      ;(options.signal as AbortSignal).addEventListener('abort', () =>
+        body.destroy(new Error('aborted')),
+      )
+      return { statusCode: 207, body }
+    })
+    const ac = new AbortController()
+    const records: ResolveRecord[] = []
+    const settled = fetchResolve(
+      c,
+      registry,
+      { roots },
+      r => {
+        records.push(r)
+        ac.abort()
+      },
+      ac.signal,
+    )
+    await settled
+    t.strictSame(keysOf(records), ['a@^1.0.0', 'a@1.0.0'])
   })
 })

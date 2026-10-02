@@ -414,3 +414,56 @@ t.test('broken lockfile fails loud, does not rebuild', async t => {
     'does not silently fall back to loading the actual tree',
   )
 })
+
+t.test(
+  'ends the server resolve once the ideal graph is built',
+  async t => {
+    const calls: string[] = []
+    const resolving = {
+      manifest: (spec: Spec) => packageInfo.manifest(spec),
+      prefetchResolve: () => {
+        calls.push('prefetch')
+      },
+      abortResolve: () => {
+        calls.push('abort')
+      },
+    } as unknown as PackageInfoClient
+    const options = {
+      ...specOptions,
+      registry: 'https://registry.npmjs.org/',
+      registries: {
+        ...specOptions.registries,
+        npm: 'https://registry.npmjs.org/',
+      },
+      packageJson: new PackageJson(),
+      packageInfo: resolving,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    }
+    const project = (dependencies: Record<string, string>) => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies,
+        }),
+      })
+      return {
+        ...options,
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        add: new Map([
+          [joinDepIDTuple(['file', '.']), new Map()],
+        ]) as AddImportersDependenciesMap,
+      }
+    }
+
+    await build(project({ foo: '^1.0.0' }))
+    t.strictSame(
+      calls,
+      ['prefetch', 'abort'],
+      'ended after the build',
+    )
+  },
+)

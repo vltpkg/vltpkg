@@ -357,6 +357,8 @@ export class PackageInfoClient {
   // stream ends. The requests overlap whatever the graph build does before
   // it asks for its first manifest.
   #resolveInflight = new Map<string, Set<Promise<void>>>()
+  /** the controller of each request sent, by its `#resolveSent` key */
+  #resolveAborts = new Map<string, AbortController>()
   // Requests already sent, so the same ask is not repeated. Keyed on the
   // request rather than the registry: a later step asking for a different
   // root set is a different question.
@@ -1212,52 +1214,78 @@ export class PackageInfoClient {
     if (this.#resolveSent.has(sent)) return
     this.#resolveSent.add(sent)
 
-    const promise = this.#runResolve(registry, request)
+    const ac = new AbortController()
+    this.#resolveAborts.set(sent, ac)
+    const promise = this.#runResolve(registry, request, ac.signal)
     let inflight = this.#resolveInflight.get(registry)
     if (!inflight)
       this.#resolveInflight.set(registry, (inflight = new Set()))
     inflight.add(promise)
     // dropped once settled, so manifest() stops waiting on a request that
     // has already delivered everything it is going to
-    const clear = () => inflight.delete(promise)
+    const clear = () => {
+      inflight.delete(promise)
+      this.#resolveAborts.delete(sent)
+    }
     promise.then(clear, clear)
+  }
+
+  /**
+   * End every resolve still streaming. The records it delivered stay
+   * answerable; the rest go to the per-name path. For the graph build to
+   * call once it has placed its last node, so an install never waits on a
+   * stream nothing will read.
+   */
+  abortResolve(): void {
+    for (const [sent, ac] of this.#resolveAborts) {
+      this.#resolveSent.delete(sent)
+      ac.abort()
+    }
+    this.#resolveAborts.clear()
   }
 
   /** Never rejects: a resolve that fails leaves every spec to manifest(). */
   async #runResolve(
     registry: string,
     request: ResolveRequest,
+    signal: AbortSignal,
   ): Promise<void> {
     try {
       if ((await this.capabilities(registry)).resolve === undefined)
         return
       const client = await this.getRegistryClient()
       this.#resolveLastRecordAt.set(registry, Date.now())
-      await fetchResolve(client, registry, request, record => {
-        this.#resolveLastRecordAt.set(registry, Date.now())
-        // A resolve record is a vlt manifest: `dist.tarball` is the
-        // tarball's basename, resolved against the package's `/-/`
-        // directory like a v2 packument's, and a tarball without a hash
-        // must carry a Repr-Digest.
-        absolutizeTarball(
-          record.manifest,
-          `${registry}${record.name}/-/`,
-        )
-        this.#vltPackuments.add(`${registry}${record.name}`)
-        // Indexed both ways: by the ranges that chose the version, which
-        // is what the graph build asks for, and by the exact version, for
-        // a lookup that already knows it.
-        for (const spec of record.requested) {
+      await fetchResolve(
+        client,
+        registry,
+        request,
+        record => {
+          this.#resolveLastRecordAt.set(registry, Date.now())
+          // A resolve record is a vlt manifest: `dist.tarball` is the
+          // tarball's basename, resolved against the package's `/-/`
+          // directory like a v2 packument's, and a tarball without a hash
+          // must carry a Repr-Digest.
+          absolutizeTarball(
+            record.manifest,
+            `${registry}${record.name}/-/`,
+          )
+          this.#vltPackuments.add(`${registry}${record.name}`)
+          // Indexed both ways: by the ranges that chose the version, which
+          // is what the graph build asks for, and by the exact version, for
+          // a lookup that already knows it.
+          for (const spec of record.requested) {
+            this.#deliverResolved(
+              `${registry}${record.name}@${spec}`,
+              record.manifest,
+            )
+          }
           this.#deliverResolved(
-            `${registry}${record.name}@${spec}`,
+            `${registry}${record.name}@${record.version}`,
             record.manifest,
           )
-        }
-        this.#deliverResolved(
-          `${registry}${record.name}@${record.version}`,
-          record.manifest,
-        )
-      })
+        },
+        signal,
+      )
     } catch {
       // The per-name path still has every spec.
     }
@@ -1339,18 +1367,13 @@ export class PackageInfoClient {
       case 'registry': {
         // a resolve entry never went through pickManifest under any
         // selection option, so those take the packument path
-        if (!SELECTION_OPTIONS.some(k => options[k] !== undefined)) {
-          const key = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
-          const resolved = this.#resolvedManifests.get(key)
+        const selecting = SELECTION_OPTIONS.some(
+          k => options[k] !== undefined,
+        )
+        const resolveKey = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
+        if (!selecting) {
+          const resolved = this.#resolvedManifests.get(resolveKey)
           if (resolved) return resolved
-          // Not here yet: give the in-flight resolve a bounded moment to
-          // deliver this one key rather than fetching a packument for a
-          // manifest that is probably already on its way.
-          if (f.registry) {
-            const arrived = await this.#awaitResolved(f.registry, key)
-            if (arrived) return arrived
-            debug('resolve miss %s', key)
-          }
         }
 
         // Check if manifest is cached, if so just return it earlier
@@ -1390,6 +1413,18 @@ export class PackageInfoClient {
           } catch {
             // Cache miss, fetch from packument
           }
+        }
+
+        // Nothing local: give the in-flight resolve a bounded moment to
+        // deliver this one key rather than fetching a packument for a
+        // manifest that is probably already on its way.
+        if (!selecting && f.registry) {
+          const arrived = await this.#awaitResolved(
+            f.registry,
+            resolveKey,
+          )
+          if (arrived) return arrived
+          debug('resolve miss %s', resolveKey)
         }
 
         const mani = pickManifest(

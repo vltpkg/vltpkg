@@ -45,13 +45,15 @@ export type ResolveRecord = {
  * Resolve `request` against `registry`, calling `onRecord` for each version
  * the server resolves, as its line arrives. Settles when the stream ends,
  * however it ends: a caller waiting on a record that never came learns that
- * from the request settling, not from an error.
+ * from the request settling, not from an error. Aborting `signal` ends it
+ * early, keeping the records that had already arrived.
  */
 export const fetchResolve = async (
   client: RegistryClient,
   registry: string,
   request: ResolveRequest,
   onRecord: (record: ResolveRecord) => void,
+  signal?: AbortSignal,
 ): Promise<void> => {
   if (!request.roots.length) return
 
@@ -63,6 +65,7 @@ export const fetchResolve = async (
         // POST, not QUERY: CloudFront's allowed-method sets are fixed and
         // none includes QUERY. The registry answers both.
         method: 'POST',
+        signal,
         headers: {
           'content-type': 'application/json',
           accept: 'application/x-ndjson',

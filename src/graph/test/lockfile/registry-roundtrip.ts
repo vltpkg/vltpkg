@@ -108,6 +108,7 @@ t.test(
         return { resolved: '', spec }
       },
       prefetchResolve() {},
+      abortResolve() {},
     } as unknown as PackageInfoClient
 
     const projectRoot = t.testdir({

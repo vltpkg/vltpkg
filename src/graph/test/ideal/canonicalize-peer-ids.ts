@@ -1137,6 +1137,7 @@ t.test('build() double-rebuild is a lockfile fixpoint', async t => {
       return manifests[spec.final.name]
     },
     prefetchResolve() {},
+    abortResolve() {},
   } as unknown as PackageInfoClient
 
   const projectRoot = t.testdir({
@@ -1195,6 +1196,7 @@ t.test(
         return manifests[spec.final.name]
       },
       prefetchResolve() {},
+      abortResolve() {},
     } as unknown as PackageInfoClient
 
     // a single fixture with one subdir per project: calling t.testdir()
@@ -1267,6 +1269,7 @@ t.test(
         return manifests[spec.final.name]
       },
       prefetchResolve() {},
+      abortResolve() {},
     } as unknown as PackageInfoClient
 
     const projectRoot = t.testdir({
@@ -1339,6 +1342,7 @@ t.test('workspace add keeps existing peer hashes', async t => {
       return manifests[spec.final.name]
     },
     prefetchResolve() {},
+    abortResolve() {},
   } as unknown as PackageInfoClient
 
   // single fixture with one subdir per project: a second t.testdir()
