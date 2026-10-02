@@ -1272,3 +1272,85 @@ t.test('detectLibc integration (mocked)', async t => {
 
   t.end()
 })
+
+t.test('parsed versions are shared between picks', t => {
+  // the same packument picked twice parses its versions once; the second
+  // pick ranks over the cached instances and lands on the same answer
+  const versions = Object.fromEntries(
+    Array.from({ length: 40 }, (_, i) => [
+      `1.${i}.0`,
+      { name: 'x', version: `1.${i}.0` },
+    ]),
+  )
+  const paku = {
+    name: 'x',
+    'dist-tags': { latest: '1.39.0' },
+    versions,
+  } as unknown as Packument
+  const first = pickManifest(paku, '>=1.2.0 <1.10.0')
+  const second = pickManifest(paku, '>=1.2.0 <1.10.0')
+  t.equal(first?.version, '1.9.0')
+  t.equal(second, first, 'same answer from the cached parses')
+
+  // an invalid version string is remembered as invalid, and skipped again
+  const odd = {
+    name: 'y',
+    'dist-tags': { latest: '2.0.0' },
+    versions: {
+      'not-a-version': { name: 'y', version: 'not-a-version' },
+      '2.0.0': { name: 'y', version: '2.0.0' },
+    },
+  } as unknown as Packument
+  t.equal(pickManifest(odd, '^2')?.version, '2.0.0')
+  t.equal(
+    pickManifest(odd, '^1'),
+    undefined,
+    'the invalid key is skipped',
+  )
+
+  // past the cap the cache is cleared and keeps answering correctly
+  const many = Object.fromEntries(
+    Array.from({ length: 33_000 }, (_, i) => [
+      `0.0.${i}`,
+      { name: 'z', version: `0.0.${i}` },
+    ]),
+  )
+  const big = {
+    name: 'z',
+    'dist-tags': { latest: '0.0.0' },
+    versions: many,
+  } as unknown as Packument
+  t.equal(pickManifest(big, '>=0.0.32990')?.version, '0.0.32999')
+  t.equal(
+    pickManifest(paku, '>=1.2.0 <1.10.0')?.version,
+    '1.9.0',
+    'still right after the clear',
+  )
+  t.end()
+})
+
+t.test('a version the time map does not list is never chosen', t => {
+  // without a cutoff the times themselves are not read, but a time map
+  // that leaves a version out still rules it out
+  const paku = {
+    name: 'x',
+    'dist-tags': { latest: '1.0.0' },
+    versions: {
+      '1.0.0': { name: 'x', version: '1.0.0' },
+      '1.1.0': { name: 'x', version: '1.1.0' },
+      '1.2.0': { name: 'x', version: '1.2.0' },
+    },
+    time: {
+      '1.0.0': '2020-01-01T00:00:00.000Z',
+      '1.1.0': '2020-02-01T00:00:00.000Z',
+    },
+  } as unknown as Packument
+  t.equal(pickManifest(paku, '^1.1.0')?.version, '1.1.0')
+  t.equal(
+    pickManifest(paku, '^1.1.0', { before: new Date('2020-03-01') })
+      ?.version,
+    '1.1.0',
+    'the same with a cutoff the listed times fall before',
+  )
+  t.end()
+})
