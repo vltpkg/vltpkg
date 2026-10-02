@@ -5308,6 +5308,9 @@ t.test('prefetchResolve', async t => {
     const pi = freshClient(t)
     pi.prefetchResolve(defaultRegistry, { roots })
     await pi.manifest('abbrev@^2.0.0')
+    // a key the stream does not carry is answered only once every request
+    // has settled, which is when the request's owner is cleared
+    await pi.manifest('nope@^1.0.0').catch(() => {})
     pi.prefetchResolve(defaultRegistry, { roots })
     await pi.manifest('abbrev@^2.0.0')
     t.equal(resolveRequests.length, 1, 'its records are still here')
