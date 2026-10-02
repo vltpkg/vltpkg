@@ -71,6 +71,8 @@ const main = async () => {
     outdir,
     pkg,
     pkgExtra: {
+      // the bundle is always esm
+      type: 'module',
       bin: BINS.reduce<Record<string, string>>((acc, bin) => {
         acc[bin] = `./${bin}.js`
         return acc
