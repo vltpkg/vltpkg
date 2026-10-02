@@ -5399,65 +5399,90 @@ t.test('prefetchResolve', async t => {
     },
   )
 
-  t.test('keeps waiting while records keep arriving', async t => {
-    // each record lands inside the wait, though the one wanted lands well
-    // after a single wait has passed
+  t.test('after the grace the packument is fetched too', async t => {
+    // the stream never carries this key, and only settles well after
+    // the grace; the hedge answers long before that
+    resolveRecords = [
+      { end: true, status: 200, returned: 0, unresolved: 1 },
+    ]
+    resolveHoldMs = 600
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '50' },
+    })
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const start = Date.now()
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.strictSame(
+      mani,
+      pakuAbbrev.versions['2.0.0'],
+      'the full manifest, so it came from the packument',
+    )
+    t.ok(Date.now() - start < 500, 'before the stream settled')
+  })
+
+  t.test('a failed hedge waits for the stream', async t => {
+    // the per-name path 404s this name, which the stream delivers later
+    const nope = [{ name: 'nope', spec: '^1.0.0' }]
     resolveRecords = [
       {
         status: 200,
-        name: 'other',
-        requested: ['^1'],
-        manifest: { name: 'other', version: '1.0.0' },
+        name: 'nope',
+        requested: ['^1.0.0'],
+        manifest: { name: 'nope', version: '1.0.0' },
       },
-      {
-        status: 200,
-        name: 'other2',
-        requested: ['^1'],
-        manifest: { name: 'other2', version: '1.0.0' },
-      },
-      {
-        status: 200,
-        name: 'abbrev',
-        requested: ['^2.0.0'],
-        manifest: { name: 'abbrev', version: '2.0.0' },
-      },
-      { end: true, status: 200, returned: 3, unresolved: 0 },
+      { end: true, status: 200, returned: 1, unresolved: 0 },
     ]
-    resolveTrickleMs = 60
+    resolveHoldMs = 300
     t.intercept(process, 'env', {
-      value: {
-        ...process.env,
-        VLT_BATCH_RESOLVE_WAIT_MS: '100',
-      },
+      value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '0' },
     })
     const pi = freshClient(t)
-    pi.prefetchResolve(defaultRegistry, { roots })
-    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
-    t.strictSame(
-      mani,
-      { name: 'abbrev', version: '2.0.0' },
-      'the resolve record, 180ms in, on a 100ms wait',
-    )
+    pi.prefetchResolve(defaultRegistry, { roots: nope })
+    const mani = (await pi.manifest('nope@^1.0.0')) as Manifest
+    t.strictSame(mani, { name: 'nope', version: '1.0.0' })
   })
 
-  t.test('waits the configured number of ms', async t => {
-    // long enough that the held resolve still wins the race
-    resolveHoldMs = 50
-    t.intercept(process, 'env', {
-      value: {
-        ...process.env,
-        VLT_BATCH_RESOLVE_WAIT_MS: '5000',
-      },
-    })
-    const pi = freshClient(t)
-    pi.prefetchResolve(defaultRegistry, { roots })
-    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
-    t.strictSame(
-      mani,
-      { name: 'abbrev', version: '2.0.0' },
-      'the resolve record, so the wait outlasted the hold',
-    )
-  })
+  t.test(
+    'a failed hedge is the answer once the stream settles',
+    async t => {
+      const nope = [{ name: 'nope', spec: '^1.0.0' }]
+      resolveRecords = [
+        { end: true, status: 200, returned: 0, unresolved: 1 },
+      ]
+      resolveHoldMs = 100
+      t.intercept(process, 'env', {
+        value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '0' },
+      })
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry, { roots: nope })
+      await t.rejects(pi.manifest('nope@^1.0.0'), {
+        cause: { response: { statusCode: 404 } },
+      })
+    },
+  )
+
+  t.test(
+    'a record inside the grace wins without a fetch',
+    async t => {
+      // the grace outlasts the hold, so the record is the answer
+      resolveHoldMs = 50
+      t.intercept(process, 'env', {
+        value: {
+          ...process.env,
+          VLT_BATCH_RESOLVE_WAIT_MS: '5000',
+        },
+      })
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.strictSame(
+        mani,
+        { name: 'abbrev', version: '2.0.0' },
+        'the resolve record, so the grace outlasted the hold',
+      )
+    },
+  )
 
   t.test('two lookups can wait for the same key', async t => {
     resolveHoldMs = 20
