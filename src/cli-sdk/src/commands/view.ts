@@ -1,12 +1,11 @@
 import * as dotProp from '@vltpkg/dot-prop'
 import { error } from '@vltpkg/error-cause'
-import { getId } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { Spec } from '@vltpkg/spec'
 import { commandUsage } from '../config/usage.ts'
-import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest, Packument, NodeLike } from '@vltpkg/types'
+import { createStubNode } from '../stub-node.ts'
+import type { Manifest, Packument } from '@vltpkg/types'
 import type {
   PackageReportData,
   PackageAlert,
@@ -287,39 +286,6 @@ export const views = {
 } as const satisfies Views<ViewResult>
 
 /**
- * Create a minimal NodeLike for SecurityArchive lookup.
- * Only the fields used by SecurityArchive.start() are needed.
- */
-const createFakeNode = (
-  spec: Spec,
-  name: string,
-  version: string,
-  options: SpecOptions,
-): NodeLike =>
-  ({
-    id: getId(spec, { name, version }),
-    name,
-    version,
-    confused: false,
-    edgesIn: new Set(),
-    edgesOut: new Map(),
-    workspaces: undefined,
-    importer: false,
-    mainImporter: false,
-    projectRoot: '',
-    dev: false,
-    optional: false,
-    graph: {} as NodeLike['graph'],
-    options,
-    /* c8 ignore next 5 - stub methods for NodeLike interface */
-    toJSON: () => ({}),
-    toString: () => `${name}@${version}`,
-    setResolved: () => {},
-    setConfusedManifest: () => {},
-    maybeSetConfusedManifest: () => {},
-  }) as unknown as NodeLike
-
-/**
  * Lookup fields from a combined packument+manifest view.
  *
  * The lookup searches in this order:
@@ -388,7 +354,7 @@ export const command: CommandFn<ViewResult> = async conf => {
 
   if (name && version) {
     try {
-      const node = createFakeNode(spec, name, version, conf.options)
+      const node = createStubNode(spec, name, version, conf.options)
       const archive = await SecurityArchive.start({
         nodes: [node],
       })

@@ -9,18 +9,38 @@ Usage:
 <Code
   code="$ vlt outdated
 $ vlt outdated [package-names...]
-$ vlt outdated [--workspace=<path>] [--view=human | json | count]"
+$ vlt outdated [--target=<query>] [--workspace=<path>]
+$ vlt outdated [--view=human | json | count]"
   title="Terminal"
   lang="bash"
 />
 
-List direct dependencies that have newer versions available.
+List dependencies that have newer versions available, and what is
+keeping them from being upgraded.
 
-For every registry dependency of the project root and its workspaces,
-the installed version is compared against the highest version that
-satisfies the range in `package.json` (wanted) and against the
-registry's `latest` dist-tag (latest). Only dependencies that are
-missing or behind on either count are reported.
+For every registry dependency, the installed version is compared
+against the highest version that satisfies the declared range (wanted)
+and against the registry's `latest` dist-tag (latest). Only
+dependencies that are missing or behind on either count are reported.
+
+Each report goes beyond the version numbers:
+
+- the size of the jump (major, minor, patch)
+- whether the installed version is deprecated
+- security scores and alerts for the installed, wanted and latest
+  versions, so an upgrade that fixes a vulnerability or one that
+  introduces a flagged version stands out
+- other dependents whose ranges hold the package back
+- engine and peer dependency requirements of the latest version that
+  this project does not meet
+- the command that performs the upgrade
+
+By default the direct dependencies of the project root and its
+workspaces are checked; `--workspace` and `--workspace-group` narrow
+that to the given workspaces. The `--target` option accepts a
+[DSS query selector](/client/selectors) instead, which can reach any
+dependency in the graph. Package names given as positional arguments
+filter either selection.
 
 The installed versions come from the graph built by `vlt install`, so
 the project must be installed by vlt first. Dependencies that do not
@@ -30,7 +50,8 @@ the catalog resolves them to.
 
 ## Examples
 
-Report outdated dependencies of the project and all its workspaces
+Report outdated direct dependencies of the project and all its
+workspaces
 
 <Code code="$ vlt outdated" title="Terminal" lang="bash" />
 
@@ -46,11 +67,72 @@ Only check the dependencies of a single workspace
   lang="bash"
 />
 
+Check every dependency in the graph, transitive ones included
+
+<Code code={`$ vlt outdated --target="*"`} title="Terminal" lang="bash" />
+
+Only check the dev dependencies of the project root
+
+<Code
+  code={`$ vlt outdated --target=":root > *:dev"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Only check dependencies with known vulnerabilities
+
+<Code
+  code={`$ vlt outdated --target="*:vuln"`}
+  title="Terminal"
+  lang="bash"
+/>
+
 Print the report as JSON
 
 <Code code="$ vlt outdated --view=json" title="Terminal" lang="bash" />
 
+## Output
+
+The human-readable view is a table with one row per dependency and
+dependent. The `Why` column summarizes the jump size, deprecation,
+security changes between the installed version and the wanted or
+latest one (high and critical severity alerts fixed or added, and
+score drops), the dependents holding a transitive package back, and
+the engine or peer requirements of the latest version that are not
+met.
+The commands that perform the upgrades follow the table: `vlt update`
+for versions within the declared ranges, `vlt install` with new ranges
+for the rest, and the catalog entries to edit.
+
+The JSON view is an array of entries with these fields:
+
+- `name`, `spec`, `type`: the dependency as declared by its dependent
+- `current`, `wanted`, `latest`: the installed version (absent when
+  missing), the highest version satisfying the spec, and the registry's
+  `latest`
+- `dependent`, `location`: the importer name, or `name@version` of a
+  transitive dependent, and its location
+- `kind`: `missing`, `major`, `minor`, `patch` or `prerelease`
+- `inRange`: whether `vlt update` picks up a newer version
+- `deprecated`: the deprecation message of the installed version
+- `heldBy`: transitive dependents whose ranges do not admit `latest`
+- `requires`: the `node` engine range and `peers` ranges of `latest`
+  that this project does not satisfy
+- `security`: `score` (0 to 100) and `alerts` for `current`, `wanted`
+  and `latest`, for the versions the security archive has reports on
+- `action`: the command that performs the upgrade, for dependencies of
+  an importer
+
 ## Options
+
+### target
+
+DSS query selector choosing the dependencies to check, in place of the
+direct dependencies of the selected importers.
+
+```
+--target=<query>
+```
 
 ### workspace
 
