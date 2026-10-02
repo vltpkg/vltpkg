@@ -357,8 +357,15 @@ export class PackageInfoClient {
   // stream ends. The requests overlap whatever the graph build does before
   // it asks for its first manifest.
   #resolveInflight = new Map<string, Set<Promise<void>>>()
-  /** the controller of each request sent, by its `#resolveSent` key */
-  #resolveAborts = new Map<string, AbortController>()
+  /**
+   * each request in flight, by its `#resolveSent` key: its controller and
+   * how many builds are still reading it. a request that settled on its
+   * own stays in `#resolveSent`, since its records are still here
+   */
+  #resolveOwners = new Map<
+    string,
+    { controller: AbortController; readers: number }
+  >()
   // Requests already sent, so the same ask is not repeated. Keyed on the
   // request rather than the registry: a later step asking for a different
   // root set is a different question.
@@ -1205,18 +1212,36 @@ export class PackageInfoClient {
    *
    * A no-op unless the registry says it serves the endpoint. Anything it
    * does not deliver is left to `manifest()`.
+   *
+   * Returns the function that releases the request. A build calls it once
+   * it has placed its last node; when the last build reading a request has
+   * released it, the stream is ended, so an install never waits on a
+   * stream nothing will read. The records it delivered stay answerable.
    */
-  prefetchResolve(registry: string, request: ResolveRequest): void {
-    if (!request.roots.length) return
+  prefetchResolve(
+    registry: string,
+    request: ResolveRequest,
+  ): () => void {
+    if (!request.roots.length) return () => {}
     // keyed the way a spec names its registry, with the trailing slash
     if (!registry.endsWith('/')) registry += '/'
     const sent = `${registry} ${JSON.stringify(request)}`
-    if (this.#resolveSent.has(sent)) return
+    // the same question already in flight is read, not asked again
+    const owned = this.#resolveOwners.get(sent)
+    if (owned) {
+      owned.readers++
+      return () => this.#releaseResolve(sent, owned)
+    }
+    if (this.#resolveSent.has(sent)) return () => {}
     this.#resolveSent.add(sent)
 
-    const ac = new AbortController()
-    this.#resolveAborts.set(sent, ac)
-    const promise = this.#runResolve(registry, request, ac.signal)
+    const owner = { controller: new AbortController(), readers: 1 }
+    this.#resolveOwners.set(sent, owner)
+    const promise = this.#runResolve(
+      registry,
+      request,
+      owner.controller.signal,
+    )
     let inflight = this.#resolveInflight.get(registry)
     if (!inflight)
       this.#resolveInflight.set(registry, (inflight = new Set()))
@@ -1225,23 +1250,28 @@ export class PackageInfoClient {
     // has already delivered everything it is going to
     const clear = () => {
       inflight.delete(promise)
-      this.#resolveAborts.delete(sent)
+      // a request released and asked again is a new owner by now
+      if (this.#resolveOwners.get(sent) === owner)
+        this.#resolveOwners.delete(sent)
     }
     promise.then(clear, clear)
+    return () => this.#releaseResolve(sent, owner)
   }
 
   /**
-   * End every resolve still streaming. The records it delivered stay
-   * answerable; the rest go to the per-name path. For the graph build to
-   * call once it has placed its last node, so an install never waits on a
-   * stream nothing will read.
+   * One build is done reading the request; the last one out ends it, and
+   * the same question can then be asked again.
    */
-  abortResolve(): void {
-    for (const [sent, ac] of this.#resolveAborts) {
+  #releaseResolve(
+    sent: string,
+    owner: { controller: AbortController; readers: number },
+  ): void {
+    if (--owner.readers > 0) return
+    if (this.#resolveOwners.get(sent) === owner) {
+      this.#resolveOwners.delete(sent)
       this.#resolveSent.delete(sent)
-      ac.abort()
     }
-    this.#resolveAborts.clear()
+    owner.controller.abort()
   }
 
   /** Never rejects: a resolve that fails leaves every spec to manifest(). */

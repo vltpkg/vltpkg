@@ -416,16 +416,14 @@ t.test('broken lockfile fails loud, does not rebuild', async t => {
 })
 
 t.test(
-  'ends the server resolve once the ideal graph is built',
+  'releases the server resolve once the ideal graph is built',
   async t => {
     const calls: string[] = []
     const resolving = {
       manifest: (spec: Spec) => packageInfo.manifest(spec),
       prefetchResolve: () => {
         calls.push('prefetch')
-      },
-      abortResolve: () => {
-        calls.push('abort')
+        return () => calls.push('release')
       },
     } as unknown as PackageInfoClient
     const options = {
@@ -462,8 +460,8 @@ t.test(
     await build(project({ foo: '^1.0.0' }))
     t.strictSame(
       calls,
-      ['prefetch', 'abort'],
-      'ended after the build',
+      ['prefetch', 'release'],
+      'released after the build',
     )
   },
 )
