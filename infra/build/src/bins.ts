@@ -3,6 +3,22 @@ import { resolve } from 'node:path'
 import { XDG } from '@vltpkg/xdg'
 import type { Commands } from '@vltpkg/cli-sdk/definition'
 
+// Suppress ExperimentalWarning (e.g. node:sqlite) without relying on
+// `--no-warnings`.  The published bundle uses a plain `#!/usr/bin/env node`
+// shebang (no `-S`) for BusyBox / Alpine compatibility.
+/* c8 ignore start - warning filter */
+{
+  const origWarning = process.listeners('warning')
+  process.removeAllListeners('warning')
+  process.on('warning', (warning: Error) => {
+    if (warning.name === 'ExperimentalWarning') return
+    for (const listener of origWarning) {
+      listener(warning)
+    }
+  })
+}
+/* c8 ignore stop */
+
 // default dir (os tmpdir) can be unwritable, eg. created by another user
 if (
   module.enableCompileCache().status ===
