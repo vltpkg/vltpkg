@@ -2,9 +2,15 @@ import t from 'tap'
 import { Readable } from 'node:stream'
 import type { RegistryClient } from '@vltpkg/registry-client'
 import { fetchResolve } from '../src/resolve-batch.ts'
+import { Registry } from '../src/registry.ts'
 import type { ResolveRecord } from '../src/resolve-batch.ts'
 
-const registry = 'https://registry.vlt.io/acme/npm/'
+// fetchResolve never asks the registry for its capabilities, so it never
+// needs the client the Registry would fetch them with
+const registry = new Registry(
+  'https://registry.vlt.io/acme/npm/',
+  () => Promise.reject(new Error('not asked')),
+)
 
 /** A RegistryClient stub that answers whatever the test hands it. */
 const client = (

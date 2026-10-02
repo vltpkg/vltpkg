@@ -38,11 +38,7 @@ import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import unzipMain from '@vltpkg/cache-unzip/unzip'
 // not exported: what the background revalidation child runs
 import { revalidateEntry } from '../../registry-client/src/revalidate-entry.ts'
-import {
-  PackageInfoClient,
-  PACKUMENT_ACCEPT,
-  resetCapabilities,
-} from '../src/index.ts'
+import { PackageInfoClient, PACKUMENT_ACCEPT } from '../src/index.ts'
 
 t.saveFixture = true
 
@@ -4089,7 +4085,6 @@ t.test(
 t.test('registry capabilities', async t => {
   const pi = new PackageInfoClient({ ...options, cache: t.testdir() })
   // manifest() asks for the document too, so start from a cold memo
-  resetCapabilities()
   capabilitiesRequests = 0
 
   t.strictSame(
@@ -4127,7 +4122,6 @@ t.test('the ?stable packument filter', async t => {
     capabilitiesDocument = withoutFilter
   })
   t.beforeEach(() => {
-    resetCapabilities()
     capabilitiesDocument = {
       ...withoutFilter,
       'stable-filter': '1.0',
@@ -4189,7 +4183,6 @@ t.test('the ?stable packument filter', async t => {
       ]
       for (const [name, spec, version] of cases) {
         await t.test(name, async t => {
-          resetCapabilities()
           stableRequests = []
           const pi = client(t)
           t.equal((await pi.manifest(spec)).version, version)
@@ -5105,7 +5098,6 @@ t.test('prefetchResolve', async t => {
       cache: t.testdir(),
     })
   t.beforeEach(() => {
-    resetCapabilities()
     capabilitiesDocument = { resolve: '0.1' }
     resolveRequests.length = 0
     resolveHoldMs = 0
