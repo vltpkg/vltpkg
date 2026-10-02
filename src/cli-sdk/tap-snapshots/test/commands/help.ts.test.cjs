@@ -41,6 +41,8 @@ COMMANDS
                  login                         Authenticate with a registry
                  logout                        Log out from a registry
 
+                 outdated     [package-name... List dependencies with newer versions available
+
                  pack                          Create a tarball from a package
                  ping         [<registry-al... Ping configured registries
   p,             pkg          <command>        Manage package metadata

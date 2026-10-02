@@ -163,6 +163,10 @@ const commandHelp = {
     args: '',
     desc: 'Log out from a registry',
   },
+  outdated: {
+    args: '[package-names...]',
+    desc: 'List dependencies with newer versions available',
+  },
   pack: {
     args: '',
     desc: 'Create a tarball from a package',

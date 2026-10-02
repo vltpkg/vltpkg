@@ -1,0 +1,79 @@
+---
+title: vlt outdated
+sidebar:
+  label: outdated
+---
+
+Usage:
+
+<Code
+  code="$ vlt outdated
+$ vlt outdated [package-names...]
+$ vlt outdated [--workspace=<path>] [--view=human | json | count]"
+  title="Terminal"
+  lang="bash"
+/>
+
+List direct dependencies that have newer versions available.
+
+For every registry dependency of the project root and its workspaces,
+the installed version is compared against the highest version that
+satisfies the range in `package.json` (wanted) and against the
+registry's `latest` dist-tag (latest). Only dependencies that are
+missing or behind on either count are reported.
+
+The installed versions come from the graph built by `vlt install`, so
+the project must be installed by vlt first. Dependencies that do not
+resolve against a registry (git, file, remote tarball or workspace
+specs) are not checked. Catalog specs are checked against the range
+the catalog resolves them to.
+
+## Examples
+
+Report outdated dependencies of the project and all its workspaces
+
+<Code code="$ vlt outdated" title="Terminal" lang="bash" />
+
+Only check the dependencies named `react` and `react-dom`
+
+<Code code="$ vlt outdated react react-dom" title="Terminal" lang="bash" />
+
+Only check the dependencies of a single workspace
+
+<Code
+  code="$ vlt outdated --workspace=packages/app"
+  title="Terminal"
+  lang="bash"
+/>
+
+Print the report as JSON
+
+<Code code="$ vlt outdated --view=json" title="Terminal" lang="bash" />
+
+## Options
+
+### workspace
+
+Limit the report to the dependencies of the given workspace(s).
+
+```
+--workspace=<path>
+```
+
+### workspace-group
+
+Limit the report to the dependencies of the workspaces in the given
+group(s).
+
+```
+--workspace-group=<name>
+```
+
+### view
+
+Output format. Defaults to human-readable or json if no tty. `count`
+outputs the number of outdated dependencies.
+
+```
+--view=[human | json | count]
+```
