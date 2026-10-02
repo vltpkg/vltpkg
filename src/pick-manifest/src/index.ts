@@ -18,6 +18,19 @@ import { readFileSync } from 'node:fs'
 
 const parsedNodeVersion = Version.parse(process.version)
 
+// Parsed versions by string, so each is parsed once across picks.
+const versionCache = new Map<string, Version | undefined>()
+const MAX_VERSION_CACHE = 32_768
+
+const parsedVersion = (ver: string): Version | undefined => {
+  const cached = versionCache.get(ver)
+  if (cached !== undefined || versionCache.has(ver)) return cached
+  const parsed = parse(ver)
+  if (versionCache.size >= MAX_VERSION_CACHE) versionCache.clear()
+  versionCache.set(ver, parsed)
+  return parsed
+}
+
 export type PickManifestOptions = {
   tag?: string
   before?: Date | number | string
@@ -340,23 +353,26 @@ export function pickManifest<T extends Packumentish>(
   }
 
   // ok, actually have to scan the list
-  const entries = Object.entries(versions) as [
-    string,
-    PickManifestish<T>,
-  ][]
+  const keys = Object.keys(versions)
 
-  if (!entries.length) {
+  if (!keys.length) {
     return undefined
   }
 
   let found: ManiCheck<T> | undefined = undefined
   let foundIsDefTag = false
 
-  for (const [ver, mani] of entries) {
-    if (time && verTimes && !isBefore(ver, time, verTimes)) {
+  for (const ver of keys) {
+    // skip versions the time map leaves out, and with a cutoff, those
+    // published after it
+    if (
+      verTimes &&
+      (before ? !isBefore(ver, time, verTimes) : !verTimes[ver])
+    ) {
       continue
     }
-    const version = parse(ver)
+    const mani = versions[ver] as PickManifestish<T>
+    const version = parsedVersion(ver)
     if (!version?.satisfies(range)) {
       continue
     }
