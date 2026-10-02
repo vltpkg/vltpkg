@@ -118,7 +118,7 @@ export const build = async (
   // Start resolving the importers' dependencies server-side, one request
   // to the default registry. manifest() picks the answers up as they land,
   // and nothing reads them once the ideal graph is built.
-  const endResolve = prefetchResolve(graph, packageInfo, options)
+  const releaseResolve = prefetchResolve(graph, packageInfo, options)
 
   let res
   try {
@@ -132,7 +132,7 @@ export const build = async (
       actual: options.actual,
     })
   } finally {
-    endResolve()
+    releaseResolve()
   }
   done()
 

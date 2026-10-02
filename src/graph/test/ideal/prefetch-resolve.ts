@@ -25,14 +25,12 @@ const graphOf = (
 /** A PackageInfoClient stub that records what it was asked to resolve. */
 const packageInfo = (
   seen: [string, ResolveRequest][],
-  ended: string[] = [],
+  released: string[] = [],
 ) =>
   ({
     prefetchResolve: (registry: string, request: ResolveRequest) => {
       seen.push([registry, request])
-    },
-    abortResolve: () => {
-      ended.push('abort')
+      return () => released.push('release')
     },
   }) as unknown as PackageInfoClient
 
@@ -219,21 +217,24 @@ t.test('prefetchResolve', async t => {
     ])
   })
 
-  t.test('hands back the function that ends the resolve', async t => {
-    const seen: [string, ResolveRequest][] = []
-    const ended: string[] = []
-    const graph = graphOf([
-      importer({ dependencies: { a: '^1.0.0' } }),
-    ])
-    const end = prefetchResolve(
-      graph,
-      packageInfo(seen, ended),
-      options,
-    )
-    t.strictSame(ended, [], 'not ended by starting it')
-    end()
-    t.strictSame(ended, ['abort'])
-  })
+  t.test(
+    'hands back the function that releases the resolve',
+    async t => {
+      const seen: [string, ResolveRequest][] = []
+      const released: string[] = []
+      const graph = graphOf([
+        importer({ dependencies: { a: '^1.0.0' } }),
+      ])
+      const release = prefetchResolve(
+        graph,
+        packageInfo(seen, released),
+        options,
+      )
+      t.strictSame(released, [], 'not released by starting it')
+      release()
+      t.strictSame(released, ['release'])
+    },
+  )
 
   t.test('sends held versions as have', async t => {
     const seen: [string, ResolveRequest][] = []

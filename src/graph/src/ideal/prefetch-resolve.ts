@@ -15,8 +15,8 @@ const nothing = () => {}
  * before it asks for its first manifest. A graph loaded whole from a
  * lockfile or node_modules sends nothing.
  *
- * Returns the function that ends the request, for the build to call once
- * it has placed its last node.
+ * Returns the function that releases the request, for the build to call
+ * once it has placed its last node.
  *
  * Fails soft in every direction: a registry that does not serve the
  * endpoint, a request that errors, and a spec it does not resolve all
@@ -81,7 +81,7 @@ export const prefetchResolve = (
     }
   }
 
-  packageInfo.prefetchResolve(registry, {
+  return packageInfo.prefetchResolve(registry, {
     roots,
     have,
     ...(scopes.length ? { stop: { scopes } } : {}),
@@ -93,5 +93,4 @@ export const prefetchResolve = (
       libc: detectLibc(),
     },
   })
-  return () => packageInfo.abortResolve()
 }

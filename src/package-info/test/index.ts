@@ -5246,16 +5246,16 @@ t.test('prefetchResolve', async t => {
     t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
   })
 
-  t.test('abortResolve ends a held stream', async t => {
-    // the server holds the whole response; without the abort, this
+  t.test('releasing the request ends a held stream', async t => {
+    // the server holds the whole response; without the release, this
     // lookup would wait the full hold for its key
     resolveHoldMs = 1500
     t.intercept(process, 'env', {
       value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
     })
     const pi = freshClient(t)
-    pi.prefetchResolve(defaultRegistry, { roots })
-    pi.abortResolve()
+    const release = pi.prefetchResolve(defaultRegistry, { roots })
+    release()
     const start = Date.now()
     const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
     t.equal(mani.version, '2.0.0', 'answered by the packument path')
@@ -5267,11 +5267,10 @@ t.test('prefetchResolve', async t => {
     )
   })
 
-  t.test('an ended request can be asked again', async t => {
+  t.test('a released request can be asked again', async t => {
     resolveHoldMs = 1500
     const pi = freshClient(t)
-    pi.prefetchResolve(defaultRegistry, { roots })
-    pi.abortResolve()
+    pi.prefetchResolve(defaultRegistry, { roots })()
     // the same question, no longer in flight, goes out again
     resolveHoldMs = 0
     pi.prefetchResolve(defaultRegistry, { roots })
@@ -5282,6 +5281,36 @@ t.test('prefetchResolve', async t => {
       2,
       'delivered by the second request',
     )
+  })
+
+  t.test(
+    'a request two builds read ends with the last release',
+    async t => {
+      resolveHoldMs = 200
+      const pi = freshClient(t)
+      const first = pi.prefetchResolve(defaultRegistry, { roots })
+      const second = pi.prefetchResolve(defaultRegistry, { roots })
+      first()
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0')
+      t.equal(
+        pi.resolvedManifestCount,
+        2,
+        'still streaming for the second reader',
+      )
+      t.equal(resolveRequests.length, 1, 'asked once')
+      second()
+      t.doesNotThrow(second, 'releasing twice is nothing')
+    },
+  )
+
+  t.test('a request that settled is not asked again', async t => {
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    await pi.manifest('abbrev@^2.0.0')
+    pi.prefetchResolve(defaultRegistry, { roots })
+    await pi.manifest('abbrev@^2.0.0')
+    t.equal(resolveRequests.length, 1, 'its records are still here')
   })
 
   t.test('a manifest in the local cache never waits', async t => {
@@ -5304,14 +5333,14 @@ t.test('prefetchResolve', async t => {
         cached: true,
       }),
     )
-    pi.prefetchResolve(defaultRegistry, { roots })
+    const release = pi.prefetchResolve(defaultRegistry, { roots })
     const start = Date.now()
     const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest & {
       cached?: boolean
     }
     t.equal(mani.cached, true, 'read from the cache file')
     t.ok(Date.now() - start < 1000, 'without waiting on the resolve')
-    pi.abortResolve()
+    release()
     // the capabilities fetch the prefetch started is still landing
     await pi.capabilities(defaultRegistry)
     await (await pi.getRegistryClient()).cache.promise()
