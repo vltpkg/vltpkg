@@ -116,18 +116,24 @@ export const build = async (
   }
 
   // Start resolving the importers' dependencies server-side, one request
-  // to the default registry. manifest() picks the answers up as they land.
-  prefetchResolve(graph, packageInfo, options)
+  // to the default registry. manifest() picks the answers up as they land,
+  // and nothing reads them once the ideal graph is built.
+  const endResolve = prefetchResolve(graph, packageInfo, options)
 
-  const res = await buildIdealFromStartingGraph({
-    ...options,
-    scurry,
-    add: getMap(options.add),
-    graph,
-    packageInfo,
-    remove: getMap(options.remove),
-    actual: options.actual,
-  })
+  let res
+  try {
+    res = await buildIdealFromStartingGraph({
+      ...options,
+      scurry,
+      add: getMap(options.add),
+      graph,
+      packageInfo,
+      remove: getMap(options.remove),
+      actual: options.actual,
+    })
+  } finally {
+    endResolve()
+  }
   done()
 
   // when adding or removing a new dependency from a file dep,

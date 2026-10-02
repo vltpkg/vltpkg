@@ -11,6 +11,7 @@ import {
   lstatSync,
   readFileSync,
   readlinkSync,
+  mkdirSync,
   renameSync,
   rmSync,
   statSync,
@@ -18,7 +19,7 @@ import {
 } from 'node:fs'
 import { readdir, rm, utimes, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
-import { basename, resolve as pathResolve } from 'node:path'
+import { basename, dirname, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
 import { EventEmitter } from 'node:events'
@@ -5243,6 +5244,77 @@ t.test('prefetchResolve', async t => {
       os: 'linux',
     })) as Manifest
     t.strictSame(mani, pakuAbbrev.versions['2.0.0'])
+  })
+
+  t.test('abortResolve ends a held stream', async t => {
+    // the server holds the whole response; without the abort, this
+    // lookup would wait the full hold for its key
+    resolveHoldMs = 1500
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
+    })
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    pi.abortResolve()
+    const start = Date.now()
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.equal(mani.version, '2.0.0', 'answered by the packument path')
+    t.ok(Date.now() - start < 1000, 'without waiting out the hold')
+    t.equal(
+      pi.resolvedManifestCount,
+      0,
+      'the stream delivered nothing',
+    )
+  })
+
+  t.test('an ended request can be asked again', async t => {
+    resolveHoldMs = 1500
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    pi.abortResolve()
+    // the same question, no longer in flight, goes out again
+    resolveHoldMs = 0
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.equal(mani.version, '2.0.0')
+    t.equal(
+      pi.resolvedManifestCount,
+      2,
+      'delivered by the second request',
+    )
+  })
+
+  t.test('a manifest in the local cache never waits', async t => {
+    // the stream is held, and the key is on disk from an earlier run
+    resolveHoldMs = 1500
+    t.intercept(process, 'env', {
+      value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
+    })
+    const pi = freshClient(t)
+    const spec = Spec.parse('abbrev@^2.0.0', {
+      registry: defaultRegistry,
+    })
+    const cachePath = pi._manifestCachePath(spec, {})!
+    mkdirSync(dirname(cachePath), { recursive: true })
+    writeFileSync(
+      cachePath,
+      JSON.stringify({
+        name: 'abbrev',
+        version: '2.0.0',
+        cached: true,
+      }),
+    )
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const start = Date.now()
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest & {
+      cached?: boolean
+    }
+    t.equal(mani.cached, true, 'read from the cache file')
+    t.ok(Date.now() - start < 1000, 'without waiting on the resolve')
+    pi.abortResolve()
+    // the capabilities fetch the prefetch started is still landing
+    await pi.capabilities(defaultRegistry)
+    await (await pi.getRegistryClient()).cache.promise()
   })
 
   t.test(

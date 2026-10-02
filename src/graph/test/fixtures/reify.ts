@@ -138,6 +138,7 @@ export const mockPackageInfo = {
 
   // the fixtures answer every manifest() directly, nothing to prefetch
   prefetchResolve: () => {},
+  abortResolve: () => {},
 }
 
 const addFixture = async (spec: Spec) => {
