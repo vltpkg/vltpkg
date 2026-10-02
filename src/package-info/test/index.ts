@@ -5099,11 +5099,18 @@ t.test('brotli tarballs', async t => {
 
 t.test('prefetchResolve', async t => {
   const roots = [{ name: 'abbrev', spec: '^2.0.0' }]
-  const freshClient = (t: Test) =>
-    new PackageInfoClient({
+  const freshClient = (t: Test) => {
+    const pi = new PackageInfoClient({
       registry: defaultRegistry,
       cache: t.testdir(),
     })
+    // Flush the registry-client cache before tap removes the testdir,
+    // otherwise lingering file handles can cause ENOTEMPTY on macOS.
+    t.teardown(async () =>
+      (await pi.getRegistryClient()).cache.promise(),
+    )
+    return pi
+  }
   t.beforeEach(() => {
     resetCapabilities()
     capabilitiesDocument = { resolve: '0.1' }
