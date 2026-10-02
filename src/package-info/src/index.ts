@@ -353,13 +353,16 @@ export class PackageInfoClient {
   // `${registry}${name}@${range}` for every spec that chose a version and
   // `${registry}${name}@${version}` for the version itself.
   #resolvedManifests = new Map<string, Manifest>()
-  // The resolves still streaming, per registry, each settling when its
-  // stream ends. The requests overlap whatever the graph build does before
-  // it asks for its first manifest.
-  #resolveInflight = new Map<string, Set<Promise<void>>>()
-  // when each registry's resolve last delivered a record, by registry: the
-  // grace a lookup gives the stream is measured from here
-  #resolveLastRecordAt = new Map<string, number>()
+  /**
+   * The resolve requests in flight against each registry, with when the
+   * registry last delivered a record: the grace a lookup gives the stream
+   * is measured from there, and it is set when the request is sent, so
+   * a registry with a request in flight always has a time.
+   */
+  #resolveInflight = new Map<
+    string,
+    { requests: Set<Promise<void>>; lastRecordAt: number }
+  >()
   /**
    * each request in flight, by its `#resolveSent` key: its controller and
    * how many builds are still reading it. a request that settled on its
@@ -1236,21 +1239,24 @@ export class PackageInfoClient {
 
     const owner = { controller: new AbortController(), readers: 1 }
     this.#resolveOwners.set(sent, owner)
+    let inflight = this.#resolveInflight.get(registry)
+    if (!inflight) {
+      inflight = { requests: new Set(), lastRecordAt: 0 }
+      this.#resolveInflight.set(registry, inflight)
+    }
     // the stream's grace runs from the moment it is asked for
-    this.#resolveLastRecordAt.set(registry, Date.now())
+    inflight.lastRecordAt = Date.now()
     const promise = this.#runResolve(
       registry,
       request,
       owner.controller.signal,
+      inflight,
     )
-    let inflight = this.#resolveInflight.get(registry)
-    if (!inflight)
-      this.#resolveInflight.set(registry, (inflight = new Set()))
-    inflight.add(promise)
+    inflight.requests.add(promise)
     // dropped once settled, so manifest() stops waiting on a request that
     // has already delivered everything it is going to
     const clear = () => {
-      inflight.delete(promise)
+      inflight.requests.delete(promise)
       // a request released and asked again is a new owner by now
       if (this.#resolveOwners.get(sent) === owner)
         this.#resolveOwners.delete(sent)
@@ -1280,6 +1286,7 @@ export class PackageInfoClient {
     registry: string,
     request: ResolveRequest,
     signal: AbortSignal,
+    inflight: { lastRecordAt: number },
   ): Promise<void> {
     try {
       if ((await this.capabilities(registry)).resolve === undefined)
@@ -1290,7 +1297,7 @@ export class PackageInfoClient {
         registry,
         request,
         record => {
-          this.#resolveLastRecordAt.set(registry, Date.now())
+          inflight.lastRecordAt = Date.now()
           // A resolve record is a vlt manifest: `dist.tarball` is the
           // tarball's basename, resolved against the package's `/-/`
           // directory like a v2 packument's, and a tarball without a hash
@@ -1350,7 +1357,7 @@ export class PackageInfoClient {
     fetch: () => Promise<Manifest>,
   ): Promise<Manifest | undefined> {
     const inflight = this.#resolveInflight.get(registry)
-    if (!inflight?.size) return undefined
+    if (!inflight?.requests.size) return undefined
 
     let wake!: (manifest: Manifest) => void
     const arrival = new Promise<Manifest | undefined>(res => {
@@ -1360,11 +1367,10 @@ export class PackageInfoClient {
     if (!waiters) this.#resolveWaiters.set(key, (waiters = new Set()))
     waiters.add(wake)
 
-    const settled = Promise.all([...inflight]).then(() =>
+    const settled = Promise.all([...inflight.requests]).then(() =>
       this.#resolvedManifests.get(key),
     )
-    const quietFor =
-      Date.now() - (this.#resolveLastRecordAt.get(registry) ?? 0)
+    const quietFor = Date.now() - inflight.lastRecordAt
     const grace = Math.max(0, resolveWaitMs() - quietFor)
     try {
       const early = await Promise.race([
@@ -1384,9 +1390,14 @@ export class PackageInfoClient {
       ])
       if (outcome) return outcome
       // the hedge failed first, or the stream settled without the key:
-      // the stream's verdict decides, and failing that, the hedge's
-      const found = await Promise.race([arrival, settled])
-      return found ?? (await hedge)
+      // the stream gets one more grace to contradict the failure, and
+      // failing that, the failure is the answer
+      const found = await Promise.race([
+        arrival,
+        settled,
+        setTimeout(resolveWaitMs(), graceOver, { ref: false }),
+      ])
+      return found && found !== graceOver ? found : await hedge
     } finally {
       waiters.delete(wake)
       if (!waiters.size) this.#resolveWaiters.delete(key)

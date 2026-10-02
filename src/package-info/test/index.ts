@@ -5421,8 +5421,10 @@ t.test('prefetchResolve', async t => {
     t.ok(Date.now() - start < 500, 'before the stream settled')
   })
 
-  t.test('a failed hedge waits for the stream', async t => {
-    // the per-name path 404s this name, which the stream delivers later
+  t.test('a failed hedge waits one grace for the stream', async t => {
+    // the per-name path 404s this name, which the stream delivers 600ms
+    // in: after the 400ms grace the hedge fires and fails at once, and
+    // the stream has one more grace to contradict it
     const nope = [{ name: 'nope', spec: '^1.0.0' }]
     resolveRecords = [
       {
@@ -5433,15 +5435,44 @@ t.test('prefetchResolve', async t => {
       },
       { end: true, status: 200, returned: 1, unresolved: 0 },
     ]
-    resolveHoldMs = 300
+    resolveHoldMs = 600
     t.intercept(process, 'env', {
-      value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '0' },
+      value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '400' },
     })
     const pi = freshClient(t)
     pi.prefetchResolve(defaultRegistry, { roots: nope })
     const mani = (await pi.manifest('nope@^1.0.0')) as Manifest
     t.strictSame(mani, { name: 'nope', version: '1.0.0' })
   })
+
+  t.test(
+    'a failed hedge is the answer after one more grace',
+    async t => {
+      // the stream stays open far longer than the grace, and never carries
+      // this key; the 404 is not held back for it
+      const nope = [{ name: 'nope', spec: '^1.0.0' }]
+      resolveRecords = [
+        { end: true, status: 200, returned: 0, unresolved: 1 },
+      ]
+      resolveHoldMs = 2000
+      t.intercept(process, 'env', {
+        value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '50' },
+      })
+      const pi = freshClient(t)
+      const release = pi.prefetchResolve(defaultRegistry, {
+        roots: nope,
+      })
+      const start = Date.now()
+      await t.rejects(pi.manifest('nope@^1.0.0'), {
+        cause: { response: { statusCode: 404 } },
+      })
+      t.ok(
+        Date.now() - start < 1000,
+        'well before the stream settled',
+      )
+      release()
+    },
+  )
 
   t.test(
     'a failed hedge is the answer once the stream settles',
