@@ -176,9 +176,11 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   }
 
 /**
- * How long `manifest()` gives an in-flight resolve to deliver a key before
- * fetching the packument as well. The stream is still read after that: the
- * lookup takes whichever answers first.
+ * How long a resolve stream may go without delivering a record before a
+ * lookup fetches the packument as well. A stream that is delivering gets
+ * this long to carry the key; one that has already been quiet for this long
+ * gets no more. The stream is still read after that: the lookup takes
+ * whichever answers first.
  */
 const resolveWaitMs = (): number => {
   const configured = Number(process.env.VLT_BATCH_RESOLVE_WAIT_MS)
@@ -355,6 +357,9 @@ export class PackageInfoClient {
   // stream ends. The requests overlap whatever the graph build does before
   // it asks for its first manifest.
   #resolveInflight = new Map<string, Set<Promise<void>>>()
+  // when each registry's resolve last delivered a record, by registry: the
+  // grace a lookup gives the stream is measured from here
+  #resolveLastRecordAt = new Map<string, number>()
   /**
    * each request in flight, by its `#resolveSent` key: its controller and
    * how many builds are still reading it. a request that settled on its
@@ -1231,6 +1236,8 @@ export class PackageInfoClient {
 
     const owner = { controller: new AbortController(), readers: 1 }
     this.#resolveOwners.set(sent, owner)
+    // the stream's grace runs from the moment it is asked for
+    this.#resolveLastRecordAt.set(registry, Date.now())
     const promise = this.#runResolve(
       registry,
       request,
@@ -1283,6 +1290,7 @@ export class PackageInfoClient {
         registry,
         request,
         record => {
+          this.#resolveLastRecordAt.set(registry, Date.now())
           // A resolve record is a vlt manifest: `dist.tarball` is the
           // tarball's basename, resolved against the package's `/-/`
           // directory like a v2 packument's, and a tarball without a hash
@@ -1328,8 +1336,10 @@ export class PackageInfoClient {
    * The manifest for `key` from an in-flight resolve, or from `fetch` when
    * the resolve is not carrying it. Undefined when nothing is in flight.
    *
-   * The stream gets a short grace to deliver the key, since its records
-   * come in the order the build asks for them. After that `fetch` runs as
+   * A stream that is delivering gets a short grace to carry the key, since
+   * its records come in the order the build asks for them; one that has
+   * gone quiet gets none, so a server that is slow to start never charges
+   * that grace to every level of the build. After the grace `fetch` runs as
    * well and the first answer wins, so a slow server can never hold a
    * lookup longer than fetching the packument would have. A fetch that
    * fails while the stream is still open waits for the stream's verdict.
@@ -1353,12 +1363,15 @@ export class PackageInfoClient {
     const settled = Promise.all([...inflight]).then(() =>
       this.#resolvedManifests.get(key),
     )
+    const quietFor =
+      Date.now() - (this.#resolveLastRecordAt.get(registry) ?? 0)
+    const grace = Math.max(0, resolveWaitMs() - quietFor)
     try {
       const early = await Promise.race([
         arrival,
         settled,
         // unref'd: a pending wait must never be what keeps the process up
-        setTimeout(resolveWaitMs(), graceOver, { ref: false }),
+        setTimeout(grace, graceOver, { ref: false }),
       ])
       if (early !== graceOver) return early ?? (await fetch())
 
