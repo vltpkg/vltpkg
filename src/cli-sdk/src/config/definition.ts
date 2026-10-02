@@ -38,6 +38,7 @@ const canonicalCommands = {
   logout: 'logout',
   list: 'list',
   ls: 'ls',
+  outdated: 'outdated',
   pack: 'pack',
   ping: 'ping',
   pkg: 'pkg',
