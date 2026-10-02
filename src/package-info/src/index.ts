@@ -176,21 +176,19 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
   }
 
 /**
- * How long `manifest()` waits on an in-flight resolve that is not delivering
- * anything before fetching the packument itself. A stream that keeps
- * delivering records is waited on for as long as it does; one that goes
- * quiet for this long is left to finish on its own.
+ * How long `manifest()` gives an in-flight resolve to deliver a key before
+ * fetching the packument as well. The stream is still read after that: the
+ * lookup takes whichever answers first.
  */
 const resolveWaitMs = (): number => {
   const configured = Number(process.env.VLT_BATCH_RESOLVE_WAIT_MS)
   return Number.isFinite(configured) && configured >= 0 ?
       configured
-    : 1000
+    : 250
 }
 
-// what a resolve wait's timer resolves to, so it cannot be mistaken for a
-// manifest
-const stalled = Symbol('stalled')
+// what the grace timer resolves to, so it cannot be mistaken for a manifest
+const graceOver = Symbol('graceOver')
 
 // request options that change which manifest is picked, or how; a batch
 // entry never went through pickManifest under them, so they bypass it
@@ -377,10 +375,6 @@ export class PackageInfoClient {
     string,
     Set<(manifest: Manifest) => void>
   >()
-  // When each registry's resolve last delivered a record, which is what a
-  // waiter checks to tell a stream that is still coming from one that has
-  // stalled.
-  #resolveLastRecordAt = new Map<string, number>()
 
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
@@ -1284,13 +1278,11 @@ export class PackageInfoClient {
       if ((await this.capabilities(registry)).resolve === undefined)
         return
       const client = await this.getRegistryClient()
-      this.#resolveLastRecordAt.set(registry, Date.now())
       await fetchResolve(
         client,
         registry,
         request,
         record => {
-          this.#resolveLastRecordAt.set(registry, Date.now())
           // A resolve record is a vlt manifest: `dist.tarball` is the
           // tarball's basename, resolved against the package's `/-/`
           // directory like a v2 packument's, and a tarball without a hash
@@ -1333,17 +1325,19 @@ export class PackageInfoClient {
   }
 
   /**
-   * The manifest an in-flight resolve is expected to carry for `key`, or
-   * undefined once waiting stopped being worth it: every request settled
-   * without the key, or no record of any kind arrived for a whole wait.
+   * The manifest for `key` from an in-flight resolve, or from `fetch` when
+   * the resolve is not carrying it. Undefined when nothing is in flight.
    *
-   * A stream that is still delivering is worth waiting on, since its records
-   * come in the order the build needs them; one that has stalled is not, and
-   * the packument fetch was the alternative anyway.
+   * The stream gets a short grace to deliver the key, since its records
+   * come in the order the build asks for them. After that `fetch` runs as
+   * well and the first answer wins, so a slow server can never hold a
+   * lookup longer than fetching the packument would have. A fetch that
+   * fails while the stream is still open waits for the stream's verdict.
    */
   async #awaitResolved(
     registry: string,
     key: string,
+    fetch: () => Promise<Manifest>,
   ): Promise<Manifest | undefined> {
     const inflight = this.#resolveInflight.get(registry)
     if (!inflight?.size) return undefined
@@ -1359,20 +1353,27 @@ export class PackageInfoClient {
     const settled = Promise.all([...inflight]).then(() =>
       this.#resolvedManifests.get(key),
     )
-    const waitMs = resolveWaitMs()
     try {
-      for (;;) {
-        const outcome = await Promise.race([
-          arrival,
-          settled,
-          // unref'd: a pending wait must never be what keeps the process up
-          setTimeout(waitMs, stalled, { ref: false }),
-        ])
-        if (outcome !== stalled) return outcome
-        const lastRecordAt =
-          this.#resolveLastRecordAt.get(registry) ?? 0
-        if (Date.now() - lastRecordAt >= waitMs) return undefined
-      }
+      const early = await Promise.race([
+        arrival,
+        settled,
+        // unref'd: a pending wait must never be what keeps the process up
+        setTimeout(resolveWaitMs(), graceOver, { ref: false }),
+      ])
+      if (early !== graceOver) return early ?? (await fetch())
+
+      debug('resolve hedge %s', key)
+      const hedge = fetch()
+      const outcome = await Promise.race([
+        arrival,
+        settled,
+        hedge.catch(() => undefined),
+      ])
+      if (outcome) return outcome
+      // the hedge failed first, or the stream settled without the key:
+      // the stream's verdict decides, and failing that, the hedge's
+      const found = await Promise.race([arrival, settled])
+      return found ?? (await hedge)
     } finally {
       waiters.delete(wake)
       if (!waiters.size) this.#resolveWaiters.delete(key)
@@ -1445,42 +1446,43 @@ export class PackageInfoClient {
           }
         }
 
-        // Nothing local: give the in-flight resolve a bounded moment to
-        // deliver this one key rather than fetching a packument for a
-        // manifest that is probably already on its way.
+        const fromPackument = async (): Promise<Manifest> => {
+          const mani = pickManifest(
+            await this.#packument(f, options, this.#stable(f)),
+            spec,
+            options,
+          )
+          if (!mani) throw this.#resolveError(spec, options)
+
+          // Cache the manifest data. Skip paths already written this
+          // run — first writer wins, avoiding duplicate serialization
+          // and racing writers for the same path.
+          if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
+            this.#manifestWritePaths.add(cachePath)
+            const vlt = this.#vltPackuments.has(
+              `${f.registry}${f.name}`,
+            )
+            void this.#writeManifestCache(
+              cachePath,
+              JSON.stringify(
+                vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
+              ),
+            )
+          }
+          return mani
+        }
+
+        // Nothing local: the in-flight resolve is probably carrying this
+        // key, so it gets a moment before the packument is fetched too
         if (!selecting && f.registry) {
-          const arrived = await this.#awaitResolved(
+          const resolved = await this.#awaitResolved(
             f.registry,
             resolveKey,
+            fromPackument,
           )
-          if (arrived) return arrived
-          debug('resolve miss %s', resolveKey)
+          if (resolved) return resolved
         }
-
-        const mani = pickManifest(
-          await this.#packument(f, options, this.#stable(f)),
-          spec,
-          options,
-        )
-        if (!mani) throw this.#resolveError(spec, options)
-
-        // Cache the manifest data. Skip paths already written this
-        // run — first writer wins, avoiding duplicate serialization
-        // and racing writers for the same path.
-        if (cachePath && !this.#manifestWritePaths.has(cachePath)) {
-          this.#manifestWritePaths.add(cachePath)
-          const vlt = this.#vltPackuments.has(
-            `${f.registry}${f.name}`,
-          )
-          void this.#writeManifestCache(
-            cachePath,
-            JSON.stringify(
-              vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
-            ),
-          )
-        }
-
-        return mani
+        return fromPackument()
       }
 
       case 'git': {
