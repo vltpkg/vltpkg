@@ -601,11 +601,18 @@ export class Node implements NodeLike {
 
 /**
  * Copy the tarball metadata `to` is missing from another node for the
- * same package version. Lockfile provenance only carries over once both
- * `integrity` and `resolved` are set, since that pair is what makes it
- * usable without refetching.
+ * same package version. `integrity` is one artifact's hash, so it never
+ * crosses onto a node bound for the other kind of tarball: a node with
+ * no metadata of its own takes `from`'s kind along with it, one that
+ * already has a url or a hash only fills in what matches its own.
+ * Lockfile provenance only carries over once both `integrity` and
+ * `resolved` are set, since that pair is what makes it usable without
+ * refetching.
  */
 export const copyPackageMetadata = (to: Node, from: Node) => {
+  if (!from.integrity && !from.resolved) return
+  if (!to.integrity && !to.resolved) to.brotli = from.brotli
+  if (to.brotli !== from.brotli) return
   to.integrity ??= from.integrity
   to.resolved ??= from.resolved
   if (from.resolvedFromLockfile && to.integrity && to.resolved) {

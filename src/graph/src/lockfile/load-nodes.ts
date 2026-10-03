@@ -9,6 +9,7 @@ import {
   getBuildStateFromNum,
 } from './types.ts'
 import type { LockfileData, LockfileNode } from './types.ts'
+import { tarballFormat } from '@vltpkg/types'
 import type { DepID } from '@vltpkg/dep-id'
 import type { GraphLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
@@ -124,9 +125,17 @@ export const loadNodes = (
     // node whose `resolved` the lockfile left out
     node.brotli = brotli
     node.integrity = integrity ?? referenceNode?.integrity
+    // `integrity` is the hash of the artifact `resolved` points at, so a
+    // reference url only stands in for an elided one when it names the
+    // kind of tarball the flag bit says the lockfile's own hash is for
+    const refResolved = referenceNode?.resolved
+    const refResolvedUsable =
+      !integrity ||
+      !refResolved ||
+      (tarballFormat(refResolved) === 'brotli') === brotli
     node.resolved =
       type === 'remote' ? filepath : (
-        (resolved ?? referenceNode?.resolved)
+        (resolved ?? (refResolvedUsable ? refResolved : undefined))
       )
     node.resolvedFromLockfile = !!(node.integrity && node.resolved)
     node.projectRoot = graph.projectRoot
