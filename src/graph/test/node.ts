@@ -5,6 +5,7 @@ import { resolve } from 'node:path'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
+import { getFlagNumFromNode } from '../src/lockfile/types.ts'
 import {
   asNode,
   copyPackageMetadata,
@@ -999,5 +1000,42 @@ t.test('copyPackageMetadata', async t => {
   t.notOk(
     partial.resolvedFromLockfile,
     'provenance needs integrity and resolved',
+  )
+
+  // a lockfile node for the .tar.br, with its hash but no url, next to
+  // a copy of the same version built from a manifest without alternates
+  const locked = mk({ brotli: true, integrity: 'sha512-br' })
+  const fromDisk = new Node(opts, id, {
+    name: 'foo',
+    version: '1.0.0',
+  })
+  t.equal(fromDisk.brotli, false, 'no alternate in the manifest')
+  copyPackageMetadata(fromDisk, locked)
+  t.equal(fromDisk.integrity, 'sha512-br', 'takes the hash')
+  t.equal(fromDisk.brotli, true, 'and the kind of tarball it is for')
+  fromDisk.setResolved()
+  t.equal(
+    fromDisk.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tar.br',
+    'resolves to the artifact the hash belongs to',
+  )
+  t.equal(getFlagNumFromNode(fromDisk) & 4, 4, 'saves the brotli bit')
+
+  const gz = mk({ resolved: 'https://x/foo.tgz' })
+  copyPackageMetadata(gz, locked)
+  t.equal(
+    gz.integrity,
+    undefined,
+    'a .tgz url never takes a .tar.br hash',
+  )
+  t.equal(gz.brotli, false, 'and keeps its kind')
+
+  const untouched = mk()
+  untouched.brotli = true
+  copyPackageMetadata(untouched, mk())
+  t.equal(
+    untouched.brotli,
+    true,
+    'nothing to copy leaves the kind alone',
   )
 })
