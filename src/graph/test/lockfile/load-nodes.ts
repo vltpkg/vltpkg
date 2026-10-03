@@ -1,6 +1,7 @@
 import t from 'tap'
 import { loadNodes } from '../../src/lockfile/load-nodes.ts'
 import { Graph } from '../../src/graph.ts'
+import { lockfileData } from '../../src/lockfile/save.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { LockfileData } from '../../src/index.ts'
 
@@ -940,3 +941,75 @@ t.test('rejects broken lockfile data', async t => {
     'the id is the store directory name',
   )
 })
+
+t.test(
+  'reference node resolved to the other kind of tarball',
+  async t => {
+    const options = {
+      registry: 'https://registry.npmjs.org/',
+      registries: { npm: 'https://registry.npmjs.org/' },
+    }
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const alphaId = joinDepIDTuple(['registry', '', 'alpha@1.0.0'])
+    const betaId = joinDepIDTuple(['registry', '', 'beta@1.0.0'])
+    const tgz = (name: string) =>
+      `https://registry.npmjs.org/${name}/-/${name}-1.0.0.tgz`
+    const br = (name: string) =>
+      `https://registry.npmjs.org/${name}/-/${name}-1.0.0.tar.br`
+
+    // an actual graph whose install used the .tgz of both packages
+    const actual = new Graph({
+      ...options,
+      mainManifest,
+      projectRoot: t.testdirName,
+    })
+    for (const [id, name] of [
+      [alphaId, 'alpha'],
+      [betaId, 'beta'],
+    ] as const) {
+      const node = actual.addNode(id, { name, version: '1.0.0' })
+      node.integrity = `sha512-tgz-${name}`
+      node.resolved = tgz(name)
+    }
+
+    const graph = new Graph({
+      ...options,
+      mainManifest,
+      projectRoot: t.testdirName,
+    })
+    loadNodes(
+      graph,
+      {
+        // the lockfile pins the .tar.br by hash, url elided
+        [alphaId]: [4, 'alpha', 'sha512-br-alpha'],
+        // no hash of its own, so the reference pair is taken as a whole
+        [betaId]: [4, 'beta'],
+      } as LockfileData['nodes'],
+      options,
+      actual,
+    )
+
+    const alpha = graph.nodes.get(alphaId)!
+    t.equal(
+      alpha.integrity,
+      'sha512-br-alpha',
+      'keeps the lockfile hash',
+    )
+    t.equal(
+      alpha.resolved,
+      br('alpha'),
+      'rebuilds the url for that hash',
+    )
+    t.equal(alpha.brotli, true)
+    t.equal(alpha.resolvedFromLockfile, false)
+
+    const beta = graph.nodes.get(betaId)!
+    t.equal(beta.integrity, 'sha512-tgz-beta', 'reference hash')
+    t.equal(beta.resolved, tgz('beta'), 'with the url it belongs to')
+    t.equal(beta.brotli, false)
+
+    const { nodes } = lockfileData({ ...options, graph })
+    t.equal(nodes[alphaId]![0] & 4, 4, 'saved with the brotli bit')
+    t.equal(nodes[betaId]![0] & 4, 0, 'saved without it')
+  },
+)
