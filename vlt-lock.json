@@ -32,7 +32,8 @@
     },
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/"
+      "npm": "https://registry.npmjs.org/",
+      "main": "https://registry.vlt.io/vltpkg/main/"
     }
   },
   "nodes": {
@@ -1429,12 +1430,14 @@
     "workspace~src+cli-sdk @vltpkg/output": "prod workspace:* workspace~src+output",
     "workspace~src+cli-sdk @vltpkg/package-info": "prod workspace:* workspace~src+package-info",
     "workspace~src+cli-sdk @vltpkg/package-json": "prod workspace:* workspace~src+package-json",
+    "workspace~src+cli-sdk @vltpkg/pick-manifest": "prod workspace:* workspace~src+pick-manifest",
     "workspace~src+cli-sdk @vltpkg/promise-spawn": "prod workspace:* workspace~src+promise-spawn",
     "workspace~src+cli-sdk @vltpkg/query": "prod workspace:* workspace~src+query",
     "workspace~src+cli-sdk @vltpkg/registry-client": "prod workspace:* workspace~src+registry-client",
     "workspace~src+cli-sdk @vltpkg/rollback-remove": "prod workspace:* workspace~src+rollback-remove",
     "workspace~src+cli-sdk @vltpkg/run": "prod workspace:* workspace~src+run",
     "workspace~src+cli-sdk @vltpkg/security-archive": "prod workspace:* workspace~src+security-archive",
+    "workspace~src+cli-sdk @vltpkg/semver": "prod workspace:* workspace~src+semver",
     "workspace~src+cli-sdk @vltpkg/spec": "prod workspace:* workspace~src+spec",
     "workspace~src+cli-sdk @vltpkg/tar": "prod workspace:* workspace~src+tar",
     "workspace~src+cli-sdk @vltpkg/types": "prod workspace:* workspace~src+types",
