@@ -4507,6 +4507,7 @@ t.test('late parse failure refetches packument', async t => {
   const result = await pi.packument('badjson')
   t.equal(calls, 2)
   t.equal(result.name, 'badjson')
+  await rc.cache.promise()
 })
 
 t.test('packument parse failure retries once', async t => {
@@ -4529,6 +4530,7 @@ t.test('packument parse failure retries once', async t => {
 
   await t.rejects(pi.packument('badjson-forever'))
   t.equal(calls, 2, 'does not retry twice')
+  await rc.cache.promise()
 })
 
 t.test('no registry configured', async t => {
@@ -4544,8 +4546,19 @@ t.test('no registry configured', async t => {
 })
 
 t.test('tarballs labelled with a digest', async t => {
-  const pi = () =>
-    new PackageInfoClient({ ...options, cache: t.testdir() })
+  const clients: PackageInfoClient[] = []
+  const pi = () => {
+    const c = new PackageInfoClient({
+      ...options,
+      cache: t.testdir(),
+    })
+    clients.push(c)
+    return c
+  }
+  t.teardown(async () => {
+    for (const c of clients)
+      await (await c.getRegistryClient()).cache.promise()
+  })
   const integrity = `sha512-${tgzAbbrevSha512}`
 
   t.test(
@@ -4715,8 +4728,20 @@ t.test('tarballs labelled with a digest', async t => {
 })
 
 t.test('v2 packuments carry tarball basenames', async t => {
-  const pi = (o?: PackageInfoClientOptions) =>
-    new PackageInfoClient({ ...options, cache: t.testdir(), ...o })
+  const clients: PackageInfoClient[] = []
+  const pi = (o?: PackageInfoClientOptions) => {
+    const c = new PackageInfoClient({
+      ...options,
+      cache: t.testdir(),
+      ...o,
+    })
+    clients.push(c)
+    return c
+  }
+  t.teardown(async () => {
+    for (const c of clients)
+      await (await c.getRegistryClient()).cache.promise()
+  })
   const tgzURL = `${defaultRegistry}v2/-/v2-1.0.0.tgz`
 
   t.test(
@@ -4767,8 +4792,20 @@ t.test('v2 packuments carry tarball basenames', async t => {
 })
 
 t.test('brotli tarballs', async t => {
-  const pi = (o?: PackageInfoClientOptions) =>
-    new PackageInfoClient({ ...options, cache: t.testdir(), ...o })
+  const clients: PackageInfoClient[] = []
+  const pi = (o?: PackageInfoClientOptions) => {
+    const c = new PackageInfoClient({
+      ...options,
+      cache: t.testdir(),
+      ...o,
+    })
+    clients.push(c)
+    return c
+  }
+  t.teardown(async () => {
+    for (const c of clients)
+      await (await c.getRegistryClient()).cache.promise()
+  })
   const brURL = `${defaultRegistry}brotli/-/brotli-1.0.0.tar.br`
   const tgzURL = `${defaultRegistry}brotli/-/brotli-1.0.0.tgz`
 
