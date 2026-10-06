@@ -91,7 +91,7 @@ jobs:
 
             // Define fixture and variation values from the strategy matrix
             const fixtures = ["vue"];
-            const variations = ["cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"];
+            const variations = ["cache", "cache-lockfile", "cache-lockfile-node-modules", "clean", "lockfile"];
 
             const consolidatedResults = {
               results: []
