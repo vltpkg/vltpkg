@@ -480,10 +480,8 @@ export class PackageInfoClient {
     const linker = options['store-linker']
     this.#storeLinker =
       linker && storeLinkers.has(linker) ? linker : 'unpack'
-    // optionally create its cache directory if it doesn't exist
-    void mkdir(pathResolve(this.#cachePath, 'package-info'), {
-      recursive: true,
-    }).catch(() => {})
+    // no eager mkdir here: an un-awaited fs op races cache dir
+    // removal; #writeManifestCache creates package-info/ lazily
   }
 
   async extract(

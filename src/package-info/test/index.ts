@@ -3537,7 +3537,7 @@ t.test('cache manifests', async t => {
     // Use specific version - should cache after
     const mani2 = await pi.manifest('abbrev@2.0.0')
     t.strictSame(mani2, pakuAbbrev.versions['2.0.0'])
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise(resolve => setTimeout(resolve, 100))
     const filesAfter = await readdir(
       pathResolve(xdgDir, 'package-info'),
     )
@@ -3776,6 +3776,20 @@ t.test('cache manifests', async t => {
     ).catch(() => [])
     t.equal(filesAfter.length, 1, 'cache directory was created')
   })
+
+  await t.test(
+    'constructor does not create the cache dir',
+    async t => {
+      const cache = pathResolve(t.testdir(), 'cache')
+      t.type(
+        new PackageInfoClient({ ...opts, cache }),
+        PackageInfoClient,
+      )
+      // ctor work is not awaitable: give any stray fs op time to land
+      await new Promise(resolve => setTimeout(resolve, 100))
+      t.equal(existsSync(cache), false, 'no cache dir created')
+    },
+  )
 
   await t.test('expired cache entry', async t => {
     // clean up current cache directory
