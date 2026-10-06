@@ -348,6 +348,13 @@ export class PackageInfoClient {
   // needed. entries are removed when the on-disk file is invalidated
   // so the refreshed manifest can be written again.
   #manifestWritePaths = new Set<string>()
+  // Concurrent manifest lookups often ask for the same cache file in the
+  // same turn. Share that disk read and parse, then give each caller its
+  // own copy because manifests are mutable.
+  #manifestCacheReads = new Map<
+    string,
+    Promise<Manifest | undefined>
+  >()
 
   // Manifests a resolve batch delivered, keyed both as
   // `${registry}${name}@${range}` for every spec that chose a version and
@@ -1017,6 +1024,52 @@ export class PackageInfoClient {
     }
   }
 
+  /** Read and validate a cache file once while concurrent callers wait. */
+  async #readManifestCache(
+    cachePath: string,
+    spec: Spec,
+  ): Promise<Manifest | undefined> {
+    let read = this.#manifestCacheReads.get(cachePath)
+    if (!read) {
+      read = (async () => {
+        try {
+          const [st, cached] = await Promise.all([
+            stat(cachePath),
+            readFile(cachePath, 'utf8'),
+          ])
+          const json = JSON.parse(cached) as Manifest & {
+            __VLT_MANIFEST_CACHE_TIMESTAMP?: number
+            __VLT_PACKUMENT?: boolean
+          }
+          if (
+            st.mtimeMs < this.#manifestCacheMinAge ||
+            json.__VLT_MANIFEST_CACHE_TIMESTAMP !== undefined
+          ) {
+            this.#manifestWritePaths.delete(cachePath)
+            void unlink(cachePath).catch(() => {})
+            return
+          }
+          if (json.__VLT_PACKUMENT) {
+            const f = spec.final
+            this.#vltPackuments.add(`${f.registry}${f.name}`)
+            delete json.__VLT_PACKUMENT
+          }
+          return json
+        } catch {
+          // Missing, expired, or invalid cache entries are cache misses.
+          return
+        }
+      })()
+      this.#manifestCacheReads.set(cachePath, read)
+      void read.finally(() => {
+        if (this.#manifestCacheReads.get(cachePath) === read)
+          this.#manifestCacheReads.delete(cachePath)
+      })
+    }
+    const manifest = await read
+    return manifest && structuredClone(manifest)
+  }
+
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -1434,40 +1487,11 @@ export class PackageInfoClient {
         // Check if manifest is cached, if so just return it earlier
         const cachePath = this._manifestCachePath(spec, options)
         if (cachePath) {
-          try {
-            // Cache file exists, read and return it. Freshness is
-            // tracked via the file's mtime, so the file content is
-            // the manifest, plus a marker when it came from a vlt
-            // packument, and can be returned as parsed.
-            const [st, cached] = await Promise.all([
-              stat(cachePath),
-              readFile(cachePath, 'utf8'),
-            ])
-            const json = JSON.parse(cached) as Manifest & {
-              __VLT_MANIFEST_CACHE_TIMESTAMP?: number
-              __VLT_PACKUMENT?: boolean
-            }
-            // removes the cache file if older than its maximum age.
-            // entries written by older clients embed a timestamp in
-            // the manifest itself; treat those as expired so they get
-            // rewritten in the mtime-tracked format.
-            if (
-              st.mtimeMs < this.#manifestCacheMinAge ||
-              json.__VLT_MANIFEST_CACHE_TIMESTAMP !== undefined
-            ) {
-              this.#manifestWritePaths.delete(cachePath)
-              void unlink(cachePath).catch(() => {})
-              throw new Error('manifest cache expired')
-            }
-            // the tarball digest stays required across processes
-            if (json.__VLT_PACKUMENT) {
-              this.#vltPackuments.add(`${f.registry}${f.name}`)
-              delete json.__VLT_PACKUMENT
-            }
-            return json
-          } catch {
-            // Cache miss, fetch from packument
-          }
+          const cached = await this.#readManifestCache(
+            cachePath,
+            spec,
+          )
+          if (cached) return cached
         }
 
         const fromPackument = async (): Promise<Manifest> => {

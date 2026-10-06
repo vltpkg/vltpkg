@@ -17,6 +17,7 @@ jobs:
         fixture: ['vue']
         variation:
           [
+            'cache',
             'cache-lockfile',
             'cache-lockfile-node-modules',
             'clean',

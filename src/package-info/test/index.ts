@@ -3482,6 +3482,62 @@ t.test('cache manifests', async t => {
     },
   )
 
+  await t.test(
+    'concurrent cache hits share the read safely',
+    async t => {
+      const fs = await import('node:fs/promises')
+      let stats = 0
+      let reads = 0
+      const cacheDir = pathResolve(xdgDir, 'package-info')
+      const { PackageInfoClient: TrackedClient } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        'node:fs/promises': {
+          ...fs,
+          stat: async (...args: Parameters<typeof fs.stat>) => {
+            if (
+              typeof args[0] === 'string' &&
+              args[0].startsWith(cacheDir)
+            )
+              stats++
+            return fs.stat(...args)
+          },
+          readFile: async (
+            ...args: Parameters<typeof fs.readFile>
+          ) => {
+            if (
+              typeof args[0] === 'string' &&
+              args[0].startsWith(cacheDir)
+            )
+              reads++
+            return fs.readFile(...args)
+          },
+        },
+      })
+      const pi = new TrackedClient(opts)
+      const [mani1, mani2] = await Promise.all([
+        pi.manifest('abbrev@2.0.0'),
+        pi.manifest('abbrev@2.0.0'),
+      ])
+      t.strictSame(mani1, pakuAbbrev.versions['2.0.0'])
+      t.strictSame(mani2, pakuAbbrev.versions['2.0.0'])
+      t.not(
+        mani1,
+        mani2,
+        'callers receive independent manifest objects',
+      )
+
+      mani1.description = 'changed by one caller'
+      t.equal(
+        mani2.description,
+        pakuAbbrev.versions['2.0.0'].description,
+        'a caller mutation does not reach another caller',
+      )
+      t.equal(stats, 1, 'one stat checked the shared cache file')
+      t.equal(reads, 1, 'one read parsed the shared cache file')
+    },
+  )
+
   await t.test('caching skipped with before option', async t => {
     const filesBefore = await readdir(
       pathResolve(xdgDir, 'package-info'),
@@ -4783,11 +4839,10 @@ t.test('v2 packuments carry tarball basenames', async t => {
 
   t.test('extract verifies the digest', async t => {
     const dir = t.testdir()
-    const res = await pi({ cache: `${dir}/cache` }).extract(
-      'v2@1.0.0',
-      `${dir}/out`,
-    )
+    const client = pi({ cache: `${dir}/cache` })
+    const res = await client.extract('v2@1.0.0', `${dir}/out`)
     t.equal(res.integrity, `sha512-${tgzAbbrevSha512}`)
+    await (await client.getRegistryClient()).cache.promise()
   })
 })
 
@@ -4867,10 +4922,8 @@ t.test('brotli tarballs', async t => {
       // its url from the .tgz by convention -- so an alternate neither
       // of those can re-derive is left alone rather than mis-unpacked
       const dir = t.testdir()
-      const res = await pi({ cache: `${dir}/cache` }).extract(
-        'brotli-odd@1.0.0',
-        `${dir}/a`,
-      )
+      const client = pi({ cache: `${dir}/cache` })
+      const res = await client.extract('brotli-odd@1.0.0', `${dir}/a`)
       t.equal(
         res.resolved,
         `${defaultRegistry}brotli-odd/-/brotli-odd-1.0.0.tgz`,
@@ -4882,6 +4935,7 @@ t.test('brotli tarballs', async t => {
         'abbrev',
         'and it unpacked',
       )
+      await (await client.getRegistryClient()).cache.promise()
     },
   )
 
@@ -5137,15 +5191,19 @@ t.test('brotli tarballs', async t => {
 t.test('prefetchResolve', async t => {
   const roots = [{ name: 'abbrev', spec: '^2.0.0' }]
   const freshClient = (t: Test) => {
+    const holder: { client?: PackageInfoClient } = {}
+    // Flush the registry-client cache before tap removes the testdir,
+    // otherwise lingering file handles can cause ENOTEMPTY on macOS.
+    t.teardown(
+      async () =>
+        holder.client &&
+        (await holder.client.getRegistryClient()).cache.promise(),
+    )
     const pi = new PackageInfoClient({
       registry: defaultRegistry,
       cache: t.testdir(),
     })
-    // Flush the registry-client cache before tap removes the testdir,
-    // otherwise lingering file handles can cause ENOTEMPTY on macOS.
-    t.teardown(async () =>
-      (await pi.getRegistryClient()).cache.promise(),
-    )
+    holder.client = pi
     return pi
   }
   t.beforeEach(() => {
