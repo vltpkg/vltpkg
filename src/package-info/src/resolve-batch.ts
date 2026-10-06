@@ -1,5 +1,6 @@
 import type { RegistryClient } from '@vltpkg/registry-client'
 import type { Manifest } from '@vltpkg/types'
+import type { Registry } from './registry.ts'
 import { createInterface } from 'node:readline'
 
 /**
@@ -50,7 +51,7 @@ export type ResolveRecord = {
  */
 export const fetchResolve = async (
   client: RegistryClient,
-  registry: string,
+  registry: Registry,
   request: ResolveRequest,
   onRecord: (record: ResolveRecord) => void,
   signal?: AbortSignal,
@@ -60,7 +61,7 @@ export const fetchResolve = async (
   let body
   try {
     const response = await client.requestStream(
-      new URL('-/vlt/resolve', registry),
+      registry.resolve('-/vlt/resolve'),
       {
         // POST, not QUERY: CloudFront's allowed-method sets are fixed and
         // none includes QUERY. The registry answers both.
