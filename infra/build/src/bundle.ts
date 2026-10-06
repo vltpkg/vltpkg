@@ -15,7 +15,6 @@ import assert from 'node:assert'
 import { BINS_DIR, BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
 import { EOL } from 'node:os'
-import { Variants } from './variants.ts'
 
 export const CLI = dirname(
   createRequire(import.meta.url).resolve(
@@ -92,10 +91,7 @@ const addBinHashbangs: esbuild.Plugin = {
       async args => {
         const contents = await readFile(args.path, 'utf8')
         return {
-          contents: [
-            `#!/usr/bin/env -S node ${Variants.Bundle?.env?.NODE_OPTIONS}`.trim(),
-            contents,
-          ].join(EOL),
+          contents: [`#!/usr/bin/env node`, contents].join(EOL),
           loader: 'ts' as esbuild.Loader,
         }
       },
