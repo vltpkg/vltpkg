@@ -22,6 +22,7 @@ import { join } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Test } from 'tap'
+import { clientCache } from '../fixtures/client-cache.ts'
 import { load as loadActual } from '../../src/actual/load.ts'
 import type {
   AddImportersDependenciesMap,
@@ -138,7 +139,10 @@ const packageInfo = {
         return esbuildWin32X64Manifest
       case 'linked':
       case 'link':
-        return new PackageInfoClient(options).manifest(spec, options)
+        return new PackageInfoClient({
+          ...options,
+          cache: clientCache,
+        }).manifest(spec, options)
       default:
         return null
     }

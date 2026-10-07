@@ -29,6 +29,7 @@ import {
 } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import { extract } from 'tar'
+import { clientCache } from './client-cache.ts'
 
 // the `npm` alias is no longer a built-in default, so it must be
 // configured explicitly for `npm:` aliased specs to collapse to their
@@ -37,7 +38,8 @@ const specOptions = {
   registries: { npm: 'https://registry.npmjs.org/' },
 }
 
-const realPackageInfo = new PackageInfoClient(specOptions)
+const clientOptions = { ...specOptions, cache: clientCache }
+const realPackageInfo = new PackageInfoClient(clientOptions)
 export const fixtureDir = resolve(import.meta.dirname, 'reify')
 
 const fixtureMapFile = resolve(fixtureDir, 'map.json')
@@ -69,7 +71,7 @@ export const fixtureManifest = (name: string) =>
     ),
   )
 
-const actualPackageInfo = new PackageInfoClient(specOptions)
+const actualPackageInfo = new PackageInfoClient(clientOptions)
 
 export const mockPackageInfo = {
   resolve: async (
