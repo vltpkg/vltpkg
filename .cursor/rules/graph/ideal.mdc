@@ -25,7 +25,7 @@ Loads Virtual from `vlt-lock.json` (`lockfile.load()`), falls back to Actual (`a
 - Prunes satisfied deps via `remove-satisfied-specs.ts`
 - User `add`/`remove` overrides computed deltas
 - `refresh-ideal-graph.ts` orders importers, calls `appendNodes()` per importer
-- After expansion: `setDefaultLocation()`, `remove-nodes.ts`, `graph.gc()`
+- After expansion: `setDefaultLocation()`, `remove-nodes.ts`, `graph.gc()`, `graph.recomputeFlags()`
 
 ## Node Appending (`append-nodes.ts`)
 

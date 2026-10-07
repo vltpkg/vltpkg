@@ -8,7 +8,7 @@ import {
 } from '@vltpkg/semver'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
-import type { Manifest } from '@vltpkg/types'
+import type { Manifest, NormalizedManifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import {
@@ -1959,6 +1959,189 @@ t.test('a stale importer edge type is healed too', async t => {
   t.equal(edge?.to?.id, abbrevId, 'the target is untouched')
   t.equal(graph.lockfileStale, true, 'flagged for saving')
   t.equal(graph.nodes.size, 2, 'no node was added or removed')
+  t.equal(
+    graph.nodes.get(abbrevId)?.dev,
+    true,
+    'node flag follows the type',
+  )
+})
+
+t.test('dev/optional flags follow the remaining edges', async t => {
+  const root = joinDepIDTuple(['file', '.'])
+  const id = (name: string, version = '1.0.0') =>
+    joinDepIDTuple(['registry', '', `${name}@${version}`])
+  const stripId = id('strip-ansi', '7.1.0')
+  const ansiId = id('ansi-regex', '6.0.1')
+  const node = (
+    flags: number,
+    name: string,
+    version: string,
+    dependencies?: Record<string, string>,
+  ) => [
+    flags,
+    name,
+    null,
+    null,
+    null,
+    { name, version, dependencies },
+  ]
+  const noFetch = {
+    async manifest(spec: Spec) {
+      throw new Error(`unexpected manifest fetch: ${spec}`)
+    },
+  } as unknown as PackageInfoClient
+  const build = async (
+    t: Test,
+    mainManifest: NormalizedManifest,
+    nodes: Record<string, unknown>,
+    edges: Record<string, string>,
+    remove = new Map() as RemoveImportersDependenciesMap,
+  ) => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const common = {
+      ...configData,
+      projectRoot,
+      mainManifest,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      packageInfo: noFetch,
+    }
+    return buildIdealFromStartingGraph({
+      ...common,
+      graph: loadVirtual({
+        ...common,
+        lockfileData: {
+          lockfileVersion: 1,
+          options: configData,
+          nodes: nodes as Record<DepID, LockfileNode>,
+          edges: edges as LockfileEdges,
+        },
+      }),
+      add: new Map() as AddImportersDependenciesMap,
+      remove,
+      remover: new RollbackRemove(),
+    })
+  }
+  const devManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    devDependencies: { 'strip-ansi': '^7.1.0' },
+  }
+  const devNodes = {
+    [stripId]: node(2, 'strip-ansi', '7.1.0', {
+      'ansi-regex': '^6.0.1',
+    }),
+    [ansiId]: node(0, 'ansi-regex', '6.0.1'),
+  }
+  const devEdges = {
+    [`${root} strip-ansi`]: `dev ^7.1.0 ${stripId}`,
+    [`${stripId} ansi-regex`]: `prod ^6.0.1 ${ansiId}`,
+  }
+
+  await t.test(
+    'a removed prod edge restores the dev flag',
+    async t => {
+      const graph = await build(
+        t,
+        devManifest,
+        devNodes,
+        {
+          ...devEdges,
+          [`${root} ansi-regex`]: `prod ^6.0.0 ${ansiId}`,
+        },
+        Object.assign(new Map([[root, new Set(['ansi-regex'])]]), {
+          modifiedDependencies: true,
+        }),
+      )
+      t.notOk(
+        graph.mainImporter.edgesOut.get('ansi-regex'),
+        'edge gone',
+      )
+      const ansi = graph.nodes.get(ansiId)
+      t.equal(ansi?.dev, true, 'dev again')
+      t.equal(ansi?.optional, false, 'not optional')
+    },
+  )
+
+  await t.test('a stale dev flag heals without changes', async t => {
+    const graph = await build(t, devManifest, devNodes, devEdges)
+    t.equal(graph.nodes.get(ansiId)?.dev, true, 'dev again')
+    t.equal(graph.lockfileStale, true, 'flagged for saving')
+  })
+
+  await t.test('a stale optional flag heals too', async t => {
+    const graph = await build(
+      t,
+      {
+        name: 'my-project',
+        version: '1.0.0',
+        optionalDependencies: { o: '^1.0.0' },
+      },
+      {
+        [id('o')]: node(1, 'o', '1.0.0', { p: '^1.0.0' }),
+        [id('p')]: node(0, 'p', '1.0.0'),
+      },
+      {
+        [`${root} o`]: `optional ^1.0.0 ${id('o')}`,
+        [`${id('o')} p`]: `prod ^1.0.0 ${id('p')}`,
+      },
+    )
+    const p = graph.nodes.get(id('p'))
+    t.equal(p?.optional, true, 'optional again')
+    t.equal(p?.dev, false, 'not dev')
+    t.equal(graph.lockfileStale, true, 'flagged for saving')
+  })
+
+  await t.test('a clean build reusing a node via prod', async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { b: '^1.0.0', q: '^1.0.0' },
+      devDependencies: { a: '^1.0.0' },
+      optionalDependencies: { o: '^1.0.0' },
+    }
+    const deps: Record<string, string> = {
+      a: 'c',
+      b: 'd',
+      d: 'c',
+      o: 'p',
+      q: 'r',
+      r: 'p',
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const common = { ...configData, projectRoot, mainManifest }
+    const graph = await buildIdealFromStartingGraph({
+      ...common,
+      packageInfo: {
+        async manifest(spec: Spec) {
+          const dep = deps[spec.name]
+          return {
+            name: spec.name,
+            version: '1.0.0',
+            ...(dep && { dependencies: { [dep]: '^1.0.0' } }),
+          }
+        },
+      } as unknown as PackageInfoClient,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      graph: new Graph(common),
+      add: new Map() as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    t.equal(graph.nodes.get(id('c'))?.dev, false, 'c is prod')
+    t.equal(graph.nodes.get(id('p'))?.optional, false, 'p is prod')
+  })
 })
 
 t.test(

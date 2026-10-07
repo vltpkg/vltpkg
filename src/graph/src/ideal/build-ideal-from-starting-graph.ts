@@ -126,5 +126,7 @@ export const buildIdealFromStartingGraph = async (
     )
   }
 
+  options.graph.recomputeFlags()
+
   return options.graph
 }
