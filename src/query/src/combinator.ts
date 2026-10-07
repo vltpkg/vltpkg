@@ -1,5 +1,6 @@
 import { asCombinatorNode } from '@vltpkg/dss-parser'
 import { queryError } from './error.ts'
+import type { CombinatorName } from '@vltpkg/dss-parser'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { ParserState, ParserFn } from './types.ts'
 
@@ -104,7 +105,7 @@ const combinatorSelectors = {
   '>': childCombinator,
   '~': subsequentSiblingCombinator,
   ' ': descendentCombinator,
-}
+} satisfies Record<CombinatorName, ParserFn>
 
 const combinatorSelectorsMap = new Map<string, ParserFn>(
   Object.entries(combinatorSelectors),

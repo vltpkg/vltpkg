@@ -20,7 +20,7 @@ Parses DSS query strings into postcss-compatible AST nodes.
 - `isCommentNode(node)` — comments
 - `isPostcssNodeWithChildren(node)` — has child nodes
 
-**Key exports**: `parse(query)` → AST, type guards above, `asStringNode()`, `asTagNode()`, `asPostcssNodeWithChildren()`
+**Key exports**: `parse(query, { loose? })` → AST (throws `EQUERY` on invalid DSS unless loose), type guards above, `asStringNode()`, `asTagNode()`, `asPostcssNodeWithChildren()`
 
 ## DSS Breadcrumb (`@vltpkg/dss-breadcrumb`)
 

@@ -363,6 +363,24 @@ t.test('trying to use string selectors', async t => {
   )
 })
 
+t.test('malformed query syntax', async t => {
+  const graph = getSimpleGraph()
+  await t.rejects(
+    new Query({
+      nodes: new Set(graph.nodes.values()),
+      edges: graph.edges,
+      importers: graph.importers,
+      securityArchive: undefined,
+    }).search(':outdated(', mockSearchOptions),
+    {
+      name: 'SyntaxError',
+      message: 'Invalid query syntax: unexpected end of input',
+      cause: { code: 'EQUERY', found: ':outdated(' },
+    },
+    'should throw a query syntax error',
+  )
+})
+
 t.test('cancellable search', async t => {
   const graph = getSingleWorkspaceGraph()
   const query = new Query({
