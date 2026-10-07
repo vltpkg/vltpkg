@@ -612,6 +612,8 @@ t.test('integrity http header handling', async t => {
 })
 
 t.test('artifact with no expected integrity', async t => {
+  t.teardown(() => rc.drain())
+  t.teardown(() => again.drain())
   const dir = t.testdir()
   const rc = new RC({ cache: dir })
   const url = `${registryURL}/some/unlabelled/tarball`
@@ -643,6 +645,7 @@ const entryAt = (rc: RegistryClient, url: string) =>
   )
 
 t.test('an identity-encoded body is checked too', async t => {
+  t.teardown(() => rc.drain())
   const dir = t.testdir()
   const rc = new RC({ cache: dir })
   const url = `${registryURL}/plain/tarball`
@@ -704,6 +707,7 @@ t.test('a request error keeps its async callers', async t => {
 })
 
 t.test('an error body is not held to the expectation', async t => {
+  t.teardown(() => rc.drain())
   const dir = t.testdir()
   const rc = new RC({ cache: dir })
   const url = `${registryURL}/gone/tarball`
@@ -882,6 +886,8 @@ t.test('readCache: false', async t => {
 })
 
 t.test('a body served without a content-type', async t => {
+  t.teardown(() => rc.drain())
+  t.teardown(() => cold.drain())
   // the json sniff un-gzips such a body in memory before it is stored,
   // but the hash recorded is that of the bytes off the wire: the one a
   // lockfile can carry to a cold cache
@@ -954,6 +960,8 @@ t.test('only a body request() fetched is labelled', async t => {
 })
 
 t.test('verifyDigest', async t => {
+  t.teardown(() => rc.drain())
+  t.teardown(() => again.drain())
   const dir = t.testdir()
   const rc = new RC({ cache: dir })
   const actual: Integrity = `sha512-${createHash('sha512')
@@ -1154,6 +1162,8 @@ t.test('npm-session header', async t => {
 
   t.test('different clients have different sessions', async t => {
     const { RegistryClient: RC2 } = await mockIndex(t)
+    t.teardown(() => rc1.drain())
+    t.teardown(() => rc2.drain())
     const rc1 = new RC2({ cache: t.testdir() + '/a' })
     const rc2 = new RC2({ cache: t.testdir() + '/b' })
     // Both will make requests; the server verifies UUID format.
@@ -1473,6 +1483,7 @@ t.test('client.login() when the browser opener fails', async t => {
       },
     },
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   await rc.login(registryURL)
   await rc.cache.promise()
@@ -1846,6 +1857,7 @@ for (const [maxAge, force] of forcedCases) {
     `forceRevalidate falls back to cache when offline (max-age=${maxAge}, ${force})`,
     async t => {
       dropConnection = false
+      t.teardown(() => rc.drain())
       const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
       // port 1 is not listening, so agent.request throws
       const key = 'http://localhost:1/abbrev'
@@ -1871,6 +1883,7 @@ for (const [maxAge, force] of forcedCases) {
 
 t.test('an aborted forced revalidation still rejects', async t => {
   dropConnection = false
+  t.teardown(() => rc.drain())
   const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
   const key = 'http://localhost:1/abbrev'
   await seed(rc, key, '{"cached":true}', '"old-etag"', 300)
@@ -1963,6 +1976,7 @@ t.test('VLT_CACHE_MAX_SIZE', async t => {
     t.intercept(process, 'env', {
       value: { ...process.env, VLT_CACHE_MAX_SIZE: '50' },
     })
+    t.teardown(() => small.drain())
     const small = new RC({ cache: t.testdir() })
     const big = Buffer.alloc(100, 7)
     small.cache.set('k', big)
@@ -1981,6 +1995,7 @@ t.test('VLT_CACHE_MAX_SIZE', async t => {
       t.intercept(process, 'env', {
         value: { ...process.env, VLT_CACHE_MAX_SIZE: raw },
       })
+      t.teardown(() => fallback.drain())
       const fallback = new RC({ cache: t.testdir() })
       const tiny = Buffer.from('ok')
       fallback.cache.set('k', tiny)
@@ -1993,6 +2008,7 @@ t.test('VLT_CACHE_MAX_SIZE', async t => {
     t.intercept(process, 'env', {
       value: { ...process.env, VLT_CACHE_MAX_SIZE: '50.9' },
     })
+    t.teardown(() => floored.drain())
     const floored = new RC({ cache: t.testdir() })
     const over = Buffer.alloc(51, 1)
     floored.cache.set('k', over)
@@ -2104,6 +2120,7 @@ t.test('cachedBody', async t => {
   }
 
   t.test('cachedIntegrity reads only the head', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const withHash = {
       ...tarHeaders,
@@ -2147,6 +2164,7 @@ t.test('cachedBody', async t => {
     rc.cache.delete(url)
 
     // A corrupt head length must not cause a huge allocation.
+    t.teardown(() => bad.drain())
     const bad = new RC({ cache: t.testdir() })
     await write(bad, entry(withHash))
     const path = bad.cache.path(cacheKey('GET', new URL(url)))
@@ -2179,6 +2197,7 @@ t.test('cachedBody', async t => {
           requests.push([u, state]),
       },
     })
+    t.teardown(() => rc.drain())
     const rc = new RegistryClient({ cache: t.testdir() })
     await write(rc, entry(tarHeaders))
     const found = rc.cachedBody(url)
@@ -2191,6 +2210,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('gzip is read off the bytes on disk', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const gz = gzipSync(tarball)
     await write(rc, entry(tarHeaders, 200, gz))
@@ -2209,6 +2229,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('normalizes the url like request() does', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const canonical =
       'https://registry.example.com/abbrev/-/abbrev-2.0.0.tgz'
@@ -2229,6 +2250,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('hit by integrity path', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     await write(rc, entry(tarHeaders))
     const intPath = rc.cache.integrityPath(integrity)
@@ -2241,6 +2263,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('a pin is never answered from the key', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     await write(rc, entry(tarHeaders))
     // The URL entry exists, but it proves nothing about which artifact
@@ -2263,6 +2286,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('misses', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     t.equal(rc.cachedBody(url), undefined, 'no file at all')
 
@@ -2295,6 +2319,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('a head of any size is fine', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     await write(
       rc,
@@ -2304,6 +2329,7 @@ t.test('cachedBody', async t => {
   })
 
   t.test('in-memory entries are left to request()', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const buf = entry(tarHeaders)
     rc.cache.set(url, buf)
@@ -2591,6 +2617,7 @@ t.test('requestStream', async t => {
   const base = `http://localhost:${STREAM_PORT}`
 
   t.test('streams an identity body', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const { statusCode, body } = await rc.requestStream(
       `${base}/-/vlt/resolve`,
@@ -2614,6 +2641,7 @@ t.test('requestStream', async t => {
   })
 
   t.test('gunzips a compressed body', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const { statusCode, body } = await rc.requestStream(
       `${base}/gzip`,
@@ -2630,6 +2658,7 @@ t.test('requestStream', async t => {
   t.test(
     'a dropped connection errors the gunzipped body',
     async t => {
+      t.teardown(() => rc.drain())
       const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
       // the drop lands after the headers, so it is the body that errors;
       // a drop before them rejects the request itself, and either way
@@ -2644,6 +2673,7 @@ t.test('requestStream', async t => {
   )
 
   t.test('hands back a non-2xx as it is', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const { statusCode, body } = await rc.requestStream(
       `${base}/missing`,
@@ -2655,12 +2685,14 @@ t.test('requestStream', async t => {
   t.test(
     'rejects a status the agent retries, as request() does',
     async t => {
+      t.teardown(() => rc.drain())
       const rc = new RC({ cache: t.testdir(), 'fetch-retries': 0 })
       await t.rejects(rc.requestStream(`${base}/boom`))
     },
   )
 
   t.test('keeps the query string', async t => {
+    t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })
     const { body } = await rc.requestStream(
       new URL(`${base}/-/vlt/resolve?x=1`),
