@@ -315,6 +315,8 @@ export class RegistryClient {
   staleWhileRevalidateFactor: number
   #session = randomUUID()
   #decoded = new WeakMap<Uint8Array, CacheEntry>()
+  // request() calls not settled yet, awaited by drain()
+  #inFlight = new Set<Promise<void>>()
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -867,9 +869,37 @@ export class RegistryClient {
     return { statusCode: response.statusCode, body }
   }
 
+  /**
+   * Settle in-flight requests and their cache writes. Await before
+   * removing the cache dir.
+   */
+  async drain(): Promise<void> {
+    do {
+      await Promise.all(this.#inFlight)
+      await this.cache.promise()
+    } while (this.#inFlight.size)
+  }
+
   async request(
     url: URL | string,
     options: RegistryClientRequestOptions = {},
+  ): Promise<CacheEntry> {
+    const p = this.#request(url, options)
+    const tracked = p.then(
+      () => {},
+      () => {},
+    )
+    this.#inFlight.add(tracked)
+    try {
+      return await p
+    } finally {
+      this.#inFlight.delete(tracked)
+    }
+  }
+
+  async #request(
+    url: URL | string,
+    options: RegistryClientRequestOptions,
   ): Promise<CacheEntry> {
     const u = typeof url === 'string' ? new URL(url) : url
     const {

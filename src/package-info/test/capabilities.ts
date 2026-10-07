@@ -1,3 +1,5 @@
+import { cacheKey } from '@vltpkg/registry-client'
+import { existsSync } from 'node:fs'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import type { Test } from 'tap'
@@ -8,6 +10,7 @@ import {
   peekCapabilities,
   resetCapabilities,
 } from '../src/index.ts'
+import { drainer } from './fixtures/drainer.ts'
 
 // What the server answers next, and what it was asked along the way.
 let body: string | undefined = JSON.stringify({
@@ -55,18 +58,13 @@ const registry = () =>
   `http://127.0.0.1:${(server.address() as AddressInfo).port}/`
 
 const client = (t: Test) => {
-  // flush the background cache writes before tap removes the fixture dir,
-  // or the cleanup races them (ENOTEMPTY on macOS). tap runs EOF hooks in
-  // registration order, so this has to be hooked before t.testdir() hooks
-  // the cleanup
-  t.teardown(async () =>
-    (await pi.getRegistryClient()).cache.promise(),
+  const track = drainer(t)
+  return track(
+    new PackageInfoClient({
+      cache: t.testdir(),
+      registry: registry(),
+    }),
   )
-  const pi = new PackageInfoClient({
-    cache: t.testdir(),
-    registry: registry(),
-  })
-  return pi
 }
 
 t.beforeEach(() => {
@@ -102,21 +100,25 @@ t.test('concurrent asks coalesce into one request', async t => {
 })
 
 t.test('a later process reads it out of the cache', async t => {
+  const track = drainer(t)
   const cache = t.testdir()
-  const first = new PackageInfoClient({ cache, registry: registry() })
+  const first = track(
+    new PackageInfoClient({ cache, registry: registry() }),
+  )
   const doc = await first.capabilities(registry())
-  await (await first.getRegistryClient()).cache.promise()
+  await first.drain()
   t.equal(requests, 1, 'cold miss')
 
   // a new client with the same cache dir stands in for a later `vlt` run
   resetCapabilities()
-  const second = new PackageInfoClient({
-    cache,
-    registry: registry(),
-  })
+  const second = track(
+    new PackageInfoClient({
+      cache,
+      registry: registry(),
+    }),
+  )
   t.strictSame(await second.capabilities(registry()), doc)
   t.equal(requests, 1, 'served from the disk cache, not the registry')
-  await (await second.getRegistryClient()).cache.promise()
 })
 
 t.test(
@@ -132,7 +134,8 @@ t.test(
 )
 
 t.test('a registry that cannot be reached answers empty', async t => {
-  const pi = new PackageInfoClient({ cache: t.testdir() })
+  const track = drainer(t)
+  const pi = track(new PackageInfoClient({ cache: t.testdir() }))
   // nothing listens here: the request rejects, and a rejected probe is
   // not a reason to fail whatever asked
   t.strictSame(await pi.capabilities('http://127.0.0.1:1/'), {})
@@ -208,6 +211,21 @@ t.test('peek answers only once the document lands', async t => {
     'the document, once it has landed',
   )
   t.equal(requests, 1, 'the peek started the only request')
+})
+
+t.test('drain settles the request a peek started', async t => {
+  const pi = client(t)
+  const rc = await pi.getRegistryClient()
+  delay = 50
+  t.equal(peekCapabilities(rc, registry()), undefined, 'in flight')
+  await pi.drain()
+  const url = new URL('-/vlt/capabilities', registry())
+  t.ok(
+    existsSync(rc.cache.path(cacheKey('GET', url))),
+    'cache entry written',
+  )
+  t.not(peekCapabilities(rc, registry()), undefined, 'landed')
+  t.equal(requests, 1)
 })
 
 t.test('reset clears the settled document too', async t => {
