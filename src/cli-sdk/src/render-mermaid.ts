@@ -64,7 +64,8 @@ export const renderMermaidToPng = async (
   const { readFile: rf } = await import('node:fs/promises')
   const { createRequire: cr } = await import('node:module')
   const wasmPath = cr(import.meta.url).resolve(
-    '@resvg/resvg-wasm/index_bg.wasm',
+    process.env.__VLT_INTERNAL_RESVG_WASM ??
+      '@resvg/resvg-wasm/index_bg.wasm',
   )
   try {
     await initWasm(await rf(wasmPath))
