@@ -387,6 +387,38 @@ export class PackageInfoClient {
   #registryClientPromise?: Promise<RegistryClient>
   #tarPoolPromise?: Promise<Pool>
 
+  // fire-and-forget work, settled by drain()
+  #background = new Set<Promise<void>>()
+
+  #inBackground(p: Promise<unknown>): void {
+    const done = () => {
+      this.#background.delete(tracked)
+    }
+    const tracked = p.then(done, done)
+    this.#background.add(tracked)
+  }
+
+  /**
+   * Wind the client down: abort open resolve streams, settle background
+   * work (manifest cache writes, capabilities, hedges), flush the registry
+   * client cache. Await before removing the cache dir or exiting.
+   */
+  async drain(): Promise<void> {
+    for (const [sent, owner] of this.#resolveOwners) {
+      this.#resolveOwners.delete(sent)
+      this.#resolveSent.delete(sent)
+      owner.controller.abort()
+    }
+    while (this.#background.size) {
+      await Promise.all(this.#background)
+    }
+    if (this.#registryClientPromise) {
+      await (await this.#registryClientPromise).cache.promise()
+    }
+    /* c8 ignore next - work started while the cache flushed */
+    if (this.#background.size) await this.drain()
+  }
+
   async getRegistryClient() {
     if (this.#registryClient) return this.#registryClient
     this.#registryClientPromise ??=
@@ -425,7 +457,7 @@ export class PackageInfoClient {
     if (!client) {
       // the registry client is built lazily, so the first caller starts it
       // and the document along with it, and asks optimistically meanwhile
-      void this.capabilities(registry).catch(() => {})
+      this.#inBackground(this.capabilities(registry))
       return true
     }
     const caps = peekCapabilities(client, registry)
@@ -1249,6 +1281,7 @@ export class PackageInfoClient {
       inflight,
     )
     inflight.requests.add(promise)
+    this.#inBackground(promise)
     // dropped once settled, so manifest() stops waiting on a request that
     // has already delivered everything it is going to
     const clear = () => {
@@ -1379,6 +1412,8 @@ export class PackageInfoClient {
 
       debug('resolve hedge %s', key)
       const hedge = fetch()
+      // stream may answer first; then nobody awaits the hedge
+      this.#inBackground(hedge)
       const outcome = await Promise.race([
         arrival,
         settled,
@@ -1452,7 +1487,7 @@ export class PackageInfoClient {
               json.__VLT_MANIFEST_CACHE_TIMESTAMP !== undefined
             ) {
               this.#manifestWritePaths.delete(cachePath)
-              void unlink(cachePath).catch(() => {})
+              this.#inBackground(unlink(cachePath))
               throw new Error('manifest cache expired')
             }
             // the tarball digest stays required across processes
@@ -1482,10 +1517,12 @@ export class PackageInfoClient {
             const vlt = this.#vltPackuments.has(
               `${f.registry}${f.name}`,
             )
-            void this.#writeManifestCache(
-              cachePath,
-              JSON.stringify(
-                vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
+            this.#inBackground(
+              this.#writeManifestCache(
+                cachePath,
+                JSON.stringify(
+                  vlt ? { ...mani, __VLT_PACKUMENT: true } : mani,
+                ),
               ),
             )
           }

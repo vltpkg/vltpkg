@@ -12,6 +12,7 @@ import {
   readFileSync,
   readlinkSync,
   mkdirSync,
+  mkdtempSync,
   renameSync,
   rmSync,
   statSync,
@@ -799,6 +800,19 @@ for (const manifest of Object.values<Manifest>(pakuAbbrev.versions)) {
   }
 }
 
+// drains the clients handed to it before t's fixture is removed: call
+// before t.testdir(), tap runs EOF hooks in registration order
+const drainer = (t: Test) => {
+  const clients: { drain(): Promise<void> }[] = []
+  t.teardown(async () => {
+    for (const c of clients) await c.drain()
+  })
+  return <C extends { drain(): Promise<void> }>(c: C): C => {
+    clients.push(c)
+    return c
+  }
+}
+
 t.before(() => new Promise<void>(res => server.listen(PORT, res)))
 t.teardown(() => server.close())
 
@@ -1377,11 +1391,12 @@ t.test('remote tarballs', async t => {
   // `from` if that is a url that redirects to it
   const primed = async (t: Test, from = url) => {
     const spec = `abbrev@${from}`
+    const track = drainer(t)
     const dir = t.testdir()
     const cache = `${dir}/cache`
-    const fresh = () => new PackageInfoClient({ ...options, cache })
-    const flush = async (p: PackageInfoClient) =>
-      (await p.getRegistryClient()).cache.promise()
+    const fresh = () =>
+      track(new PackageInfoClient({ ...options, cache }))
+    const flush = (p: PackageInfoClient) => p.drain()
     const p = fresh()
     const before = abbrevTgzRequests
     t.equal(
@@ -1758,11 +1773,16 @@ t.test('remote tarballs', async t => {
     const spec = `plain@${url}`
     const key = cacheKey('GET', new URL(url))
     const integrity: Integrity = `sha512-${tarAbbrevSha512}`
+    const track = drainer(t)
     const dir = t.testdir()
     const client = (cache: string) =>
-      new PackageInfoClient({ ...options, cache: `${dir}/${cache}` })
-    const flush = async (p: PackageInfoClient) =>
-      (await p.getRegistryClient()).cache.promise()
+      track(
+        new PackageInfoClient({
+          ...options,
+          cache: `${dir}/${cache}`,
+        }),
+      )
+    const flush = (p: PackageInfoClient) => p.drain()
 
     let before = plainTarRequests
     let p = client('bad')
@@ -1849,11 +1869,16 @@ t.test('remote tarballs', async t => {
     // as they came off the wire: the one a cold cache can check
     const url = `${defaultRegistry}no-type/-/no-type-1.0.0.tgz`
     const spec = `no-type@${url}`
+    const track = drainer(t)
     const dir = t.testdir()
     const fresh = (cache: string) =>
-      new PackageInfoClient({ ...options, cache: `${dir}/${cache}` })
-    const flush = async (p: PackageInfoClient) =>
-      (await p.getRegistryClient()).cache.promise()
+      track(
+        new PackageInfoClient({
+          ...options,
+          cache: `${dir}/${cache}`,
+        }),
+      )
+    const flush = (p: PackageInfoClient) => p.drain()
 
     let before = noTypeRequests
     const p = fresh('cache')
@@ -1916,11 +1941,12 @@ t.test('remote tarballs', async t => {
   ) => {
     const spec = `abbrev@${url}`
     const key = cacheKey('GET', new URL(url))
+    const track = drainer(t)
     const dir = t.testdir()
     const cache = `${dir}/cache`
-    const fresh = () => new PackageInfoClient({ ...options, cache })
-    const flush = async (p: PackageInfoClient) =>
-      (await p.getRegistryClient()).cache.promise()
+    const fresh = () =>
+      track(new PackageInfoClient({ ...options, cache }))
+    const flush = (p: PackageInfoClient) => p.drain()
     const rc = await fresh().getRegistryClient()
     const stored = () =>
       CacheEntry.decode(readFileSync(rc.cache.path(key)))
@@ -2298,7 +2324,7 @@ t.test('registry tarball integrity verification', async t => {
       )
       // flush pending cache writes so file handles are released
       // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
-      await (await pi.getRegistryClient()).cache.promise()
+      await pi.drain()
     },
   )
 
@@ -2316,7 +2342,7 @@ t.test('registry tarball integrity verification', async t => {
       })
       // flush pending cache writes so file handles are released
       // before t.testdir() cleanup (avoids ENOTEMPTY on macOS)
-      await (await tb.getRegistryClient()).cache.promise()
+      await tb.drain()
     },
   )
 
@@ -2339,7 +2365,7 @@ t.test('registry tarball integrity verification', async t => {
         { cause: { code: 'EINTEGRITY' } },
         'should throw EINTEGRITY',
       )
-      await (await pi.getRegistryClient()).cache.promise()
+      await pi.drain()
     },
   )
 
@@ -2354,7 +2380,7 @@ t.test('registry tarball integrity verification', async t => {
       await t.rejects(tb.tarball('corrupted-no-header@1.0.0'), {
         cause: { code: 'EINTEGRITY' },
       })
-      await (await tb.getRegistryClient()).cache.promise()
+      await tb.drain()
     },
   )
 
@@ -2398,7 +2424,7 @@ t.test('registry tarball integrity verification', async t => {
         0x8b,
         'should be a gzip file (second magic byte)',
       )
-      await (await tb.getRegistryClient()).cache.promise()
+      await tb.drain()
     },
   )
 
@@ -2452,7 +2478,7 @@ t.test('registry tarball integrity verification', async t => {
         { cause: { code: 'EINTEGRITY' } },
         'should verify tarball integrity even with integrity+resolved provided',
       )
-      await (await pi.getRegistryClient()).cache.promise()
+      await pi.drain()
     },
   )
 
@@ -2469,7 +2495,7 @@ t.test('registry tarball integrity verification', async t => {
         cache: cacheDir,
       })
       await pi.extract('abbrev@2', dir + '/first')
-      await (await pi.getRegistryClient()).cache.promise()
+      await pi.drain()
 
       const cache = (await pi.getRegistryClient()).cache
       const buf = await cache.fetch(tarballUrl)
@@ -2508,8 +2534,8 @@ t.test('registry tarball integrity verification', async t => {
         'tarball() also issues no tarball requests on warm cache',
       )
       t.ok(tb.length > 0, 'returned cached tarball bytes')
-      await (await pi2.getRegistryClient()).cache.promise()
-      await (await pi3.getRegistryClient()).cache.promise()
+      await pi2.drain()
+      await pi3.drain()
     },
   )
 
@@ -2540,7 +2566,7 @@ t.test('registry tarball integrity verification', async t => {
         2,
         'should have fetched twice (first corrupted, then fresh)',
       )
-      await (await pi.getRegistryClient()).cache.promise()
+      await pi.drain()
     },
   )
 })
@@ -2607,8 +2633,7 @@ t.test('network tarball hashed once', async t => {
     { name: 'abbrev', version: '2.0.0' },
   )
 
-  for (const c of clients)
-    await (await c.getRegistryClient()).cache.promise()
+  for (const c of clients) await c.drain()
 })
 
 t.test('trusted refetch is verified', async t => {
@@ -2642,14 +2667,14 @@ t.test('trusted refetch is verified', async t => {
       JSON.parse(readFileSync(dir + '/ok/package.json', 'utf8')),
       { name: 'abbrev', version: '2.0.0' },
     )
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   })
 
   t.test('extract corrupt', async t => {
     const { dir, pi } = await trusted(t)
     flakyCorrupt = true
     await t.rejects(pi.extract('flaky@1.0.0', dir + '/bad'), failed)
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   })
 
   t.test('tarball', async t => {
@@ -2658,14 +2683,14 @@ t.test('trusted refetch is verified', async t => {
       await pi.tarball('flaky@1.0.0', { useCache: false }),
       tgzAbbrev,
     )
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   })
 
   t.test('tarball corrupt', async t => {
     const { pi } = await trusted(t)
     flakyCorrupt = true
     await t.rejects(pi.tarball('flaky@1.0.0'), failed)
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   })
 })
 
@@ -2681,6 +2706,7 @@ const tarballLog = (states: string[]) => ({
 })
 
 t.test('registry tarballs unpack from the cache file', async t => {
+  const track = drainer(t)
   const dir = t.testdir({ 'vlt.json': '{}' })
   t.chdir(dir)
   unload()
@@ -2703,14 +2729,14 @@ t.test('registry tarballs unpack from the cache file', async t => {
 
   const cold = new PackageInfoClient(opts)
   await cold.extract('abbrev@2', dir + '/cold')
-  await (await cold.getRegistryClient()).cache.promise()
+  await cold.drain()
   t.strictSame(calls, ['unpack'], 'cold install fetches the bytes')
   t.equal(states[0], 'start', 'cold install went to the network')
 
   // a fresh client has an empty memory cache, so the probe hits disk
   calls.length = 0
   states.length = 0
-  const warm = new PackageInfoClient(opts)
+  const warm = track(new PackageInfoClient(opts))
   await warm.extract('abbrev@2', dir + '/warm')
   t.strictSame(calls, ['unpack'], 'warm install unpacked once')
   t.strictSame(states, ['cache'], 'logged the hit exactly once')
@@ -2726,13 +2752,14 @@ t.test('registry tarballs unpack from the cache file', async t => {
 })
 
 t.test('falls back when the cache file will not unpack', async t => {
+  const track = drainer(t)
   const dir = t.testdir({ 'vlt.json': '{}' })
   t.chdir(dir)
   unload()
   const opts = { ...options, cache: dir + '/cache' }
   const prime = new PackageInfoClient(opts)
   await prime.extract('abbrev@2', dir + '/prime')
-  await (await prime.getRegistryClient()).cache.promise()
+  await prime.drain()
 
   const calls: string[] = []
   const states: string[] = []
@@ -2751,7 +2778,7 @@ t.test('falls back when the cache file will not unpack', async t => {
     },
     ...tarballLog(states),
   })
-  await new PIC(opts).extract('abbrev@2', dir + '/fallback')
+  await track(new PIC(opts)).extract('abbrev@2', dir + '/fallback')
   t.strictSame(calls, ['unpack', 'unpack'], 'refetched')
   t.strictSame(states, ['cache'], 'the hit is not double-counted')
   t.match(
@@ -2783,6 +2810,7 @@ t.test('global store', async t => {
   }
 
   const setup = async (t: Test, debugged?: unknown[][]) => {
+    const track = drainer(t)
     const dir = t.testdir({ 'vlt.json': '{}' })
     t.chdir(dir)
     unload()
@@ -2822,7 +2850,9 @@ t.test('global store', async t => {
       opts: PackageInfoClientOptions = {},
       noTarball = false,
     ) => {
-      const pi = new PackageInfoClient({ ...options, cache, ...opts })
+      const pi = track(
+        new PackageInfoClient({ ...options, cache, ...opts }),
+      )
       if (noTarball) {
         const rc = await pi.getRegistryClient()
         rc.cachedBody = () => {
@@ -2838,7 +2868,7 @@ t.test('global store', async t => {
     const prime = async () => {
       const pi = await client()
       await pi.extract('abbrev@2', dir + '/prime', lockOpts)
-      await (await pi.getRegistryClient()).cache.promise()
+      await pi.drain()
       registered.length = 0
       states.length = 0
     }
@@ -2972,7 +3002,7 @@ t.test('global store', async t => {
     const { dir, registered, states, client } = await setup(t)
     const pi = await client({ 'store-linker': 'hardlink' })
     await pi.extract('abbrev@2', dir + '/t', lockOpts)
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
     t.equal(nlink(dir + '/t'), 1)
     t.equal(states[0], 'start', 'fetched')
     // one registration, from the cache write, none from extract()
@@ -4096,7 +4126,7 @@ t.test(
       'range manifest came from the coalesced packument',
     )
     t.equal(exact.license, 'ISC', 'manifest retains license metadata')
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   },
 )
 
@@ -4117,7 +4147,7 @@ t.test('registry capabilities', async t => {
     'the same document on a second ask',
   )
   t.equal(capabilitiesRequests, 1, 'asked the registry once')
-  await (await pi.getRegistryClient()).cache.promise()
+  await pi.drain()
 })
 
 t.test('the ?stable packument filter', async t => {
@@ -4126,9 +4156,7 @@ t.test('the ?stable packument filter', async t => {
     // dir, or the cleanup races them (ENOTEMPTY on macOS). tap runs EOF
     // hooks in registration order, so this has to be hooked before
     // t.testdir() hooks the cleanup
-    t.teardown(async () =>
-      (await pi.getRegistryClient()).cache.promise(),
-    )
+    t.teardown(() => pi.drain())
     const pi = new PackageInfoClient({
       ...options,
       cache: t.testdir(),
@@ -4297,7 +4325,7 @@ t.test('the ?stable packument filter', async t => {
       ['/stable-split?stable', '/stable-split'],
       'one request per representation',
     )
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   })
 })
 
@@ -4305,8 +4333,7 @@ t.test('moving selectors force a revalidation', async t => {
   const cache = t.testdir()
   // one client per simulated process; the point is the disk cache
   const client = () => new PackageInfoClient({ ...options, cache })
-  const flush = async (pi: PackageInfoClient) =>
-    (await pi.getRegistryClient()).cache.promise()
+  const flush = (pi: PackageInfoClient) => pi.drain()
   movingRequests = 0
   movingLatest = '1.0.0'
 
@@ -4356,7 +4383,7 @@ t.test('moving selector does not ride a pinned request', async t => {
 
   const warm = new PackageInfoClient({ ...options, cache })
   await warm.packument('moving@1.0.0')
-  await (await warm.getRegistryClient()).cache.promise()
+  await warm.drain()
   movingLatest = '2.0.0'
 
   // the pinned request lands in #packumentPromises first and will settle
@@ -4379,7 +4406,8 @@ t.test('moving selector does not ride a pinned request', async t => {
   ])
   t.equal(m2, p2, 'shared one packument')
   t.equal(movingRequests, before + 1, 'made one request')
-  await (await pi2.getRegistryClient()).cache.promise()
+  await pi.drain()
+  await pi2.drain()
 })
 
 t.test('backgroundRevalidate', async t => {
@@ -4398,9 +4426,10 @@ t.test('backgroundRevalidate', async t => {
     },
   })
   const bg = { backgroundRevalidate: true }
+  const track = drainer(t)
   const cache = t.testdir()
   const client = async () => {
-    const pi = new PIC({ ...options, cache })
+    const pi = track(new PIC({ ...options, cache }))
     const rc = await pi.getRegistryClient()
     const calls = { n: 0 }
     const request = rc.request.bind(rc)
@@ -4408,7 +4437,6 @@ t.test('backgroundRevalidate', async t => {
       calls.n++
       return request(...args)
     }
-    t.teardown(() => rc.cache.promise())
     return { pi, calls }
   }
   const latest = (
@@ -4419,7 +4447,7 @@ t.test('backgroundRevalidate', async t => {
   movingLatest = '1.0.0'
   const warm = await client()
   await latest(warm.pi.packument('moving@1.0.0'))
-  await (await warm.pi.getRegistryClient()).cache.promise()
+  await warm.pi.drain()
   // latest moves; the cached packument is still strictly valid
   movingLatest = '2.0.0'
 
@@ -4521,7 +4549,7 @@ t.test('late parse failure refetches packument', async t => {
   const result = await pi.packument('badjson')
   t.equal(calls, 2)
   t.equal(result.name, 'badjson')
-  await rc.cache.promise()
+  await pi.drain()
 })
 
 t.test('packument parse failure retries once', async t => {
@@ -4544,7 +4572,7 @@ t.test('packument parse failure retries once', async t => {
 
   await t.rejects(pi.packument('badjson-forever'))
   t.equal(calls, 2, 'does not retry twice')
-  await rc.cache.promise()
+  await pi.drain()
 })
 
 t.test('no registry configured', async t => {
@@ -4561,18 +4589,25 @@ t.test('no registry configured', async t => {
 
 t.test('tarballs labelled with a digest', async t => {
   const clients: PackageInfoClient[] = []
-  const pi = () => {
-    const c = new PackageInfoClient({
-      ...options,
-      cache: t.testdir(),
-    })
+  const track = (c: PackageInfoClient) => {
     clients.push(c)
     return c
   }
-  t.teardown(async () => {
-    for (const c of clients)
-      await (await c.getRegistryClient()).cache.promise()
-  })
+  // drained before the suite's and each subtest's fixture cleanup
+  const drainAll = async () => {
+    for (const c of clients) await c.drain()
+  }
+  t.teardown(drainAll)
+  t.beforeEach(t => t.teardown(drainAll))
+  // one fixture: t.testdir() per client would rimrafSync it under live ones
+  const root = t.testdir()
+  const pi = () =>
+    track(
+      new PackageInfoClient({
+        ...options,
+        cache: mkdtempSync(`${root}/c-`),
+      }),
+    )
   const integrity = `sha512-${tgzAbbrevSha512}`
 
   t.test(
@@ -4590,11 +4625,13 @@ t.test('tarballs labelled with a digest', async t => {
   t.test(
     'resolve against a registry without a trailing slash',
     async t => {
-      const p = new PackageInfoClient({
-        ...options,
-        registry: defaultRegistry.replace(/\/$/, ''),
-        cache: t.testdir(),
-      })
+      const p = track(
+        new PackageInfoClient({
+          ...options,
+          registry: defaultRegistry.replace(/\/$/, ''),
+          cache: t.testdir(),
+        }),
+      )
       const res = await p.resolve('digest@1.0.0')
       t.equal(
         res.resolved,
@@ -4608,10 +4645,10 @@ t.test('tarballs labelled with a digest', async t => {
     async t => {
       const dir = t.testdir()
       const cache = `${dir}/cache`
-      const p = new PackageInfoClient({ ...options, cache })
+      const p = track(new PackageInfoClient({ ...options, cache }))
       const res = await p.extract('digest@1.0.0', `${dir}/a`)
       t.equal(res.integrity, integrity)
-      await (await p.getRegistryClient()).cache.promise()
+      await p.drain()
 
       // a fresh resolution of the same tarball is served from the
       // in-memory cache, hash included
@@ -4619,7 +4656,7 @@ t.test('tarballs labelled with a digest', async t => {
       t.equal(warm.integrity, integrity)
 
       // and a fresh client unpacks it straight off the cache file
-      const cold = new PackageInfoClient({ ...options, cache })
+      const cold = track(new PackageInfoClient({ ...options, cache }))
       const url = `${defaultRegistry}digest/-/digest-1.0.0.tgz`
       t.ok(
         (await cold.getRegistryClient()).cachedBody(url),
@@ -4641,7 +4678,7 @@ t.test('tarballs labelled with a digest', async t => {
     const dir = t.testdir()
     for (const name of ['digest-bad', 'digest-missing']) {
       const cache = `${dir}/${name}`
-      const p = new PackageInfoClient({ ...options, cache })
+      const p = track(new PackageInfoClient({ ...options, cache }))
       const spec = `${name}@1.0.0`
       await t.rejects(p.extract(spec, `${dir}/${name}-a`), {
         cause: { code: 'EINTEGRITY' },
@@ -4653,7 +4690,7 @@ t.test('tarballs labelled with a digest', async t => {
 
       // a fresh client on the same cache has to reject it too, rather
       // than unpack the leftover off the cache file and pin its hash
-      const cold = new PackageInfoClient({ ...options, cache })
+      const cold = track(new PackageInfoClient({ ...options, cache }))
       t.equal(
         (await cold.getRegistryClient()).cachedBody(url),
         undefined,
@@ -4683,10 +4720,9 @@ t.test('tarballs labelled with a digest', async t => {
     async t => {
       const cache = t.testdir()
       const spec = Spec.parse('digest-missing@1.0.0', options)
-      const p = new PackageInfoClient({ ...options, cache })
+      const p = track(new PackageInfoClient({ ...options, cache }))
       t.equal((await p.resolve(spec)).digestRequired, true)
-      // the manifest cache write is fire-and-forget
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await p.drain()
       const cachePath = p._manifestCachePath(spec, {})
       if (!cachePath) throw new Error('spec is not cacheable')
       const cached = JSON.parse(
@@ -4698,7 +4734,7 @@ t.test('tarballs labelled with a digest', async t => {
         'cache file carries the marker',
       )
 
-      const cold = new PackageInfoClient({ ...options, cache })
+      const cold = track(new PackageInfoClient({ ...options, cache }))
       const mani = await cold.manifest(spec)
       t.notOk(
         '__VLT_PACKUMENT' in mani,
@@ -4743,19 +4779,23 @@ t.test('tarballs labelled with a digest', async t => {
 
 t.test('v2 packuments carry tarball basenames', async t => {
   const clients: PackageInfoClient[] = []
+  // drained before the suite's and each subtest's fixture cleanup
+  const drainAll = async () => {
+    for (const c of clients) await c.drain()
+  }
+  t.teardown(drainAll)
+  t.beforeEach(t => t.teardown(drainAll))
+  // one fixture: t.testdir() per client would rimrafSync it under live ones
+  const root = t.testdir()
   const pi = (o?: PackageInfoClientOptions) => {
     const c = new PackageInfoClient({
       ...options,
-      cache: t.testdir(),
       ...o,
+      cache: o?.cache ?? mkdtempSync(`${root}/c-`),
     })
     clients.push(c)
     return c
   }
-  t.teardown(async () => {
-    for (const c of clients)
-      await (await c.getRegistryClient()).cache.promise()
-  })
   const tgzURL = `${defaultRegistry}v2/-/v2-1.0.0.tgz`
 
   t.test(
@@ -4807,19 +4847,23 @@ t.test('v2 packuments carry tarball basenames', async t => {
 
 t.test('brotli tarballs', async t => {
   const clients: PackageInfoClient[] = []
+  // drained before the suite's and each subtest's fixture cleanup
+  const drainAll = async () => {
+    for (const c of clients) await c.drain()
+  }
+  t.teardown(drainAll)
+  t.beforeEach(t => t.teardown(drainAll))
+  // one fixture: t.testdir() per client would rimrafSync it under live ones
+  const root = t.testdir()
   const pi = (o?: PackageInfoClientOptions) => {
     const c = new PackageInfoClient({
       ...options,
-      cache: t.testdir(),
       ...o,
+      cache: o?.cache ?? mkdtempSync(`${root}/c-`),
     })
     clients.push(c)
     return c
   }
-  t.teardown(async () => {
-    for (const c of clients)
-      await (await c.getRegistryClient()).cache.promise()
-  })
   const brURL = `${defaultRegistry}brotli/-/brotli-1.0.0.tar.br`
   const tgzURL = `${defaultRegistry}brotli/-/brotli-1.0.0.tgz`
 
@@ -4920,7 +4964,7 @@ t.test('brotli tarballs', async t => {
       'abbrev',
       'the brotli bytes really did unpack',
     )
-    await (await p.getRegistryClient()).cache.promise()
+    await p.drain()
 
     // and a fresh client unpacks it straight off the cache file,
     // which nothing ever rewrote: still brotli, still declared by url
@@ -5122,7 +5166,7 @@ t.test('brotli tarballs', async t => {
     // Install once so the tarball ends up in the cache.
     const cold = pi({ cache })
     await cold.extract('brotli@1.0.0', `${dir}/cold`)
-    await (await cold.getRegistryClient()).cache.promise()
+    await cold.drain()
 
     // Write the store entry the background child would have written.
     const hex = String(integrityHex(brAbbrevIntegrity))
@@ -5151,15 +5195,12 @@ t.test('brotli tarballs', async t => {
 t.test('prefetchResolve', async t => {
   const roots = [{ name: 'abbrev', spec: '^2.0.0' }]
   const freshClient = (t: Test) => {
+    // before t.testdir(): tap runs EOF hooks in registration order
+    t.teardown(() => pi.drain())
     const pi = new PackageInfoClient({
       registry: defaultRegistry,
       cache: t.testdir(),
     })
-    // Flush the registry-client cache before tap removes the testdir,
-    // otherwise lingering file handles can cause ENOTEMPTY on macOS.
-    t.teardown(async () =>
-      (await pi.getRegistryClient()).cache.promise(),
-    )
     return pi
   }
   t.beforeEach(() => {
@@ -5325,6 +5366,19 @@ t.test('prefetchResolve', async t => {
     )
   })
 
+  t.test('drain ends a held stream', async t => {
+    resolveHoldMs = 3000
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    // in flight: the server has it and holds the response
+    while (!resolveRequests.length)
+      await new Promise(r => setTimeout(r, 5))
+    const start = Date.now()
+    await pi.drain()
+    t.ok(Date.now() - start < 1000, 'without waiting out the hold')
+    t.equal(pi.resolvedManifestCount, 0)
+  })
+
   t.test('a released request can be asked again', async t => {
     resolveHoldMs = 1500
     const pi = freshClient(t)
@@ -5404,7 +5458,7 @@ t.test('prefetchResolve', async t => {
     release()
     // the capabilities fetch the prefetch started is still landing
     await pi.capabilities(defaultRegistry)
-    await (await pi.getRegistryClient()).cache.promise()
+    await pi.drain()
   })
 
   t.test(
@@ -5624,6 +5678,8 @@ t.test('prefetchResolve', async t => {
           )
         }
       }
+      // before t.testdir(), see freshClient
+      t.teardown(() => pi.drain())
       const pi = new Broken({
         registry: defaultRegistry,
         cache: t.testdir(),
