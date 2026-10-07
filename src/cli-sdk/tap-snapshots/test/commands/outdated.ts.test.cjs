@@ -224,6 +224,19 @@ Array [
     "wanted": "1.0.0",
   },
   Object {
+    "action": "set the \\"tools\\" catalog entry for tool in vlt.json to ^2.0.0",
+    "current": "1.0.0",
+    "dependent": "my-project",
+    "inRange": false,
+    "kind": "major",
+    "latest": "2.0.0",
+    "location": ".",
+    "name": "tool",
+    "spec": "catalog:tools",
+    "type": "prod",
+    "wanted": "1.0.0",
+  },
+  Object {
     "action": "vlt update",
     "current": "2.0.0-beta.1",
     "dependent": "my-project",
@@ -355,6 +368,32 @@ Array [
     "spec": "^1.0.0",
     "type": "prod",
     "wanted": "1.2.0",
+  },
+  Object {
+    "action": "set the catalog entry for cat in vlt.json to ^2.0.0",
+    "current": "1.0.0",
+    "dependent": "a",
+    "inRange": false,
+    "kind": "major",
+    "latest": "2.0.0",
+    "location": "./packages/a",
+    "name": "cat",
+    "spec": "catalog:",
+    "type": "prod",
+    "wanted": "1.0.0",
+  },
+  Object {
+    "action": "set the \\"tools\\" catalog entry for tool in vlt.json to ^2.0.0",
+    "current": "1.0.0",
+    "dependent": "a",
+    "inRange": false,
+    "kind": "major",
+    "latest": "2.0.0",
+    "location": "./packages/a",
+    "name": "tool",
+    "spec": "catalog:tools",
+    "type": "prod",
+    "wanted": "1.0.0",
   },
 ]
 `
@@ -629,6 +668,19 @@ Array [
     "wanted": "1.0.0",
   },
   Object {
+    "action": "set the \\"tools\\" catalog entry for tool in vlt.json to ^2.0.0",
+    "current": "1.0.0",
+    "dependent": "my-project",
+    "inRange": false,
+    "kind": "major",
+    "latest": "2.0.0",
+    "location": ".",
+    "name": "tool",
+    "spec": "catalog:tools",
+    "type": "prod",
+    "wanted": "1.0.0",
+  },
+  Object {
     "action": "vlt update",
     "current": "2.0.0-beta.1",
     "dependent": "my-project",
@@ -761,6 +813,32 @@ Array [
     "type": "prod",
     "wanted": "1.2.0",
   },
+  Object {
+    "action": "set the catalog entry for cat in vlt.json to ^2.0.0",
+    "current": "1.0.0",
+    "dependent": "a",
+    "inRange": false,
+    "kind": "major",
+    "latest": "2.0.0",
+    "location": "./packages/a",
+    "name": "cat",
+    "spec": "catalog:",
+    "type": "prod",
+    "wanted": "1.0.0",
+  },
+  Object {
+    "action": "set the \\"tools\\" catalog entry for tool in vlt.json to ^2.0.0",
+    "current": "1.0.0",
+    "dependent": "a",
+    "inRange": false,
+    "kind": "major",
+    "latest": "2.0.0",
+    "location": "./packages/a",
+    "name": "tool",
+    "spec": "catalog:tools",
+    "type": "prod",
+    "wanted": "1.0.0",
+  },
 ]
 `
 
@@ -772,6 +850,7 @@ notag    1.0.0         1.5.0    1.5.0   prod  my-project  minor
 foo-two  1.0.0         1.2.0    2.0.0   prod  my-project  major, wanted fixes 1 serious alert, latest fixes 1 serious alert, latest adds 1 serious alert, latest score 30 (from 90), latest needs node >=99, latest needs react@^19.0.0
 baz      1.0.0         1.1.0    1.1.0   prod  my-project  minor
 cat      1.0.0         1.0.0    2.0.0   prod  my-project  major
+tool     1.0.0         1.0.0    2.0.0   prod  my-project  major
 pre      2.0.0-beta.1  2.0.0    2.0.0   prod  my-project  prerelease
 tagged   1.0.0         1.1.0    1.0.0   prod  my-project  minor
 patchy   1.0.0         1.0.1    1.0.1   prod  my-project  patch
@@ -779,12 +858,15 @@ unsat    1.0.0         missing  1.5.0   prod  my-project  minor
 gone     1.0.0         1.1.0    9.9.9   prod  my-project  major
 pinned   1.0.0         1.0.0    1.1.0   dev   my-project  minor, deprecated
 foo      1.0.0         1.2.0    2.0.0   prod  a           major, wanted fixes 1 serious alert, latest fixes 1 serious alert, latest adds 1 serious alert, latest score 30 (from 90), latest needs node >=99
+cat      1.0.0         1.0.0    2.0.0   prod  a           major
+tool     1.0.0         1.0.0    2.0.0   prod  a           major
 
 Run \`vlt update\` to pick up 10 in-range updates.
 Run \`vlt install foo@^2.0.0 foo-two@npm:foo@^2.0.0 unsat@^1.5.0 gone@^9.9.9\` to move to latest.
 Run \`vlt install pinned@^1.1.0 --save-dev\` to move to latest.
 Run \`vlt install foo@^2.0.0 --workspace=packages/a\` to move to latest.
 Set the catalog entry for cat in vlt.json to ^2.0.0.
+Set the "tools" catalog entry for tool in vlt.json to ^2.0.0.
 `
 
 exports[`test/commands/outdated.ts > TAP > views > human view of transitive dependencies 1`] = `

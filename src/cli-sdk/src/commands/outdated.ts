@@ -296,7 +296,9 @@ const explain = (entry: OutdatedEntry): string => {
 
 /**
  * The commands that perform the upgrades, one `vlt install` per set of
- * flags so that the specs can be combined.
+ * flags so that the specs can be combined. Several entries can call
+ * for the same step, such as every workspace that shares a catalog
+ * entry, so each step is listed once.
  */
 const suggestActions = (result: OutdatedResult): string[] => {
   const lines: string[] = []
@@ -306,28 +308,29 @@ const suggestActions = (result: OutdatedResult): string[] => {
       `Run \`vlt update\` to pick up ${plural(updates, 'in-range update')}.`,
     )
   }
-  const installs = new Map<string, string[]>()
+  const installs = new Map<string, Set<string>>()
+  const edits = new Set<string>()
   for (const { action } of result) {
-    if (!action?.startsWith('vlt install ')) continue
-    const [spec = '', ...flags] = action
-      .slice('vlt install '.length)
-      .split(' ')
-    const key = flags.join(' ')
-    const specs = installs.get(key) ?? []
-    specs.push(spec)
-    installs.set(key, specs)
+    if (!action) continue
+    if (action.startsWith('vlt install ')) {
+      const [spec = '', ...flags] = action
+        .slice('vlt install '.length)
+        .split(' ')
+      const key = flags.join(' ')
+      const specs = installs.get(key) ?? new Set()
+      specs.add(spec)
+      installs.set(key, specs)
+    } else if (!action.startsWith('vlt ')) {
+      edits.add(
+        `${action.charAt(0).toUpperCase()}${action.slice(1)}.`,
+      )
+    }
   }
   for (const [flags, specs] of installs) {
     const args = [...specs, ...(flags ? [flags] : [])].join(' ')
     lines.push(`Run \`vlt install ${args}\` to move to latest.`)
   }
-  for (const { action } of result) {
-    if (action && !action.startsWith('vlt ')) {
-      lines.push(
-        `${action.charAt(0).toUpperCase()}${action.slice(1)}.`,
-      )
-    }
-  }
+  lines.push(...edits)
   return lines
 }
 
@@ -485,7 +488,11 @@ const actionFor = (
     if (satisfies(latest, range)) return 'vlt update'
     const newRange = `${savePrefix}${latest}`
     if (edge.spec.type === 'catalog') {
-      return `set the catalog entry for ${edge.name} in vlt.json to ${newRange}`
+      const catalog =
+        edge.spec.catalog ?
+          `"${edge.spec.catalog}" catalog`
+        : 'catalog'
+      return `set the ${catalog} entry for ${edge.name} in vlt.json to ${newRange}`
     }
     const workspace =
       edge.from.mainImporter ?
