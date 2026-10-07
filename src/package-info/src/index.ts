@@ -480,8 +480,6 @@ export class PackageInfoClient {
     const linker = options['store-linker']
     this.#storeLinker =
       linker && storeLinkers.has(linker) ? linker : 'unpack'
-    // no eager mkdir here: an un-awaited fs op races cache dir
-    // removal; #writeManifestCache creates package-info/ lazily
   }
 
   async extract(
