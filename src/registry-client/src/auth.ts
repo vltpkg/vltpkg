@@ -57,13 +57,23 @@ export const isToken = (t: any): t is Token =>
   typeof t === 'string' &&
   (t.startsWith('Bearer ') || t.startsWith('Basic '))
 
+/**
+ * Delete the token for `registry`. With `token`, also delete every other
+ * key holding it: one login can save a token under many registries.
+ */
 export const deleteToken = async (
   registry: string,
   identity: string,
+  token?: Token,
 ): Promise<void> => {
   const kc = getKC(identity)
   await kc.load()
   kc.delete(normalizeRegistryKey(registry))
+  if (token) {
+    for (const key of kc.keysSync()) {
+      if (kc.getSync(key) === token) kc.delete(key)
+    }
+  }
   await kc.save()
 }
 

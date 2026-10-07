@@ -502,7 +502,7 @@ export class RegistryClient {
         }
       }
     } finally {
-      await deleteToken(registry, this.identity)
+      await deleteToken(registry, this.identity, tok)
     }
   }
 

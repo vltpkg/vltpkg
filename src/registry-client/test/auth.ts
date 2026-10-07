@@ -42,6 +42,10 @@ class Keychain {
     return this.#data[reg] as `Bearer ${string}` | undefined
   }
 
+  getSync(reg: string) {
+    return this.#data[reg]
+  }
+
   async keys() {
     return Object.keys(this.#data)
   }
@@ -173,6 +177,24 @@ t.test('deleteToken preserves path', async t => {
   t.strictSame(checkLog(getKC('')), [
     ['load'],
     ['delete', 'https://registry.vlt.io/luke'],
+    ['save'],
+  ])
+})
+
+t.test('deleteToken drops every key holding the token', async t => {
+  const { deleteToken, getKC } = await t.mockImport<
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
+  const kc = getKC('')
+  kc.set('https://r.io/acme/npm', 'Bearer tok')
+  kc.set('https://r.io/acme/main', 'Bearer tok')
+  kc.set('https://r.io/other', 'Bearer other')
+  await deleteToken('https://r.io/acme/npm/', '', 'Bearer tok')
+  t.strictSame(await kc.keys(), ['https://r.io/other'])
+  t.strictSame(checkLog(kc).slice(3), [
+    ['load'],
+    ['delete', 'https://r.io/acme/npm'],
+    ['delete', 'https://r.io/acme/main'],
     ['save'],
   ])
 })
