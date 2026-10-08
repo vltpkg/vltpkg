@@ -4,7 +4,7 @@ import { frontmatter } from 'fumadocs-core/content/md/frontmatter'
 
 const tree = 'https://github.com/vltpkg/vltpkg/tree/main'
 
-// skills live in the repo's skills/, where `npx skills add` finds them; scripts/skills.mts
+// skills live in the repo's skills/, where `vlx skills add` finds them; scripts/skills.mts
 // copies them into public/, which serves them as-is. read at build time for llms.txt and llms-full.txt
 const skill = (name: string) => {
   const dir = `/skills/${name}`
@@ -27,7 +27,7 @@ const skill = (name: string) => {
     name,
     url,
     github: `${tree}${dir}`,
-    install: `npx skills add vltpkg/vltpkg --skill ${name}`,
+    install: `vlx skills add vltpkg/vltpkg --skill ${name}`,
     description,
     content: content.trim(),
   }

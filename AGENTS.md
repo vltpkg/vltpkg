@@ -55,7 +55,7 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 - `/www/**/*.mjs` is gitignored (treated as build output) — name
   source scripts `.mts`.
 - Agent skills published from this repo live in root
-  `skills/<name>/SKILL.md`, where `npx skills add vltpkg/vltpkg`
+  `skills/<name>/SKILL.md`, where `vlx skills add vltpkg/vltpkg`
   (skills.sh) finds them. `/skills/*` is gitignored for #1540 mounts,
   so a new one needs a `!/skills/<name>/` line in `.gitignore` and an
   entry in `www/docs/src/lib/skills.ts`. `www/docs` copies them into
