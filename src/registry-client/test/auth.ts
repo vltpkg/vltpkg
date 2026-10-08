@@ -401,7 +401,7 @@ t.test('getTokenByURL VLT_TOKEN_* env vars', async t => {
     'https://npm.corp/com/x.tgz',
     'https://npm-corp.com/',
     'https://r.io/acme-npm/x',
-    // env-only key, #1844
+    // not configured
     'https://npm.corp.com/x.tgz',
   ]) {
     t.equal(await getTokenByURL(url, ''), undefined, url)
@@ -441,6 +441,95 @@ t.test('getTokenByURL VLT_REGISTRY without VLT_TOKEN', async t => {
     await getTokenByURL('https://registry.vlt.io/luke/pkg', ''),
     'Bearer luke-env',
     'VLT_TOKEN_<key> for VLT_REGISTRY',
+  )
+})
+
+t.test('registryKeys', async t => {
+  const { registryKeys } = await t.mockImport<
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
+  t.strictSame(registryKeys({}), [])
+  t.strictSame(
+    registryKeys({
+      registry: 'https://r.io/',
+      registries: {
+        npm: 'https://r.io/acme/npm/',
+        dup: 'https://r.io/acme/npm',
+        empty: '',
+        bad: 'not a url',
+      },
+      'scoped-registries': { '@acme': 'https://r.io/acme/main/' },
+      'jsr-registries': { jsr: 'https://npm.jsr.io/' },
+    }),
+    [
+      'https://r.io',
+      'https://r.io/acme/npm',
+      'https://r.io/acme/main',
+      'https://npm.jsr.io',
+    ],
+  )
+})
+
+t.test('getTokenByURL configured registries', async t => {
+  const {
+    getTokenByURL,
+    getKC,
+    registryKeys,
+    setRuntimeToken,
+    clearRuntimeTokens,
+  } = await t.mockImport<typeof import('../src/auth.ts')>(
+    '../src/auth.ts',
+    mocks,
+  )
+  clearRuntimeTokens()
+  process.env.VLT_TOKEN_https_r_io_acme_npm = 'npm'
+  process.env.VLT_TOKEN_https_r_io_acme_main = 'main'
+  t.teardown(() => {
+    clearRuntimeTokens()
+    delete process.env.VLT_TOKEN_https_r_io_acme_npm
+    delete process.env.VLT_TOKEN_https_r_io_acme_main
+  })
+  const keys = registryKeys({
+    registries: { npm: 'https://r.io/acme/npm/' },
+    'scoped-registries': { '@acme': 'https://r.io/acme/main/' },
+  })
+  const cases: [string, string | undefined][] = [
+    ['https://r.io/acme/npm/lodash', 'Bearer npm'],
+    [
+      'https://r.io/acme/npm/lodash/-/lodash-4.17.21.tgz',
+      'Bearer npm',
+    ],
+    ['https://r.io/acme/main/@acme%2futils', 'Bearer main'],
+    ['https://r.io/acme-npm/x', undefined],
+    ['https://r.io/acme/npmx/y', undefined],
+    ['https://r.io/x', undefined],
+    ['https://r-io/acme/npm/x', undefined],
+  ]
+  for (const [url, tok] of cases) {
+    t.equal(await getTokenByURL(url, '', keys), tok, url)
+  }
+  t.equal(
+    await getTokenByURL('https://r.io/acme/npm/lodash', ''),
+    undefined,
+    'env not probed without configured keys',
+  )
+  // env-less configured key does not shadow a shorter keychain key
+  getKC('').set('https://r.io', 'Bearer kc')
+  const more = [...keys, 'https://r.io/acme/x']
+  t.equal(
+    await getTokenByURL('https://r.io/acme/x/p', '', more),
+    'Bearer kc',
+  )
+  t.equal(
+    await getTokenByURL('https://r.io/acme/npm/lodash', '', more),
+    'Bearer npm',
+    'env on longer key beats shorter keychain key',
+  )
+  setRuntimeToken('https://r.io/acme/npm/', 'Bearer rt')
+  t.equal(
+    await getTokenByURL('https://r.io/acme/npm/lodash', '', keys),
+    'Bearer rt',
+    'runtime beats env',
   )
 })
 

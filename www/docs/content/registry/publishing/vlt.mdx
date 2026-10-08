@@ -82,9 +82,11 @@ export VLT_TOKEN=<your token>
 export VLT_REGISTRY=https://registry.vlt.io/acme/npm/
 ```
 
-`VLT_TOKEN` alone covers the default registry. If you also use
-`scoped-registries`, set `VLT_REGISTRY` as well — without it, vlt
-sends no credentials to the scoped registry.
+`VLT_TOKEN` with `VLT_REGISTRY` covers the default registry. For
+`scoped-registries`, also export that registry's
+`VLT_TOKEN_<registry>`, e.g.
+`VLT_TOKEN_https_registry_vlt_io_acme_main` (see
+[Authentication](/client/auth#ci-and-other-headless-environments)).
 
 ## Install from the npm mirror
 
@@ -176,8 +178,6 @@ Supported commands are `whoami`, `logout`, `login`, `token`, `access`,
   `stdin.setRawMode is not a function`. Use `VLT_TOKEN` in scripts.
 - **`scoped-registries` keeps the `@`** — `scoped-registries.@acme`,
   unlike Yarn's `npmScopes`.
-- With `scoped-registries`, `VLT_TOKEN` alone is not enough; add
-  `VLT_REGISTRY`.
 - The config key is `scoped-registries`, not `scope-registries`.
-- Per-registry `VLT_TOKEN_<registry>` variables exist but do not apply
-  to scoped registries. Prefer `VLT_REGISTRY` + `VLT_TOKEN`.
+- `VLT_TOKEN` covers one registry only; scoped (and other) registries
+  need their own `VLT_TOKEN_<registry>`.

@@ -2,13 +2,22 @@ import t from 'tap'
 import type { LoadedConfig } from '../src/config/index.ts'
 
 t.test('createGetAuthHeader', async t => {
-  const calls: [string, string][] = []
+  const calls: [string, string, string[]][] = []
+  const seen: unknown[] = []
   const { createGetAuthHeader } = await t.mockImport<
     typeof import('../src/query-auth.ts')
   >('../src/query-auth.ts', {
     '@vltpkg/registry-client': {
-      getTokenByURL: async (url: string, identity: string) => {
-        calls.push([url, identity])
+      registryKeys: (o: unknown) => {
+        seen.push(o)
+        return ['k']
+      },
+      getTokenByURL: async (
+        url: string,
+        identity: string,
+        keys: string[],
+      ) => {
+        calls.push([url, identity, keys])
         return url.startsWith('http://example.com/private/') ?
             'Bearer test-token'
           : undefined
@@ -34,9 +43,11 @@ t.test('createGetAuthHeader', async t => {
   t.strictSame(
     calls,
     [
-      ['http://example.com/private/registry/a', 'myid'],
-      ['http://example.com/other/a', 'myid'],
+      ['http://example.com/private/registry/a', 'myid', ['k']],
+      ['http://example.com/other/a', 'myid', ['k']],
     ],
-    'should forward url and configured identity',
+    'should forward url, identity and configured registry keys',
   )
+  t.equal(seen.length, 1, 'keys computed once')
+  t.equal(seen[0], conf.options, 'from config options')
 })
