@@ -41,6 +41,7 @@ const arg0 = await vlx.resolve(positionals, options, promptFn)
 // now one of the following is true:
 // - arg0 refers to a locally installed package bin
 // - arg0 refers to a package bin in the XDG.data directory
+// - arg0 refers to a local directory's bin, shimmed in XDG.cache
 // - arg0 is undefined, and an interactive shell can be executed
 // - an error was thrown, because it couijld not be determined
 if (arg0 === undefined) {

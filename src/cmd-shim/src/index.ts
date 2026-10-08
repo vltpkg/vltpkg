@@ -18,7 +18,7 @@ import {
 
 import { error } from '@vltpkg/error-cause'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { dirname, relative } from 'node:path'
+import { dirname, isAbsolute, relative } from 'node:path'
 import { convertToSetCommands } from './to-batch-syntax.ts'
 export {
   findCmdShim,
@@ -99,6 +99,9 @@ const writeShim_ = async (
   variables?: string,
 ) => {
   let shTarget = relative(dirname(to), from)
+  // win32 cross-drive: relative() is absolute, so no basedir prefix
+  const [dp0, basedir] =
+    isAbsolute(shTarget) ? ['', ''] : ['%dp0%\\', '$basedir/']
   let target = shTarget.split('/').join('\\')
   let longProg
   let shProg = prog?.split('\\').join('/')
@@ -109,8 +112,8 @@ const writeShim_ = async (
   args = args || ''
   variables = variables || ''
   if (!prog) {
-    prog = `"%dp0%\\${target}"`
-    shProg = `"$basedir/${shTarget}"`
+    prog = `"${dp0}${target}"`
+    shProg = `"${basedir}${shTarget}"`
     pwshProg = shProg
     args = ''
     target = ''
@@ -119,8 +122,8 @@ const writeShim_ = async (
     longProg = `"%dp0%\\${prog}.exe"`
     shLongProg = `"$basedir/${prog}"`
     pwshLongProg = `"$basedir/${prog}$exe"`
-    target = `"%dp0%\\${target}"`
-    shTarget = `"$basedir/${shTarget}"`
+    target = `"${dp0}${target}"`
+    shTarget = `"${basedir}${shTarget}"`
   }
 
   // Subroutine trick to fix https://github.com/npm/cmd-shim/issues/10

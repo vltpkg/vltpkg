@@ -6,18 +6,41 @@ sidebar:
 
 Usage:
 
-<Code code="$ vlt exec [command]" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt exec [--package=<pkg>] [--call=<cmd>] [command...]"
+  title="Terminal"
+  lang="bash"
+/>
 
-Run an arbitrary command, with the local installed packages first in
-the PATH. Ie, this will run your locally installed package bins.
+Run a command defined by a package, installing it if necessary. Also
+available as `vlx`.
 
-If no command is provided, then a shell is spawned in the current
-working directory, with the locally installed package bins first in
-the PATH.
+- If `--package` is set, that package's bins are used.
+- Otherwise, if the first argument is a bin in the local
+  `node_modules/.bin`, it runs without installing anything.
+- Otherwise, the first argument is treated as the package, and its
+  default bin is run: its single bin, or the bin named after the
+  package.
 
-Note that any vlt configs must be specified _before_ the command, as
-the remainder of the command line options are provided to the exec
-process.
+With no command, a shell is spawned with the bins in `PATH`. Flags for
+the bin go after `--`.
+
+Installs go to vlt's XDG data directory. Local `node_modules` is never
+changed.
+
+## Local packages
+
+A path to a local directory (relative to the current directory) runs
+its bins in place. Nothing is installed, and its own `node_modules` is
+used as-is.
+
+<Code
+  code={`$ vlx .
+$ vlx . -- --help
+$ vlt exec --package=. other-bin`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ## Aliases
 
