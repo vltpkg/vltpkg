@@ -21,6 +21,8 @@ When a specific field is provided, only that field value is displayed. Use dot-p
 
 Security data from the vlt security archive is shown when available, including scores and alerts.
 
+Use \`.\` (or no args) for the package in the current directory (nearest package.json), \`.@<version>\` to pick a version. Private packages show local package.json info.
+
 ## Aliases
 
 \`\`\`
@@ -63,6 +65,18 @@ Show the latest dist-tag value
 
 \`\`\`
 vlt view express dist-tags.latest
+\`\`\`
+
+View the package in the current directory
+
+\`\`\`
+vlt view .
+\`\`\`
+
+Show the latest published version of the current package
+
+\`\`\`
+vlt view . version
 \`\`\`
 
 ## Options

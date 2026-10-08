@@ -1,0 +1,59 @@
+---
+title: vlt view
+sidebar:
+  label: view
+---
+
+Usage:
+
+<Code
+  code="$ vlt view <pkg>[@<version>] [<field>]
+$ vlt view <pkg>[@<version>] [--view=human | json]"
+  title="Terminal"
+  lang="bash"
+/>
+
+View registry information about a package: manifest of the resolved
+version, dist-tags, maintainers, versions and, when available, vlt
+security scores and alerts.
+
+Aliases: `info`, `show`.
+
+## Local package
+
+`.` views the package in the current directory (nearest
+`package.json`, walking up). Running `vlt view` with no arguments does
+the same.
+
+<Code
+  code="$ vlt view .
+$ vlt view .@1.2.3
+$ vlt view . version"
+  title="Terminal"
+  lang="bash"
+/>
+
+- `.` looks up the local package name in the configured registry
+  (default dist-tag); `.@<version>` picks a version or tag.
+- Private packages (`"private": true`) are never looked up in the
+  registry; their local `package.json` info is shown instead.
+- Path specs (`./pkg`, `file:pkg`) show that directory's
+  `package.json`, relative to the project root.
+
+## Fields
+
+Pass a field to print only its value. Nested fields use dot-prop
+syntax:
+
+<Code
+  code="$ vlt view express dist-tags.latest
+$ vlt view express dependencies.debug"
+  title="Terminal"
+  lang="bash"
+/>
+
+## Options
+
+### `--view=<human | json>`
+
+Output format. Defaults to `human`, or `json` when not a tty.
