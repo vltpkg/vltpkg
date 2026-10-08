@@ -92,15 +92,15 @@ instead.
 Which option is available depends on the version, and there is one
 unlucky release with neither:
 
-| pnpm version     | `${VLT_TOKEN}` in `.npmrc` | `pnpm_config_…` env var |
-| ---------------- | -------------------------- | ----------------------- |
-| 11.5.2 and older | works                      | **not supported**       |
-| 11.5.3           | blocked                    | **not supported**       |
-| 11.6.0 – 11.26.0 | blocked                    | works                   |
-| 12.x             | blocked                    | works                   |
+| pnpm version     | `${VLT_TOKEN}` in project `.npmrc` | `pnpm_config_…` env var |
+| ---------------- | ---------------------------------- | ----------------------- |
+| 11.5.2 and older | works                              | **not supported**       |
+| 11.5.3           | blocked                            | **not supported**       |
+| 11.6.0 – 11.26.0 | blocked                            | works                   |
+| 12.x             | blocked                            | works                   |
 
 So on the pinned 11.26.0 above, use `pnpm login` or the environment
-variable — never a placeholder in the file.
+variable — never a placeholder in the project file.
 
 ### Option 1 — log in (recommended for laptops)
 
@@ -129,16 +129,20 @@ Two notes:
   ignored and you get
   `ERR_PNPM_FETCH_401 … No authorization header was set for the request`.
 
+In CI you can also write the auth lines to the user-level `~/.npmrc`,
+where `${VLT_TOKEN}` still expands — see
+[CI & automation](/registry/publishing/ci#pnpm-needs-a-different-approach).
+
 ## Install from the npm mirror
 
 ```sh
 pnpm add abbrev
 ```
 
-To move an existing project onto the mirror:
+To move an existing project onto the mirror, keep `pnpm-lock.yaml` —
+it stores no tarball URLs — and run `pnpm install`:
 
 ```sh
-rm -rf pnpm-lock.yaml node_modules
 pnpm install
 ```
 

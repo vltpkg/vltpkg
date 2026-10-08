@@ -52,11 +52,11 @@ npm install abbrev
 ```
 
 Resolves through `https://registry.vlt.io/acme/npm/`. To move an
-existing project onto the mirror, delete the lockfile so the resolved
-URLs get rewritten:
+existing project onto the mirror, keep `package-lock.json` and
+reinstall. npm's `replace-registry-host` (on by default) fetches
+locked `registry.npmjs.org` URLs from your configured registry:
 
 ```sh
-rm -rf package-lock.json node_modules
 npm install
 ```
 

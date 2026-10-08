@@ -1,14 +1,18 @@
 ---
 title: CI & automation
-description: Install and publish from CI with a vlt.io service token.
+description:
+  Install and publish from CI, Vercel and coding-agent sandboxes with
+  a vlt.io service token.
 sidebar:
   label: CI & Automation
   order: 7
 ---
 
-Store your token as a secret named `VLT_TOKEN` and export it. Every
-config file in these guides reads the token from the environment, so
-nothing else changes between your laptop and CI.
+Store your token as a secret named `VLT_TOKEN` and expose it to the
+job as an env var. The config files in these guides reference it
+(`${VLT_TOKEN}`, or `$VLT_TOKEN` in `bunfig.toml`), so nothing else
+changes between your laptop and CI — except pnpm, see
+[below](#pnpm-needs-a-different-approach).
 
 <Aside type="caution" title="If CI publishes, the token must be a service token">
 
@@ -17,6 +21,25 @@ publish and will fail with `EOTP`. See
 [Publishing from CI](#publishing-from-ci).
 
 </Aside>
+
+## Who reads what
+
+Only the vlt CLI reads `VLT_TOKEN` itself (with `VLT_REGISTRY`, or
+per-registry `VLT_TOKEN_*`; see
+[Authentication](/client/auth#ci-and-other-headless-environments)).
+Other tools see the secret only through an auth line that references
+it (pnpm: `~/.npmrc` or a `pnpm_config_…` env var), so setting the
+secret alone sends no credentials.
+
+| Tool          | Auth from                                | Token reference in committed project file                 |
+| ------------- | ---------------------------------------- | --------------------------------------------------------- |
+| vlt           | keychain or env vars                     | n/a, `.npmrc` not read                                    |
+| npm, npx      | `.npmrc`                                 | expanded                                                  |
+| pnpm          | `~/.npmrc`, or `pnpm_config_…` env var   | **ignored** ([11.5.3+](#pnpm-needs-a-different-approach)) |
+| yarn          | `.yarnrc.yml` (Classic: `.npmrc`)        | expanded                                                  |
+| bun           | `bunfig.toml` (`$VLT_TOKEN`) or `.npmrc` | expanded                                                  |
+| deno          | `.npmrc`                                 | expanded                                                  |
+| Vercel builds | `.npmrc` written from `NPM_RC`           | see [Vercel](#vercel)                                     |
 
 ## GitHub Actions
 
@@ -41,7 +64,7 @@ jobs:
 Commit the `.npmrc` / `bunfig.toml` / `.yarnrc.yml` from the relevant
 guide. Because they reference `${VLT_TOKEN}` rather than a literal
 token, they are safe in version control and need no rewriting step in
-CI.
+CI (pnpm: see [below](#pnpm-needs-a-different-approach)).
 
 ## Per package manager
 
@@ -83,7 +106,8 @@ If you would rather not commit the file, write it in a step:
 ```
 
 Keep the quotes on `<<'EOF'` so the shell leaves `${VLT_TOKEN}` intact
-for the package manager to expand.
+for the package manager to expand — never write the literal token into
+a project `.npmrc`. pnpm ignores `${VLT_TOKEN}` here too; see below.
 
 ### pnpm needs a different approach
 
@@ -105,6 +129,22 @@ and `.`, which the shell will not accept in an assignment. This needs
 [the pnpm guide](/registry/publishing/pnpm) for the full version
 matrix.
 
+Or write the auth lines to the user-level `~/.npmrc`, where pnpm still
+expands `${VLT_TOKEN}`:
+
+```yaml
+- run: |
+    cat >> ~/.npmrc <<'EOF'
+    //registry.vlt.io/acme/npm/:_authToken=${VLT_TOKEN}
+    //registry.vlt.io/acme/main/:_authToken=${VLT_TOKEN}
+    EOF
+- run: pnpm install --frozen-lockfile
+```
+
+`PNPM_CONFIG_NPMRC_AUTH_FILE=<path>` (env form of `--npmrc-auth-file`)
+does the same with an auth file outside the repo (verified on pnpm
+11.26 and 12).
+
 Pin pnpm by exact version in `packageManager`, not by range. Corepack
 resolves a range against its local cache first, so `pnpm@11` can
 produce different versions on different runners.
@@ -118,6 +158,38 @@ produce different versions on different runners.
   package you published minutes earlier. If CI installs your own fresh
   releases, configure `minimumDependencyAge` as shown in
   [the deno guide](/registry/publishing/deno).
+
+## Vercel
+
+Vercel doesn't read `VLT_TOKEN`. Builds install with an `.npmrc`
+Vercel writes from the `NPM_RC` env var. Set `NPM_RC` to your routing
+and auth lines with a `package:read` service token, and keep a
+`registry.npmjs.org` line — Vercel installs its runtimes from the
+public registry. For multi-line values, set it with the Vercel CLI to
+keep the line breaks. Use `NPM_RC`, not `NPM_TOKEN` (meant for private
+packages on npm's own registry; `NPM_RC` wins if both are set). See
+Vercel's
+[private dependencies guide](https://vercel.com/kb/guide/using-private-dependencies-with-vercel).
+
+## Coding-agent sandboxes
+
+Each cloud agent or dev environment (Cursor, Claude Code, Devin,
+Codespaces, …) needs the token set up separately — treat each like a
+CI runner:
+
+- Give it its own `package:read` service token (owners and admins
+  create them), so you can revoke one without breaking the others.
+- Store the token in that environment's secrets (these guides call it
+  `VLT_TOKEN`).
+- Commit the routing: default `registry` → the `npm` mirror, `@acme`
+  scope → `main` (`.npmrc` / `.yarnrc.yml` / `bunfig.toml` /
+  `vlt.json`).
+- Provide auth for both registry URLs: committed `${VLT_TOKEN}` lines
+  (npm, yarn, deno; `$VLT_TOKEN` in `bunfig.toml`), a setup step
+  writing `~/.npmrc` (pnpm,
+  [above](#pnpm-needs-a-different-approach)), or, for vlt, the env
+  vars in
+  [Authentication](/client/auth#ci-and-other-headless-environments).
 
 ## Publishing from CI
 
@@ -183,7 +255,10 @@ one of your dependencies is a public package from `main`.
 
 - `VLT_TOKEN` is set as a masked secret, not a plaintext variable.
 - The committed config uses `${VLT_TOKEN}` (or `$VLT_TOKEN` for
-  `bunfig.toml`) — never a literal token.
-- Lockfiles were regenerated after switching registries, so resolved
-  URLs point at `registry.vlt.io`.
+  `bunfig.toml`; pnpm: routing only) — never a literal token.
+- The secret is really set in the job: npm, bun and deno send an unset
+  token variable literally, which looks like a bad token.
+- After switching registries: npm and pnpm lockfiles kept;
+  `vlt-lock.json`, `yarn.lock`, `bun.lock` and `deno.lock` regenerated
+  (see each guide).
 - Installs use the frozen-lockfile flag for the package manager.
