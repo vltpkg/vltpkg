@@ -50,6 +50,11 @@ export const usage: CommandUsage = () =>
                   If the appropriate excutable cannot be determined, then
                   an error will be raised.
 
+                  If the package is a path to a local directory (eg, \`.\`
+                  or \`../pkg\`, relative to the current directory), its
+                  bins are run in place. Nothing is installed, and its own
+                  \`node_modules\` is used as-is.
+
                   At no point will \`vlt exec\` change the locally installed
                   dependencies. Any installs it performs is done in vlt's XDG
                   data directory.
@@ -64,6 +69,10 @@ export const usage: CommandUsage = () =>
       'eslint@9.24 src/file.js': {
         description:
           'Run the default bin provided by eslint version 9.24',
+      },
+      '.': {
+        description:
+          'Run the default bin of the package in the current directory',
       },
       'create-react-app --call="echo $PWD"': {
         description:

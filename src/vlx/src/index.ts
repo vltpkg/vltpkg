@@ -35,8 +35,9 @@ export type VlxInfo = VlxManifest['vlx'] & {
   version?: string
 
   /**
-   * path to the synthetic project for non-local installs, or to the
-   * current projectRoot if the resolution is local.
+   * path to the synthetic project for non-local installs, to the
+   * current projectRoot if the resolution is local, or a private shim
+   * dir for local directory specs.
    */
   path: string
 

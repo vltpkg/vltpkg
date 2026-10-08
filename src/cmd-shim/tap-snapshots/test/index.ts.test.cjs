@@ -709,6 +709,19 @@ Array [
 ]
 `
 
+exports[`test/index.ts > TAP > removed by target on another drive 1`] = `
+Array [
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.env.shim",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.env.shim.cmd",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.env.shim.ps1",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.env.shim.pwsh",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.exe.shim",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.exe.shim.cmd",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.exe.shim.ps1",
+  "{CWD}/.tap/fixtures/test-index.ts/xdrive-from.exe.shim.pwsh",
+]
+`
+
 exports[`test/index.ts > TAP > shebang with env -S > cmd 1`] = `
 @ECHO off\\r
 GOTO start\\r
