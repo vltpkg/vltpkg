@@ -8,6 +8,7 @@ import { reify } from './reify/index.ts'
 import { lockfile } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { Monorepo } from '@vltpkg/workspaces'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -23,6 +24,11 @@ export const uninstall = async (
   const mainManifest = options.packageJson.read(options.projectRoot)
   const modifiers = GraphModifier.maybeLoad(options)
   const remover = new RollbackRemove()
+  // graph spans every workspace; -w only picks the `remove` targets
+  const monorepo = Monorepo.maybeLoad(options.projectRoot, {
+    packageJson: options.packageJson,
+    scurry: options.scurry,
+  })
 
   try {
     // Load the actual graph before building the ideal graph so that
@@ -33,12 +39,14 @@ export const uninstall = async (
     // due to throwOnMissingManifest and leaving stale entries behind.
     const act = actualLoad({
       ...options,
+      monorepo,
       modifiers: undefined,
       mainManifest,
       loadManifests: true,
     })
     const graph = await idealBuild({
       ...options,
+      monorepo,
       actual: act,
       remove,
       mainManifest,

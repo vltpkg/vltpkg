@@ -1,5 +1,16 @@
 import t from 'tap'
 import { PackageJson } from '@vltpkg/package-json'
+import type { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
+import { Monorepo } from '@vltpkg/workspaces'
+import {
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import { objectLikeOutput } from '../src/visualization/object-like-output.ts'
 import { mockPackageInfo as mockPackageInfoBase } from './fixtures/reify.ts'
@@ -53,6 +64,9 @@ t.test('update', async t => {
           log += 'GraphModifier.maybeLoad\n'
         },
       },
+    },
+    '@vltpkg/workspaces': {
+      Monorepo: { maybeLoad: () => undefined },
     },
   })
 
@@ -225,6 +239,166 @@ t.test(
       objectLikeOutput(graph),
       /Edge spec\(strip-ansi@7\.1\.0\)/,
       'ideal graph reflects package.json spec, not existing node_modules',
+    )
+  },
+)
+
+t.test(
+  'update -w re-resolves only the selected workspaces',
+  async t => {
+    // exact specs (locked nodes) get that version, ranges get `latest`
+    let latest = '1.0.0'
+    const packageInfo = {
+      async manifest({ final: f }: Spec) {
+        return {
+          name: f.name,
+          version:
+            /^\d+\.\d+\.\d+$/.test(f.bareSpec) ? f.bareSpec : latest,
+        }
+      },
+      prefetchResolve: () => () => {},
+    } as unknown as PackageInfoClient
+    const pkg = (
+      name: string,
+      dependencies: Record<string, string>,
+    ) => ({
+      'package.json': JSON.stringify({
+        name,
+        version: '1.0.0',
+        dependencies,
+      }),
+    })
+    const dir = t.testdir({
+      ...pkg('root', { a: '^1.0.0' }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        x: pkg('x', { b: '^1.0.0', d: '^1.0.0' }),
+        y: pkg('y', { c: '^1.0.0', d: '^1.0.0' }),
+      },
+    })
+    t.chdir(dir)
+    unload('project')
+    t.teardown(() => unload('project'))
+    const packageJson = new PackageJson()
+    // fresh scurry: fs changes between calls
+    const opts = (load: { paths?: string[] } = {}) => {
+      const scurry = new PathScurry(dir)
+      return {
+        projectRoot: dir,
+        scurry,
+        packageJson,
+        packageInfo,
+        registries: { npm: 'https://registry.npmjs.org/' },
+        allowScripts: ':not(*)',
+        monorepo: Monorepo.maybeLoad(dir, {
+          scurry,
+          packageJson,
+          load,
+        }),
+      } as unknown as UpdateOptions
+    }
+    const { install } = await import('../src/install.ts')
+    await install({ ...opts(), lockfileOnly: true })
+    const lockfile = resolve(dir, 'vlt-lock.json')
+    const lock = JSON.parse(readFileSync(lockfile, 'utf8')) as {
+      nodes: Record<string, unknown>
+    }
+
+    latest = '1.1.0'
+    const { update } = await t.mockImport<
+      typeof import('../src/update.ts')
+    >('../src/update.ts', {
+      '../src/reify/index.ts': {
+        reify: async () => ({ buildQueue: [], diff: {} }),
+      },
+    })
+    const versions = async (options: UpdateOptions) => {
+      const { graph } = await update(options)
+      const res: Record<string, string | undefined> = {}
+      for (const importer of graph.importers) {
+        for (const edge of importer.edgesOut.values()) {
+          res[`${importer.name} ${edge.name}`] = edge.to?.version
+        }
+      }
+      return res
+    }
+
+    const scoped = {
+      'root a': '1.0.0',
+      'x b': '1.1.0',
+      'x d': '1.0.0',
+      'y c': '1.0.0',
+      'y d': '1.0.0',
+    }
+    t.strictSame(
+      await versions(opts({ paths: ['packages/x'] })),
+      scoped,
+      'only x re-resolved; shared d kept locked',
+    )
+    const all = {
+      'root a': '1.1.0',
+      'x b': '1.1.0',
+      'x d': '1.1.0',
+      'y c': '1.1.0',
+      'y d': '1.1.0',
+    }
+    t.strictSame(
+      await versions(opts()),
+      all,
+      'unfiltered updates all',
+    )
+    writeFileSync(
+      lockfile,
+      JSON.stringify({
+        ...lock,
+        nodes: { ...lock.nodes, 'file~../../forbidden': [0, 'f'] },
+      }),
+    )
+    await t.rejects(
+      update(opts({ paths: ['packages/x'] })),
+      { cause: { code: 'EINVALIDNAME' } },
+      'unsafe lockfile fails loud',
+    )
+    rmSync(lockfile)
+    t.strictSame(
+      await versions(opts({ paths: ['packages/x'] })),
+      all,
+      'no lockfile, nothing installed: updates all',
+    )
+
+    // installed: root a, y c + d (store ids from the lockfile)
+    const link = (from: string, name: string) => {
+      const id = Object.keys(lock.nodes).find(i =>
+        i.endsWith(`~${name}@1.0.0`),
+      )!
+      const pkgDir = resolve(
+        dir,
+        'node_modules/.vlt',
+        id,
+        'node_modules',
+        name,
+      )
+      mkdirSync(pkgDir, { recursive: true })
+      writeFileSync(
+        resolve(pkgDir, 'package.json'),
+        JSON.stringify({ name, version: '1.0.0' }),
+      )
+      mkdirSync(resolve(dir, from, 'node_modules'), {
+        recursive: true,
+      })
+      symlinkSync(
+        pkgDir,
+        resolve(dir, from, 'node_modules', name),
+        'junction',
+      )
+    }
+    link('.', 'a')
+    link('packages/y', 'c')
+    link('packages/y', 'd')
+    t.strictSame(
+      await versions(opts({ paths: ['packages/x'] })),
+      scoped,
+      'no lockfile: unselected keep installed versions',
     )
   },
 )
