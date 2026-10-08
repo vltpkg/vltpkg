@@ -8,6 +8,7 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
 import { Graph } from '../src/graph.ts'
+import type { Node } from '../src/node.ts'
 
 t.cleanSnapshot = s =>
   s
@@ -3114,4 +3115,65 @@ t.test('mutations counts structural writes', async t => {
   quiet('gc with nothing unreachable', () => graph.gc())
   bumped('removeNode', () => graph.removeNode(bar))
   bumped('resetEdges', () => graph.resetEdges())
+})
+
+t.test('recomputeFlags', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot,
+  })
+  const place = (
+    from: Node,
+    type: 'prod' | 'dev' | 'optional',
+    name: string,
+  ) => {
+    const node = graph.placePackage(
+      from,
+      type,
+      Spec.parse(`${name}@^1.0.0`, configData),
+      { name, version: '1.0.0' },
+    )
+    if (!node) throw new Error(`failed to place ${name}`)
+    return node
+  }
+  const root = graph.mainImporter
+  const a = place(root, 'dev', 'a')
+  const b = place(root, 'prod', 'b')
+  const o = place(root, 'optional', 'o')
+  const c = place(a, 'prod', 'c')
+  const d = place(b, 'prod', 'd')
+  // reusing c via a prod path leaves its dev flag behind
+  graph.addEdge('prod', Spec.parse('c@^1.0.0', configData), d, c)
+  const p = place(o, 'prod', 'p')
+  const x = place(root, 'dev', 'x')
+  const y = place(x, 'optional', 'y')
+  y.optional = false
+  graph.addEdge(
+    'prod',
+    Spec.parse('missing@^1.0.0', configData),
+    root,
+  )
+  t.equal(c.dev, true, 'c starts stale')
+
+  const { mutations } = graph
+  graph.recomputeFlags()
+  const flags = (n: Node) => ({ dev: n.dev, optional: n.optional })
+  t.strictSame(flags(root), { dev: false, optional: false })
+  t.strictSame(flags(a), { dev: true, optional: false })
+  t.strictSame(flags(b), { dev: false, optional: false })
+  t.strictSame(flags(d), { dev: false, optional: false })
+  t.strictSame(flags(c), { dev: false, optional: false }, 'c healed')
+  t.strictSame(flags(o), { dev: false, optional: true })
+  t.strictSame(flags(p), { dev: false, optional: true })
+  t.strictSame(flags(y), { dev: true, optional: true }, 'y healed')
+  t.equal(graph.lockfileStale, true, 'lockfile marked stale')
+  t.equal(graph.mutations, mutations, 'not a structural write')
+
+  graph.lockfileStale = false
+  graph.recomputeFlags()
+  t.equal(graph.lockfileStale, false, 'no change, not stale')
 })

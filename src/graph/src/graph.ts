@@ -179,9 +179,10 @@ export class Graph implements GraphLike {
   /**
    * Whether the lockfile on disk no longer matches this graph even
    * though no node changed, e.g. an importer edge spec was rewritten to
-   * the value saved to `package.json`, or the config options the graph
-   * was built with differ from the ones stored in the lockfile. Reify
-   * saves the lockfiles from its no-diff early return when set.
+   * the value saved to `package.json`, a node dev/optional flag was
+   * re-derived, or the config options the graph was built with differ
+   * from the ones stored in the lockfile. Reify saves the lockfiles
+   * from its no-diff early return when set.
    */
   lockfileStale = false
 
@@ -288,6 +289,35 @@ export class Graph implements GraphLike {
    */
   nextPeerContextIndex() {
     return ++this.currentPeerContextIndex
+  }
+
+  /**
+   * Re-derive node `dev`/`optional` flags: a node is dev/optional only
+   * when every importer path crosses a dev/optional edge. Placement only
+   * ever lowers these flags, so removed or retyped edges leave them
+   * stale. Sets `lockfileStale` when any flag changes.
+   */
+  recomputeFlags() {
+    const reach = (skip: (edge: Edge) => boolean) => {
+      const seen = new Set<Node>(this.importers)
+      for (const node of seen) {
+        for (const edge of node.edgesOut.values()) {
+          if (edge.to && !skip(edge)) seen.add(edge.to)
+        }
+      }
+      return seen
+    }
+    const nonDev = reach(edge => edge.dev)
+    const nonOptional = reach(edge => edge.optional)
+    for (const node of this.nodes.values()) {
+      const dev = !nonDev.has(node)
+      const optional = !nonOptional.has(node)
+      if (node.dev !== dev || node.optional !== optional) {
+        node.dev = dev
+        node.optional = optional
+        this.lockfileStale = true
+      }
+    }
   }
 
   /**
