@@ -681,6 +681,28 @@ t.test('an identity-encoded body is checked too', async t => {
   t.equal(found?.integrity, actual, 'stored under its hash')
 })
 
+t.test('a request error keeps its async callers', async t => {
+  const rc = t.context.rc as RegistryClient
+  // thrown inside #request() after it awaited the response, so the
+  // frames above it are all async ones. redirect hops must not use up
+  // the default 10-frame limit before the caller is reached
+  async function callerOfRequest(path: string) {
+    return await rc.request(`${registryURL}${path}`, {
+      integrity: wrong,
+    })
+  }
+  for (const path of ['/plain/tarball', '/301-redirect1']) {
+    await t.rejects(
+      callerOfRequest(path),
+      {
+        cause: { code: 'EINTEGRITY' },
+        stack: /\bat async callerOfRequest\b/,
+      },
+      path,
+    )
+  }
+})
+
 t.test('an error body is not held to the expectation', async t => {
   const dir = t.testdir()
   const rc = new RC({ cache: dir })

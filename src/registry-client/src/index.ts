@@ -884,16 +884,18 @@ export class RegistryClient {
     url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
-    const p = this.#request(url, options)
-    const tracked = p.then(
-      () => {},
-      () => {},
-    )
+    // tracked apart from the #request() promise: a second reaction on
+    // that one would make V8 drop the caller's async frames from the
+    // stack of any error #request() throws. redirect and otp hops call
+    // #request() directly, this call already tracks them
+    let settle!: () => void
+    const tracked = new Promise<void>(res => (settle = res))
     this.#inFlight.add(tracked)
     try {
-      return await p
+      return await this.#request(url, options)
     } finally {
       this.#inFlight.delete(tracked)
+      settle()
     }
   }
 
@@ -1152,7 +1154,7 @@ export class RegistryClient {
     if (response.statusCode === 401) {
       const otpResult = await otplease(this, options, response)
       if (otpResult && 'retry' in otpResult) {
-        return await this.request(url, otpResult.retry)
+        return await this.#request(url, otpResult.retry)
       }
       if (otpResult && 'bodyConsumed' in otpResult) {
         consumedBody = otpResult.bodyConsumed
@@ -1196,7 +1198,7 @@ export class RegistryClient {
       response.body.resume()
       const [nextURL, nextOptions] = redirect(options, result, url)
       if (nextOptions && nextURL) {
-        return await this.request(nextURL, nextOptions)
+        return await this.#request(nextURL, nextOptions)
       }
       return result
     }
