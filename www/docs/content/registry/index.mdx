@@ -105,14 +105,6 @@ aliases in one step:
 vlt setup
 ```
 
-In an existing project, reinstall afterwards without the old lockfile
-([#1579](https://github.com/vltpkg/vltpkg/issues/1579)):
-
-```bash
-rm -rf vlt-lock.json node_modules
-vlt install
-```
-
 Alternatively, configure a project manually:
 
 <Steps>
@@ -152,13 +144,9 @@ Alternatively, configure a project manually:
    vlt login
    ```
 
-   Then reinstall from the mirror. vlt doesn't yet re-resolve a kept
-   `vlt-lock.json` against a new registry
-   ([#1579](https://github.com/vltpkg/vltpkg/issues/1579)), so delete
-   it first:
+Then reinstall your dependencies from the vlt.io mirror:
 
    ```bash
-   rm -rf vlt-lock.json node_modules
    vlt install
    ```
 
