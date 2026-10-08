@@ -2615,3 +2615,44 @@ t.test('requestStream', async t => {
     t.equal(seen.url, '/-/vlt/resolve?x=1')
   })
 })
+
+// after logout, so no keychain token for registryURL is left over
+t.test('VLT_TOKEN_<key> for configured registries', async t => {
+  dropConnection = false
+  const npm = `${registryURL}/alt/acme/npm/`
+  const main = `${registryURL}/alt/acme/main/`
+  const npmVar = `VLT_TOKEN_http_localhost_${PORT}_alt_acme_npm`
+  const mainVar = `VLT_TOKEN_http_localhost_${PORT}_alt_acme_main`
+  process.env[npmVar] = 'npm-env'
+  process.env[mainVar] = 'main-env'
+  t.teardown(() => {
+    delete process.env[npmVar]
+    delete process.env[mainVar]
+  })
+  const rc = new RC({
+    cache: dirname((t.context.rc as RegistryClient).cache.path()),
+    registries: { npm },
+    'scoped-registries': { '@acme': main },
+  })
+  authSeen.length = 0
+  for (const url of [
+    `${npm}abbrev`,
+    `${main}@acme/utils`,
+    `${registryURL}/alt/acme-npm/abbrev`,
+  ]) {
+    await rc.request(url, { useCache: false })
+  }
+  const { body } = await rc.requestStream(`${npm}abbrev`)
+  await body.toArray()
+  // no configured registries, env not used
+  await (t.context.rc as RegistryClient).request(`${npm}abbrev`, {
+    useCache: false,
+  })
+  t.strictSame(authSeen, [
+    ['/alt/acme/npm/abbrev', 'Bearer npm-env'],
+    ['/alt/acme/main/@acme/utils', 'Bearer main-env'],
+    ['/alt/acme-npm/abbrev', undefined],
+    ['/alt/acme/npm/abbrev', 'Bearer npm-env'],
+    ['/alt/acme/npm/abbrev', undefined],
+  ])
+})

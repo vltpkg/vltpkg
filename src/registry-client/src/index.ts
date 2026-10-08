@@ -18,7 +18,7 @@ import type { Agent, Dispatcher } from 'undici'
 import { RetryAgent } from 'undici'
 import { userAgent } from '@vltpkg/user-agent'
 import { addHeader } from './add-header.ts'
-import type { Token } from './auth.ts'
+import type { RegistryURLs, Token } from './auth.ts'
 import {
   clearRuntimeTokens,
   deleteToken,
@@ -29,6 +29,7 @@ import {
   keychains,
   normalizeRegistryKey,
   registryBase,
+  registryKeys,
   runtimeTokens,
   setRuntimeToken,
   setToken,
@@ -75,6 +76,7 @@ export {
   oidc,
   registryBase,
   registryErrorMessage,
+  registryKeys,
   requestError,
   runtimeTokens,
   setRuntimeToken,
@@ -83,6 +85,7 @@ export {
   type ErrorResponse,
   type JSONObj,
   type OidcOptions,
+  type RegistryURLs,
   type Token,
   type TokenResponse,
   type WebAuthChallenge,
@@ -113,7 +116,7 @@ const maxHeadSize = 1024 * 1024
 export const cacheKey = (method: string, url: URL | string): string =>
   `${method !== 'GET' ? method + ' ' : ''}${url}`
 
-export type RegistryClientOptions = {
+export type RegistryClientOptions = RegistryURLs & {
   /**
    * Path on disk where the cache should be stored
    *
@@ -312,6 +315,8 @@ export class RegistryClient {
   agent: RetryAgent
   cache: Cache
   identity: string
+  /** configured registry keys; `VLT_TOKEN_<key>` applies under each */
+  readonly registryKeys: readonly string[]
   staleWhileRevalidateFactor: number
   #session = randomUUID()
   #decoded = new WeakMap<Uint8Array, CacheEntry>()
@@ -328,6 +333,7 @@ export class RegistryClient {
         staleWhileRevalidateFactor = 576, // 48h for a 5min cache
     } = options
     this.identity = identity
+    this.registryKeys = registryKeys(options)
     this.staleWhileRevalidateFactor = staleWhileRevalidateFactor
     const path = resolve(cache, 'registry-client')
     const store = options.storeRoot ?? storeRoot(cache)
@@ -840,7 +846,11 @@ export class RegistryClient {
     o.headers = addHeader(
       o.headers,
       'authorization',
-      await getTokenByURL(String(u), this.identity),
+      await getTokenByURL(
+        String(u),
+        this.identity,
+        this.registryKeys,
+      ),
     )
 
     logRequest(url, 'start', { method: o.method })
@@ -984,7 +994,11 @@ export class RegistryClient {
       options.headers = addHeader(
         options.headers,
         'authorization',
-        await getTokenByURL(String(u), this.identity),
+        await getTokenByURL(
+          String(u),
+          this.identity,
+          this.registryKeys,
+        ),
       )
     }
 
