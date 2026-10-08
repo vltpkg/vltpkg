@@ -38,12 +38,21 @@ const mockAddToPATH = {
   addToPATH: (path: string) => addedToPath.push(path),
 }
 
+const mockXDG = (t: Test) => ({
+  XDG: class {
+    cache(p = '') {
+      return resolve(t.testdirName, 'cache', p)
+    }
+  },
+})
+
 const getVlxResolve = async (t: Test) =>
   await t.mockImport<typeof import('../src/resolve.ts')>(
     '../src/resolve.ts',
     {
       '../src/install.ts': mockVlxInstall(t),
       '../src/add-to-path.ts': mockAddToPATH,
+      '@vltpkg/xdg': mockXDG(t),
     },
   )
 
@@ -225,4 +234,140 @@ t.test('pkgOption has version, use global, cannot infer', async t => {
   t.strictSame(addedToPath, [
     resolve(t.testdirName, 'abbrevhash/node_modules/.bin'),
   ])
+})
+
+const localFixture = (t: Test) => {
+  const bin = '#!/usr/bin/env node\n'
+  const testdir = t.testdir({
+    proj: {
+      'package.json': JSON.stringify({
+        name: 'my-tool',
+        version: '1.0.0',
+        bin: { 'my-tool': 'cli.js' },
+      }),
+      'cli.js': bin,
+      sub: {},
+    },
+    multi: {
+      'package.json': JSON.stringify({
+        name: 'multi',
+        version: '1.0.0',
+        bin: { a: 'a.js', b: 'b.js' },
+      }),
+      'a.js': bin,
+      'b.js': bin,
+    },
+    'x.tgz': '',
+  })
+  const options = {
+    projectRoot: testdir,
+    packageJson,
+    scurry: new PathScurry(testdir),
+    packageInfo: mockPackageInfoClient,
+    allowScripts: '*',
+  }
+  return { testdir, proj: resolve(testdir, 'proj'), options }
+}
+
+// PATH holds the local dir's shim dir
+const assertShimDir = async (t: Test, dir: string) => {
+  const { vlxLocal } = await t.mockImport<
+    typeof import('../src/local.ts')
+  >('../src/local.ts', { '@vltpkg/xdg': mockXDG(t) })
+  const { path } = await vlxLocal(dir, new PackageJson())
+  t.strictSame(addedToPath, [resolve(path, 'node_modules/.bin')])
+}
+
+t.test('local dir, dot', async t => {
+  const { vlxResolve } = await getVlxResolve(t)
+  const { proj, options } = localFixture(t)
+  t.chdir(proj)
+  t.equal(
+    await vlxResolve(['.'], { ...options, projectRoot: proj }),
+    'my-tool',
+  )
+  await assertShimDir(t, proj)
+})
+
+t.test('local dir, dotdot', async t => {
+  const { vlxResolve } = await getVlxResolve(t)
+  const { proj, options } = localFixture(t)
+  t.chdir(resolve(proj, 'sub'))
+  t.equal(
+    await vlxResolve(['..'], { ...options, projectRoot: proj }),
+    'my-tool',
+  )
+  await assertShimDir(t, proj)
+})
+
+t.test('local dir, --package=dot', async t => {
+  const { vlxResolve } = await getVlxResolve(t)
+  const { proj, options } = localFixture(t)
+  t.chdir(proj)
+  t.equal(
+    await vlxResolve([], {
+      ...options,
+      package: '.',
+      projectRoot: proj,
+    }),
+    undefined,
+  )
+  await assertShimDir(t, proj)
+})
+
+t.test('local dir, cannot infer', async t => {
+  const { vlxResolve } = await getVlxResolve(t)
+  const { testdir, options } = localFixture(t)
+  const multi = resolve(testdir, 'multi')
+  t.chdir(multi)
+  await t.rejects(
+    vlxResolve(['.'], { ...options, projectRoot: multi }),
+    {
+      message: 'Package executable could not be inferred',
+      cause: {
+        name: 'multi',
+        found: { a: 'a.js', b: 'b.js' },
+      },
+    },
+  )
+})
+
+t.test('local tarball installs', async t => {
+  const { vlxResolve } = await getVlxResolve(t)
+  const { testdir, options } = localFixture(t)
+  t.chdir(testdir)
+  t.equal(await vlxResolve(['./x.tgz'], options), 'glob')
+  t.strictSame(addedToPath, [
+    resolve(testdir, 'globhash/node_modules/.bin'),
+  ])
+})
+
+t.test('local dir, path-like arg0 skips installed bins', async t => {
+  const { vlxResolve } = await getVlxResolve(t)
+  const testdir = t.testdir({
+    proj: {
+      'package.json': JSON.stringify({ name: 'proj', bin: 'cli.js' }),
+      'cli.js': '#!/usr/bin/env node\n',
+    },
+    node_modules: {
+      proj: { 'bin.js': '' },
+      '.bin': {
+        proj: t.fixture('symlink', '../proj/bin.js'),
+        'proj.cmd': '',
+        'proj.ps1': '',
+      },
+    },
+  })
+  t.chdir(testdir)
+  t.equal(
+    await vlxResolve(['./proj'], {
+      projectRoot: testdir,
+      packageJson,
+      scurry: new PathScurry(testdir),
+      packageInfo: mockPackageInfoClient,
+      allowScripts: '*',
+    }),
+    'proj',
+  )
+  await assertShimDir(t, resolve(testdir, 'proj'))
 })

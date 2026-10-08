@@ -169,8 +169,9 @@ export const reify = async (
     // Even when there are no changes to reify, ensure lockfiles
     // exist on disk. This handles the case where a project has no
     // dependencies (or only workspace importers) but still needs
-    // lockfiles written on the first install. A stale flag means an
-    // edge spec was rewritten above, which the lockfiles have to carry.
+    // lockfiles written on the first install. A stale flag means
+    // lockfile data changed w/o a node diff (edge spec/type, options,
+    // dev/optional flags), which the lockfiles have to carry.
     if (!hasLockfiles || graph.lockfileStale) {
       // with no diff at all the ideal graph is the actual graph, so the
       // hidden lockfile can be written from it; an optional-only diff

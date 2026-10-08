@@ -11,7 +11,7 @@ Guide for adding pseudo-selectors to `src/query/`.
 
 1. **Study patterns**: `src/query/src/pseudo/` — see `missing.ts` (edge), `private.ts` (node), `overridden.ts` (edge property)
 2. **Create**: `src/query/src/pseudo/your-selector.ts`
-3. **Register**: import in `src/query/src/pseudo.ts`, add to `pseudoSelectors` Map
+3. **Register**: import in `src/query/src/pseudo.ts`, add to `pseudoSelectors` Map; add the name to `pseudoClassNames` in `src/dss-parser/src/grammar.ts` (tsc enforces)
 4. **Test**: `src/query/test/pseudo/your-selector.ts`
 5. **Validate**: follow `@code-validation-workflow.mdc`
 

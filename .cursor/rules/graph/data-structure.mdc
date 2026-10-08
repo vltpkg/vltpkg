@@ -24,6 +24,7 @@ alwaysApply: false
 - `placePackage(fromNode, depType, spec, manifest?, id?, extra?)` — high-level: creates node + edge, splits `extra` into `modifier`/`peerSetHash`
 - `findResolution(spec, fromNode, extra?)` — searches `nodesByName` for satisfying node, cached by spec+location+extra
 - `removeNode(node, replacement?, keepEdges?)`, `gc()` — prune unreachable
+- `recomputeFlags()` — re-derive `dev`/`optional` from importer reachability
 - `resetEdges()` — clears edges, marks manifested nodes as `detached` for reuse
 - `nextPeerContextIndex()` — unique peer context ID generation
 - `toJSON()` → `lockfileData()` for deterministic serialization

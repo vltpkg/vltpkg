@@ -421,6 +421,7 @@ t.test(
           nodes: new Map(),
           importers: [],
           gc: () => {},
+          recomputeFlags: () => {},
         }),
         loadHidden: () => ({
           nodes: new Map(),
@@ -1035,6 +1036,7 @@ t.test(
           nodes: new Map(),
           importers: [],
           gc: () => {},
+          recomputeFlags: () => {},
         }),
         loadHidden: () => ({
           nodes: new Map(),
@@ -2104,6 +2106,98 @@ t.test('a legacy importer edge heals its type', async t => {
     'a second install writes nothing',
   )
   t.ok(before, 'the first heal did write')
+})
+
+t.test('a dev flag lost to a removed prod edge heals', async t => {
+  const manifests: Record<string, Record<string, unknown>> = {
+    'strip-ansi': {
+      name: 'strip-ansi',
+      version: '7.1.0',
+      dependencies: { 'ansi-regex': '^6.0.1' },
+    },
+    'ansi-regex': { name: 'ansi-regex', version: '6.0.1' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return manifests[spec.name]
+    },
+    async extract(spec: Spec) {
+      return { resolved: '', spec }
+    },
+  } as unknown as PackageInfoClient
+  const projectRoot = t.testdir({})
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = () =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      allowScripts: ':not(*)',
+    }) as unknown as InstallOptions
+  // a removed edge hands its link to a detached rm process, which holds
+  // the fixture cwd on windows (EBUSY); let tap sweep it instead
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class extends RollbackRemove {
+        confirm() {}
+      },
+    },
+  })
+  const id = joinDepIDTuple(['registry', '', 'ansi-regex@6.0.1'])
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const file = (f: string) => resolve(projectRoot, f)
+  const flags = () =>
+    lockfiles.map(
+      f =>
+        (
+          JSON.parse(readFileSync(file(f), 'utf8')) as {
+            nodes: Record<string, [number]>
+          }
+        ).nodes[id]?.[0],
+    )
+  const pj = (dependencies?: Record<string, string>) =>
+    writeFileSync(
+      file('package.json'),
+      JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies,
+        devDependencies: { 'strip-ansi': '^7.1.0' },
+      }),
+    )
+
+  pj()
+  await install(opts())
+  t.strictSame(flags(), [2, 2], 'dev via strip-ansi')
+  pj({ 'ansi-regex': '^6.0.0' })
+  await install(opts())
+  t.strictSame(flags(), [0, 0], 'prod')
+  pj()
+  await install(opts())
+  t.strictSame(flags(), [2, 2], 'dev again')
+
+  // a lockfile written before the fix
+  for (const f of lockfiles) {
+    const data = JSON.parse(readFileSync(file(f), 'utf8')) as {
+      nodes: Record<string, [number]>
+    }
+    data.nodes[id]![0] = 0
+    writeFileSync(file(f), JSON.stringify(data))
+  }
+  await install(opts())
+  t.strictSame(flags(), [2, 2], 'healed by a plain install')
+
+  utimesSync(file('vlt-lock.json'), 0, 0)
+  await install(opts())
+  t.equal(
+    statSync(file('vlt-lock.json')).mtimeMs,
+    0,
+    'a second install writes nothing',
+  )
 })
 
 t.test('explicit adds carry the saved value everywhere', async t => {

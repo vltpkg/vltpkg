@@ -178,7 +178,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
   constructor(query: string) {
     this.#items = []
     this.specificity = { idCounter: 0, commonCounter: 0 }
-    const ast = parse(query)
+    const ast = parse(query, { loose: true })
 
     // Track whether we encountered a combinator since the last item
     let afterCombinator = true

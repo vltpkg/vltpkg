@@ -55,6 +55,7 @@ After Ideal + Actual, compute `Diff` → apply via `reify()`.
 - Use hidden lockfile for faster Actual loads
 - `graph.resetEdges()` preserves detached nodes for reuse
 - Pass `actual` to `ideal.build()` for early extraction optimization
+- `install`/`uninstall`/`update` build from an unfiltered `Monorepo`: `-w` filters `options.monorepo`, a filtered graph drops other workspaces' lockfile entries
 
 ## Sub-rules
 

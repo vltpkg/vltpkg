@@ -64,13 +64,21 @@ For example:
 VLT_TOKEN="helloworldtokendeadbeef" vlt install
 ```
 
-To provide a token for other registries, replace all non-alphanumeric
-characters in the registry URL with `_`, and set the appropriate
-`VLT_TOKEN_{...}` variable.
+To provide a token for other registries, set a `VLT_TOKEN_{...}`
+variable named after the registry URL: drop the trailing `/` and
+replace each run of non-alphanumeric characters with `_`. The path is
+part of the name, e.g. `https://registry.vlt.io/acme/main/` becomes
+`VLT_TOKEN_https_registry_vlt_io_acme_main`.
 
 ```
 VLT_TOKEN_https_my_custom_registry_mycompany_local="helloworldtokendeadbeef" vlt install
 ```
+
+These variables apply to configured registries (`registry`,
+`registries`, `scoped-registries` and `jsr-registries`, built-in `gh`
+and `jsr` included) and to registries you've logged in to. The token
+is only sent to URLs under that registry URL (plus same-origin
+redirects, see above).
 
 ## OIDC (OpenID Connect)
 

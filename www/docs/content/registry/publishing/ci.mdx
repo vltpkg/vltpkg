@@ -62,8 +62,10 @@ bun install --frozen-lockfile
 # deno — commit .npmrc with ${VLT_TOKEN}
 deno ci
 
-# vlt
-VLT_REGISTRY=https://registry.vlt.io/acme/npm/ vlt install --frozen-lockfile
+# vlt — one VLT_TOKEN_<registry> per registry
+VLT_TOKEN_https_registry_vlt_io_acme_npm=$VLT_TOKEN \
+VLT_TOKEN_https_registry_vlt_io_acme_main=$VLT_TOKEN \
+vlt install --frozen-lockfile
 ```
 
 ### Generating `.npmrc` at runtime instead

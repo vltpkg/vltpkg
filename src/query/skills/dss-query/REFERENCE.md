@@ -69,7 +69,7 @@ Package properties:
 | ------------------- | --------------------------------------- | ---------------------------------------------- |
 | `:attr(...)`        | nested package.json property            | `:attr(engines, [node])`                       |
 | `:dist(tag)`        | registry dist-tag                       | `:dist(latest)`                                |
-| `:has(sel)`         | has matching descendant                 | `:has(.peer[name=react])`                      |
+| `:has(sel)`         | has matching descendant                 | `:has(:peer[name=react])`                      |
 | `:host(name)`       | switch graph context to another project | `:host(local) :malware`                        |
 | `:is(a, b)`         | any of (forgiving list)                 | `:is([name=a], [name=b])`                      |
 | `:not(sel)`         | negation                                | `:not([license=MIT])`                          |

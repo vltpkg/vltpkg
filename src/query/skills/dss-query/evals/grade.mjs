@@ -69,6 +69,7 @@ const makeQuery = () => {
   })
 }
 
+// parse() rejects invalid DSS (grammar + structure), not just bad syntax
 const parseAll = selectors => {
   const failures = []
   for (const s of selectors) {
