@@ -125,8 +125,8 @@ alone sends no credentials.
 - vlt: per-registry
   `VLT_TOKEN_<registry URL, trailing / dropped, each run of non-alphanumerics → _>`,
   e.g. `VLT_TOKEN_https_registry_vlt_io_acme_npm` and
-  `VLT_TOKEN_https_registry_vlt_io_acme_main`.
-  See [Authentication](https://docs.vlt.sh/client/auth.md#ci-and-other-headless-environments).
+  `VLT_TOKEN_https_registry_vlt_io_acme_main`. See
+  [Authentication](https://docs.vlt.sh/client/auth.md#ci-and-other-headless-environments).
 
 ## 5. CI and hosted environments
 
