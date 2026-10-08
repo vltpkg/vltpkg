@@ -25,7 +25,9 @@ Every page is available as Markdown: append \`.md\` to its URL, or request the p
 
 ## Agent skills
 
-${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description}`).join('\n')}
+Follow a skill by reading its link. Skills with an \`Install:\` command can also be added to a project with the [skills CLI](https://skills.sh/docs/cli).
+
+${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description} Install: \`${s.install}\``).join('\n')}
 - [${dssQuerySkill.name}](${dssQuerySkill.github}): ${dssQuerySkill.description}
 
 ## Pages

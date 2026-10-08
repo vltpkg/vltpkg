@@ -1,16 +1,20 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { frontmatter } from 'fumadocs-core/content/md/frontmatter'
 
 const tree = 'https://github.com/vltpkg/vltpkg/tree/main'
 
-// skills are served as-is from public/; read at build time for llms.txt and llms-full.txt
+// skills live in the repo's skills/, where `npx skills add` finds them; scripts/skills.mts
+// copies them into public/, which serves them as-is. read at build time for llms.txt and llms-full.txt
 const skill = (name: string) => {
   const dir = `/skills/${name}`
   const url = `${dir}/SKILL.md`
-  const { data, content } = frontmatter(
-    readFileSync(join(process.cwd(), 'public', url), 'utf8'),
-  )
+  const file = join(process.cwd(), 'public', url)
+  if (!existsSync(file))
+    throw new Error(
+      `${url}: not in public/, run scripts/skills.mts (prebuild, predev)`,
+    )
+  const { data, content } = frontmatter(readFileSync(file, 'utf8'))
   const { name: fmName, description } = data as Record<
     string,
     unknown
@@ -22,7 +26,8 @@ const skill = (name: string) => {
   return {
     name,
     url,
-    github: `${tree}/www/docs/public${dir}`,
+    github: `${tree}${dir}`,
+    install: `npx skills add vltpkg/vltpkg --skill ${name}`,
     description,
     content: content.trim(),
   }
