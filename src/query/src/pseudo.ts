@@ -67,6 +67,7 @@ import { unstable } from './pseudo/unstable.ts'
 import { vuln } from './pseudo/vuln.ts'
 import { workspace } from './pseudo/workspace.ts'
 
+import type { PseudoClassName } from '@vltpkg/dss-parser'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { ParserFn, ParserState } from './types.ts'
 
@@ -371,7 +372,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     vuln,
     vulnerable: vuln,
     workspace,
-  }),
+  } satisfies Record<PseudoClassName, ParserFn>),
 )
 
 /**

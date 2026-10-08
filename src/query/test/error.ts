@@ -4,7 +4,7 @@ import type { PostcssNode } from '@vltpkg/dss-parser'
 import { didYouMean, queryError, selectorText } from '../src/error.ts'
 
 const first = (query: string): PostcssNode => {
-  const node = parse(query).nodes[0]?.nodes[0]
+  const node = parse(query, { loose: true }).nodes[0]?.nodes[0]
   if (!node) throw new Error(`no node parsed for ${query}`)
   return node
 }
