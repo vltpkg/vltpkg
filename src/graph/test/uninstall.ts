@@ -3,6 +3,7 @@ import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { LoadQuery } from '@vltpkg/workspaces'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
@@ -310,17 +311,28 @@ const wsLockfile = async (
       allowScripts: ':not(*)',
     }) as unknown as UninstallOptions
   const read = (f: string) => readFileSync(resolve(dir, f), 'utf8')
-  // remover deletes in a detached child: skip its parked entries
   const store = () =>
-    readdirSync(resolve(dir, 'node_modules/.vlt'))
-      .filter(f => !f.startsWith('.VLT.DELETE.'))
-      .join('\n')
+    readdirSync(resolve(dir, 'node_modules/.vlt')).join('\n')
   const bLink = () =>
     existsSync(
       resolve(dir, 'packages/b/node_modules/which/package.json'),
     )
   const { install } = await import('../src/install.ts')
-  const { uninstall } = await import('../src/uninstall.ts')
+  // the real remover deletes in a detached child that inherits the
+  // cwd (dir), so Windows can't remove the testdir in teardown (EBUSY)
+  const { uninstall } = await t.mockImport<
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class {
+        async rm(path: string) {
+          await rm(path, { recursive: true, force: true })
+        }
+        confirm() {}
+        async rollback() {}
+      },
+    },
+  })
 
   await install(opts())
   const baseline = read('vlt-lock.json')
