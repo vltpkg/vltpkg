@@ -124,7 +124,8 @@ environment variable:
 
 ## Removing credentials
 
-- `vlt logout --registry=...` removes the token from your keychain.
+- `vlt logout --registry=...` removes the token from your keychain,
+  under every registry key holding it (e.g. both `npm` and `main`).
   Revoke the token itself in the dashboard.
 - `vlt token rm` removes a token from your local keychain only.
 - Revoking a token in the dashboard invalidates it everywhere,

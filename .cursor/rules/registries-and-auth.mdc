@@ -44,6 +44,8 @@ URLs (path-scoped keys do not match sibling registries). Login writes
 both; after the `vlt.json` write, setup also fills a missing one from
 the other (keychain only, never overwrites, never persists env tokens),
 including `--yes` / skipped auth.
+`logout` drops every key holding the revoked token, so there is
+nothing to copy back.
 
 It then loops to add optional custom aliases (partner/team registries).
 Runs unattended with `vlt setup <account> --yes` (+ `--registries name=url`).

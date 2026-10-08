@@ -1271,6 +1271,9 @@ t.test(
 t.test('client.logout()', async t => {
   dropConnection = false
   const rc = t.context.rc as RegistryClient
+  const shared = await getKC('').get(`${registryURL}/shared`)
+  t.ok(shared, 'sibling has a token')
+  t.equal(shared, await getKC('').get(registryURL), 'same token')
   await rc.logout(registryURL)
   await getKC('').save()
   // do it again just to hit the 'no token' use case
@@ -1279,6 +1282,11 @@ t.test('client.logout()', async t => {
   getKC('').set(registryURL, 'Bearer some-invalid-token')
   await rc.logout(registryURL)
   t.equal(await getKC('').get(registryURL), undefined)
+  t.equal(
+    await getKC('').get(`${registryURL}/shared`),
+    undefined,
+    'revoked token dropped from sibling key',
+  )
   t.strictSame(
     new Set(tokensActions),
     new Set([
@@ -2400,6 +2408,7 @@ t.test('logout() reports revocation failures', async t => {
       tokensListStatus = 200
     })
     getKC('').set(registryURL, 'Bearer npm_Yy')
+    getKC('').set(`${registryURL}/acme/main`, 'Bearer npm_Yy')
     await rc.logout(registryURL)
     // args() drains the capture, so read it once
     const [[warning] = []] = errs()
@@ -2407,6 +2416,11 @@ t.test('logout() reports revocation failures', async t => {
     t.match(warning, /revoke the token in the registry UI/)
     // the local credential goes away regardless
     t.equal(await getKC('').get(registryURL), undefined)
+    t.equal(
+      await getKC('').get(`${registryURL}/acme/main`),
+      undefined,
+      'and every other key holding it',
+    )
   })
 
   t.test('revocation is refused', async t => {
