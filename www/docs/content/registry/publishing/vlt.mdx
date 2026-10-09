@@ -94,15 +94,6 @@ export VLT_REGISTRY=https://registry.vlt.io/acme/npm/
 vlt install abbrev
 ```
 
-To move an existing project onto the mirror, delete the lockfile: vlt
-doesn't yet re-resolve a kept `vlt-lock.json` against a new registry
-([#1579](https://github.com/vltpkg/vltpkg/issues/1579)).
-
-```sh
-rm -rf vlt-lock.json node_modules
-vlt install
-```
-
 ## Install from your `main` registry
 
 With `scoped-registries` configured:
