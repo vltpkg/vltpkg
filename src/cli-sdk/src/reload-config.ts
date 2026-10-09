@@ -16,5 +16,6 @@ export const reloadConfig = async (
   } catch {}
 
   const { Config } = await import('./config/index.ts')
-  return Config.load(folder, process.argv, true)
+  // host contexts never switch to the global project
+  return Config.load(folder, process.argv, true, false)
 }

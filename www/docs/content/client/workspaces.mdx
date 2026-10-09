@@ -184,7 +184,7 @@ not expand them incorrectly.
 ### Running Commands on Specific Workspaces By Group
 
 If you had configured your workspaces into named groups, then you can
-reference those groups using the `-g<name> --workspace-group=<name>`
+reference those groups using the `--workspace-group=<name>`
 configuration option.
 
 For example, with the `vlt.json` defined above:
@@ -204,7 +204,7 @@ For example, with the `vlt.json` defined above:
 we could do:
 
 ```bash
-$ vlt -g utils run test
+$ vlt --workspace-group utils run test
 ```
 
 to run tests on all our `utils` workspaces.

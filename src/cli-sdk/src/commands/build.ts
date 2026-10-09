@@ -74,6 +74,10 @@ export const usage: CommandUsage = () =>
         description:
           'Query selector to filter packages using DSS syntax.',
       },
+      global: {
+        description:
+          'Build packages installed in the global project.',
+      },
     },
   })
 

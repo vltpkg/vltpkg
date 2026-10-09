@@ -3,6 +3,11 @@ import type { Graph } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
+import {
+  assertGlobalOptions,
+  parseGlobalRemoveArgs,
+  removeGlobalPackages,
+} from '../global.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
@@ -41,6 +46,10 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      global: {
+        description:
+          'Uninstall global packages, removing their workspace and bins.',
+      },
     },
   })
 
@@ -53,8 +62,11 @@ export const views = {
 } as const satisfies Views<UninstallResult>
 
 export const command: CommandFn<UninstallResult> = async conf => {
+  if (conf.globalRoot) assertGlobalOptions(conf)
   const { monorepo, scurry } = conf.options
-  const { remove } = parseRemoveArgs(conf, scurry, monorepo)
+  const global =
+    conf.globalRoot ? parseGlobalRemoveArgs(conf) : undefined
+  const { remove } = global ?? parseRemoveArgs(conf, scurry, monorepo)
   /* c8 ignore start */
   const allowScripts =
     conf.get('allow-scripts') ?
@@ -69,5 +81,7 @@ export const command: CommandFn<UninstallResult> = async conf => {
     },
     remove,
   )
+  if (global)
+    await removeGlobalPackages(conf.projectRoot, global.dirs)
   return { graph }
 }

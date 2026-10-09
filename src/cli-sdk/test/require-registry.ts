@@ -366,3 +366,12 @@ t.test('asUnknownSpecPrefix', async t => {
     t.equal(asUnknownSpecPrefix(er), er, 'passes through')
   }
 })
+
+t.test('parseSpecArg', async t => {
+  const { parseSpecArg } = await load()
+  t.equal(String(parseSpecArg('foo@1', {})), 'foo@1')
+  t.throws(() => parseSpecArg('nope:bar@1', {}), {
+    message: /^Unknown spec prefix "nope:"/,
+    cause: { code: 'ECONFIG' },
+  })
+})

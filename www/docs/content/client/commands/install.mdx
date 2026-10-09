@@ -203,7 +203,7 @@ lang="bash" />
 | Flag                        | Short | Description                            |
 | --------------------------- | ----- | -------------------------------------- |
 | `--workspace=<ws>`          | `-w`  | Limit operation to specific workspaces |
-| `--workspace-group=<group>` | `-g`  | Operate on named workspace groups      |
+| `--workspace-group=<group>` |       | Operate on named workspace groups      |
 
 <Code
   code={`# Install in specific workspace
@@ -211,7 +211,72 @@ $ vlt install -w packages/core lodash
 
 # Install in workspace group
 
-$ vlt install -g apps express`} title="Terminal" lang="bash" />
+$ vlt install --workspace-group apps express`} title="Terminal"
+lang="bash" />
+
+### Global options
+
+| Flag                  | Short | Description                                                                |
+| --------------------- | ----- | -------------------------------------------------------------------------- |
+| `--global`            | `-g`  | Install into the global project, see [Global installs](#global-installs)   |
+| `--global-dir=<path>` |       | Location of the global project (default: `vlt/global` in the XDG data dir) |
+
+## Global installs
+
+Install command line tools once, for use anywhere, with `-g`:
+
+<Code
+  code={`$ vlt install -g eslint
+
+# install a local tool
+
+$ vlt install -g ./my-tool`} title="Terminal" lang="bash" />
+
+Global packages live in a regular vlt project at `--global-dir`
+(`vlt/global` in the XDG data directory by default, e.g.
+`~/.local/share/vlt/global` on Linux):
+
+- each package gets its own workspace, `packages/<name>-global-ws`,
+  with the package as its only dependency
+- the project has its own `vlt-lock.json` and `node_modules`
+- bins of global packages are linked into `<global-dir>/bin`, add that
+  folder to your `PATH` to run them
+
+The current project is never read or changed by a global install,
+including its `vlt.json`. `global` and `global-dir` can be set on the
+command line, via env (`VLT_GLOBAL`, `VLT_GLOBAL_DIR`) or in the user
+config.
+
+<Code
+  code={`# upgrade, re-run install with the new spec
+$ vlt install -g eslint@latest
+
+# list global packages
+
+$ vlt ls -g
+
+# run their install scripts
+
+$ vlt build -g
+
+# remove a global package and its bins
+
+$ vlt uninstall -g eslint`} title="Terminal" lang="bash" />
+
+Running `vlt install -g` with no packages re-installs the global
+project and re-links all bins.
+
+A bin name already linked by another global package (or a file not
+created by vlt) is skipped with a warning. Use `--force` to overwrite
+it.
+
+Like any install, scripts of global packages are not run, use
+`vlt build -g` to run them.
+
+`--workspace`, `--workspace-group` and `--lockfile-only` are not
+supported with `-g`, and the dependency type flags (`--save-dev`,
+etc.) are ignored. `-g` is supported by `install`, `uninstall`,
+`list`, `query` and `build`.
 
 ## Phased Package Installations
 

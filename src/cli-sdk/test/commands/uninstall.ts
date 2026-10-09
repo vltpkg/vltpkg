@@ -64,3 +64,48 @@ t.strictSame(
   } as unknown as UninstallResult),
   { install: true },
 )
+
+t.test('--global', async t => {
+  let glog = ''
+  const remove = new Map()
+  const dirs = ['/g/packages/foo-global-ws']
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/uninstall.ts')
+  >('../../src/commands/uninstall.ts', {
+    '@vltpkg/graph': {
+      async uninstall(_: unknown, r: unknown) {
+        glog += `uninstall ${r === remove}\n`
+        return { graph: {} }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseRemoveArgs: () => {
+        throw new Error('not global')
+      },
+    },
+    '../../src/global.ts': {
+      assertGlobalOptions: () => {
+        glog += 'assert\n'
+      },
+      parseGlobalRemoveArgs: () => {
+        glog += 'parse global\n'
+        return { remove, dirs }
+      },
+      removeGlobalPackages: async (root: string, d: string[]) => {
+        glog += `remove ${root} ${d === dirs}\n`
+      },
+    },
+  })
+  await Command.command({
+    globalRoot: '/g',
+    projectRoot: '/g',
+    positionals: ['foo'],
+    values: {},
+    options,
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+  t.equal(
+    glog,
+    'assert\nparse global\nuninstall true\nremove /g true\n',
+  )
+})

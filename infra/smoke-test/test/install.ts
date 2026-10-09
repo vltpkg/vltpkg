@@ -1,6 +1,6 @@
 import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { stripVTControlCharacters } from 'node:util'
 import { ansiToAnsi } from 'ansi-to-pre'
@@ -92,3 +92,49 @@ t.test(
     t.match(output, 'vlt install')
   },
 )
+
+t.test('global install', async t => {
+  const { status } = await runMultiple(
+    t,
+    ['install', '-g', 'semver'],
+    {
+      match: ['status'],
+      test: async ({ t, dirs, run }) => {
+        const g = join(dirs.data, 'vlt', 'global')
+        const ws = join(g, 'packages', 'semver-global-ws')
+        const lockfile = join(g, 'vlt-lock.json')
+        const lock = JSON.parse(readFileSync(lockfile, 'utf-8'))
+        t.ok(
+          lock.edges['workspace~packages+semver-global-ws semver'],
+          'semver should be in the global lockfile',
+        )
+        t.match(
+          JSON.parse(readFileSync(join(ws, 'package.json'), 'utf-8')),
+          {
+            name: 'semver-global-ws',
+            dependencies: { semver: String },
+          },
+        )
+        const bin = join(
+          g,
+          'bin',
+          process.platform === 'win32' ? 'semver.cmd' : 'semver',
+        )
+        t.ok(existsSync(bin), 'bin linked')
+        t.notOk(existsSync(join(dirs.project, 'node_modules')))
+        t.notOk(existsSync(join(dirs.project, 'vlt-lock.json')))
+
+        const ls = await run(['ls', '-g', '--view=json'])
+        t.equal(ls.status, 0)
+        t.match(ls.stdout, 'semver')
+
+        const rm = await run(['uninstall', '-g', 'semver'])
+        t.equal(rm.status, 0)
+        t.notOk(existsSync(ws), 'workspace removed')
+        t.notOk(existsSync(bin), 'bin removed')
+        t.notMatch(readFileSync(lockfile, 'utf-8'), 'semver')
+      },
+    },
+  )
+  t.equal(status, 0)
+})

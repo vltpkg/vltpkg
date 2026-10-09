@@ -843,11 +843,13 @@ t.test('install validation', async t => {
     t: Test,
     dir: string,
     values: Partial<LoadedConfig['values']> & { target?: string },
+    globalRoot?: string,
   ) => {
     const Command = await mockList(t)
     const packageJson = new PackageJson()
     packageJson.read = () => mainManifest
     return Command.command({
+      globalRoot,
       positionals: [],
       values: { view: 'count', ...values },
       options: { ...sharedOptions, packageJson, projectRoot: dir },
@@ -877,6 +879,11 @@ t.test('install validation', async t => {
       },
       'should refuse to list a project that was never installed',
     )
+  })
+
+  await t.test('global project is exempt', async t => {
+    const dir = t.testdir(fixture)
+    await t.resolves(run(t, dir, { view: 'count' }, dir))
   })
 
   await t.test('vlt store present', async t => {

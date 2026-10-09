@@ -235,6 +235,18 @@ Can be set multiple times
 Location of the vlt on-disk cache. Defaults to the platform-specific
 directory recommended by the XDG specification.
 
+### `-g --global`
+
+Operate on the global project instead of the current one. Supported by
+`install`, `uninstall`, `list`, `query` and `build`. See
+[Global installs](/client/commands/install#global-installs).
+
+### `--global-dir=<path>`
+
+Location of the global project used by `--global`. Defaults to
+`vlt/global` in the XDG data directory. Only read from the command
+line, environment or the user config, never from a project `vlt.json`.
+
 ### `--store-linker=<auto | hardlink | copy | unpack>`
 
 How packages are placed in `node_modules`. Every linker but `unpack`
@@ -348,7 +360,7 @@ Specifying workspaces by package.json name is not supported.
 
 Can be set multiple times
 
-### `-g<workspace-group> --workspace-group=<workspace-group>`
+### `--workspace-group=<workspace-group>`
 
 Specify named workspace group names to load and operate on when doing
 recursive operations on workspaces.

@@ -79,7 +79,8 @@ const run = async () => {
   const { monorepo } = vlt.options
 
   // Infer the workspace by being in that directory.
-  if (vlt.get('workspace') === undefined) {
+  // Not for the global project, cwd is unrelated to it.
+  if (vlt.get('workspace') === undefined && !vlt.globalRoot) {
     const ws = monorepo?.get(cwd)
     if (ws) {
       vlt.values.workspace = [ws.path]

@@ -35,11 +35,11 @@ import {
   isRecordStringString,
 } from '@vltpkg/types'
 import type { Validator, WhichConfig } from '@vltpkg/vlt-json'
-import { find, load, reload, save } from '@vltpkg/vlt-json'
-import { Monorepo } from '@vltpkg/workspaces'
+import { find, load, reload, save, unload } from '@vltpkg/vlt-json'
+import { Monorepo, workspaceCache } from '@vltpkg/workspaces'
 import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { readFile, rm, writeFile } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import type { Commands, RecordField } from './definition.ts'
 import {
@@ -52,6 +52,10 @@ import {
   storeLinkers,
 } from './definition.ts'
 import { merge } from './merge.ts'
+import {
+  ensureGlobalProject,
+  globalCommands,
+} from '../global-project.ts'
 import { cloneLayer, mergeLayers } from './merge-layers.ts'
 export {
   commands,
@@ -390,6 +394,8 @@ export class Config {
     this.projectRoot = projectRoot
     this.#options = undefined
     resetCaches()
+    // cached manifests belong to the old packageJson
+    workspaceCache.clear()
   }
 
   // memoized options() getter value
@@ -415,6 +421,11 @@ export class Config {
    * `~/projects/xyz`, then the highest dir it will check is `~/projects`
    */
   projectRoot: string
+
+  /**
+   * Global project root, set when `--global` switched to it.
+   */
+  globalRoot?: string
 
   /**
    * `Record<alias, canonical name>` to dereference command aliases.
@@ -516,6 +527,8 @@ export class Config {
       values[k] = dedupePairs([...(base as string[]), ...pairs])
     }
     this.jack.writeEnv(p)
+    // scripts and nested vlt act on their own project
+    delete process.env[envKey('global')]
     process.env[kParentEnv] = JSON.stringify({
       explicit,
       env: Object.fromEntries(
@@ -885,12 +898,41 @@ export class Config {
   /**
    * Find the local config file and load both it and the user-level config in
    * the XDG config home.
+   *
+   * When `args` select a `--global` command, the global project is used
+   * instead of the current one.
    */
-  async loadConfigFile(): Promise<this> {
+  async loadConfigFile(args?: string[]): Promise<this> {
     await this.#maybeLoadConfigFile('user')
+    const root = args && this.#globalRoot(args)
+    if (root) {
+      ensureGlobalProject(root)
+      unload('project')
+      this.globalRoot = this.projectRoot = root
+    }
     this.projectRoot = dirname(find('project', this.projectRoot))
     await this.#maybeLoadConfigFile('project')
     return this
+  }
+
+  // global project root if `args` run a global command with --global.
+  // cli > env > user config, project config is not loaded yet.
+  #globalRoot(args: string[]): string | undefined {
+    const { values, positionals } = this.jack.parseRaw(args)
+    const cmd = getCommand(positionals[0])
+    if (values.help || !cmd || !globalCommands.has(cmd)) return
+    const dflt = this.#defaults()
+    const env = process.env[envKey('global')]
+    const global =
+      values.global ??
+      (env !== undefined ? env === '1' : dflt.global === true)
+    if (!global) return
+    // empty means unset, never the cwd
+    return resolve(
+      values['global-dir'] ||
+        process.env[envKey('global-dir')] ||
+        String(dflt['global-dir'] || defaultValues['global-dir']),
+    )
   }
 
   /**
@@ -949,10 +991,12 @@ export class Config {
      * @internal
      */
     reload = false,
+    /** switch to the global project on `--global` */
+    allowGlobal = true,
   ): Promise<LoadedConfig> {
     if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)
-    const b = await a.loadConfigFile()
+    const b = await a.loadConfigFile(allowGlobal ? argv : undefined)
     this.#loaded = b.parse(argv)
     return this.#loaded
   }

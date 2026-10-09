@@ -45,4 +45,9 @@ package.json appropriately.
 
       ​--allow-scripts=<query>
 
+    global
+      Uninstall global packages, removing their workspace and bins.
+
+      ​--global
+
 `
