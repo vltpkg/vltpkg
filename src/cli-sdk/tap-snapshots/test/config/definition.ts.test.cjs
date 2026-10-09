@@ -504,6 +504,10 @@ Object {
     "short": "P",
     "type": "boolean",
   },
+  "save-types": Object {
+    "description": "Also save the matching \`@types/*\` package as a devDependency for each added registry package that ships no TypeScript types of its own.",
+    "type": "boolean",
+  },
   "scope": Object {
     "description": "Set to filter the scope of an operation using a DSS Query.",
     "hint": "query",
@@ -710,6 +714,7 @@ Array [
   "--save-peer",
   "--save-prefix=<save-prefix>",
   "--save-prod",
+  "--save-types",
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
@@ -782,6 +787,7 @@ Array [
   "save-peer",
   "save-prefix",
   "save-prod",
+  "save-types",
   "scope",
   "scoped-registries",
   "script-shell",

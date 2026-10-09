@@ -3,6 +3,7 @@ import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 const options = {}
+const parsedAdd = new Map()
 let log = ''
 t.afterEach(() => (log = ''))
 
@@ -30,7 +31,12 @@ const Command = await t.mockImport<
           `, with values ${Object.entries(conf.values).join('=')}`
         : ''
       log += `parse add args ${items}${values}\n`
-      return { add: new Map() }
+      return { add: parsedAdd }
+    },
+  },
+  '../../src/save-types.ts': {
+    addTypesDeps: async (_: LoadedConfig, add: unknown) => {
+      log += `add types deps, parsed map: ${add === parsedAdd}\n`
     },
   },
 })
@@ -55,6 +61,16 @@ await Command.command({
   get: () => undefined,
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should install adding a new dependency')
+
+// adds matching @types/* packages
+await Command.command({
+  positionals: ['express'],
+  values: { 'save-types': true },
+  options,
+  explicit: {},
+  get: () => undefined,
+} as unknown as LoadedConfig)
+t.matchSnapshot(log, 'should add types deps with save-types')
 
 // Helper to create mock nodes
 const mockNode = (
@@ -450,6 +466,11 @@ t.test('persists spec config after install', async t => {
       '../../src/parse-add-remove-args.ts': {
         parseAddArgs: () => ({ add: new Map() }),
       },
+      '../../src/save-types.ts': {
+        addTypesDeps: async () => {
+          log += 'types\n'
+        },
+      },
       '../../src/persist-spec-config.ts': {
         planSpecConfigPersist: () => {
           log += 'plan\n'
@@ -460,7 +481,7 @@ t.test('persists spec config after install', async t => {
     })
     const conf = {
       positionals: [],
-      values: {},
+      values: { 'save-types': true },
       options: {},
       get: () => undefined,
       addConfigToFile: async (which: string, values: unknown) => {
@@ -475,20 +496,20 @@ t.test('persists spec config after install', async t => {
     const res = await run()
     t.equal(
       log(),
-      'plan\ninstall\nwrite project {"registries":{"loc":"http://loc/"}}\n',
+      'plan\ntypes\ninstall\nwrite project {"registries":{"loc":"http://loc/"}}\n',
     )
     t.strictSame(res.persistedConfig, plan)
   })
   t.test('no plan, no write', async t => {
     const { run, log } = await setup({})
     const res = await run()
-    t.equal(log(), 'plan\ninstall\n')
+    t.equal(log(), 'plan\ntypes\ninstall\n')
     t.equal(res.persistedConfig, undefined)
   })
   t.test('failed install, no write', async t => {
     const { run, log } = await setup({ plan, fail: true })
     await t.rejects(run(), { message: 'install failed' })
-    t.equal(log(), 'plan\ninstall\n')
+    t.equal(log(), 'plan\ntypes\ninstall\n')
   })
   t.test('unknown spec prefix from package.json', async t => {
     const { run } = await setup({

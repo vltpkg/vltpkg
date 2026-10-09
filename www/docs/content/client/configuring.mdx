@@ -466,6 +466,22 @@ if a package already exists in devDependencies or
 optionalDependencies, but you want to move it to be a non-optional
 production dependency.
 
+### `--save-types`
+
+For each added registry package that ships no TypeScript types of its
+own (no `types`, `typings` or `typesVersions` field, no `types`
+condition in its root `exports` entry), also save the newest
+non-deprecated `@types/*` package in the same major version
+(major.minor for `0.x`) to `devDependencies` (`@scope/pkg` →
+`@types/scope__pkg`). If that major has none, the `@types/*` `latest`
+version is used when it is older and not deprecated. Skipped when
+there is no such version, the `@types/*` package is already a
+dependency (any version), or the package comes from a different
+registry than `@types/*`.
+
+Enable for every install with `"config": { "save-types": true }` in
+`vlt.json`; turn off for one run with `--no-save-types`.
+
 ### `--save-config`
 
 Save the registry and git host options given on the command line or

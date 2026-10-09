@@ -3,6 +3,7 @@ import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
+import { addTypesDeps } from '../save-types.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
@@ -67,6 +68,10 @@ export const usage: CommandUsage = () =>
       'save-prod': {
         description:
           'Save installed packages to package.json as dependencies.',
+      },
+      'save-types': {
+        description:
+          'Also save matching @types/* packages to devDependencies for added packages that ship no types.',
       },
       'save-config': {
         description:
@@ -184,6 +189,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   const scurry = conf.options.scurry
   const { add } = parseAddArgs(conf, scurry, monorepo)
   const persist = planSpecConfigPersist(conf)
+  if (conf.values['save-types']) await addTypesDeps(conf, add)
   const frozenLockfile = conf.options['frozen-lockfile']
   const expectLockfile = conf.options['expect-lockfile']
   const lockfileOnly = conf.options['lockfile-only']
