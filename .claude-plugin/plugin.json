@@ -1,0 +1,13 @@
+{
+  "name": "vlt",
+  "description": "Agent skills for the vlt CLI and vlt.io registries.",
+  "author": {
+    "name": "vlt technology inc.",
+    "email": "support@vlt.sh",
+    "url": "https://vlt.sh"
+  },
+  "skills": [
+    "./skills/vlt-registry-migration",
+    "./src/query/skills/dss-query"
+  ]
+}

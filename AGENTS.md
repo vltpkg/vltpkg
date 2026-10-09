@@ -54,11 +54,14 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `.github/workflows/ci.yml`.
 - `/www/**/*.mjs` is gitignored (treated as build output) — name
   source scripts `.mts`.
-- Agent skills published from this repo live in root
-  `skills/<name>/SKILL.md`, where `vlx skills add vltpkg/vltpkg`
-  (skills.sh) finds them. `/skills/*` is gitignored for #1540 mounts,
-  so a new one needs a `!/skills/<name>/` line in `.gitignore` and an
-  entry in `www/docs/src/lib/skills.ts`. `www/docs` copies them into
+- Agent skills published from this repo live in root `skills/<name>/`,
+  or in a workspace whose package ships them
+  (`src/query/skills/dss-query`, mounted by #1540). List each in
+  `.claude-plugin/plugin.json` `skills` (how
+  `vlx skills add vltpkg/vltpkg` finds workspace ones) and in
+  `skills.sh.json`. Root ones also need a `!/skills/<name>/` line in
+  `.gitignore` (`/skills/*` is gitignored for #1540 mounts) and an
+  entry in `www/docs/src/lib/skills.ts`; `www/docs` copies them into
   `public/skills` at prebuild/predev.
 
 ## Development
