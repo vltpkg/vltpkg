@@ -2298,6 +2298,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'extract throws EINTEGRITY when tarball is corrupted',
     async t => {
+      t.teardown(() => pi.drain())
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
       unload()
@@ -2319,6 +2320,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'tarball() throws EINTEGRITY when tarball is corrupted',
     async t => {
+      t.teardown(() => tb.drain())
       const dir = t.testdir()
       const tb = new PackageInfoClient({
         ...options,
@@ -2337,6 +2339,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'extract throws EINTEGRITY without integrity header',
     async t => {
+      t.teardown(() => pi.drain())
       // no integrity header: checked against dist.integrity anyway
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
@@ -2360,6 +2363,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'tarball() throws EINTEGRITY without integrity header',
     async t => {
+      t.teardown(() => tb.drain())
       const dir = t.testdir()
       const tb = new PackageInfoClient({
         ...options,
@@ -2395,6 +2399,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'tarball() succeeds when dist.integrity is missing',
     async t => {
+      t.teardown(() => tb.drain())
       const dir = t.testdir()
       const tb = new PackageInfoClient({
         ...options,
@@ -2447,6 +2452,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'extract DOES verify integrity even when integrity+resolved provided without fromLockfile',
     async t => {
+      t.teardown(() => pi.drain())
       // Previously, the heuristic `!!(integrity && resolved)` would
       // skip the check whenever both were provided. Now, the check
       // only skips with an explicit `fromLockfile: true`.
@@ -2473,15 +2479,18 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'extract from unzipped cache does not re-fetch tarball',
     async t => {
+      const track = drainer(t)
       const dir = t.testdir({ 'vlt.json': '{}' })
       t.chdir(dir)
       unload()
       const cacheDir = dir + '/cache'
       const tarballUrl = `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`
-      const pi = new PackageInfoClient({
-        ...options,
-        cache: cacheDir,
-      })
+      const pi = track(
+        new PackageInfoClient({
+          ...options,
+          cache: cacheDir,
+        }),
+      )
       await pi.extract('abbrev@2', dir + '/first')
       await pi.drain()
 
@@ -2497,10 +2506,12 @@ t.test('registry tarball integrity verification', async t => {
       await cache.promise()
 
       const before = abbrevTgzRequests
-      const pi2 = new PackageInfoClient({
-        ...options,
-        cache: cacheDir,
-      })
+      const pi2 = track(
+        new PackageInfoClient({
+          ...options,
+          cache: cacheDir,
+        }),
+      )
       await pi2.extract('abbrev@2', dir + '/second')
       t.equal(
         abbrevTgzRequests,
@@ -2511,10 +2522,12 @@ t.test('registry tarball integrity verification', async t => {
       const pkg = JSON.parse(json) as Manifest
       t.match(pkg, { name: 'abbrev', version: '2.0.0' })
 
-      const pi3 = new PackageInfoClient({
-        ...options,
-        cache: cacheDir,
-      })
+      const pi3 = track(
+        new PackageInfoClient({
+          ...options,
+          cache: cacheDir,
+        }),
+      )
       const tb = await pi3.tarball('abbrev@2')
       t.equal(
         abbrevTgzRequests,
@@ -2530,6 +2543,7 @@ t.test('registry tarball integrity verification', async t => {
   await t.test(
     'extract retries with cache bust on EINTEGRITY then succeeds',
     async t => {
+      t.teardown(() => pi.drain())
       // The corrupted-once endpoint serves corrupted data the first
       // time, then correct data on the second request. This
       // simulates a CDN serving a stale/corrupted cached tarball that
@@ -2560,6 +2574,7 @@ t.test('registry tarball integrity verification', async t => {
 })
 
 t.test('network tarball hashed once', async t => {
+  const track = drainer(t)
   const dir = t.testdir({ 'vlt.json': '{}' })
   t.chdir(dir)
   unload()
@@ -2591,10 +2606,12 @@ t.test('network tarball hashed once', async t => {
   }
   const clients: InstanceType<typeof PackageInfoClient>[] = []
   const client = () => {
-    const c = new PackageInfoClient({
-      ...options,
-      cache: `${dir}/cache${clients.length}`,
-    })
+    const c = track(
+      new PackageInfoClient({
+        ...options,
+        cache: `${dir}/cache${clients.length}`,
+      }),
+    )
     clients.push(c)
     return c
   }
@@ -2634,6 +2651,7 @@ t.test('trusted refetch is verified', async t => {
   }
   // verified and trusted, but not cached: the next fetch is trusted
   const trusted = async (t: Test) => {
+    t.teardown(() => pi.drain())
     const dir = t.testdir({ 'vlt.json': '{}' })
     t.chdir(dir)
     unload()
@@ -2715,7 +2733,7 @@ t.test('registry tarballs unpack from the cache file', async t => {
   })
   const opts = { ...options, cache: dir + '/cache' }
 
-  const cold = new PackageInfoClient(opts)
+  const cold = track(new PackageInfoClient(opts))
   await cold.extract('abbrev@2', dir + '/cold')
   await cold.drain()
   t.strictSame(calls, ['unpack'], 'cold install fetches the bytes')
@@ -2745,7 +2763,7 @@ t.test('falls back when the cache file will not unpack', async t => {
   t.chdir(dir)
   unload()
   const opts = { ...options, cache: dir + '/cache' }
-  const prime = new PackageInfoClient(opts)
+  const prime = track(new PackageInfoClient(opts))
   await prime.extract('abbrev@2', dir + '/prime')
   await prime.drain()
 
@@ -3798,9 +3816,10 @@ t.test('cache manifests', async t => {
   await t.test(
     'constructor does not create the cache dir',
     async t => {
+      const track = drainer(t)
       const cache = pathResolve(t.testdir(), 'cache')
       t.type(
-        new PackageInfoClient({ ...opts, cache }),
+        track(new PackageInfoClient({ ...opts, cache })),
         PackageInfoClient,
       )
       // ctor work is not awaitable: give any stray fs op time to land
@@ -4059,6 +4078,7 @@ t.test('path git selector', async t => {
 t.test(
   'full packument requests coalesce and retain manifest metadata',
   async t => {
+    t.teardown(() => pi.drain())
     const pi = new PackageInfoClient({
       ...options,
       cache: t.testdir(),
@@ -4119,6 +4139,7 @@ t.test(
 )
 
 t.test('registry capabilities', async t => {
+  t.teardown(() => pi.drain())
   const pi = new PackageInfoClient({ ...options, cache: t.testdir() })
   // manifest() asks for the document too, so start from a cold memo
   resetCapabilities()
@@ -4318,9 +4339,11 @@ t.test('the ?stable packument filter', async t => {
 })
 
 t.test('moving selectors force a revalidation', async t => {
+  const track = drainer(t)
   const cache = t.testdir()
   // one client per simulated process; the point is the disk cache
-  const client = () => new PackageInfoClient({ ...options, cache })
+  const client = () =>
+    track(new PackageInfoClient({ ...options, cache }))
   const flush = (pi: PackageInfoClient) => pi.drain()
   movingRequests = 0
   movingLatest = '1.0.0'
@@ -4365,18 +4388,19 @@ t.test('moving selectors force a revalidation', async t => {
 })
 
 t.test('moving selector does not ride a pinned request', async t => {
+  const track = drainer(t)
   const cache = t.testdir()
   movingRequests = 0
   movingLatest = '1.0.0'
 
-  const warm = new PackageInfoClient({ ...options, cache })
+  const warm = track(new PackageInfoClient({ ...options, cache }))
   await warm.packument('moving@1.0.0')
   await warm.drain()
   movingLatest = '2.0.0'
 
   // the pinned request lands in #packumentPromises first and will settle
   // to a cache hit; the dist tag must not coalesce onto it
-  const pi = new PackageInfoClient({ ...options, cache })
+  const pi = track(new PackageInfoClient({ ...options, cache }))
   const [pinned, moving] = await Promise.all([
     pi.packument('moving@1.0.0'),
     pi.packument('moving@latest'),
@@ -4386,7 +4410,7 @@ t.test('moving selector does not ride a pinned request', async t => {
 
   // the reverse direction still coalesces: a pinned spec is happy with a
   // forced result
-  const pi2 = new PackageInfoClient({ ...options, cache })
+  const pi2 = track(new PackageInfoClient({ ...options, cache }))
   const before = movingRequests
   const [m2, p2] = await Promise.all([
     pi2.packument('moving@latest'),
@@ -4505,6 +4529,7 @@ t.test('backgroundRevalidate', async t => {
 })
 
 t.test('late parse failure refetches packument', async t => {
+  t.teardown(() => pi.drain())
   const pi = new PackageInfoClient({
     ...options,
     cache: t.testdir(),
@@ -4541,6 +4566,7 @@ t.test('late parse failure refetches packument', async t => {
 })
 
 t.test('packument parse failure retries once', async t => {
+  t.teardown(() => pi.drain())
   const pi = new PackageInfoClient({
     ...options,
     cache: t.testdir(),

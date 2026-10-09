@@ -75,6 +75,7 @@ tmp
 /www/*/scripts/fixtures/
 /www/docs/plans/**
 /scripts/*.js
+!/scripts/eslint-*.js
 /scripts/*.js.map
 /scripts/*.d.ts
 /scripts/*.d.ts.map

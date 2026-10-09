@@ -7,6 +7,7 @@ import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
 
 import enforceMockImportTypes from './scripts/eslint-enforce-mock-import-types.js'
+import drainBeforeTestdir from './scripts/eslint-drain-before-testdir.js'
 
 const NAME = 'eslint-config-vltpkg'
 
@@ -64,6 +65,7 @@ export default [
       vltpkg: {
         rules: {
           'enforce-mock-import-types': enforceMockImportTypes,
+          'drain-before-testdir': drainBeforeTestdir,
         },
       },
     },
@@ -271,6 +273,7 @@ export default [
       '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/use-unknown-in-catch-callback-variable':
         'off',
+      'vltpkg/drain-before-testdir': 'error',
     },
   },
   {
