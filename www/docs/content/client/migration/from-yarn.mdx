@@ -326,6 +326,11 @@ too. `package.json` is left as-is for yarn. Commit `vlt.json`:
 `.yarnrc.yml` is not read, so any yarn v2+ filtering defined there
 needs to move.
 
+yarn v1 has no `workspace:` protocol, so local packages are referenced
+by plain ranges. Add `":project > :workspace": "workspace:*"` to
+`modifiers` in `vlt.json` to always link them, see
+[Implicit workspace references](/client/graph-modifiers#implicit-workspace-references).
+
 Edit `vlt.json` to use vlt's **named workspace groups** for targeted
 operations. If `vlt.json` has a `workspaces` field it wins outright,
 and the `package.json` field is ignored rather than merged, so later

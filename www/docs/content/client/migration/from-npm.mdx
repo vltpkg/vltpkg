@@ -377,6 +377,11 @@ operations against a subset of your workspaces:
   update `vlt.json` too.
 - **Named groups** — supported only in `vlt.json`, since a
   `package.json` using them would be meaningless to npm.
+- **Local package references** — npm has no `workspace:` protocol, so
+  local packages are referenced by plain ranges. Add
+  `":project > :workspace": "workspace:*"` to `modifiers` in
+  `vlt.json` to always link them, see
+  [Implicit workspace references](/client/graph-modifiers#implicit-workspace-references).
 
 ### Workspace Commands
 

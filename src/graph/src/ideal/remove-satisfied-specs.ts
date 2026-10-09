@@ -49,12 +49,18 @@ export const removeSatisfiedSpecs = ({
       const depIsCatalog = dependency.spec.type === 'catalog'
       if (edgeIsCatalog !== depIsCatalog) continue
 
+      const governed = !!modifiers?.targetsImporterEdge(
+        importer,
+        dependency.spec,
+      )
       // If the current graph edge is already valid, then we remove that
-      // dependency item from the list of items to be added to the graph
+      // dependency item from the list of items to be added to the graph.
+      // governed edges carry the modifier value, check against that
+      // (e.g. `workspace:*` to a versionless workspace)
       if (
         satisfies(
           edge.to?.id,
-          dependency.spec,
+          governed ? edge.spec : dependency.spec,
           edge.from.location,
           graph.projectRoot,
           graph.monorepo,
@@ -69,7 +75,7 @@ export const removeSatisfiedSpecs = ({
           (edge.spec.bareSpec !== dependency.spec.bareSpec ||
             (dependency.type !== 'implicit' &&
               edge.type !== dependency.type)) &&
-          !modifiers?.targetsImporterEdge(importer, dependency.spec)
+          !governed
         ) {
           staleSpecs.set(edge, dependency)
         }
