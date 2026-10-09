@@ -72,8 +72,8 @@ Full config:
 - vlt: write `vlt.json` with `vlt config set` (vlt guide).
   `vlt setup acme` only writes the `npm` / `main` aliases to user
   config.
-- pnpm ≤ 10 ignores `registry` in `pnpm-workspace.yaml`: keep
-  `registry` and `@acme:registry` in `.npmrc`
+- pnpm < 11.10 ignores `registry` in `pnpm-workspace.yaml` for
+  installs: keep `registry` and `@acme:registry` in `.npmrc`
   (`pnpm config set … --location=project` writes it).
   `pnpm-workspace.yaml` can't hold auth either.
 
@@ -162,8 +162,9 @@ Details:
 ## Verify
 
 - `npm config get registry` / `pnpm config get registry` print the
-  mirror. pnpm ≤ 10 printing `registry.npmjs.org`: move `registry`
-  from `pnpm-workspace.yaml` to `.npmrc`.
+  mirror. pnpm < 11.10 still installs from npmjs.org if `registry` is
+  only in `pnpm-workspace.yaml`, even when this passes: move it to
+  `.npmrc`.
 - `vlt ping` checks the default registry and `registries` aliases (not
   `scoped-registries`). Read its output: it exits 0 even when a ping
   fails.
