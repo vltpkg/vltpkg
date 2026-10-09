@@ -1,10 +1,12 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import {
   command,
   views,
   usage,
 } from '../../src/commands/unpublish.ts'
 import type { CommandResult } from '../../src/commands/unpublish.ts'
+import { PackageJson } from '@vltpkg/package-json'
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -24,7 +26,9 @@ interface MockCacheEntry {
 interface TestConfig {
   projectRoot?: string
   options: {
-    registry: string
+    registry?: string
+    registries?: Record<string, string>
+    packageJson?: PackageJson
     otp?: string
     force?: boolean
   }
@@ -33,9 +37,15 @@ interface TestConfig {
   get?: (key: string) => unknown
 }
 
+// no local package.json unless a test passes a real PackageJson
+const noPackageJson = {
+  find: () => undefined,
+} as unknown as PackageJson
+
 const makeTestConfig = (config: TestConfig): LoadedConfig =>
   ({
     ...config,
+    options: { packageJson: noPackageJson, ...config.options },
     get: (key: string) => config.values?.[key],
   }) as LoadedConfig
 
@@ -979,3 +989,152 @@ t.test(
     }
   },
 )
+
+t.test('local publishConfig.registry', async t => {
+  const packument = (name: string) => ({
+    _rev: '1-abc',
+    name,
+    versions: { '1.0.0': {}, '2.0.0': {} },
+  })
+  const localConfig = (
+    t: Test,
+    manifest: Record<string, unknown> | string,
+    options: TestConfig['options'],
+    positionals = ['my-package@1.0.0'],
+  ) => {
+    t.chdir(
+      t.testdir({
+        'package.json':
+          typeof manifest === 'string' ? manifest : (
+            JSON.stringify({ version: '1.0.0', ...manifest })
+          ),
+      }),
+    )
+    return makeTestConfig({
+      options: { packageJson: new PackageJson(), ...options },
+      positionals,
+    })
+  }
+  const publishConfig = {
+    registry: 'https://custom.example.com/reg',
+  }
+
+  t.test('no pre-command registry gate', async t => {
+    const mod =
+      (await import('../../src/commands/unpublish.ts')) as Record<
+        string,
+        unknown
+      >
+    t.notOk(mod.needsRegistry)
+  })
+
+  t.test('overrides the configured registry', async t => {
+    mockResponses.set('https://custom.example.com/reg/my-package', {
+      json: packument('my-package'),
+    })
+    const result = await command(
+      localConfig(
+        t,
+        { name: 'my-package', publishConfig },
+        { registry: 'https://registry.npmjs.org' },
+      ),
+    )
+    t.equal(result.registry, 'https://custom.example.com')
+    t.strictSame(
+      mockRequests.map(r => [r.method, r.url]),
+      [
+        [undefined, 'https://custom.example.com/reg/my-package'],
+        [
+          'PUT',
+          'https://custom.example.com/reg/my-package/-rev/1-abc',
+        ],
+      ],
+    )
+  })
+
+  t.test('is enough w/o any configured registry', async t => {
+    const url = 'https://custom.example.com/reg/@scope%2Fmy-package'
+    mockResponses.set(url, { json: packument('@scope/my-package') })
+    const result = await command(
+      localConfig(
+        t,
+        { name: '@scope/my-package', publishConfig },
+        { registries: {} },
+        ['@scope/my-package@1.0.0'],
+      ),
+    )
+    t.equal(result.registry, 'https://custom.example.com')
+    t.equal(mockRequests.at(-1)?.url, `${url}/-rev/1-abc`)
+  })
+
+  t.test('ignored when spec names another package', async t => {
+    mockResponses.set('https://registry.npmjs.org/my-package', {
+      json: packument('my-package'),
+    })
+    const result = await command(
+      localConfig(
+        t,
+        { name: 'other', publishConfig },
+        { registry: 'https://registry.npmjs.org' },
+      ),
+    )
+    t.equal(result.registry, 'https://registry.npmjs.org')
+  })
+
+  t.test('configured registry when no publishConfig', async t => {
+    mockResponses.set('https://registry.npmjs.org/my-package', {
+      json: packument('my-package'),
+    })
+    const result = await command(
+      localConfig(
+        t,
+        { name: 'my-package' },
+        { registry: 'https://registry.npmjs.org' },
+      ),
+    )
+    t.equal(result.registry, 'https://registry.npmjs.org')
+  })
+
+  t.test('unreadable local package.json fails', async t => {
+    await t.rejects(
+      command(
+        localConfig(t, '{ not json', {
+          registry: 'https://registry.npmjs.org',
+        }),
+      ),
+      { message: 'Could not read package.json file' },
+    )
+    t.strictSame(mockRequests, [])
+  })
+
+  t.test('no registry anywhere', async t => {
+    await t.rejects(
+      command(
+        localConfig(
+          t,
+          { name: 'other', publishConfig },
+          {
+            registries: {},
+          },
+        ),
+      ),
+      {
+        message: /Missing registry configuration/,
+        cause: { code: 'ECONFIG' },
+      },
+    )
+    t.strictSame(mockRequests, [])
+  })
+
+  t.test('usage errors come before registry errors', async t => {
+    await t.rejects(
+      command(
+        makeTestConfig({
+          options: { registries: {} },
+          positionals: ['my-package'],
+        }),
+      ),
+      { message: /without --force/ },
+    )
+  })
+})

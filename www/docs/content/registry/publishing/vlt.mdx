@@ -149,7 +149,8 @@ mapping alone is enough, with no token in the environment or keychain:
 vlt publish --registry=https://registry.vlt.io/acme/main/
 ```
 
-Or set `registry` in the project `vlt.json` and just run
+Or set `registry` in the project `vlt.json` (or
+`publishConfig.registry` in `package.json`) and just run
 `vlt publish`. Useful flags: `--access public`, `--tag`, `--dry-run`,
 and `--recursive` to publish every workspace in a monorepo.
 

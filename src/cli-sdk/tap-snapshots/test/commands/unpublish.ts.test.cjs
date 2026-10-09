@@ -13,7 +13,9 @@ Usage:
 Remove a package version from the registry.
 
 To unpublish a single version, specify the package name and version. To
-unpublish an entire package, specify the package name and use --force.
+unpublish an entire package, specify the package name and use --force. A spec
+naming the package in the current directory uses its \`publishConfig.registry\`,
+if set.
 
 ⚠️ Unpublishing is a destructive action that cannot be undone. Consider using
 \`vlt deprecate\` instead if you want to discourage usage of a package without

@@ -38,7 +38,8 @@ interface TestConfig {
           fullpath: string
         }[]
       | null
-    registry: string
+    registry?: string
+    registries?: Record<string, string>
     tag?: string
     access?: string
   }
@@ -54,14 +55,18 @@ const makeTestConfig = (config: TestConfig): LoadedConfig =>
   }) as LoadedConfig
 
 const mockResponses = new Map<string, MockResponse>()
+const requests: { url: string; method?: string }[] = []
 const originalRequest = RegistryClient.prototype.request
 
 t.beforeEach(() => {
   mockResponses.clear()
+  requests.length = 0
   RegistryClient.prototype.request = async function (
     url: URL | string,
+    opts?: { method?: string },
   ) {
     const urlStr = url.toString()
+    requests.push({ url: urlStr, method: opts?.method })
     const mockResponse = mockResponses.get(urlStr)
 
     if (mockResponse) {
@@ -1924,5 +1929,136 @@ t.test('readme in publish metadata', async t => {
       { 'publish-directory': 'dist' },
     )
     t.equal(manifest.readme, '# published')
+  })
+})
+
+t.test('publishConfig.registry alone is enough', async t => {
+  const monorepoDir = (t: Test, aConfig: object, bConfig: object) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+      }),
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+            ...aConfig,
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.0.0',
+            ...bConfig,
+          }),
+        },
+      },
+    })
+    return makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registries: {},
+        tag: 'latest',
+        monorepo: ['a', 'b'].map(name => ({
+          name,
+          path: `packages/${name}`,
+          fullpath: resolve(dir, 'packages', name),
+        })),
+      },
+      positionals: ['publish'],
+      values: { recursive: true },
+    })
+  }
+  const custom = (path: string) => ({
+    publishConfig: { registry: `https://custom.example.com/${path}` },
+  })
+
+  t.test('no pre-command registry gate', async t => {
+    const mod =
+      (await import('../../src/commands/publish.ts')) as Record<
+        string,
+        unknown
+      >
+    t.notOk(mod.needsRegistry)
+  })
+
+  t.test('publishes w/o any configured registry', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@test/pc',
+        version: '1.0.0',
+        ...custom('reg'),
+      }),
+      'vlt.json': '{}',
+    })
+    t.chdir(dir)
+    const result = (await command(
+      makeTestConfig({
+        projectRoot: dir,
+        options: {
+          packageJson: new PackageJson(),
+          registries: {},
+          tag: 'latest',
+        },
+        positionals: ['publish'],
+      }),
+    )) as CommandResultSingle
+    t.equal(result.registry, 'https://custom.example.com')
+    t.strictSame(requests, [
+      {
+        url: 'https://custom.example.com/reg/@test%2Fpc',
+        method: 'PUT',
+      },
+    ])
+  })
+
+  t.test('each workspace uses its own publishConfig', async t => {
+    const config = monorepoDir(t, custom('a'), custom('b'))
+    await command(config)
+    t.strictSame(
+      requests.map(r => r.url),
+      [
+        'https://custom.example.com/a/a',
+        'https://custom.example.com/b/b',
+      ],
+    )
+  })
+
+  t.test('missing registry fails before publishing any', async t => {
+    const config = monorepoDir(t, custom('a'), {})
+    await t.rejects(command(config), {
+      message: /Missing registry configuration/,
+      cause: { code: 'ECONFIG' },
+    })
+    t.strictSame(requests, [])
+  })
+
+  t.test('configured registry resolved at most once', async t => {
+    let calls = 0
+    const cmd = await t.mockImport<
+      typeof import('../../src/commands/publish.ts')
+    >('../../src/commands/publish.ts', {
+      '../../src/require-registry.ts': {
+        ...(await import('../../src/require-registry.ts')),
+        resolveRegistry: async () => {
+          calls++
+          return 'https://registry.example.com/'
+        },
+      },
+    })
+    for (const [aConfig, bConfig, want] of [
+      [{}, {}, 1],
+      [custom('a'), custom('b'), 0],
+    ] as const) {
+      calls = 0
+      const config = monorepoDir(t, aConfig, bConfig)
+      config.options['dry-run'] = true
+      await cmd.command(config)
+      t.equal(calls, want)
+    }
   })
 })
