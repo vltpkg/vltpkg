@@ -125,4 +125,28 @@ t.test('global', async t => {
   t.notMatch(out, 'Skipped')
   t.notMatch(out, 'PATH')
   r2.error(new Error('x'))
+
+  // PATH hint only when there are bins
+  for (const [conflicts, hint] of [
+    [[], false],
+    [['c'], true],
+  ] as const) {
+    const r = reporter()
+    r.start()
+    await r.done(
+      {
+        global: {
+          binDir: '/g/bin',
+          bins: [],
+          conflicts,
+          inPath: false,
+        },
+      } as unknown as InstallResult,
+      { time: 7 },
+    )
+    await setTimeout(50)
+    t.match(out, 'Done in 7ms')
+    t.equal(out.includes('PATH'), hint, `hint: ${hint}`)
+    r.error(new Error('x'))
+  }
 })

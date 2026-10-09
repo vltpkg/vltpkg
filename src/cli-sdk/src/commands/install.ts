@@ -14,7 +14,12 @@ import { addTypesDeps } from '../save-types.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { Diff, Graph } from '@vltpkg/graph'
+import type {
+  AddImportersDependenciesMap,
+  Diff,
+  Graph,
+} from '@vltpkg/graph'
+import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -202,39 +207,15 @@ export const command: CommandFn<InstallResult> = async conf => {
   // TODO: we should probably throw an error if the user
   // tries to install using view=mermaid
   if (conf.globalRoot) assertGlobalOptions(conf)
+  // throws before any global ws dir is created
+  const persist = planSpecConfigPersist(conf)
   // before reading options, it may reset them
   const globalAdd =
     conf.globalRoot ? await parseGlobalAddArgs(conf) : undefined
-  const monorepo = conf.options.monorepo
-  const scurry = conf.options.scurry
-  const { add } = globalAdd ?? parseAddArgs(conf, scurry, monorepo)
-  const persist = planSpecConfigPersist(conf)
-  // global ws has only the package as dep
-  if (conf.values['save-types'] && !globalAdd)
-    await addTypesDeps(conf, add)
-  const frozenLockfile = conf.options['frozen-lockfile']
-  const expectLockfile = conf.options['expect-lockfile']
-  const lockfileOnly = conf.options['lockfile-only']
-  const saveExact = conf.values['save-exact']
-  const savePrefix = conf.values['save-prefix']
-  /* c8 ignore start */
-  const allowScripts =
-    conf.get('allow-scripts') ?
-      String(conf.get('allow-scripts'))
-    : ':not(*)'
-  /* c8 ignore stop */
   const installStart = Date.now()
-  const { buildQueue, graph, diff } = await install(
-    {
-      ...conf.options,
-      frozenLockfile,
-      expectLockfile,
-      allowScripts,
-      lockfileOnly,
-      saveExact,
-      savePrefix,
-    },
-    add,
+  const { buildQueue, graph, diff } = await runInstall(
+    conf,
+    globalAdd?.add,
   ).catch(async (er: unknown) => {
     if (globalAdd) await removeGlobalWorkspaces(globalAdd.created)
     throw asUnknownSpecPrefix(er)
@@ -261,4 +242,40 @@ export const command: CommandFn<InstallResult> = async conf => {
     ...(persist ? { persistedConfig: persist } : null),
     ...(global ? { global } : null),
   }
+}
+
+// async, so any throw rolls back global ws dirs
+const runInstall = async (
+  conf: LoadedConfig,
+  globalAdd?: AddImportersDependenciesMap,
+) => {
+  const monorepo = conf.options.monorepo
+  const scurry = conf.options.scurry
+  const add = globalAdd ?? parseAddArgs(conf, scurry, monorepo).add
+  // global ws has only the package as dep
+  if (conf.values['save-types'] && !globalAdd)
+    await addTypesDeps(conf, add)
+  const frozenLockfile = conf.options['frozen-lockfile']
+  const expectLockfile = conf.options['expect-lockfile']
+  const lockfileOnly = conf.options['lockfile-only']
+  const saveExact = conf.values['save-exact']
+  const savePrefix = conf.values['save-prefix']
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
+  return install(
+    {
+      ...conf.options,
+      frozenLockfile,
+      expectLockfile,
+      allowScripts,
+      lockfileOnly,
+      saveExact,
+      savePrefix,
+    },
+    add,
+  )
 }
