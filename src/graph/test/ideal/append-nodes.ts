@@ -5782,3 +5782,52 @@ t.test('locked version fetch without node_modules', async t => {
     t.equal(graph.mainImporter.edgesOut.get('foo')?.to, undefined)
   })
 })
+
+t.test(
+  'catalog spec errors point at the declaring package',
+  async t => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { foo: '^1.0.0' },
+      },
+    })
+    const packageInfo = {
+      async manifest() {
+        return {
+          name: 'foo',
+          version: '1.0.0',
+          dependencies: { bar: 'catalog:' },
+        }
+      },
+    } as unknown as PackageInfoClient
+    const options = { ...configData, catalogs: { dev: { bar: '1' } } }
+    const dep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0', options),
+      type: 'prod',
+    })
+    await t.rejects(
+      appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [dep],
+        new PathScurry(t.testdirName),
+        options,
+        new Set<DepID>(),
+        new Map([['foo', dep]]),
+      ),
+      {
+        message: 'Default catalog not found for bar@catalog:',
+        cause: {
+          code: 'ECONFIG',
+          from: `./node_modules/.vlt/${joinDepIDTuple(['registry', '', 'foo@1.0.0'])}/node_modules/foo/package.json (dependencies)`,
+          wanted: ['catalog:dev'],
+        },
+      },
+    )
+  },
+)

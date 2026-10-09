@@ -1,6 +1,10 @@
 import { longDependencyTypes } from '@vltpkg/types'
 import type { DependencyTypeLong } from '@vltpkg/types'
-import { shorten, asDependency } from '../dependencies.ts'
+import {
+  shorten,
+  asDependency,
+  asDependencySpecError,
+} from '../dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   Dependency,
@@ -122,7 +126,12 @@ export const getImporterSpecs = (
         continue
       }
 
-      const spec = Spec.parse(depName, depSpec, options)
+      let spec: Spec
+      try {
+        spec = Spec.parse(depName, depSpec, options)
+      } catch (er) {
+        throw asDependencySpecError(er, importer, type)
+      }
 
       // if a workspace dep references a workspace that no longer exists
       // (folder was removed), mark it for removal instead of trying to
@@ -195,11 +204,14 @@ export const getImporterSpecs = (
           if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
           // add the dependency to the addDeps map
-          const dependency = asDependency({
-            spec: Spec.parse(depName, depSpec, options),
-            type: shorten(depType, depName, manifest),
-          })
-          addDeps.set(depName, dependency)
+          const type = shorten(depType, depName, manifest)
+          let spec: Spec
+          try {
+            spec = Spec.parse(depName, depSpec, options)
+          } catch (er) {
+            throw asDependencySpecError(er, node, type)
+          }
+          addDeps.set(depName, asDependency({ spec, type }))
         }
       }
 

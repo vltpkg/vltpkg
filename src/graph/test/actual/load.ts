@@ -1899,3 +1899,90 @@ t.test(
     )
   },
 )
+
+t.test('catalog spec errors', async t => {
+  t.test('missing dependency', async t => {
+    const projectRoot = t.testdir({
+      'vlt.json': '{"workspaces":"packages/*"}',
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+      }),
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+            dependencies: { abbrev: 'catalog:' },
+          }),
+        },
+      },
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    t.throws(
+      () =>
+        load({
+          scurry: new PathScurry(projectRoot),
+          packageJson: new PackageJson(),
+          monorepo: Monorepo.maybeLoad(projectRoot),
+          projectRoot,
+          loadManifests: true,
+          catalogs: { dev: { abbrev: '^2.0.0' } },
+          ...configData,
+        }),
+      {
+        message: 'Default catalog not found for abbrev@catalog:',
+        cause: {
+          code: 'ECONFIG',
+          from: './packages/a/package.json (dependencies)',
+          wanted: ['catalog:dev'],
+          validOptions: ['catalog:dev'],
+        },
+      },
+    )
+  })
+
+  t.test('installed dependency', async t => {
+    const projectRoot = t.testdir({
+      'vlt.json': '{}',
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        devDependencies: { abbrev: 'catalog:x' },
+      }),
+      vendor: {
+        abbrev: {
+          'package.json': JSON.stringify({
+            name: 'abbrev',
+            version: '2.0.0',
+          }),
+        },
+      },
+      // readDir only follows symlinks
+      node_modules: {
+        abbrev: t.fixture('symlink', '../vendor/abbrev'),
+      },
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    t.throws(
+      () =>
+        load({
+          scurry: new PathScurry(projectRoot),
+          packageJson: new PackageJson(),
+          monorepo: Monorepo.maybeLoad(projectRoot),
+          projectRoot,
+          loadManifests: true,
+          ...configData,
+        }),
+      {
+        message: 'Catalog "x" not found for abbrev@catalog:x',
+        cause: {
+          code: 'ECONFIG',
+          from: './package.json (devDependencies)',
+        },
+      },
+    )
+  })
+})

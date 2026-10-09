@@ -1502,3 +1502,125 @@ t.test('unchanged importer edges are not re-parsed', async t => {
     'the retyped dep is satisfied, so it heals instead',
   )
 })
+
+t.test('catalog spec errors point at the manifest', async t => {
+  t.test('importer', async t => {
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      projectRoot,
+      mainManifest: {
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { abbrev: 'catalog:dev' },
+      },
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    t.throws(
+      () =>
+        getImporterSpecs({
+          add: new Map() as AddImportersDependenciesMap,
+          graph,
+          remove: new Map() as RemoveImportersDependenciesMap,
+          scurry: new PathScurry(projectRoot),
+          packageJson: new PackageJson(),
+        }),
+      {
+        message: 'Catalog "dev" not found for abbrev@catalog:dev',
+        cause: {
+          code: 'ECONFIG',
+          from: './package.json (dependencies)',
+        },
+      },
+    )
+  })
+
+  t.test('file-type directory', async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { nested: 'file:./nested' },
+      }),
+      'vlt.json': '{}',
+      nested: {
+        'package.json': JSON.stringify({
+          name: 'nested',
+          version: '1.0.0',
+          dependencies: { foo: '^1.0.0', bar: 'catalog:' },
+        }),
+      },
+      node_modules: {
+        nested: t.fixture(
+          'symlink',
+          '.vlt/' +
+            joinDepIDTuple(['file', 'nested']) +
+            '/node_modules/nested',
+        ),
+        '.vlt-lock.json': JSON.stringify({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {
+            [joinDepIDTuple(['file', 'nested'])]: [
+              0,
+              'nested',
+              null,
+              null,
+              null,
+              {
+                name: 'nested',
+                version: '1.0.0',
+                dependencies: { foo: '^1.0.0' },
+              },
+            ],
+            [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+              0,
+              'foo',
+              null,
+              null,
+              null,
+              { name: 'foo', version: '1.0.0' },
+            ],
+          },
+          edges: {
+            [`${joinDepIDTuple(['file', '.'])} nested`]:
+              'prod file:./nested ' +
+              joinDepIDTuple(['file', 'nested']),
+            [`${joinDepIDTuple(['file', 'nested'])} foo`]:
+              'prod ^1.0.0 ' +
+              joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+          },
+        }),
+      },
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    const graph = load({
+      projectRoot,
+      scurry,
+      packageJson,
+      loadManifests: true,
+      skipHiddenLockfile: false,
+    })
+    t.throws(
+      () =>
+        getImporterSpecs({
+          add: new Map() as AddImportersDependenciesMap,
+          graph,
+          remove: new Map() as RemoveImportersDependenciesMap,
+          scurry,
+          packageJson,
+        }),
+      {
+        message: 'Default catalog not found for bar@catalog:',
+        cause: {
+          code: 'ECONFIG',
+          from: './nested/package.json (dependencies)',
+        },
+      },
+    )
+  })
+})

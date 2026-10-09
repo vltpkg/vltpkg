@@ -13,6 +13,7 @@ import {
   shorten,
   getRawDependencies,
   getDependencies,
+  asDependencySpecError,
 } from '../dependencies.ts'
 import { Graph } from '../graph.ts'
 import { loadHidden } from '../lockfile/load.ts'
@@ -358,13 +359,18 @@ const parseDir = (
       const bareSpec = deps?.bareSpec || '*'
 
       const depType = shorten(type, alias, fromNode.manifest)
-      let spec = Spec.parse(alias, bareSpec, {
-        ...options,
-        // fall back to options.registry (which the lockfile merges into)
-        // so importer-level edges don't silently revert to the default
-        // npm registry. see vltpkg/vltpkg#1580.
-        registry: fromNode.registry ?? options.registry,
-      })
+      let spec: Spec
+      try {
+        spec = Spec.parse(alias, bareSpec, {
+          ...options,
+          // fall back to options.registry (which the lockfile merges into)
+          // so importer-level edges don't silently revert to the default
+          // npm registry. see vltpkg/vltpkg#1580.
+          registry: fromNode.registry ?? options.registry,
+        })
+      } catch (er) {
+        throw asDependencySpecError(er, fromNode, depType)
+      }
 
       // Check for active modifiers and replace spec if a modifier is complete
       const { spec: modifiedSpec, queryModifier } =
@@ -436,10 +442,15 @@ const parseDir = (
   for (const { name, type, bareSpec } of dependencies.values()) {
     if (!seenDeps.has(name)) {
       const depType = shorten(type, name, fromNode.manifest)
-      let spec = Spec.parse(name, bareSpec, {
-        ...options,
-        registry: fromNode.registry ?? options.registry,
-      })
+      let spec: Spec
+      try {
+        spec = Spec.parse(name, bareSpec, {
+          ...options,
+          registry: fromNode.registry ?? options.registry,
+        })
+      } catch (er) {
+        throw asDependencySpecError(er, fromNode, depType)
+      }
 
       // Check for active modifiers and replace spec for missing dependencies
       const { spec: modifiedSpec, queryModifier } =

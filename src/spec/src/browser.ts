@@ -61,9 +61,10 @@ export const defaultScopeRegistries = {
 export const getOptions = (
   options?: SpecOptions,
 ): SpecOptionsFilled => ({
-  catalog: {},
   catalogs: {},
   ...options,
+  // after spread: explicit `catalog: undefined` gets default too
+  catalog: options?.catalog ?? {},
   // built-in aliases are user/service-overridable: user config wins
   'jsr-registries': {
     ...defaultJsrRegistries,
@@ -426,24 +427,38 @@ export class Spec implements SpecLike<Spec> {
 
     if (this.bareSpec.startsWith('catalog:')) {
       this.catalog = this.bareSpec.substring('catalog:'.length)
+      const { catalog: defaultCatalog, catalogs = {} } = this.options
       const catalog =
         this.catalog ?
-          this.options.catalogs?.[this.catalog]
-        : this.options.catalog
+          Object.hasOwn(catalogs, this.catalog) ?
+            catalogs[this.catalog]
+          : undefined
+        : Object.keys(defaultCatalog).length ? defaultCatalog
+        : undefined
       if (!catalog) {
-        throw this.#error('Named catalog not found', {
-          name: this.catalog,
-          validOptions:
-            this.options.catalogs &&
-            Object.keys(this.options.catalogs),
-        })
+        throw this.#catalogError(
+          this.catalog ?
+            `Catalog "${this.catalog}" not found for ${this.spec}`
+          : `Default catalog not found for ${this.spec}`,
+        )
       }
-      const sub = catalog[this.name]
+      const catalogName =
+        this.catalog ? `catalog "${this.catalog}"` : 'default catalog'
+      const sub =
+        Object.hasOwn(catalog, this.name) ?
+          catalog[this.name]
+        : undefined
       if (!sub) {
-        throw this.#error('Name not found in catalog', {
-          name: this.name,
-          validOptions: Object.keys(catalog),
-        })
+        throw this.#catalogError(
+          `Package "${this.name}" not found in ${catalogName}`,
+        )
+      }
+      // would recurse or resolve against another catalog
+      if (sub.startsWith('catalog:')) {
+        throw this.#error(
+          `Catalog entry "${this.name}" in ${catalogName} cannot be a catalog: spec`,
+          { code: 'ECONFIG', found: sub },
+        )
       }
       this.subspec = Spec.parse(this.name, sub, this.options)
       this.type = 'catalog'
@@ -849,6 +864,28 @@ export class Spec implements SpecLike<Spec> {
           ...Object.keys(this.options['jsr-registries']),
         ]),
       ].map(p => `${p}:`),
+    })
+  }
+
+  /** ECONFIG error listing defined catalogs & ones defining this dep */
+  #catalogError(message: string) {
+    const { catalog, catalogs = {} } = this.options
+    const defined: [string, Record<string, string>][] = [
+      ...(Object.keys(catalog).length ?
+        [['', catalog] as [string, Record<string, string>]]
+      : []),
+      ...Object.entries(catalogs),
+    ]
+    const validOptions = defined.map(([n]) => `catalog:${n}`)
+    const wanted = defined
+      .filter(
+        ([, c]) => Object.hasOwn(c, this.name) && !!c[this.name],
+      )
+      .map(([n]) => `catalog:${n}`)
+    return this.#error(message, {
+      code: 'ECONFIG',
+      ...(validOptions.length ? { validOptions } : {}),
+      ...(wanted.length ? { wanted } : {}),
     })
   }
 

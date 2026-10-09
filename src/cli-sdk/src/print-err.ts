@@ -296,8 +296,11 @@ const printCode = (
     }
 
     case 'ECONFIG': {
-      const { found, wanted, validOptions } = err.cause
+      const { found, wanted, validOptions, from } = err.cause
       stderr(`Config Error: ${err.message}`)
+      if (from) {
+        stderr(indent(`From: ${format(from)}`))
+      }
       if (found) {
         stderr(indent(`Found: ${format(found)}`))
       }

@@ -9,7 +9,10 @@ import type {
   GraphLike,
   NodeLike,
 } from '@vltpkg/types'
-import { isDependencyTypeShort } from '../dependencies.ts'
+import {
+  asDependencySpecError,
+  isDependencyTypeShort,
+} from '../dependencies.ts'
 import type {
   LockfileData,
   LockfileEdgeKey,
@@ -163,12 +166,24 @@ export const loadEdges = (
     // loaded), so overriding here would always inject `undefined`
     // and silently revert to the default npm registry.
     // See vltpkg/vltpkg#1580.
-    const spec = parseEdgeSpec(
-      specName,
-      valRest.substring(0, vrSplit),
-      options,
-      cache,
-    )
+    let spec: Spec
+    try {
+      spec = parseEdgeSpec(
+        specName,
+        valRest.substring(0, vrSplit),
+        options,
+        cache,
+      )
+    } catch (er) {
+      // spec text is the lockfile's; hidden lockfile errors are
+      // swallowed, so only vlt-lock.json surfaces here
+      throw asDependencySpecError(
+        er,
+        fromNode,
+        depType,
+        'vlt-lock.json',
+      )
+    }
 
     if (useOptimizations) {
       edgeProcessingQueue.push({
