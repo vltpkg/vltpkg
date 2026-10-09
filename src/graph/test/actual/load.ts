@@ -880,6 +880,43 @@ t.test('modifiers integration', async t => {
   )
 
   await t.test(
+    'a "-" modifier does not mark a dependency as missing',
+    async t => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'modifiers-removed-test',
+          version: '1.0.0',
+          dependencies: {
+            removed: '^1.0.0',
+            missing: '^1.0.0',
+          },
+        }),
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #removed': '-' },
+        }),
+      })
+
+      t.chdir(projectRoot)
+      unload('project')
+
+      const graph = load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        modifiers: new GraphModifier({ ...configData }),
+        ...configData,
+      })
+
+      const { edgesOut } = graph.mainImporter
+      t.notOk(edgesOut.get('removed'), 'no edge for removed dep')
+      t.ok(edgesOut.get('missing'), 'unmodified dep still missing')
+      t.notOk(edgesOut.get('missing')?.to)
+    },
+  )
+
+  await t.test(
     'should apply modifiers when loadManifests=false',
     async t => {
       const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])

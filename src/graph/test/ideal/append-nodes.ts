@@ -792,6 +792,33 @@ t.test('spec edge removal', async t => {
     fooNode,
     'should not have a node for foo since it was removed',
   )
+
+  await t.rejects(
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      new Map([['foo', fooDep]]),
+      modifiers,
+      completeModifierRefs,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+    ),
+    {
+      message: /Cannot add foo: it is removed by a graph modifier/,
+      cause: { code: 'ECONFIG', found: '#foo' },
+    },
+    'an explicit add of a removed dep throws',
+  )
 })
 
 // Add a test for the error handling when a node can't be placed

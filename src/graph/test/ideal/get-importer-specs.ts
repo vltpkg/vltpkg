@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
-import { unload } from '@vltpkg/vlt-json'
+import { reload, unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect as rawInspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
@@ -14,6 +14,7 @@ const inspect = (obj: unknown, opts?: InspectOptions) =>
     .replaceAll(' [Set] ', ' ')
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { load } from '../../src/actual/load.ts'
 import type {
   AddImportersDependenciesMap,
@@ -23,6 +24,7 @@ import { asDependency } from '../../src/dependencies.ts'
 import { Edge } from '../../src/edge.ts'
 import { Graph } from '../../src/graph.ts'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -1501,4 +1503,91 @@ t.test('unchanged importer edges are not re-parsed', async t => {
     [['f', 'prod', 'dev']],
     'the retyped dep is satisfied, so it heals instead',
   )
+})
+
+t.test('a "-" modifier keeps the dependency out of add', async t => {
+  const removedCase = (
+    t: Test,
+    dependencies: Record<string, string>,
+    edges: Record<string, string> = {},
+  ) => {
+    const mainManifest = { name: 'my-project', dependencies }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #b': '-',
+          ':root > #q:semver(^1.0.0)': '-',
+        },
+      }),
+    })
+    t.chdir(projectRoot)
+    reload('modifiers', 'project')
+    const graph = new Graph({
+      projectRoot,
+      mainManifest,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
+    // edges as a lockfile written before the change has them
+    for (const [name, bareSpec] of Object.entries(edges)) {
+      const spec = Spec.parse(name, bareSpec)
+      const node = graph.addNode(
+        undefined,
+        { name, version: '2.0.0' },
+        spec,
+        name,
+        '2.0.0',
+      )
+      graph.addEdge('prod', spec, graph.mainImporter, node)
+    }
+    return getImporterSpecs({
+      add: new Map() as AddImportersDependenciesMap,
+      graph,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      modifiers: GraphModifier.load({}),
+    })
+  }
+
+  await t.test('with other deps', async t => {
+    const specs = removedCase(t, { a: '^1.0.0', b: '^1.0.0' })
+    t.strictSame(
+      [
+        ...(specs.add.get(joinDepIDTuple(['file', '.']))?.keys() ??
+          []),
+      ],
+      ['a'],
+      'only the kept dep is queued',
+    )
+    t.equal(specs.add.modifiedDependencies, true)
+  })
+
+  await t.test('only the removed dep', async t => {
+    const specs = removedCase(t, { b: '^1.0.0' })
+    t.notOk(
+      specs.add.get(joinDepIDTuple(['file', '.']))?.size,
+      'nothing is queued',
+    )
+    t.equal(specs.add.modifiedDependencies, false)
+    t.equal(specs.removedEdges.size, 0, 'no edge to drop')
+  })
+
+  await t.test('a qualifier starts matching an edge', async t => {
+    const specs = removedCase(t, { q: '^1.1.0' }, { q: '^2.0.0' })
+    t.strictSame(
+      [...specs.removedEdges].map(
+        e => `${e.name}@${e.spec.bareSpec}`,
+      ),
+      ['q@^2.0.0'],
+      'the old edge is dropped',
+    )
+    t.notOk(
+      specs.add.get(joinDepIDTuple(['file', '.']))?.size,
+      'nothing is queued',
+    )
+    t.equal(specs.remove.size, 0, 'package.json keeps it')
+    t.equal(specs.add.modifiedDependencies, false)
+    t.equal(specs.remove.modifiedDependencies, false)
+  })
 })

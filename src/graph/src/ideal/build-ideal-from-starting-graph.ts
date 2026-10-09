@@ -104,6 +104,15 @@ export const buildIdealFromStartingGraph = async (
     options.graph.lockfileStale = true
   }
 
+  // importer edges a `-` modifier now removes: drop them, gc() takes
+  // whatever only they reached
+  for (const edge of importerSpecs.removedEdges) {
+    edge.from.edgesOut.delete(edge.name)
+    edge.to?.edgesIn.delete(edge)
+    options.graph.edges.delete(edge)
+    options.graph.lockfileStale = true
+  }
+
   // refreshs the current graph adding the nodes marked for addition
   // and removing the ones marked for removal, while also recalculating
   // peer dependencies and default locations

@@ -69,6 +69,8 @@ export const getImporterSpecs = (
     new AddImportersDependenciesMapImpl()
   const removeResult: RemoveImportersDependenciesMap =
     new RemoveImportersDependenciesMapImpl()
+  // importer edges a `-` modifier now removes, package.json keeps them
+  const removedEdges = new Set<Edge>()
 
   // traverse the list of importers in the starting graph
   for (const importer of graph.importers) {
@@ -123,6 +125,13 @@ export const getImporterSpecs = (
       }
 
       const spec = Spec.parse(depName, depSpec, options)
+
+      // a `-` modifier removes this dependency, nothing to place; an
+      // edge from before (e.g. a qualifier now matching) has to go
+      if (options.modifiers?.removesImporterEdge(importer, spec)) {
+        if (edge) removedEdges.add(edge)
+        continue
+      }
 
       // if a workspace dep references a workspace that no longer exists
       // (folder was removed), mark it for removal instead of trying to
@@ -286,6 +295,7 @@ export const getImporterSpecs = (
   return {
     add: addResult,
     remove: removeResult,
+    removedEdges,
     staleSpecs,
     transientAdd,
     transientRemove,

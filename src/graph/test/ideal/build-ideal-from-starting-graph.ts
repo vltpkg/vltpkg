@@ -36,6 +36,7 @@ import type {
   LockfileNode,
 } from '../../src/index.ts'
 import { Graph } from '../../src/graph.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
 import { lockfileData } from '../../src/lockfile/save.ts'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
@@ -1968,6 +1969,73 @@ t.test('a stale importer edge type is healed too', async t => {
     true,
     'node flag follows the type',
   )
+})
+
+t.test('a "-" modifier drops an edge it starts to match', async t => {
+  // the qualifier now accepts the package.json range; modifiers are
+  // unchanged, so no options change resets the old edge
+  const modifiers = { ':root > #abbrev:semver(^1.0.0)': '-' }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { abbrev: '^1.1.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({ modifiers }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  t.teardown(() => unload('project'))
+
+  const abbrevId = joinDepIDTuple(['registry', '', 'abbrev@2.0.0'])
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      throw new Error(`unexpected manifest fetch: ${spec}`)
+    },
+  } as unknown as PackageInfoClient
+  const common = {
+    ...configData,
+    projectRoot,
+    mainManifest,
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    remove: new Map() as RemoveImportersDependenciesMap,
+    packageInfo,
+    modifiers: GraphModifier.load(configData),
+  }
+  const starting = loadVirtual({
+    ...common,
+    lockfileData: {
+      lockfileVersion: 1,
+      options: { ...configData, modifiers },
+      nodes: {
+        [abbrevId]: [
+          0,
+          'abbrev',
+          null,
+          null,
+          null,
+          { name: 'abbrev', version: '2.0.0' },
+        ],
+      } as unknown as Record<DepID, LockfileNode>,
+      edges: {
+        [edgeKey(['file', '.'], 'abbrev')]: `prod ^2.0.0 ${abbrevId}`,
+      } as LockfileEdges,
+    },
+  })
+  t.equal(starting.optionsChanged, false, 'same options')
+  const graph = await buildIdealFromStartingGraph({
+    ...common,
+    graph: starting,
+    add: new Map() as AddImportersDependenciesMap,
+    remover: new RollbackRemove(),
+  })
+
+  t.notOk(graph.mainImporter.edgesOut.get('abbrev'), 'edge dropped')
+  t.equal(graph.edges.size, 0, 'no edge left')
+  t.notOk(graph.nodes.get(abbrevId), 'node collected')
+  t.equal(graph.lockfileStale, true, 'flagged for saving')
 })
 
 t.test('dev/optional flags follow the remaining edges', async t => {
