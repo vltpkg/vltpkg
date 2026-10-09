@@ -5,6 +5,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { DependencySaveType } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
+import { setTimeout as delay } from 'node:timers/promises'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type {
@@ -296,6 +297,68 @@ t.test('lockfileOnly skips early extraction', async t => {
     [...graph.nodes.values()].some(n => n.extracted),
     'no node is marked extracted',
   )
+})
+
+t.test('a failed build leaves no extraction unhandled', async t => {
+  const unhandled: unknown[] = []
+  const onUnhandled = (er: unknown) => unhandled.push(er)
+  process.on('unhandledRejection', onUnhandled)
+  t.teardown(() => process.off('unhandledRejection', onUnhandled))
+
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const graph = () =>
+    new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+  let extracted = 0
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'missing') throw new Error('missing')
+      return {
+        name: 'foo',
+        version: '1.0.0',
+        dependencies: { missing: '1' },
+      }
+    },
+    async extract() {
+      extracted++
+      await delay(20)
+      throw new Error('extract failed')
+    },
+  } as unknown as PackageInfoClient
+  const options = (lockfileOnly?: boolean) => ({
+    add: new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map(
+          Object.entries({
+            foo: {
+              spec: Spec.parse('foo', '^1.0.0'),
+              type: 'prod' as DependencySaveType,
+            } satisfies Dependency,
+          }),
+        ),
+      ],
+    ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    graph: graph(),
+    packageInfo,
+    scurry: new PathScurry(t.testdirName),
+    // makes foo eligible for early extraction
+    actual: graph(),
+    remover: new RollbackRemove(),
+    lockfileOnly,
+  })
+
+  await t.rejects(refreshIdealGraph(options()), /missing/)
+  t.equal(extracted, 1, 'an extraction was in flight')
+  await t.rejects(refreshIdealGraph(options(true)), /missing/)
+  t.equal(extracted, 1, 'none when lockfileOnly')
+  // past the extract rejection
+  await delay(50)
+  t.strictSame(unhandled, [])
 })
 
 t.test(

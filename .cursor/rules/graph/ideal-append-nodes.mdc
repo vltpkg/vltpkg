@@ -15,6 +15,8 @@ Core BFS graph builder in `src/graph/src/ideal/append-nodes.ts`.
 - `reuseTasks: ReuseTask[]` — deferred edge creation for existing nodes
 - `forkRequests: PeerContextEntryInput[]` — accumulated peer context fork entries
 
+Errors: every `manifestPromise` is side-caught; `Promise.all` fails the level on the first rejection (others may still be in flight). `refreshIdealGraph` side-catches in-flight early extractions when the build fails.
+
 ### Phase B: Serial Mutations (deterministic)
 Sort results by `${node.id}::${depth}`. For each (in order):
 1. Apply `forkRequests` → `forkPeerContext()`

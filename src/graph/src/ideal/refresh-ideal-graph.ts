@@ -215,7 +215,11 @@ export const refreshIdealGraph = async ({
       transientAdd,
       transientRemove,
       explicit,
-    )
+    ).catch((er: unknown) => {
+      // extractions still in flight are moot now
+      for (const p of extractPromises ?? []) p.catch(() => {})
+      throw er
+    })
   }
 
   // locked resolutions only apply to the rebuild that captured them
