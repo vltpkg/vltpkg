@@ -12,6 +12,7 @@ import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { error } from '@vltpkg/error-cause'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { sortScopeLocations } from '../sort-scope-locations.ts'
 import { minimatch } from 'minimatch'
 
 export const needsRegistry = true
@@ -126,7 +127,7 @@ const scopeLocations = async (
     )
     locations.push(resolve(projectRoot, location))
   }
-  return locations
+  return sortScopeLocations(locations, options.monorepo)
 }
 
 export const command: CommandFn<CommandResult> = async conf => {

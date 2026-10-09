@@ -5,6 +5,7 @@ import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { CommandResultSingle } from '../../src/commands/version.ts'
 import * as actualGitModule from '@vltpkg/git'
+import { Monorepo } from '@vltpkg/workspaces'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../../src/commands/version.ts')>(
@@ -651,6 +652,7 @@ t.test('version command with scope', async t => {
           'package.json': JSON.stringify({
             name: '@test/a',
             version: '1.0.0',
+            dependencies: { '@test/b': 'workspace:*' },
           }),
         },
         b: {
@@ -709,18 +711,10 @@ t.test('version command with scope', async t => {
       ['patch'],
       {
         scope: ':workspace',
-        monorepo: [
-          {
-            name: '@test/a',
-            path: 'packages/a',
-            fullpath: resolve(dir, 'packages/a'),
-          },
-          {
-            name: '@test/b',
-            path: 'packages/b',
-            fullpath: resolve(dir, 'packages/b'),
-          },
-        ],
+        monorepo: new Monorepo(dir, {
+          config: { packages: ['packages/*'] },
+          load: {},
+        }),
       },
       { version: '1.0.0' },
     )
@@ -758,9 +752,10 @@ t.test('version command with scope', async t => {
     const results = result as CommandResultSingle[]
     t.equal(results.length, 2, 'should update both workspaces')
 
-    const [resultA, resultB] = results.sort((a, b) =>
-      a.name.localeCompare(b.name),
-    )
+    // a depends on b, so b goes first
+    const [resultB, resultA] = results
+    t.equal(resultB!.name, '@test/b')
+    t.equal(resultA!.name, '@test/a')
     t.equal(resultA!.oldVersion, '1.0.0')
     t.equal(resultA!.newVersion, '1.0.1')
     t.equal(resultB!.oldVersion, '2.0.0')
