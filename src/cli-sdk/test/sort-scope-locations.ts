@@ -72,6 +72,10 @@ t.test('independent keeps query order', async t => {
   t.strictSame(sort('d', 'e'), expected('d', 'e'))
 })
 
+t.test('dep may move ahead of unrelated match', async t => {
+  t.strictSame(sort('b', 'd', 'c'), expected('c', 'b', 'd'))
+})
+
 t.test('non-workspace slots keep index', async t => {
   const foo = resolve(dir, 'node_modules/foo')
   t.strictSame(

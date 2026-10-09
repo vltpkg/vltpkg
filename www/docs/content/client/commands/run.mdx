@@ -196,9 +196,10 @@ vlt run test --scope=":root > *"  # Direct dependencies only
 ```
 
 Matched workspaces run in dependency order (a workspace runs after the
-workspaces it depends on), like `--workspace`/`--recursive`. Unrelated
-workspaces keep query order; non-workspace matches (e.g. `:root`) keep
-their position.
+workspaces it depends on), like `--workspace`/`--recursive`. Otherwise
+query order is kept where possible (a dependency may move ahead of
+unrelated matches); non-workspace matches (e.g. `:root`) keep their
+position.
 
 ### `--bail`, `-b` / `--no-bail`, `-B`
 

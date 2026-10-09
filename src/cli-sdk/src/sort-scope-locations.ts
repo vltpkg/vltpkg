@@ -5,8 +5,9 @@ import type { Monorepo, Workspace } from '@vltpkg/workspaces'
 /**
  * Reorder `--scope` target locations so each workspace follows the
  * workspaces it depends on (directly or via unmatched workspaces),
- * matching --workspace/--recursive. Stable: unrelated workspaces keep
- * query order; cycles are broken deterministically. Non-workspace
+ * matching --workspace/--recursive. Ties broken by query order (a dep
+ * may move ahead of unrelated matches); cycles broken
+ * deterministically. Non-workspace
  * locations (root, installed deps) keep their index. Accepts absolute
  * or projectRoot-relative locations; returns the original strings.
  */
