@@ -444,6 +444,10 @@ const parseDir = (
       // Check for active modifiers and replace spec for missing dependencies
       const { spec: modifiedSpec, queryModifier } =
         maybeApplyModifierToSpec(spec, name, modifierRefs)
+      // a `-` modifier removes the dependency, so it is not missing
+      if (modifiedSpec !== spec && modifiedSpec.bareSpec === '-') {
+        continue
+      }
       spec = modifiedSpec
 
       graph.placePackage(

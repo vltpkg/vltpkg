@@ -1,6 +1,7 @@
 import t from 'tap'
 import type { Test } from 'tap'
 import {
+  existsSync,
   readFileSync,
   statSync,
   utimesSync,
@@ -2498,6 +2499,193 @@ t.test('a project with modifiers stays in sync', async t => {
     )
   }
 })
+
+t.test('a "-" modifier removes dependencies', async t => {
+  const pj = JSON.stringify({
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { abbrev: '^2.0.0', which: '^2.0.1' },
+  })
+  const projectRoot = t.testdir({
+    'package.json': pj,
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #abbrev': '-', '#which > #isexe': '-' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  // the cli always passes an add map
+  const noAdd = () =>
+    Object.assign(new Map(), {
+      modifiedDependencies: false,
+    }) as AddImportersDependenciesMap
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(opts(), noAdd())
+  t.notOk(graph.mainImporter.edgesOut.get('abbrev'), 'no abbrev edge')
+  t.ok(graph.mainImporter.edgesOut.get('which')?.to, 'which kept')
+  t.notOk(graph.nodesByName.get('isexe'), 'no isexe node')
+  t.notOk(
+    existsSync(resolve(projectRoot, 'node_modules/abbrev')),
+    'abbrev not installed',
+  )
+  t.equal(read('package.json'), pj, 'package.json untouched')
+  const lock = JSON.parse(read('vlt-lock.json')) as {
+    nodes: Record<string, unknown>
+    edges: Record<string, string>
+  }
+  t.notMatch(
+    Object.keys(lock.nodes).join('\n'),
+    /~(abbrev|isexe)@/,
+    'no removed nodes in lockfile',
+  )
+  t.notMatch(
+    Object.keys(lock.edges).join('\n'),
+    / (abbrev|isexe)$/m,
+    'no removed edges in lockfile',
+  )
+
+  const stamp = new Date(0)
+  for (const f of lockfiles) {
+    utimesSync(resolve(projectRoot, f), stamp, stamp)
+  }
+  await install(opts(), noAdd())
+  for (const f of lockfiles) {
+    t.equal(
+      statSync(resolve(projectRoot, f)).mtimeMs,
+      0,
+      `${f} was left alone`,
+    )
+  }
+
+  await t.resolves(
+    install(opts({ frozenLockfile: true }), noAdd()),
+    'frozen install passes',
+  )
+  await t.resolves(
+    install(opts({ lockfileOnly: true }), noAdd()),
+    'lockfile-only install passes',
+  )
+
+  const add = Object.assign(
+    new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map([
+          [
+            'abbrev',
+            asDependency({
+              spec: Spec.parse('abbrev', '2.0.0'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ]),
+    { modifiedDependencies: true },
+  )
+  await t.rejects(
+    install(opts(), add),
+    { cause: { code: 'ECONFIG' } },
+    'an explicit add of a removed dep fails',
+  )
+})
+
+t.test(
+  'adding a "-" modifier removes an installed dependency',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          which: '^2.0.1',
+          isexe: '^2.0.0',
+          abbrev: '2.0.0',
+        },
+      }),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    t.teardown(() => unload('project'))
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        registries: { npm: 'https://registry.npmjs.org/' },
+        ...extra,
+      }) as unknown as InstallOptions
+    // the cli always passes an add map
+    const noAdd = () =>
+      Object.assign(new Map(), {
+        modifiedDependencies: false,
+      }) as AddImportersDependenciesMap
+    // removed links go to a detached rm process, which holds the fixture
+    // cwd on windows (EBUSY); let tap sweep it instead. each import also
+    // gets a fresh vlt.json cache
+    const mockInstall = async () =>
+      (
+        await t.mockImport<typeof import('../src/install.ts')>(
+          '../src/install.ts',
+          {
+            '@vltpkg/rollback-remove': {
+              RollbackRemove: class extends RollbackRemove {
+                confirm() {}
+              },
+            },
+          },
+        )
+      ).install
+    let install = await mockInstall()
+    const exists = (f: string) => existsSync(resolve(projectRoot, f))
+    const store = (id: string) =>
+      exists(
+        `node_modules/.vlt/${joinDepIDTuple(['registry', 'npm', id])}`,
+      )
+
+    await install(opts(), noAdd())
+    t.ok(exists('node_modules/abbrev'), 'abbrev installed')
+    t.ok(exists('node_modules/isexe'), 'isexe installed')
+    t.ok(store('abbrev@2.0.0'), 'abbrev in store')
+
+    writeFileSync(
+      resolve(projectRoot, 'vlt.json'),
+      JSON.stringify({
+        modifiers: { ':root > #abbrev': '-', ':root > #isexe': '-' },
+      }),
+    )
+    install = await mockInstall()
+    await install(opts(), noAdd())
+    t.notOk(exists('node_modules/abbrev'), 'abbrev link removed')
+    t.notOk(exists('node_modules/isexe'), 'isexe link removed')
+    t.notOk(store('abbrev@2.0.0'), 'abbrev store dir removed')
+    t.ok(store('isexe@2.0.0'), 'isexe still used by which')
+
+    await t.resolves(
+      install(opts({ frozenLockfile: true }), noAdd()),
+      'frozen install passes',
+    )
+    const { diff } = await install(opts(), noAdd())
+    t.equal(diff?.hasChanges(), false, 'nothing left to reify')
+  },
+)
 
 // a modifier that does not govern the root's own abbrev edge leaves the
 // frozen check owning it, so editing package.json alone must be caught

@@ -484,6 +484,99 @@ t.test('GraphModifier', async t => {
     )
   })
 
+  await t.test('removesImporterEdge', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #abbrev': '-',
+          '#lone': '-',
+          ':root > #unused > #deep': '-',
+          ':root > #q:semver(^1.0.0)': '-',
+          '#x': '-',
+          ':root > #x': '1.0.0',
+          '#y': '1.0.0',
+          ':root > #y': '-',
+          '#swap': '2.0.0',
+          '#tie:semver(^1.0.0)': '-',
+          ':root > #tie': '1.0.0',
+        },
+      }),
+    })
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    const root = { mainImporter: true, importer: true } as Node
+    const ws = { mainImporter: false, importer: true } as Node
+    const spec = (name: string, bareSpec = '*') =>
+      Spec.parse(name, bareSpec, mockSpecOptions)
+    t.equal(
+      modifier.removesImporterEdge(root, spec('abbrev')),
+      true,
+      'direct root edge removal',
+    )
+    t.equal(
+      modifier.removesImporterEdge(ws, spec('abbrev')),
+      false,
+      ':root does not select a workspace',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('lone')),
+      true,
+      'lone selector removes root edge',
+    )
+    t.equal(
+      modifier.removesImporterEdge(ws, spec('lone')),
+      true,
+      'lone selector removes workspace edge',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('deep')),
+      false,
+      'a deeper scope leaves the importer edge alone',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('q', '^1.2.0')),
+      true,
+      ':semver qualifier accepts the spec',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('q', '^2.0.0')),
+      false,
+      ':semver qualifier rejects the spec',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('x')),
+      false,
+      'more specific swap beats lone removal',
+    )
+    t.equal(
+      modifier.removesImporterEdge(ws, spec('x')),
+      true,
+      'lone removal applies where the swap does not',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('y')),
+      true,
+      'more specific removal beats lone swap',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('tie', '^1.0.0')),
+      false,
+      'importer-anchored entry wins a specificity tie',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('swap')),
+      false,
+      'non-removal value',
+    )
+    t.equal(
+      modifier.removesImporterEdge(root, spec('unrelated')),
+      false,
+      'unrelated name',
+    )
+  })
+
   await t.test('config getter', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({ modifiers: validStringConfig }),

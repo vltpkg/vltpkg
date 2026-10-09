@@ -53,6 +53,7 @@ type ModifierActiveEntry = { modifier: ModifierEntry, interactiveBreadcrumb, ori
 - `tryDependencies(from, deps)` → `Map<string, ModifierActiveEntry>`
 - `updateActiveEntry(from, active)` — advance breadcrumb
 - `rollbackActiveEntries()` — restore original edges for incomplete matches
+- `removesImporterEdge(importer, spec)` — winning modifier for a direct importer dep is `"-"` (used by `getImporterSpecs` to skip it)
 
 ## Integration with Ideal Build
 

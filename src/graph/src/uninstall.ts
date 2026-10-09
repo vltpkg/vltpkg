@@ -51,6 +51,7 @@ export const uninstall = async (
       remove,
       mainManifest,
       loadManifests: true,
+      modifiers,
       remover,
     })
 
@@ -82,6 +83,7 @@ export const uninstall = async (
       actual: act,
       graph,
       loadManifests: true,
+      modifiers,
       remover,
     })
 

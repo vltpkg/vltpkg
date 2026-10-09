@@ -124,6 +124,11 @@ export const getImporterSpecs = (
 
       const spec = Spec.parse(depName, depSpec, options)
 
+      // a `-` modifier removes this dependency, nothing to place
+      if (options.modifiers?.removesImporterEdge(importer, spec)) {
+        continue
+      }
+
       // if a workspace dep references a workspace that no longer exists
       // (folder was removed), mark it for removal instead of trying to
       // resolve it — the workspace can't be satisfied

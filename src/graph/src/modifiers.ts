@@ -222,6 +222,29 @@ export class GraphModifier {
   }
 
   /**
+   * Whether the modifier that wins the direct `importer -> spec.name`
+   * edge removes it (value `-`). Same pick as tryNewDependency: complete
+   * entries whose qualifier accepts the spec, highest specificity,
+   * importer-anchored before lone on ties.
+   */
+  removesImporterEdge(importer: Node, spec: Spec): boolean {
+    const anchored: ModifierEntry[] = []
+    const lone: ModifierEntry[] = []
+    for (const mod of this.#modifiers) {
+      const { last } = mod.breadcrumb
+      if (last.name !== spec.name || !matchesQualifier(last, spec))
+        continue
+      const { prev } = last
+      if (!prev) lone.push(mod)
+      else if (!prev.prev && matchesImporter(prev, importer))
+        anchored.push(mod)
+    }
+    const all = [...anchored, ...lone]
+    const [winner] = specificitySort(all.map(m => m.breadcrumb))
+    return all.find(m => m.breadcrumb === winner)?.value === '-'
+  }
+
+  /**
    * Loads the modifiers defined in `vlt.json` into memory.
    */
   load(options: SpecOptions) {
