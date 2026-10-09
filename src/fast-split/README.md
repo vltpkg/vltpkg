@@ -9,25 +9,30 @@ to quickly parse a small-to-medium sized string by a given delimiter.
 
 ## How Fast Is It!?
 
-This is about 10% faster for splitting short strings by a short
-delimiter. When we have to walk the resulting list for any reason, or
-limit the number of items returned, it's an even bigger difference.
+About 1.4x faster than `str.split()` for splitting short strings by a
+short delimiter, about 1.2-1.5x when walking the resulting list, and
+about 1.2x when limiting the number of items returned.
 
-2024 M1 macbook pro, using node 20.11.0, v8 version 11.3.244.8-node.17
-Counts are operations per ms, splitting the string '1.2.3-asdf+foo' by
-the delimiter '.', transforms calling part.toUpperCase(), and limits
-at 2 items
+Note: V8 caches `split()` results (no limit) for internalized strings
+(literals, JSON keys, short JSON values), so splitting the same such
+string repeatedly, as benchmarks over literals do, favors native
+`split()`. Substrings, regex captures and built strings don't hit that
+cache.
+
+Linux x64, node 22.23.3. Counts are operations per ms, splitting the
+string '1.2.3-asdf+foo' (built at runtime) by the delimiter '.',
+transforms calling part.toUpperCase(), and limits at 2 items
 
 ```
-              split 10385.779
-          fastSplit 10718.341
-    splitEmptyCheck  9563.721
-fastSplitEmptyCheck 11273.537
- splitTransformLoop  5722.724
-  splitTransformMap  6136.161
- fastSplitTransform  6438.606
-         splitLimit  7076.179
-     fastSplitLimit 13257.948
+              split 4184.630
+          fastSplit 6030.971
+    splitEmptyCheck 4298.313
+fastSplitEmptyCheck 6618.990
+ splitTransformLoop 2656.957
+  splitTransformMap 2729.902
+ fastSplitTransform 3440.579
+         splitLimit 5393.705
+     fastSplitLimit 6431.606
 ```
 
 ## Usage

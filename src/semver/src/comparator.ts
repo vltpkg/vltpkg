@@ -109,6 +109,22 @@ const isXMinor = (parsed: ParsedXRange): parsed is ParsedXMinor =>
 const isXMajor = (parsed: ParsedXRange): parsed is ParsedXMajor =>
   undefined === parsed[MAJOR]
 
+// split on first 2 dots, rest kept in last part
+const splitX = (
+  raw: string,
+): [string, string | undefined, string | undefined] => {
+  const a = raw.indexOf('.')
+  if (a === -1) return [raw, undefined, undefined]
+  const b = raw.indexOf('.', a + 1)
+  if (b === -1)
+    return [raw.substring(0, a), raw.substring(a + 1), undefined]
+  return [
+    raw.substring(0, a),
+    raw.substring(a + 1, b),
+    raw.substring(b + 1),
+  ]
+}
+
 /**
  * Class used to parse the `||` separated portions
  * of a range, and evaluate versions against it.
@@ -449,12 +465,11 @@ export class Comparator {
   // return the fields for creating a Version object.
   // only call once operator is stripped off
   #parseX(raw: string): ParsedXRange {
-    let [M, m, p] = fastSplit(raw, '.', 3)
+    let [M, m, p] = splitX(raw)
     let prune = 0
     while (M && preJunk.has(M.charAt(prune))) prune++
-    if (M !== undefined && prune !== 0) M = M.substring(prune)
-    // the `|| !M` is so TS knows we've handled undefined
-    if (!M || isX(M)) return this.#validXM(raw, m, p)
+    if (prune !== 0) M = M.substring(prune)
+    if (isX(M)) return this.#validXM(raw, m, p)
     if (!m || isX(m)) return this.#validXm(raw, M, m, p)
     if (!p || isX(p)) return this.#validXp(raw, M, m, p)
 

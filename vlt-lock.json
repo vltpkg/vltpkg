@@ -1569,7 +1569,6 @@
     "workspace~src+graph @vltpkg/dep-id": "prod workspace:* workspace~src+dep-id",
     "workspace~src+graph @vltpkg/dss-breadcrumb": "prod workspace:* workspace~src+dss-breadcrumb",
     "workspace~src+graph @vltpkg/error-cause": "prod workspace:* workspace~src+error-cause",
-    "workspace~src+graph @vltpkg/fast-split": "prod workspace:* workspace~src+fast-split",
     "workspace~src+graph @vltpkg/graph-run": "prod workspace:* workspace~src+graph-run",
     "workspace~src+graph @vltpkg/init": "prod workspace:* workspace~src+init",
     "workspace~src+graph @vltpkg/output": "prod workspace:* workspace~src+output",

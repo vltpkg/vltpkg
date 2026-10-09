@@ -44,7 +44,7 @@ Options stored: `modifiers`, `catalog`, `catalogs`, `scoped-registries`, `jsr-re
 ## Performance (>50 nodes)
 
 - `load-nodes.ts`: `registryVersionCache` avoids repeated string splitting
-- `load-edges.ts`: `seenNodes` Map caches node lookups, `edgeProcessingQueue` batches mutations, uses `fastSplit()`
+- `load-edges.ts`: `seenNodes` Map caches node lookups, `edgeProcessingQueue` batches mutations, splits w/ inline `indexOf` (`splitFirst`)
 - Hidden lockfile skips filesystem traversal entirely
 
 ## Tips

@@ -13,7 +13,6 @@
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/dss-breadcrumb": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/graph-run": "workspace:*",
     "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",

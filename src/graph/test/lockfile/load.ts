@@ -2037,3 +2037,20 @@ t.test('diffLockfileOptions', async t => {
     )
   })
 })
+
+t.test('loadEdges skips malformed edge records', async t => {
+  const graph = new Graph({
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot: t.testdirName,
+  })
+  const mainDepId = joinDepIDTuple(['file', '.'])
+  const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  graph.addNode(fooId, { name: 'foo', version: '1.0.0' })
+  const edges = {
+    [mainDepId]: `prod ^1.0.0 ${fooId}`,
+    [`${mainDepId} bar`]: 'prod',
+    [`${mainDepId} foo`]: `prod ^1.0.0 ${fooId}`,
+  } as LockfileEdges
+  loadEdges(graph, edges, { registry: 'https://registry.npmjs.org/' })
+  t.equal(graph.edges.size, 1, 'only the valid edge is loaded')
+})
