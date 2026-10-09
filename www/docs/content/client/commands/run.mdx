@@ -195,6 +195,11 @@ Filter packages using a [DSS query](/client/selectors) selector.
 vlt run test --scope=":root > *"  # Direct dependencies only
 ```
 
+Matched workspaces run in dependency order (a workspace runs after the
+workspaces it depends on), like `--workspace`/`--recursive`. Unrelated
+workspaces keep query order; non-workspace matches (e.g. `:root`) keep
+their position.
+
 ### `--bail`, `-b` / `--no-bail`, `-B`
 
 Control whether to stop on first failure when running across multiple

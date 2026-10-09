@@ -4,6 +4,7 @@ import { readFile, access } from 'node:fs/promises'
 import { command, views, usage } from '../../src/commands/pack.ts'
 import type { CommandResultSingle } from '../../src/commands/pack.ts'
 import { PackageJson } from '@vltpkg/package-json'
+import { Monorepo } from '@vltpkg/workspaces'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 const makeTestConfig = (config: any) => ({
@@ -277,6 +278,7 @@ t.test('pack command with scope', async t => {
           'package.json': JSON.stringify({
             name: '@test/a',
             version: '1.0.0',
+            dependencies: { '@test/b': 'workspace:*' },
           }),
           'index.js': 'console.log("a")',
           'vlt.json': '{}',
@@ -338,18 +340,10 @@ t.test('pack command with scope', async t => {
       projectRoot: dir,
       options: {
         packageJson: new PackageJson(),
-        monorepo: [
-          {
-            name: '@test/a',
-            path: 'packages/a',
-            fullpath: resolve(dir, 'packages/a'),
-          },
-          {
-            name: '@test/b',
-            path: 'packages/b',
-            fullpath: resolve(dir, 'packages/b'),
-          },
-        ],
+        monorepo: new Monorepo(dir, {
+          config: { packages: ['packages/*'] },
+          load: {},
+        }),
       },
       positionals: ['pack'],
       values: { scope: ':workspace' },
@@ -365,10 +359,11 @@ t.test('pack command with scope', async t => {
     const results = result as CommandResultSingle[]
     t.equal(results.length, 2, 'should pack both workspaces')
 
-    t.equal(results[0]!.name, '@test/a')
-    t.equal(results[0]!.version, '1.0.0')
-    t.equal(results[1]!.name, '@test/b')
-    t.equal(results[1]!.version, '2.0.0')
+    // a depends on b, so b goes first
+    t.equal(results[0]!.name, '@test/b')
+    t.equal(results[0]!.version, '2.0.0')
+    t.equal(results[1]!.name, '@test/a')
+    t.equal(results[1]!.version, '1.0.0')
   })
 
   t.test('handles empty scope query results', async t => {

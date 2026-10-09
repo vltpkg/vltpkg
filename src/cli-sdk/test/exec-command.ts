@@ -120,3 +120,56 @@ t.test('getCwd', async t => {
     t.equal(e.getCwd(), resolve(dir, 'src/a'))
   }
 })
+
+t.test('--scope targets run in dependency order', async t => {
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+    'package.json': JSON.stringify({ name: 'root' }),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+          dependencies: { b: 'workspace:*' },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../src/config/index.ts')
+  >('../src/config/index.ts')
+  unload()
+  const conf = await Config.load(t.testdirName, ['run', 'hello'])
+  conf.projectRoot = dir
+  conf.values.scope = ':workspace#a, :workspace#b'
+  conf.values.view = 'json'
+  const cwds: string[] = []
+  const dummyBG = (async ({ cwd }: { cwd: string }) => {
+    cwds.push(cwd)
+    return {
+      command: 'hello',
+      args: [],
+      cwd,
+      stdout: '',
+      stderr: '',
+      status: 0,
+      signal: null,
+    }
+  }) as unknown as typeof exec
+  const e = new ExecCommand(conf, dummyBG, execFG)
+  const result = await e.run()
+  t.strictSame(cwds, [resolve(dir, 'src/b'), resolve(dir, 'src/a')])
+  t.strictSame(Object.keys(result), ['src/b', 'src/a'])
+  t.strictSame(
+    e.getTargets().map(t => t.label),
+    ['src/b', 'src/a'],
+  )
+})

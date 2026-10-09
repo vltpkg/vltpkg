@@ -209,6 +209,20 @@ $ vlt -g utils run test
 
 to run tests on all our `utils` workspaces.
 
+### Execution Order
+
+Commands that target multiple workspaces (`run`, `run-exec`, `exec`,
+`exec-local`, `version`, `pack`, `publish`, `pkg`) process them in
+dependency order: a workspace comes after the workspaces it depends
+on. This applies to `--recursive`, `--workspace`, `--workspace-group`
+and `--scope`.
+
+With `--scope`, unrelated workspaces keep query order, and
+dependencies through workspaces the query did not match still count.
+`--workspace` and `--workspace-group` only see dependencies among the
+selected workspaces. Cycles are broken, so order within a cycle is not
+guaranteed.
+
 ## See also
 
 - [Affected Dependencies](/client/affected) — running scripts on only

@@ -135,6 +135,9 @@ only what your branch could have broken:
   lang="bash"
 />
 
+Matched workspaces run in dependency order, so changed workspaces run
+before their dependents.
+
 Workspaces without the script are skipped rather than failing:
 `--scope` implies `--if-present`, as do `--workspace`,
 `--workspace-group` and `--recursive`.

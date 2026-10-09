@@ -32,6 +32,7 @@ import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
 import assert from 'node:assert'
 import { resolve } from 'node:path'
 import { createHostContextsMap } from './query-host-contexts.ts'
+import { sortScopeLocations } from './sort-scope-locations.ts'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -145,11 +146,13 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         this.projectRoot,
       )
       let graph
+      let monorepo: Monorepo | undefined
       if (mainManifest) {
+        monorepo = Monorepo.load(this.projectRoot)
         graph = actual.load({
           ...conf.options,
           mainManifest,
-          monorepo: Monorepo.load(this.projectRoot),
+          monorepo,
           loadManifests: false,
         })
       }
@@ -167,7 +170,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const { nodes } = await query.search(queryString, {
         signal: new AbortController().signal,
       })
-      this.#nodes = []
+      const locations: string[] = []
       for (const node of nodes) {
         const { location } = node.toJSON()
         assert(
@@ -176,8 +179,9 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
             found: node,
           }),
         )
-        this.#nodes.push(location)
+        locations.push(location)
       }
+      this.#nodes = sortScopeLocations(locations, monorepo)
     } else if (paths?.length || groups?.length || recursive) {
       this.#defaultIgnoreMissing = true
       this.#monorepo = Monorepo.load(this.projectRoot, {
