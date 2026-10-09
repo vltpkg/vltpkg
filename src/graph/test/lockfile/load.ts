@@ -1876,7 +1876,7 @@ t.test('catalog specs resolve against current config', async t => {
         message: 'Catalog "legacy" not found for once@catalog:legacy',
         cause: {
           code: 'ECONFIG',
-          from: './package.json (dependencies)',
+          from: 'vlt-lock.json (./package.json dependencies)',
         },
       },
     )

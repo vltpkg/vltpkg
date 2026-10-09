@@ -903,4 +903,22 @@ t.test('asDependencySpecError', async t => {
   t.match(asDependencySpecError(er, ws, 'dev'), {
     cause: { from: './packages/a/package.json (devDependencies)' },
   })
+  t.match(asDependencySpecError(er, ws, 'dev', 'vlt-lock.json'), {
+    cause: {
+      from: 'vlt-lock.json (./packages/a/package.json devDependencies)',
+    },
+  })
+  for (const [location, from] of [
+    ['nested', './nested/package.json (dependencies)'],
+    ['.hidden/a', './.hidden/a/package.json (dependencies)'],
+    ['../a', '../a/package.json (dependencies)'],
+    ['/a', '/a/package.json (dependencies)'],
+    ['C:/a', 'C:/a/package.json (dependencies)'],
+  ]) {
+    t.match(
+      asDependencySpecError(er, createMockNode({ location }), 'prod'),
+      { cause: { from } },
+      `location ${location}`,
+    )
+  }
 })

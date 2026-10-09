@@ -1707,7 +1707,7 @@ t.test('catalog spec errors point at the manifest', async t => {
         message: 'Default catalog not found for bar@catalog:',
         cause: {
           code: 'ECONFIG',
-          from: /nested\/package\.json \(dependencies\)$/,
+          from: './nested/package.json (dependencies)',
         },
       },
     )
