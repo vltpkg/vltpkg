@@ -18,6 +18,7 @@ import type {
 import type { SpecOptions } from '@vltpkg/spec'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { Edge } from './edge.ts'
+import type { Graph } from './graph.ts'
 import type { Node } from './node.ts'
 import type { Dependency } from './dependencies.ts'
 
@@ -112,6 +113,18 @@ const matchesImporter = (
     (item.value === ':workspace' && importer.importer))
 
 /**
+ * Is this a trailing `:workspace` item right after a plain importer
+ * selector, e.g. `:project > :workspace`? It selects any direct
+ * dependency named after a workspace.
+ */
+const isWorkspaceTarget = (item: ModifierBreadcrumbItem): boolean =>
+  item.importer &&
+  item.value === ':workspace' &&
+  !!item.prev?.importer &&
+  !item.prev.name &&
+  !item.prev.prev
+
+/**
  * Does this item's qualifier (e.g. `:semver(^1)`, `:v(^1)`) accept the
  * given spec? Shared by traversal matching and by the frozen / healing
  * exemption, so both agree on what a modifier actually governs.
@@ -147,6 +160,11 @@ const matchesQualifier = (
  * for (const entry of entries)
  *   modifier.updateActiveEntry(fromNode, entry)
  * ```
+ *
+ * A trailing `:workspace` right after an importer selector, e.g.
+ * `:project > :workspace`, is expanded into one `#<name>` entry per
+ * named workspace of the graph, on its first `tryImporter` or
+ * `targetsImporterEdge` call.
  */
 export class GraphModifier {
   /** The loaded modifiers configuration */
@@ -181,6 +199,14 @@ export class GraphModifier {
   activeModifiers = new Set<ModifierActiveEntry>()
   /** A set of all modifier string values loaded from vlt.json */
   modifierNames = new Set<string>()
+  /** Spec options used when expanding `:workspace` targets */
+  #options: SpecOptions = {}
+  /** `<importer> > :workspace` modifiers, expanded once a graph is known */
+  #workspaceTargets: { query: string; value: string }[] = []
+  /** Graphs whose workspaces were already expanded */
+  #expandedGraphs = new WeakSet<Graph>()
+  /** Workspace names already expanded */
+  #expandedNames = new Set<string>()
 
   constructor(options: SpecOptions) {
     this.load(options)
@@ -206,6 +232,7 @@ export class GraphModifier {
    * root's own b edge is still the manifest's to validate and heal.
    */
   targetsImporterEdge(importer: Node, spec: Spec) {
+    this.#expandWorkspaceTargets(importer)
     for (const { breadcrumb } of this.#modifiers) {
       const { last } = breadcrumb
       if (last.name !== spec.name) continue
@@ -225,16 +252,23 @@ export class GraphModifier {
    * Loads the modifiers defined in `vlt.json` into memory.
    */
   load(options: SpecOptions) {
+    this.#options = options
     for (const [key, value] of Object.entries(this.config)) {
       this.modifierNames.add(key)
       const breadcrumb = parseBreadcrumb(key)
-      /* c8 ignore start - should not be possible */
       if (!breadcrumb.last.name) {
-        throw error('Could not find name in breadcrumb', {
+        // `<importer> > :workspace` names no package up front, it is
+        // expanded into one entry per workspace once a graph is known
+        if (isWorkspaceTarget(breadcrumb.last)) {
+          this.#workspaceTargets.push({ query: key, value })
+          continue
+        }
+        throw error('Invalid modifier selector', {
           found: key,
+          wanted:
+            'a selector ending in #<name>, or :root, :project or :workspace followed by > :workspace',
         })
       }
-      /* c8 ignore stop */
       let mod: ModifierEntry
       if (typeof value === 'string') {
         mod = {
@@ -262,14 +296,60 @@ export class GraphModifier {
         this.#nodeModifiers.add(mod)
       }
       /* c8 ignore end */
-      this.#modifiers.add(mod)
-      // if the breadcrumb starts with an id, then add it to the
-      // map of initial entries, so that we can use it to match
-      if (breadcrumb.first.name) {
-        const initialSet =
-          this.#initialEntries.get(breadcrumb.first.name) ?? new Set()
-        initialSet.add(mod)
-        this.#initialEntries.set(breadcrumb.first.name, initialSet)
+      this.#register(mod)
+    }
+  }
+
+  /**
+   * Adds a modifier entry to the set of known modifiers.
+   */
+  #register(mod: ModifierEntry) {
+    this.#modifiers.add(mod)
+    // if the breadcrumb starts with an id, then add it to the
+    // map of initial entries, so that we can use it to match
+    const { name } = mod.breadcrumb.first
+    if (name) {
+      const initialSet = this.#initialEntries.get(name) ?? new Set()
+      initialSet.add(mod)
+      this.#initialEntries.set(name, initialSet)
+    }
+  }
+
+  /**
+   * Expands `<importer> > :workspace` modifiers into one
+   * `<importer> > #<name>` entry per named workspace of the node's graph.
+   */
+  #expandWorkspaceTargets(node: Node) {
+    if (!this.#workspaceTargets.length) return
+    const { graph } = node
+    if (this.#expandedGraphs.has(graph)) return
+    this.#expandedGraphs.add(graph)
+    for (const importer of graph.importers) {
+      // nameless workspaces are named after their folder, never link those
+      const name = importer.manifest?.name
+      if (
+        importer.mainImporter ||
+        !name ||
+        this.#expandedNames.has(name)
+      ) {
+        continue
+      }
+      this.#expandedNames.add(name)
+      for (const { query, value } of this.#workspaceTargets) {
+        // fresh breadcrumb per name: items are a linked list and the
+        // active entry maps key on the last item's name
+        const breadcrumb = parseBreadcrumb(query)
+        breadcrumb.last.name = name
+        const mod: EdgeModifierEntry = {
+          breadcrumb,
+          query,
+          refs: new Set(),
+          spec: Spec.parse(name, value, this.#options),
+          type: 'edge',
+          value,
+        }
+        this.#edgeModifiers.add(mod)
+        this.#register(mod)
       }
     }
   }
@@ -280,6 +360,7 @@ export class GraphModifier {
    * update the active entry to the current importer node.
    */
   tryImporter(importer: Node) {
+    this.#expandWorkspaceTargets(importer)
     for (const modifier of this.#modifiers) {
       // if the first item in the breadcrumb is an importer and it matches
       // any of the valid top-level selectors, then register the modifier

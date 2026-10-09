@@ -150,6 +150,7 @@ export const reify = async (
         packageJson: options.packageJson,
         saveExact: options.saveExact,
         savePrefix: options.savePrefix,
+        modifiers: options.modifiers,
       })
     : undefined
 

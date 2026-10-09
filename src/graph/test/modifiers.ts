@@ -1,5 +1,7 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import { GraphModifier } from '../src/modifiers.ts'
+import type { ModifierActiveEntry } from '../src/modifiers.ts'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { reload } from '@vltpkg/vlt-json'
@@ -1470,5 +1472,173 @@ t.test('GraphModifier', async t => {
         'should match the non-importer semver selector',
       )
     })
+  })
+})
+
+t.test('trailing :workspace', async t => {
+  const spec = (name: string, bareSpec = '*') =>
+    Spec.parse(name, bareSpec, mockSpecOptions)
+  const setup = (t: Test, modifiers: Record<string, string>) => {
+    t.chdir(t.testdir({ 'vlt.json': JSON.stringify({ modifiers }) }))
+    reload('modifiers', 'project')
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    const graph = getMultiWorkspaceGraph()
+    const [root, a, b, c] = [...graph.importers] as [
+      Node,
+      Node,
+      Node,
+      Node,
+    ]
+    return { modifier, graph, root, a, b, c }
+  }
+  const isComplete = (entry?: ModifierActiveEntry) =>
+    !!entry &&
+    entry.interactiveBreadcrumb.current ===
+      entry.modifier.breadcrumb.last
+
+  await t.test(':workspace > :workspace', async t => {
+    const { modifier, root, a, b, c } = setup(t, {
+      ':workspace > :workspace': 'workspace:*',
+    })
+    for (const importer of [root, a, b, c])
+      modifier.tryImporter(importer)
+    const entry = modifier.tryNewDependency(b, spec('a', '^9.0.0'))
+    t.equal(entry?.modifier.query, ':workspace > :workspace')
+    t.ok(isComplete(entry), 'complete entry')
+    const modSpec =
+      entry?.modifier.type === 'edge' && entry.modifier.spec
+    t.equal(modSpec && modSpec.bareSpec, 'workspace:*')
+    t.equal(modSpec && modSpec.workspace, 'a')
+    t.equal(
+      modifier.tryNewDependency(b, spec('d')),
+      undefined,
+      'non workspace name untouched',
+    )
+  })
+
+  await t.test(':project > :workspace links every name', async t => {
+    const { modifier, root } = setup(t, {
+      ':project > :workspace': 'workspace:*',
+    })
+    modifier.tryImporter(root)
+    for (const name of ['a', 'b', 'c']) {
+      const entry = modifier.tryNewDependency(root, spec(name))
+      t.equal(entry?.modifier.query, ':project > :workspace', name)
+      t.ok(isComplete(entry), `${name} complete`)
+    }
+  })
+
+  await t.test('explicit names win', async t => {
+    const { modifier, b } = setup(t, {
+      ':workspace > :workspace': 'workspace:*',
+      ':workspace > #a': 'workspace:^1.0.0',
+    })
+    modifier.tryImporter(b)
+    const entry = modifier.tryNewDependency(b, spec('a'))
+    t.equal(entry?.modifier.query, ':workspace > #a')
+  })
+
+  await t.test('targetsImporterEdge', async t => {
+    const { modifier, root, a } = setup(t, {
+      ':workspace > :workspace': 'workspace:*',
+    })
+    t.equal(modifier.targetsImporterEdge(a, spec('b')), true)
+    t.equal(modifier.targetsImporterEdge(root, spec('b')), true)
+    t.equal(modifier.targetsImporterEdge(a, spec('d')), false)
+
+    const rootOnly = setup(t, { ':root > :workspace': 'workspace:*' })
+    t.equal(
+      rootOnly.modifier.targetsImporterEdge(rootOnly.root, spec('a')),
+      true,
+    )
+    t.equal(
+      rootOnly.modifier.targetsImporterEdge(rootOnly.b, spec('a')),
+      false,
+      ':root does not select a workspace',
+    )
+  })
+
+  await t.test('nameless workspaces are skipped', async t => {
+    const { modifier, graph, root } = setup(t, {
+      ':project > :workspace': 'workspace:*',
+    })
+    const addNode = newNode(graph)
+    for (const folder of ['utils', 'tools']) {
+      const ws = addNode(folder)
+      ws.id = joinDepIDTuple(['workspace', `packages/${folder}`])
+      ws.importer = true
+      graph.nodes.set(ws.id, ws)
+      graph.importers.add(ws)
+    }
+    const [utils, tools] = [...graph.importers].slice(-2) as [
+      Node,
+      Node,
+    ]
+    utils.manifest = { version: '1.0.0' }
+    tools.manifest = undefined
+    t.equal(modifier.targetsImporterEdge(root, spec('utils')), false)
+    t.equal(modifier.targetsImporterEdge(root, spec('tools')), false)
+    modifier.tryImporter(root)
+    t.equal(modifier.tryNewDependency(root, spec('utils')), undefined)
+    t.equal(modifier.tryNewDependency(root, spec('tools')), undefined)
+    t.ok(isComplete(modifier.tryNewDependency(root, spec('a'))))
+  })
+
+  await t.test('expands once per graph and name', async t => {
+    const { modifier, root } = setup(t, {
+      ':project > :workspace': 'workspace:*',
+    })
+    modifier.tryImporter(root)
+    t.equal(modifier.activeModifiers.size, 3, 'a, b and c')
+    modifier.tryImporter(root)
+    t.equal(
+      modifier.activeModifiers.size,
+      6,
+      'same graph, no new names',
+    )
+
+    const other = getMultiWorkspaceGraph()
+    const z = newNode(other)('z')
+    z.id = joinDepIDTuple(['workspace', 'z'])
+    z.importer = true
+    other.nodes.set(z.id, z)
+    other.importers.add(z)
+    const otherRoot = other.mainImporter as Node
+    t.equal(modifier.targetsImporterEdge(otherRoot, spec('z')), true)
+    modifier.tryImporter(otherRoot)
+    t.equal(
+      modifier.activeModifiers.size,
+      10,
+      'only z is new, a, b and c not duplicated',
+    )
+  })
+
+  await t.test('invalid selectors', async t => {
+    for (const key of [
+      ':v(1.0.0)',
+      ':workspace',
+      ':root',
+      '#d > :workspace',
+      ':root > #d > :workspace',
+      '#a:workspace > :workspace',
+      ':root > :project > :workspace',
+    ]) {
+      t.chdir(
+        t.testdir({
+          'vlt.json': JSON.stringify({
+            modifiers: { [key]: '1.0.0' },
+          }),
+        }),
+      )
+      reload('modifiers', 'project')
+      t.throws(
+        () => new GraphModifier({ ...mockSpecOptions }),
+        {
+          message: 'Invalid modifier selector',
+          cause: { found: key },
+        },
+        key,
+      )
+    }
   })
 })

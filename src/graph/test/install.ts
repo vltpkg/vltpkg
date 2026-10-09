@@ -2499,6 +2499,152 @@ t.test('a project with modifiers stays in sync', async t => {
   }
 })
 
+// the CLI always passes an add map, which puts every manifest dep
+// through updatePackageJson; a fresh one per call since it is mutated
+const emptyAdd = () =>
+  Object.assign(new Map(), {
+    modifiedDependencies: false,
+  }) as AddImportersDependenciesMap
+
+t.test('a governed edge keeps its value with an add map', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #abbrev': '2.0.0' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const options = {
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    allowScripts: ':not(*)',
+    registries: { npm: 'https://registry.npmjs.org/' },
+  } as unknown as InstallOptions
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(options, emptyAdd())
+  t.equal(
+    graph.mainImporter.edgesOut.get('abbrev')?.spec.bareSpec,
+    '2.0.0',
+    'the modifier value is kept',
+  )
+  t.match(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    'prod 2.0.0',
+  )
+})
+
+t.test('implicit workspace references', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      workspaces: ['packages/*'],
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':project > :workspace': 'workspace:*' },
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: '@ws/a',
+          version: '1.0.0',
+          dependencies: { '@ws/b': '^2.0.0', '@ws/c': '*' },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: '@ws/b',
+          private: true,
+        }),
+      },
+      c: {
+        'package.json': JSON.stringify({
+          name: '@ws/c',
+          version: '1.0.0',
+          dependencies: { '@ws/b': '*' },
+        }),
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const noRegistry = () => {
+    throw new Error('unexpected registry fetch')
+  }
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: createMockPackageInfo({
+        manifest: noRegistry,
+        resolve: noRegistry,
+        extract: noRegistry,
+      }),
+      allowScripts: ':not(*)',
+      ...extra,
+    }) as unknown as InstallOptions
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(opts(), emptyAdd())
+  const ws = (name: string) =>
+    [...graph.importers].find(i => i.name === name)
+  for (const [from, to] of [
+    ['@ws/a', '@ws/b'],
+    ['@ws/a', '@ws/c'],
+    ['@ws/c', '@ws/b'],
+  ] as const) {
+    const edge = ws(from)?.edgesOut.get(to)
+    t.equal(edge?.spec.bareSpec, 'workspace:*', `${from} -> ${to}`)
+    t.equal(edge?.to, ws(to), `${to} is linked`)
+  }
+  const lock = JSON.parse(read('vlt-lock.json')) as {
+    edges: Record<string, string>
+  }
+  t.equal(
+    Object.values(lock.edges).filter(e =>
+      e.startsWith('prod workspace:* '),
+    ).length,
+    3,
+    'the lockfile carries the modifier value',
+  )
+  t.match(
+    JSON.parse(read('packages/a/package.json')),
+    { dependencies: { '@ws/b': '^2.0.0', '@ws/c': '*' } },
+    'package.json is left alone',
+  )
+
+  // a plain install must not rewrite either lockfile
+  const stamp = new Date(0)
+  for (const f of lockfiles) {
+    utimesSync(resolve(projectRoot, f), stamp, stamp)
+  }
+  await install(opts(), emptyAdd())
+  for (const f of lockfiles) {
+    t.equal(
+      statSync(resolve(projectRoot, f)).mtimeMs,
+      0,
+      `${f} was left alone`,
+    )
+  }
+
+  await t.resolves(
+    install(opts({ frozenLockfile: true }), emptyAdd()),
+    'frozen install passes',
+  )
+})
+
 // a modifier that does not govern the root's own abbrev edge leaves the
 // frozen check owning it, so editing package.json alone must be caught
 const ungovernedFrozenCase = async (
