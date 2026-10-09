@@ -6,10 +6,11 @@ import { isBuiltin } from 'node:module'
  * slowest way to place a file and unpacking is not much better. Node
  * has no API for it (`copyFile` with `COPYFILE_FICLONE` clones one
  * file at a time, through libuv, and costs more than unpacking), and
- * `node:ffi` only exists on recent Node, so everything here is
- * feature-detected: {@link cloneAvailable} is false anywhere else, and
- * {@link cloneDir} then reports `ENOTSUP`, which callers treat like a
- * filesystem without clones.
+ * `node:ffi` only exists on recent Node, and is experimental, so
+ * everything here is feature-detected: {@link cloneAvailable} is false
+ * wherever it cannot be loaded, and {@link cloneDir} then reports
+ * `ENOTSUP`, which callers treat like a filesystem without clones, as
+ * it does for an ffi call that throws.
  */
 
 // the parts of `node:ffi` used here; it ships no types
@@ -46,17 +47,15 @@ const codes: Record<number, string> = {
   63: 'ENAMETOOLONG',
 }
 
-/** True where {@link cloneDir} can work: macOS, on a Node with `node:ffi`. */
-export const cloneAvailable = (): boolean =>
-  process.platform === 'darwin' && isBuiltin('node:ffi')
-
 // null: tried and unavailable
 let lib: Lib | null | undefined
 
 const load = (): Lib | null => {
   if (lib !== undefined) return lib
   lib = null
-  if (!cloneAvailable()) return lib
+  if (process.platform !== 'darwin' || !isBuiltin('node:ffi')) {
+    return lib
+  }
   // `node:ffi` warns once when loaded, being experimental. The CLI runs
   // with --no-warnings; anyone else would see it on their first
   // install, so that one warning is swallowed here and nothing else.
@@ -100,6 +99,13 @@ const load = (): Lib | null => {
 }
 
 /**
+ * True where {@link cloneDir} can work: macOS, on a Node whose
+ * `node:ffi` loads. Being built in is not enough: the permission model
+ * without `--allow-ffi` denies it. Loads it, once.
+ */
+export const cloneAvailable = (): boolean => !!load()
+
+/**
  * Clone the directory `src` to `dst`, which must not exist, with
  * `clonefile(2)`. Returns true, or the errno code of the failure:
  * `ENOTSUP` where cloning is unavailable (not macOS, no `node:ffi`,
@@ -109,8 +115,15 @@ const load = (): Lib | null => {
 export const cloneDir = (src: string, dst: string): true | string => {
   const l = load()
   if (!l) return 'ENOTSUP'
-  if (l.clonefile(src, dst, 0) === 0) return true
-  // read errno right away, before anything else can set it
-  const errno = l.getInt32(l.error(), 0)
-  return codes[errno] ?? `E${errno}`
+  try {
+    if (l.clonefile(src, dst, 0) === 0) return true
+    // read errno right away, before anything else can set it
+    const errno = l.getInt32(l.error(), 0)
+    return codes[errno] ?? `E${errno}`
+  } catch {
+    // `node:ffi` is experimental: a call that throws (a changed
+    // signature or type) degrades to no clones, never fails an install
+    lib = null
+    return 'ENOTSUP'
+  }
 }

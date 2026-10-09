@@ -4,6 +4,7 @@ import { Spec } from '@vltpkg/spec'
 import {
   removeStoreEntry,
   storeEntryCopied,
+  storeEntryLastCopied,
   storeEntryLinked,
   storeEntryNames,
   storeEntryTime,
@@ -54,6 +55,9 @@ export class CacheView extends ViewClass {
 export const views: Views<CacheResult> = {
   human: CacheView,
 }
+
+/** `prune-store`: days a copied entry stays, by default */
+const pruneDays = 30
 
 const usageDef = {
   command: 'cache',
@@ -116,12 +120,14 @@ const usageDef = {
     },
 
     'prune-store': {
-      usage: '',
+      usage: '[<date>]',
       description: `Remove global store entries that no \`node_modules\`
-                    folder links to. Entries ever copied or cloned from
-                    (install scripts, \`store-linker=copy\`, macOS, a
-                    cache on another drive) stay: copies do not show
-                    use.`,
+                    folder links to. Copies do not show use: an entry
+                    copied or cloned from (install scripts,
+                    \`store-linker=copy\`, macOS, a cache on another
+                    drive) stays if that last happened after
+                    \`<date>\`, or in the last ${pruneDays} days
+                    without one.`,
     },
   },
   examples: {
@@ -476,9 +482,19 @@ const verify = async (
 
 const pruneStore = async (
   conf: LoadedConfig,
-  _: string[],
+  args: string[],
   view?: CacheView,
 ): Promise<StoreResult> => {
+  const since =
+    args.length ?
+      new Date(args.join(' ')).getTime()
+    : Date.now() - pruneDays * 24 * 60 * 60 * 1000
+  if (Number.isNaN(since)) {
+    throw error('Invalid date', {
+      code: 'EUSAGE',
+      found: args.join(' '),
+    })
+  }
   const { storeRoot } = conf.options
   const names = storeEntryNames(storeRoot)
   const removed: Record<string, string> = {}
@@ -486,7 +502,8 @@ const pruneStore = async (
     const entry = resolve(storeRoot, hex)
     const index = readStoreIndex(entry)
     if (
-      storeEntryCopied(entry, index) ||
+      (storeEntryCopied(entry, index) &&
+        storeEntryLastCopied(entry) >= since) ||
       storeEntryLinked(entry, index)
     ) {
       continue

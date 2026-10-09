@@ -478,8 +478,8 @@ export class Config {
 
     // `auto` only hardlinks from the global store on linux: on APFS a
     // hardlink is the slowest way to place a file, so darwin clones
-    // instead, when its node has `node:ffi` to call clonefile(2) with,
-    // and win32 (and an older node on darwin) unpack by default. the
+    // instead, when its node can load `node:ffi` to call clonefile(2)
+    // with, and win32 (and darwin without it) unpack by default. the
     // env layer is rewritten too, so `explicit` records the resolved
     // value.
     if (

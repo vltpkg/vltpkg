@@ -83,10 +83,10 @@ vlt cache verify --all
 
 ### prune-store
 
-Remove global store entries that no \`node_modules\` folder links to. Entries ever copied or cloned from (install scripts, \`store-linker=copy\`, macOS, a cache on another drive) stay: copies do not show use.
+Remove global store entries that no \`node_modules\` folder links to. Copies do not show use: an entry copied or cloned from (install scripts, \`store-linker=copy\`, macOS, a cache on another drive) stays if that last happened after \`<date>\`, or in the last 30 days without one.
 
 \`\`\`
-vlt cache prune-store
+vlt cache prune-store [<date>]
 \`\`\`
 
 ## Examples
@@ -274,6 +274,20 @@ Array [
   ],
   Array [
     "Removed 4 of 7 global store entries",
+  ],
+]
+`
+
+exports[`test/commands/cache.ts > TAP > logged by prune-store: copies stay while copied from 1`] = `
+Array [
+  Array [
+    "Removed 0 of 4 global store entries",
+  ],
+  Array [
+    "Removed 2 of 2 global store entries",
+  ],
+  Array [
+    "Removed 2 of 4 global store entries",
   ],
 ]
 `

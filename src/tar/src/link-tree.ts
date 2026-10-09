@@ -49,11 +49,12 @@ export type LinkFromStoreOptions = {
   copy?: boolean
   /**
    * clone the entry directory copy-on-write (`clonefile(2)`: macOS on
-   * APFS) instead of placing files one by one. Where a clone fails,
-   * files are linked or copied as without it; where one cannot work at
-   * all (no clones on this filesystem, another volume), never tried
-   * again in this process. A clone shares no file with the store, so
-   * it needs no copy on top, for `copy` or for install scripts.
+   * APFS) instead of placing files one by one. A failed clone is a
+   * store miss, so the caller unpacks: on APFS, hardlinking file by
+   * file is slower than that. Where a clone cannot work at all (no
+   * clones on this filesystem, another volume), every later call is a
+   * miss without trying. A clone shares no file with the store, so it
+   * needs no copy on top, for `copy` or for install scripts.
    */
   clone?: boolean
 }
@@ -76,9 +77,8 @@ let cloneNone = false
 const native = (p: string) =>
   sep === '/' ? p : p.replaceAll('/', sep)
 
-// false: not cloned, place the files one by one
+// false: not cloned
 const cloneEntry = (storeEntry: string, tmp: string): boolean => {
-  if (cloneNone) return false
   const res = cloneDir(storeEntry, tmp)
   if (res === true) return true
   if (
@@ -88,10 +88,9 @@ const cloneEntry = (storeEntry: string, tmp: string): boolean => {
     res === 'EACCES'
   ) {
     cloneNone = true
-    debug('global store: cloning failed, linking from now on', res)
+    debug('global store: cloning failed, unpacking from now on', res)
   }
-  // ENOENT (entry gone) and the rest: one entry, and placing its
-  // files finds out what is wrong with it
+  // ENOENT (entry gone) and the rest: a miss for this entry only
   return false
 }
 
@@ -236,15 +235,17 @@ const fill = (
  * after another file was linked, the whole package is copied, so a
  * private package.json means nothing is shared. Returns how, with the
  * index, or false, leaving `target` untouched, on a store miss (no
- * valid index, entry not a directory, symlinked target parent), a name
- * clash on a case-insensitive target, or a damaged entry, which is
- * removed.
+ * valid index, entry not a directory, symlinked target parent, a
+ * failed clone), a name clash on a case-insensitive target, or a
+ * damaged entry, which is removed.
  */
 export const linkFromStore = (
   storeEntry: string,
   target: string,
   { copy = false, clone = false }: LinkFromStoreOptions = {},
 ): StoreLinkResult => {
+  // no clones here: a miss, without reading anything
+  if (clone && cloneNone) return false
   const index = readStoreIndex(storeEntry)
   if (!index || !lstatSync(storeEntry, noThrow)?.isDirectory()) {
     return false
@@ -257,13 +258,14 @@ export const linkFromStore = (
   const og = tmp + '.ORIGINAL'
   let succeeded = false
   try {
-    const cloned = clone && cloneEntry(storeEntry, tmp)
+    // whatever a failed clone left in tmp goes with it, below
+    if (clone && !cloneEntry(storeEntry, tmp)) return false
     // a clone is copy-on-write: nothing written into it reaches the
     // store, so it needs no copy on top
-    let copied = !cloned && copy
-    if (!cloned) mkdirSync(tmp)
+    let copied = !clone && copy
+    if (!clone) mkdirSync(tmp)
     let miss =
-      cloned ?
+      clone ?
         checkClone(tmp, index)
       : fill(storeEntry, tmp, index, copied)
     if (miss === 'mixed') {
@@ -288,13 +290,16 @@ export const linkFromStore = (
     if (targetExists) renameSync(target, og)
     renameSync(tmp, target)
     if (targetExists) rimrafSync(og)
-    // nlink stays 1 (a clone shares blocks, not inodes): tell
-    // prune-store it is used
-    if (cloned || copied || copyAll) markStoreEntryCopied(storeEntry)
+    // nlink stays 1 (a clone shares blocks, not inodes; reify copies
+    // a linked package right before its install scripts run): tell
+    // prune-store it was used, and when
+    if (clone || copied || copyAll || index.scripts) {
+      markStoreEntryCopied(storeEntry)
+    }
     succeeded = true
     return {
       how:
-        cloned ? 'clone'
+        clone ? 'clone'
         : copied || copyAll ? 'copy'
         : 'link',
       index,

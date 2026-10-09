@@ -107,10 +107,10 @@ Hardlink every file of a store entry into a sibling temp dir
 `{ how, index }`: `how` is `'link'`, `'clone'` when the directory was
 cloned, or `'copy'` when files were copied instead (see below).
 Returns `false`, creating nothing, if the sidecar is missing or
-invalid, the entry is not a directory, or the target's parent is a
-symlink. An entry with a missing file is removed and `false` returned.
-Two index paths that collide on a case-insensitive target (`EEXIST`)
-also return `false`.
+invalid, the entry is not a directory, the target's parent is a
+symlink, or a clone fails (see below). An entry with a missing file is
+removed and `false` returned. Two index paths that collide on a
+case-insensitive target (`EEXIST`) also return `false`.
 
 `EXDEV`, `EPERM`, `EACCES` and `ENOTSUP` switch the process to copying
 (read + write into a fresh file); `ENOENT` while both the source and
@@ -118,7 +118,9 @@ the target's parent exist (overlayfs cross-layer links) does the same.
 `EMLINK` copies that file only. Other link errors throw. Every file is
 copied with `copy: true`, or when package.json is copied after another
 file was linked: a private package.json means nothing is shared. A
-copy creates the entry's copied marker (`<entry>.copied`), once.
+copy, or a link of a package with install scripts (reify copies it
+before they run), touches the entry's copied marker
+(`<entry>.copied`): its mtime is the last time one did.
 
 With `clone: true` the whole entry directory is cloned copy-on-write
 into the temp dir in one `clonefile(2)` call instead (see
@@ -126,23 +128,27 @@ into the temp dir in one `clonefile(2)` call instead (see
 names in every directory, since a clone holds whatever the entry
 holds), and, sharing no inode with the store, marks the entry copied.
 Nothing written into a clone reaches the store, so `copy` changes
-nothing about it, and install scripts need no copy before they run.
-Where a clone fails the files are linked or copied as without the
-option; `ENOTSUP`, `EXDEV`, `EPERM` and `EACCES` stop cloning for the
-rest of the process.
+nothing about it, and install scripts need no copy before they run. A
+failed clone is a store miss, so the caller unpacks: on APFS,
+hardlinking file by file is slower than that. Whatever it left in the
+temp dir is removed. After `ENOTSUP`, `EXDEV`, `EPERM` or `EACCES`,
+every later clone is a miss without trying, for the rest of the
+process.
 
 `VLT_STORE_VERIFY=1` checks the linked package.json size against the
 index and removes the entry on a mismatch (debugging aid).
 
 ### clonefile
 
-`cloneAvailable()` is true on macOS with a Node that has `node:ffi`
-(26.1 and later), which is what `cloneDir(src, dst)` calls
-`clonefile(2)` through: it clones the directory `src` to `dst`, which
-must not exist, and returns `true` or the errno code of the failure
-(`ENOTSUP` wherever it is unavailable: another platform, no
-`node:ffi`, a filesystem without clones). `node:ffi` is loaded on the
-first call, once, and its experimental warning is swallowed.
+`cloneAvailable()` is true on macOS with a Node whose `node:ffi` (26.1
+and later) loads: the permission model denies it without
+`--allow-ffi`. That is what `cloneDir(src, dst)` calls `clonefile(2)`
+through: it clones the directory `src` to `dst`, which must not exist,
+and returns `true` or the errno code of the failure (`ENOTSUP`
+wherever it is unavailable: another platform, no usable `node:ffi`, a
+filesystem without clones, or an ffi call that throws, after which it
+stays unavailable). `node:ffi` is loaded on the first call of either,
+once, and its experimental warning is swallowed.
 
 ### readStoreIndex(storeEntry)
 
@@ -165,7 +171,9 @@ Sidecar path: `<storeEntry>.json`.
   copied marker or install scripts (copied before they run), i.e.
   nlink cannot show use.
 - `storeCopiedPath(storeEntry)`, `markStoreEntryCopied(storeEntry)`:
-  the copied marker, and its exclusive create.
+  the copied marker, and its touch (created the first time).
+- `storeEntryLastCopied(storeEntry)`: the copied marker's mtime in ms,
+  else `storeEntryTime(storeEntry)`.
 - `storeEntryTime(storeEntry)`: sidecar mtime in ms (dir mtime without
   one, else 0).
 - `removeStoreEntry(storeEntry)`: remove the dir, then the sidecar and

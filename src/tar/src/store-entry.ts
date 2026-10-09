@@ -5,6 +5,7 @@ import {
   readdirSync,
   readFileSync,
   statSync,
+  utimesSync,
 } from 'node:fs'
 import { join, relative } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
@@ -39,21 +40,30 @@ export const storeEntryNames = (root: string): string[] => {
 }
 
 /**
- * Marker next to a global store entry: some install copied from it, so
- * its files' nlink cannot show use. See {@link markStoreEntryCopied}.
+ * Marker next to a global store entry: some install copied or cloned
+ * from it, so its files' nlink cannot show use; its mtime is the last
+ * time one did. See {@link markStoreEntryCopied}.
  */
 export const storeCopiedPath = (storeEntry: string) =>
   storeEntry + '.copied'
 
 /**
- * Mark a global store entry as copied from. Called on copies only:
- * one exclusive create per entry, a failed open after that.
+ * Mark a global store entry as copied from, now. Called on uses that
+ * nlink cannot show (copies, clones, links copied before install
+ * scripts): one create per entry, then a touch per use, so prune-store
+ * can tell an entry still in use from one long forgotten.
  */
 export const markStoreEntryCopied = (storeEntry: string): void => {
+  const marker = storeCopiedPath(storeEntry)
   try {
-    closeSync(openSync(storeCopiedPath(storeEntry), 'wx'))
+    const now = new Date()
+    utimesSync(marker, now, now)
   } catch {
-    // EEXIST: marked. Else prune-store may drop it: only a re-explode.
+    try {
+      closeSync(openSync(marker, 'a'))
+    } catch {
+      // prune-store may drop it: only a re-explode
+    }
   }
 }
 
@@ -76,6 +86,14 @@ export const storeEntryTime = (storeEntry: string): number =>
     statSync(storeIndexPath(storeEntry), noThrow) ??
     statSync(storeEntry, noThrow)
   )?.mtimeMs ?? 0
+
+/**
+ * When a global store entry was last copied from, in ms: its marker's
+ * mtime, else when it was written ({@link storeEntryTime}).
+ */
+export const storeEntryLastCopied = (storeEntry: string): number =>
+  statSync(storeCopiedPath(storeEntry), noThrow)?.mtimeMs ??
+  storeEntryTime(storeEntry)
 
 /**
  * True if the global store entry has a valid sidecar and dir, and was

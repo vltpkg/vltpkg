@@ -1,5 +1,19 @@
+import { spawnSync } from 'node:child_process'
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import t from 'tap'
 import type { Test } from 'tap'
+import { cloneAvailable, cloneDir } from '../src/clonefile.ts'
+
+// the real thing, before any test fakes the platform: macOS on a Node
+// with node:ffi only
+const real = cloneAvailable() || 'needs macOS and node:ffi'
 
 type Clonefile = typeof import('../src/clonefile.ts')
 
@@ -8,7 +22,7 @@ type FakeOptions = {
   ret?: number
   /** errno after a failed clonefile */
   errno?: number
-  throwAt?: 'lib' | 'sym'
+  throwAt?: 'lib' | 'sym' | 'call'
 }
 
 // what `node:ffi` is asked for, recording every call
@@ -25,6 +39,8 @@ const fakeFfi = ({ ret = 0, errno = 0, throwAt }: FakeOptions) => {
       return name === 'clonefile' ?
           (...args: unknown[]) => {
             calls.push(['clonefile', ...args])
+            if (throwAt === 'call')
+              throw new TypeError('bad argument')
             return ret
           }
         : () => 42n
@@ -117,11 +133,28 @@ t.test('a failure reports errno by code', async t => {
 
 t.test('no usable ffi: unavailable, and not retried', async t => {
   for (const throwAt of ['lib', 'sym'] as const) {
-    const { cloneDir, loads } = await load(t, { throwAt })
-    t.equal(cloneDir('/s/a', '/p/.a.1'), 'ENOTSUP', throwAt)
+    const { cloneAvailable, cloneDir, loads } = await load(t, {
+      throwAt,
+    })
+    t.equal(cloneAvailable(), false, throwAt)
     t.equal(cloneDir('/s/a', '/p/.a.1'), 'ENOTSUP')
     t.equal(loads().length, 1, 'not loaded again')
   }
+})
+
+t.test('an ffi call that throws: no clones from then on', async t => {
+  const { cloneAvailable, cloneDir, calls } = await load(t, {
+    throwAt: 'call',
+  })
+  t.equal(cloneAvailable(), true, 'loads fine')
+  t.equal(cloneDir('/s/a', '/p/.a.1'), 'ENOTSUP')
+  t.equal(cloneAvailable(), false)
+  t.equal(cloneDir('/s/b', '/p/.b.1'), 'ENOTSUP')
+  t.strictSame(
+    calls.filter(c => c[0] === 'clonefile'),
+    [['clonefile', '/s/a', '/p/.a.1', 0]],
+    'not called again',
+  )
 })
 
 t.test('only the ffi experimental warning is swallowed', async t => {
@@ -161,3 +194,76 @@ t.test('only the ffi experimental warning is swallowed', async t => {
     ],
   )
 })
+
+t.test(
+  'clonefile(2) through node:ffi',
+  { skip: real !== true && real },
+  async t => {
+    const dir = t.testdir({
+      src: {
+        'package.json': '{"name":"x"}',
+        lib: { 'a.js': 'a', deep: { 'b.js': 'b' } },
+      },
+    })
+    const src = resolve(dir, 'src')
+    const dst = resolve(dir, 'dst')
+    t.equal(cloneDir(src, dst), true)
+    t.strictSame(
+      readdirSync(dst, { recursive: true }).sort(),
+      readdirSync(src, { recursive: true }).sort(),
+    )
+    t.equal(readFileSync(resolve(dst, 'lib/deep/b.js'), 'utf8'), 'b')
+    // copy-on-write: a write to the clone stays there
+    writeFileSync(resolve(dst, 'lib/a.js'), 'changed')
+    t.equal(readFileSync(resolve(src, 'lib/a.js'), 'utf8'), 'a')
+
+    t.equal(cloneDir(src, dst), 'EEXIST', 'dst must not exist')
+    t.equal(
+      cloneDir(resolve(dir, 'missing'), resolve(dir, 'x')),
+      'ENOENT',
+    )
+    mkdirSync(resolve(dir, 'nope'))
+    t.equal(
+      cloneDir(src, resolve(dir, 'nope/no/dst')),
+      'ENOENT',
+      'dst parent missing',
+    )
+  },
+)
+
+t.test(
+  'the permission model needs --allow-ffi',
+  { skip: real !== true && real },
+  async t => {
+    const mod = fileURLToPath(
+      new URL('../src/clonefile.ts', import.meta.url),
+    )
+    const available = (...flags: string[]) => {
+      const env = { ...process.env }
+      delete env.NODE_V8_COVERAGE
+      // tap puts its loaders in the NODE_OPTIONS of every child, and
+      // the permission model denies what they do: a shell drops them
+      const { stdout, stderr, status } = spawnSync(
+        '/bin/sh',
+        [
+          '-c',
+          'unset NODE_OPTIONS; exec "$@"',
+          'sh',
+          process.execPath,
+          '--permission',
+          '--allow-fs-read=*',
+          ...flags,
+          '--input-type=module',
+          '-e',
+          `import { cloneAvailable } from ${JSON.stringify(mod)}
+          process.stdout.write(String(cloneAvailable()))`,
+        ],
+        { encoding: 'utf8', env },
+      )
+      t.equal(status, 0, 'exits', { stderr })
+      return stdout
+    }
+    t.equal(available(), 'false', 'built in, but denied')
+    t.equal(available('--allow-ffi'), 'true')
+  },
+)

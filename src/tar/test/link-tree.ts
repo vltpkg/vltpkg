@@ -200,6 +200,8 @@ t.test('install scripts: linked', async t => {
   )
   t.equal(how(linkFromStore(entry, target)), 'link')
   checkTree(t, entry, index, target, () => 2)
+  // reify copies it before they run: nlink will not show this use
+  t.equal(existsSync(storeCopiedPath(entry)), true, 'marked')
 })
 
 t.test('clone option clones the entry', async t => {
@@ -240,43 +242,53 @@ t.test('clone option clones the entry', async t => {
     t.strictSame(clones, [])
   })
 
-  t.test('a failed clone places the files instead', async t => {
-    const { entry, index, target } = makeEntry(t)
+  t.test('a failed clone is a miss, not a link', async t => {
+    const { entry, target } = makeEntry(t)
     let code: string | undefined = 'ENOENT'
     const { linkFromStore, clones } = await mockClone(t, () => code)
-    t.equal(
-      how(linkFromStore(entry, target, { clone: true })),
-      'link',
-    )
-    checkTree(t, entry, index, target, () => 2)
+    t.equal(linkFromStore(entry, target, { clone: true }), false)
+    noTrace(t, target)
     t.equal(existsSync(storeCopiedPath(entry)), false)
+    t.equal(existsSync(entry), true, 'entry kept')
     // still tried, still clones
     code = undefined
-    const other = resolve(dirname(target), 'other')
     t.equal(
-      how(linkFromStore(entry, other, { clone: true })),
+      how(linkFromStore(entry, target, { clone: true })),
       'clone',
     )
-    t.strictSame(clones, [clones[0]])
+    t.equal(clones.length, 1)
+  })
+
+  t.test('a partial clone is cleaned up', async t => {
+    const { entry, target } = makeEntry(t)
+    const { linkFromStore } = await mockClone(t, (_, dst) => {
+      FS.mkdirSync(resolve(dst, 'lib'), { recursive: true })
+      writeFileSync(resolve(dst, 'lib/a.js'), 'a')
+      return 'ENOSPC'
+    })
+    t.equal(linkFromStore(entry, target, { clone: true }), false)
+    noTrace(t, target)
   })
 
   t.test('a clone that cannot work stops cloning', async t => {
     for (const fatal of ['ENOTSUP', 'EXDEV', 'EPERM', 'EACCES']) {
       const { entry, target } = makeEntry(t)
-      let code: string | undefined = fatal
-      const { linkFromStore, clones } = await mockClone(t, () => code)
+      let tries = 0
+      const { linkFromStore } = await mockClone(t, () => {
+        tries++
+        return fatal
+      })
       t.equal(
-        how(linkFromStore(entry, target, { clone: true })),
-        'link',
+        linkFromStore(entry, target, { clone: true }),
+        false,
         fatal,
       )
-      code = undefined
       const other = resolve(dirname(target), 'other')
-      t.equal(
-        how(linkFromStore(entry, other, { clone: true })),
-        'link',
-      )
-      t.strictSame(clones, [], 'never again')
+      t.equal(linkFromStore(entry, other, { clone: true }), false)
+      t.equal(tries, 1, 'never again')
+      noTrace(t, target)
+      // linking is no clone: unaffected
+      t.equal(how(linkFromStore(entry, target)), 'link')
     }
   })
 
