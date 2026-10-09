@@ -54,6 +54,7 @@ import {
 } from './definition.ts'
 import { merge } from './merge.ts'
 import { cloneLayer, mergeLayers } from './merge-layers.ts'
+import { assertSpecAliases } from './spec-aliases.ts'
 export {
   commands,
   definition,
@@ -518,6 +519,10 @@ export class Config {
       if (!pairs.length) continue
       const base = (k in cmdPairs ? cmdPairs[k] : fileValues[k]) ?? []
       values[k] = dedupePairs([...(base as string[]), ...pairs])
+    }
+    // skipped for `vlt config`, so a bad alias can be removed
+    if (cmdOrFallback !== 'config') {
+      assertSpecAliases(pairsToRecords(p.values))
     }
     this.jack.writeEnv(p)
     process.env[kParentEnv] = JSON.stringify({

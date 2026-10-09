@@ -179,7 +179,8 @@ Note that the built-in registry aliases (`gh:`, `jsr:`) and the `@jsr`
 scope mapping still have built-in URLs. The `npm:` alias, however, is
 **no longer built-in** — it has no baked-in URL and must be configured
 (see [The `npm:` alias](#npm) below). All built-in aliases are
-user/service-overridable.
+overridable within their own map (`registries.gh`,
+`jsr-registries.jsr`, `git-hosts.github`, ...).
 
 ## Bare specs and `--default-registry-alias`
 
@@ -357,6 +358,16 @@ registry by alias on the command line:
 ```bash
 $ vlt install bar:bloo@1.2
 ```
+
+### Alias names must be unique
+
+Each spec prefix maps to one alias. A name set in more than one of
+`registries`, `jsr-registries` or `git-hosts` (counting the built-in
+`gh`, `jsr`, `github`, `gitlab`, `bitbucket` and `gist`), or a
+built-in protocol name like `file` or `https`, is a config error. Fix
+it by renaming the alias, or remove it with
+`vlt config delete <field>.<name>` (`--config=user` for the user
+config).
 
 ### Special Aliases:
 

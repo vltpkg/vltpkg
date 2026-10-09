@@ -169,8 +169,10 @@ Prefixes can be used as a package alias. For example:
 
 The `npm:` prefix is **not** pre-registered to any URL — configure it
 (for example with `vlt setup`) before bare specs or `npm:` aliases can
-resolve. The built-in `gh:` and `jsr:` prefixes are pre-registered but
-remain overridable here.
+resolve. The built-in `gh:` prefix is pre-registered but remains
+overridable here. A name used by `--jsr-registries` or `--git-hosts`
+(e.g. `jsr`, `github`), or a built-in protocol (e.g. `file`), is an
+error.
 
 Aliases given on the command line or in `VLT_REGISTRIES` merge with
 the configured ones, later sources winning per key. Pass

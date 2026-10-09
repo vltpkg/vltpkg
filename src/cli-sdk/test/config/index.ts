@@ -1597,6 +1597,18 @@ t.test('config layers', async t => {
     )
   })
 
+  await t.test('a spec alias colliding across files', async t => {
+    await t.rejects(
+      layered(
+        t,
+        { registries: { acme: 'https://user/' } },
+        { 'jsr-registries': { acme: 'https://project/' } },
+        ['install'],
+      ),
+      { cause: { code: 'ECONFIG', name: 'jsr-registries.acme' } },
+    )
+  })
+
   await t.test(
     'an invalid value is blamed on its own file',
     async t => {
@@ -1871,4 +1883,54 @@ t.test('record fields merge file -> env -> cli', async t => {
   })
 
   t.end()
+})
+
+t.test('colliding spec prefix aliases', async t => {
+  const gh = { registries: { github: 'https://x/' } }
+  const load = async (
+    t: Test,
+    argv: string[],
+    config: Record<string, unknown> = {},
+  ) => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ config }),
+      '.git': {},
+    })
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    return Config.load(dir, argv, true)
+  }
+  const rejected = {
+    cause: { code: 'ECONFIG', name: 'registries.github' },
+  }
+
+  await t.test('cli', t =>
+    t.rejects(
+      load(t, ['install', '--registries', 'github=https://x/']),
+      rejected,
+    ),
+  )
+  await t.test('vlt.json', t =>
+    t.rejects(load(t, ['install'], gh), rejected),
+  )
+  await t.test('env', async t => {
+    process.env.VLT_REGISTRIES = 'github=https://x/'
+    t.teardown(clearEnv)
+    await t.rejects(load(t, ['install']), rejected)
+  })
+  await t.test('command block', t =>
+    t.rejects(
+      load(t, ['install'], { command: { install: gh } }),
+      rejected,
+    ),
+  )
+  await t.test('other command block', async t => {
+    const c = await load(t, ['ls'], { command: { install: gh } })
+    t.equal(c.getRecord('registries').github, undefined)
+  })
+  await t.test('vlt config is exempt', async t => {
+    const c = await load(t, ['config', 'list'], gh)
+    t.equal(c.getRecord('registries').github, 'https://x/')
+  })
 })

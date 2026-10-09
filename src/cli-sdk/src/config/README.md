@@ -76,7 +76,9 @@ alias named by `--default-registry-alias` (`npm` by default). The
 points it at your vlt.io account registry) or configure
 `registries.npm` yourself. Only the `gh:` and `jsr:` aliases (and the
 `@jsr` scope mapping) keep built-in URLs; all aliases are
-user-overridable.
+user-overridable within their own map. A name in more than one of
+`registries` / `jsr-registries` / `git-hosts`, or a built-in protocol
+name, is an `ECONFIG` error at load (`vlt config` exempt).
 
 ## Configuration Definitions and Patterns
 
