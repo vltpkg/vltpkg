@@ -143,7 +143,7 @@ export class InstallReporter extends ViewClass {
       if (conflicts.length) {
         out += `\n⚠️  Skipped ${conflicts.join(', ')}: already linked by another global package (use --force to overwrite)`
       }
-      if (!inPath) {
+      if (!inPath && (bins.length || conflicts.length)) {
         out += `\n⚠️  Add ${binDir} to your PATH to run globally installed bins.`
       }
     }

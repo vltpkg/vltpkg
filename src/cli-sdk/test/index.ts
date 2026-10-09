@@ -188,6 +188,52 @@ t.test('invalid config in file', async t => {
   t.matchSnapshot(logs.join('\n'))
 })
 
+t.test('config errors', async t => {
+  const exit = (t: Test) => {
+    const codes: number[] = []
+    t.intercept(process, 'exit', {
+      value: (code: number) => {
+        codes.push(code)
+        throw new Error()
+      },
+    })
+    return codes
+  }
+
+  t.test('global project cannot be created', async t => {
+    const codes = exit(t)
+    const cwd = t.testdir({ file: '' })
+    const g = join(cwd, 'file', 'g')
+    const { logs } = await run(t, {
+      argv: ['ls', '-g', `--global-dir=${g}`],
+      cwd,
+    })
+    t.strictSame(codes, [1])
+    t.equal(
+      logs[0],
+      'Config Error: Could not create the global project',
+    )
+    t.equal(logs[1], `  Found: ${g}`)
+    t.match(logs[2], /^ {2}Cause: /)
+    t.equal(logs.length, 3)
+  })
+
+  t.test('in a config file', async t => {
+    const codes = exit(t)
+    const cwd = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: { registries: { '': 'https://x.example/' } },
+      }),
+    })
+    const { logs } = await run(t, { cwd })
+    t.strictSame(codes, [1])
+    t.strictSame(logs, [
+      'Config Error: Reserved character found in registries name',
+      `  File: ${join(cwd, 'vlt.json')}`,
+    ])
+  })
+})
+
 t.test('valid workspace', async t => {
   const cwd = t.testdir({
     'vlt.json': JSON.stringify({

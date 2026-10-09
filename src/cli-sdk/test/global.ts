@@ -95,7 +95,11 @@ const mockConf = (
     projectRoot,
     positionals,
     values,
-    options: { projectRoot, packageInfo: { manifest } },
+    options: {
+      projectRoot,
+      tag: 'latest',
+      packageInfo: { manifest },
+    },
     resetOptions: (root: string) => resets.push(root),
   } as unknown as LoadedConfig
   return { conf, resets }
@@ -155,7 +159,8 @@ t.test('parseGlobalAddArgs', async t => {
     t.equal(String(dep?.spec), 'foo@1')
     t.equal(
       String(add.get(wsId('@s+bar-global-ws'))?.get('@s/bar')?.spec),
-      '@s/bar@',
+      '@s/bar@latest',
+      'bare name gets the default tag',
     )
     t.strictSame(
       importers,
@@ -249,6 +254,32 @@ t.test('parseGlobalAddArgs', async t => {
     t.notOk(existsSync(resolve(root, '../evil-global-ws')))
   })
 
+  t.test('name differs only in case', async t => {
+    const root = t.testdir({
+      packages: {
+        'Foo-global-ws': { 'package.json': '{}' },
+        '@S+bar-global-ws': { 'package.json': '{}' },
+        'baz-global-ws': { 'package.json': '{}' },
+        'Baz-global-ws': { 'package.json': '{}' },
+      },
+    })
+    await t.rejects(
+      parseGlobalAddArgs(mockConf(root, ['foo']).conf),
+      {
+        message: 'foo differs only in case from global package Foo',
+        cause: { code: 'EUSAGE', found: 'foo' },
+      },
+    )
+    await t.rejects(
+      parseGlobalAddArgs(mockConf(root, ['@s/bar']).conf),
+      { message: /from global package @S\/bar$/ },
+    )
+    const { created } = await parseGlobalAddArgs(
+      mockConf(root, ['baz']).conf,
+    )
+    t.strictSame(created, [], 'exact match wins')
+  })
+
   t.test('created workspaces removed on error', async t => {
     const root = t.testdir({ packages: {} })
     const { conf } = mockConf(root, ['foo', 'nope:bar@1'])
@@ -288,6 +319,13 @@ t.test('parseGlobalRemoveArgs', async t => {
     {
       message: 'nope is not installed globally',
       cause: { code: 'EUSAGE', found: 'nope' },
+    },
+  )
+  t.throws(
+    () => parseGlobalRemoveArgs(mockConf(root, ['FOO']).conf),
+    {
+      message: 'FOO is not installed globally',
+      cause: { code: 'EUSAGE', found: 'FOO', validOptions: ['foo'] },
     },
   )
   t.throws(
@@ -518,12 +556,21 @@ t.test('linkGlobalBins', async t => {
 
   t.test('win32 shims', async t => {
     t.intercept(process, 'platform', { value: 'win32' })
-    const root = t.testdir({ bin: { 'taken.ps1': 'foreign' } })
+    const root = t.testdir({
+      bin: { 'taken.ps1': 'foreign' },
+      packages: {
+        'a-global-ws': {
+          node_modules: { a: { 'a.js': '', 't.js': '' } },
+        },
+      },
+    })
     const graph = mockGraph(root, {
-      'a-global-ws': { a: { bins: { a: 'a.js', taken: 't.js' } } },
+      'a-global-ws': {
+        a: { bins: { a: 'a.js', taken: 't.js', missing: 'm.js' } },
+      },
     })
     const res = await linkGlobalBins(graph, opts(root))
-    t.strictSame(res.bins, ['a'])
+    t.strictSame(res.bins, ['a'], 'missing target not linked')
     t.strictSame(res.conflicts, ['taken'])
     t.strictSame(shims, [
       [

@@ -236,8 +236,9 @@ Global packages live in a regular vlt project at `--global-dir`
 (`vlt/global` in the XDG data directory by default, e.g.
 `~/.local/share/vlt/global` on Linux):
 
-- each package gets its own workspace, `packages/<name>-global-ws`,
-  with the package as its only dependency
+- each package gets its own workspace, `packages/<name>-global-ws`
+  (`packages/@scope+name-global-ws` for scoped packages), with the
+  package as its only dependency
 - the project has its own `vlt-lock.json` and `node_modules`
 - bins of global packages are linked into `<global-dir>/bin`, add that
   folder to your `PATH` to run them
@@ -247,9 +248,17 @@ including its `vlt.json`. `global` and `global-dir` can be set on the
 command line, via env (`VLT_GLOBAL`, `VLT_GLOBAL_DIR`) or in the user
 config.
 
+A package name with no version installs the `latest` dist-tag (or
+`--tag`), like `npm install -g`, so re-running it upgrades. Use a
+version or range to pin one instead.
+
 <Code
-  code={`# upgrade, re-run install with the new spec
-$ vlt install -g eslint@latest
+  code={`# upgrade to latest
+$ vlt install -g eslint
+
+# pin a version range
+
+$ vlt install -g eslint@9
 
 # list global packages
 

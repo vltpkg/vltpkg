@@ -245,7 +245,12 @@ Operate on the global project instead of the current one. Supported by
 
 Location of the global project used by `--global`. Defaults to
 `vlt/global` in the XDG data directory. Only read from the command
-line, environment or the user config, never from a project `vlt.json`.
+line, environment or the user config, never from a project `vlt.json`,
+so set it with `vlt config set --config=user global-dir=<path>`.
+
+A leading `~` is the home directory. Relative paths on the command
+line or in `VLT_GLOBAL_DIR` resolve from the current directory; in the
+user config the path must be absolute.
 
 ### `--store-linker=<auto | hardlink | copy | unpack>`
 

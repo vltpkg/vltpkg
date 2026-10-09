@@ -1,5 +1,6 @@
 import { format } from 'node:util'
-import { asRootError } from '@vltpkg/output/error'
+import { asRootError, findRootError } from '@vltpkg/output/error'
+import { isError } from '@vltpkg/types'
 import { loadPackageJson } from 'package-json-from-dist'
 import {
   getSortedCliOptions,
@@ -32,6 +33,16 @@ const loadVlt = async (cwd: string, argv: string[]) => {
   try {
     return await Config.load(cwd, argv)
   } catch (e) {
+    // eg the global project can't be created
+    const conf = findRootError(e, { code: 'ECONFIG' })
+    if (conf?.cause) {
+      const { found, path, cause } = conf.cause
+      stderr(`Config Error: ${conf.message}`)
+      if (path) stderr(indent(`File: ${format(path)}`))
+      if (found) stderr(indent(`Found: ${format(found)}`))
+      if (isError(cause)) stderr(indent(`Cause: ${cause.message}`))
+      return flushAndExit(process.exitCode || 1)
+    }
     const err = asRootError(e, { code: 'JACKSPEAK' })
     const { found, path, wanted, name } = err.cause
     const isConfigFile = typeof path === 'string'

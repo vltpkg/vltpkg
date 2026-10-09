@@ -530,7 +530,9 @@ export const definition = j
                     Defaults to \`vlt/global\` in the XDG data directory.
 
                     Only read from the command line, environment or the user
-                    config, never from a project \`vlt.json\`.`,
+                    config, never from a project \`vlt.json\`. A leading
+                    \`~\` is the home directory. Must be absolute in the
+                    user config.`,
     },
   })
 

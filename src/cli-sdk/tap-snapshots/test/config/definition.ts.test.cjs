@@ -335,7 +335,7 @@ Object {
     "description": String(
       Location of the global project used by \`--global\`. Defaults to \`vlt/global\` in the XDG data directory.
       
-      Only read from the command line, environment or the user config, never from a project \`vlt.json\`.
+      Only read from the command line, environment or the user config, never from a project \`vlt.json\`. A leading \`~\` is the home directory. Must be absolute in the user config.
     ),
     "hint": "path",
     "type": "string",

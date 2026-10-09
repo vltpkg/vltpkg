@@ -1861,11 +1861,13 @@ t.test('--global', async t => {
       },
     })
     const xdg = resolve(dir, 'xdg')
+    const home = resolve(dir, 'home')
     t.chdir(resolve(dir, 'cwd'))
     unload()
     const { Config } = await t.mockImport<
       typeof import('../../src/config/index.ts')
     >('../../src/config/index.ts', {
+      'node:os': t.createMock(OS, { homedir: () => home }),
       '@vltpkg/xdg': {
         XDG: class extends XDG {
           base = {
@@ -1882,6 +1884,7 @@ t.test('--global', async t => {
       Config,
       cwd: resolve(dir, 'cwd'),
       g: resolve(dir, 'g'),
+      home,
       dflt: resolve(xdg, 'data/vlt/global'),
     }
   }
@@ -1905,14 +1908,45 @@ t.test('--global', async t => {
     t.ok(existsSync(resolve(g, 'package.json')))
     t.ok(conf.options.monorepo?.get('x-global-ws'), 'global monorepo')
     t.equal(process.env.VLT_GLOBAL, undefined, 'not passed on')
+    t.equal(process.env.VLT_GLOBAL_DIR, g)
   })
 
   t.test('from env', async t => {
     const { Config, cwd, g } = await setup(t)
     process.env.VLT_GLOBAL = '1'
-    process.env.VLT_GLOBAL_DIR = g
+    process.env.VLT_GLOBAL_DIR = '../g'
     const conf = await Config.load(cwd, ['i'], true)
-    t.equal(conf.globalRoot, g)
+    t.equal(conf.globalRoot, g, 'relative to cwd')
+    t.equal(process.env.VLT_GLOBAL_DIR, g, 'absolute for nested vlt')
+  })
+
+  t.test('~ is home', async t => {
+    const { Config, cwd, home } = await setup(t)
+    for (const [dir, want] of [
+      ['~', home],
+      ['~/g', resolve(home, 'g')],
+      ['~x', resolve(cwd, '~x')],
+    ] as const) {
+      const conf = await Config.load(
+        cwd,
+        ['install', '-g', `--global-dir=${dir}`],
+        true,
+      )
+      t.equal(conf.globalRoot, want, dir)
+      clearEnv()
+    }
+  })
+
+  t.test('global project cannot be created', async t => {
+    const { Config, cwd } = await setup(t)
+    const g = resolve(cwd, 'package.json', 'g')
+    await t.rejects(
+      Config.load(cwd, ['install', '-g', `--global-dir=${g}`], true),
+      {
+        message: 'Could not create the global project',
+        cause: { code: 'ECONFIG', found: g, cause: Error },
+      },
+    )
   })
 
   t.test('disabled in env', async t => {
@@ -1929,13 +1963,21 @@ t.test('--global', async t => {
   })
 
   t.test('from user config', async t => {
-    const { Config, cwd, g } = await setup(t, {
+    const { Config, cwd, home } = await setup(t, {
       global: true,
-      'global-dir': '../g',
+      'global-dir': '~/g',
     })
     const conf = await Config.load(cwd, ['install'], true)
-    t.equal(conf.globalRoot, g)
+    t.equal(conf.globalRoot, resolve(home, 'g'))
     t.equal(conf.explicit.global, undefined)
+  })
+
+  t.test('relative global-dir in user config', async t => {
+    const { Config, cwd } = await setup(t, { 'global-dir': '../g' })
+    await t.rejects(Config.load(cwd, ['install', '-g'], true), {
+      message: 'global-dir in the user config must be absolute',
+      cause: { code: 'ECONFIG', found: '../g' },
+    })
   })
 
   t.test('no switch', async t => {

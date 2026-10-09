@@ -39,7 +39,8 @@ import { find, load, reload, save, unload } from '@vltpkg/vlt-json'
 import { Monorepo, workspaceCache } from '@vltpkg/workspaces'
 import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { readFile, rm, writeFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { homedir } from 'node:os'
+import { dirname, isAbsolute, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import type { Commands, RecordField } from './definition.ts'
 import {
@@ -191,6 +192,10 @@ const kRecord = Symbol('parsed key=value record')
 // jackspeak's env var name for a field
 const envKey = (k: string) =>
   `VLT_${k.replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase()}`
+
+// `~` and `~/x` (shells leave `--opt=~/x` alone)
+const expandHome = (p: string) =>
+  p.replace(/^~(?=$|[\\/])/, homedir())
 
 // `parse()` writes every resolved value to `VLT_*`, so a nested vlt
 // can't tell inherited env from env set for it. this holds the
@@ -529,6 +534,10 @@ export class Config {
     this.jack.writeEnv(p)
     // scripts and nested vlt act on their own project
     delete process.env[envKey('global')]
+    // but use the same global dir, even from another cwd
+    if (this.globalRoot) {
+      process.env[envKey('global-dir')] = this.globalRoot
+    }
     process.env[kParentEnv] = JSON.stringify({
       explicit,
       env: Object.fromEntries(
@@ -906,7 +915,15 @@ export class Config {
     await this.#maybeLoadConfigFile('user')
     const root = args && this.#globalRoot(args)
     if (root) {
-      ensureGlobalProject(root)
+      try {
+        ensureGlobalProject(root)
+      } catch (cause) {
+        throw error('Could not create the global project', {
+          code: 'ECONFIG',
+          found: root,
+          cause,
+        })
+      }
       unload('project')
       this.globalRoot = this.projectRoot = root
     }
@@ -928,11 +945,20 @@ export class Config {
       (env !== undefined ? env === '1' : dflt.global === true)
     if (!global) return
     // empty means unset, never the cwd
-    return resolve(
-      values['global-dir'] ||
-        process.env[envKey('global-dir')] ||
-        String(dflt['global-dir'] || defaultValues['global-dir']),
+    const dir =
+      values['global-dir'] || process.env[envKey('global-dir')]
+    if (dir) return resolve(expandHome(dir))
+    const user = expandHome(
+      String(dflt['global-dir'] || defaultValues['global-dir']),
     )
+    // would differ per cwd
+    if (!isAbsolute(user)) {
+      throw error('global-dir in the user config must be absolute', {
+        code: 'ECONFIG',
+        found: user,
+      })
+    }
+    return user
   }
 
   /**
