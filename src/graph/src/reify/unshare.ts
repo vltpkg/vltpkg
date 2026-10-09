@@ -1,23 +1,15 @@
 import { randomBytes } from 'node:crypto'
-import { lstatSync, readdirSync, rmSync } from 'node:fs'
-import {
-  chmod,
-  readFile,
-  rename,
-  rm,
-  writeFile,
-} from 'node:fs/promises'
+import { constants, lstatSync, readdirSync, rmSync } from 'node:fs'
+import { copyFile, rename, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { callLimit } from 'promise-call-limit'
 
 const TMP = '.vlt-unshare-'
 
-const own = async (p: string, mode: number, tmp: string) => {
-  const body = await readFile(p)
+const own = async (p: string, tmp: string) => {
   try {
-    await writeFile(tmp, body, { mode: mode & 0o777, flag: 'wx' })
-    // same modes as a copy from the store
-    if (mode & 0o111) await chmod(tmp, mode & 0o777)
+    // keeps the store file's mode
+    await copyFile(p, tmp, constants.COPYFILE_EXCL)
     // atomic: p is never missing
     await rename(tmp, p)
   } catch (er) {
@@ -46,10 +38,9 @@ export const unshare = async (dir: string): Promise<void> => {
       const p = join(d, ent.name)
       if (ent.isDirectory()) walk(p)
       else if (ent.isFile() && p !== pjPath) {
-        const { mode, nlink } = lstatSync(p)
-        if (nlink > 1) {
+        if (lstatSync(p).nlink > 1) {
           const tmp = join(d, `${tag}${n++}`)
-          shared.push(() => own(p, mode, tmp))
+          shared.push(() => own(p, tmp))
         } else if (ent.name.startsWith(TMP)) {
           // a killed run's tmp copy
           rmSync(p)
@@ -59,5 +50,5 @@ export const unshare = async (dir: string): Promise<void> => {
   }
   walk(dir)
   await callLimit(shared, { limit: 16, rejectLate: true })
-  await own(pjPath, pj.mode, join(dir, `${tag}${n}`))
+  await own(pjPath, join(dir, `${tag}${n}`))
 }
