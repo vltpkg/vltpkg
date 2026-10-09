@@ -15,6 +15,7 @@ import type {
   RemoveImportersDependenciesMap,
 } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
+import type { GraphModifier } from '../modifiers.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
 import { calculateSaveValue } from './calculate-save-value.ts'
 
@@ -62,6 +63,10 @@ export type UpdatePackageJsonOptions = {
    * Defaults to `^` if not specified. Ignored when `saveExact` is true.
    */
   savePrefix?: string
+  /**
+   * Graph modifiers, importer edges they govern keep the modifier value.
+   */
+  modifiers?: GraphModifier
 }
 
 const addOrRemoveDeps = (
@@ -71,6 +76,7 @@ const addOrRemoveDeps = (
     AddImportersDependenciesMap | RemoveImportersDependenciesMap,
   saveExact?: boolean,
   savePrefix?: string,
+  modifiers?: GraphModifier,
 ): NormalizedManifest | undefined => {
   const node = graph.nodes.get(nodeId)
   if (!node) {
@@ -162,8 +168,12 @@ const addOrRemoveDeps = (
       // the lockfile has to carry the value package.json carries, or a
       // later install reads back `latest` where the manifest says
       // `^1.2.3`. anything keyed by the old spec from here on must be
-      // invalidated at this point.
-      if (saveValue !== edge.spec.bareSpec) {
+      // invalidated at this point. governed edges keep the modifier
+      // value instead.
+      if (
+        saveValue !== edge.spec.bareSpec &&
+        !modifiers?.targetsImporterEdge(node, dep.spec)
+      ) {
         edge.spec = Spec.parse(name, saveValue, dep.spec.options)
         graph.lockfileStale = true
       }
@@ -183,6 +193,7 @@ export const updatePackageJson = ({
   remove,
   saveExact,
   savePrefix,
+  modifiers,
 }: UpdatePackageJsonOptions) => {
   const manifestsToUpdate = new Set<NormalizedManifest>()
   const operations = new Set([add, remove])
@@ -199,6 +210,7 @@ export const updatePackageJson = ({
           operation,
           saveExact,
           savePrefix,
+          modifiers,
         )
         if (manifest) {
           manifestsToUpdate.add(manifest)

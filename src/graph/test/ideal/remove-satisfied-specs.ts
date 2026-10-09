@@ -397,3 +397,91 @@ t.test('a qualifier that rejects the spec heals the edge', async t =>
     'no modifier governs the root edge',
   ),
 )
+
+t.test(
+  'a governed edge is checked against the modifier value',
+  async t => {
+    const rootID = joinDepIDTuple(['file', '.'])
+    // the edge reads foo@1.0.0 -> foo@1.0.0, package.json says ^2.0.0
+    const run = (t: Test, value: string, type = 'prod') => {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: { foo: '1.0.0' },
+        }),
+        'vlt.json': JSON.stringify({
+          modifiers: { ':root > #foo': value },
+        }),
+        node_modules: {
+          '.vlt': {
+            [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
+              node_modules: {
+                foo: {
+                  'package.json': JSON.stringify({
+                    name: 'foo',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
+          foo: t.fixture(
+            'symlink',
+            '.vlt/' +
+              joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+              '/node_modules/foo',
+          ),
+        },
+      })
+      t.chdir(projectRoot)
+      reload('modifiers', 'project')
+      const add = new Map([
+        [
+          rootID,
+          new Map(
+            Object.entries({
+              foo: asDependency({
+                spec: Spec.parse('foo@^2.0.0'),
+                type,
+              }),
+            }),
+          ),
+        ],
+      ]) as AddImportersDependenciesMap
+      const graph = load({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+      })
+      const edge = graph.mainImporter.edgesOut.get('foo')
+      const stale = removeSatisfiedSpecs({
+        add,
+        graph,
+        modifiers: GraphModifier.load({}),
+      })
+      return { add, edge, stale }
+    }
+
+    await t.test('satisfied by the modifier value', async t => {
+      const { add, stale } = run(t, '1.0.0')
+      t.equal(add.size, 0, 'pruned')
+      t.equal(stale.size, 0, 'not stale')
+    })
+
+    await t.test('not satisfied by the modifier value', async t => {
+      const { add, stale } = run(t, '2.0.0')
+      t.ok(add.get(rootID)?.has('foo'), 'rebuilt')
+      t.equal(stale.size, 0, 'not stale')
+    })
+
+    await t.test('a type change heals the type only', async t => {
+      const { add, edge, stale } = run(t, '1.0.0', 'dev')
+      t.equal(add.size, 0, 'pruned')
+      const dep = edge && stale.get(edge)
+      t.equal(dep?.type, 'dev', 'type follows package.json')
+      t.equal(dep?.spec, edge?.spec, 'spec kept')
+    })
+  },
+)

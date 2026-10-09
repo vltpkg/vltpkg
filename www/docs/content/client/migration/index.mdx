@@ -45,4 +45,6 @@ changes are:
   moving)
 - `node_modules` structure is compatible — your code runs the same way
 - Registry authentication uses tokens, just stored differently
-- Workspace packages still use `workspace:` protocol references
+- Workspace packages still use `workspace:` protocol references; local
+  packages referenced by plain ranges can be linked with a
+  [`:project > :workspace` graph modifier](/client/graph-modifiers#implicit-workspace-references)

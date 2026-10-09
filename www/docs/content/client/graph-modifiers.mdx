@@ -30,6 +30,10 @@ subset of the Dependency Selector Syntax:
 - ID selectors (`#package-name`)
 - Semantic version selectors (`:v(^1.0.0)`)
 - Direct dependency combinator (`>`)
+- `:workspace` as the last selector, right after `:root >`,
+  `:project >` or `:workspace >`, matching any direct dependency named
+  after one of the project's workspaces (see
+  [Implicit workspace references](#implicit-workspace-references))
 
 ### Understanding how Graph Modifiers work
 
@@ -162,6 +166,35 @@ modifiers.
 You may use the `:workspace` selector to target workspaces. In the
 example above we target a specific workspace named `core` by combining
 the `#core` ID selector with the `:workspace` selector.
+
+### Implicit workspace references
+
+```json
+{
+  "modifiers": {
+    ":project > :workspace": "workspace:*"
+  }
+}
+```
+
+For monorepos whose `package.json` files reference local packages by
+plain ranges (e.g. npm or yarn v1 projects) instead of the
+`workspace:` protocol:
+
+- Without it, a plain range links a workspace only while the workspace
+  version satisfies that range, otherwise vlt fetches that name from
+  the registry.
+- With it, every direct dependency of the root or of a workspace that
+  is named after a workspace links to that workspace, whatever range
+  is declared.
+- Other dependencies, including transitive ones, are left untouched.
+- Workspaces without a `name` are never matched.
+- Use `:root > :workspace` to limit it to the root's dependencies.
+- Explicit `#name` keys, e.g. `":workspace > #core": "workspace:^1"`,
+  take precedence over it.
+- Only the `<importer> > :workspace` form is supported, no deeper
+  paths or chained pseudo selectors.
+- Remove it once your `package.json` files use `workspace:` specs.
 
 ---
 
