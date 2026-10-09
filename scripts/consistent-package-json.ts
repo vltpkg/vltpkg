@@ -305,6 +305,7 @@ const fixCliVariants = async (ws: Workspace) => {
   ws.pj.publishConfig = {
     directory: './.build-publish',
   }
+  ws.pj.type = 'module'
 
   if (workspaceBasename === 'cli-js' || isDefaultCli) {
     ws.pj.name = isDefaultCli ? 'vlt' : '@vltpkg/cli-js'
