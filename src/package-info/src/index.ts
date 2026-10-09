@@ -400,8 +400,9 @@ export class PackageInfoClient {
 
   /**
    * Wind the client down: abort open resolve streams, settle background
-   * work (manifest cache writes, capabilities, hedges), flush the registry
-   * client cache. Await before removing the cache dir or exiting.
+   * work (manifest cache writes, capabilities, hedges), drain the registry
+   * client (in-flight requests, cache writes). Await before removing the
+   * cache dir or exiting.
    */
   async drain(): Promise<void> {
     for (const [sent, owner] of this.#resolveOwners) {
@@ -413,7 +414,7 @@ export class PackageInfoClient {
       await Promise.all(this.#background)
     }
     if (this.#registryClientPromise) {
-      await (await this.#registryClientPromise).cache.promise()
+      await (await this.#registryClientPromise).drain()
     }
     /* c8 ignore next - work started while the cache flushed */
     if (this.#background.size) await this.drain()

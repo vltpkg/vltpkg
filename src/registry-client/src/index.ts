@@ -320,6 +320,8 @@ export class RegistryClient {
   staleWhileRevalidateFactor: number
   #session = randomUUID()
   #decoded = new WeakMap<Uint8Array, CacheEntry>()
+  // request() calls not settled yet, awaited by drain()
+  #inFlight = new Set<Promise<void>>()
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -877,9 +879,39 @@ export class RegistryClient {
     return { statusCode: response.statusCode, body }
   }
 
+  /**
+   * Settle in-flight requests and their cache writes. Await before
+   * removing the cache dir.
+   */
+  async drain(): Promise<void> {
+    do {
+      await Promise.all(this.#inFlight)
+      await this.cache.promise()
+    } while (this.#inFlight.size)
+  }
+
   async request(
     url: URL | string,
     options: RegistryClientRequestOptions = {},
+  ): Promise<CacheEntry> {
+    // tracked apart from the #request() promise: a second reaction on
+    // that one would make V8 drop the caller's async frames from the
+    // stack of any error #request() throws. redirect and otp hops call
+    // #request() directly, this call already tracks them
+    let settle!: () => void
+    const tracked = new Promise<void>(res => (settle = res))
+    this.#inFlight.add(tracked)
+    try {
+      return await this.#request(url, options)
+    } finally {
+      this.#inFlight.delete(tracked)
+      settle()
+    }
+  }
+
+  async #request(
+    url: URL | string,
+    options: RegistryClientRequestOptions,
   ): Promise<CacheEntry> {
     const u = typeof url === 'string' ? new URL(url) : url
     const {
@@ -1136,7 +1168,7 @@ export class RegistryClient {
     if (response.statusCode === 401) {
       const otpResult = await otplease(this, options, response)
       if (otpResult && 'retry' in otpResult) {
-        return await this.request(url, otpResult.retry)
+        return await this.#request(url, otpResult.retry)
       }
       if (otpResult && 'bodyConsumed' in otpResult) {
         consumedBody = otpResult.bodyConsumed
@@ -1180,7 +1212,7 @@ export class RegistryClient {
       response.body.resume()
       const [nextURL, nextOptions] = redirect(options, result, url)
       if (nextOptions && nextURL) {
-        return await this.request(nextURL, nextOptions)
+        return await this.#request(nextURL, nextOptions)
       }
       return result
     }

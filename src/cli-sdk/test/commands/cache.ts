@@ -27,6 +27,7 @@ import type { Test } from 'tap'
 import t from 'tap'
 import { Header } from 'tar'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import { drainer } from '../fixtures/drainer.ts'
 
 const logged: unknown[][] = []
 const stdout = (...a: unknown[]) => logged.push(a)
@@ -242,6 +243,7 @@ const createCache = (t: Test) => {
 }
 
 t.test('delete', async t => {
+  const track = drainer(t)
   const dir = createCache(t)
   const { command, CacheView } = await mockCommand(t)
   new CacheView({}, {} as unknown as LoadedConfig)
@@ -250,7 +252,7 @@ t.test('delete', async t => {
     cache: dir,
   }
   Object.assign(options, {
-    packageInfo: new PackageInfoClient(options),
+    packageInfo: track(new PackageInfoClient(options)),
   })
 
   await t.rejects(
@@ -279,6 +281,7 @@ t.test('delete', async t => {
 })
 
 t.test('delete removes the global store entry', async t => {
+  const track = drainer(t)
   const dir = createCache(t)
   const store = resolve(dir, 'store/v1')
   mkdirSync(resolve(store, hashHex), { recursive: true })
@@ -288,7 +291,7 @@ t.test('delete removes the global store entry', async t => {
   const { command } = await mockCommand(t)
   const options = { cache: dir }
   Object.assign(options, {
-    packageInfo: new PackageInfoClient(options),
+    packageInfo: track(new PackageInfoClient(options)),
   })
   await command({
     positionals: ['delete', tgzkey],
@@ -302,6 +305,7 @@ t.test('delete removes the global store entry', async t => {
 })
 
 t.test('delete-before', async t => {
+  const track = drainer(t)
   const dir = createCache(t)
   const { command, CacheView } = await mockCommand(t)
   new CacheView({}, {} as unknown as LoadedConfig)
@@ -317,7 +321,7 @@ t.test('delete-before', async t => {
   utimesSync(resolve(storeRoot, `${oldHex}.json`), 1000, 1000)
   const options = { cache: dir, storeRoot }
   Object.assign(options, {
-    packageInfo: new PackageInfoClient(options),
+    packageInfo: track(new PackageInfoClient(options)),
   })
 
   await t.rejects(
@@ -366,12 +370,13 @@ t.test('delete-before', async t => {
 })
 
 t.test('clean', async t => {
+  const track = drainer(t)
   const dir = createCache(t)
   const { command } = await mockCommand(t)
 
   const options = { cache: dir }
   Object.assign(options, {
-    packageInfo: new PackageInfoClient(options),
+    packageInfo: track(new PackageInfoClient(options)),
   })
 
   await command({
@@ -402,11 +407,12 @@ t.test('clean', async t => {
 })
 
 t.test('ls', async t => {
+  const track = drainer(t)
   const dir = createCache(t)
   const { command, CacheView } = await mockCommand(t)
   const options = { cache: dir }
   Object.assign(options, {
-    packageInfo: new PackageInfoClient(options),
+    packageInfo: track(new PackageInfoClient(options)),
   })
 
   const conf = {
@@ -456,12 +462,13 @@ t.test('human view coverage bits', async t => {
 
 t.test('info', async t => {
   const { command } = await mockCommand(t)
+  const track = drainer(t)
   const dir = createCache(t)
   const options = {
     cache: dir,
   }
   Object.assign(options, {
-    packageInfo: new PackageInfoClient(options),
+    packageInfo: track(new PackageInfoClient(options)),
   })
 
   await t.rejects(

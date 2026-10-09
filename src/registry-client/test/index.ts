@@ -439,11 +439,11 @@ t.beforeEach(t => {
   dropConnection = true
   tokensActions.length = 0
   // create a registry client for each test based on its testdir, and
-  // flush its background cache writes before tap removes that dir. tap
-  // runs EOF hooks in registration order, so the flush has to be hooked
+  // drain its requests and cache writes before tap removes that dir. tap
+  // runs EOF hooks in registration order, so the drain has to be hooked
   // before t.testdir() hooks the cleanup: an afterEach, or a teardown
   // hooked after it, only runs once the dir is already gone
-  t.teardown(() => (t.context.rc as RegistryClient).cache.promise())
+  t.teardown(() => (t.context.rc as RegistryClient).drain())
   t.context.rc = new RC({ cache: t.testdir() })
 })
 
@@ -496,6 +496,38 @@ t.test('make a request', { saveFixture: true }, async t => {
   const hit = await rc.request(`${registryURL}/abbrev`)
   t.strictSame(hit, res2)
 })
+
+t.test(
+  'drain settles in-flight requests and their cache writes',
+  async t => {
+    const rc = t.context.rc as RegistryClient
+    const urlA = `${registryURL}/abbrev`
+    const urlB = `${registryURL}/plain/tarball`
+    const file = (url: string) =>
+      rc.cache.path(cacheKey('GET', new URL(url)))
+    let second: Promise<CacheEntry> | undefined
+    // B starts while drain() waits on A
+    void rc.request(urlA).then(() => {
+      second = rc.request(urlB)
+    })
+    await rc.cache.promise()
+    t.equal(
+      existsSync(file(urlA)),
+      false,
+      'cache.promise() misses it',
+    )
+    await rc.drain()
+    t.equal(existsSync(file(urlA)), true)
+    t.equal(existsSync(file(urlB)), true)
+    t.ok(second)
+    await second
+
+    // a rejected request settles too
+    const p = rc.request(urlA, { signal: AbortSignal.abort() })
+    await rc.drain()
+    await t.rejects(p)
+  },
+)
 
 t.test('register unzipping for gzip responses', async t => {
   const rc = t.context.rc as RegistryClient
@@ -647,6 +679,28 @@ t.test('an identity-encoded body is checked too', async t => {
   })
   t.equal(found?.path, rc.cache.integrityPath(actual))
   t.equal(found?.integrity, actual, 'stored under its hash')
+})
+
+t.test('a request error keeps its async callers', async t => {
+  const rc = t.context.rc as RegistryClient
+  // thrown inside #request() after it awaited the response, so the
+  // frames above it are all async ones. redirect hops must not use up
+  // the default 10-frame limit before the caller is reached
+  async function callerOfRequest(path: string) {
+    return await rc.request(`${registryURL}${path}`, {
+      integrity: wrong,
+    })
+  }
+  for (const path of ['/plain/tarball', '/301-redirect1']) {
+    await t.rejects(
+      callerOfRequest(path),
+      {
+        cause: { code: 'EINTEGRITY' },
+        stack: /\bat async callerOfRequest\b/,
+      },
+      path,
+    )
+  }
 })
 
 t.test('an error body is not held to the expectation', async t => {
