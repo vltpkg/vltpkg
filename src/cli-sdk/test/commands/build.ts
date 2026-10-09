@@ -117,6 +117,49 @@ t.test('views', async t => {
     const output = Command.views.human(emptyResult)
     t.matchSnapshot(output, 'should show no packages message')
   })
+
+  t.test('skipped on security timeout', async t => {
+    const node = (name: string) =>
+      ({
+        id: `··${name}@1.0.0`,
+        name,
+        version: '1.0.0',
+      }) as unknown as Node
+    t.equal(
+      Command.views.human({
+        success: [],
+        failure: [],
+        skipped: [node('a'), node('b')],
+      }),
+      '⏳ 2 packages not built, security data timed out. Run "vlt build" again later.',
+      'should not claim all built',
+    )
+    t.equal(
+      Command.views.human({
+        success: [node('a')],
+        failure: [],
+        skipped: [node('b')],
+      }),
+      '🔨 Built 1 package successfully.\n' +
+        '⏳ 1 package not built, security data timed out. Run "vlt build" again later.',
+      'should list built and skipped',
+    )
+    t.strictSame(
+      Command.views.json({
+        success: [],
+        failure: [],
+        skipped: [node('a')],
+      }),
+      {
+        success: [],
+        failure: [],
+        skipped: [{ id: '··a@1.0.0', name: 'a', version: '1.0.0' }],
+        message:
+          '1 package not built, security data timed out. Run "vlt build" again later.',
+      },
+      'should list skipped in json',
+    )
+  })
 })
 
 t.test('command execution', async t => {

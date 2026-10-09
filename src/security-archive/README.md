@@ -44,7 +44,8 @@ if (archive.ok) {
 - `path`: sqlite db location. Defaults to the vlt XDG cache dir.
 - `retries`: retry attempts on failed API requests. Defaults to `3`.
 - `timeout`: max ms to wait for the API, retries included. Defaults to
-  `VLT_SECURITY_ARCHIVE_TIMEOUT` env or `30000`. On timeout a warning
-  is printed, missing packages stay unscanned, `ok` is `false`,
-  `timedOut` is `true` and nothing is cached.
-- `ttl`: ms to cache entries for. Defaults to 3 hours.
+  `VLT_SECURITY_ARCHIVE_TIMEOUT` env or `30000`. Must be a positive
+  integer, other values are ignored. On timeout a warning is printed,
+  missing packages stay unscanned, `ok` is `false`, `timedOut` is
+  `true` and nothing is cached.
+- `ttl`: ms to cache newly fetched entries for. Defaults to 3 hours.

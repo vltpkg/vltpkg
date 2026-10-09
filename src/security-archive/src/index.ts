@@ -79,8 +79,9 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
   /**
    * Max ms to wait for the remote security API, incl. retries.
    * Defaults to `VLT_SECURITY_ARCHIVE_TIMEOUT` env or
-   * {@link SecurityArchive.defaultTimeout}. On timeout, missing
-   * packages are left unscanned and a warning is printed.
+   * {@link SecurityArchive.defaultTimeout}. Positive integers only,
+   * other values are ignored. On timeout, missing packages are left
+   * unscanned and a warning is printed.
    */
   timeout?: number
 }

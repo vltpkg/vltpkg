@@ -285,14 +285,14 @@ cached locally. Results are cached for 3 hours; stale data is used
 while it refreshes in the background.
 
 Requests to Socket time out after 30 seconds, retries included. Set
-`VLT_SECURITY_ARCHIVE_TIMEOUT=<ms>` to wait longer. On timeout vlt
-prints a warning and continues, treating the affected packages as
-unscanned: `:scanned` excludes them and security selectors such as
-`:malware` don't match them, but `:not(:malware)` does. In `vlt ls`
-and `vlt query`, combine with `:scanned`, e.g.
-`:scanned:not(:malware)`. `vlt build` and `--allow-scripts` skip
-scripts of packages whose security data timed out; run `vlt build`
-later to build them.
+`VLT_SECURITY_ARCHIVE_TIMEOUT=<ms>` (a positive integer, other values
+are ignored) to wait longer. On timeout vlt prints a warning and
+continues, treating the affected packages as unscanned: `:scanned`
+excludes them and security selectors such as `:malware` don't match
+them, but `:not(:malware)` does. In `vlt ls` and `vlt query`, combine
+with `:scanned`, e.g. `:scanned:not(:malware)`. `vlt build` and
+`--allow-scripts` skip scripts of packages whose security data timed
+out and report them as not built; run `vlt build` later to build them.
 
 Packages are eligible when their origin is the public npm registry
 (`https://registry.npmjs.org/`) or whatever URL is configured as

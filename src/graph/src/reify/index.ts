@@ -30,10 +30,8 @@ import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
 import { Query } from '@vltpkg/query'
-import {
-  SecurityArchive,
-  usesNpmRegistry,
-} from '@vltpkg/security-archive'
+import { SecurityArchive } from '@vltpkg/security-archive'
+import { usesNpmRegistry } from '@vltpkg/security-archive/browser'
 import type { NodeLike } from '@vltpkg/types'
 import { binChmodAll } from './bin-chmod.ts'
 

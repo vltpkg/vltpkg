@@ -1284,7 +1284,6 @@ t.test('allowScripts with query selector :scripts', async t => {
 })
 
 t.test('allowScripts fails closed on security timeout', async t => {
-  const realArchive = await import('@vltpkg/security-archive')
   // reify w/ a timed out archive, returns the script-allowed set
   const run = async (t: Test, scanned?: string) => {
     const dir = t.testdir({
@@ -1328,7 +1327,6 @@ t.test('allowScripts fails closed on security timeout', async t => {
         },
       },
       '@vltpkg/security-archive': {
-        ...realArchive,
         SecurityArchive: {
           start: async () => ({
             timedOut: true,
