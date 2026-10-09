@@ -121,6 +121,14 @@ environment variable:
   lang="ini"
 />
 
+That form works for npm — an unset variable is sent as the literal
+string, so a missing secret fails like a bad token. **pnpm ignores
+`${...}` in a project `.npmrc`**; see
+[pnpm in CI](/registry/publishing/ci#pnpm-needs-a-different-approach).
+Never commit a literal token, or have CI write one into the project
+`.npmrc`. For which tool reads what, Vercel and agent sandboxes, see
+[CI & automation](/registry/publishing/ci#who-reads-what).
+
 ## Removing credentials
 
 - `vlt logout --registry=...` removes the token from your keychain,

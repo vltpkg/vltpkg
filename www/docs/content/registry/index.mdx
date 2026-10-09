@@ -7,8 +7,19 @@ sidebar:
 
 ## Sign Up
 
-To publish packages to the vlt registry, you first have to
-[sign up](https://www.vlt.io/sign-up).
+You need a vlt.io account to publish, and also to **install** through
+your account's `npm` mirror: the mirror requires a token, even for
+public npm packages.
+
+For a team, invite each developer
+([Members & Access Control](/registry/access#inviting-members)); each
+one logs in (or creates a personal token). Give CI and shared
+environments (Vercel, coding-agent sandboxes) a service token with
+only `package:read` (plus `package:write` if CI publishes), created by
+an owner or admin — see
+[Authentication & Tokens](/registry/tokens#personal-and-service-tokens).
+
+[Sign up](https://www.vlt.io/sign-up):
 
 <Steps>
 
@@ -123,7 +134,8 @@ Alternatively, configure a project manually:
    current project:
 
    ```bash
-   vlt config set registry=https://registry.vlt.io/acme/npm/
+   vlt config set registry=https://registry.vlt.io/acme/npm/ \
+     registries.npm=https://registry.vlt.io/acme/npm/
    ```
 
    Then log in to obtain an authentication token:
@@ -162,11 +174,10 @@ Alternatively, configure a project manually:
    npm login --registry=https://registry.vlt.io/acme/npm/
    ```
 
-   Then to switch all your dependencies to the vlt.io mirror, delete
-   your `package-lock.json` and `node_modules` folder and reinstall:
+   Keep your `package-lock.json`: npm fetches its `registry.npmjs.org`
+   entries from the mirror. Run a normal install:
 
    ```bash
-   rm -rf package-lock.json node_modules
    npm install
    ```
 
@@ -212,11 +223,15 @@ Alternatively, configure a project manually:
    pnpm login
    ```
 
-   Then to switch all your dependencies to the vlt.io mirror, delete
-   your `pnpm-lock.yaml` and `node_modules` folder and reinstall:
+   `pnpm login` keeps the token out of the repo. In CI, don't put
+   `${VLT_TOKEN}` in the project `.npmrc` — pnpm 11.5.3+ ignores it.
+   See
+   [pnpm in CI](/registry/publishing/ci#pnpm-needs-a-different-approach).
+
+   Keep your `pnpm-lock.yaml`: it stores no tarball URLs, so a normal
+   install fetches everything from the mirror:
 
    ```bash
-   rm -rf pnpm-lock.yaml node_modules
    pnpm install
    ```
 
@@ -320,6 +335,9 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
    export VLT_TOKEN=<your token>
    ```
 
+   `VLT_TOKEN` is just a name: bun doesn't read it by itself, only
+   through the `$VLT_TOKEN` reference in `bunfig.toml` below.
+
 2. **Set up the vlt.io npm mirror**
 
    Create (or edit) `bunfig.toml` in your project root and point the
@@ -389,6 +407,9 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
    echo "VLT_TOKEN=<your token>" >> .env
    ```
 
+   `VLT_TOKEN` is just a name: deno uses it only through the
+   `${VLT_TOKEN}` lines in `.npmrc`.
+
    Then to switch all your dependencies to the vlt.io mirror, delete
    your `deno.lock` and `node_modules` folder and reinstall, passing
    `--env-file` so the token in `.env` is loaded:
@@ -428,3 +449,11 @@ These instructions are for yarn 2+ ("Berry"), the version you get from
 </TabItem>
 
 </Tabs>
+
+## CI and hosted environments
+
+Only the vlt CLI reads `VLT_TOKEN` / `VLT_TOKEN_*` itself (see
+[Authentication](/client/auth#ci-and-other-headless-environments)).
+Other package managers need an auth line in their own config, and
+Vercel builds use `NPM_RC`. For CI, Vercel and coding-agent sandboxes,
+see [CI & automation](/registry/publishing/ci#who-reads-what).
