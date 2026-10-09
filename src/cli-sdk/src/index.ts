@@ -98,7 +98,7 @@ const run = async () => {
     ![...(monorepo?.values() ?? [])].length
   ) {
     stderr(
-      `Error: No matching workspaces found. Make sure the vlt.json config, or the "workspaces" field of the root package.json, contains the correct workspaces.`,
+      `Error: No matching workspaces found. Make sure the vlt.json config, the "workspaces" field of the root package.json, or the "packages" list of pnpm-workspace.yaml contains the correct workspaces.`,
     )
     if (vlt.get('workspace')) {
       stderr(indent(`Workspace: ${format(vlt.get('workspace'))}`))

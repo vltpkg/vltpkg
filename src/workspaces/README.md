@@ -92,8 +92,12 @@ Note the precedence is keyed on the _field_, not the file: a
 `vlt.json` that exists but says nothing about workspaces still falls
 through to `package.json`. The two are never merged.
 
-In either file, a pattern beginning with `!` excludes the paths it
-matches, following npm's semantics: `!a/b` excludes only that
+If neither declares workspaces, the `packages` list of a root
+`pnpm-workspace.yaml` is used (plain string lists only; other keys and
+unsupported YAML are ignored).
+
+In any of these files, a pattern beginning with `!` excludes the paths
+it matches, following npm's semantics: `!a/b` excludes only that
 directory, `!a/b/**` excludes the subtree, and a later positive
 pattern overrides an earlier exclusion.
 
