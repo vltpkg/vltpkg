@@ -85,27 +85,26 @@ Provide a token through the environment rather than a config file. The
 portable form is `VLT_TOKEN` alongside `VLT_REGISTRY`:
 
 <Code
-  code={`VLT_REGISTRY=https://registry.vlt.io/acme/main/ \
+  code={`VLT_REGISTRY=https://registry.vlt.io/acme/main/ \\
 VLT_TOKEN="<service token>" vlt install`}
   title="Terminal"
   lang="bash"
 />
 
-Per-registry `VLT_TOKEN_*` variables, named after the registry URL
-with non-alphanumeric characters replaced by `_`, also work:
+To authenticate more than one registry, set a per-registry
+`VLT_TOKEN_*` variable for each configured registry, named after its
+URL with the trailing `/` dropped and each run of non-alphanumeric
+characters replaced by `_`:
 
 <Code
-  code={`VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" vlt install`}
+  code={`VLT_TOKEN_https_registry_vlt_io_acme_npm="<service token>" \\
+VLT_TOKEN_https_registry_vlt_io_acme_main="<service token>" \\
+vlt install`}
   title="Terminal"
   lang="bash"
 />
 
-<Aside type="caution">
-  The per-registry variables do **not** apply to registries configured
-  through `scoped-registries` — vlt sends no credentials to a scoped
-  registry on their strength alone. If you use `scoped-registries`,
-  set `VLT_TOKEN` and `VLT_REGISTRY` instead.
-</Aside>
+This applies to `registries` and `scoped-registries` alike.
 
 See
 [Authentication — CI](/client/auth#ci-and-other-headless-environments)
@@ -121,6 +120,14 @@ environment variable:
   title=".npmrc"
   lang="ini"
 />
+
+That form works for npm — an unset variable is sent as the literal
+string, so a missing secret fails like a bad token. **pnpm ignores
+`${...}` in a project `.npmrc`**; see
+[pnpm in CI](/registry/publishing/ci#pnpm-needs-a-different-approach).
+Never commit a literal token, or have CI write one into the project
+`.npmrc`. For which tool reads what, Vercel and agent sandboxes, see
+[CI & automation](/registry/publishing/ci#who-reads-what).
 
 ## Removing credentials
 

@@ -1,6 +1,7 @@
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { readFileSync, rmSync, statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
+import * as path from 'node:path'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { cmdShim, cmdShimIfExists } from '../src/index.ts'
@@ -165,4 +166,27 @@ t.test('shebang with env -S', async t => {
   t.matchSnapshot(readFileSync(to, 'utf8'), 'shell')
   t.matchSnapshot(readFileSync(to + '.cmd', 'utf8'), 'cmd')
   t.matchSnapshot(readFileSync(to + '.ps1', 'utf8'), 'cmd')
+})
+
+t.test('target on another drive', async t => {
+  for (const name of ['from.env', 'from.exe']) {
+    const abs = resolve(fixtures, name)
+    const { cmdShim } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      'node:path': { ...path, relative: () => abs },
+    })
+    const to = resolve(fixtures, `xdrive-${name}.shim`)
+    await cmdShim(abs, to, remover)
+    const sh = abs.replace(/\\/g, '/')
+    const cmd = abs.replace(/\//g, '\\')
+    for (const f of [to, to + '.ps1']) {
+      const c = readFileSync(f, 'utf8')
+      t.ok(c.includes(`"${sh}"`), f)
+      t.notOk(c.includes(`$basedir/${sh}`), f)
+    }
+    const c = readFileSync(to + '.cmd', 'utf8')
+    t.ok(c.includes(`"${cmd}"`), 'cmd')
+    t.notOk(c.includes(`%dp0%\\${cmd}`), 'cmd')
+  }
 })

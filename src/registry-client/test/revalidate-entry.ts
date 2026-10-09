@@ -55,6 +55,7 @@ t.test('missing cache file is a no-op', async t => {
     hits++
     res.end('nope')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   await revalidateEntry(rc, 'GET', `${url}/pkg`)
   t.equal(hits, 0)
@@ -67,6 +68,7 @@ t.test('re-requests the representation it was given', async t => {
     res.statusCode = 304
     res.end()
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   await seed(rc, 'GET', target, jsonEntry({ etag: '"abc"' }))
@@ -82,6 +84,7 @@ t.test('truncated cache file is a no-op', async t => {
     hits++
     res.end('nope')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const key = cacheKey('GET', target)
@@ -97,6 +100,7 @@ t.test('declared head shorter than 7 is a no-op', async t => {
     hits++
     res.end('nope')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const key = cacheKey('GET', target)
@@ -114,6 +118,7 @@ t.test('incomplete head read is a no-op', async t => {
     hits++
     res.end('nope')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const key = cacheKey('GET', target)
@@ -131,6 +136,7 @@ t.test('status 0 head is a no-op', async t => {
     hits++
     res.end('nope')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const key = cacheKey('GET', target)
@@ -153,6 +159,7 @@ t.test('304 patches the head in place', async t => {
     res.setHeader('date', newDate)
     res.end()
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString()
@@ -193,6 +200,7 @@ t.test(
       res.setHeader('date', newDate)
       res.end()
     })
+    t.teardown(() => rc.drain())
     const rc = new RegistryClient({ cache: t.testdir() })
     const target = `${url}/pkg`
     const entry = jsonEntry({
@@ -222,6 +230,7 @@ t.test('304 fallback no-ops if full decode fails', async t => {
     res.setHeader('date', new Date().toUTCString())
     res.end()
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const entry = new CacheEntry(
@@ -256,6 +265,7 @@ t.test('200 stores the new unzipped body', async t => {
     res.setHeader('date', new Date().toUTCString())
     res.end(gz)
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   await seed(
@@ -281,6 +291,7 @@ t.test('HEAD 200 leaves the entry untouched', async t => {
     res.statusCode = 200
     res.end('ignored')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const entry = jsonEntry({
@@ -299,6 +310,7 @@ t.test('non-2xx/304 leaves the entry untouched', async t => {
     res.statusCode = 500
     res.end('err')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   await seed(
@@ -331,6 +343,7 @@ t.test('3xx delegates to RegistryClient.request', async t => {
     res.setHeader('date', new Date().toUTCString())
     res.end('{"redirected":true}')
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   await seed(
@@ -358,6 +371,7 @@ t.test('412 patches like 304', async t => {
     res.setHeader('date', newDate)
     res.end()
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString()
@@ -381,6 +395,7 @@ t.test('200 identity body without content-length', async t => {
     res.write('{"n":1}')
     res.end()
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   await seed(
@@ -405,6 +420,7 @@ t.test('200 unzip failure leaves the entry', async t => {
     res.setHeader('content-encoding', 'gzip')
     res.end(Buffer.from([0x1f, 0x8b, 0xff, 0xff]))
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   await seed(
@@ -423,6 +439,7 @@ t.test('200 unzip failure leaves the entry', async t => {
 })
 
 t.test('network errors are swallowed', async t => {
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = 'http://127.0.0.1:1/pkg'
   await seed(rc, 'GET', target, jsonEntry({ etag: '"abc"' }))
@@ -435,6 +452,7 @@ t.test('304 without date header uses now', async t => {
     res.statusCode = 304
     res.end()
   })
+  t.teardown(() => rc.drain())
   const rc = new RegistryClient({ cache: t.testdir() })
   const target = `${url}/pkg`
   const oldDate = new Date('2020-01-01T00:00:00.000Z').toUTCString()

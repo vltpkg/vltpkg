@@ -1,5 +1,7 @@
 import t from 'tap'
+import { resolve } from 'node:path'
 import { getId } from '@vltpkg/dep-id'
+import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { Manifest, Packument, NodeLike } from '@vltpkg/types'
@@ -71,13 +73,19 @@ let securityStartCalled = false
 let lastSecurityNodes: unknown[] = []
 let mockSecurityResult: PackageReportData | undefined
 let mockSecurityShouldThrow = false
+let lastSpec: Spec | undefined
+let picCalls = 0
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/view.ts')
 >('../../src/commands/view.ts', {
   '@vltpkg/package-info': {
     PackageInfoClient: class {
-      async packument() {
+      constructor() {
+        picCalls++
+      }
+      async packument(spec: Spec) {
+        lastSpec = spec
         if (!mockPackumentResult) {
           throw new Error('No packument found')
         }
@@ -114,6 +122,8 @@ t.beforeEach(() => {
   lastSecurityNodes = []
   mockSecurityResult = undefined
   mockSecurityShouldThrow = false
+  lastSpec = undefined
+  picCalls = 0
 })
 
 const makeConfig = (
@@ -279,13 +289,6 @@ t.test('views', async t => {
 })
 
 t.test('command', async t => {
-  t.test('requires package spec', async t => {
-    const config = makeConfig([])
-    await t.rejects(Command.command(config), {
-      message: 'view requires a package spec argument',
-    })
-  })
-
   t.test('basic view - fetches packument and manifest', async t => {
     mockPackumentResult = mockPackument
     mockManifestResult = mockManifest
@@ -597,9 +600,10 @@ t.test('human formatting edge cases', async t => {
       manifest: { version: undefined } as unknown as Manifest,
     }
     const output = Command.views.human(result, {}, {} as LoadedConfig)
-    t.ok(
-      output.includes('from-packument@'),
-      'falls back to packument name',
+    t.equal(
+      output.split('\n')[0],
+      'from-packument',
+      'falls back to packument name, no version',
     )
   })
 
@@ -661,5 +665,160 @@ t.test('human formatting edge cases', async t => {
     const output = Command.views.human(result, {}, {} as LoadedConfig)
     t.ok(output.includes('1 optional'))
     t.ok(output.includes('1 peer'))
+  })
+})
+
+t.test('local package (.)', async t => {
+  const localConfig = (
+    positionals: string[],
+    pkg: Record<string, unknown> | null = {
+      name: 'test-pkg',
+      version: '1.0.0',
+    },
+  ) => {
+    const found: string[] = []
+    const config = makeConfig(positionals)
+    config.options.packageJson = {
+      find: (cwd: string) => {
+        found.push(cwd)
+        return pkg ? '/p/package.json' : undefined
+      },
+      read: () => pkg,
+    } as unknown as LoadedConfig['options']['packageJson']
+    return { config, found }
+  }
+
+  t.beforeEach(() => {
+    mockPackumentResult = mockPackument
+    mockManifestResult = mockManifest
+  })
+
+  t.test('no args views local pkg from registry', async t => {
+    const { config } = localConfig([])
+    const result = await Command.command(config)
+    t.equal(lastSpec?.name, 'test-pkg')
+    t.equal(lastSpec?.bareSpec, '')
+    t.equal(result.manifest, mockManifest)
+  })
+
+  t.test('. views local pkg from registry', async t => {
+    const { config, found } = localConfig(['.'])
+    const result = await Command.command(config)
+    t.strictSame(found, [process.cwd()])
+    t.equal(lastSpec?.name, 'test-pkg')
+    t.equal(lastSpec?.bareSpec, '')
+    t.equal(result.manifest, mockManifest)
+  })
+
+  t.test('.@<version>', async t => {
+    const { config } = localConfig(['.@1.0.0'])
+    await Command.command(config)
+    t.equal(lastSpec?.name, 'test-pkg')
+    t.equal(lastSpec?.bareSpec, '1.0.0')
+  })
+
+  t.test('name kept literal', async t => {
+    const { config } = localConfig(['.'], { name: 'npm:x' })
+    await Command.command(config)
+    t.equal(lastSpec?.name, 'npm:x')
+    t.equal(lastSpec?.bareSpec, '')
+  })
+
+  t.test('path spec skips local lookup', async t => {
+    const { config, found } = localConfig(['./sub'])
+    await Command.command(config)
+    t.strictSame(found, [])
+    t.equal(lastSpec?.type, 'file')
+  })
+
+  t.test('scoped .@<tag>', async t => {
+    const { config } = localConfig(['.@next'], {
+      name: '@scope/pkg',
+      version: '1.0.0',
+    })
+    await Command.command(config)
+    t.equal(lastSpec?.name, '@scope/pkg')
+    t.equal(lastSpec?.bareSpec, 'next')
+  })
+
+  t.test('. <field>', async t => {
+    const { config } = localConfig(['.', 'version'])
+    const result = await Command.command(config)
+    t.equal(result.fieldValue, '2.0.0')
+  })
+
+  t.test('no package.json', async t => {
+    const { config } = localConfig(['.'], null)
+    await t.rejects(Command.command(config), {
+      message: 'No local package.json found',
+      cause: { code: 'EUSAGE' },
+    })
+  })
+
+  t.test('no name', async t => {
+    const { config } = localConfig(['.'], { version: '1.0.0' })
+    await t.rejects(Command.command(config), {
+      message: 'No package name found in package.json',
+      cause: { code: 'EUSAGE', found: '/p/package.json' },
+    })
+  })
+
+  t.test('private shows local info, no fetch', async t => {
+    const pkg = { name: 'test-pkg', version: '1.0.0', private: true }
+    const { config } = localConfig(['.'], pkg)
+    const result = await Command.command(config)
+    t.equal(result.manifest, pkg)
+    t.strictSame(result.packument, {
+      name: 'test-pkg',
+      'dist-tags': {},
+      versions: {},
+    })
+    t.equal(result.security, undefined)
+    t.equal(securityStartCalled, false)
+    t.equal(picCalls, 0)
+    const output = Command.views.human(result, {}, {} as LoadedConfig)
+    t.equal(output.split('\n')[0], 'test-pkg@1.0.0')
+    t.notMatch(output, 'versions:')
+
+    const { config: fieldConfig } = localConfig(['.', 'version'], pkg)
+    t.equal((await Command.command(fieldConfig)).fieldValue, '1.0.0')
+  })
+
+  t.test('private without version', async t => {
+    const pkg = { name: 'test-pkg', private: true }
+    const { config } = localConfig(['.'], pkg)
+    const result = await Command.command(config)
+    t.strictSame(result.packument.versions, {})
+    const output = Command.views.human(result, {}, {} as LoadedConfig)
+    t.equal(output.split('\n')[0], 'test-pkg')
+  })
+
+  t.test('private .@<version>', async t => {
+    const { config } = localConfig(['.@1'], {
+      name: 'test-pkg',
+      private: true,
+    })
+    await t.rejects(Command.command(config), {
+      message: 'Cannot select a version of a private package',
+      cause: { code: 'EUSAGE', found: '.@1' },
+    })
+    t.equal(picCalls, 0)
+  })
+
+  t.test('walks up from cwd', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.2.3',
+        private: true,
+      }),
+      sub: {},
+    })
+    t.chdir(resolve(dir, 'sub'))
+    const config = makeConfig(['.'])
+    config.options.packageJson = new PackageJson()
+    const result = await Command.command(config)
+    t.equal(result.manifest.name, 'x')
+    t.equal(result.manifest.version, '1.2.3')
   })
 })

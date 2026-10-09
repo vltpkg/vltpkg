@@ -36,7 +36,9 @@ Lives in [`../../dss-query-workspace/`](../../dss-query-workspace/)
    `node skills/dss-query/evals/grade.mjs <iteration-dir>`) — no LLM:
    - extract selectors from the answer (`vlt query '…'` and bare
      code-block selectors);
-   - every selector must **parse** via `@vltpkg/dss-parser`;
+   - every selector must **parse** via `@vltpkg/dss-parser`, which
+     rejects unknown pseudo-classes/combinators/attribute operators,
+     bare words and empty or dangling selectors;
    - structural selectors must **execute** via `Query.search()`
      against the in-memory fixture graph
      (`src/query/test/fixtures/graph.ts`). Selectors using `:outdated`

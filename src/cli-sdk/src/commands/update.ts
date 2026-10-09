@@ -16,8 +16,19 @@ export const usage: CommandUsage = () =>
     command: 'update',
     usage: '',
     description: `Update dependencies to their latest in-range versions.
-                  Discards the lockfile and resolves dependencies from scratch.`,
+                  Discards the lockfile and resolves dependencies from scratch
+                  (with -w: only matching workspaces' dependencies).`,
     options: {
+      workspace: {
+        value: '<path|glob>',
+        description:
+          'Limit update to matching workspaces. Others, and deps they share, keep their locked versions.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description:
+          'Limit update to workspace groups. Others, and deps they share, keep their locked versions.',
+      },
       'save-config': {
         description:
           'Save registry and git host options given on the command line or via env (e.g. `--registries name=url`) to the project vlt.json, or the user vlt.json with --config=user.',

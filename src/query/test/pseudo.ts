@@ -1,6 +1,7 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { pseudo } from '../src/pseudo.ts'
+import { pseudoClassNames } from '@vltpkg/dss-parser'
+import { pseudo, pseudoSelectorNames } from '../src/pseudo.ts'
 import {
   getCycleGraph,
   getMissingManifestsGraph,
@@ -576,4 +577,8 @@ t.test('unexpected attr usage', async t => {
     /Failed to parse :attr selector/,
     'should throw a failure to parse error',
   )
+})
+
+t.test('pseudo-class names match dss-parser grammar', async t => {
+  t.strictSame(pseudoSelectorNames, new Set(pseudoClassNames))
 })

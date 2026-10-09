@@ -10,6 +10,7 @@ import type {
   PackageReportData,
   PackageAlert,
 } from '@vltpkg/security-archive'
+import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { ViewOptions, Views } from '../view.ts'
 
@@ -32,7 +33,11 @@ export const usage: CommandUsage = () =>
       (e.g., \`dist-tags.latest\`, \`dependencies.lodash\`).
 
       Security data from the vlt security archive is shown when
-      available, including scores and alerts.`,
+      available, including scores and alerts.
+
+      Use \`.\` (or no args) for the package in the current directory
+      (nearest package.json), \`.@<version>\` to pick a version.
+      Private packages show local package.json info.`,
     examples: {
       express: {
         description: 'View info about the latest version of express',
@@ -51,6 +56,13 @@ export const usage: CommandUsage = () =>
       },
       'express dist-tags.latest': {
         description: 'Show the latest dist-tag value',
+      },
+      '.': {
+        description: 'View the package in the current directory',
+      },
+      '. version': {
+        description:
+          'Show the latest published version of the current package',
       },
     },
     options: {
@@ -153,7 +165,7 @@ const formatHuman = (result: ViewResult): string => {
   // Name and version
   const name = manifest.name ?? packument.name
   const version = manifest.version ?? ''
-  lines.push(`${name}@${version}`)
+  lines.push(version ? `${name}@${version}` : name)
 
   // Description
   if (manifest.description) {
@@ -326,18 +338,35 @@ const lookupField = (result: ViewResult, path: string): unknown => {
   return dotProp.get(result.manifest, path)
 }
 
-export const command: CommandFn<ViewResult> = async conf => {
-  const specArg = conf.positionals[0]
-
-  if (!specArg) {
-    throw error('view requires a package spec argument', {
+const readLocalManifest = (conf: LoadedConfig) => {
+  const file = conf.options.packageJson.find(process.cwd())
+  if (!file) {
+    throw error('No local package.json found', {
       code: 'EUSAGE',
+      path: process.cwd(),
     })
   }
+  const manifest = conf.options.packageJson.read(file) as Manifest
+  const { name } = manifest
+  if (!name) {
+    throw error('No package name found in package.json', {
+      code: 'EUSAGE',
+      found: file,
+    })
+  }
+  return { name, manifest }
+}
 
-  const fieldPath = conf.positionals[1]
+// nothing published: no dist-tags or versions
+const localView = (name: string, manifest: Manifest): ViewResult => ({
+  manifest,
+  packument: { name, 'dist-tags': {}, versions: {} },
+})
 
-  const spec = Spec.parseArgs(specArg, conf.options)
+const fetchView = async (
+  spec: Spec,
+  conf: LoadedConfig,
+): Promise<ViewResult> => {
   const pic = new PackageInfoClient(conf.options)
 
   // Fetch the full packument (needs time, maintainers) and resolved manifest
@@ -364,10 +393,39 @@ export const command: CommandFn<ViewResult> = async conf => {
     }
   }
 
-  const result: ViewResult = {
-    packument,
-    manifest,
-    security,
+  return { packument, manifest, security }
+}
+
+export const command: CommandFn<ViewResult> = async conf => {
+  // `.` (or no args) is the package in the current directory
+  const specArg = conf.positionals[0] || '.'
+  const fieldPath = conf.positionals[1]
+
+  let result: ViewResult
+  if (specArg === '.' || specArg.startsWith('.@')) {
+    const { name, manifest } = readLocalManifest(conf)
+    const rest = specArg.slice(1)
+    if (manifest.private) {
+      // never query the registry for private pkgs
+      if (rest) {
+        throw error('Cannot select a version of a private package', {
+          code: 'EUSAGE',
+          found: specArg,
+        })
+      }
+      result = localView(name, manifest)
+    } else {
+      // keep name literal; rest is '' or '@<spec>'
+      result = await fetchView(
+        Spec.parse(name, rest.slice(1), conf.options),
+        conf,
+      )
+    }
+  } else {
+    result = await fetchView(
+      Spec.parseArgs(specArg, conf.options),
+      conf,
+    )
   }
 
   // If a field path is provided, resolve it

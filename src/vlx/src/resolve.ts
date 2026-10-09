@@ -6,6 +6,7 @@ import { findExecutable } from './find-executable.ts'
 import { findPackage } from './find-package.ts'
 import type { PromptFn, VlxInfo, VlxOptions } from './index.ts'
 import { vlxInstall } from './install.ts'
+import { localDir, vlxLocal } from './local.ts'
 
 /**
  * Figure out the `arg0` to use for an exec command.
@@ -30,7 +31,11 @@ export const vlxResolve = async (
       return undefined
     }
 
-    const found = await findExecutable(arg0, projectRoot)
+    // path-like args are never bin names
+    const found =
+      arg0 === '.' || arg0 === '..' || /[\\/]/.test(arg0) ?
+        undefined
+      : await findExecutable(arg0, projectRoot)
     // if found locally, then that's the bin, whatever the package is
     // since no package option was provided anyway.
     if (found) return found
@@ -41,18 +46,28 @@ export const vlxResolve = async (
   }
 
   let pkgTarget: undefined | VlxInfo = undefined
+  let dir: string | undefined
 
   if (pkgOption) {
-    // check for local option, otherwise install in data dir we can
-    // ONLY do the local option if the spec is a simple name. otherwise
-    // it's too complicated to know if it's a match, especially in this
-    // world of multiple registries and such, and it's easy enough to
-    // just install it externally.
-    const pkgSpec = Spec.parseArgs(pkgOption, options)
+    // check for local option, otherwise install in data dir. local is
+    // a simple name found in node_modules, or a local dir run in place.
+    // other specs are too complicated to know if it's a match, especially
+    // in this world of multiple registries and such, and it's easy enough
+    // to just install them externally.
+    const pkgSpec = Spec.parseArgs(
+      // bare . / .. are paths, not names
+      pkgOption === '.' || pkgOption === '..' ?
+        `${pkgOption}/`
+      : pkgOption,
+      options,
+    )
     const { name, bareSpec } = pkgSpec.final
     // if it's just a name, we can use the local version
     if (!bareSpec) {
       pkgTarget = await findPackage(name, projectRoot, packageJson)
+    } else {
+      dir = await localDir(pkgSpec)
+      if (dir) pkgTarget = await vlxLocal(dir, packageJson)
     }
     pkgTarget ??= await vlxInstall(pkgSpec, options, promptFn)
   }
@@ -83,7 +98,8 @@ export const vlxResolve = async (
     arg0 = pkgTarget.arg0
     if (!arg0) {
       const { name, version, bin } = packageJson.read(
-        resolve(pkgTarget.path, 'node_modules', pkgTarget.name),
+        dir ??
+          resolve(pkgTarget.path, 'node_modules', pkgTarget.name),
       )
       throw error('Package executable could not be inferred', {
         name,

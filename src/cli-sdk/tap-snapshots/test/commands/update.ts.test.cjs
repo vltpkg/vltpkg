@@ -15,13 +15,26 @@ Usage:
   vlt update
 
 Update dependencies to their latest in-range versions. Discards the lockfile and
-resolves dependencies from scratch.
+resolves dependencies from scratch (with -w: only matching workspaces'
+dependencies).
 
   Aliases
 
     ​u
 
   Options
+
+    workspace
+      Limit update to matching workspaces. Others, and deps they share, keep
+      their locked versions.
+
+      ​--workspace=<path|glob>
+
+    workspace-group
+      Limit update to workspace groups. Others, and deps they share, keep their
+      locked versions.
+
+      ​--workspace-group=<name>
 
     save-config
       Save registry and git host options given on the command line or via env

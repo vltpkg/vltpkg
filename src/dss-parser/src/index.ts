@@ -1,14 +1,23 @@
 import postcssSelectorParser from 'postcss-selector-parser'
-import type { Pseudo, Root } from 'postcss-selector-parser'
+import { syntaxError } from '@vltpkg/error-cause'
+import type { Pseudo, Root, Selector } from 'postcss-selector-parser'
+import {
+  attributeOperatorNames,
+  combinatorNames,
+  pseudoClassNames,
+} from './grammar.ts'
 import {
   asSelectorNode,
+  isAttributeNode,
   isCombinatorNode,
   isPseudoNode,
+  isStringNode,
   isTagNode,
 } from './types.ts'
 import type { PostcssNode } from './types.ts'
 
 export * from './types.ts'
+export * from './grammar.ts'
 
 /**
  * Escapes forward slashes in specific patterns matching @scoped/name paths
@@ -42,11 +51,107 @@ const pseudoCleanUpNeeded = new Set([
 const hasParamsToEscape = (node: Pseudo) =>
   pseudoCleanUpNeeded.has(node.value)
 
+const pseudoClasses = new Set<string>(pseudoClassNames)
+const combinators = new Set<string>(combinatorNames)
+const attributeOperators = new Set<string>(attributeOperatorNames)
+// pseudo-classes taking selector args, all others take strings
+const selectorPseudos = new Set(['has', 'is', 'not'])
+
+const invalid = (message: string, found: string) =>
+  syntaxError(message, { code: 'EQUERY', found })
+
 /**
- * Parses a CSS selector string into an AST
- * Handles escaping of forward slashes in specific patterns
+ * Checks a parsed selector against the DSS grammar.
+ * `forgiving`: inside `:is()`, only bare words / strings / empty
+ * `#` `[]` are rejected.
  */
-export const parse = (query: string): Root => {
+const validate = (
+  selector: Selector,
+  query: string,
+  forgiving = false,
+): void => {
+  const nodes = selector.nodes.filter(n => n.type !== 'comment')
+  if (!nodes.length && !forgiving) {
+    throw invalid('Empty selector', query)
+  }
+  nodes.forEach((node, i) => {
+    // `#` / `[]`: nothing to match
+    if (
+      (node.type === 'id' && !node.value) ||
+      (node.type === 'attribute' && !node.attribute)
+    ) {
+      throw invalid(
+        'Unsupported selector',
+        node.type === 'id' ? '#' : '[]',
+      )
+    }
+    if (isCombinatorNode(node)) {
+      if (forgiving) return
+      if (!combinators.has(node.value)) {
+        throw syntaxError(`Unsupported combinator: ${node.value}`, {
+          code: 'EQUERY',
+          found: node.value,
+          validOptions: combinatorNames,
+        })
+      }
+      const next = nodes[i + 1]
+      if (!next || isCombinatorNode(next)) {
+        throw invalid('Dangling combinator', query)
+      }
+    } else if (isPseudoNode(node)) {
+      const name = node.value.slice(1)
+      if (!pseudoClasses.has(name)) {
+        if (forgiving) return
+        throw invalid(
+          `Unsupported pseudo-class: ${node.value}`,
+          node.value,
+        )
+      }
+      if (selectorPseudos.has(name)) {
+        for (const n of node.nodes) {
+          validate(
+            asSelectorNode(n),
+            query,
+            forgiving || name === 'is',
+          )
+        }
+      }
+    } else if (isAttributeNode(node)) {
+      if (
+        !forgiving &&
+        node.operator &&
+        !attributeOperators.has(node.operator)
+      ) {
+        throw invalid(
+          `Unsupported attribute operator: ${node.operator}`,
+          node.operator,
+        )
+      }
+    } else if (
+      (isTagNode(node) && node.value !== '{' && node.value !== '}') ||
+      isStringNode(node)
+    ) {
+      // `{` / `}` tags are a noop in the query engine
+      throw invalid('Unsupported selector', node.value)
+    }
+  })
+}
+
+export type ParseOptions = {
+  /** skip DSS grammar checks, malformed syntax still throws */
+  loose?: boolean
+}
+
+/**
+ * Parses a DSS query string into an AST
+ * Handles escaping of forward slashes in specific patterns
+ * Throws an `EQUERY` SyntaxError on invalid DSS
+ */
+export const parse = (
+  query: string,
+  { loose = false }: ParseOptions = {},
+): Root => {
+  if (!loose && !query.trim()) throw invalid('Empty query', query)
   const escapedQuery = escapeDots(escapeScopedNamesSlashes(query))
   const transformAst = (root: Root) => {
     root.walk((node: PostcssNode) => {
@@ -62,6 +167,7 @@ export const parse = (query: string): Root => {
         for (const n of node.nodes) {
           // the parameters have a selector node that wraps them up
           const selector = asSelectorNode(n)
+          if (!selector.nodes.length) continue
           selector.nodes.forEach((currentNode, index, arr) => {
             // get the next node, we'll update it later
             const nextNode = arr[index + 1]
@@ -119,5 +225,27 @@ export const parse = (query: string): Root => {
       }
     })
   }
-  return postcssSelectorParser(transformAst).astSync(escapedQuery)
+  let ast: Root
+  try {
+    ast = postcssSelectorParser(transformAst).astSync(escapedQuery)
+  } catch (err) {
+    // postcss crashes with a TypeError when input ends after `(`
+    const reason =
+      err instanceof TypeError ?
+        'unexpected end of input'
+      : (err as Error).message
+    throw syntaxError(`Invalid query syntax: ${reason}`, {
+      code: 'EQUERY',
+      found: query,
+      cause: err,
+    })
+  }
+  if (!loose) {
+    // postcss silently drops a trailing top-level comma
+    if (/(^|[^\\])(\\\\)*,\s*$/.test(query)) {
+      throw invalid('Empty selector', query)
+    }
+    for (const s of ast.nodes) validate(s, query)
+  }
+  return ast
 }

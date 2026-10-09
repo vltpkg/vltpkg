@@ -2,6 +2,7 @@ import { asAttributeNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
 import { queryError } from './error.ts'
 import { removeDanglingEdges } from './pseudo/helpers.ts'
+import type { AttributeOperatorName } from '@vltpkg/dss-parser'
 import type { NodeLike, JSONField, Manifest } from '@vltpkg/types'
 import type { ParserState } from './types.ts'
 
@@ -135,7 +136,7 @@ export const filterAttributes = (
 }
 
 // ref: https://developer.mozilla.org/en-US/docs/Web/CSS/Attribute_selectors
-const attributeSelectors: Record<string, ComparatorFn> = {
+const attributeSelectors = {
   '=': (attr: string, value = '') => attr === value,
   '^=': (attr: string, value = '') => attr.startsWith(value),
   '$=': (attr: string, value = '') => attr.endsWith(value),
@@ -145,7 +146,7 @@ const attributeSelectors: Record<string, ComparatorFn> = {
   '|=': (attr: string, value = '') =>
     attr === value || attr.startsWith(`${value}-`),
   undefined: (attr: string) => !!attr,
-}
+} satisfies Record<AttributeOperatorName | 'undefined', ComparatorFn>
 export const attributeSelectorsMap = new Map<string, ComparatorFn>(
   Object.entries(attributeSelectors),
 )

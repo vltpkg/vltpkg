@@ -65,7 +65,7 @@ export const selectorFixture =
     scopeIDs ??= [joinDepIDTuple(['file', '.'])]
     let current: PostcssNode
     if (typeof query === 'string') {
-      const ast = parse(query)
+      const ast = parse(query, { loose: true })
       // if the testing function handles a fully parsed
       // css ast then just use that instead
       current =

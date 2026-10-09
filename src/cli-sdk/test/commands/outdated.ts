@@ -33,6 +33,7 @@ const specOptions = {
     custom: 'https://example.com/',
   },
   catalog: { cat: '^1.0.0' },
+  catalogs: { tools: { tool: '^1.0.0' } },
 } satisfies SpecOptions
 
 const manifest = (
@@ -100,6 +101,11 @@ const packuments: Record<string, Packument> = {
     manifest('cat', '1.0.0'),
     manifest('cat', '2.0.0'),
   ]),
+  // resolved through a named catalog
+  tool: packument('tool', [
+    manifest('tool', '1.0.0'),
+    manifest('tool', '2.0.0'),
+  ]),
   // a transitive dependency held back by its dependents
   lodash: packument('lodash', [
     manifest('lodash', '1.0.0'),
@@ -146,6 +152,7 @@ const mainManifest = {
     'foo-two': 'npm:foo@^1.0.0',
     baz: 'custom:baz@^1.0.0',
     cat: 'catalog:',
+    tool: 'catalog:tools',
     pre: '^2.0.0-beta.0',
     tagged: 'next',
     patchy: '^1.0.0',
@@ -162,6 +169,9 @@ const wsManifest = {
   version: '1.0.0',
   dependencies: {
     foo: '^1.0.0',
+    // the workspace shares both catalog entries with the root
+    cat: 'catalog:',
+    tool: 'catalog:tools',
   },
 }
 
@@ -265,6 +275,13 @@ place(
 place(
   mainImporter,
   'prod',
+  'tool',
+  'catalog:tools',
+  manifest('tool', '1.0.0'),
+)
+place(
+  mainImporter,
+  'prod',
   'pre',
   '^2.0.0-beta.0',
   manifest('pre', '2.0.0-beta.1'),
@@ -310,6 +327,14 @@ const wsNode = graph.nodes.get(
 )
 if (!wsNode) throw new Error('workspace node was not created')
 place(wsNode, 'prod', 'foo', '^1.0.0', manifest('foo', '1.0.0'))
+place(wsNode, 'prod', 'cat', 'catalog:', manifest('cat', '1.0.0'))
+place(
+  wsNode,
+  'prod',
+  'tool',
+  'catalog:tools',
+  manifest('tool', '1.0.0'),
+)
 
 const alert = (
   key: string,
@@ -458,6 +483,7 @@ t.test('reports outdated direct dependencies', async t => {
       ['foo-two', 'my-project'],
       ['baz', 'my-project'],
       ['cat', 'my-project'],
+      ['tool', 'my-project'],
       ['pre', 'my-project'],
       ['tagged', 'my-project'],
       ['patchy', 'my-project'],
@@ -465,6 +491,8 @@ t.test('reports outdated direct dependencies', async t => {
       ['gone', 'my-project'],
       ['pinned', 'my-project'],
       ['foo', 'a'],
+      ['cat', 'a'],
+      ['tool', 'a'],
     ],
     'only dependencies that are missing or behind are reported',
   )
@@ -483,6 +511,7 @@ t.test('reports outdated direct dependencies', async t => {
       'pre',
       'react',
       'tagged',
+      'tool',
       'unsat',
     ],
     'one packument per registry package, git specs are skipped',
@@ -537,6 +566,11 @@ t.test('reports outdated direct dependencies', async t => {
     spec: 'catalog:',
     kind: 'major',
     action: 'set the catalog entry for cat in vlt.json to ^2.0.0',
+  })
+  t.match(byName.tool, {
+    spec: 'catalog:tools',
+    action:
+      'set the "tools" catalog entry for tool in vlt.json to ^2.0.0',
   })
   t.match(byName.pre, { kind: 'prerelease', action: 'vlt update' })
   t.match(byName.tagged, {
@@ -595,6 +629,8 @@ t.test('reports outdated direct dependencies', async t => {
       id('pre', '2.0.0-beta.1'),
       id('tagged', '1.0.0'),
       id('tagged', '1.1.0'),
+      id('tool', '1.0.0'),
+      id('tool', '2.0.0'),
       id('unsat', '1.0.0'),
       id('unsat', '1.5.0'),
     ],
@@ -642,8 +678,12 @@ t.test('limits the report to selected workspaces', async t => {
   const result = await Command.command(
     makeConfig({ values: { workspace: ['packages/a'] } }),
   )
-  t.strictSame(names(result), [['foo', 'a']])
-  t.strictSame(requested, ['foo'])
+  t.strictSame(names(result), [
+    ['foo', 'a'],
+    ['cat', 'a'],
+    ['tool', 'a'],
+  ])
+  t.strictSame(requested, ['foo', 'cat', 'tool'])
 })
 
 t.test('checks whatever a --target query selects', async t => {
@@ -734,6 +774,10 @@ t.test('requires a vlt install', async t => {
   t.strictSame(requested, [], 'no packuments are requested')
 })
 
+// the suggested steps that follow the table in the human view
+const suggestedLines = (view: string) =>
+  view.split('\n\n')[1]?.split('\n') ?? []
+
 t.test('views', async t => {
   const entry = (
     overrides: Partial<OutdatedEntry>,
@@ -790,6 +834,29 @@ t.test('views', async t => {
   t.matchSnapshot(
     Command.views.human([]),
     'human view with nothing outdated',
+  )
+  const repeated: OutdatedResult = [
+    entry({
+      action: 'vlt install foo@^2.0.0 --workspace=packages/a',
+    }),
+    entry({
+      action: 'vlt install foo@^2.0.0 --workspace=packages/a',
+    }),
+    entry({
+      action: 'set the catalog entry for cat in vlt.json to ^2.0.0',
+    }),
+    entry({
+      action: 'set the catalog entry for cat in vlt.json to ^2.0.0',
+    }),
+  ]
+  t.strictSame(
+    suggestedLines(Command.views.human(repeated)),
+    [
+      'Run `vlt update` to pick up 4 in-range updates.',
+      'Run `vlt install foo@^2.0.0 --workspace=packages/a` to move to latest.',
+      'Set the catalog entry for cat in vlt.json to ^2.0.0.',
+    ],
+    'the same step is suggested once however many entries call for it',
   )
   t.equal(Command.views.count(full), full.length)
   t.equal(Command.views.json(full), full)

@@ -511,7 +511,7 @@ export class Query {
     }
 
     // parse the query string into AST
-    const current = parse(query)
+    const current = parse(query, { loose: true })
     // set loose mode for the entire parse in case there are multiple selectors
     // so that using invalid pseudo selectors or other query language parser
     // errors won't throw an error,
@@ -577,7 +577,7 @@ export class Query {
 
     const ast = (q: string) => {
       try {
-        return parse(q)
+        return parse(q, { loose: true })
       } catch (_e) {
         return ast(q.slice(0, -1))
       }
