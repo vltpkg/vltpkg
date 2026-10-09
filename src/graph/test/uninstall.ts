@@ -400,3 +400,96 @@ t.test('uninstall --workspace-group keeps other groups', t =>
     { groups: ['apps'] },
   ),
 )
+
+// modifiers must reach the build: a rebuild without them would fetch
+// the plain-range workspace deps from the registry
+const implicitWsUninstall = async (
+  t: Test,
+  lockfileOnly: boolean,
+) => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      workspaces: ['packages/*'],
+      dependencies: { '@ws/a': '^9.0.0' },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':project > :workspace': 'workspace:*' },
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: '@ws/a',
+          version: '1.0.0',
+          dependencies: { '@ws/b': '^2.0.0' },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: '@ws/b',
+          private: true,
+        }),
+      },
+    },
+  })
+  t.chdir(dir)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const noRegistry = () => {
+    throw new Error('unexpected registry fetch')
+  }
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: createMockPackageInfo({
+        manifest: noRegistry,
+        resolve: noRegistry,
+        extract: noRegistry,
+      }),
+      allowScripts: ':not(*)',
+      lockfileOnly,
+      ...extra,
+    }) as unknown as UninstallOptions
+  const { install } = await import('../src/install.ts')
+  const { uninstall } = await t.mockImport<
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class {
+        async rm(path: string) {
+          await rm(path, { recursive: true, force: true })
+        }
+        confirm() {}
+        async rollback() {}
+      },
+    },
+  })
+
+  await install(opts())
+  const remove = Object.assign(
+    new Map([[joinDepIDTuple(['file', '.']), new Set(['@ws/a'])]]),
+    { modifiedDependencies: true },
+  )
+  const { graph } = await uninstall(opts(), remove)
+  const a = [...graph.importers].find(i => i.name === '@ws/a')
+  const ab = a?.edgesOut.get('@ws/b')
+  t.equal(ab?.spec.bareSpec, 'workspace:*', 'modifier value kept')
+  t.equal(ab?.to?.name, '@ws/b', 'still linked')
+  t.notOk(graph.mainImporter.edgesOut.has('@ws/a'), 'removed')
+  await t.resolves(
+    install(opts({ frozenLockfile: true })),
+    'lockfile keeps the modifiers',
+  )
+}
+
+t.test('uninstall keeps implicit workspace links', t =>
+  implicitWsUninstall(t, false),
+)
+
+t.test(
+  'uninstall --lockfile-only keeps implicit workspace links',
+  t => implicitWsUninstall(t, true),
+)

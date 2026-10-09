@@ -418,6 +418,8 @@ t.test('GraphModifier', async t => {
           ':workspace > #ws-only': '1.0.0',
           ':root > #qualified:semver(^1.0.0)': '1.1.1',
           '#lone:v(^1.0.0)': '1.1.1',
+          ':root > #lodash': '4.1.0',
+          ':project > #proj': '1.0.0',
         },
       }),
     })
@@ -427,6 +429,8 @@ t.test('GraphModifier', async t => {
     const modifier = new GraphModifier({ ...mockSpecOptions })
     const root = { mainImporter: true, importer: true } as Node
     const ws = { mainImporter: false, importer: true } as Node
+    // a nested folder dep the user adds to, never an importer
+    const folder = { mainImporter: false, importer: false } as Node
     const spec = (name: string, bareSpec = '*') =>
       Spec.parse(name, bareSpec, mockSpecOptions)
     t.equal(
@@ -483,6 +487,36 @@ t.test('GraphModifier', async t => {
       modifier.targetsImporterEdge(root, spec('lone', 'github:a/b')),
       false,
       'a non-semver spec cannot satisfy a qualifier',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(ws, spec('proj')),
+      true,
+      ':project selects a workspace',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(folder, spec('proj')),
+      false,
+      ':project does not select a nested folder',
+    )
+    t.equal(
+      modifier.targetsImporterEdge(folder, spec('lodash')),
+      true,
+      'a lone selector matches a nested folder edge',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(root, spec('lodash'))?.query,
+      ':root > #lodash',
+      'the most specific modifier wins',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(ws, spec('lodash'))?.query,
+      '#lodash',
+      'the lone selector governs a workspace edge',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(root, spec('foo')),
+      undefined,
+      'no governing modifier',
     )
   })
 
@@ -1585,32 +1619,37 @@ t.test('trailing :workspace', async t => {
   })
 
   await t.test('expands once per graph and name', async t => {
-    const { modifier, root } = setup(t, {
+    const { modifier, graph, root } = setup(t, {
       ':project > :workspace': 'workspace:*',
     })
+    const addImporter = (g: typeof graph, name: string) => {
+      const ws = newNode(g)(name)
+      ws.id = joinDepIDTuple(['workspace', name])
+      ws.importer = true
+      g.nodes.set(ws.id, ws)
+      g.importers.add(ws)
+    }
+    // modifiers behind the active entries, i.e. the expanded ones
+    const expanded = () =>
+      new Set([...modifier.activeModifiers].map(e => e.modifier)).size
     modifier.tryImporter(root)
-    t.equal(modifier.activeModifiers.size, 3, 'a, b and c')
-    modifier.tryImporter(root)
+    t.equal(expanded(), 3, 'a, b and c')
+
+    addImporter(graph, 'y')
     t.equal(
-      modifier.activeModifiers.size,
-      6,
-      'same graph, no new names',
+      modifier.targetsImporterEdge(root, spec('y')),
+      false,
+      'importers are read once per graph',
     )
+    modifier.tryImporter(root)
+    t.equal(expanded(), 3, 'same graph, nothing new')
 
     const other = getMultiWorkspaceGraph()
-    const z = newNode(other)('z')
-    z.id = joinDepIDTuple(['workspace', 'z'])
-    z.importer = true
-    other.nodes.set(z.id, z)
-    other.importers.add(z)
+    addImporter(other, 'z')
     const otherRoot = other.mainImporter as Node
     t.equal(modifier.targetsImporterEdge(otherRoot, spec('z')), true)
     modifier.tryImporter(otherRoot)
-    t.equal(
-      modifier.activeModifiers.size,
-      10,
-      'only z is new, a, b and c not duplicated',
-    )
+    t.equal(expanded(), 4, 'only z is new')
   })
 
   await t.test('invalid selectors', async t => {

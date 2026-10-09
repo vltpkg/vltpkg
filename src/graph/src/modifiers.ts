@@ -108,9 +108,10 @@ const matchesImporter = (
   importer: Node,
 ): boolean =>
   item.importer &&
+  importer.importer &&
   (item.value === ':project' ||
-    (item.value === ':root' && importer.mainImporter) ||
-    (item.value === ':workspace' && importer.importer))
+    item.value === ':workspace' ||
+    (item.value === ':root' && importer.mainImporter))
 
 /**
  * Is this a trailing `:workspace` item right after a plain importer
@@ -164,7 +165,7 @@ const matchesQualifier = (
  * A trailing `:workspace` right after an importer selector, e.g.
  * `:project > :workspace`, is expanded into one `#<name>` entry per
  * named workspace of the graph, on its first `tryImporter` or
- * `targetsImporterEdge` call.
+ * `importerEdgeModifier` call.
  */
 export class GraphModifier {
   /** The loaded modifiers configuration */
@@ -232,20 +233,34 @@ export class GraphModifier {
    * root's own b edge is still the manifest's to validate and heal.
    */
   targetsImporterEdge(importer: Node, spec: Spec) {
+    return !!this.importerEdgeModifier(importer, spec)
+  }
+
+  /**
+   * The modifier governing the direct `importer -> spec.name` edge, see
+   * {@link GraphModifier.targetsImporterEdge}. The most specific one
+   * wins, same as during the graph build.
+   */
+  importerEdgeModifier(
+    importer: Node,
+    spec: Spec,
+  ): ModifierEntry | undefined {
     this.#expandWorkspaceTargets(importer)
-    for (const { breadcrumb } of this.#modifiers) {
-      const { last } = breadcrumb
+    const found: ModifierEntry[] = []
+    for (const mod of this.#modifiers) {
+      const { last } = mod.breadcrumb
       if (last.name !== spec.name) continue
       // a qualifier that rejects the spec means the modifier never
       // applies to this edge, so it stays the manifest's to validate
       if (!matchesQualifier(last, spec)) continue
       const { prev } = last
       // a lone `#b` matches an edge to b anywhere, importers included
-      if (!prev) return true
-      if (prev.prev) continue
-      if (matchesImporter(prev, importer)) return true
+      if (!prev || (!prev.prev && matchesImporter(prev, importer))) {
+        found.push(mod)
+      }
     }
-    return false
+    const [best] = specificitySort(found.map(m => m.breadcrumb))
+    return found.find(m => m.breadcrumb === best)
   }
 
   /**

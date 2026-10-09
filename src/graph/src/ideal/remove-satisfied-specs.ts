@@ -49,33 +49,38 @@ export const removeSatisfiedSpecs = ({
       const depIsCatalog = dependency.spec.type === 'catalog'
       if (edgeIsCatalog !== depIsCatalog) continue
 
-      const governed = !!modifiers?.targetsImporterEdge(
+      // a governed edge is checked against the modifier value (e.g.
+      // `workspace:*` to a versionless workspace), not its own spec: one
+      // built before the modifier applied must be rebuilt
+      const mod = modifiers?.importerEdgeModifier(
         importer,
         dependency.spec,
       )
       // If the current graph edge is already valid, then we remove that
-      // dependency item from the list of items to be added to the graph.
-      // governed edges carry the modifier value, check against that
-      // (e.g. `workspace:*` to a versionless workspace)
+      // dependency item from the list of items to be added to the graph
       if (
         satisfies(
           edge.to?.id,
-          governed ? edge.spec : dependency.spec,
+          mod?.type === 'edge' ? mod.spec : dependency.spec,
           edge.from.location,
           graph.projectRoot,
           graph.monorepo,
         )
       ) {
-        // a governed edge carries the modifier value by construction:
-        // healing it to the manifest text would only be undone by the
-        // rebuild that re-applies the override. `implicit` is not a real
-        // edge type, it means "keep what the edge already is", so it
-        // never makes an edge stale
-        if (
-          (edge.spec.bareSpec !== dependency.spec.bareSpec ||
-            (dependency.type !== 'implicit' &&
-              edge.type !== dependency.type)) &&
-          !governed
+        // `implicit` is not a real edge type, it means "keep what the
+        // edge already is", so it never makes an edge stale
+        const typeChanged =
+          dependency.type !== 'implicit' &&
+          edge.type !== dependency.type
+        if (mod) {
+          // keeps the modifier value, the rebuild would re-apply it
+          // anyway; only the type follows the manifest
+          if (typeChanged) {
+            staleSpecs.set(edge, { ...dependency, spec: edge.spec })
+          }
+        } else if (
+          edge.spec.bareSpec !== dependency.spec.bareSpec ||
+          typeChanged
         ) {
           staleSpecs.set(edge, dependency)
         }

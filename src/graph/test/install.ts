@@ -1,6 +1,7 @@
 import t from 'tap'
 import type { Test } from 'tap'
 import {
+  mkdirSync,
   readFileSync,
   statSync,
   utimesSync,
@@ -19,10 +20,11 @@ import type {
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
 import { unload } from '@vltpkg/vlt-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { workspaceCache } from '@vltpkg/workspaces'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -2643,7 +2645,158 @@ t.test('implicit workspace references', async t => {
     install(opts({ frozenLockfile: true }), emptyAdd()),
     'frozen install passes',
   )
+
+  // a governed dep moved to devDependencies heals its type only
+  writeFileSync(
+    resolve(projectRoot, 'packages/a/package.json'),
+    JSON.stringify({
+      name: '@ws/a',
+      version: '1.0.0',
+      dependencies: { '@ws/c': '*' },
+      devDependencies: { '@ws/b': '^2.0.0' },
+    }),
+  )
+  workspaceCache.clear()
+  const moved = await install(opts(), emptyAdd())
+  const ab = [...moved.graph.importers]
+    .find(i => i.name === '@ws/a')
+    ?.edgesOut.get('@ws/b')
+  t.equal(ab?.type, 'dev', 'type follows package.json')
+  t.equal(ab?.spec.bareSpec, 'workspace:*', 'modifier value kept')
+  t.match(read('vlt-lock.json'), 'dev workspace:* ')
 })
+
+// lockfile-only registry stub, unknown specs throw
+const stubRegistry = (versions: Record<string, string>) =>
+  ({
+    async manifest(spec: Spec) {
+      const version = versions[spec.bareSpec]
+      if (!version) throw new Error(`unexpected fetch: ${spec}`)
+      return { name: spec.name, version }
+    },
+    async extract(spec: Spec) {
+      return { resolved: '', spec }
+    },
+  }) as unknown as PackageInfoClient
+
+const stubSetup = async (
+  t: Test,
+  dir: Parameters<Test['testdir']>[0],
+  versions: Record<string, string>,
+) => {
+  const projectRoot = t.testdir(dir)
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: stubRegistry(versions),
+      allowScripts: ':not(*)',
+      lockfileOnly: true,
+      ...extra,
+    }) as unknown as InstallOptions
+  const write = (f: string, data: unknown) => {
+    mkdirSync(dirname(resolve(projectRoot, f)), { recursive: true })
+    writeFileSync(resolve(projectRoot, f), JSON.stringify(data))
+  }
+  const { install } = await import('../src/install.ts')
+  return { projectRoot, opts, write, install }
+}
+
+t.test('an edge that becomes governed is rebuilt', async t => {
+  const pj = (foo: string) => ({
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo },
+  })
+  const { projectRoot, opts, write, install } = await stubSetup(
+    t,
+    {
+      'package.json': JSON.stringify(pj('^2.0.0')),
+      'vlt.json': JSON.stringify({
+        modifiers: { ':root > #foo:v(^1)': '1.5.0' },
+      }),
+    },
+    { '^2.0.0': '2.0.0', '1.5.0': '1.5.0' },
+  )
+  const first = await install(opts(), emptyAdd())
+  t.equal(
+    first.graph.mainImporter.edgesOut.get('foo')?.to?.version,
+    '2.0.0',
+    'the qualifier rejects ^2',
+  )
+
+  write('package.json', pj('^1.0.0'))
+  const { graph } = await install(opts(), emptyAdd())
+  const edge = graph.mainImporter.edgesOut.get('foo')
+  t.equal(edge?.spec.bareSpec, '1.5.0', 'the modifier value')
+  t.equal(edge?.to?.version, '1.5.0', 'the modifier target')
+  t.match(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    'prod 1.5.0 ',
+  )
+  await t.resolves(
+    install(opts({ frozenLockfile: true }), emptyAdd()),
+    'frozen install passes',
+  )
+})
+
+// a workspace named after a registry dep shows up, w/ or w/o a range edit
+const newWsRelink = async (t: Test, range: string) => {
+  const pj = (bar: string) => ({
+    name: 'my-project',
+    version: '1.0.0',
+    workspaces: ['packages/*'],
+    dependencies: { bar },
+  })
+  const { opts, write, install } = await stubSetup(
+    t,
+    {
+      'package.json': JSON.stringify(pj('^2.0.0')),
+      'vlt.json': JSON.stringify({
+        modifiers: { ':project > :workspace': 'workspace:*' },
+      }),
+      packages: {},
+    },
+    { '^2.0.0': '2.0.0' },
+  )
+  const first = await install(opts(), emptyAdd())
+  t.equal(
+    first.graph.mainImporter.edgesOut.get('bar')?.to?.version,
+    '2.0.0',
+    'from the registry',
+  )
+
+  write('packages/bar/package.json', {
+    name: 'bar',
+    version: '0.1.0',
+  })
+  write('package.json', pj(range))
+  const { graph } = await install(opts(), emptyAdd())
+  const { mainImporter } = graph
+  const edge = mainImporter.edgesOut.get('bar')
+  t.equal(edge?.spec.bareSpec, 'workspace:*', 'the modifier value')
+  t.equal(
+    edge?.to,
+    [...graph.importers].find(i => i.name === 'bar'),
+    'linked to the workspace',
+  )
+  t.strictSame(
+    [...graph.edges].filter(e => e.from === mainImporter),
+    [...mainImporter.edgesOut.values()],
+    'graph edges match',
+  )
+}
+
+t.test('a registry dep relinks to a new workspace', t =>
+  newWsRelink(t, '^2.0.0'),
+)
+
+t.test('an edited registry dep relinks to a new workspace', t =>
+  newWsRelink(t, '^3.0.0'),
+)
 
 // a modifier that does not govern the root's own abbrev edge leaves the
 // frozen check owning it, so editing package.json alone must be caught
