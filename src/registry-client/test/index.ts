@@ -1,6 +1,7 @@
 import type { Cache } from '@vltpkg/cache'
 import { createServer } from 'http'
-import EventEmitter from 'node:events'
+import { spawn } from 'node:child_process'
+import EventEmitter, { getMaxListeners } from 'node:events'
 import {
   existsSync,
   linkSync,
@@ -9,6 +10,7 @@ import {
 } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { dirname, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import { createHash } from 'node:crypto'
@@ -528,6 +530,150 @@ t.test(
     await t.rejects(p)
   },
 )
+
+t.test('client signal', async t => {
+  // never answers, except /retry
+  const hang = createServer((req, res) => {
+    if (req.url === '/retry') {
+      res.writeHead(503, { 'retry-after': '30' }).end()
+    }
+  })
+  await new Promise<void>(r => hang.listen(0, '127.0.0.1', r))
+  t.teardown(() => {
+    hang.closeAllConnections()
+    hang.close()
+  })
+  const { port } = hang.address() as AddressInfo
+  const url = `http://127.0.0.1:${port}/hang`
+  const aborted = {
+    cause: { code: 'EREQUEST', cause: { name: 'AbortError' } },
+  }
+
+  t.test(
+    'aborts requests in flight',
+    { timeout: 10_000 },
+    async t => {
+      t.teardown(() => rc.drain())
+      const ac = new AbortController()
+      const rc = new RC({
+        cache: t.testdir(),
+        'fetch-retries': 0,
+        signal: ac.signal,
+      })
+      t.equal(getMaxListeners(ac.signal), 0, 'no listener cap')
+      hang.once('request', () => ac.abort())
+      await t.rejects(rc.request(url), aborted)
+      await t.rejects(
+        rc.request(url),
+        { name: 'AbortError' },
+        'nothing sent once aborted',
+      )
+    },
+  )
+
+  t.test(
+    'joined with the request signal',
+    { timeout: 10_000 },
+    async t => {
+      dropConnection = false
+      t.teardown(() => rc.drain())
+      const ac = new AbortController()
+      const rc = new RC({
+        cache: t.testdir(),
+        'fetch-retries': 0,
+        signal: ac.signal,
+      })
+      const own = new AbortController()
+      hang.once('request', () => own.abort())
+      await t.rejects(
+        rc.request(url, { signal: own.signal }),
+        aborted,
+      )
+      t.equal(ac.signal.aborted, false, 'client signal untouched')
+
+      const same = await rc.request(`${registryURL}/abbrev`, {
+        signal: ac.signal,
+      })
+      t.strictSame(same.json(), { hello: 'world' })
+
+      hang.once('request', () => ac.abort())
+      await t.rejects(
+        rc.request(url, { signal: new AbortController().signal }),
+        aborted,
+      )
+    },
+  )
+
+  t.test(
+    'aborts a Retry-After wait',
+    { timeout: 10_000 },
+    async t => {
+      t.teardown(() => rc.drain())
+      const ac = new AbortController()
+      const rc = new RC({ cache: t.testdir(), signal: ac.signal })
+      // once the 503 is sent
+      hang.once('request', () => setTimeout(() => ac.abort(), 100))
+      const start = Date.now()
+      await t.rejects(
+        rc.request(`http://127.0.0.1:${port}/retry`),
+        aborted,
+      )
+      t.ok(Date.now() - start < 5000, 'did not sit out Retry-After')
+    },
+  )
+
+  t.test('own EventEmitter signal is not joined', async t => {
+    t.teardown(() => rc.drain())
+    const rc = new RC({
+      cache: t.testdir(),
+      signal: new AbortController().signal,
+    })
+    const res = await rc.requestStream(`${registryURL}/abbrev`, {
+      signal: new EventEmitter(),
+    })
+    t.equal(res.statusCode, 200)
+    res.body.resume()
+  })
+
+  t.test('process exits once aborted', async t => {
+    const mod = pathToFileURL(
+      resolve(import.meta.dirname, '../src/index.ts'),
+    ).href
+    const code = `
+const { RegistryClient } = await import(${JSON.stringify(mod)})
+const ac = new AbortController()
+const rc = new RegistryClient({
+  cache: ${JSON.stringify(t.testdir())},
+  'fetch-retries': 0,
+  signal: ac.signal,
+})
+setTimeout(() => ac.abort(), 100)
+await rc.request(${JSON.stringify(url)}).catch(() => console.log('rejected'))
+`
+    const child = spawn(
+      process.execPath,
+      ['--input-type=module', '-e', code],
+      {
+        env: {
+          ...process.env,
+          NODE_OPTIONS: '--no-warnings --experimental-strip-types',
+        },
+        // a socket left open keeps it alive until this kills it
+        timeout: 20_000,
+      },
+    )
+    let out = ''
+    let err = ''
+    child.stdout.on('data', (c: Buffer) => (out += String(c)))
+    child.stderr.on('data', (c: Buffer) => (err += String(c)))
+    const [status, signal] = await new Promise<
+      [number | null, NodeJS.Signals | null]
+    >(r => child.on('close', (...a) => r(a)))
+    t.equal(signal, null, 'not killed')
+    t.equal(status, 0, err)
+    t.equal(out.trim(), 'rejected')
+  })
+})
 
 t.test('register unzipping for gzip responses', async t => {
   const rc = t.context.rc as RegistryClient
@@ -2690,6 +2836,17 @@ t.test('requestStream', async t => {
       await t.rejects(rc.requestStream(`${base}/boom`))
     },
   )
+
+  t.test('aborted by the client signal', async t => {
+    t.teardown(() => rc.drain())
+    const rc = new RC({
+      cache: t.testdir(),
+      signal: AbortSignal.abort(),
+    })
+    await t.rejects(rc.requestStream(`${base}/gzip`), {
+      name: 'AbortError',
+    })
+  })
 
   t.test('keeps the query string', async t => {
     t.teardown(() => rc.drain())

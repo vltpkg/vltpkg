@@ -275,6 +275,8 @@ export type ConfigOptions = ConfigOptionsNoExtras &
     storeRoot: string
     monorepo?: Monorepo
     packageInfo: PackageInfoClient
+    /** aborted when the command fails */
+    signal: AbortSignal
   }
 
 /**
@@ -324,6 +326,7 @@ export class Config {
     const asRecords = pairsToRecords(this.parse().values)
     const extras = {
       projectRoot: this.projectRoot,
+      signal: this.#abort.signal,
       storeRoot: storeRoot(asRecords.cache),
       scurry,
       packageJson,
@@ -374,7 +377,8 @@ export class Config {
               k !== 'monorepo' &&
               k !== 'scurry' &&
               k !== 'packageJson' &&
-              k !== 'packageInfo',
+              k !== 'packageInfo' &&
+              k !== 'signal',
           ),
         )
       },
@@ -394,6 +398,13 @@ export class Config {
 
   // memoized options() getter value
   #options?: ConfigOptions
+
+  #abort = new AbortController()
+
+  /** Abort requests still in flight */
+  abort() {
+    this.#abort.abort()
+  }
 
   /**
    * positional arguments to the vlt process

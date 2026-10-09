@@ -339,6 +339,7 @@ export const outputCommand = async <T>(
       colors: stderrColor,
     })
 
-    await flushAndExit(process.exitCode)
+    // stop pending requests, so the process can exit on its own
+    conf.abort()
   }
 }

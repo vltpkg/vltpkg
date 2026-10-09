@@ -419,13 +419,13 @@ export const exec = async (
     projectRoot,
     'script-shell': shell = false,
     color = false,
-    signal,
     ...spawnOptions
   } = options
 
   const [spawnCmd, spawnArgs] = withShellArgs(shell, arg0, args)
 
   const p = promiseSpawn(spawnCmd, spawnArgs, {
+    // `signal` kills it when aborted
     ...spawnOptions,
     shell,
     stdio: 'pipe',
@@ -444,6 +444,12 @@ export const exec = async (
     windowsHide: true,
   })
   proxySignals(p.process)
+  // rejected on 'error'; a killed shell's own child would keep these
+  // pipes, and so this process, open
+  p.process.on('error', () => {
+    p.process.stdout.destroy()
+    p.process.stderr.destroy()
+  })
   return await p
 }
 

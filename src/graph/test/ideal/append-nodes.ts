@@ -10,6 +10,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { parse as parseVersion } from '@vltpkg/semver'
 import { asNormalizedManifest } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
+import { setTimeout as delay } from 'node:timers/promises'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -5782,3 +5783,126 @@ t.test('locked version fetch without node_modules', async t => {
     t.equal(graph.mainImporter.edgesOut.get('foo')?.to, undefined)
   })
 })
+
+t.test('fails on the first rejected manifest', async t => {
+  const mainManifest = asNormalizedManifest({
+    name: 'my-project',
+    version: '1.0.0',
+  })
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest,
+  })
+  const deps = ['hang', 'missing'].map(name =>
+    asDependency({
+      spec: Spec.parse(name, '^1.0.0', configData),
+      type: 'prod',
+    }),
+  )
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      if (spec.name === 'missing') throw new Error('missing')
+      // never settles
+      return new Promise(() => {})
+    },
+  } as unknown as PackageInfoClient
+  await t.rejects(
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+    ),
+    /missing/,
+  )
+})
+
+t.test(
+  'a throw with fetches in flight leaves none unhandled',
+  async t => {
+    const unhandled: unknown[] = []
+    const onUnhandled = (er: unknown) => unhandled.push(er)
+    process.on('unhandledRejection', onUnhandled)
+    t.teardown(() => process.off('unhandledRejection', onUnhandled))
+
+    const mainManifest = { name: 'my-monorepo', version: '1.0.0' }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      packages: {
+        'lib-a': {
+          'package.json': JSON.stringify({
+            name: '@scope/lib-a',
+            version: '1.0.0',
+          }),
+        },
+        consumer: {
+          'package.json': JSON.stringify({
+            name: 'consumer',
+            version: '1.0.0',
+          }),
+        },
+      },
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['packages/*'] },
+      }),
+    })
+    const scurry = new PathScurry(dir)
+    const monorepo = new Monorepo(dir, {
+      config: { packages: ['packages/*'] },
+      scurry,
+      packageJson: new PackageJson(),
+      load: { paths: ['packages/lib-a', 'packages/consumer'] },
+    })
+    const graph = new Graph({
+      projectRoot: dir,
+      mainManifest,
+      monorepo,
+      ...configData,
+    })
+    const consumerNode = [...graph.importers].find(
+      n => n.name === 'consumer',
+    )
+    t.ok(consumerNode)
+    let fetched = 0
+    const packageInfo = {
+      async manifest() {
+        fetched++
+        await delay(10)
+        throw new Error('registry down')
+      },
+    } as unknown as PackageInfoClient
+    // sorts first, so its fetch starts before the workspace dep throws
+    const reg = asDependency({
+      spec: Spec.parse('@aaa/reg', '^1.0.0', configData),
+      type: 'prod',
+    })
+    const ws = asDependency({
+      spec: Spec.parse(
+        '@scope/lib-a',
+        'workspace:^2.0.0',
+        configData,
+      ),
+      type: 'prod',
+    })
+    await t.rejects(
+      appendNodes(
+        packageInfo,
+        graph,
+        consumerNode!,
+        [ws, reg],
+        scurry,
+        configData,
+        new Set<DepID>(),
+      ),
+      { message: /does not match the local workspace version/ },
+    )
+    t.equal(fetched, 1, 'a fetch was in flight')
+    // past the registry rejection
+    await delay(50)
+    t.strictSame(unhandled, [])
+  },
+)

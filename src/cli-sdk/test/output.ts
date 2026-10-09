@@ -18,20 +18,31 @@ import * as view from '../src/view.ts'
 import * as printErr from '../src/print-err.ts'
 
 // make sure these are loaded after the isTTY intercept
-const { outputCommand, flushStream, getView, stderr, stdout } =
-  await t.mockImport<typeof import('../src/output.ts')>(
-    '../src/output.ts',
-    {
-      '../src/print-err.ts': t.createMock(printErr, {
-        printErr(err: unknown) {
-          errsPrinted.push(err)
-        },
-      }),
-      '../src/view.ts': view,
-    },
-  )
+const {
+  outputCommand,
+  flushAndExit,
+  flushStream,
+  getView,
+  stderr,
+  stdout,
+} = await t.mockImport<typeof import('../src/output.ts')>(
+  '../src/output.ts',
+  {
+    '../src/print-err.ts': t.createMock(printErr, {
+      printErr(err: unknown) {
+        errsPrinted.push(err)
+      },
+    }),
+    '../src/view.ts': view,
+  },
+)
 
 const errsPrinted: unknown[] = []
+// errsPrinted.length at each conf.abort()
+const aborted: number[] = []
+const abort = () => {
+  aborted.push(errsPrinted.length)
+}
 
 t.test('stdout, stderr', t => {
   const logs = t.capture(console, 'log').args
@@ -57,6 +68,12 @@ t.test('flushStream', async t => {
   t.strictSame(written, [], 'an empty stream is not written to')
   await flushStream(stream(100))
   t.strictSame(written, [''], 'a queued stream is waited on')
+})
+
+t.test('flushAndExit', async t => {
+  const exits = t.capture(process, 'exit').args
+  await flushAndExit(3)
+  t.strictSame(exits(), [[3]])
 })
 
 t.test('getView', async t => {
@@ -126,9 +143,11 @@ t.test('outputCommand', async t => {
   } as LoadedConfig
   const confHuman = {
     values: { view: 'human' },
+    abort,
   } as LoadedConfig
   const confInspect = {
     values: { view: 'inspect' },
+    abort,
   } as LoadedConfig
   const confHelp = {
     values: { help: true },
@@ -206,6 +225,7 @@ t.test('outputCommand', async t => {
 
   t.test('fail output', async t => {
     errsPrinted.length = 0
+    aborted.length = 0
     const { exitCode = 0 } = process
     const exits = t.capture(process, 'exit').args
     t.teardown(() => {
@@ -215,13 +235,15 @@ t.test('outputCommand', async t => {
       throw new Error('poop')
     }
     await outputCommand(cliCommand, confInspect)
-    t.strictSame(exits(), [[1]])
+    t.strictSame(exits(), [], 'no forced exit')
+    t.strictSame(aborted, [1], 'aborted after printing')
     t.equal(process.exitCode, 1)
     t.strictSame(errsPrinted, [new Error('poop')])
   })
 
   t.test('fail output with error cause code', async t => {
     errsPrinted.length = 0
+    aborted.length = 0
     const { exitCode = 0 } = process
     const exits = t.capture(process, 'exit').args
     t.teardown(() => {
@@ -231,7 +253,8 @@ t.test('outputCommand', async t => {
       throw new Error('boom', { cause: { code: 'ECODE' } })
     }
     await outputCommand(cliCommand, confInspect)
-    t.strictSame(exits(), [[1]])
+    t.strictSame(exits(), [], 'no forced exit')
+    t.strictSame(aborted, [1], 'aborted after printing')
     t.equal(process.exitCode, 1)
     t.strictSame(errsPrinted, [
       new Error('boom', { cause: { code: 'ECODE' } }),
@@ -240,6 +263,7 @@ t.test('outputCommand', async t => {
 
   t.test('fail output with onError method', async t => {
     errsPrinted.length = 0
+    aborted.length = 0
     const { exitCode = 0 } = process
     t.teardown(() => {
       if (t.passing()) process.exitCode = exitCode
@@ -255,7 +279,8 @@ t.test('outputCommand', async t => {
       throw new Error('asdf')
     }
     await outputCommand(cliCommand, confHuman)
-    t.strictSame(exits(), [[1]])
+    t.strictSame(exits(), [], 'no forced exit')
+    t.strictSame(aborted, [1], 'aborted after printing')
     t.equal(process.exitCode, 1)
     t.match(sawError, new Error('asdf'))
     t.equal(errsPrinted[0], sawError, 'printed the error we saw')
@@ -275,6 +300,7 @@ t.test('outputCommand', async t => {
       'ECONFIG when only built-in defaults are configured',
       async t => {
         errsPrinted.length = 0
+        aborted.length = 0
         const { exitCode = 0 } = process
         const exits = t.capture(process, 'exit').args
         t.teardown(() => {
@@ -287,8 +313,10 @@ t.test('outputCommand', async t => {
           options: {
             registries: { gh: 'https://npm.pkg.github.com/' },
           },
+          abort,
         } as unknown as LoadedConfig)
-        t.strictSame(exits(), [[1]])
+        t.strictSame(exits(), [], 'no forced exit')
+        t.strictSame(aborted, [1], 'aborted after printing')
         t.equal(process.exitCode, 1)
         t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
         t.match(String(errsPrinted[0]), /docs\.vlt\.sh\/cli/)
@@ -370,6 +398,7 @@ t.test('outputCommand', async t => {
 
     t.test('ECONFIG when registries.npm is missing', async t => {
       errsPrinted.length = 0
+      aborted.length = 0
       const { exitCode = 0 } = process
       const exits = t.capture(process, 'exit').args
       t.teardown(() => {
@@ -384,8 +413,10 @@ t.test('outputCommand', async t => {
           registries: {},
           'default-registry-alias': 'npm',
         },
+        abort,
       } as unknown as LoadedConfig)
-      t.strictSame(exits(), [[1]])
+      t.strictSame(exits(), [], 'no forced exit')
+      t.strictSame(aborted, [1], 'aborted after printing')
       t.equal(process.exitCode, 1)
       t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
       t.match(String(errsPrinted[0]), /registries\.npm/)
@@ -395,6 +426,7 @@ t.test('outputCommand', async t => {
       'ECONFIG when only a non-npm alias is configured',
       async t => {
         errsPrinted.length = 0
+        aborted.length = 0
         const { exitCode = 0 } = process
         const exits = t.capture(process, 'exit').args
         t.teardown(() => {
@@ -406,8 +438,10 @@ t.test('outputCommand', async t => {
             registries: { main: 'https://example.com/' },
             'default-registry-alias': 'npm',
           },
+          abort,
         } as unknown as LoadedConfig)
-        t.strictSame(exits(), [[1]])
+        t.strictSame(exits(), [], 'no forced exit')
+        t.strictSame(aborted, [1], 'aborted after printing')
         t.equal(process.exitCode, 1)
         t.match(String(errsPrinted[0]), /Missing npm registry/)
       },
@@ -415,6 +449,7 @@ t.test('outputCommand', async t => {
 
     t.test('error names the default-registry-alias', async t => {
       errsPrinted.length = 0
+      aborted.length = 0
       const { exitCode = 0 } = process
       const exits = t.capture(process, 'exit').args
       t.teardown(() => {
@@ -426,8 +461,10 @@ t.test('outputCommand', async t => {
           registries: {},
           'default-registry-alias': 'custom',
         },
+        abort,
       } as unknown as LoadedConfig)
-      t.strictSame(exits(), [[1]])
+      t.strictSame(exits(), [], 'no forced exit')
+      t.strictSame(aborted, [1], 'aborted after printing')
       t.match(String(errsPrinted[0]), /Missing custom registry/)
       t.match(String(errsPrinted[0]), /registries\.custom/)
     })
