@@ -1,6 +1,8 @@
 import { unload } from '@vltpkg/vlt-json'
+import { XDG } from '@vltpkg/xdg'
 import type { OptionsResults } from 'jackspeak'
 import {
+  existsSync,
   readFileSync,
   statSync,
   unlinkSync,
@@ -122,6 +124,9 @@ t.test('read and write a user config', async t => {
         cache() {
           return dir + '/default/cache'
         }
+        data() {
+          return dir + '/default/data'
+        }
       },
     },
   })
@@ -200,6 +205,9 @@ t.test(
           }
           cache() {
             return dir + '/default/cache'
+          }
+          data() {
+            return dir + '/default/data'
           }
         },
       },
@@ -720,6 +728,9 @@ t.test('do not walk past xdg config dir', async t => {
       }
       cache() {
         return resolve(dir, 'default/cache')
+      }
+      data() {
+        return resolve(dir, 'default/data')
       }
     },
   }
@@ -1357,6 +1368,9 @@ t.test('config layers', async t => {
           cache() {
             return dir + '/default/cache'
           }
+          data() {
+            return dir + '/default/data'
+          }
         },
       },
     })
@@ -1562,6 +1576,9 @@ t.test('config layers', async t => {
             }
             cache() {
               return dir + '/default/cache'
+            }
+            data() {
+              return dir + '/default/data'
             }
           },
         },
@@ -1814,4 +1831,203 @@ t.test('record fields merge file -> env -> cli', async t => {
   })
 
   t.end()
+})
+
+t.test('--global', async t => {
+  const setup = async (t: Test, userConfig?: unknown) => {
+    const dir = t.testdir({
+      xdg: {
+        config: {
+          vlt:
+            userConfig ?
+              { 'vlt.json': JSON.stringify({ config: userConfig }) }
+            : {},
+        },
+      },
+      cwd: {
+        '.git': {},
+        'package.json': JSON.stringify({ name: 'cwd' }),
+        'vlt.json': JSON.stringify({
+          config: { registry: 'https://cwd.example/' },
+          workspaces: 'nope/*',
+        }),
+      },
+      g: {
+        packages: {
+          'x-global-ws': {
+            'package.json': JSON.stringify({ name: 'x-global-ws' }),
+          },
+        },
+      },
+    })
+    const xdg = resolve(dir, 'xdg')
+    const home = resolve(dir, 'home')
+    t.chdir(resolve(dir, 'cwd'))
+    unload()
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
+      'node:os': t.createMock(OS, { homedir: () => home }),
+      '@vltpkg/xdg': {
+        XDG: class extends XDG {
+          base = {
+            config: resolve(xdg, 'config'),
+            cache: resolve(xdg, 'cache'),
+            data: resolve(xdg, 'data'),
+            state: resolve(xdg, 'state'),
+            runtime: resolve(xdg, 'runtime'),
+          }
+        },
+      },
+    })
+    return {
+      Config,
+      cwd: resolve(dir, 'cwd'),
+      g: resolve(dir, 'g'),
+      home,
+      dflt: resolve(xdg, 'data/vlt/global'),
+    }
+  }
+
+  t.test('switch to the global project', async t => {
+    const { Config, cwd, g } = await setup(t)
+    const conf = await Config.load(
+      cwd,
+      ['install', '-g', `--global-dir=${g}`],
+      true,
+    )
+    t.equal(conf.projectRoot, g)
+    t.equal(conf.globalRoot, g)
+    t.equal(conf.get('global'), true)
+    t.equal(conf.explicit.global, true)
+    t.equal(conf.get('registry'), undefined, 'cwd config not read')
+    t.strictSame(
+      JSON.parse(readFileSync(resolve(g, 'vlt.json'), 'utf8')),
+      { workspaces: 'packages/*' },
+    )
+    t.ok(existsSync(resolve(g, 'package.json')))
+    t.ok(conf.options.monorepo?.get('x-global-ws'), 'global monorepo')
+    t.equal(process.env.VLT_GLOBAL, undefined, 'not passed on')
+    t.equal(process.env.VLT_GLOBAL_DIR, g)
+  })
+
+  t.test('from env', async t => {
+    const { Config, cwd, g } = await setup(t)
+    process.env.VLT_GLOBAL = '1'
+    process.env.VLT_GLOBAL_DIR = '../g'
+    const conf = await Config.load(cwd, ['i'], true)
+    t.equal(conf.globalRoot, g, 'relative to cwd')
+    t.equal(process.env.VLT_GLOBAL_DIR, g, 'absolute for nested vlt')
+  })
+
+  t.test('~ is home', async t => {
+    const { Config, cwd, home } = await setup(t)
+    for (const [dir, want] of [
+      ['~', home],
+      ['~/g', resolve(home, 'g')],
+      ['~x', resolve(cwd, '~x')],
+    ] as const) {
+      const conf = await Config.load(
+        cwd,
+        ['install', '-g', `--global-dir=${dir}`],
+        true,
+      )
+      t.equal(conf.globalRoot, want, dir)
+      clearEnv()
+    }
+  })
+
+  t.test('global project cannot be created', async t => {
+    const { Config, cwd } = await setup(t)
+    const g = resolve(cwd, 'package.json', 'g')
+    await t.rejects(
+      Config.load(cwd, ['install', '-g', `--global-dir=${g}`], true),
+      {
+        message: 'Could not create the global project',
+        cause: { code: 'ECONFIG', found: g, cause: Error },
+      },
+    )
+  })
+
+  t.test('disabled in env', async t => {
+    const { Config, cwd, g } = await setup(t)
+    process.env.VLT_GLOBAL = '0'
+    const conf = await Config.load(
+      cwd,
+      ['install', `--global-dir=${g}`],
+      true,
+    )
+    t.equal(conf.globalRoot, undefined)
+    t.equal(conf.projectRoot, cwd)
+    t.notOk(existsSync(resolve(g, 'package.json')))
+  })
+
+  t.test('from user config', async t => {
+    const { Config, cwd, home } = await setup(t, {
+      global: true,
+      'global-dir': '~/g',
+    })
+    const conf = await Config.load(cwd, ['install'], true)
+    t.equal(conf.globalRoot, resolve(home, 'g'))
+    t.equal(conf.explicit.global, undefined)
+  })
+
+  t.test('relative global-dir in user config', async t => {
+    const { Config, cwd } = await setup(t, { 'global-dir': '../g' })
+    await t.rejects(Config.load(cwd, ['install', '-g'], true), {
+      message: 'global-dir in the user config must be absolute',
+      cause: { code: 'ECONFIG', found: '../g' },
+    })
+  })
+
+  t.test('no switch', async t => {
+    const { Config, cwd, g } = await setup(t)
+    for (const argv of [
+      ['run', 'x', '-g'],
+      ['-g'],
+      ['install', '-g', '--help'],
+      ['install'],
+    ]) {
+      const conf = await Config.load(
+        cwd,
+        [...argv, `--global-dir=${g}`],
+        true,
+      )
+      t.equal(conf.globalRoot, undefined, argv.join(' '))
+      t.equal(conf.projectRoot, cwd)
+      t.equal(conf.get('registry'), 'https://cwd.example/')
+      clearEnv()
+    }
+    const conf = await Config.load(
+      cwd,
+      ['install', '-g', `--global-dir=${g}`],
+      true,
+      false,
+    )
+    t.equal(conf.globalRoot, undefined, 'not allowed')
+    t.notOk(existsSync(resolve(g, 'package.json')), 'no skeleton')
+  })
+
+  t.test('default and empty global-dir', async t => {
+    const { Config, cwd, dflt } = await setup(t)
+    const def = await Config.load(cwd, ['install', '-g'], true)
+    t.equal(def.globalRoot, dflt)
+    clearEnv()
+    const empty = await Config.load(
+      cwd,
+      ['install', '-g', '--global-dir='],
+      true,
+    )
+    t.equal(empty.globalRoot, dflt, 'empty cli value')
+    clearEnv()
+    process.env.VLT_GLOBAL_DIR = ''
+    const emptyEnv = await Config.load(cwd, ['install', '-g'], true)
+    t.equal(emptyEnv.globalRoot, dflt, 'empty env value')
+  })
+
+  t.test('empty global-dir in user config', async t => {
+    const { Config, cwd, dflt } = await setup(t, { 'global-dir': '' })
+    const conf = await Config.load(cwd, ['install', '-g'], true)
+    t.equal(conf.globalRoot, dflt)
+  })
 })

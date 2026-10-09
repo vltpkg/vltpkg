@@ -508,6 +508,34 @@ export const definition = j
     },
   })
 
+  .flag({
+    global: {
+      short: 'g',
+      description: `Operate on the global project instead of the current
+                    one. Supported by \`install\`, \`uninstall\`, \`list\`,
+                    \`query\` and \`build\`.
+
+                    Each global package is installed in its own workspace of
+                    the project in \`--global-dir\`, and its bins are linked
+                    into \`<global-dir>/bin\`. Add that folder to your
+                    \`PATH\` to run them.`,
+    },
+  })
+
+  .opt({
+    'global-dir': {
+      hint: 'path',
+      default: xdg.data('global'),
+      description: `Location of the global project used by \`--global\`.
+                    Defaults to \`vlt/global\` in the XDG data directory.
+
+                    Only read from the command line, environment or the user
+                    config, never from a project \`vlt.json\`. A leading
+                    \`~\` is the home directory. Must be absolute in the
+                    user config.`,
+    },
+  })
+
   .opt({
     scope: {
       short: 's',

@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import type { Graph } from '@vltpkg/graph'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
@@ -519,4 +520,134 @@ t.test('json view includes persistedConfig', async t => {
   t.match(Command.views.json({ graph: {} as any, persistedConfig }), {
     persistedConfig,
   })
+})
+
+t.test('--global', async t => {
+  let glog = ''
+  let fail = false
+  let failPersist = false
+  const add = new Map()
+  const created = ['/g/packages/foo-global-ws']
+  const importers = new Set(['workspace~packages+foo-global-ws'])
+  const global = {
+    binDir: '/g/bin',
+    bins: ['foo'],
+    conflicts: [],
+    inPath: true,
+  }
+  const options = { projectRoot: '/g' }
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install(_: unknown, a: unknown) {
+        glog += `install ${a === add}\n`
+        if (fail) throw new Error('nope')
+        return { graph: { nodes: new Map() } }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseAddArgs: () => {
+        glog += 'parse\n'
+        return { add: new Map() }
+      },
+    },
+    '../../src/persist-spec-config.ts': {
+      planSpecConfigPersist: () => {
+        glog += 'persist\n'
+        if (failPersist) throw new Error('persist')
+      },
+    },
+    '../../src/global.ts': {
+      assertGlobalOptions: () => {
+        glog += 'assert\n'
+      },
+      parseGlobalAddArgs: async () => {
+        glog += 'parse global\n'
+        return { add, created, importers }
+      },
+      removeGlobalWorkspaces: async (dirs: string[]) => {
+        glog += `remove ${dirs.join()}\n`
+      },
+      linkGlobalBins: async (
+        _: unknown,
+        opts: unknown,
+        i: unknown,
+      ) => {
+        glog += `link ${opts === options} ${i === importers}\n`
+        return global
+      },
+    },
+  })
+  const conf = (globalRoot?: string) =>
+    ({
+      globalRoot,
+      projectRoot: '/g',
+      positionals: ['foo'],
+      values: {},
+      options,
+      explicit: {},
+      get: () => undefined,
+    }) as unknown as LoadedConfig
+
+  const res = await Command.command(conf('/g'))
+  t.equal(res.global, global)
+  t.equal(
+    glog,
+    'assert\npersist\nparse global\ninstall true\nlink true true\n',
+  )
+
+  glog = ''
+  const local = await Command.command(conf())
+  t.equal(local.global, undefined)
+  t.equal(
+    glog,
+    'persist\nparse\ninstall false\n',
+    'no global helpers',
+  )
+
+  glog = ''
+  failPersist = true
+  await t.rejects(Command.command(conf('/g')), { message: 'persist' })
+  t.equal(glog, 'assert\npersist\n', 'no workspace created')
+  failPersist = false
+
+  glog = ''
+  const badOptions = Object.defineProperty(conf('/g'), 'options', {
+    get: () => {
+      throw new Error('options')
+    },
+  })
+  await t.rejects(Command.command(badOptions), { message: 'options' })
+  t.equal(
+    glog,
+    'assert\npersist\nparse global\nremove /g/packages/foo-global-ws\n',
+    'removed on any error before install',
+  )
+
+  glog = ''
+  fail = true
+  await t.rejects(Command.command(conf('/g')), { message: 'nope' })
+  t.equal(
+    glog,
+    'assert\npersist\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
+    'created workspaces removed',
+  )
+
+  glog = ''
+  await t.rejects(Command.command(conf()), { message: 'nope' })
+  t.equal(glog, 'persist\nparse\ninstall false\n')
+
+  t.match(
+    Command.views.json({
+      graph: {} as unknown as Graph,
+      buildQueue: ['~~x@1.0.0'],
+      global,
+    }),
+    {
+      message:
+        '1 packages that will need to be built, run "vlt build -g" to complete the install.',
+      global,
+    },
+  )
 })

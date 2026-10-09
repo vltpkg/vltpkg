@@ -1,12 +1,24 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
+import {
+  assertGlobalOptions,
+  linkGlobalBins,
+  parseGlobalAddArgs,
+  removeGlobalWorkspaces,
+} from '../global.ts'
+import type { GlobalBins } from '../global.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { Diff, Graph } from '@vltpkg/graph'
+import type {
+  AddImportersDependenciesMap,
+  Diff,
+  Graph,
+} from '@vltpkg/graph'
+import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -31,6 +43,10 @@ export type InstallResult = {
    * Spec config from the cli / env that was saved to a config file.
    */
   persistedConfig?: SpecConfigPersistPlan
+  /**
+   * Bins linked by a `--global` install.
+   */
+  global?: GlobalBins
 }
 
 export const needsRegistry = true
@@ -98,6 +114,10 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      global: {
+        description:
+          'Install packages globally, each in its own workspace of the global project, linking their bins.',
+      },
     },
   })
 
@@ -163,12 +183,13 @@ export const views = {
       ...(i.buildQueue?.length ?
         {
           buildQueue: i.buildQueue,
-          message: `${i.buildQueue.length} packages that will need to be built, run "vlt build" to complete the install.`,
+          message: `${i.buildQueue.length} packages that will need to be built, run "vlt build${i.global ? ' -g' : ''}" to complete the install.`,
         }
       : null),
       ...(i.persistedConfig ?
         { persistedConfig: i.persistedConfig }
       : null),
+      ...(i.global ? { global: i.global } : null),
     }
   },
   human: lazyView(
@@ -180,36 +201,23 @@ export const views = {
 export const command: CommandFn<InstallResult> = async conf => {
   // TODO: we should probably throw an error if the user
   // tries to install using view=mermaid
-  const monorepo = conf.options.monorepo
-  const scurry = conf.options.scurry
-  const { add } = parseAddArgs(conf, scurry, monorepo)
+  if (conf.globalRoot) assertGlobalOptions(conf)
+  // throws before any global ws dir is created
   const persist = planSpecConfigPersist(conf)
-  const frozenLockfile = conf.options['frozen-lockfile']
-  const expectLockfile = conf.options['expect-lockfile']
-  const lockfileOnly = conf.options['lockfile-only']
-  const saveExact = conf.values['save-exact']
-  const savePrefix = conf.values['save-prefix']
-  /* c8 ignore start */
-  const allowScripts =
-    conf.get('allow-scripts') ?
-      String(conf.get('allow-scripts'))
-    : ':not(*)'
-  /* c8 ignore stop */
+  // before reading options, it may reset them
+  const globalAdd =
+    conf.globalRoot ? await parseGlobalAddArgs(conf) : undefined
   const installStart = Date.now()
-  const { buildQueue, graph, diff } = await install(
-    {
-      ...conf.options,
-      frozenLockfile,
-      expectLockfile,
-      allowScripts,
-      lockfileOnly,
-      saveExact,
-      savePrefix,
-    },
-    add,
-  ).catch((er: unknown) => {
+  const { buildQueue, graph, diff } = await runInstall(
+    conf,
+    globalAdd?.add,
+  ).catch(async (er: unknown) => {
+    if (globalAdd) await removeGlobalWorkspaces(globalAdd.created)
     throw asUnknownSpecPrefix(er)
   })
+  const global =
+    globalAdd &&
+    (await linkGlobalBins(graph, conf.options, globalAdd.importers))
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
   /* c8 ignore next 9 - telemetry is best-effort */
@@ -227,5 +235,39 @@ export const command: CommandFn<InstallResult> = async conf => {
     graph,
     diff,
     ...(persist ? { persistedConfig: persist } : null),
+    ...(global ? { global } : null),
   }
+}
+
+// async, so any throw rolls back global ws dirs
+const runInstall = async (
+  conf: LoadedConfig,
+  globalAdd?: AddImportersDependenciesMap,
+) => {
+  const monorepo = conf.options.monorepo
+  const scurry = conf.options.scurry
+  const add = globalAdd ?? parseAddArgs(conf, scurry, monorepo).add
+  const frozenLockfile = conf.options['frozen-lockfile']
+  const expectLockfile = conf.options['expect-lockfile']
+  const lockfileOnly = conf.options['lockfile-only']
+  const saveExact = conf.values['save-exact']
+  const savePrefix = conf.values['save-prefix']
+  /* c8 ignore start */
+  const allowScripts =
+    conf.get('allow-scripts') ?
+      String(conf.get('allow-scripts'))
+    : ':not(*)'
+  /* c8 ignore stop */
+  return install(
+    {
+      ...conf.options,
+      frozenLockfile,
+      expectLockfile,
+      allowScripts,
+      lockfileOnly,
+      saveExact,
+      savePrefix,
+    },
+    add,
+  )
 }

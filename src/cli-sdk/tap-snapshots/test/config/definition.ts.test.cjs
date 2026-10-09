@@ -322,6 +322,24 @@ Object {
     ),
     "type": "boolean",
   },
+  "global": Object {
+    "description": String(
+      Operate on the global project instead of the current one. Supported by \`install\`, \`uninstall\`, \`list\`, \`query\` and \`build\`.
+      
+      Each global package is installed in its own workspace of the project in \`--global-dir\`, and its bins are linked into \`<global-dir>/bin\`. Add that folder to your \`PATH\` to run them.
+    ),
+    "short": "g",
+    "type": "boolean",
+  },
+  "global-dir": Object {
+    "description": String(
+      Location of the global project used by \`--global\`. Defaults to \`vlt/global\` in the XDG data directory.
+      
+      Only read from the command line, environment or the user config, never from a project \`vlt.json\`. A leading \`~\` is the home directory. Must be absolute in the user config.
+    ),
+    "hint": "path",
+    "type": "string",
+  },
   "help": Object {
     "description": "Print helpful information",
     "short": "h",
@@ -686,6 +704,8 @@ Array [
   "--git-hosts=<name=template>",
   "--git-shallow",
   "--git-tag-version",
+  "--global",
+  "--global-dir=<path>",
   "--help",
   "--identity=<name>",
   "--if-present",
@@ -758,6 +778,8 @@ Array [
   "git-hosts",
   "git-shallow",
   "git-tag-version",
+  "global",
+  "global-dir",
   "help",
   "identity",
   "if-present",

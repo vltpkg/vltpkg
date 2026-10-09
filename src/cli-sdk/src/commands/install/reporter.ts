@@ -129,11 +129,23 @@ export class InstallReporter extends ViewClass {
 
     // prints a very complete message explaining users the next steps
     // in case there are packages to be built
+    const g = _result.global ? ' -g' : ''
     if (_result.buildQueue?.length) {
       out += `\n\n📦 ${_result.buildQueue.length} packages have install scripts defined & were not fully built\n`
-      out += '🔎 Run `vlt query :scripts` to list them\n'
-      out +=
-        '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
+      out += `🔎 Run \`vlt query${g} :scripts\` to list them\n`
+      out += `🔨 Run \`vlt build${g}\` to run all required scripts to build installed packages.\n`
+    }
+    if (_result.global) {
+      const { binDir, bins, conflicts, inPath } = _result.global
+      if (bins.length) {
+        out += `\n🔗 Linked ${bins.join(', ')} in ${binDir}`
+      }
+      if (conflicts.length) {
+        out += `\n⚠️  Skipped ${conflicts.join(', ')}: already linked by another global package (use --force to overwrite)`
+      }
+      if (!inPath && (bins.length || conflicts.length)) {
+        out += `\n⚠️  Add ${binDir} to your PATH to run globally installed bins.`
+      }
     }
     const saved = _result.persistedConfig
     if (saved) {
