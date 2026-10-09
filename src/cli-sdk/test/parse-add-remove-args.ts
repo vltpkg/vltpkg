@@ -749,7 +749,10 @@ t.test('unknown spec prefix', async t => {
   conf.positionals = ['foo@catalog:nope']
   t.throws(
     () => parseAddArgs(conf, scurry),
-    { cause: { code: undefined } },
+    {
+      message: 'Catalog "nope" not found for foo@catalog:nope',
+      cause: { code: 'ECONFIG', found: undefined },
+    },
     'other spec errors pass through',
   )
 })

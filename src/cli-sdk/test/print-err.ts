@@ -211,6 +211,16 @@ t.test('snapshots', async t => {
         code: 'ECONFIG',
       }),
     )
+    await testErr(
+      t,
+      'from',
+      error('Default catalog not found for a@catalog:', {
+        code: 'ECONFIG',
+        from: './packages/a/package.json (dependencies)',
+        wanted: ['catalog:dev'],
+        validOptions: ['catalog:dev', 'catalog:tools'],
+      }),
+    )
   })
 
   t.test('EQUERY', async t => {

@@ -2,6 +2,7 @@ import t from 'tap'
 import {
   addKey,
   asDependency,
+  asDependencySpecError,
   asDependencyTypeShort,
   getDependencies,
   getRawDependencies,
@@ -13,6 +14,7 @@ import {
 } from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import type {
   DependencyTypeLong,
   Manifest,
@@ -841,4 +843,64 @@ t.test('getDependencies', async t => {
       t.notOk(result.has('jest'), 'should skip dev dependency')
     },
   )
+
+  t.test(
+    'points catalog errors at the declaring manifest',
+    async t => {
+      const manifest: Manifest = { dependencies: { a: 'catalog:' } }
+      const node = createMockNode({ importer: true }, manifest)
+      t.throws(() => getDependencies(node, {}), {
+        message: 'Default catalog not found for a@catalog:',
+        cause: {
+          code: 'ECONFIG',
+          from: './package.json (dependencies)',
+        },
+      })
+    },
+  )
+})
+
+t.test('asDependencySpecError', async t => {
+  const node = createMockNode()
+  for (const er of [
+    'str',
+    new Error('x'),
+    error('x', { code: 'EUSAGE' }),
+  ]) {
+    t.equal(
+      asDependencySpecError(er, node, 'prod'),
+      er,
+      'passes through',
+    )
+  }
+
+  const er = error('Default catalog not found for a@catalog:', {
+    code: 'ECONFIG',
+    spec: 'a@catalog:',
+    validOptions: ['catalog:dev'],
+    wanted: ['catalog:dev'],
+  })
+  const res = asDependencySpecError(er, node, 'prod')
+  t.match(res, {
+    message: 'Default catalog not found for a@catalog:',
+    cause: {
+      code: 'ECONFIG',
+      spec: 'a@catalog:',
+      validOptions: ['catalog:dev'],
+      wanted: ['catalog:dev'],
+      from: './package.json (dependencies)',
+    },
+  })
+  t.equal(
+    (res as Error & { cause: { cause: unknown } }).cause.cause,
+    er,
+  )
+
+  const ws = createMockNode({ location: './packages/a' })
+  t.match(asDependencySpecError(er, ws, 'peerOptional'), {
+    cause: { from: './packages/a/package.json (peerDependencies)' },
+  })
+  t.match(asDependencySpecError(er, ws, 'dev'), {
+    cause: { from: './packages/a/package.json (devDependencies)' },
+  })
 })

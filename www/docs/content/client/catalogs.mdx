@@ -340,11 +340,24 @@ Where your `vlt.json` might look like:
 If you reference a catalog or dependency that doesn't exist, vlt will
 provide helpful error messages:
 
-- **Missing catalog**: "Named catalog not found"
-- **Missing dependency in catalog**: "Name not found in catalog"
+- **Missing default catalog**: `Default catalog not found for <spec>`
+- **Missing named catalog**: `Catalog "<name>" not found for <spec>`
+- **Missing dependency in catalog**:
+  `Package "<dep>" not found in default catalog` or
+  `Package "<dep>" not found in catalog "<name>"`
 
-These errors include suggestions for valid options to help you correct
-the reference.
+For example:
+
+```
+Config Error: Default catalog not found for abbrev@catalog:
+  From: ./packages/a/package.json (dependencies)
+  Wanted: [ 'catalog:dev' ]
+  Valid Options: [ 'catalog:dev', 'catalog:tools' ]
+```
+
+`From` is the `package.json` and dependency type declaring the spec,
+`Wanted` lists the catalogs that define the dependency and
+`Valid Options` lists all defined catalogs.
 
 ## Migration from Other Package Managers
 

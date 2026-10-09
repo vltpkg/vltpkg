@@ -1033,6 +1033,11 @@ t.test('packTarball', async t => {
 
     await t.rejects(
       packTarball(mainManifest, mainPath, missingCatalogConfig),
+      {
+        message:
+          'Package "missing-package" not found in default catalog',
+        cause: { code: 'ECONFIG' },
+      },
       'should error when package not found in catalog',
     )
   })

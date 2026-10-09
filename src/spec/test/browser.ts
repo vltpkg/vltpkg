@@ -1009,13 +1009,48 @@ t.test('catalogs', async t => {
   })
 
   t.throws(() => Spec.parse('b@catalog:', opts), {
-    message: 'Name not found in catalog',
+    message: 'Package "b" not found in default catalog',
     cause: {
-      name: 'b',
-      validOptions: ['a'],
+      code: 'ECONFIG',
       spec: 'b@catalog:',
+      validOptions: ['catalog:', 'catalog:x', 'catalog:y'],
+      wanted: undefined,
     },
   })
+  t.throws(
+    () =>
+      Spec.parse('a', 'catalog:', {
+        catalog: undefined,
+        catalogs: { x: { a: '1.2.3' } },
+      }),
+    {
+      message: 'Default catalog not found for a@catalog:',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'a@catalog:',
+        validOptions: ['catalog:x'],
+        wanted: ['catalog:x'],
+      },
+    },
+    'undefined default catalog suggests named catalogs',
+  )
+  t.throws(
+    () =>
+      Spec.parse('a', 'catalog:', {
+        catalog: {},
+        catalogs: { x: { a: '1.2.3' } },
+      }),
+    {
+      message: 'Default catalog not found for a@catalog:',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'a@catalog:',
+        validOptions: ['catalog:x'],
+        wanted: ['catalog:x'],
+      },
+    },
+    'empty default catalog is treated as undefined',
+  )
   t.throws(
     () =>
       Spec.parse('b', 'catalog:', {
@@ -1023,24 +1058,106 @@ t.test('catalogs', async t => {
         catalogs: undefined,
       }),
     {
-      message: 'Named catalog not found',
+      message: 'Default catalog not found for b@catalog:',
       cause: {
+        code: 'ECONFIG',
         spec: 'b@catalog:',
-        name: '',
         validOptions: undefined,
+        wanted: undefined,
       },
       name: 'Error',
     },
     'should throw proper catalog missing when no catalogs provided',
   )
   t.throws(() => Spec.parse('b@catalog:z', opts), {
-    message: 'Named catalog not found',
+    message: 'Catalog "z" not found for b@catalog:z',
     cause: {
-      name: 'z',
-      validOptions: ['x', 'y'],
+      code: 'ECONFIG',
       spec: 'b@catalog:z',
+      validOptions: ['catalog:', 'catalog:x', 'catalog:y'],
+      wanted: undefined,
     },
   })
+  t.throws(() => Spec.parse('a@catalog:z', opts), {
+    message: 'Catalog "z" not found for a@catalog:z',
+    cause: {
+      code: 'ECONFIG',
+      spec: 'a@catalog:z',
+      validOptions: ['catalog:', 'catalog:x', 'catalog:y'],
+      wanted: ['catalog:', 'catalog:x', 'catalog:y'],
+    },
+  })
+  t.throws(
+    () =>
+      Spec.parse('b@catalog:x', {
+        catalogs: { x: { a: '1.2.3' }, y: { b: '1' } },
+      }),
+    {
+      message: 'Package "b" not found in catalog "x"',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'b@catalog:x',
+        validOptions: ['catalog:x', 'catalog:y'],
+        wanted: ['catalog:y'],
+      },
+    },
+    'suggests catalogs defining the missing dep',
+  )
+  t.throws(
+    () =>
+      Spec.parse('a@catalog:x', {
+        catalog: { a: '' },
+        catalogs: { x: { b: '1' } },
+      }),
+    {
+      message: 'Package "a" not found in catalog "x"',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'a@catalog:x',
+        validOptions: ['catalog:', 'catalog:x'],
+        wanted: undefined,
+      },
+    },
+    'empty catalog entries are not suggested',
+  )
+  t.throws(
+    () => Spec.parse('a@catalog:', { catalog: { a: '' } }),
+    {
+      message: 'Package "a" not found in default catalog',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'a@catalog:',
+        validOptions: ['catalog:'],
+        wanted: undefined,
+      },
+    },
+    'empty catalog entry is not found',
+  )
+  t.throws(
+    () => Spec.parse('a@catalog:constructor', { catalogs: {} }),
+    {
+      message:
+        'Catalog "constructor" not found for a@catalog:constructor',
+      cause: {
+        code: 'ECONFIG',
+        validOptions: undefined,
+        wanted: undefined,
+      },
+    },
+    'prototype keys are not catalog names',
+  )
+  t.throws(
+    () => Spec.parse('constructor@catalog:', { catalog }),
+    {
+      message: 'Package "constructor" not found in default catalog',
+      cause: {
+        code: 'ECONFIG',
+        validOptions: ['catalog:'],
+        wanted: undefined,
+      },
+    },
+    'prototype keys are not catalog entries',
+  )
 
   t.test(
     'propagates configured registry to catalog subspec',

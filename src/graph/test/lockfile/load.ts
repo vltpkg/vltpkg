@@ -1853,6 +1853,34 @@ t.test('catalog specs resolve against current config', async t => {
       )
     },
   )
+
+  t.test('missing catalog points at the declaring edge', async t => {
+    const projectRoot = t.testdir({
+      'vlt-lock.json': JSON.stringify(lockfileData),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    t.throws(
+      () =>
+        loadObject(
+          {
+            ...configData,
+            mainManifest,
+            projectRoot,
+            catalogs: { other: { x: '1.0.0' } },
+          },
+          lockfileData,
+        ),
+      {
+        message: 'Catalog "legacy" not found for once@catalog:legacy',
+        cause: {
+          code: 'ECONFIG',
+          from: './package.json (dependencies)',
+        },
+      },
+    )
+  })
 })
 
 t.test('diffLockfileOptions', async t => {
