@@ -1579,14 +1579,16 @@ t.test('trailing :workspace', async t => {
     t.equal(modifier.targetsImporterEdge(a, spec('b')), true)
     t.equal(modifier.targetsImporterEdge(root, spec('b')), true)
     t.equal(modifier.targetsImporterEdge(a, spec('d')), false)
+  })
 
-    const rootOnly = setup(t, { ':root > :workspace': 'workspace:*' })
+  // own subtest: a 2nd testdir in the same test can't rmdir cwd on win32
+  await t.test('targetsImporterEdge :root only', async t => {
+    const { modifier, root, b } = setup(t, {
+      ':root > :workspace': 'workspace:*',
+    })
+    t.equal(modifier.targetsImporterEdge(root, spec('a')), true)
     t.equal(
-      rootOnly.modifier.targetsImporterEdge(rootOnly.root, spec('a')),
-      true,
-    )
-    t.equal(
-      rootOnly.modifier.targetsImporterEdge(rootOnly.b, spec('a')),
+      modifier.targetsImporterEdge(b, spec('a')),
       false,
       ':root does not select a workspace',
     )
@@ -1662,22 +1664,20 @@ t.test('trailing :workspace', async t => {
       '#a:workspace > :workspace',
       ':root > :project > :workspace',
     ]) {
-      t.chdir(
-        t.testdir({
-          'vlt.json': JSON.stringify({
-            modifiers: { [key]: '1.0.0' },
+      await t.test(key, async t => {
+        t.chdir(
+          t.testdir({
+            'vlt.json': JSON.stringify({
+              modifiers: { [key]: '1.0.0' },
+            }),
           }),
-        }),
-      )
-      reload('modifiers', 'project')
-      t.throws(
-        () => new GraphModifier({ ...mockSpecOptions }),
-        {
+        )
+        reload('modifiers', 'project')
+        t.throws(() => new GraphModifier({ ...mockSpecOptions }), {
           message: 'Invalid modifier selector',
           cause: { found: key },
-        },
-        key,
-      )
+        })
+      })
     }
   })
 })
