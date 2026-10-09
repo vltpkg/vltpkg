@@ -272,7 +272,12 @@ const isStableSelector = (f: Spec) => {
 }
 
 // anything else, eg an unvalidated env value, means `unpack`
-const storeLinkers = new Set<string>(['auto', 'hardlink', 'copy'])
+const storeLinkers = new Set<string>([
+  'auto',
+  'hardlink',
+  'clone',
+  'copy',
+])
 
 // the hash a response answers for. a network body's is the hash of its
 // bytes: the registry client already checked it against the expected
@@ -316,18 +321,19 @@ export class PackageInfoClient {
   #cachePath: string
   #storeRoot: string
   #storeLinker: StoreLinker
-  #storeHits = { link: 0, copy: 0 }
+  #storeHits = { link: 0, clone: 0, copy: 0 }
   #storeMisses = 0
   #storeHitRateLogged = false
   #logStoreHitRate = () => {
-    const { link, copy } = this.#storeHits
-    const n = Math.max(1, link + copy + this.#storeMisses)
+    const { link, clone, copy } = this.#storeHits
+    const n = Math.max(1, link + clone + copy + this.#storeMisses)
     debug(
-      'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
+      'global store: linked=%d cloned=%d copied=%d missed=%d hit rate=%s%%',
       link,
+      clone,
       copy,
       this.#storeMisses,
-      (((link + copy) / n) * 100).toFixed(1),
+      (((link + clone + copy) / n) * 100).toFixed(1),
     )
   }
   // In-flight coalescing key is `${registry}${name}` — no representation
@@ -594,6 +600,7 @@ export class PackageInfoClient {
         const storeOn =
           f.type === 'registry' && this.#storeLinker !== 'unpack'
         const copy = this.#storeLinker === 'copy'
+        const clone = this.#storeLinker === 'clone'
         // If we already have a hash, that is the store key. Some
         // tarballs arrive without one: a `.tar.br`, or anything a
         // registry serves with no `dist.integrity`. For those, read the
@@ -616,13 +623,13 @@ export class PackageInfoClient {
           const linked = await pool.linkFromStore(
             pathResolve(this.#storeRoot, hex),
             target,
-            { copy },
+            { copy, clone },
           )
           if (linked) {
             const { how, index } = linked
             this.#storeHits[how]++
             // a copy is no link: report it as a cache hit
-            logRequest(r.resolved, how === 'link' ? 'store' : 'cache')
+            logRequest(r.resolved, how === 'copy' ? 'cache' : 'store')
             return {
               ...r,
               manifest: index.manifest,

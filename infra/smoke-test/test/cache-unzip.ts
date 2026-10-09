@@ -1,5 +1,6 @@
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { isBuiltin } from 'node:module'
 import { join } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
@@ -86,17 +87,22 @@ const unpackTest = async (t: Test, dirs: { cache: string }) => {
   t.notOk(c.store, 'global store not populated')
 }
 
-// `auto` hardlinks from the global store on linux only, and means
-// `unpack` everywhere else
-t.test('default: store on linux, unpack elsewhere', async t => {
-  const { status } = await runMultiple(t, ['i', 'abbrev'], {
-    test: async ({ t, dirs }) =>
-      process.platform === 'linux' ?
-        storeTest(t, dirs)
-      : unpackTest(t, dirs),
-  })
-  t.equal(status, 0)
-})
+// `auto` hardlinks from the global store on linux, clones from it on
+// darwin when node has `node:ffi`, and means `unpack` everywhere else
+const cloneable =
+  process.platform === 'darwin' && isBuiltin('node:ffi')
+
+t.test(
+  'default: store on linux and darwin, unpack elsewhere',
+  async t => {
+    const store = process.platform === 'linux' || cloneable
+    const { status } = await runMultiple(t, ['i', 'abbrev'], {
+      test: async ({ t, dirs }) =>
+        store ? storeTest(t, dirs) : unpackTest(t, dirs),
+    })
+    t.equal(status, 0)
+  },
+)
 
 t.test(
   'store-linker=hardlink: explodes tarballs, leaves them gzipped',
@@ -116,3 +122,40 @@ t.test('store-linker=unpack: unzips all cache entries', async t => {
   })
   t.equal(status, 0)
 })
+
+t.test(
+  'store-linker=clone: the next install clones from the store',
+  { skip: !cloneable && 'needs macOS and node:ffi' },
+  async t => {
+    const env = { VLT_STORE_LINKER: 'clone' }
+    const { status } = await runMultiple(t, ['i', 'abbrev'], {
+      env,
+      test: async ({ t, dirs, run }) => {
+        await storeTest(t, dirs)
+        rmSync(join(dirs.project, 'node_modules'), {
+          recursive: true,
+        })
+        const again = await run(['i', 'abbrev'], {
+          env: { ...env, NODE_DEBUG: 'vlt' },
+        })
+        t.equal(again.status, 0)
+        t.match(
+          again.stderr,
+          /global store: linked=0 cloned=1 copied=0 missed=0/,
+        )
+        const pj = join(
+          dirs.project,
+          'node_modules/abbrev/package.json',
+        )
+        t.equal(statSync(pj).nlink, 1, 'a clone, not a hardlink')
+        t.ok(
+          readdirSync(join(dirs.cache, 'vlt/store/v1')).some(n =>
+            n.endsWith('.copied'),
+          ),
+          'entry marked used',
+        )
+      },
+    })
+    t.equal(status, 0)
+  },
+)

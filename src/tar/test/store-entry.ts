@@ -19,6 +19,7 @@ import {
   removeStoreEntry,
   storeCopiedPath,
   storeEntryCopied,
+  storeEntryLastCopied,
   storeEntryLinked,
   storeEntryNames,
   storeEntryTime,
@@ -128,11 +129,22 @@ t.test('markStoreEntryCopied', async t => {
   markStoreEntryCopied(entry)
   t.equal(readFileSync(marker, 'utf8'), '')
   utimesSync(marker, 1000, 1000)
+  const before = Date.now() - 1000
   markStoreEntryCopied(entry)
-  t.equal(FS.statSync(marker).mtimeMs, 1_000_000, 'EEXIST: untouched')
+  t.ok(FS.statSync(marker).mtimeMs >= before, 'touched: last copy')
+  t.equal(readFileSync(marker, 'utf8'), '')
   // best effort
   markStoreEntryCopied(resolve(store, 'nope/x'))
   t.equal(existsSync(resolve(store, 'nope')), false)
+})
+
+t.test('storeEntryLastCopied', async t => {
+  const { entry } = makeEntry(t)
+  utimesSync(storeIndexPath(entry), 1000, 1000)
+  t.equal(storeEntryLastCopied(entry), 1_000_000, 'unmarked: written')
+  markStoreEntryCopied(entry)
+  utimesSync(storeCopiedPath(entry), 3000, 3000)
+  t.equal(storeEntryLastCopied(entry), 3_000_000, 'marker')
 })
 
 t.test('storeEntryCopied', async t => {

@@ -1,4 +1,5 @@
 import t from 'tap'
+import { cloneAvailable } from '../src/clonefile.ts'
 import { Pool } from '../src/pool.ts'
 
 import {
@@ -231,4 +232,18 @@ t.test('global store', async t => {
     await p.linkFromStore(resolve(d, 'missing'), resolve(d, 'nm/c')),
     false,
   )
+  // a clone needs macOS and node:ffi: a miss where it cannot work
+  const cloned = await p.linkFromStore(entry, resolve(d, 'nm/d'), {
+    clone: true,
+  })
+  if (cloneAvailable()) {
+    t.strictSame(cloned, { how: 'clone', index })
+    t.equal(statSync(resolve(d, 'nm/d/package.json')).nlink, 1)
+  } else {
+    t.equal(cloned, false)
+    t.equal(
+      lstatSync(resolve(d, 'nm/d'), { throwIfNoEntry: false }),
+      undefined,
+    )
+  }
 })

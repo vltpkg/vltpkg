@@ -91,7 +91,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --scoped-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
-    --store-linker=<auto | hardlink | copy | unpack>
+    --store-linker=<auto | hardlink | clone | copy | unpack>
     --tag=<tag>
     --target=<query>
     --telemetry

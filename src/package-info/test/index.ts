@@ -1,7 +1,11 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool, unpackToStoreSync } from '@vltpkg/tar'
-import type { StoreIndex, StoreLinker } from '@vltpkg/tar'
+import type {
+  LinkFromStoreOptions,
+  StoreIndex,
+  StoreLinker,
+} from '@vltpkg/tar'
 import { integrityHex } from '@vltpkg/types'
 import type { Integrity, Manifest } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
@@ -3121,14 +3125,60 @@ t.test('global store', async t => {
     ;(hooks[0]?.args[1] as () => void)()
     t.strictSame(rate(), [
       [
-        'global store: linked=%d copied=%d missed=%d hit rate=%s%%',
+        'global store: linked=%d cloned=%d copied=%d missed=%d hit rate=%s%%',
         3,
+        0,
         0,
         1,
         '75.0',
       ],
     ])
   })
+
+  t.test(
+    'store-linker=clone: asks for a clone, a store hit',
+    async t => {
+      const track = drainer(t)
+      const { dir, store, states, links } = await setup(t)
+      populate(store)
+      // clonefile(2) is darwin-only, and a failed clone is a miss:
+      // link the entry, and report a clone
+      const opts: LinkFromStoreOptions[] = []
+      const { PackageInfoClient } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        '@vltpkg/tar': {
+          Pool: class ClonePool extends Pool {
+            async linkFromStore(
+              ...[entry, target, o]: Parameters<Pool['linkFromStore']>
+            ) {
+              opts.push(o ?? {})
+              const res = await super.linkFromStore(entry, target, {
+                ...o,
+                clone: false,
+              })
+              return res && { ...res, how: 'clone' as const }
+            }
+          },
+        },
+        ...tarballLog(states),
+      })
+      const pi = track(
+        new PackageInfoClient({
+          ...options,
+          cache: dir + '/cache',
+          'store-linker': 'clone',
+        }),
+      )
+      const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
+      t.strictSame(opts, [{ copy: false, clone: true }])
+      t.strictSame(states, ['store'], 'counted as a store hit')
+      t.strictSame(links, [], 'not the tracked pool')
+      t.type(res.manifest, 'string')
+      const pj = readFileSync(dir + '/t/package.json', 'utf8')
+      t.match(JSON.parse(pj), { name: 'abbrev', version: '2.0.0' })
+    },
+  )
 
   t.test('git specs untouched', async t => {
     const { dir, links, registered, client } = await setup(t)

@@ -773,3 +773,74 @@ t.test('prune-store', async t => {
   } as unknown as LoadedConfig)
   t.strictSame(logged[1], ['Removed 0 of 0 global store entries'])
 })
+
+t.test('prune-store: copies stay while copied from', async t => {
+  const { command, CacheView } = await mockCommand(t)
+  new CacheView({}, {} as unknown as LoadedConfig)
+  const { storeRoot, pkgs } = storeFixture(t, [
+    'recent',
+    'stale',
+    'build',
+    'oldbuild',
+  ])
+  const day = 24 * 60 * 60
+  const ago = (days: number) => Date.now() / 1000 - days * day
+  const recent = pkg(pkgs, 'recent')
+  const stale = pkg(pkgs, 'stale')
+  const build = pkg(pkgs, 'build')
+  const oldbuild = pkg(pkgs, 'oldbuild')
+  for (const p of [recent, stale]) {
+    writeFileSync(storeCopiedPath(p.entry), '')
+  }
+  utimesSync(storeCopiedPath(recent.entry), ago(29), ago(29))
+  utimesSync(storeCopiedPath(stale.entry), ago(31), ago(31))
+  for (const p of [build, oldbuild]) {
+    const index = storeIndexPath(p.entry)
+    writeFileSync(
+      index,
+      JSON.stringify({
+        ...JSON.parse(readFileSync(index, 'utf8')),
+        scripts: true,
+      }),
+    )
+  }
+  // never marked: copied from when written, at the latest
+  utimesSync(storeIndexPath(oldbuild.entry), ago(40), ago(40))
+  // marked: the marker says when
+  writeFileSync(storeCopiedPath(build.entry), '')
+  utimesSync(storeIndexPath(build.entry), ago(40), ago(40))
+
+  const prune = (...args: string[]) =>
+    command({
+      positionals: ['prune-store', ...args],
+      options: { storeRoot },
+    } as unknown as LoadedConfig)
+
+  await t.rejects(prune('not', 'a', 'date'), {
+    message: 'Invalid date',
+    cause: { code: 'EUSAGE', found: 'not a date' },
+  })
+  t.strictSame(
+    await prune(new Date(ago(50) * 1000).toISOString()),
+    { checked: 4, removed: {} },
+    'all copied from since then',
+  )
+  t.strictSame(await prune(), {
+    checked: 4,
+    removed: { [stale.hex]: 'unused', [oldbuild.hex]: 'unused' },
+  })
+  t.strictSame(
+    readdirSync(storeRoot)
+      .filter(n => !n.endsWith('.json') && !n.endsWith('.copied'))
+      .sort(),
+    ['.tmp', recent.hex, build.hex].sort(),
+  )
+  t.strictSame(
+    await prune(new Date().toISOString()),
+    {
+      checked: 2,
+      removed: { [recent.hex]: 'unused', [build.hex]: 'unused' },
+    },
+    'none copied from since now',
+  )
+})
