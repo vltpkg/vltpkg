@@ -420,6 +420,88 @@ ${JSON.stringify({
     )
   })
 
+  await t.test(
+    'unscored package and wrapper items in API response',
+    async t => {
+      const dir = t.testdir()
+      const path = resolve(dir, 'unscored.db')
+
+      // a package that was published too recently for socket.dev to
+      // have analyzed it comes back as an artifact with no score
+      const { score: _, ...unscoredEnglishDays } = englishDaysReport
+
+      t.intercept(global, 'fetch', {
+        value: async () =>
+          ({
+            ok: true,
+            status: 200,
+            text: async () => `${JSON.stringify(fooReport)}
+${JSON.stringify(unscoredEnglishDays)}
+${JSON.stringify({
+  _type: 'purlError',
+  value: {
+    error: 'package_not_found',
+    inputPurl: 'pkg:npm/missing@1.0.0',
+    retryable: false,
+  },
+})}
+${JSON.stringify({
+  _type: 'summary',
+  value: {
+    purl_input: 3,
+    resolved: 2,
+    errors: {
+      purl_malformed: 0,
+      purl_ecosystem_not_enabled: 0,
+      package_not_found: 1,
+    },
+  },
+})}
+`,
+          }) as unknown as Response,
+      })
+
+      const warn = t.capture(console, 'warn').args
+      const archive = new SecurityArchive({ path })
+      await archive.refresh({ nodes })
+
+      t.ok(
+        archive.has(
+          joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0']),
+        ),
+        'should store the scored package',
+      )
+      t.notOk(
+        archive.has(
+          joinDepIDTuple(['registry', 'npm', 'english-days@1.0.0']),
+        ),
+        'should leave out the package that has no score yet',
+      )
+      t.equal(
+        archive.ok,
+        false,
+        'should flag the archive as incomplete',
+      )
+      t.strictSame(
+        warn(),
+        [],
+        'should not warn about the wrapper items',
+      )
+
+      // the unscored package must not have been persisted either
+      const db = new DatabaseSync(path)
+      const rows = db
+        .prepare('SELECT depID FROM cache ORDER BY depID')
+        .all() as { depID: string }[]
+      db.close()
+      t.strictSame(
+        rows.map(r => r.depID),
+        [joinDepIDTuple(['registry', 'npm', '@ruyadorno/foo@1.0.0'])],
+        'should only persist the scored package',
+      )
+    },
+  )
+
   await t.test('missing cache folder', async t => {
     const dir = t.testdir()
     const path = resolve(dir, 'missing-folder/new.db')

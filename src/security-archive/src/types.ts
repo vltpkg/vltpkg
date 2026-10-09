@@ -132,3 +132,57 @@ export const asPackageReportData = (
   }
   return o
 }
+
+/**
+ * A single line of the NDJSON stream returned by the socket.dev
+ * batch purl API. Besides package artifacts, the stream can carry
+ * `purlError` and `summary` wrapper items, and a package that was
+ * published recently enough to not have been analyzed yet comes back
+ * as an artifact with no `score` object at all.
+ */
+export type JSONItemResponse = {
+  _type?: 'purlError' | 'summary'
+  namespace?: `@{string}`
+  name?: string
+  version?: string
+  score?: {
+    overall?: number
+    license: number
+    maintenance: number
+    quality: number
+    supplyChain: number
+    vulnerability: number
+  }
+}
+
+/**
+ * Returns the score of a response item with its `overall` value
+ * recalculated as the average of the individual components, or
+ * `undefined` when the item is not a scored package artifact.
+ */
+export const getItemScore = (
+  data: JSONItemResponse,
+): PackageScore | undefined => {
+  if (data._type || !data.score) return undefined
+  const {
+    license,
+    maintenance,
+    quality,
+    supplyChain,
+    vulnerability,
+  } = data.score
+  const scoreComponents = [
+    license,
+    maintenance,
+    quality,
+    supplyChain,
+    vulnerability,
+  ]
+  const overall = Number(
+    (
+      scoreComponents.reduce((sum, score) => sum + score, 0) /
+      scoreComponents.length
+    ).toFixed(2),
+  )
+  return { ...data.score, overall }
+}

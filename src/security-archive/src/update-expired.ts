@@ -6,9 +6,9 @@ import pRetry, { AbortError } from 'p-retry'
 import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { userAgent } from '@vltpkg/user-agent'
-import { asPackageReportData } from './types.ts'
+import { asPackageReportData, getItemScore } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { JSONItemResponse } from './index.ts'
+import type { JSONItemResponse } from './types.ts'
 import type EventEmitter from 'node:events'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
@@ -143,6 +143,9 @@ export const main = async (
   for (const line of json) {
     if (!line.trim()) continue
     const data = JSON.parse(line + '}') as JSONItemResponse
+    // skip the purlError and summary wrapper items the API may
+    // include in the stream, they do not describe a package
+    if (data._type) continue
     const scope = data.namespace ? `${data.namespace}/` : ''
     const name = `${scope}${data.name}`
     const key = `${name}@${data.version}`
@@ -156,24 +159,15 @@ export const main = async (
       continue
     }
 
-    // Calculate average score from all score components
-    const scoreComponents = [
-      data.score.license,
-      data.score.maintenance,
-      data.score.quality,
-      data.score.supplyChain,
-      data.score.vulnerability,
-    ]
-    const newAverageScore = Number(
-      (
-        scoreComponents.reduce((sum, score) => sum + score, 0) /
-        scoreComponents.length
-      ).toFixed(2),
-    )
+    const score = getItemScore(data)
+    // a package that socket.dev has not finished analyzing yet comes
+    // back without a score, keep the stale entry rather than replacing
+    // it with an invalid one
+    if (!score) continue
 
     const reportData = asPackageReportData({
       ...data,
-      score: { ...data.score, overall: newAverageScore },
+      score,
     })
 
     results.push({
