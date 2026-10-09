@@ -27,6 +27,14 @@ const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
   'sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api'
 
+// AbortSignal.timeout throws on <0/NaN and overflows to 1ms above 2^31-1
+const asTimeout = (raw: unknown): number | undefined => {
+  const n = Number(raw)
+  return Number.isInteger(n) && n > 0 && n <= 2_147_483_647 ?
+      n
+    : undefined
+}
+
 export type JSONItemResponse = {
   namespace?: `@{string}`
   name: string
@@ -68,6 +76,13 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
    * Number of retries attempts to reach the remote security API.
    */
   retries?: number
+  /**
+   * Max ms to wait for the remote security API, incl. retries.
+   * Defaults to `VLT_SECURITY_ARCHIVE_TIMEOUT` env or
+   * {@link SecurityArchive.defaultTimeout}. On timeout, missing
+   * packages are left unscanned and a warning is printed.
+   */
+  timeout?: number
 }
 
 /**
@@ -76,7 +91,8 @@ export type SecurityArchiveOptions = LRUCache.OptionsBase<
  * Using the SecurityArchive.refresh() method will update the local cache
  * with information from the socket.dev APIs or load from the local storage
  * if available. Information about package security is then available
- * using the SecurityArchive.get() method.
+ * using the SecurityArchive.get() method. Remote requests are bounded
+ * by the `timeout` option.
  */
 export class SecurityArchive
   extends LRUCache<DepID, PackageReportData>
@@ -85,6 +101,7 @@ export class SecurityArchive
   #expired = new Set<DepID>()
   #path: string
   #retries: number
+  #timeout: number
   #nodesByName = new Map<string, Set<NodeLike>>()
   #nodesByID = new Map<DepID, NodeLike>()
 
@@ -93,6 +110,11 @@ export class SecurityArchive
    * for all public registry packages from the initial list of nodes.
    */
   ok = false
+
+  /**
+   * True if the last refresh() timed out waiting for the remote API.
+   */
+  timedOut = false
 
   /**
    * Creates a new security archive instance and starts the refresh process.
@@ -119,6 +141,13 @@ export class SecurityArchive
     return 1000 * 60 * 60 * 3
   }
 
+  /**
+   * By default, remote requests time out after 30 seconds.
+   */
+  static get defaultTimeout() {
+    return 30_000
+  }
+
   constructor(options: SecurityArchiveOptions = {}) {
     super({
       max: SecurityArchive.defaultMax,
@@ -130,6 +159,10 @@ export class SecurityArchive
     this.#path =
       options.path ?? new XDG('vlt').cache('security-archive.db')
     this.#retries = options.retries ?? 3
+    this.#timeout =
+      asTimeout(options.timeout) ??
+      asTimeout(process.env.VLT_SECURITY_ARCHIVE_TIMEOUT) ??
+      SecurityArchive.defaultTimeout
   }
 
   /**
@@ -283,6 +316,7 @@ export class SecurityArchive
     const payload: UpdateExpiredPayload = {
       dbPath: this.#path,
       retries: this.#retries,
+      timeout: this.#timeout,
       ttl: SecurityArchive.defaultTtl,
       expired,
     }
@@ -346,6 +380,7 @@ export class SecurityArchive
    */
   async #retrieveRemoteData(
     queue: Set<Record<'purl', string>>,
+    signal: AbortSignal,
   ): Promise<string> {
     // fetch information from the socket.dev API
     const req = await fetch(SOCKET_API_V0_URL, {
@@ -357,6 +392,7 @@ export class SecurityArchive
       body: JSON.stringify({
         components: Array.from(queue),
       }),
+      signal,
     })
     // on missing valid auth or API, it should abort the retry logic
     if (req.status === 404) {
@@ -369,6 +405,29 @@ export class SecurityArchive
 
     const str = await req.text()
     return str.trim() + '\n'
+  }
+
+  /**
+   * Fetches remote data within the configured timeout, retries included.
+   * Returns `undefined` on timeout so that queued packages stay unscanned.
+   */
+  async #fetchRemoteData(
+    queue: Set<Record<'purl', string>>,
+  ): Promise<string | undefined> {
+    const signal = AbortSignal.timeout(this.#timeout)
+    try {
+      return await pRetry(
+        () => this.#retrieveRemoteData(queue, signal),
+        { retries: this.#retries, signal },
+      )
+    } catch (err) {
+      if (!signal.aborted) throw err
+      this.timedOut = true
+      // eslint-disable-next-line no-console
+      console.warn(
+        `security-archive: timed out after ${this.#timeout}ms fetching security data; ${queue.size} package(s) left unscanned (use :scanned to exclude them). Set VLT_SECURITY_ARCHIVE_TIMEOUT=<ms> to wait longer.`,
+      )
+    }
   }
 
   /**
@@ -478,6 +537,7 @@ export class SecurityArchive
   async refresh({ nodes }: SecurityArchiveRefreshOptions) {
     // should start by clearing the current in-memory cache
     this.clear()
+    this.timedOut = false
 
     const db = this.#openDatabase()
 
@@ -500,13 +560,12 @@ export class SecurityArchive
       const queue = this.#queueUpRequiredPackages()
       // only reach for the remote API if there are packages queued up
       if (queue.size > 0) {
-        // Parse the response data
-        const res = await pRetry(
-          () => this.#retrieveRemoteData(queue),
-          { retries: this.#retries },
-        )
-        const ids = this.#loadFromNDJSON(res)
-        this.#storeNewItemsToDatabase(db, ids)
+        const res = await this.#fetchRemoteData(queue)
+        // on timeout nothing is loaded nor cached
+        if (res !== undefined) {
+          const ids = this.#loadFromNDJSON(res)
+          this.#storeNewItemsToDatabase(db, ids)
+        }
       }
 
       // validates the refresh process was successful

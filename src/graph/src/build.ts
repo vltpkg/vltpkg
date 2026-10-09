@@ -5,7 +5,10 @@ import type { BuildResult } from './reify/build.ts'
 import { Diff } from './diff.ts'
 import { Graph } from './graph.ts'
 import { Query } from '@vltpkg/query'
-import { SecurityArchive } from '@vltpkg/security-archive'
+import {
+  SecurityArchive,
+  usesNpmRegistry,
+} from '@vltpkg/security-archive'
 import type { LoadOptions } from './actual/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
@@ -56,7 +59,15 @@ const filterNodesByQuery = async (
     signal: new AbortController().signal,
   })
 
-  return new Set(resultNodes.map(node => node.id))
+  // fail closed: never run scripts of pkgs whose security data timed out
+  const allowed =
+    securityArchive?.timedOut ?
+      resultNodes.filter(
+        node =>
+          securityArchive.has(node.id) || !usesNpmRegistry(node),
+      )
+    : resultNodes
+  return new Set(allowed.map(node => node.id))
 }
 
 /**
