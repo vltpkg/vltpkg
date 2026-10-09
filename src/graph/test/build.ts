@@ -445,13 +445,12 @@ t.test('build with target option', async t => {
 })
 
 t.test('security archive timeout fails closed', async t => {
-  const realArchive = await import('@vltpkg/security-archive')
   const mockBuild = async (timedOut: boolean) => {
+    // partial mock: graph must only need SecurityArchive from main entry
     const { build } = await t.mockImport<
       typeof import('../src/build.ts')
     >('../src/build.ts', {
       '@vltpkg/security-archive': {
-        ...realArchive,
         SecurityArchive: {
           start: async () => ({
             timedOut,
@@ -478,6 +477,11 @@ t.test('security archive timeout fails closed', async t => {
       ['target-pkg-1'],
       'should only build scanned pkg',
     )
+    t.strictSame(
+      result.skipped?.map(n => n.name),
+      ['other-pkg'],
+      'should report skipped pkg',
+    )
   })
 
   t.test('keeps all when not timed out', async t => {
@@ -493,6 +497,7 @@ t.test('security archive timeout fails closed', async t => {
       ['other-pkg', 'target-pkg-1'],
       'should build both pkgs',
     )
+    t.equal(result.skipped, undefined, 'should skip nothing')
   })
 })
 

@@ -22,6 +22,8 @@ import { unshare } from './unshare.ts'
 export type BuildResult = {
   success: Node[]
   failure: Node[]
+  /** needed builds skipped as their security data timed out */
+  skipped?: Node[]
 }
 
 export const build = async (
