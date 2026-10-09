@@ -24,6 +24,7 @@ import { pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
@@ -1426,6 +1427,121 @@ t.test('binding.gyp found past a stale path cache', async t => {
   const id = joinDepIDTuple(['registry', '', 'lodash@4.17.21'])
   t.strictSame(result.buildQueue, [id])
   t.equal(graph.nodes.get(id)?.buildState, 'needed')
+})
+
+t.test('pending build state survives later reify', async t => {
+  const lodashId = joinDepIDTuple(['registry', '', 'lodash@4.17.21'])
+  // lodash gets a binding.gyp, so it needs a build
+  const packageInfo = createMockPackageInfo({
+    extract: async (spec, target, options) => {
+      const res = await mockPackageInfoBase.extract(
+        spec,
+        target,
+        options,
+      )
+      if (String(spec).includes('lodash'))
+        writeFileSync(resolve(target, 'binding.gyp'), '{}')
+      return res
+    },
+  })
+  const setup = async (t: Test) => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'x',
+          version: '1.0.0',
+          dependencies: { lodash: '4' },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const opts = () => ({
+      projectRoot,
+      registries,
+      packageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      remover: new RollbackRemove(),
+      allowScripts: ':not(*)',
+    })
+    const hidden = () =>
+      JSON.parse(
+        readFileSync(
+          resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+          'utf8',
+        ),
+      ) as LockfileData
+    const o = opts()
+    const res = await reify({ ...o, graph: await ideal.build(o) })
+    t.strictSame(res.buildQueue, [lodashId])
+    t.equal(hidden().nodes[lodashId]?.[9], 1, 'pending after install')
+    return { projectRoot, opts, hidden }
+  }
+
+  t.test('unrelated add', async t => {
+    const { opts, hidden } = await setup(t)
+    const o = opts()
+    const act = actual.load({ ...o, loadManifests: true })
+    const add = Object.assign(
+      new Map([
+        [
+          joinDepIDTuple(['file', '.']),
+          new Map([
+            [
+              'underscore',
+              asDependency({
+                spec: Spec.parse('underscore', '1.13.7', {
+                  registries,
+                }),
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]),
+      { modifiedDependencies: true },
+    )
+    const graph = await ideal.build({ ...o, actual: act, add })
+    const res = await reify({ ...o, actual: act, add, graph })
+    const { nodes } = hidden()
+    t.ok(
+      nodes[joinDepIDTuple(['registry', '', 'underscore@1.13.7'])],
+      'hidden lockfile rewritten',
+    )
+    t.equal(nodes[lodashId]?.[9], 1, 'still pending')
+    t.strictSame(res.buildQueue, [lodashId])
+  })
+
+  t.test('changed spec, same node', async t => {
+    const { projectRoot, opts, hidden } = await setup(t)
+    writeFileSync(
+      resolve(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { lodash: '4.17.21' },
+      }),
+    )
+    const o = opts()
+    const act = actual.load({ ...o, loadManifests: true })
+    const graph = await ideal.build({ ...o, actual: act })
+    const res = await reify({ ...o, actual: act, graph })
+    t.equal(res.diff.hasChanges(), false)
+    const { edges, nodes } = hidden()
+    t.strictSame(
+      edges,
+      {
+        [`${joinDepIDTuple(['file', '.'])} lodash`]: `prod 4.17.21 ${lodashId}`,
+      },
+      'hidden lockfile rewritten',
+    )
+    t.equal(nodes[lodashId]?.[9], 1, 'still pending')
+  })
 })
 
 t.test('reify recreates deleted workspace node_modules', async t => {

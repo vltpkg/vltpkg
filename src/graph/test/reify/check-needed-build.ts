@@ -5,7 +5,10 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Diff } from '../../src/diff.ts'
 import type { Node } from '../../src/node.ts'
-import { checkNeededBuild } from '../../src/reify/check-needed-build.ts'
+import {
+  carryBuildState,
+  checkNeededBuild,
+} from '../../src/reify/check-needed-build.ts'
 
 const dir = t.testdir({
   gyp: {
@@ -86,5 +89,23 @@ t.test('built, or install script', async t => {
       }),
     ),
     true,
+  )
+})
+
+t.test('carryBuildState', async t => {
+  const n = (id: string, buildState: Node['buildState'] = 'none') =>
+    ({ id, buildState }) as Node
+  const from = [n('a', 'needed'), n('b', 'built'), n('c', 'built')]
+  const to = [n('a'), n('b'), n('c', 'needed'), n('d')]
+  const nodes = (list: Node[]) => new Map(list.map(x => [x.id, x]))
+  carryBuildState({
+    from: { nodes: nodes(from) },
+    to: { nodes: nodes(to) },
+    nodes: { add: new Set([to[2]]) },
+  } as unknown as Diff)
+  t.strictSame(
+    to.map(x => x.buildState),
+    ['needed', 'built', 'needed', 'none'],
+    'kept nodes carried, added and new ones untouched',
   )
 })

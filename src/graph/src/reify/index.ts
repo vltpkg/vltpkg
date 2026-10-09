@@ -22,7 +22,10 @@ import { addEdges } from './add-edges.ts'
 import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
-import { checkNeededBuild } from './check-needed-build.ts'
+import {
+  carryBuildState,
+  checkNeededBuild,
+} from './check-needed-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
 import { pruneUnsupportedOptional } from './optional-fail.ts'
@@ -131,6 +134,7 @@ export const reify = async (
     })
 
   const diff = new Diff(actual, graph)
+  carryBuildState(diff)
 
   // normalise importer edge specs and compute the package.json changes
   // before deciding whether anything needs reifying: an add whose target
@@ -273,7 +277,7 @@ const reify_ = async (
 
   // set the buildQueue on the result object containing
   // an array with all the ids of nodes that need building
-  res.buildQueue = [...diff.nodes.add]
+  res.buildQueue = [...diff.to.nodes.values()]
     .filter(node => node.buildState === 'needed')
     .map(node => node.id)
 
