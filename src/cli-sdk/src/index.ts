@@ -1,5 +1,5 @@
 import { format } from 'node:util'
-import { asRootError } from '@vltpkg/output/error'
+import { asRootError, findRootError } from '@vltpkg/output/error'
 import { loadPackageJson } from 'package-json-from-dist'
 import {
   getSortedCliOptions,
@@ -32,15 +32,17 @@ const loadVlt = async (cwd: string, argv: string[]) => {
   try {
     return await Config.load(cwd, argv)
   } catch (e) {
-    const err = asRootError(e, { code: 'JACKSPEAK' })
+    const code =
+      findRootError(e, { code: 'ECONFIG' }) ? 'ECONFIG' : 'JACKSPEAK'
+    const err = asRootError(e, { code })
     const { found, path, wanted, name } = err.cause
     const isConfigFile = typeof path === 'string'
     const msg =
-      isConfigFile ?
-        `Problem in Config File ${path}`
+      isConfigFile ? `Problem in Config File ${path}`
+      : code === 'ECONFIG' ? 'Config Error'
       : 'Invalid Option Flag'
     const validOptions =
-      wanted ? undefined
+      wanted || code === 'ECONFIG' ? undefined
       : isConfigFile ? getSortedKeys()
       : getSortedCliOptions()
     stderr(msg)
@@ -58,11 +60,14 @@ const loadVlt = async (cwd: string, argv: string[]) => {
       stderr(indent('Valid Options:'))
       stderr(indent(validOptions.join('\n'), 4))
     }
-    stderr(
-      indent(
-        `Run 'vlt help' for more information about available options.`,
-      ),
-    )
+    // `vlt help` would fail the same way
+    if (code !== 'ECONFIG') {
+      stderr(
+        indent(
+          `Run 'vlt help' for more information about available options.`,
+        ),
+      )
+    }
     return flushAndExit(process.exitCode || 1)
   }
 }

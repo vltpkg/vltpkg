@@ -261,8 +261,11 @@ export const definition = j
 
                     There is **no** built-in \`npm\` registry URL; the \`npm\`
                     alias must be configured (e.g. via \`vlt setup\`) before it
-                    can be used. The \`gh\` and \`jsr\` aliases have built-in
-                    defaults that can be overridden here.
+                    can be used. The \`gh\` alias has a built-in default
+                    that can be overridden here. A name used by
+                    \`--jsr-registries\` or \`--git-hosts\` (e.g. \`jsr\`,
+                    \`github\`), or a built-in protocol (e.g. \`file\`), is
+                    an error.
 
                     Aliases given on the command line or in
                     \`VLT_REGISTRIES\` (newline-delimited) merge with the

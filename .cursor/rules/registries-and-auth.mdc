@@ -12,7 +12,9 @@ alwaysApply: false
 2. **Named aliases**: `--registries=<name>=<url>` → use as `name:pkg@ver` in dependencies
 3. **Scope registries**: `--scoped-registries=@scope=<url>` → `@scope/*` auto-routes
 4. **Built-in aliases**: `jsr:` (jsr.io), `gh:` (GitHub packages). All are
-   user/service-overridable. `npm:` is **not** built-in — it has no baked
+   user/service-overridable, only in their own map; cross-map or
+   built-in-protocol names → `ECONFIG` at config load (cli-sdk
+   `config/spec-aliases.ts`). `npm:` is **not** built-in — it has no baked
    URL and must be configured (see below).
 
 ## Bare specs & `--default-registry-alias`

@@ -168,6 +168,38 @@ t.test('invalid config in file', async t => {
   t.matchSnapshot(logs.join('\n'))
 })
 
+t.test('config error', async t => {
+  const cases: [string, string[], Record<string, unknown>][] = [
+    ['colliding alias', ['--registries', 'github=https://x/'], {}],
+    [
+      'reserved registries name',
+      [],
+      { registries: { 'a~b': 'https://x/' } },
+    ],
+  ]
+  for (const [name, argv, config] of cases) {
+    await t.test(name, async t => {
+      let exitCode = 0
+      const cwd = t.testdir({
+        'vlt.json': JSON.stringify({ config }),
+        '.git': {},
+      })
+      t.intercept(process, 'exit', {
+        value: (code: number) => {
+          exitCode = code
+          if (code !== 0) {
+            throw new Error()
+          }
+        },
+      })
+      const { error, logs } = await run(t, { argv, cwd })
+      t.ok(error instanceof Error)
+      t.equal(exitCode, 1)
+      t.matchSnapshot(logs.join('\n'))
+    })
+  }
+})
+
 t.test('valid workspace', async t => {
   const cwd = t.testdir({
     'vlt.json': JSON.stringify({

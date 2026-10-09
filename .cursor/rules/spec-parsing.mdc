@@ -79,7 +79,9 @@ pass `registries: { npm: 'https://registry.npmjs.org/' }` so `npm:`
 aliases and bare specs resolve.
 
 `getOptions` merges user config **over** built-in defaults, so every
-built-in alias (`gh`, `jsr`) is user/service-overridable.
+built-in alias (`gh`, `jsr`) is user/service-overridable within its own
+map. cli-sdk rejects cross-map or built-in-protocol names at config load
+(`builtinProtocols` is exported for that).
 
 ## Undefined protocols
 
