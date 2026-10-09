@@ -2,12 +2,19 @@
 
 // Generates GitHub release notes for a tag and prints them to stdout.
 //
-// GitHub's automatic release notes attribute each pull request to the
-// account that opened it. When that account is a GitHub App (a `[bot]`
-// login), the person behind the change is only recorded as a
-// `Co-Authored-By` trailer on the commits. GitHub resolves those
-// trailers to user accounts, so this script rewrites the attribution
-// of bot-opened pull requests to the human co-authors of their commits.
+// GitHub's automatic release notes list each pull request by its
+// title, which is not always what landed: a squash commit can be
+// retitled when merging, and titles carry markers such as
+// `[ci full-matrix]` that only steer CI. This script lists each pull
+// request by the headline of the commit that landed instead, with any
+// such marker removed.
+//
+// They also attribute each pull request to the account that opened
+// it. When that account is a GitHub App (a `[bot]` login), the person
+// behind the change is only recorded as a `Co-Authored-By` trailer on
+// the commits. GitHub resolves those trailers to user accounts, so
+// this script rewrites the attribution of bot-opened pull requests to
+// the human co-authors of their commits.
 //
 // Usage: ./scripts/release-notes.ts <tag> <previous-tag>
 // Requires GH_TOKEN (or GITHUB_TOKEN) and GITHUB_REPOSITORY.
@@ -57,16 +64,33 @@ const isBot = (login: string) => login.endsWith('[bot]')
 // addresses (`<id>+<login>@users.noreply.github.com`) are kept.
 const isNoReply = (email: string) => /^no-?reply@/i.test(email)
 
-// The human co-authors of a pull request's commits, in first-seen
-// order, excluding the bot that opened it and any other bots.
-const humanCoAuthors = async (number: number): Promise<string[]> => {
+// Markers such as `[ci full-matrix]` opt a pull request into extra CI
+// runs (see .github/workflows/ci.yml). They mean nothing to readers,
+// and a squash commit can still carry one if its title was not edited.
+const withoutCiMarkers = (title: string) =>
+  title.replace(/\s*\[ci [^\]]*\]/gi, '').trim()
+
+type PullRequest = {
+  // The first line of the commit that landed, without the
+  // ` (#<number>)` that GitHub appends to squash commits. Unset when
+  // a rebase landed several commits, as no one line describes them.
+  headline?: string
+  // The human co-authors of the pull request's commits, in first-seen
+  // order, excluding the bot that opened it and any other bots.
+  coAuthors: string[]
+}
+
+const pullRequest = async (number: number): Promise<PullRequest> => {
   type Result = {
     data?: {
       repository?: {
         pullRequest?: {
+          mergeCommit: { message: string } | null
           commits: {
             nodes: {
               commit: {
+                message: string
+                parents: { totalCount: number }
                 author: { email: string } | null
                 authors: {
                   nodes: {
@@ -82,12 +106,17 @@ const humanCoAuthors = async (number: number): Promise<string[]> => {
     }
     errors?: { message: string }[]
   }
+  // `last` rather than `first`, so a rebase can be recognized by its
+  // last commit even on a pull request with more than 100 of them.
   const query = `query ($owner: String!, $repo: String!, $number: Int!) {
     repository(owner: $owner, name: $repo) {
       pullRequest(number: $number) {
-        commits(first: 100) {
+        mergeCommit { message }
+        commits(last: 100) {
           nodes {
             commit {
+              message
+              parents { totalCount }
               author { email }
               authors(first: 10) {
                 nodes { email user { login } }
@@ -109,14 +138,34 @@ const humanCoAuthors = async (number: number): Promise<string[]> => {
     }
   } catch (er) {
     // This runs after the packages are published and the tag is pushed,
-    // so a failed lookup keeps the bot attribution rather than failing
-    // the release.
+    // so a failed lookup keeps the generated title and attribution
+    // rather than failing the release.
     console.warn(`pull request #${number}: ${er}`)
-    return []
+    return { coAuthors: [] }
   }
+  const pr = result.data?.repository?.pullRequest
+  if (!pr) return { coAuthors: [] }
+
+  // A squash lands one new commit. A rebase lands the pull request's
+  // own commits, leaving out merges from the base branch, and the merge
+  // commit is a copy of the last of them, message included. The first
+  // line is read from `message`, as `messageHeadline` gets truncated.
+  const landed = pr.mergeCommit?.message
+  const own = pr.commits.nodes.filter(
+    ({ commit }) => commit.parents.totalCount === 1,
+  )
+  const rebasedSeveral =
+    own.length > 1 && landed === own.at(-1)?.commit.message
+  const headline =
+    rebasedSeveral ? undefined : (
+      landed
+        ?.split('\n', 1)[0]
+        ?.trim()
+        .replace(new RegExp(` \\(#${number}\\)$`), '')
+    )
+
   const logins = new Set<string>()
-  for (const { commit } of result.data?.repository?.pullRequest
-    ?.commits.nodes ?? []) {
+  for (const { commit } of pr.commits.nodes) {
     // `authors` includes the commit's own author, not just the trailers,
     // and a human pushing to a bot's branch must not re-attribute the
     // whole pull request to them.
@@ -132,7 +181,7 @@ const humanCoAuthors = async (number: number): Promise<string[]> => {
       }
     }
   }
-  return [...logins]
+  return { headline, coAuthors: [...logins] }
 }
 
 const { body } = await api<{ body: string }>(
@@ -142,7 +191,7 @@ const { body } = await api<{ body: string }>(
 
 const pullUrl = `${serverUrl}/${owner}/${repo}/pull/`
 const changeLine = new RegExp(
-  `^(\\* .* by )@([^\\s]+\\[bot\\])( in ${pullUrl.replaceAll('.', '\\.')}(\\d+))$`,
+  `^\\* (.*) by @([^\\s]+) (in ${pullUrl.replaceAll('.', '\\.')}(\\d+))$`,
 )
 const contributorLine =
   /^\* @([^\s]+\[bot\]) made their first contribution in /
@@ -153,13 +202,16 @@ const rewrittenBots = new Set<string>()
 for (const [i, line] of lines.entries()) {
   const match = changeLine.exec(line)
   if (!match) continue
-  const [, prefix, bot, suffix, number] = match
-  assert(prefix && bot && suffix && number)
-  const authors = await humanCoAuthors(Number(number))
-  if (!authors.length) continue
+  const [, title, login, link, number] = match
+  assert(title && login && link && number)
+  const { headline, coAuthors } = await pullRequest(Number(number))
+  let authors = [login]
+  if (isBot(login) && coAuthors.length) {
+    authors = coAuthors
+    rewrittenBots.add(login)
+  }
   lines[i] =
-    `${prefix}${authors.map(a => `@${a}`).join(', ')}${suffix}`
-  rewrittenBots.add(bot)
+    `* ${withoutCiMarkers(headline ?? title)} by ${authors.map(a => `@${a}`).join(', ')} ${link}`
 }
 
 // A bot whose changes were attributed to their co-authors is not a
