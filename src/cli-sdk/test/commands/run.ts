@@ -167,6 +167,56 @@ t.test('run script across several workspaces', async t => {
   })
 })
 
+t.test('runs --scope targets in dependency order', async t => {
+  const runTest = async (t: Test, { args }: { args: string[] }) => {
+    const ws = (name: string, dep?: string) => ({
+      'package.json': JSON.stringify({
+        name,
+        version: '1.0.0',
+        ...(dep && { dependencies: { [dep]: 'workspace:*' } }),
+        scripts: { hello: pass },
+      }),
+    })
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      'package.json': '{}',
+      src: { a: ws('a', 'b'), b: ws('b', 'c'), c: ws('c') },
+      '.git': {},
+    })
+    t.chdir(dir)
+
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    unload()
+    const conf = await Config.load(t.testdirName, [
+      'hello',
+      ...args,
+      '--view=human',
+    ])
+    const logs = t.capture(console, 'log').args
+    const result = await command(conf)
+    t.strictSame(Object.keys(result), ['src/c', 'src/b', 'src/a'])
+    t.strictSame(logs(), [
+      ['src/c', 'ok'],
+      ['src/b', 'ok'],
+      ['src/a', 'ok'],
+    ])
+  }
+
+  t.test('with scope', async t => {
+    await runTest(t, {
+      args: ['--scope', ':workspace#a, :workspace#b, :workspace#c'],
+    })
+  })
+
+  t.test('with workspaces', async t => {
+    await runTest(t, {
+      args: ['-w', 'src/a', '-w', 'src/b', '-w', 'src/c'],
+    })
+  })
+})
+
 t.test('run script across workspaces with some missing', async t => {
   const runTest = async (t: Test, { args }: { args: string[] }) => {
     const dir = t.testdir({

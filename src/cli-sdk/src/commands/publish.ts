@@ -21,6 +21,7 @@ import { actual } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import type { LoadedConfig } from '../config/index.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { sortScopeLocations } from '../sort-scope-locations.ts'
 import { minimatch } from 'minimatch'
 import { resolveRegistry } from '../require-registry.ts'
 import { stderr } from '../output.ts'
@@ -149,6 +150,7 @@ export const command: CommandFn<CommandResult> = async conf => {
     const { nodes } = await query.search(queryString, {
       signal: new AbortController().signal,
     })
+    const found: string[] = []
     for (const node of nodes) {
       const { location } = node.toJSON()
       assert(
@@ -157,8 +159,9 @@ export const command: CommandFn<CommandResult> = async conf => {
           found: node,
         }),
       )
-      locations.push(resolve(projectRoot, location))
+      found.push(resolve(projectRoot, location))
     }
+    locations.push(...sortScopeLocations(found, options.monorepo))
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
       if (paths?.length) {
