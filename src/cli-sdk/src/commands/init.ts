@@ -79,14 +79,12 @@ export const command: CommandFn<
     )
     // what gets written back to vlt.json. The raw vlt.json value is
     // reused as-is so its existing shape is preserved. When the
-    // definitions live in package.json instead, seed vlt.json with them
-    // first -- otherwise adding a `workspaces` field here would shadow
-    // every workspace package.json already declares.
+    // definitions live in package.json or pnpm-workspace.yaml instead,
+    // seed vlt.json with them first -- otherwise adding a `workspaces`
+    // field here would shadow every workspace already declared there.
     const workspacesConfig =
       load('workspaces', assertWSConfig) ??
-      (source === 'package.json' ?
-        Object.values(parsedWSConfig).flat()
-      : undefined)
+      (source ? Object.values(parsedWSConfig).flat() : undefined)
     const results: InitFileResults[] = []
     const addToConfig: string[] = []
 

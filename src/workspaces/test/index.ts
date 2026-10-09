@@ -666,6 +666,89 @@ t.test(
   },
 )
 
+t.test('pnpm-workspace.yaml fallback', async t => {
+  const tree = {
+    '.git': {},
+    'pnpm-workspace.yaml':
+      "packages:\n  - 'packages/*'\n  - '!packages/legacy'\n",
+    packages: {
+      a: { 'package.json': pkg('a') },
+      legacy: { 'package.json': pkg('legacy') },
+    },
+    apps: { web: { 'package.json': pkg('web') } },
+  }
+
+  await t.test(
+    'used when nothing else declares workspaces',
+    async t => {
+      const dir = t.testdir({ ...tree, 'package.json': pkg('root') })
+      t.chdir(dir)
+      unload()
+      t.strictSame(
+        new Set(Monorepo.maybeLoad(dir)?.names()),
+        new Set(['a']),
+      )
+      t.strictSame(resolveWSConfig(dir), {
+        config: { packages: ['packages/*', '!packages/legacy'] },
+        source: 'pnpm-workspace.yaml',
+      })
+    },
+  )
+
+  await t.test('package.json workspaces win', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['apps/*'],
+      }),
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(
+      new Set(Monorepo.maybeLoad(dir)?.names()),
+      new Set(['web']),
+    )
+    t.equal(resolveWSConfig(dir).source, 'package.json')
+  })
+
+  await t.test('vlt.json workspaces win', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'vlt.json': JSON.stringify({ workspaces: ['apps/*'] }),
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(
+      new Set(Monorepo.maybeLoad(dir)?.names()),
+      new Set(['web']),
+    )
+    t.equal(resolveWSConfig(dir).source, 'vlt.json')
+  })
+
+  await t.test('no packages list: not a monorepo', async t => {
+    const dir = t.testdir({
+      ...tree,
+      'pnpm-workspace.yaml': 'catalog:\n  react: ^18\n',
+    })
+    t.chdir(dir)
+    unload()
+    t.equal(Monorepo.maybeLoad(dir), undefined)
+    t.strictSame(resolveWSConfig(dir), { config: {} })
+  })
+
+  await t.test("packages: ['.']: not a monorepo", async t => {
+    const dir = t.testdir({
+      ...tree,
+      'pnpm-workspace.yaml': "packages: ['.']\n",
+    })
+    t.chdir(dir)
+    unload()
+    t.equal(Monorepo.maybeLoad(dir), undefined)
+    t.strictSame(resolveWSConfig(dir), { config: {} })
+  })
+})
+
 t.test('not a monorepo', async t => {
   await t.test('root package.json has no workspaces', async t => {
     const dir = t.testdir({
