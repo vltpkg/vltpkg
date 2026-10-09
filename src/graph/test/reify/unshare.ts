@@ -9,7 +9,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { unshare } from '../../src/reify/unshare.ts'
@@ -49,6 +49,7 @@ t.test('shared package: every file copied', async t => {
     process.umask(prev)
   })
   const { store, pkg } = setup(t)
+  FS.chmodSync(resolve(store, 'index.js'), 0o644)
   const before = files.map(f => ino(resolve(pkg, f)))
   await unshare(pkg)
   files.forEach((f, i) => {
@@ -64,10 +65,10 @@ t.test('shared package: every file copied', async t => {
     )
   })
   if (!isWin) {
-    // like a copy from the store: bins keep their mode, the rest umask'd
+    // store mode kept, umask not applied
     const mode = (f: string) => statSync(resolve(pkg, f)).mode & 0o777
     t.equal(mode('bin/cli.js'), 0o755)
-    t.equal(mode('index.js'), 0o640)
+    t.equal(mode('index.js'), 0o644)
   }
   t.strictSame(readdirSync(pkg).sort(), [
     'bin',
@@ -79,32 +80,34 @@ t.test('shared package: every file copied', async t => {
   t.equal(readFileSync(resolve(store, 'index.js'), 'utf8'), 'index')
 })
 
-// windows reports no exec bits: fake them
-t.test('exec files get the store mode', async t => {
+t.test('copied with COPYFILE_EXCL into a sibling tmp', async t => {
   const { pkg } = setup(t)
-  const chmods: [string, number][] = []
+  const calls: [string, string, number | undefined][] = []
   const { unshare: mocked } = await t.mockImport<
     typeof import('../../src/reify/unshare.ts')
   >('../../src/reify/unshare.ts', {
-    'node:fs': t.createMock(FS, {
-      lstatSync: ((p: string, o?: FS.StatSyncOptions) => {
-        const st = FS.lstatSync(p, o) as FS.Stats | undefined
-        if (st && p.endsWith('cli.js')) st.mode |= 0o751
-        return st
-      }) as typeof FS.lstatSync,
-    }),
     'node:fs/promises': t.createMock(FSP, {
-      chmod: async (p: FS.PathLike, mode: FS.Mode) => {
-        chmods.push([String(p), Number(mode)])
+      copyFile: async (
+        src: FS.PathLike,
+        dst: FS.PathLike,
+        mode?: number,
+      ) => {
+        calls.push([String(src), String(dst), mode])
+        return FSP.copyFile(src, dst, mode)
       },
     }),
   })
   await mocked(pkg)
-  t.strictSame(
-    chmods.map(([p, m]) => [dirname(p), m & 0o111]),
-    [[resolve(pkg, 'bin'), 0o111]],
-  )
-  t.equal(statSync(resolve(pkg, 'bin/cli.js')).nlink, 1)
+  t.equal(calls.length, 4)
+  for (const [src, dst, mode] of calls) {
+    t.equal(mode, FS.constants.COPYFILE_EXCL)
+    t.equal(dirname(dst), dirname(src))
+    t.match(basename(dst), /^\.vlt-unshare-/)
+  }
+  t.equal(calls.at(-1)?.[0], resolve(pkg, 'package.json'))
+  for (const f of files) {
+    t.equal(statSync(resolve(pkg, f)).nlink, 1, f)
+  }
 })
 
 t.test('private package.json: nothing touched', async t => {
@@ -161,23 +164,29 @@ t.test("a killed run's tmp copy is removed", async t => {
 
 t.test('failed: package.json still shared, retry', async t => {
   const fails: Record<string, Partial<typeof FSP>> = {
-    read: {
-      readFile: (async (p: FS.PathLike) => {
-        if (String(p).endsWith('a.js')) throw new Error('EIO')
-        return FSP.readFile(p)
-      }) as typeof FSP.readFile,
+    copy: {
+      copyFile: async (
+        src: FS.PathLike,
+        dst: FS.PathLike,
+        mode?: number,
+      ) => {
+        if (String(src).endsWith('a.js')) throw new Error('EIO')
+        return FSP.copyFile(src, dst, mode)
+      },
     },
     // a partial tmp copy is removed, the shared file kept
-    write: {
-      writeFile: (async (
-        p: FS.PathLike,
-        data: string,
-        o: FS.WriteFileOptions,
+    partial: {
+      copyFile: async (
+        src: FS.PathLike,
+        dst: FS.PathLike,
+        mode?: number,
       ) => {
-        const lib = dirname(String(p)).endsWith('lib')
-        await FSP.writeFile(p, lib ? '' : data, o)
-        if (lib) throw new Error('EIO')
-      }) as typeof FSP.writeFile,
+        if (!dirname(String(src)).endsWith('lib')) {
+          return FSP.copyFile(src, dst, mode)
+        }
+        await FSP.writeFile(dst, '')
+        throw new Error('EIO')
+      },
     },
     // e.g. a file held open on windows
     rename: {
