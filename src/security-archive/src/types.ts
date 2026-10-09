@@ -142,7 +142,7 @@ export const asPackageReportData = (
  */
 export type JSONItemResponse = {
   _type?: 'purlError' | 'summary'
-  namespace?: `@{string}`
+  namespace?: `@${string}`
   name?: string
   version?: string
   score?: {
