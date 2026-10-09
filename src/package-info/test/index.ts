@@ -3135,7 +3135,8 @@ t.test('global store', async t => {
       const track = drainer(t)
       const { dir, store, states, links } = await setup(t)
       populate(store)
-      // clonefile(2) is darwin-only: what the pool reports for one
+      // clonefile(2) is darwin-only, and a failed clone is a miss:
+      // link the entry, and report a clone
       const opts: LinkFromStoreOptions[] = []
       const { PackageInfoClient } = await t.mockImport<
         typeof import('../src/index.ts')
@@ -3143,10 +3144,13 @@ t.test('global store', async t => {
         '@vltpkg/tar': {
           Pool: class ClonePool extends Pool {
             async linkFromStore(
-              ...args: Parameters<Pool['linkFromStore']>
+              ...[entry, target, o]: Parameters<Pool['linkFromStore']>
             ) {
-              opts.push(args[2] ?? {})
-              const res = await super.linkFromStore(...args)
+              opts.push(o ?? {})
+              const res = await super.linkFromStore(entry, target, {
+                ...o,
+                clone: false,
+              })
               return res && { ...res, how: 'clone' as const }
             }
           },
