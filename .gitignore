@@ -11,7 +11,7 @@ tmp
 /.turbo
 /docs
 /node_modules
-# install-generated skill mounts (vltpkg/vltpkg#1540); each skill this
+# install-generated skill mounts (vltpkg/vltpkg#1540); each root skill this
 # repo publishes (skills.sh, docs.vlt.sh/skills) needs a `!` line here
 /skills/*
 !/skills/vlt-registry-migration/
