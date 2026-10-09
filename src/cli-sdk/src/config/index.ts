@@ -958,7 +958,8 @@ export class Config {
         found: user,
       })
     }
-    return user
+    // normalize separators (`~/g` on win32)
+    return resolve(user)
   }
 
   /**
