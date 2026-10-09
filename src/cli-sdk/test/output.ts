@@ -139,17 +139,21 @@ t.test('getView', async t => {
 
 t.test('outputCommand', async t => {
   const confJson = {
+    explicit: {},
     values: { view: 'json' },
   } as LoadedConfig
   const confHuman = {
+    explicit: {},
     values: { view: 'human' },
     abort,
   } as LoadedConfig
   const confInspect = {
+    explicit: {},
     values: { view: 'inspect' },
     abort,
   } as LoadedConfig
   const confHelp = {
+    explicit: {},
     values: { help: true },
   } as LoadedConfig
 
@@ -185,6 +189,7 @@ t.test('outputCommand', async t => {
   t.test('success output (silent)', async t => {
     const logs = t.capture(console, 'log').args
     const confSilent = {
+      explicit: {},
       values: { view: 'silent' },
     } as LoadedConfig
     await outputCommand(cliCommand, confSilent)
@@ -218,7 +223,7 @@ t.test('outputCommand', async t => {
         usage: () => ({ usage: () => 'usage' }) as Jack,
         views: {},
       },
-      { values: {} } as LoadedConfig,
+      { explicit: {}, values: {} } as LoadedConfig,
     )
     t.strictSame(logs(), [['true']])
   })
@@ -309,6 +314,7 @@ t.test('outputCommand', async t => {
         // a built-in default (gh) left at its default URL does not
         // count as the user having configured a registry
         await outputCommand(registryCommand, {
+          explicit: {},
           values: { view: 'json' },
           options: {
             registries: { gh: 'https://npm.pkg.github.com/' },
@@ -326,6 +332,7 @@ t.test('outputCommand', async t => {
     t.test('--help is answered before the check', async t => {
       const logs = t.capture(console, 'log').args
       await outputCommand(registryCommand, {
+        explicit: {},
         values: { help: true },
         options: {},
       } as LoadedConfig)
@@ -335,6 +342,7 @@ t.test('outputCommand', async t => {
     t.test('runs when a registry is configured', async t => {
       const logs = t.capture(console, 'log').args
       await outputCommand(registryCommand, {
+        explicit: {},
         values: { view: 'json' },
         options: { registry: 'https://registry.npmjs.org/' },
       } as LoadedConfig)
@@ -346,6 +354,7 @@ t.test('outputCommand', async t => {
       async t => {
         const logs = t.capture(console, 'log').args
         await outputCommand(registryCommand, {
+          explicit: {},
           values: { view: 'json' },
           options: {
             'default-registry-alias': 'npm',
@@ -363,6 +372,7 @@ t.test('outputCommand', async t => {
         // user-configured alias is enough for resolveRegistry to pick
         const logs = t.capture(console, 'log').args
         await outputCommand(registryCommand, {
+          explicit: {},
           values: { view: 'json' },
           options: {
             'default-registry-alias': 'npm',
@@ -377,6 +387,7 @@ t.test('outputCommand', async t => {
       // gh overridden to a non-default URL counts as user-configured
       const logs = t.capture(console, 'log').args
       await outputCommand(registryCommand, {
+        explicit: {},
         values: { view: 'json' },
         options: {
           registries: { gh: 'https://custom.example.com/' },
@@ -407,6 +418,7 @@ t.test('outputCommand', async t => {
       // a scalar --registry is enough for needsRegistry, but not
       // for the install-related npm alias gate
       await outputCommand(npmRegistryCommand, {
+        explicit: {},
         values: { view: 'json' },
         options: {
           registry: 'https://registry.npmjs.org/',
@@ -433,6 +445,7 @@ t.test('outputCommand', async t => {
           if (t.passing()) process.exitCode = exitCode
         })
         await outputCommand(npmRegistryCommand, {
+          explicit: {},
           values: { view: 'json' },
           options: {
             registries: { main: 'https://example.com/' },
@@ -456,6 +469,7 @@ t.test('outputCommand', async t => {
         if (t.passing()) process.exitCode = exitCode
       })
       await outputCommand(npmRegistryCommand, {
+        explicit: {},
         values: { view: 'json' },
         options: {
           registries: {},
@@ -472,6 +486,7 @@ t.test('outputCommand', async t => {
     t.test('--help is answered before the check', async t => {
       const logs = t.capture(console, 'log').args
       await outputCommand(npmRegistryCommand, {
+        explicit: {},
         values: { help: true },
         options: {},
       } as LoadedConfig)
@@ -481,6 +496,7 @@ t.test('outputCommand', async t => {
     t.test('runs when registries.npm is configured', async t => {
       const logs = t.capture(console, 'log').args
       await outputCommand(npmRegistryCommand, {
+        explicit: {},
         values: { view: 'json' },
         options: {
           registries: { npm: 'https://registry.npmjs.org/' },
@@ -497,6 +513,7 @@ t.test('outputCommand', async t => {
         // registries.npm is missing, but bare specs resolve through
         // `main` here, so the gate must not block
         await outputCommand(npmRegistryCommand, {
+          explicit: {},
           values: { view: 'json' },
           options: {
             registries: { main: 'https://example.com/' },
@@ -567,5 +584,83 @@ t.test('outputCommand', async t => {
 
     await outputCommand(cliCommand, confHuman)
     t.ok(startCalled, 'lazy view class was loaded and started')
+  })
+})
+
+t.test('--global', async t => {
+  const globalCommand: Command<true> = {
+    async command() {
+      return true
+    },
+    usage: () => ({ usage: () => 'usage' }) as Jack,
+    views: { json: x => x },
+  }
+
+  t.test('explicit on unsupported command', async t => {
+    errsPrinted.length = 0
+    aborted.length = 0
+    const { exitCode = 0 } = process
+    const exits = t.capture(process, 'exit').args
+    t.teardown(() => {
+      if (t.passing()) process.exitCode = exitCode
+    })
+    await outputCommand(globalCommand, {
+      command: 'run',
+      explicit: { global: true },
+      values: { view: 'json', global: true },
+      options: {},
+      abort,
+    } as unknown as LoadedConfig)
+    t.strictSame(exits(), [], 'no forced exit')
+    t.strictSame(aborted, [1], 'aborted after printing')
+    t.equal(process.exitCode, 1)
+    t.match(errsPrinted[0], {
+      message: '`vlt run` does not support --global',
+      cause: {
+        code: 'EUSAGE',
+        found: 'run',
+        validOptions: [
+          'install',
+          'uninstall',
+          'list',
+          'query',
+          'build',
+        ],
+      },
+    })
+  })
+
+  t.test('from user config only, ignored', async t => {
+    const logs = t.capture(console, 'log').args
+    await outputCommand(globalCommand, {
+      command: 'run',
+      explicit: {},
+      values: { view: 'json', global: true },
+      options: {},
+    } as unknown as LoadedConfig)
+    t.strictSame(logs(), [['true']])
+  })
+
+  t.test('switched to global root', async t => {
+    const logs = t.capture(console, 'log').args
+    await outputCommand(globalCommand, {
+      command: 'install',
+      globalRoot: '/global',
+      explicit: { global: true },
+      values: { view: 'json', global: true },
+      options: {},
+    } as unknown as LoadedConfig)
+    t.strictSame(logs(), [['true']])
+  })
+
+  t.test('--help still answered', async t => {
+    const logs = t.capture(console, 'log').args
+    await outputCommand(globalCommand, {
+      command: 'run',
+      explicit: { global: true },
+      values: { help: true, global: true },
+      options: {},
+    } as unknown as LoadedConfig)
+    t.strictSame(logs(), [['usage']])
   })
 })

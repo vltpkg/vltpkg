@@ -118,4 +118,10 @@ appropriately.
 
       ​--allow-scripts=<query>
 
+    global
+      Install packages globally, each in its own workspace of the global
+      project, linking their bins.
+
+      ​--global
+
 `
