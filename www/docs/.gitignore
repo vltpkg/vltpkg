@@ -7,3 +7,6 @@ next-env.d.ts
 
 # fumadocs-mdx
 .source
+
+# Copied from ../../skills by scripts/skills.mts
+/public/skills

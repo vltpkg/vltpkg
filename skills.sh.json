@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "vlt registry",
+      "description": "Move a repository, its CI and its coding agents onto a vlt.io registry.",
+      "skills": ["vlt-registry-migration"]
+    }
+  ]
+}

@@ -48,8 +48,9 @@
     "node": "22.x"
   },
   "scripts": {
-    "prebuild": "node scripts/typedoc.mts",
+    "prebuild": "node scripts/skills.mts && node scripts/typedoc.mts",
     "build": "next build",
+    "predev": "node scripts/skills.mts",
     "dev": "next dev",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",

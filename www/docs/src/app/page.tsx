@@ -24,6 +24,7 @@ import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AgentPrompt } from '@/components/agent-prompt'
 import { Book } from '@/components/book'
+import { dssQuerySkill, registryMigrationSkill } from '@/lib/skills'
 
 const lede =
   'Most registries treat your packages as files to store. vlt treats them as a dependency graph to understand.'
@@ -35,14 +36,12 @@ export const metadata: Metadata = {
 }
 
 const docs = 'https://docs.vlt.sh'
-const skill =
-  'https://github.com/vltpkg/vltpkg/tree/main/src/query/skills/dss-query'
 
 const prompt = `Help me use vlt in this project. Start by reading ${docs}/llms.txt, which lists every page of the vlt docs. Any page is available as Markdown by adding .md to its URL (for example ${docs}/client/auth.md), and ${docs}/llms-full.txt has the whole site in one file.
 
 1. Install the vlt CLI with \`curl -fsSL https://install.vlt.sh | bash\` (it requires Node.js 22.22 or later), then run \`vlt install\`.
-2. To use vlt.io registries, run \`vlt setup\`. It authenticates and configures the account's registry aliases in one step.
-3. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${skill} covers it.
+2. To use vlt.io registries, run \`vlt setup\`. It authenticates and configures the account's registry aliases in one step. To move an existing repository (and its CI) onto a vlt.io registry, follow ${docs}${registryMigrationSkill.url}.
+3. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${dssQuerySkill.github} covers it.
 
 Only use commands and flags that appear in the docs.`
 
@@ -66,7 +65,14 @@ const cards: Card[] = [
     title: 'DSS query skill',
     description:
       'An agent skill that composes and explains vlt query selectors, including Socket-powered security audits.',
-    href: skill,
+    href: dssQuerySkill.github,
+  },
+  {
+    icon: ArrowRightLeftIcon,
+    title: 'Registry migration skill',
+    description:
+      'An agent skill that moves a repository, its CI, and its agents onto your vlt.io registry.',
+    href: registryMigrationSkill.github,
   },
 ]
 
