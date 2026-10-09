@@ -1509,12 +1509,16 @@ t.test('a "-" modifier keeps the dependency out of add', async t => {
   const removedCase = (
     t: Test,
     dependencies: Record<string, string>,
+    edges: Record<string, string> = {},
   ) => {
     const mainManifest = { name: 'my-project', dependencies }
     const projectRoot = t.testdir({
       'package.json': JSON.stringify(mainManifest),
       'vlt.json': JSON.stringify({
-        modifiers: { ':root > #b': '-' },
+        modifiers: {
+          ':root > #b': '-',
+          ':root > #q:semver(^1.0.0)': '-',
+        },
       }),
     })
     t.chdir(projectRoot)
@@ -1524,6 +1528,18 @@ t.test('a "-" modifier keeps the dependency out of add', async t => {
       mainManifest,
       monorepo: Monorepo.maybeLoad(projectRoot),
     })
+    // edges as a lockfile written before the change has them
+    for (const [name, bareSpec] of Object.entries(edges)) {
+      const spec = Spec.parse(name, bareSpec)
+      const node = graph.addNode(
+        undefined,
+        { name, version: '2.0.0' },
+        spec,
+        name,
+        '2.0.0',
+      )
+      graph.addEdge('prod', spec, graph.mainImporter, node)
+    }
     return getImporterSpecs({
       add: new Map() as AddImportersDependenciesMap,
       graph,
@@ -1554,5 +1570,24 @@ t.test('a "-" modifier keeps the dependency out of add', async t => {
       'nothing is queued',
     )
     t.equal(specs.add.modifiedDependencies, false)
+    t.equal(specs.removedEdges.size, 0, 'no edge to drop')
+  })
+
+  await t.test('a qualifier starts matching an edge', async t => {
+    const specs = removedCase(t, { q: '^1.1.0' }, { q: '^2.0.0' })
+    t.strictSame(
+      [...specs.removedEdges].map(
+        e => `${e.name}@${e.spec.bareSpec}`,
+      ),
+      ['q@^2.0.0'],
+      'the old edge is dropped',
+    )
+    t.notOk(
+      specs.add.get(joinDepIDTuple(['file', '.']))?.size,
+      'nothing is queued',
+    )
+    t.equal(specs.remove.size, 0, 'package.json keeps it')
+    t.equal(specs.add.modifiedDependencies, false)
+    t.equal(specs.remove.modifiedDependencies, false)
   })
 })

@@ -690,6 +690,76 @@ t.test('failure of optional node just deletes it', async t => {
   t.equal(extractCalled, false, 'still no extraction')
 })
 
+t.test('a deletion-only diff is not skipped', async t => {
+  // no adds means optionalOnly, but the optional-only skip must not
+  // swallow a removal (e.g. a `-` modifier added later)
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { abbrev: '2.0.0' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const common = () => ({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    allowScripts: ':not(*)',
+    // moved-aside dirs are left for tap to sweep
+    remover: new (class extends RollbackRemove {
+      confirm() {}
+    })(),
+  })
+  const exists = (f: string) => existsSync(resolve(projectRoot, f))
+  const store = `node_modules/.vlt/${joinDepIDTuple(['registry', 'npm', 'abbrev@2.0.0'])}`
+
+  const graph = await ideal.build({
+    ...common(),
+    packageInfo: mockPackageInfo,
+  })
+  await reify({ ...common(), packageInfo: mockPackageInfo, graph })
+  t.ok(exists('node_modules/abbrev'), 'abbrev installed')
+  t.ok(exists('node_modules/.vlt-lock.json'), 'lockfiles written')
+
+  // drop abbrev from the ideal graph, package.json keeps it
+  const edge = graph.mainImporter.edgesOut.get('abbrev')
+  graph.mainImporter.edgesOut.delete('abbrev')
+  if (edge) edge.to?.edgesIn.delete(edge)
+  graph.gc()
+
+  const res = await reify({
+    ...common(),
+    packageInfo: createMockPackageInfo({
+      async extract(): Promise<Resolution> {
+        throw new Error('nothing to extract')
+      },
+    }),
+    graph,
+    actual: actual.load({ ...common(), loadManifests: true }),
+  })
+  t.equal(res.diff.optionalOnly, true, 'no adds, so optionalOnly')
+  t.equal(res.diff.nodes.delete.size, 1, 'abbrev node deleted')
+  t.notOk(exists('node_modules/abbrev'), 'link removed')
+  t.notOk(exists(store), 'store dir removed')
+  t.notMatch(
+    readFileSync(
+      resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+      'utf8',
+    ),
+    /abbrev/,
+    'hidden lockfile updated',
+  )
+})
+
 t.test('unsupported optional subtree is never placed', async t => {
   const dir = t.testdir({
     cache: {},

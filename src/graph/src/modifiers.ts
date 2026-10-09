@@ -104,7 +104,7 @@ export type ModifierActiveEntry = {
  */
 const matchesImporter = (
   item: ModifierBreadcrumbItem,
-  importer: Node,
+  importer: Pick<Node, 'importer' | 'mainImporter'>,
 ): boolean =>
   item.importer &&
   (item.value === ':project' ||
@@ -222,12 +222,15 @@ export class GraphModifier {
   }
 
   /**
-   * Whether the modifier that wins the direct `importer -> spec.name`
-   * edge removes it (value `-`). Same pick as tryNewDependency: complete
-   * entries whose qualifier accepts the spec, highest specificity,
-   * importer-anchored before lone on ties.
+   * Selector of the modifier that wins the direct `importer -> spec.name`
+   * edge, if it removes it (value `-`). Same pick as tryNewDependency:
+   * complete entries whose qualifier accepts the spec, highest
+   * specificity, importer-anchored before lone on ties.
    */
-  removesImporterEdge(importer: Node, spec: Spec): boolean {
+  removesImporterEdge(
+    importer: Pick<Node, 'importer' | 'mainImporter'>,
+    spec: Spec,
+  ): string | undefined {
     const anchored: ModifierEntry[] = []
     const lone: ModifierEntry[] = []
     for (const mod of this.#modifiers) {
@@ -241,7 +244,8 @@ export class GraphModifier {
     }
     const all = [...anchored, ...lone]
     const [winner] = specificitySort(all.map(m => m.breadcrumb))
-    return all.find(m => m.breadcrumb === winner)?.value === '-'
+    const mod = all.find(m => m.breadcrumb === winner)
+    return mod?.value === '-' ? mod.query : undefined
   }
 
   /**

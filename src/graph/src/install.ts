@@ -14,6 +14,7 @@ import type {
   Dependency,
 } from './dependencies.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -153,6 +154,7 @@ export const install = async (
     if (
       importerSpecs.add.modifiedDependencies ||
       importerSpecs.remove.modifiedDependencies ||
+      importerSpecs.removedEdges.size > 0 ||
       specChanges.length > 0 ||
       lockfileGraph.optionsChanged
     ) {
@@ -197,6 +199,12 @@ export const install = async (
         }
       }
 
+      for (const edge of importerSpecs.removedEdges) {
+        details.push(
+          `  ${edge.from.location}: ${edge.name} is removed by a graph modifier`,
+        )
+      }
+
       const lockfilePath = resolve(
         options.projectRoot,
         'vlt-lock.json',
@@ -208,6 +216,31 @@ export const install = async (
           path: lockfilePath,
         },
       )
+    }
+  }
+
+  // an explicit add of a dep a `-` modifier removes fails before
+  // anything on disk is touched
+  if (modifiers && add?.modifiedDependencies) {
+    const wsIds = new Set(
+      [...(fullMonorepo?.values() ?? [])].map(ws => ws.id),
+    )
+    for (const [id, deps] of add) {
+      const mainImporter = id === joinDepIDTuple(['file', '.'])
+      // nested folders are no importers, appendNodes checks those
+      if (!mainImporter && !wsIds.has(id)) continue
+      for (const { spec } of deps.values()) {
+        const found = modifiers.removesImporterEdge(
+          { importer: true, mainImporter },
+          spec,
+        )
+        if (found) {
+          throw error(
+            `Cannot add ${spec.name}: it is removed by a graph modifier`,
+            { code: 'ECONFIG', found },
+          )
+        }
+      }
     }
   }
 

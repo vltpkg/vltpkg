@@ -499,6 +499,7 @@ t.test('GraphModifier', async t => {
           '#swap': '2.0.0',
           '#tie:semver(^1.0.0)': '-',
           ':root > #tie': '1.0.0',
+          ':workspace > #wsdep': '-',
         },
       }),
     })
@@ -510,71 +511,56 @@ t.test('GraphModifier', async t => {
     const ws = { mainImporter: false, importer: true } as Node
     const spec = (name: string, bareSpec = '*') =>
       Spec.parse(name, bareSpec, mockSpecOptions)
-    t.equal(
-      modifier.removesImporterEdge(root, spec('abbrev')),
-      true,
-      'direct root edge removal',
-    )
-    t.equal(
-      modifier.removesImporterEdge(ws, spec('abbrev')),
-      false,
-      ':root does not select a workspace',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('lone')),
-      true,
-      'lone selector removes root edge',
-    )
-    t.equal(
-      modifier.removesImporterEdge(ws, spec('lone')),
-      true,
-      'lone selector removes workspace edge',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('deep')),
-      false,
-      'a deeper scope leaves the importer edge alone',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('q', '^1.2.0')),
-      true,
-      ':semver qualifier accepts the spec',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('q', '^2.0.0')),
-      false,
-      ':semver qualifier rejects the spec',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('x')),
-      false,
-      'more specific swap beats lone removal',
-    )
-    t.equal(
-      modifier.removesImporterEdge(ws, spec('x')),
-      true,
-      'lone removal applies where the swap does not',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('y')),
-      true,
-      'more specific removal beats lone swap',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('tie', '^1.0.0')),
-      false,
-      'importer-anchored entry wins a specificity tie',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('swap')),
-      false,
-      'non-removal value',
-    )
-    t.equal(
-      modifier.removesImporterEdge(root, spec('unrelated')),
-      false,
-      'unrelated name',
-    )
+    // the `-` selector the traversal itself applies (see appendNodes)
+    const enginePick = (importer: Node, s: Spec) => {
+      const engine = new GraphModifier({ ...mockSpecOptions })
+      engine.tryImporter(importer)
+      const active = engine.tryNewDependency(importer, s)
+      const complete =
+        active?.interactiveBreadcrumb.current ===
+        active?.modifier.breadcrumb.last
+      return complete && active?.modifier.value === '-' ?
+          active.modifier.query
+        : undefined
+    }
+    const cases: [Node, Spec, string | undefined, string][] = [
+      [root, spec('abbrev'), ':root > #abbrev', 'direct root edge'],
+      [ws, spec('abbrev'), undefined, ':root skips a workspace'],
+      [root, spec('lone'), '#lone', 'lone selector, root edge'],
+      [ws, spec('lone'), '#lone', 'lone selector, workspace edge'],
+      [root, spec('deep'), undefined, 'a deeper scope is not it'],
+      [
+        root,
+        spec('q', '^1.2.0'),
+        ':root > #q:semver(^1.0.0)',
+        ':semver qualifier accepts the spec',
+      ],
+      [root, spec('q', '^2.0.0'), undefined, 'qualifier rejects it'],
+      [root, spec('x'), undefined, 'more specific swap wins'],
+      [ws, spec('x'), '#x', 'lone removal where the swap is not'],
+      [root, spec('y'), ':root > #y', 'more specific removal wins'],
+      [
+        root,
+        spec('tie', '^1.0.0'),
+        undefined,
+        'importer-anchored entry wins a specificity tie',
+      ],
+      [ws, spec('wsdep'), ':workspace > #wsdep', ':workspace'],
+      [root, spec('swap'), undefined, 'non-removal value'],
+      [root, spec('unrelated'), undefined, 'unrelated name'],
+    ]
+    for (const [importer, s, expected, msg] of cases) {
+      t.equal(
+        modifier.removesImporterEdge(importer, s),
+        expected,
+        msg,
+      )
+      t.equal(
+        enginePick(importer, s),
+        expected,
+        `${msg}, engine agrees`,
+      )
+    }
   })
 
   await t.test('config getter', async t => {

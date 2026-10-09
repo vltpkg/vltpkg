@@ -101,8 +101,9 @@ The value `"-"` removes the selected dependency: it is not resolved,
 installed or saved to `vlt-lock.json`, nor is anything only it pulled
 in. Its `package.json` entry is left as is. An explicit
 `vlt install left-pad` fails with a config error until the modifier is
-removed. Normal selector and specificity rules apply, so a more
-specific non-`"-"` modifier wins.
+removed. Normal selector rules apply: the most specific matching
+modifier wins, whatever its value (see
+[Specificity Resolution](#specificity-resolution)).
 
 ### Adding Comments to Selectors
 
