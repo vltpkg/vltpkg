@@ -6,6 +6,7 @@ import { Diff } from './diff.ts'
 import { Graph } from './graph.ts'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import { usesNpmRegistry } from '@vltpkg/security-archive/browser'
 import type { LoadOptions } from './actual/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
@@ -26,12 +27,13 @@ export interface BuildOptions extends LoadOptions {
 }
 
 /**
- * Filter nodes using a DSS query string
+ * Filter nodes using a DSS query string. `skipped` holds matched nodes
+ * left out because their security data timed out.
  */
 const filterNodesByQuery = async (
   targetQuery: string,
   graph: Graph,
-): Promise<Set<DepID>> => {
+): Promise<{ allowed: Set<DepID>; skipped: Set<DepID> }> => {
   /* c8 ignore start */
   const securityArchive =
     Query.hasSecuritySelectors(targetQuery) ?
@@ -56,7 +58,21 @@ const filterNodesByQuery = async (
     signal: new AbortController().signal,
   })
 
-  return new Set(resultNodes.map(node => node.id))
+  // fail closed: never run scripts of pkgs whose security data timed out
+  const allowed = new Set<DepID>()
+  const skipped = new Set<DepID>()
+  for (const node of resultNodes) {
+    if (
+      securityArchive?.timedOut &&
+      !securityArchive.has(node.id) &&
+      usesNpmRegistry(node)
+    ) {
+      skipped.add(node.id)
+    } else {
+      allowed.add(node.id)
+    }
+  }
+  return { allowed, skipped }
 }
 
 /**
@@ -94,10 +110,8 @@ export const build = async (
   })
 
   // Filter nodes using target query provided
-  const targetFilteredNodes: Set<DepID> = await filterNodesByQuery(
-    target,
-    actualGraph,
-  )
+  const { allowed: targetFilteredNodes, skipped } =
+    await filterNodesByQuery(target, actualGraph)
 
   // Create a total diff including the actual graph as 'to'
   const diff = new Diff(
@@ -143,5 +157,11 @@ export const build = async (
     })
   }
 
-  return buildResult
+  // needed builds left out for lack of security data
+  const skippedNodes = [...diff.nodes.add].filter(node =>
+    skipped.has(node.id),
+  )
+  return skippedNodes.length ?
+      { ...buildResult, skipped: skippedNodes }
+    : buildResult
 }

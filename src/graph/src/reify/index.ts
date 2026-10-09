@@ -31,6 +31,7 @@ import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import { usesNpmRegistry } from '@vltpkg/security-archive/browser'
 import type { NodeLike } from '@vltpkg/types'
 import { binChmodAll } from './bin-chmod.ts'
 
@@ -81,7 +82,15 @@ const filterNodesByQuery = async (
     },
   )
 
-  return new Set(resultNodes.map(node => node.id))
+  // fail closed: never run scripts of pkgs whose security data timed out
+  const allowed =
+    securityArchive?.timedOut ?
+      resultNodes.filter(
+        node =>
+          securityArchive.has(node.id) || !usesNpmRegistry(node),
+      )
+    : resultNodes
+  return new Set(allowed.map(node => node.id))
 }
 
 // - [ ] depid's with peer resolutions

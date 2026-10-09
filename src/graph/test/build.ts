@@ -1,7 +1,9 @@
 import { existsSync, linkSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import t from 'tap'
+import type { Test } from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { build } from '../src/build.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
@@ -277,89 +279,93 @@ t.test('hidden lockfile is only saved for a vlt install', async t => {
   )
 })
 
-t.test('build with target option', async t => {
-  t.test('builds only nodes matching target query', async t => {
-    const testPkgId1 = joinDepIDTuple([
-      'registry',
-      'https://registry.npmjs.org/',
-      'target-pkg-1',
-      '1.0.0',
-    ])
-    const testPkgId2 = joinDepIDTuple([
-      'registry',
-      'https://registry.npmjs.org/',
-      'other-pkg',
-      '1.0.0',
-    ])
+const testPkgId1 = joinDepIDTuple([
+  'registry',
+  'https://registry.npmjs.org/',
+  'target-pkg-1',
+  '1.0.0',
+])
+const testPkgId2 = joinDepIDTuple([
+  'registry',
+  'https://registry.npmjs.org/',
+  'other-pkg',
+  '1.0.0',
+])
 
-    const dir = t.testdir({
-      'package.json': JSON.stringify({
-        name: 'test-project',
-        version: '1.0.0',
-        dependencies: {
-          'target-pkg-1': '1.0.0',
-          'other-pkg': '1.0.0',
-        },
-      }),
-      'vlt.json': JSON.stringify({}),
-      node_modules: {
-        'target-pkg-1': {
-          'package.json': JSON.stringify({
-            name: 'target-pkg-1',
-            version: '1.0.0',
-          }),
-        },
-        'other-pkg': {
-          'package.json': JSON.stringify({
-            name: 'other-pkg',
-            version: '1.0.0',
-          }),
-        },
-        '.vlt-lock.json': JSON.stringify({
-          lockfileVersion: 1,
-          options: {
-            registry: 'https://registry.npmjs.org/',
-          },
-          nodes: {
-            [joinDepIDTuple(['file', '.'])]: [0, 'test-project'],
-            [testPkgId1]: [
-              0,
-              'target-pkg-1',
-              'sha512-testintegrity==',
-              null,
-              null,
-              {
-                name: 'target-pkg-1',
-                version: '1.0.0',
-              },
-              null,
-              null,
-              null,
-              1, // buildState: needed
-            ],
-            [testPkgId2]: [
-              0,
-              'other-pkg',
-              'sha512-testintegrity==',
-              null,
-              null,
-              {
-                name: 'other-pkg',
-                version: '1.0.0',
-              },
-              null,
-              null,
-              null,
-              1, // buildState: needed
-            ],
-          },
-          edges: {
-            [`${joinDepIDTuple(['file', '.'])} target-pkg-1`]: `prod 1.0.0 ${testPkgId1}`,
-            [`${joinDepIDTuple(['file', '.'])} other-pkg`]: `prod 1.0.0 ${testPkgId2}`,
-          },
+// 2 registry pkgs, both buildState: needed
+const targetFixture = (t: Test) =>
+  t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test-project',
+      version: '1.0.0',
+      dependencies: {
+        'target-pkg-1': '1.0.0',
+        'other-pkg': '1.0.0',
+      },
+    }),
+    'vlt.json': JSON.stringify({}),
+    node_modules: {
+      'target-pkg-1': {
+        'package.json': JSON.stringify({
+          name: 'target-pkg-1',
+          version: '1.0.0',
         }),
       },
-    })
+      'other-pkg': {
+        'package.json': JSON.stringify({
+          name: 'other-pkg',
+          version: '1.0.0',
+        }),
+      },
+      '.vlt-lock.json': JSON.stringify({
+        lockfileVersion: 1,
+        options: {
+          registry: 'https://registry.npmjs.org/',
+        },
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'test-project'],
+          [testPkgId1]: [
+            0,
+            'target-pkg-1',
+            'sha512-testintegrity==',
+            null,
+            null,
+            {
+              name: 'target-pkg-1',
+              version: '1.0.0',
+            },
+            null,
+            null,
+            null,
+            1, // buildState: needed
+          ],
+          [testPkgId2]: [
+            0,
+            'other-pkg',
+            'sha512-testintegrity==',
+            null,
+            null,
+            {
+              name: 'other-pkg',
+              version: '1.0.0',
+            },
+            null,
+            null,
+            null,
+            1, // buildState: needed
+          ],
+        },
+        edges: {
+          [`${joinDepIDTuple(['file', '.'])} target-pkg-1`]: `prod 1.0.0 ${testPkgId1}`,
+          [`${joinDepIDTuple(['file', '.'])} other-pkg`]: `prod 1.0.0 ${testPkgId2}`,
+        },
+      }),
+    },
+  })
+
+t.test('build with target option', async t => {
+  t.test('builds only nodes matching target query', async t => {
+    const dir = targetFixture(t)
 
     // Call build with target query - only build packages with name starting with "target-"
     const result = await build({
@@ -436,6 +442,63 @@ t.test('build with target option', async t => {
   })
 
   t.end()
+})
+
+t.test('security archive timeout fails closed', async t => {
+  const mockBuild = async (timedOut: boolean) => {
+    // partial mock: graph must only need SecurityArchive from main entry
+    const { build } = await t.mockImport<
+      typeof import('../src/build.ts')
+    >('../src/build.ts', {
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          start: async () => ({
+            timedOut,
+            // only target-pkg-1 got scanned
+            has: (id: DepID) => id === testPkgId1,
+            get: () => undefined,
+          }),
+        },
+      },
+    })
+    return build
+  }
+
+  t.test('skips unscanned registry pkgs', async t => {
+    const build = await mockBuild(true)
+    const result = await build({
+      projectRoot: targetFixture(t),
+      packageJson,
+      scurry,
+      target: ':not(:malware)',
+    })
+    t.strictSame(
+      result.success.map(n => n.name),
+      ['target-pkg-1'],
+      'should only build scanned pkg',
+    )
+    t.strictSame(
+      result.skipped?.map(n => n.name),
+      ['other-pkg'],
+      'should report skipped pkg',
+    )
+  })
+
+  t.test('keeps all when not timed out', async t => {
+    const build = await mockBuild(false)
+    const result = await build({
+      projectRoot: targetFixture(t),
+      packageJson,
+      scurry,
+      target: ':not(:malware)',
+    })
+    t.strictSame(
+      result.success.map(n => n.name).sort(),
+      ['other-pkg', 'target-pkg-1'],
+      'should build both pkgs',
+    )
+    t.equal(result.skipped, undefined, 'should skip nothing')
+  })
 })
 
 t.test('build with optional dependencies that fail', async t => {

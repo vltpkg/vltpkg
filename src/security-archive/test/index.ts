@@ -12,6 +12,7 @@ import {
   newGraph,
   newNode,
 } from './fixtures/graph.ts'
+import { hangingFetch } from './fixtures/hanging-fetch.ts'
 import type { PackageReportData } from '../src/types.ts'
 
 const fooReport = {
@@ -471,6 +472,155 @@ ${JSON.stringify({
       /Missing API/,
       'should abort retries',
     )
+  })
+
+  const fooId = joinDepIDTuple([
+    'registry',
+    'npm',
+    '@ruyadorno/foo@1.0.0',
+  ])
+  const timeoutMsg = (ms: number) =>
+    `security-archive: timed out after ${ms}ms fetching security data; 2 package(s) left unscanned (use :scanned to exclude them). Set VLT_SECURITY_ARCHIVE_TIMEOUT=<ms> to wait longer.`
+  const countRows = (path: string) => {
+    const db = new DatabaseSync(path)
+    const { count } = db
+      .prepare('SELECT COUNT(*) AS count FROM cache')
+      .get() as { count: number }
+    db.close()
+    return count
+  }
+
+  await t.test('timeout on hanging api response', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'timeout.db')
+    const warn = t.capture(console, 'warn').args
+    t.intercept(global, 'fetch', { value: hangingFetch })
+
+    const archive = new SecurityArchive({ path, timeout: 50 })
+    await archive.refresh({ nodes })
+
+    t.strictSame(
+      warn(),
+      [[timeoutMsg(50)]],
+      'should warn once about the timeout',
+    )
+    t.equal(archive.ok, false, 'should not be ok')
+    t.equal(archive.timedOut, true, 'should flag timed out')
+    t.equal(archive.has(fooId), false, 'should leave pkg unscanned')
+    t.equal(countRows(path), 0, 'should not cache anything')
+
+    await t.test('recovers after timeout', async t => {
+      t.intercept(global, 'fetch', {
+        value: async () =>
+          ({
+            ok: true,
+            status: 200,
+            text: async () => `${JSON.stringify(fooReport)}
+${JSON.stringify(englishDaysReport)}
+`,
+          }) as unknown as Response,
+      })
+
+      await archive.refresh({ nodes })
+
+      t.strictSame(archive.get(fooId), fooReport, 'should load data')
+      t.equal(archive.ok, true, 'should be ok')
+      t.equal(archive.timedOut, false, 'should reset timed out')
+      t.strictSame(warn(), [], 'should not warn again')
+      t.equal(countRows(path), 2, 'should cache new data')
+    })
+  })
+
+  await t.test('timeout spans retries', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'timeout-retries.db')
+    const warn = t.capture(console, 'warn').args
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: false,
+          status: 500,
+          text: async () => '',
+        }) as unknown as Response,
+    })
+
+    const archive = new SecurityArchive({
+      path,
+      retries: 3,
+      timeout: 50,
+    })
+    const start = Date.now()
+    await archive.refresh({ nodes })
+    const elapsed = Date.now() - start
+
+    t.ok(elapsed < 1000, `should not wait on backoff (${elapsed}ms)`)
+    t.strictSame(warn(), [[timeoutMsg(50)]], 'should warn once')
+    t.equal(archive.timedOut, true, 'should flag timed out')
+  })
+
+  await t.test('VLT_SECURITY_ARCHIVE_TIMEOUT env', async t => {
+    const setEnv = (value: string) =>
+      t.intercept(process, 'env', {
+        value: {
+          ...process.env,
+          VLT_SECURITY_ARCHIVE_TIMEOUT: value,
+        },
+      })
+    const dir = t.testdir()
+    const warn = t.capture(console, 'warn').args
+    t.intercept(global, 'fetch', { value: hangingFetch })
+
+    setEnv('50')
+    await new SecurityArchive({
+      path: resolve(dir, 'env-only.db'),
+    }).refresh({ nodes })
+    t.strictSame(warn(), [[timeoutMsg(50)]], 'should use env value')
+
+    await new SecurityArchive({
+      path: resolve(dir, 'env-bad-option.db'),
+      timeout: 0,
+    }).refresh({ nodes })
+    t.strictSame(
+      warn(),
+      [[timeoutMsg(50)]],
+      'should ignore invalid option',
+    )
+
+    await new SecurityArchive({
+      path: resolve(dir, 'env-and-option.db'),
+      timeout: 60,
+    }).refresh({ nodes })
+    t.strictSame(
+      warn(),
+      [[timeoutMsg(60)]],
+      'option should win over env',
+    )
+
+    // 0 would abort right away if not ignored
+    setEnv('0')
+    t.intercept(global, 'fetch', {
+      value: async () => {
+        await new Promise(res => setTimeout(res, 20))
+        return {
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(fooReport)}
+${JSON.stringify(englishDaysReport)}
+`,
+        } as unknown as Response
+      },
+    })
+    const archive = new SecurityArchive({
+      path: resolve(dir, 'env-invalid.db'),
+    })
+    await archive.refresh({ nodes })
+    t.equal(archive.timedOut, false, 'should ignore invalid env')
+    t.equal(archive.ok, true, 'should load data')
+    t.strictSame(warn(), [], 'should not warn')
+  })
+
+  await t.test('defaultTimeout', async t => {
+    t.equal(SecurityArchive.defaultTimeout, 30_000)
   })
 
   await t.test('stale-while-revalidate cache', async t => {
