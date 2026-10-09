@@ -107,6 +107,7 @@ export const uninstall = async (
             ...options,
             remove,
             graph,
+            modifiers,
           })
         : undefined
       saveImportersPackageJson?.()

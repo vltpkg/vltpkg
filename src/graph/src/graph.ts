@@ -447,6 +447,9 @@ export class Graph implements GraphLike {
         }
         return edge
       }
+      // a stale edgesIn ref would let removing the old target drop
+      // the new edge from `from.edgesOut`
+      edge.to?.edgesIn.delete(edge)
       this.edges.delete(edge)
     }
     this.mutations++
