@@ -41,7 +41,7 @@ export type SpecOptionsFilled = {
   'scoped-registries': Record<Scope, string>
   /** registries that work like https://npm.jsr.io */
   'jsr-registries': Record<string, string>
-  catalog: Record<string, string>
+  catalog?: Record<string, string>
   catalogs?: Record<string, Record<string, string>>
 }
 

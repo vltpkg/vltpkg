@@ -1,5 +1,6 @@
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec/browser'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
@@ -10,6 +11,8 @@ import type {
   NodeLike,
 } from '@vltpkg/types'
 import {
+  isErrorWithCause,
+  isObject,
   dependencyTypes,
   longDependencyTypes,
   shortDependencyTypes,
@@ -218,6 +221,41 @@ export const getRawDependencies = (node: NodeLike) => {
   return dependencies
 }
 
+const longTypeNames: Record<DependencyTypeShort, DependencyTypeLong> =
+  {
+    prod: 'dependencies',
+    dev: 'devDependencies',
+    optional: 'optionalDependencies',
+    peer: 'peerDependencies',
+    peerOptional: 'peerDependencies',
+  }
+
+/**
+ * Point an `ECONFIG` spec error (eg: an undefined `catalog:`) at the
+ * package.json & dependency type that declared it. Other values are
+ * returned as is.
+ */
+export const asDependencySpecError = (
+  er: unknown,
+  from: NodeLike,
+  type: DependencyTypeShort,
+): unknown =>
+  (
+    isErrorWithCause(er) &&
+    isObject(er.cause) &&
+    er.cause.code === 'ECONFIG'
+  ) ?
+    error(
+      er.message,
+      {
+        ...(er.cause as ErrorCauseOptions),
+        from: `${from.location ?? '.'}/package.json (${longTypeNames[type]})`,
+        cause: er,
+      },
+      asDependencySpecError,
+    )
+  : er
+
 /**
  * Retrieves a map of all dependencies, of all types, that can be inferred
  * from a given node manifest, including missing dependencies.
@@ -230,12 +268,17 @@ export const getDependencies = (
   const dependencies = getRawDependencies(node)
   for (const { name, type, bareSpec } of dependencies.values()) {
     const depType = shorten(type, name, node.manifest)
-    const spec = Spec.parse(name, bareSpec, {
-      ...options,
-      // fall back to options.registry so deps don't lose the configured
-      // registry when the node itself has none. see vltpkg/vltpkg#1580.
-      registry: node.registry ?? options.registry,
-    })
+    let spec: Spec
+    try {
+      spec = Spec.parse(name, bareSpec, {
+        ...options,
+        // fall back to options.registry so deps don't lose the configured
+        // registry when the node itself has none. see vltpkg/vltpkg#1580.
+        registry: node.registry ?? options.registry,
+      })
+    } catch (er) {
+      throw asDependencySpecError(er, node, depType)
+    }
     res.set(name, {
       spec,
       type: depType,

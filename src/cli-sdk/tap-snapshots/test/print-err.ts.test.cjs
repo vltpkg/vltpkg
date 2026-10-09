@@ -12,6 +12,13 @@ Config Error: Invalid config keys
   Valid Options: [ 'wanted' ]
 `
 
+exports[`test/print-err.ts > TAP > snapshots > ECONFIG > from > output 1`] = `
+Config Error: Default catalog not found for a@catalog:
+  From: ./packages/a/package.json (dependencies)
+  Wanted: [ 'catalog:dev' ]
+  Valid Options: [ 'catalog:dev', 'catalog:tools' ]
+`
+
 exports[`test/print-err.ts > TAP > snapshots > ECONFIG > no code > output 1`] = `
 Config Error: Invalid config keys
 `
