@@ -1,4 +1,5 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import { PackageJson } from '@vltpkg/package-json'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
@@ -10,6 +11,8 @@ import type {
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
+import { reload } from '@vltpkg/vlt-json'
 
 const specOptions = {
   registry: 'https://registry.npmjs.org',
@@ -976,7 +979,11 @@ t.test('stores the saved value on importer edges', async t => {
     edgeSpec: Spec,
     depSpec: Spec,
     rootDeps?: Record<string, string>,
-    opts?: { saveExact?: boolean; savePrefix?: string },
+    opts?: {
+      saveExact?: boolean
+      savePrefix?: string
+      modifiers?: GraphModifier
+    },
   ) => {
     const rootMani = {
       name: 'root',
@@ -1074,5 +1081,45 @@ t.test('stores the saved value on importer edges', async t => {
     const git = run(gitSpec, gitSpec)
     t.equal(git.edge.spec, gitSpec)
     t.equal(git.graph.lockfileStale, false)
+  })
+
+  const loadModifiers = (t: Test, query: string) => {
+    t.chdir(
+      t.testdir({
+        'vlt.json': JSON.stringify({
+          modifiers: { [query]: '1.0.0' },
+        }),
+      }),
+    )
+    reload('modifiers', 'project')
+    return GraphModifier.load(specOptions)
+  }
+
+  await t.test(
+    'a governed edge keeps the modifier value',
+    async t => {
+      const modifiers = loadModifiers(t, ':root > #foo')
+      const { edge, graph, manifest } = run(
+        Spec.parse('foo', '1.0.0', specOptions),
+        Spec.parse('foo', '^1.0.0', specOptions),
+        { foo: '^1.0.0' },
+        { modifiers },
+      )
+      t.equal(edge.spec.bareSpec, '1.0.0')
+      t.equal(graph.lockfileStale, false)
+      t.equal(manifest?.dependencies?.foo, '^1.0.0')
+    },
+  )
+
+  await t.test('an unrelated modifier heals the edge', async t => {
+    const modifiers = loadModifiers(t, ':root > #bar')
+    const { edge, graph } = run(
+      Spec.parse('foo', '1.0.0', specOptions),
+      Spec.parse('foo', '^1.0.0', specOptions),
+      { foo: '^1.0.0' },
+      { modifiers },
+    )
+    t.equal(edge.spec.bareSpec, '^1.0.0')
+    t.equal(graph.lockfileStale, true)
   })
 })

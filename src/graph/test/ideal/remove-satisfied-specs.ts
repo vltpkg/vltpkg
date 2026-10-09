@@ -397,3 +397,80 @@ t.test('a qualifier that rejects the spec heals the edge', async t =>
     'no modifier governs the root edge',
   ),
 )
+
+t.test(
+  'a governed edge is checked against the modifier value',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { foo: '1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: { ':root > #foo': '1.0.0' },
+      }),
+      node_modules: {
+        '.vlt': {
+          [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
+            node_modules: {
+              foo: {
+                'package.json': JSON.stringify({
+                  name: 'foo',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+        },
+        foo: t.fixture(
+          'symlink',
+          '.vlt/' +
+            joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+            '/node_modules/foo',
+        ),
+      },
+    })
+    t.chdir(projectRoot)
+    reload('modifiers', 'project')
+    const modifiers = GraphModifier.load({})
+    const rootID = joinDepIDTuple(['file', '.'])
+    const newAdd = () =>
+      new Map([
+        [
+          rootID,
+          new Map(
+            Object.entries({
+              foo: asDependency({
+                spec: Spec.parse('foo@^2.0.0'),
+                type: 'prod',
+              }),
+            }),
+          ),
+        ],
+      ]) as AddImportersDependenciesMap
+    const newGraph = () =>
+      load({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+      })
+
+    const ungoverned = newAdd()
+    removeSatisfiedSpecs({ add: ungoverned, graph: newGraph() })
+    t.ok(
+      ungoverned.get(rootID)?.has('foo'),
+      'manifest range not satisfied',
+    )
+
+    const governed = newAdd()
+    const stale = removeSatisfiedSpecs({
+      add: governed,
+      graph: newGraph(),
+      modifiers,
+    })
+    t.equal(governed.size, 0, 'satisfied by the modifier value')
+    t.equal(stale.size, 0, 'not stale')
+  },
+)

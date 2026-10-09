@@ -323,6 +323,11 @@ Exclusion patterns such as `!packages/legacy` are honored too. The
 `workspaces` field of `.yarnrc.yml` is not read, so any yarn v2+
 filtering defined there needs to move.
 
+yarn v1 has no `workspace:` protocol, so local packages are referenced
+by plain ranges. Add `":project > :workspace": "workspace:*"` to
+`modifiers` in `vlt.json` to always link them, see
+[Implicit workspace references](/client/graph-modifiers#implicit-workspace-references).
+
 You only need to define workspaces in `vlt.json` if you want vlt's
 **named workspace groups** for targeted operations. If `vlt.json` has
 a `workspaces` field it wins outright, and the `package.json` field is
