@@ -764,6 +764,11 @@ export const definition = j
                     devDependencies or optionalDependencies, but you want to
                     move it to be a non-optional production dependency.`,
     },
+    'save-types': {
+      description: `Also save the matching \`@types/*\` package as a
+                    devDependency for each added registry package that
+                    ships no TypeScript types of its own.`,
+    },
     'save-config': {
       description: `Save the registry and git host options given on the
                     command line or via \`VLT_*\` env (\`--registry\`,
