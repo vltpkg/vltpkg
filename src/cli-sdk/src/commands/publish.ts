@@ -13,7 +13,6 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import { packTarball } from '../pack-tarball.ts'
 import type { Views } from '../view.ts'
 import assert from 'node:assert'
-import type { NormalizedManifest } from '@vltpkg/types'
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import prettyBytes from 'pretty-bytes'
@@ -24,8 +23,7 @@ import { createHostContextsMap } from '../query-host-contexts.ts'
 import { minimatch } from 'minimatch'
 import { resolveRegistry } from '../require-registry.ts'
 import { stderr } from '../output.ts'
-
-export const needsRegistry = true
+import { getPublishConfig } from '../publish-config.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -34,7 +32,10 @@ export const usage: CommandUsage = () =>
     description: `Create a tarball from a package and publish it to the configured registry.
     
     This command will pack the package in the current directory or specified folder,
-    and then upload it to the configured registry.`,
+    and then upload it to the configured registry.
+
+    The registry is the package's \`publishConfig.registry\` if set (no other
+    registry config needed), else \`--registry\`, else a configured alias.`,
     options: {
       tag: {
         description: 'Publish the package with the given tag',
@@ -179,7 +180,9 @@ export const command: CommandFn<CommandResult> = async conf => {
   }
 
   if (single) {
-    return commandSingle(single, conf)
+    const [target] = await resolveTargets([single], conf)
+    assert(target)
+    return commandSingle(target, conf)
   }
 
   assert(
@@ -188,28 +191,35 @@ export const command: CommandFn<CommandResult> = async conf => {
   )
 
   const results: CommandResultSingle[] = []
-  for (const location of locations) {
-    results.push(await commandSingle(location, conf))
+  for (const target of await resolveTargets(locations, conf)) {
+    results.push(await commandSingle(target, conf))
   }
   return results
 }
 
-type PublishConfig = {
-  directory?: string
-  registry?: string
-  access?: string
-  tag?: string
-}
+type Target = { manifestDir: string; registry: string }
 
-const getPublishConfig = (
-  manifest: NormalizedManifest,
-): PublishConfig | undefined => {
-  const pc: unknown = (manifest as Record<string, unknown>)
-    .publishConfig
-  if (pc && typeof pc === 'object') {
-    return pc
+/**
+ * Registry of every target, before anything runs or publishes.
+ * The configured one is only resolved (or prompted for) once.
+ */
+const resolveTargets = async (
+  locations: string[],
+  conf: LoadedConfig,
+): Promise<Target[]> => {
+  let fallback: Promise<string> | undefined
+  const targets: Target[] = []
+  for (const location of locations) {
+    const manifestPath = conf.options.packageJson.find(location)
+    assert(manifestPath, 'No package.json found')
+    const manifestDir = dirname(manifestPath)
+    const manifest = conf.options.packageJson.read(manifestDir)
+    const registry =
+      getPublishConfig(manifest)?.registry ??
+      (await (fallback ??= resolveRegistry(conf)))
+    targets.push({ manifestDir, registry })
   }
-  return undefined
+  return targets
 }
 
 /** Of several readmes at the package root, npm prefers the markdown one. */
@@ -243,12 +253,9 @@ const readPublishReadme = (
 }
 
 const commandSingle = async (
-  location: string,
+  { manifestDir, registry }: Target,
   conf: LoadedConfig,
 ) => {
-  const manifestPath = conf.options.packageJson.find(location)
-  assert(manifestPath, 'No package.json found')
-  const manifestDir = dirname(manifestPath)
   const manifest = conf.options.packageJson.read(manifestDir)
 
   assert(
@@ -260,8 +267,6 @@ const commandSingle = async (
   const publishConfig = getPublishConfig(manifest)
   const tag = publishConfig?.tag ?? conf.options.tag
   const access = publishConfig?.access ?? conf.options.access
-  const registry =
-    publishConfig?.registry ?? (await resolveRegistry(conf))
   const registryUrl = new URL(registryBase(registry))
 
   const runOptions = {
