@@ -294,6 +294,89 @@ t.test('update-expired main()', async t => {
     },
   )
 
+  await t.test(
+    'keeps stale entries when API returns no score',
+    async t => {
+      const dir = t.testdir()
+      const dbPath = resolve(dir, 'test.db')
+      const englishDaysId = joinDepIDTuple([
+        'registry',
+        'npm',
+        'english-days@1.0.0',
+      ])
+
+      const expiredStart =
+        Date.now() - SecurityArchive.defaultTtl - 1000
+      const db = initDB(dbPath, [
+        {
+          depID: englishDaysId,
+          report: JSON.stringify(englishDaysReport),
+          start: expiredStart,
+          ttl: SecurityArchive.defaultTtl,
+        },
+      ])
+
+      // socket.dev has not analyzed this version yet, so the artifact
+      // comes back without a score, alongside a purlError wrapper item
+      const { score: _, ...unscoredReport } = englishDaysUpdatedReport
+      t.intercept(global, 'fetch', {
+        value: async () =>
+          ({
+            ok: true,
+            status: 200,
+            text: async () => `${JSON.stringify(unscoredReport)}
+${JSON.stringify({
+  _type: 'purlError',
+  value: {
+    error: 'package_not_found',
+    inputPurl: 'pkg:npm/missing@1.0.0',
+    retryable: false,
+  },
+})}
+`,
+          }) as unknown as Response,
+      })
+
+      const warn = t.capture(console, 'warn').args
+      const payload: UpdateExpiredPayload = {
+        dbPath,
+        retries: 3,
+        ttl: SecurityArchive.defaultTtl,
+        expired: [
+          {
+            depID: baseDepID(englishDaysId),
+            name: 'english-days',
+            version: '1.0.0',
+          },
+        ],
+      }
+
+      const result = await main(payloadStream(payload))
+      t.equal(
+        result,
+        false,
+        'should return false when nothing was scored',
+      )
+      t.strictSame(
+        warn(),
+        [],
+        'should not warn about the wrapper item',
+      )
+
+      const row = db
+        .prepare('SELECT report, start FROM cache WHERE depID = ?')
+        .get(englishDaysId) as { report: string; start: number }
+      t.strictSame(
+        JSON.parse(row.report),
+        englishDaysReport,
+        'should keep the stale report',
+      )
+      t.equal(row.start, expiredStart, 'should not touch the entry')
+
+      db.close()
+    },
+  )
+
   await t.test('returns false for empty expired list', async t => {
     const payload: UpdateExpiredPayload = {
       dbPath: '/tmp/unused.db',
