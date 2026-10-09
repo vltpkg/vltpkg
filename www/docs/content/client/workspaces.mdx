@@ -217,10 +217,11 @@ dependency order: a workspace comes after the workspaces it depends
 on. This applies to `--recursive`, `--workspace`, `--workspace-group`
 and `--scope`.
 
-With `--scope`, unrelated workspaces keep query order, and
-dependencies through workspaces the query did not match still count.
-`--workspace` and `--workspace-group` only see dependencies among the
-selected workspaces. Cycles are broken, so order within a cycle is not
+With `--scope`, query order is kept where possible (a dependency may
+move ahead of unrelated matches), and dependencies through workspaces
+the query did not match still count. `--workspace` and
+`--workspace-group` only see dependencies among the selected
+workspaces. Cycles are broken, so order within a cycle is not
 guaranteed.
 
 ## See also
