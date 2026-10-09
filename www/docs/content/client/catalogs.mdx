@@ -345,6 +345,8 @@ provide helpful error messages:
 - **Missing dependency in catalog**:
   `Package "<dep>" not found in default catalog` or
   `Package "<dep>" not found in catalog "<name>"`
+- **Catalog entry using `catalog:`**:
+  `Catalog entry "<dep>" in catalog "<name>" cannot be a catalog: spec`
 
 For example:
 
@@ -355,9 +357,10 @@ Config Error: Default catalog not found for abbrev@catalog:
   Valid Options: [ 'catalog:dev', 'catalog:tools' ]
 ```
 
-`From` is the `package.json` and dependency type declaring the spec,
-`Wanted` lists the catalogs that define the dependency and
-`Valid Options` lists all defined catalogs.
+`From` is the `package.json` and dependency type declaring the spec
+(prefixed with `vlt-lock.json` when the spec was read from the
+lockfile, eg: `vlt ci`), `Wanted` lists the catalogs that define the
+dependency and `Valid Options` lists all defined catalogs.
 
 ## Migration from Other Package Managers
 

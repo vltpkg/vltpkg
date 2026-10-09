@@ -3,12 +3,9 @@ import { splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
-import type {
-  DependencyTypeLong,
-  DependencyTypeShort,
-  NormalizedManifest,
-} from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
 import { longDependencyTypes } from '@vltpkg/types'
+import { longDependencyTypeNames } from '../dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   Dependency,
@@ -17,14 +14,6 @@ import type {
 import type { Graph } from '../graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
 import { calculateSaveValue } from './calculate-save-value.ts'
-
-const depTypesMap = new Map<DependencyTypeShort, DependencyTypeLong>([
-  ['prod', 'dependencies'],
-  ['dev', 'devDependencies'],
-  ['peer', 'peerDependencies'],
-  ['peerOptional', 'peerDependencies'],
-  ['optional', 'optionalDependencies'],
-])
 
 export type UpdatePackageJsonOptions = {
   /**
@@ -110,10 +99,13 @@ const addOrRemoveDeps = (
       const [name, dep] = deleteNameOrAddItem
       // peerOptional also needs to add peerDependenciesMeta entry
       const depTypeShort = resolveSaveType(node, name, dep.type)
-      const depType = depTypesMap.get(depTypeShort)
+      const depType =
+        Object.hasOwn(longDependencyTypeNames, depTypeShort) ?
+          longDependencyTypeNames[depTypeShort]
+        : undefined
       if (!depType) {
         throw error('Failed to retrieve dependency type', {
-          validOptions: [...depTypesMap.keys()],
+          validOptions: Object.keys(longDependencyTypeNames),
           found: dep.type,
         })
       }

@@ -175,7 +175,14 @@ export const loadEdges = (
         cache,
       )
     } catch (er) {
-      throw asDependencySpecError(er, fromNode, depType)
+      // spec text is the lockfile's; hidden lockfile errors are
+      // swallowed, so only vlt-lock.json surfaces here
+      throw asDependencySpecError(
+        er,
+        fromNode,
+        depType,
+        'vlt-lock.json',
+      )
     }
 
     if (useOptimizations) {

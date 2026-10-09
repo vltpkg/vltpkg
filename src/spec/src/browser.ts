@@ -61,9 +61,10 @@ export const defaultScopeRegistries = {
 export const getOptions = (
   options?: SpecOptions,
 ): SpecOptionsFilled => ({
-  catalog: {},
   catalogs: {},
   ...options,
+  // after spread: explicit `catalog: undefined` gets default too
+  catalog: options?.catalog ?? {},
   // built-in aliases are user/service-overridable: user config wins
   'jsr-registries': {
     ...defaultJsrRegistries,
@@ -426,8 +427,7 @@ export class Spec implements SpecLike<Spec> {
 
     if (this.bareSpec.startsWith('catalog:')) {
       this.catalog = this.bareSpec.substring('catalog:'.length)
-      const { catalog: defaultCatalog = {}, catalogs = {} } =
-        this.options
+      const { catalog: defaultCatalog, catalogs = {} } = this.options
       const catalog =
         this.catalog ?
           Object.hasOwn(catalogs, this.catalog) ?
@@ -442,13 +442,22 @@ export class Spec implements SpecLike<Spec> {
           : `Default catalog not found for ${this.spec}`,
         )
       }
+      const catalogName =
+        this.catalog ? `catalog "${this.catalog}"` : 'default catalog'
       const sub =
         Object.hasOwn(catalog, this.name) ?
           catalog[this.name]
         : undefined
       if (!sub) {
         throw this.#catalogError(
-          `Package "${this.name}" not found in ${this.catalog ? `catalog "${this.catalog}"` : 'default catalog'}`,
+          `Package "${this.name}" not found in ${catalogName}`,
+        )
+      }
+      // would recurse or resolve against another catalog
+      if (sub.startsWith('catalog:')) {
+        throw this.#error(
+          `Catalog entry "${this.name}" in ${catalogName} cannot be a catalog: spec`,
+          { code: 'ECONFIG', found: sub },
         )
       }
       this.subspec = Spec.parse(this.name, sub, this.options)
@@ -860,7 +869,7 @@ export class Spec implements SpecLike<Spec> {
 
   /** ECONFIG error listing defined catalogs & ones defining this dep */
   #catalogError(message: string) {
-    const { catalog = {}, catalogs = {} } = this.options
+    const { catalog, catalogs = {} } = this.options
     const defined: [string, Record<string, string>][] = [
       ...(Object.keys(catalog).length ?
         [['', catalog] as [string, Record<string, string>]]

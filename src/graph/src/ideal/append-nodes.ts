@@ -19,6 +19,7 @@ import type { PathScurry } from 'path-scurry'
 import { fixupAddedNames } from '../fixup-added-names.ts'
 import {
   addKey,
+  asDependencySpecError,
   shorten,
   shouldInstallDepType,
 } from '../dependencies.ts'
@@ -860,15 +861,19 @@ const processPlacementTasks = async (
         for (const [name, bareSpec] of sortedEntries) {
           // might need to skip already placed peer deps here
           if (bundled.has(name)) continue
-          const dep = {
-            type: shorten(depTypeName, name, manifest),
-            spec: Spec.parse(name, bareSpec, {
+          const type = shorten(depTypeName, name, manifest)
+          let depSpec: Spec
+          try {
+            depSpec = Spec.parse(name, bareSpec, {
               ...options,
               // git/file/remote parents have no spec.registry, so fall
               // back to the configured one. see vltpkg/vltpkg#1580.
               registry: spec.registry ?? options.registry,
-            }),
+            })
+          } catch (er) {
+            throw asDependencySpecError(er, node, type)
           }
+          const dep = { type, spec: depSpec }
           if (depTypeName === 'peerDependencies') {
             nextPeerDeps.set(name, dep)
           } else {

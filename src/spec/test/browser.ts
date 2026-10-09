@@ -441,6 +441,11 @@ t.test('parse args', t => {
 
 t.test('getOptions', t => {
   t.matchSnapshot(getOptions({}), 'should get default options')
+  t.strictSame(
+    getOptions({ catalog: undefined }).catalog,
+    {},
+    'explicit undefined catalog gets the default',
+  )
   t.end()
 })
 
@@ -1157,6 +1162,35 @@ t.test('catalogs', async t => {
       },
     },
     'prototype keys are not catalog entries',
+  )
+  t.throws(
+    () => Spec.parse('a@catalog:', { catalog: { a: 'catalog:' } }),
+    {
+      message:
+        'Catalog entry "a" in default catalog cannot be a catalog: spec',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'a@catalog:',
+        found: 'catalog:',
+      },
+    },
+    'catalog entries cannot point at the default catalog',
+  )
+  t.throws(
+    () =>
+      Spec.parse('a@catalog:x', {
+        catalogs: { x: { a: 'catalog:y' }, y: { a: '1' } },
+      }),
+    {
+      message:
+        'Catalog entry "a" in catalog "x" cannot be a catalog: spec',
+      cause: {
+        code: 'ECONFIG',
+        spec: 'a@catalog:x',
+        found: 'catalog:y',
+      },
+    },
+    'catalog entries cannot point at other catalogs',
   )
 
   t.test(

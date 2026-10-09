@@ -7750,8 +7750,8 @@ x@workspace:y@1.x
 
 exports[`test/browser.ts > TAP > getOptions > should get default options 1`] = `
 Object {
-  "catalog": Object {},
   "catalogs": Object {},
+  "catalog": Object {},
   "jsr-registries": Object {
     "jsr": "https://npm.jsr.io/",
   },
