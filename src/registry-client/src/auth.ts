@@ -88,9 +88,14 @@ export const setToken = async (
   await kc.save()
 }
 
+/**
+ * `VLT_TOKEN` applies to `VLT_REGISTRY` if set, else `defaultKey`
+ * (see {@link defaultRegistryKey}).
+ */
 export const getToken = async (
   registry: string,
   identity: string,
+  defaultKey?: string,
 ): Promise<Token | undefined> => {
   const kc = getKC(identity)
   const key = normalizeRegistryKey(registry)
@@ -100,7 +105,8 @@ export const getToken = async (
   if (rt) return rt
 
   const envReg = process.env.VLT_REGISTRY
-  if (envReg && key === normalizeRegistryKey(envReg)) {
+  const tokKey = envReg ? normalizeRegistryKey(envReg) : defaultKey
+  if (key === tokKey) {
     const envTok = process.env.VLT_TOKEN
     if (envTok) return `Bearer ${envTok}`
   }
@@ -116,6 +122,20 @@ export type RegistryURLs = {
   registries?: Record<string, string>
   'scoped-registries'?: Record<string, string>
   'jsr-registries'?: Record<string, string>
+  /** `registries` alias for bare specs, default `npm` */
+  'default-registry-alias'?: string
+}
+
+/**
+ * Normalized key of `registries[default-registry-alias]` (a `registry`
+ * scalar applies via `VLT_REGISTRY`). Undefined if unset/unparseable.
+ */
+export const defaultRegistryKey = (
+  o: RegistryURLs,
+): string | undefined => {
+  // 'npm': default of `default-registry-alias`
+  const u = o.registries?.[o['default-registry-alias'] ?? 'npm']
+  return u && URL.canParse(u) ? normalizeRegistryKey(u) : undefined
 }
 
 /**
@@ -138,9 +158,10 @@ export const registryKeys = (o: RegistryURLs): string[] => [
 /**
  * Find the best matching token for a request URL by performing a
  * longest-prefix match against all known registry keys (runtime
- * tokens, `VLT_REGISTRY`, keychain entries, and `keys`: normalized
- * configured registry keys, e.g. from {@link registryKeys}). A key
- * that resolves no token is skipped.
+ * tokens, `VLT_REGISTRY`, `defaultKey`, keychain entries, and `keys`:
+ * normalized configured registry keys, e.g. from {@link registryKeys}).
+ * A key that resolves no token is skipped. `VLT_TOKEN` applies to
+ * `VLT_REGISTRY` if set, else `defaultKey`.
  *
  * `VLT_TOKEN_<key>` env vars are only read for a known key: their
  * names are lossy (`.`, `-`, `/` all become `_`), so probing them by
@@ -153,6 +174,7 @@ export const getTokenByURL = async (
   requestUrl: string,
   identity: string,
   keys: readonly string[] = [],
+  defaultKey?: string,
 ): Promise<Token | undefined> => {
   const normalized = normalizeRegistryKey(requestUrl)
 
@@ -163,6 +185,7 @@ export const getTokenByURL = async (
   if (envReg) {
     candidates.push(normalizeRegistryKey(envReg))
   }
+  if (defaultKey) candidates.push(defaultKey)
 
   const kc = getKC(identity)
 
@@ -177,7 +200,7 @@ export const getTokenByURL = async (
     .filter(c => normalized === c || normalized.startsWith(c + '/'))
     .sort((a, b) => b.length - a.length)
   for (const key of matches) {
-    const tok = await getToken(key, identity)
+    const tok = await getToken(key, identity, defaultKey)
     if (tok) return tok
   }
 }

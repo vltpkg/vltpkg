@@ -21,6 +21,7 @@ import { addHeader } from './add-header.ts'
 import type { RegistryURLs, Token } from './auth.ts'
 import {
   clearRuntimeTokens,
+  defaultRegistryKey,
   deleteToken,
   getKC,
   getToken,
@@ -66,6 +67,7 @@ export {
   assertOk,
   CacheEntry,
   clearRuntimeTokens,
+  defaultRegistryKey,
   deleteToken,
   getKC,
   getToken,
@@ -317,6 +319,8 @@ export class RegistryClient {
   identity: string
   /** configured registry keys; `VLT_TOKEN_<key>` applies under each */
   readonly registryKeys: readonly string[]
+  /** default registry key: gets `VLT_TOKEN` if no `VLT_REGISTRY` */
+  readonly defaultRegistryKey: string | undefined
   staleWhileRevalidateFactor: number
   #session = randomUUID()
   #decoded = new WeakMap<Uint8Array, CacheEntry>()
@@ -336,6 +340,7 @@ export class RegistryClient {
     } = options
     this.identity = identity
     this.registryKeys = registryKeys(options)
+    this.defaultRegistryKey = defaultRegistryKey(options)
     this.staleWhileRevalidateFactor = staleWhileRevalidateFactor
     const path = resolve(cache, 'registry-client')
     const store = options.storeRoot ?? storeRoot(cache)
@@ -852,6 +857,7 @@ export class RegistryClient {
         String(u),
         this.identity,
         this.registryKeys,
+        this.defaultRegistryKey,
       ),
     )
 
@@ -1030,6 +1036,7 @@ export class RegistryClient {
           String(u),
           this.identity,
           this.registryKeys,
+          this.defaultRegistryKey,
         ),
       )
     }

@@ -21,6 +21,7 @@ import { cacheKey } from '../src/index.ts'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,
+  RegistryURLs,
 } from '../src/index.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
@@ -2740,5 +2741,72 @@ t.test('VLT_TOKEN_<key> for configured registries', async t => {
     ['/alt/acme-npm/abbrev', undefined],
     ['/alt/acme/npm/abbrev', 'Bearer npm-env'],
     ['/alt/acme/npm/abbrev', undefined],
+  ])
+})
+
+t.test('VLT_TOKEN for the default registry', async t => {
+  dropConnection = false
+  const npm = `${registryURL}/alt/acme/npm/`
+  const main = `${registryURL}/alt/acme/main/`
+  const scoped = `${registryURL}/alt/acme/scoped/`
+  const mainVar = `VLT_TOKEN_http_localhost_${PORT}_alt_acme_main`
+  const { VLT_REGISTRY, VLT_TOKEN } = process.env
+  // `vlr test` sets VLT_REGISTRY
+  delete process.env.VLT_REGISTRY
+  process.env.VLT_TOKEN = 'env'
+  t.teardown(() => {
+    if (VLT_REGISTRY === undefined) delete process.env.VLT_REGISTRY
+    else process.env.VLT_REGISTRY = VLT_REGISTRY
+    if (VLT_TOKEN === undefined) delete process.env.VLT_TOKEN
+    else process.env.VLT_TOKEN = VLT_TOKEN
+    delete process.env[mainVar]
+  })
+  const cache = dirname((t.context.rc as RegistryClient).cache.path())
+  const registries = { npm, main }
+  // [defaultRegistryKey, auth: npm, main, scoped, lookalike, npm stream]
+  const authFor = async (o: RegistryURLs) => {
+    const rc = new RC({
+      cache,
+      registries,
+      'scoped-registries': { '@acme': scoped },
+      ...o,
+    })
+    authSeen.length = 0
+    for (const url of [
+      `${npm}abbrev`,
+      `${main}abbrev`,
+      `${scoped}@acme/utils`,
+      `${registryURL}/alt/acme-npm/abbrev`,
+    ]) {
+      await rc.request(url, { useCache: false })
+    }
+    const { body } = await rc.requestStream(`${npm}abbrev`)
+    await body.toArray()
+    await rc.drain()
+    return [rc.defaultRegistryKey, authSeen.map(([, a]) => a)]
+  }
+  const env = 'Bearer env'
+  const npmKey = `${registryURL}/alt/acme/npm`
+  const npmOnly = [
+    npmKey,
+    [env, undefined, undefined, undefined, env],
+  ]
+  t.strictSame(await authFor({}), npmOnly)
+  t.strictSame(await authFor({ 'default-registry-alias': 'main' }), [
+    `${registryURL}/alt/acme/main`,
+    [undefined, env, undefined, undefined, undefined],
+  ])
+  // `registry` option (e.g. `vlt registry main …`) doesn't move it
+  t.strictSame(await authFor({ registry: main }), npmOnly)
+  process.env[mainVar] = 'main-env'
+  t.strictSame(await authFor({ registry: main }), [
+    npmKey,
+    [env, 'Bearer main-env', undefined, undefined, env],
+  ])
+  delete process.env[mainVar]
+  process.env.VLT_REGISTRY = main
+  t.strictSame(await authFor({}), [
+    npmKey,
+    [undefined, env, undefined, undefined, undefined],
   ])
 })
