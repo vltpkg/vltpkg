@@ -1,6 +1,11 @@
 import { error } from '@vltpkg/error-cause'
 import { isErrorWithCause, isObject } from '@vltpkg/types'
-import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
+import {
+  defaultRegistries,
+  defaultRegistryName,
+  Spec,
+} from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { selectRegistry } from './select-registry.ts'
 import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
@@ -66,6 +71,21 @@ export const asUnknownSpecPrefix = (er: unknown): unknown => {
     ) ?
       unknownSpecPrefixError(found.slice(0, -1), spec, validOptions)
     : er
+}
+
+/**
+ * Parse a positional arg, turning an unknown `name:` prefix into an
+ * `ECONFIG` that says how to define it.
+ */
+export const parseSpecArg = (
+  item: string,
+  options: SpecOptions,
+): Spec => {
+  try {
+    return Spec.parseArgs(item, options)
+  } catch (er) {
+    throw asUnknownSpecPrefix(er)
+  }
 }
 
 /**

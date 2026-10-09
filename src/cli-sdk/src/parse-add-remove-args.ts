@@ -13,7 +13,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import type { DependencySaveType } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { LoadedConfig } from './config/index.ts'
-import { asUnknownSpecPrefix } from './require-registry.ts'
+import { parseSpecArg } from './require-registry.ts'
 
 export type ParsedAddArgs = {
   add: AddImportersDependenciesMap
@@ -139,18 +139,6 @@ const rebaseFileSpec = (
 }
 
 /**
- * Parse a positional arg, turning an unknown `name:` prefix into an
- * `ECONFIG` that says how to define it.
- */
-const parseArg = (item: string, options: SpecOptions): Spec => {
-  try {
-    return Spec.parseArgs(item, options)
-  } catch (er) {
-    throw asUnknownSpecPrefix(er)
-  }
-}
-
-/**
  * Parses the positional arguments into {@link AddImportersDependenciesMap}.
  */
 export const parseAddArgs = (
@@ -170,7 +158,7 @@ export const parseAddArgs = (
   const parsedItems: { spec: Spec; type: DependencySaveType }[] = []
   let hasFileSpecs = false
   for (const item of items) {
-    const spec = parseArg(item, specOptions)
+    const spec = parseSpecArg(item, specOptions)
     parsedItems.push({ spec, type })
     if (spec.type === 'file') hasFileSpecs = true
     add.modifiedDependencies = true

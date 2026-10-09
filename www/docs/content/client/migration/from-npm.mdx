@@ -69,6 +69,8 @@ export `VLT_REGISTRIES`. See [Registries](/client/registries).
 | `npm install <pkg>`            | `vlt install <pkg>`                        | Same behavior                                   |
 | `npm install -D <pkg>`         | `vlt install -D <pkg>`                     | Same flags                                      |
 | `npm uninstall <pkg>`          | `vlt uninstall <pkg>`                      | Aliases: `rm`, `u`                              |
+| `npm install -g <pkg>`         | `vlt install -g <pkg>`                     | One workspace per pkg in `global-dir`           |
+| `npm uninstall -g <pkg>`       | `vlt uninstall -g <pkg>`                   |                                                 |
 | `npm run <script>`             | `vlt run <script>`                         | Aliases: `r`, `run-script`                      |
 | `npm test`                     | `vlt run test`                             | No `vlt test` shorthand                         |
 | `npm start`                    | `vlt run start`                            | No `vlt start` shorthand                        |
@@ -80,6 +82,7 @@ export `VLT_REGISTRIES`. See [Registries](/client/registries).
 | `npm login`                    | `vlt login`                                |                                                 |
 | `npm whoami`                   | `vlt whoami`                               |                                                 |
 | `npm ls`                       | `vlt list`                                 | Alias: `ls`                                     |
+| `npm ls -g`                    | `vlt ls -g`                                |                                                 |
 | `npm query`                    | `vlt query`                                | Uses DSS, not CSS selectors                     |
 | `npm ci`                       | `vlt install --expect-lockfile`            | Strict lockfile mode                            |
 | `npm install --ignore-scripts` | `vlt install`                              | Default behavior                                |
