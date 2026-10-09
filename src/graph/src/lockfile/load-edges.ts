@@ -1,6 +1,5 @@
 import { asDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
-import { fastSplit } from '@vltpkg/fast-split'
 import { Spec } from '@vltpkg/spec/browser'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import { longDependencyTypes } from '@vltpkg/types'
@@ -27,6 +26,14 @@ export type ProcessingEdge = {
   toNode: NodeLike | undefined
   depType: DependencyTypeShort
   spec: Spec
+}
+
+// split on first space, rest kept in 2nd part
+const splitFirst = (s: string): [string, string | undefined] => {
+  const i = s.indexOf(' ')
+  return i === -1 ?
+      [s, undefined]
+    : [s.substring(0, i), s.substring(i + 1)]
 }
 
 const retrieveNodeFromGraph = (
@@ -97,16 +104,14 @@ export const loadEdges = (
     useOptimizations ? new Map<string, NodeLike>() : undefined
 
   for (const [key, value] of entries) {
-    const [fromId, specName] = fastSplit(key, ' ', 2)
-    const [depType, valRest] = fastSplit(value, ' ', 2)
+    const [fromId, specName] = splitFirst(key)
+    const [depType, valRest] = splitFirst(value)
     const vrSplit = valRest?.lastIndexOf(' ') ?? -1
 
     // not a valid edge record
-    /* c8 ignore start */
     if (!valRest || !depType || !fromId || !specName || vrSplit < 1) {
       continue
     }
-    /* c8 ignore stop */
 
     // Validate dependency type early
     if (!isDependencyTypeShort(depType)) {
