@@ -217,6 +217,12 @@ Alternatively, configure a project manually:
    pnpm config set registry https://registry.vlt.io/acme/npm/ --location=project
    ```
 
+   Keep registry settings in `.npmrc`: pnpm before 11.10 ignores
+   `registry` in `pnpm-workspace.yaml` and installs from npmjs.org,
+   even if `pnpm config get registry` shows the mirror; pnpm 10 also
+   logs in to npmjs.org. pnpm 11.10+ reads `registry` from either
+   file. `_authToken` needs `.npmrc`.
+
    Then log in to obtain an authentication token:
 
    ```bash

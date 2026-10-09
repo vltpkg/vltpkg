@@ -73,7 +73,8 @@ registry=https://registry.vlt.io/acme/npm/
 ```
 
 Registry and auth keys belong in `.npmrc`; every other pnpm setting
-now lives in `pnpm-workspace.yaml`.
+now lives in `pnpm-workspace.yaml`. pnpm before 11.10 ignores
+`registry` in `pnpm-workspace.yaml` when installing.
 
 ### `${VLT_TOKEN}` does not work in a project `.npmrc`
 
