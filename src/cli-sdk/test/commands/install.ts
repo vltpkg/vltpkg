@@ -788,6 +788,7 @@ t.test('saves --allow-skills after install', async t => {
 t.test('--global', async t => {
   let glog = ''
   let fail = false
+  let failPersist = false
   const add = new Map()
   const created = ['/g/packages/foo-global-ws']
   const importers = new Set(['workspace~packages+foo-global-ws'])
@@ -817,6 +818,12 @@ t.test('--global', async t => {
       parseAddArgs: () => {
         glog += 'parse\n'
         return { add: new Map() }
+      },
+    },
+    '../../src/persist-spec-config.ts': {
+      planSpecConfigPersist: () => {
+        glog += 'persist\n'
+        if (failPersist) throw new Error('persist')
       },
     },
     '../../src/global.ts': {
@@ -855,38 +862,61 @@ t.test('--global', async t => {
   t.equal(res.global, global)
   t.equal(
     glog,
-    'assert\nparse global\ninstall true\nlink true true\n',
+    'assert\npersist\nparse global\ninstall true\nlink true true\n',
   )
 
   glog = ''
   const local = await Command.command(conf())
   t.equal(local.global, undefined)
-  t.equal(glog, 'parse\ninstall false\n', 'no global helpers')
+  t.equal(
+    glog,
+    'persist\nparse\ninstall false\n',
+    'no global helpers',
+  )
 
   glog = ''
   const types = { 'save-types': true }
   await Command.command(conf('/g', types))
   t.equal(
     glog,
-    'assert\nparse global\ninstall true\nlink true true\n',
+    'assert\npersist\nparse global\ninstall true\nlink true true\n',
     'no types deps in global ws',
   )
   glog = ''
   await Command.command(conf(undefined, types))
-  t.equal(glog, 'parse\ntypes\ninstall false\n')
+  t.equal(glog, 'persist\nparse\ntypes\ninstall false\n')
+
+  glog = ''
+  failPersist = true
+  await t.rejects(Command.command(conf('/g')), { message: 'persist' })
+  t.equal(glog, 'assert\npersist\n', 'no workspace created')
+  failPersist = false
+
+  glog = ''
+  const badOptions = Object.defineProperty(conf('/g'), 'options', {
+    get: () => {
+      throw new Error('options')
+    },
+  })
+  await t.rejects(Command.command(badOptions), { message: 'options' })
+  t.equal(
+    glog,
+    'assert\npersist\nparse global\nremove /g/packages/foo-global-ws\n',
+    'removed on any error before install',
+  )
 
   glog = ''
   fail = true
   await t.rejects(Command.command(conf('/g')), { message: 'nope' })
   t.equal(
     glog,
-    'assert\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
     'created workspaces removed',
   )
 
   glog = ''
   await t.rejects(Command.command(conf()), { message: 'nope' })
-  t.equal(glog, 'parse\ninstall false\n')
+  t.equal(glog, 'persist\nparse\ninstall false\n')
 
   t.match(
     Command.views.json({

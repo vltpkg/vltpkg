@@ -13,12 +13,13 @@ import type {
 } from '@vltpkg/graph'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import {
   lstat,
   mkdir,
   readdir,
   rm,
+  stat,
   symlink,
   writeFile,
 } from 'node:fs/promises'
@@ -101,6 +102,10 @@ const globalSpec = async (
       .join('/')
     spec = Spec.parse(spec.name, `file:${file}`, options)
   }
+  // a bare name gets the default tag, like npm
+  if (spec.type === 'registry' && !spec.bareSpec) {
+    return Spec.parse(spec.name, options.tag, options)
+  }
   if (spec.name !== '(unknown)') return spec
   const { name } = await options.packageInfo.manifest(spec, {
     from: process.cwd(),
@@ -112,6 +117,35 @@ const globalSpec = async (
     })
   }
   return Spec.parse(name, spec.bareSpec, options)
+}
+
+// `@s+p-global-ws` -> `@s/p`
+const wsPackageName = (dir: string) =>
+  dir.replace(/-global-ws$/, '').replace('+', '/')
+
+/**
+ * The workspace of `name`. Matched by exact case, since the fs may
+ * ignore it but workspace ids don't. `variant` is an installed name
+ * that differs only in case.
+ */
+const findWorkspace = (projectRoot: string, name: string) => {
+  const path = globalWorkspacePath(name)
+  const dir = resolve(projectRoot, path)
+  const base = basename(path)
+  const entries = readdirSync(
+    resolve(projectRoot, globalWorkspacesDir),
+  )
+  const variant = entries.find(
+    e => e !== base && e.toLowerCase() === base.toLowerCase(),
+  )
+  return {
+    path,
+    dir,
+    exists:
+      entries.includes(base) &&
+      existsSync(resolve(dir, 'package.json')),
+    variant: variant && wsPackageName(variant),
+  }
 }
 
 /** one workspace per positional, created if missing */
@@ -128,17 +162,27 @@ export const parseGlobalAddArgs = async (
   try {
     for (const item of positionals) {
       const spec = await globalSpec(item, conf)
-      const path = globalWorkspacePath(spec.name)
-      const dir = resolve(projectRoot, path)
-      const pj = resolve(dir, 'package.json')
-      if (!existsSync(pj)) {
+      const { path, dir, exists, variant } = findWorkspace(
+        projectRoot,
+        spec.name,
+      )
+      if (!exists) {
+        if (variant) {
+          throw error(
+            `${spec.name} differs only in case from global package ${variant}`,
+            { code: 'EUSAGE', found: spec.name },
+          )
+        }
         await mkdir(dir, { recursive: true })
         created.push(dir)
         const ws = {
           name: globalWorkspaceName(spec.name),
           private: true,
         }
-        await writeFile(pj, JSON.stringify(ws, null, 2) + '\n')
+        await writeFile(
+          resolve(dir, 'package.json'),
+          JSON.stringify(ws, null, 2) + '\n',
+        )
       }
       const id = workspaceId(path)
       importers.add(id)
@@ -174,14 +218,17 @@ export const parseGlobalRemoveArgs = (
   )
   const dirs: string[] = []
   for (const name of positionals) {
-    const path = globalWorkspacePath(name)
+    const { path, dir, exists, variant } = findWorkspace(
+      projectRoot,
+      name,
+    )
     const id = workspaceId(path)
     if (remove.has(id)) continue
-    const dir = resolve(projectRoot, path)
-    if (!existsSync(resolve(dir, 'package.json'))) {
+    if (!exists) {
       throw error(`${name} is not installed globally`, {
         code: 'EUSAGE',
         found: name,
+        ...(variant ? { validOptions: [variant] } : null),
       })
     }
     remove.set(id, new Set([name]))
@@ -299,13 +346,18 @@ export const linkGlobalBins = async (
           edge.to?.bins ?? {},
         )) {
           if (!safeBin(bin)) continue
+          const target = resolve(nm, edge.spec.name, path)
+          // win32 shims need the target, posix links may dangle
+          const win32 = process.platform === 'win32'
+          if (win32 && !(await stat(target).catch(() => false))) {
+            continue
+          }
           const link = resolve(binDir, bin)
           if (!force && (await exists(link))) {
             conflicts.add(bin)
             continue
           }
-          const target = resolve(nm, edge.spec.name, path)
-          if (process.platform === 'win32') {
+          if (win32) {
             await cmdShimIfExists(target, link, remover)
           } else {
             await remover.rm(link)
