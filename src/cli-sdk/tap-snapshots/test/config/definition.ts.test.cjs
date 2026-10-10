@@ -53,6 +53,7 @@ Object {
   "rx": "run-exec",
   "setup": "setup",
   "show": "view",
+  "skills": "skills",
   "token": "token",
   "u": "update",
   "uninstall": "uninstall",
@@ -86,6 +87,15 @@ Object {
     "description": String(
       Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.  
       Example: --allow-scripts=":root > *, #my-package" Runs scripts only for direct dependencies of the current project and any occurrences of a specific dependency with the name "my-package" anywhere in the dependency graph.
+    ),
+    "hint": "query",
+    "type": "string",
+  },
+  "allow-skills": Object {
+    "description": String(
+      Link the agent skills (folders with a \`SKILL.md\`) shipped by installed packages matching this DSS query into \`./skills/<package>/<skill>\` after \`install\`, \`ci\` or \`update\`. Unset (the default) or \`:not(*)\` links nothing.
+      
+      Example: --allow-skills=":root > *" Links skills of the project's direct dependencies.
     ),
     "hint": "query",
     "type": "string",
@@ -243,6 +253,7 @@ Object {
       "run-exec",
       "run",
       "setup",
+      "skills",
       "token",
       "uninstall",
       "unpublish",
@@ -662,6 +673,7 @@ Array [
   "--access=<access>",
   "--all",
   "--allow-scripts=<query>",
+  "--allow-skills=<query>",
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
@@ -734,6 +746,7 @@ Array [
   "access",
   "all",
   "allow-scripts",
+  "allow-skills",
   "arch",
   "bail",
   "before",

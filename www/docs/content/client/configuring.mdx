@@ -19,7 +19,7 @@ More documentation available at
 ## Subcommands
 
 ```
-access, bugs, build, cache, ci, config, create, deprecate, dist-tag, docs, exec, exec-cache, exec-local, help, init, add, install, list, login, logout, pack, ping, pkg, profile, publish, query, registry, repo, run-script, run, run-exec, setup, token, uninstall, unpublish, update, version, view, whoami
+access, bugs, build, cache, ci, config, create, deprecate, dist-tag, docs, exec, exec-cache, exec-local, help, init, add, install, list, login, logout, pack, ping, pkg, profile, publish, query, registry, repo, run-script, run, run-exec, setup, skills, token, uninstall, unpublish, update, version, view, whoami
 ```
 
 Run `vlt <cmd> --help` for more information about a specific command
@@ -482,6 +482,13 @@ via `VLT_*` env (`--registry`, `--registries`,
 the user one with `--config=user`) after a successful `install`, `add`
 or `update`. Values a config file already has are left alone. See
 [Registries](/client/registries#saving-registries-given-to-install).
+
+### `--allow-skills=<query>`
+
+Link the agent skills (folders with a `SKILL.md`) shipped by installed
+packages matching this DSS query into `./skills/<package>/<skill>`
+after `install`, `ci` or `update`. Unset (the default) or `:not(*)`
+links nothing. See [`vlt skills`](/client/commands/skills).
 
 ### `-v --version`
 

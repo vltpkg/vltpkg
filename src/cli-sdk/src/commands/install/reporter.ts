@@ -135,6 +135,30 @@ export class InstallReporter extends ViewClass {
       out +=
         '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
     }
+    const {
+      linked = [],
+      removed = [],
+      conflicts = [],
+    } = _result.skills ?? {}
+    const s = (n: number) => (n === 1 ? '' : 's')
+    const skills: string[] = []
+    if (linked.length) {
+      skills.push(
+        `🔗 Linked ${linked.length} agent skill${s(linked.length)} into ./skills`,
+      )
+    }
+    if (removed.length) {
+      skills.push(
+        `🧹 Removed ${removed.length} stale skill link${s(removed.length)}: ${removed.join(', ')}`,
+        '   Run `vlt skills link <query>` to link again.',
+      )
+    }
+    if (conflicts.length) {
+      skills.push(
+        `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use: ${conflicts.join(', ')}`,
+      )
+    }
+    if (skills.length) out += `\n${skills.join('\n')}\n`
     const saved = _result.persistedConfig
     if (saved) {
       for (const e of persistedEntries(saved.values)) {

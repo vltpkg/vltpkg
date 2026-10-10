@@ -50,6 +50,7 @@ const canonicalCommands = {
   'run-exec': 'run-exec',
   run: 'run',
   setup: 'setup',
+  skills: 'skills',
   token: 'token',
   uninstall: 'uninstall',
   unpublish: 'unpublish',
@@ -860,6 +861,19 @@ export const definition = j
                     Example: --allow-scripts=":root > *, #my-package"
                     Runs scripts only for direct dependencies of the current project and any occurrences
                     of a specific dependency with the name "my-package" anywhere in the dependency graph.`,
+    },
+  })
+  .opt({
+    'allow-skills': {
+      hint: 'query',
+      description: `Link the agent skills (folders with a \`SKILL.md\`) shipped by
+                    installed packages matching this DSS query into
+                    \`./skills/<package>/<skill>\` after \`install\`,
+                    \`ci\` or \`update\`.
+                    Unset (the default) or \`:not(*)\` links nothing.
+
+                    Example: --allow-skills=":root > *"
+                    Links skills of the project's direct dependencies.`,
     },
   })
   .opt({

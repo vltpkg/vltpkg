@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import type { InstallResult } from '../../src/commands/install.ts'
 
 const options = {}
 let log = ''
@@ -519,4 +520,56 @@ t.test('json view includes persistedConfig', async t => {
   t.match(Command.views.json({ graph: {} as any, persistedConfig }), {
     persistedConfig,
   })
+})
+
+t.test('allow-skills', async t => {
+  const skills = {
+    linked: [{ mount: 'skills/foo/a' }],
+    unchanged: [],
+    removed: ['skills/gone/x'],
+    conflicts: ['skills/bar/b'],
+  }
+  let allowSkills: unknown
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install(opts: { allowSkills?: string }) {
+        allowSkills = opts.allowSkills
+        return {
+          graph: {},
+          ...(opts.allowSkills ? { skills } : null),
+        }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseAddArgs: () => ({ add: new Map() }),
+    },
+  })
+  const run = (value?: string) =>
+    Command.command({
+      positionals: [],
+      values: {},
+      options: {},
+      get: (k: string) => (k === 'allow-skills' ? value : undefined),
+    } as unknown as LoadedConfig)
+
+  const res = await run('#foo')
+  t.equal(allowSkills, '#foo', 'passed to install')
+  t.equal(res.skills, skills, 'returned')
+  t.notOk('skills' in (await run()), 'no skills key when unset')
+
+  t.match(
+    Command.views.json({
+      graph: {},
+      skills,
+    } as unknown as InstallResult),
+    {
+      skills: {
+        linked: ['skills/foo/a'],
+        removed: ['skills/gone/x'],
+        conflicts: ['skills/bar/b'],
+      },
+    },
+  )
 })

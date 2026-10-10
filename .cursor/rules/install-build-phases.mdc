@@ -28,6 +28,7 @@ Flow:
 | `--expect-lockfile` | Fail if lockfile missing or outdated (used by `vlt ci`) |
 | `--lockfile-only` | Update only lockfile + package.json, skip node_modules |
 | `--allow-scripts=<selector>` | Allow scripts during install (DSS query) |
+| `--allow-skills=<selector>` | Link agent skills into `./skills` after install (DSS query) |
 | `-D` `--save-dev` | Save as devDependency |
 | `-O` `--save-optional` | Save as optionalDependency |
 | `--save-peer` | Save as peerDependency |
