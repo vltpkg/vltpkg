@@ -78,11 +78,42 @@ minimal filesystem changes (creating/deleting links, writing
 lockfiles, hoisting, lifecycle scripts) to make the on-disk install
 match the Ideal graph. Returns `{ diff, buildQueue }`.
 
-### `install(options, add?): Promise<{ graph, diff, buildQueue }>`
+### `install(options, add?): Promise<{ graph, diff, buildQueue, skills? }>`
 
 High-level install orchestration that handles graph building, reify,
 and lockfile management. Supports `--frozen-lockfile`,
-`--clean-install`, and `--lockfile-only` modes.
+`--clean-install`, and `--lockfile-only` modes. With `allowSkills` (a
+DSS query, validated up front), links the agent skills of matching
+packages afterwards (see `linkSkills`) and returns the result as
+`skills`. Unset: removes dangling skill links (see `syncSkills`).
+
+### `listSkills(options): Promise<Skill[]>`
+
+Lists the agent skills (dirs with a `SKILL.md`, see
+https://agentskills.io/specification) shipped by installed packages in
+the vlt store, at `skills/<dir>/SKILL.md` or a root `SKILL.md`.
+`options.target` is a DSS query selecting packages (default `*`).
+
+### `linkSkills(options): Promise<LinkSkillsResult>`
+
+Links the skills of the packages matching `options.target` into
+`./skills/<package>/<skill>` (junctions on Windows), then prunes stale
+links: dangling, or no longer a skill of a linked package. Only links
+pointing into a `node_modules/.vlt` store are ever replaced or
+removed; anything else in the way is reported in `conflicts`. Linked
+packages get private copies of files hardlinked from the global store.
+
+### `syncSkills(options): Promise<LinkSkillsResult | undefined>`
+
+Run by `install`, `update` and `uninstall` after reify. With
+`options.allowSkills`, runs `linkSkills` for it. Else best effort:
+removes dangling skill links (returned as `removed`, if any) and keeps
+files behind live links private.
+
+### `unlinkSkills(options): Promise<{ removed }>`
+
+Removes the skill links of the packages matching `options.target`
+(default: all), plus any dangling ones.
 
 ### `mermaidOutput(graph): string`
 

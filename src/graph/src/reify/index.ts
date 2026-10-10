@@ -29,60 +29,10 @@ import { pruneUnsupportedOptional } from './optional-fail.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
-import { Query } from '@vltpkg/query'
-import { SecurityArchive } from '@vltpkg/security-archive'
-import type { NodeLike } from '@vltpkg/types'
 import { binChmodAll } from './bin-chmod.ts'
+import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
-
-/**
- * Filter nodes using a DSS query string
- */
-const filterNodesByQuery = async (
-  graph: Graph,
-  allowScriptsQuery?: string,
-): Promise<Set<DepID>> => {
-  // shortcut no packages included
-  if (
-    allowScriptsQuery === ':not(*)' /* c8 ignore next */ ||
-    !allowScriptsQuery
-  ) {
-    return new Set()
-  }
-  // shortcut all packages included
-  if (allowScriptsQuery === '*') {
-    return new Set(graph.nodes.keys())
-  }
-  /* c8 ignore start */
-  const securityArchive =
-    Query.hasSecuritySelectors(allowScriptsQuery) ?
-      await SecurityArchive.start({
-        nodes: [...graph.nodes.values()],
-      })
-    : undefined
-  /* c8 ignore stop */
-
-  const edges = graph.edges
-  const nodes = new Set<NodeLike>(graph.nodes.values())
-  const importers = graph.importers
-
-  const query = new Query({
-    edges,
-    nodes,
-    importers,
-    securityArchive,
-  })
-
-  const { nodes: resultNodes } = await query.search(
-    allowScriptsQuery,
-    {
-      signal: new AbortController().signal,
-    },
-  )
-
-  return new Set(resultNodes.map(node => node.id))
-}
 
 // - [ ] depid's with peer resolutions
 // - [ ] depid shortening

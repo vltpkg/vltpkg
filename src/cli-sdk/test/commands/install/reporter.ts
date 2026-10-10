@@ -77,6 +77,58 @@ t.test('steps, requests and trailer', async t => {
   r.error(new Error('x'))
 })
 
+t.test('skills', async t => {
+  const done = async (
+    linked: number,
+    conflicts: string[],
+    removed: string[] = [],
+  ) => {
+    const r = reporter()
+    r.start()
+    await r.done(
+      {
+        skills: {
+          linked: Array(linked).fill({}),
+          unchanged: [],
+          removed,
+          conflicts,
+        },
+      } as unknown as InstallResult,
+      { time: 1 },
+    )
+    await setTimeout(50)
+    // ink in CI writes a bare newline on unmount
+    const res = out
+    r.error(new Error('x'))
+    return res
+  }
+  const one = await done(1, ['skills/x/y'])
+  t.match(one, 'Linked 1 agent skill into ./skills')
+  t.match(one, '1 skill link skipped, path in use: skills/x/y')
+  const two = await done(2, ['skills/x/y', 'skills/x/z'])
+  t.match(two, 'Linked 2 agent skills into ./skills')
+  t.match(
+    two,
+    '2 skill links skipped, path in use: skills/x/y, skills/x/z',
+  )
+  const conflictOnly = await done(0, ['skills/x/y'])
+  t.match(
+    conflictOnly,
+    /Done in 1ms\n⚠️ 1 skill link skipped/,
+    'own line when nothing linked',
+  )
+  t.notMatch(conflictOnly, 'Linked')
+  const none = await done(0, [])
+  t.notMatch(none, 'skill')
+  const pruned = await done(0, [], ['skills/x/y'])
+  t.match(pruned, '🧹 Removed 1 stale skill link: skills/x/y')
+  t.match(pruned, 'Run `vlt skills link <query>` to link again.')
+  t.match(
+    await done(0, [], ['skills/x/y', 'skills/x/z']),
+    'Removed 2 stale skill links: skills/x/y, skills/x/z',
+  )
+})
+
 t.test('no start, no persisted config', async t => {
   const r = reporter()
   t.equal(await r.done({} as InstallResult, { time: 1 }), undefined)
