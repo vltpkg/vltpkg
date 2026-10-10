@@ -25,6 +25,10 @@ import { lockfile } from './index.ts'
 import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { Monorepo } from '@vltpkg/workspaces'
+import type { Diff } from './diff.ts'
+import { syncSkills } from './skills/index.ts'
+import { assertQuery } from './filter-nodes-by-query.ts'
+import type { LinkSkillsResult } from './skills/index.ts'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -32,18 +36,39 @@ export type InstallOptions = LoadOptions & {
   allowScripts: string
   saveExact?: boolean
   savePrefix?: string
+  /**
+   * DSS query: packages whose agent skills get linked into `./skills`
+   * after install. Unset or `:not(*)`: none.
+   */
+  allowSkills?: string
+}
+
+/**
+ * Result of {@link install}.
+ */
+export type InstallResult = {
+  buildQueue?: DepID[]
+  graph: Graph
+  diff?: Diff
+  /** skill links added or removed, if any */
+  skills?: LinkSkillsResult
 }
 
 export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
-) => {
+): Promise<InstallResult> => {
   // Validate incompatible options
   if (options.lockfileOnly && options.cleanInstall) {
     throw error(
       'Cannot use --lockfile-only with --clean-install (ci command). Clean install requires filesystem operations.',
     )
   }
+
+  const { allowSkills } = options
+  const skills = !!allowSkills && allowSkills !== ':not(*)'
+  // fail before installing, not after
+  if (skills) await assertQuery(allowSkills, 'allow-skills')
 
   if (options.expectLockfile || options.frozenLockfile) {
     const lockfilePath = resolve(options.projectRoot, 'vlt-lock.json')
@@ -223,6 +248,7 @@ export const install = async (
     }
   }
 
+  let result: InstallResult
   try {
     const remove = Object.assign(new Map<DepID, Set<string>>(), {
       modifiedDependencies: false,
@@ -295,7 +321,7 @@ export const install = async (
       remover,
     })
 
-    return { buildQueue, graph, diff }
+    result = { buildQueue, graph, diff }
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
@@ -311,4 +337,9 @@ export const install = async (
     } catch {}
     throw err
   }
+
+  // after the try: a link failure must not roll back the install
+  const synced = await syncSkills({ ...options, graph: result.graph })
+  if (synced) result.skills = synced
+  return result
 }

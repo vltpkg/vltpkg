@@ -57,6 +57,7 @@ COMMANDS
   rx,            run-exec     <script>         Run a script &/or fallback to executing a binary
 
                  setup        [<account>]      Configure your vlt.io account registries
+                 skills       [list|link|un... Manage agent skills from installed packages
 
                  token        [add|rm]         Manage authentication tokens
 

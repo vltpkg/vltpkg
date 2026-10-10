@@ -2574,3 +2574,121 @@ t.test('the frozen error names the changed option', async t => {
     'the only detail line is the catalog entry',
   )
 })
+
+t.test('allowSkills', async t => {
+  type SyncOpts = { allowSkills?: string; graph: unknown }
+  const setup = async (
+    t: Test,
+    syncSkills: (o: SyncOpts) => unknown,
+  ) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      'vlt.json': '{}',
+      node_modules: { '.vlt-lock.json': '{}' },
+    })
+    const graph = {
+      nodes: new Map(),
+      importers: [],
+      projectRoot: dir,
+    }
+    let built = 0
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/ideal/build.ts': {
+        build: async () => {
+          built++
+          return graph
+        },
+      },
+      '../src/reify/index.ts': {
+        reify: async () => ({ buildQueue: [], diff: {} }),
+      },
+      '../src/index.ts': { lockfile: { save: () => {} } },
+      '../src/skills/index.ts': {
+        syncSkills: async (o: never) => syncSkills(o),
+      },
+    })
+    const run = (extra: Partial<InstallOptions>) =>
+      install(
+        {
+          projectRoot: dir,
+          scurry: new PathScurry(dir),
+          packageJson: new PackageJson(),
+          packageInfo: mockPackageInfo,
+          allowScripts: ':not(*)',
+          ...extra,
+        },
+        new Map() as AddImportersDependenciesMap,
+      )
+    return { dir, graph, run, built: () => built }
+  }
+
+  t.test('links matching skills', async t => {
+    const calls: SyncOpts[] = []
+    const skills = {
+      linked: [],
+      unchanged: [],
+      removed: [],
+      conflicts: [],
+    }
+    const { graph, run } = await setup(t, o => {
+      calls.push(o)
+      return skills
+    })
+    const result = await run({ allowSkills: '#foo' })
+    t.equal(calls.length, 1)
+    t.equal(calls[0]?.allowSkills, '#foo')
+    t.equal(calls[0]?.graph, graph, 'uses the installed graph')
+    t.equal(result.skills, skills)
+  })
+
+  t.test('unset or :not(*): no skills result', async t => {
+    const calls: SyncOpts[] = []
+    const { run } = await setup(t, o => {
+      calls.push(o)
+      return undefined
+    })
+    for (const extra of [{}, { allowSkills: ':not(*)' }]) {
+      const result = await run(extra)
+      t.notOk('skills' in result, JSON.stringify(extra))
+    }
+    t.strictSame(
+      calls.map(c => c.allowSkills),
+      [undefined, ':not(*)'],
+      'still synced: prunes dangling links',
+    )
+  })
+
+  t.test('skipped on lockfileOnly', async t => {
+    let called = 0
+    const { run } = await setup(t, () => called++)
+    const result = await run({ allowSkills: '*', lockfileOnly: true })
+    t.notOk('skills' in result)
+    t.equal(called, 0)
+  })
+
+  t.test('invalid query fails before installing', async t => {
+    let called = 0
+    const { run, built } = await setup(t, () => called++)
+    await t.rejects(run({ allowSkills: ':nope' }), {
+      cause: { code: 'EUSAGE', found: ':nope' },
+    })
+    t.equal(built(), 0, 'nothing built')
+    t.equal(called, 0)
+  })
+
+  t.test('a link failure does not undo the install', async t => {
+    const { dir, run } = await setup(t, () => {
+      throw new Error('link failed')
+    })
+    await t.rejects(run({ allowSkills: '*' }), /link failed/)
+    t.ok(
+      statSync(resolve(dir, 'node_modules/.vlt-lock.json')).isFile(),
+      'hidden lockfile kept',
+    )
+  })
+})

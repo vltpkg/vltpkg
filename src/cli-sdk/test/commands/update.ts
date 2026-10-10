@@ -210,3 +210,46 @@ t.test('persists spec config after update', async t => {
   })
   t.end()
 })
+
+t.test('allow-skills', async t => {
+  const skills = {
+    linked: [{ mount: 'skills/foo/a' }],
+    unchanged: [],
+    removed: ['skills/gone/x'],
+    conflicts: ['skills/bar/b'],
+  }
+  let allowSkills: unknown
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/update.ts')
+  >('../../src/commands/update.ts', {
+    '@vltpkg/graph': {
+      async update(opts: { allowSkills?: string }) {
+        allowSkills = opts.allowSkills
+        return {
+          graph: { toJSON: () => ({}) },
+          ...(opts.allowSkills ? { skills } : null),
+        }
+      },
+    },
+  })
+  const run = (value?: string) =>
+    Command.command({
+      positionals: [],
+      values: {},
+      options: {},
+      get: (k: string) => (k === 'allow-skills' ? value : undefined),
+    } as unknown as LoadedConfig)
+
+  const res = await run('#foo')
+  t.equal(allowSkills, '#foo', 'passed to update')
+  t.equal(res.skills, skills, 'returned')
+  t.notOk('skills' in (await run()), 'no skills key when unset')
+  t.strictSame(Command.views.json(res), {
+    graph: {},
+    skills: {
+      linked: ['skills/foo/a'],
+      removed: ['skills/gone/x'],
+      conflicts: ['skills/bar/b'],
+    },
+  })
+})

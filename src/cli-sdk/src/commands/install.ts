@@ -6,7 +6,7 @@ import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { Diff, Graph } from '@vltpkg/graph'
+import type { Diff, Graph, LinkSkillsResult } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -31,6 +31,10 @@ export type InstallResult = {
    * Spec config from the cli / env that was saved to a config file.
    */
   persistedConfig?: SpecConfigPersistPlan
+  /**
+   * Agent skill links added or removed.
+   */
+  skills?: LinkSkillsResult
 }
 
 export const needsRegistry = true
@@ -97,6 +101,11 @@ export const usage: CommandUsage = () =>
         value: '<query>',
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+      },
+      'allow-skills': {
+        value: '<query>',
+        description:
+          'Link agent skills of packages matching this DSS query into ./skills.',
       },
     },
   })
@@ -169,6 +178,15 @@ export const views = {
       ...(i.persistedConfig ?
         { persistedConfig: i.persistedConfig }
       : null),
+      ...(i.skills ?
+        {
+          skills: {
+            linked: i.skills.linked.map(s => s.mount),
+            removed: i.skills.removed,
+            conflicts: i.skills.conflicts,
+          },
+        }
+      : null),
     }
   },
   human: lazyView(
@@ -195,13 +213,15 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
+  const allowSkills = conf.get('allow-skills')
   const installStart = Date.now()
-  const { buildQueue, graph, diff } = await install(
+  const { buildQueue, graph, diff, skills } = await install(
     {
       ...conf.options,
       frozenLockfile,
       expectLockfile,
       allowScripts,
+      allowSkills,
       lockfileOnly,
       saveExact,
       savePrefix,
@@ -227,5 +247,6 @@ export const command: CommandFn<InstallResult> = async conf => {
     graph,
     diff,
     ...(persist ? { persistedConfig: persist } : null),
+    ...(skills ? { skills } : null),
   }
 }

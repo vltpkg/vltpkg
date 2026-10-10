@@ -1,4 +1,5 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import { PackageJson } from '@vltpkg/package-json'
 import type { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
@@ -7,6 +8,7 @@ import {
   mkdirSync,
   readFileSync,
   rmSync,
+  statSync,
   symlinkSync,
   writeFileSync,
 } from 'node:fs'
@@ -402,3 +404,113 @@ t.test(
     )
   },
 )
+
+t.test('allowSkills', async t => {
+  type SyncOpts = { allowSkills?: string; graph: unknown }
+  const setup = async (
+    t: Test,
+    syncSkills: (o: SyncOpts) => unknown,
+    pj = true,
+  ) => {
+    const dir = t.testdir({
+      ...(pj ?
+        {
+          'package.json': JSON.stringify({
+            name: 'test',
+            version: '1.0.0',
+          }),
+        }
+      : {}),
+      'vlt.json': '{}',
+      node_modules: { '.vlt-lock.json': '{}' },
+    })
+    const graph = {
+      nodes: new Map(),
+      importers: [],
+      projectRoot: dir,
+    }
+    const log: string[] = []
+    const { update } = await t.mockImport<
+      typeof import('../src/update.ts')
+    >('../src/update.ts', {
+      '../src/ideal/build-ideal-from-starting-graph.ts': {
+        buildIdealFromStartingGraph: async () => {
+          log.push('build')
+          return graph
+        },
+      },
+      '../src/reify/index.ts': {
+        reify: async () => ({ buildQueue: [], diff: {} }),
+      },
+      '../src/skills/index.ts': {
+        syncSkills: async (o: never) => syncSkills(o),
+      },
+      '@vltpkg/init': {
+        init: async () => {
+          log.push('init')
+        },
+      },
+    })
+    const run = (extra: Partial<UpdateOptions>) =>
+      update({
+        projectRoot: dir,
+        scurry: new PathScurry(dir),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        ...extra,
+      })
+    return { dir, graph, run, log }
+  }
+
+  t.test('links matching skills', async t => {
+    const calls: SyncOpts[] = []
+    const skills = {
+      linked: [],
+      unchanged: [],
+      removed: [],
+      conflicts: [],
+    }
+    const { graph, run } = await setup(t, o => {
+      calls.push(o)
+      return skills
+    })
+    const result = await run({ allowSkills: '#foo' })
+    t.equal(calls.length, 1)
+    t.equal(calls[0]?.allowSkills, '#foo')
+    t.equal(calls[0]?.graph, graph, 'uses the updated graph')
+    t.equal(result.skills, skills)
+  })
+
+  t.test('unset: synced, no skills result', async t => {
+    let called = 0
+    const { run } = await setup(t, () => {
+      called++
+      return undefined
+    })
+    t.notOk('skills' in (await run({})))
+    t.equal(called, 1)
+  })
+
+  t.test('invalid query fails before updating', async t => {
+    let called = 0
+    // no package.json: init would run first
+    const { run, log } = await setup(t, () => called++, false)
+    await t.rejects(run({ allowSkills: ':nope' }), {
+      cause: { code: 'EUSAGE', found: ':nope' },
+    })
+    t.strictSame(log, [], 'nothing built or initialized')
+    t.equal(called, 0)
+  })
+
+  t.test('a link failure does not undo the update', async t => {
+    const { dir, run } = await setup(t, () => {
+      throw new Error('link failed')
+    })
+    await t.rejects(run({ allowSkills: '*' }), /link failed/)
+    t.ok(
+      statSync(resolve(dir, 'node_modules/.vlt-lock.json')).isFile(),
+      'hidden lockfile kept',
+    )
+  })
+})

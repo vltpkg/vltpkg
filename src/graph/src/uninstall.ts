@@ -11,6 +11,7 @@ import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { syncSkills } from './skills/index.ts'
 
 export type UninstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -84,6 +85,8 @@ export const uninstall = async (
       loadManifests: true,
       remover,
     })
+    // prune only: never throws, so no rollback risk
+    await syncSkills({ ...options, graph, allowSkills: undefined })
 
     return { graph, diff }
     /* c8 ignore start */

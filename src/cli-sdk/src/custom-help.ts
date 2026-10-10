@@ -217,6 +217,10 @@ const commandHelp = {
     desc: 'Configure your vlt.io account registries',
     defaultOrder: 0,
   },
+  skills: {
+    args: '[list|link|unlink]',
+    desc: 'Manage agent skills from installed packages',
+  },
   token: {
     args: '[add|rm]',
     desc: 'Manage authentication tokens',

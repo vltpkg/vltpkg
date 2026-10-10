@@ -51,6 +51,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --access=<access>
     --all
     --allow-scripts=<query>
+    --allow-skills=<query>
     --arch=<arch>
     --bail
     --before=<date>
@@ -126,6 +127,7 @@ Unknown config option: asdf
     access
     all
     allow-scripts
+    allow-skills
     arch
     bail
     before

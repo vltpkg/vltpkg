@@ -182,6 +182,21 @@ $ vlt install --allow-scripts="#esbuild, #node-gyp"
 $ vlt install --allow-scripts=":root > \*"`} title="Terminal"
 lang="bash" />
 
+### Agent skills
+
+| Flag                        | Description                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| `--allow-skills=<selector>` | Link the agent skills of matching packages into `./skills` after install (default: none) |
+
+<Code
+  code={`# Link the agent skills of direct dependencies
+$ vlt install --allow-skills=":root > *"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+See [`vlt skills`](/client/commands/skills).
+
 ### Registry options
 
 | Flag              | Description                                    |
