@@ -8,12 +8,13 @@ import { asDepID, baseDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { userAgent } from '@vltpkg/user-agent'
 import { XDG } from '@vltpkg/xdg'
-import { asPackageReportData } from './types.ts'
+import { asPackageReportData, getItemScore } from './types.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-expired.ts'
 import type { UpdateExpiredPayload } from './update-expired.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
 import type {
+  JSONItemResponse,
   PackageReportData,
   SecurityArchiveLike,
   SecurityArchiveRefreshOptions,
@@ -26,20 +27,6 @@ export { npmRegistryURL, usesNpmRegistry } from './browser.ts'
 const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
   'sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api'
-
-export type JSONItemResponse = {
-  namespace?: `@{string}`
-  name: string
-  version: string
-  score: {
-    overall: number
-    license: number
-    maintenance: number
-    quality: number
-    supplyChain: number
-    vulnerability: number
-  }
-}
 
 export type DBReadEntry = {
   depID: string
@@ -382,36 +369,28 @@ export class SecurityArchive
     for (const line of json) {
       if (!line.trim()) continue
       const data = JSON.parse(line + '}') as JSONItemResponse
+      // skip the purlError and summary wrapper items the API may
+      // include in the stream, they do not describe a package
+      if (data._type) continue
       const scope = data.namespace ? `${data.namespace}/` : ''
       const name = `${scope}${data.name}`
-      const node = this.#retrieveNodeByNameVersion(name, data.version)
+      const node = this.#retrieveNodeByNameVersion(
+        name,
+        String(data.version),
+      )
       if (node) {
+        const score = getItemScore(data)
+        // a package that socket.dev has not finished analyzing yet
+        // comes back without a score, leave it out of the archive so
+        // that it gets requested again on the next run
+        if (!score) continue
         const normalizedId = baseDepID(node.id)
-        fetchedDepIDs.add(baseDepID(node.id))
-        // Calculate average score from all score components
-        const scoreComponents = [
-          data.score.license,
-          data.score.maintenance,
-          data.score.quality,
-          data.score.supplyChain,
-          data.score.vulnerability,
-        ]
-        const newAverageScore = Number(
-          (
-            scoreComponents.reduce((sum, score) => sum + score, 0) /
-            scoreComponents.length
-          ).toFixed(2),
-        )
-        // Add average score to the score object
-        const scoreWithNewAverage = {
-          ...data.score,
-          overall: newAverageScore,
-        }
+        fetchedDepIDs.add(normalizedId)
         this.set(
           normalizedId,
           asPackageReportData({
             ...data,
-            score: scoreWithNewAverage,
+            score,
           }),
         )
       } else {
