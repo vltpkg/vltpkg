@@ -50,7 +50,7 @@ export const extractNode = async (
   node: Node,
   scurry: PathScurry,
   remover: RollbackRemove,
-  options: SpecOptions,
+  options: SpecOptions & { allowScripts?: string },
   packageInfo: PackageInfoClient,
   diff?: Diff,
 ): Promise<ExtractResult> => {
@@ -63,6 +63,7 @@ export const extractNode = async (
     diff,
   )
   const { integrity, resolved } = node
+  const { allowScripts = '' } = options
 
   // skip optional nodes that are deprecated or can't run here
   if (removeOptionalFailedNode && isUnsupported(node)) {
@@ -79,6 +80,9 @@ export const extractNode = async (
     integrity,
     resolved,
     fromLockfile: node.resolvedFromLockfile,
+    // every pkg w/ scripts may run them: copy now, not link + unshare
+    copyScripts:
+      allowScripts === '*' || allowScripts.includes(':scripts'),
   }
 
   const extracted = (r: ExtractResolution): ExtractResult => {

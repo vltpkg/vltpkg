@@ -3,6 +3,7 @@ import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
 import type {
   PackageInfoClient,
+  PackageInfoClientExtractOptions,
   PackageInfoClientRequestOptions,
 } from '@vltpkg/package-info'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
@@ -1077,14 +1078,20 @@ t.test('early extraction during appendNodes', async t => {
       })
 
       const extractedNodes: string[] = []
+      const copyScripts: (boolean | undefined)[] = []
 
       const packageInfo = {
         async manifest(spec: Spec) {
           if (spec.name === 'foo') return fooManifest
           return null
         },
-        async extract(spec: Spec) {
+        async extract(
+          spec: Spec,
+          _: string,
+          o?: PackageInfoClientExtractOptions,
+        ) {
           extractedNodes.push(spec.name)
+          copyScripts.push(o?.copyScripts)
           return { extracted: true }
         },
       } as unknown as PackageInfoClient
@@ -1096,6 +1103,8 @@ t.test('early extraction during appendNodes', async t => {
 
       const extractPromises: any[] = []
       const seenExtracted = new Set<DepID>()
+      // reify options reach early extraction
+      const options = { ...configData, allowScripts: ':scripts' }
 
       await appendNodes(
         packageInfo,
@@ -1103,7 +1112,7 @@ t.test('early extraction during appendNodes', async t => {
         idealGraph.mainImporter,
         [fooDep],
         new PathScurry(t.testdirName),
-        configData,
+        options,
         new Set<DepID>(),
         new Map([['foo', fooDep]]),
         undefined,
@@ -1121,6 +1130,7 @@ t.test('early extraction during appendNodes', async t => {
 
       t.equal(extractedNodes.length, 1, 'node was extracted')
       t.ok(extractedNodes.includes('foo'), 'foo was extracted')
+      t.strictSame(copyScripts, [true], 'scripts may run: copied')
     },
   )
 

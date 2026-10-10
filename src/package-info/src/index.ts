@@ -213,6 +213,8 @@ export type PackageInfoClientExtractOptions =
      * Other network bodies are always checked.
      */
     fromLockfile?: boolean
+    /** copy, not link, a store package with install scripts */
+    copyScripts?: boolean
   }
 
 // the maximum duration of a manifest cache file
@@ -533,6 +535,7 @@ export class PackageInfoClient {
       integrity,
       resolved,
       fromLockfile = false,
+      copyScripts = false,
     } = options
     const f = spec.final
     // If the caller already provides both integrity and resolved
@@ -623,7 +626,7 @@ export class PackageInfoClient {
           const linked = await pool.linkFromStore(
             pathResolve(this.#storeRoot, hex),
             target,
-            { copy, clone },
+            { copy, clone, copyScripts },
           )
           if (linked) {
             const { how, index } = linked

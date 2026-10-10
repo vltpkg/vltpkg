@@ -100,7 +100,7 @@ The index has files (`[path, size, exec]`, sorted), every directory
 normalized `bins`, `name`, `version` and `manifest` (package.json as
 compact JSON text, if valid; lets reify skip reading it back).
 
-### linkFromStore(storeEntry, target, { copy, clone })
+### linkFromStore(storeEntry, target, { copy, clone, copyScripts })
 
 Hardlink every file of a store entry into a sibling temp dir
 (package.json last), then rename it to `target`. Returns
@@ -117,10 +117,11 @@ case-insensitive target (`EEXIST`) also return `false`.
 the target's parent exist (overlayfs cross-layer links) does the same.
 `EMLINK` copies that file only. Other link errors throw. Every file is
 copied with `copy: true`, or when package.json is copied after another
-file was linked: a private package.json means nothing is shared. A
-copy, or a link of a package with install scripts (reify copies it
-before they run), touches the entry's copied marker
-(`<entry>.copied`): its mtime is the last time one did.
+file was linked: a private package.json means nothing is shared.
+`copyScripts: true` copies an entry whose index has `scripts`. A copy,
+or a link of a package with install scripts (reify copies it before
+they run), touches the entry's copied marker (`<entry>.copied`): its
+mtime is the last time one did.
 
 With `clone: true` the whole entry directory is cloned copy-on-write
 into the temp dir in one `clonefile(2)` call instead (see
