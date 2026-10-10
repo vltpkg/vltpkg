@@ -560,7 +560,7 @@ Object {
       - copy: Copy from the global store. Use this when editing files in \`node_modules\` in place, since a hardlink shares its content with every project.
       - unpack: Unpack each package tarball, skipping the global store.
       
-      A hardlinked package is copied right before its install scripts run, so they don't change its files in the store; a cloned one needs no copy. An invalid \`VLT_STORE_LINKER\` warns and uses \`unpack\`.
+      A package with install scripts is copied, not hardlinked, when \`allow-scripts\` is \`*\` or contains \`:scripts\`, and a hardlinked one is copied right before its install scripts run, so they don't change its files in the store; a cloned one needs no copy. An invalid \`VLT_STORE_LINKER\` warns and uses \`unpack\`.
     ),
     "hint": "auto | hardlink | clone | copy | unpack",
     "type": "string",

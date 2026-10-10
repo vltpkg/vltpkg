@@ -204,6 +204,33 @@ t.test('install scripts: linked', async t => {
   t.equal(existsSync(storeCopiedPath(entry)), true, 'marked')
 })
 
+t.test('copyScripts', async t => {
+  t.test('install scripts: copied', async t => {
+    const { entry, index, target } = makeEntry(t)
+    writeFileSync(
+      storeIndexPath(entry),
+      JSON.stringify({ ...index, scripts: true }),
+    )
+    t.equal(
+      how(linkFromStore(entry, target, { copyScripts: true })),
+      'copy',
+    )
+    checkTree(t, entry, index, target, () => 1)
+    t.equal(existsSync(storeCopiedPath(entry)), true, 'marked')
+    writeFileSync(resolve(target, 'index.js'), 'changed')
+    t.equal(readFileSync(resolve(entry, 'index.js'), 'utf8'), 'index')
+  })
+
+  t.test('no install scripts: linked', async t => {
+    const { entry, index, target } = makeEntry(t)
+    t.equal(
+      how(linkFromStore(entry, target, { copyScripts: true })),
+      'link',
+    )
+    checkTree(t, entry, index, target, () => 2)
+  })
+})
+
 t.test('clone option clones the entry', async t => {
   const { entry, index, target } = makeEntry(t)
   const { linkFromStore, clones } = await mockClone(t)
@@ -232,7 +259,16 @@ t.test('clone option clones the entry', async t => {
       how: 'clone',
       index: { scripts: true },
     })
-    t.equal(clones.length, 2)
+    t.equal(
+      how(
+        linkFromStore(entry, target + '3', {
+          clone: true,
+          copyScripts: true,
+        }),
+      ),
+      'clone',
+    )
+    t.equal(clones.length, 3)
   })
 
   t.test('not asked: never tried', async t => {

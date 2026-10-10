@@ -135,6 +135,7 @@ t.test('successfully extract a node', async t => {
     'resolved passed',
   )
   t.equal(options.fromLockfile, true, 'fromLockfile passed')
+  t.equal(options.copyScripts, false, 'no scripts: link')
 })
 
 t.test('missing target is not removed', async t => {
@@ -155,6 +156,37 @@ t.test('missing target is not removed', async t => {
   t.strictSame(result, { success: true, node })
   t.strictSame(removed, [], 'nothing to remove')
   t.equal(extracted.length, 1, 'still extracted')
+})
+
+t.test('copyScripts only when scripts may run', async t => {
+  const node = mockNode({
+    id: joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    location: './node_modules/foo',
+    name: 'foo',
+  })
+  const scurry = new PathScurry(t.testdir({}))
+  const queries = [
+    ':scripts',
+    '*',
+    ':scripts:not(:malware)',
+    '#esbuild',
+    ':not(*)',
+    undefined,
+  ]
+  for (const allowScripts of queries) {
+    await extractNode(
+      node,
+      scurry,
+      mockRemover,
+      { ...getOptions(configData), allowScripts },
+      mockPackageInfo,
+      mockDiff,
+    )
+  }
+  t.strictSame(
+    extracted.map(e => e[2].copyScripts),
+    [true, true, true, false, false, false],
+  )
 })
 
 t.test('dangling link at target is removed', async t => {

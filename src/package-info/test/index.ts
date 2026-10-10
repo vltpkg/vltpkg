@@ -3027,6 +3027,30 @@ t.test('global store', async t => {
     t.equal(nlink(dir + '/t'), 2)
   })
 
+  t.test('install scripts, copyScripts: copied', async t => {
+    const { dir, store, states, client } = await setup(t)
+    populate(store, true)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    await pi.extract('abbrev@2', dir + '/t', {
+      ...lockOpts,
+      copyScripts: true,
+    })
+    t.equal(nlink(dir + '/t'), 1)
+    t.strictSame(states, ['cache'])
+  })
+
+  t.test('no install scripts, copyScripts: linked', async t => {
+    const { dir, store, states, client } = await setup(t)
+    populate(store)
+    const pi = await client({ 'store-linker': 'hardlink' }, true)
+    await pi.extract('abbrev@2', dir + '/t', {
+      ...lockOpts,
+      copyScripts: true,
+    })
+    t.equal(nlink(dir + '/t'), 2)
+    t.strictSame(states, ['store'])
+  })
+
   t.test('store-linker=copy', async t => {
     const { dir, store, states, client } = await setup(t)
     populate(store)
@@ -3171,7 +3195,9 @@ t.test('global store', async t => {
         }),
       )
       const res = await pi.extract('abbrev@2', dir + '/t', lockOpts)
-      t.strictSame(opts, [{ copy: false, clone: true }])
+      t.strictSame(opts, [
+        { copy: false, clone: true, copyScripts: false },
+      ])
       t.strictSame(states, ['store'], 'counted as a store hit')
       t.strictSame(links, [], 'not the tracked pool')
       t.type(res.manifest, 'string')
