@@ -5,6 +5,17 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/commands/install.ts > TAP > should add types deps with save-types 1`] = `
+parse add args 
+install
+parse add args from abbrev@2, with values save-dev,true
+install
+parse add args from express, with values save-types,true
+add types deps, parsed map: true
+install
+
+`
+
 exports[`test/commands/install.ts > TAP > should call install with expected options 1`] = `
 parse add args 
 install
@@ -62,6 +73,12 @@ appropriately.
       Save installed packages to package.json as dependencies.
 
       ​--save-prod
+
+    save-types
+      Also save matching @types/* packages to devDependencies for added packages
+      that ship no types.
+
+      ​--save-types
 
     save-config
       Save registry and git host options given on the command line or via env

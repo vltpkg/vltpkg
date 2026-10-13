@@ -146,12 +146,24 @@ $ vlt install ../shared-lib`} title="Terminal" lang="bash" />
 
 ### Dependency type flags
 
-| Flag              | Short | Description                     |
-| ----------------- | ----- | ------------------------------- |
-| `--save-prod`     | `-P`  | Add to `dependencies` (default) |
-| `--save-dev`      | `-D`  | Add to `devDependencies`        |
-| `--save-optional` | `-O`  | Add to `optionalDependencies`   |
-| `--save-peer`     |       | Add to `peerDependencies`       |
+| Flag              | Short | Description                                  |
+| ----------------- | ----- | -------------------------------------------- |
+| `--save-prod`     | `-P`  | Add to `dependencies` (default)              |
+| `--save-dev`      | `-D`  | Add to `devDependencies`                     |
+| `--save-optional` | `-O`  | Add to `optionalDependencies`                |
+| `--save-peer`     |       | Add to `peerDependencies`                    |
+| `--save-types`    |       | Add matching `@types/*` to `devDependencies` |
+
+[`--save-types`](/client/configuring#--save-types) skips packages that
+ship their own types:
+
+<Code
+  code={`# express ships no types: adds @types/express to devDependencies too
+$ vlt install express --save-types
+
+# zod ships its own types: adds zod only
+
+$ vlt install zod --save-types`} title="Terminal" lang="bash" />
 
 ### Config options
 

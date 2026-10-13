@@ -101,6 +101,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --save-peer
     --save-prefix=<save-prefix>
     --save-prod
+    --save-types
     --scope=<query>
     --scoped-registries=<@scope=url>
     --script-shell=<program>
@@ -176,6 +177,7 @@ Unknown config option: asdf
     save-peer
     save-prefix
     save-prod
+    save-types
     scope
     scoped-registries
     script-shell
