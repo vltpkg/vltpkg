@@ -1,0 +1,147 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "vlt docs",
+    "version": "1.0.0",
+    "summary": "Read-only HTTP API of the vlt documentation site.",
+    "description": "Search the vlt docs and fetch pages as Markdown. Every endpoint is public and needs no authentication. This describes the documentation site only, not the vlt.io registry (which speaks the npm registry protocol at https://registry.vlt.io)."
+  },
+  "servers": [{ "url": "/" }],
+  "paths": {
+    "/api/search": {
+      "get": {
+        "operationId": "searchDocs",
+        "summary": "Full-text search over the docs",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search terms. An empty or missing query returns an empty list.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Comma-separated sections to search within.",
+            "schema": { "type": "string" },
+            "example": "registry,client"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matches, each page followed by the heading and text hits within it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchResult"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llms.txt": {
+      "get": {
+        "operationId": "getIndex",
+        "summary": "Index of every page, linking to the Markdown versions",
+        "responses": {
+          "200": {
+            "description": "The llms.txt index.",
+            "content": {
+              "text/plain": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/llms-full.txt": {
+      "get": {
+        "operationId": "getFullText",
+        "summary": "Every page except the generated API reference, in one file",
+        "responses": {
+          "200": {
+            "description": "The docs as one Markdown document.",
+            "content": {
+              "text/plain": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "/{path}.md": {
+      "get": {
+        "operationId": "getPageMarkdown",
+        "summary": "A documentation page as Markdown",
+        "description": "The same Markdown is served at the page's own URL when the request sends `Accept: text/markdown`.",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "The page's path as listed in /llms.txt; it may contain slashes.",
+            "schema": { "type": "string" },
+            "example": "client/auth"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The page.",
+            "content": {
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          },
+          "404": {
+            "description": "No such page. The body links to /llms.txt and the sitemap.",
+            "content": {
+              "text/markdown": { "schema": { "type": "string" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchResult": {
+        "type": "object",
+        "required": ["id", "url", "type", "content"],
+        "properties": {
+          "id": { "type": "string" },
+          "url": {
+            "type": "string",
+            "description": "Site-relative URL of the page, with a #fragment for heading and text hits."
+          },
+          "type": { "enum": ["page", "heading", "text"] },
+          "content": {
+            "type": "string",
+            "description": "Markdown, with <mark> around the matched terms."
+          },
+          "breadcrumbs": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "Error": {
+        "description": "Returned with a 404 by any /api path that is not listed here.",
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message", "hint"],
+            "properties": {
+              "code": { "type": "string", "example": "not_found" },
+              "message": { "type": "string" },
+              "hint": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
