@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { DropdownMenu } from 'radix-ui'
+import { toast } from 'sonner'
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -67,8 +68,21 @@ export const CopyPage = ({ url }: { url: string }) => {
 
   // fetch on hover/focus so the copy only awaits an already-settled promise;
   // Safari drops clipboard writes that happen too long after the click
+  // a failed fetch is forgotten, so the next hover or click retries instead of reusing it
   const load = () =>
-    (markdown.current ??= fetch(`${url}.md`).then(res => res.text()))
+    (markdown.current ??= fetch(`${url}.md`)
+      .then(res => {
+        if (!res.ok) throw new Error(`${url}.md: ${res.status}`)
+        return res.text()
+      })
+      .catch((error: unknown) => {
+        markdown.current = null
+        throw error
+      }))
+  // the click reports a failure; a failed preload has nobody to tell
+  const preload = () => void load().catch(() => {})
+  const copyPage = () =>
+    load().then(copy, () => toast.error('Failed to copy the page'))
 
   return (
     <div
@@ -77,9 +91,9 @@ export const CopyPage = ({ url }: { url: string }) => {
       <Button
         variant="outline"
         size="sm"
-        onPointerEnter={load}
-        onFocus={load}
-        onClick={async () => copy(await load())}
+        onPointerEnter={preload}
+        onFocus={preload}
+        onClick={copyPage}
         className="bg-illustration text-foreground/75 hover:text-foreground rounded-[calc(var(--radius-xl)-2px)] active:not-aria-[haspopup]:translate-y-0">
         {copied ?
           <CheckIcon aria-hidden />
