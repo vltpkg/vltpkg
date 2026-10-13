@@ -9,30 +9,32 @@ to quickly parse a small-to-medium sized string by a given delimiter.
 
 ## How Fast Is It!?
 
-About 1.4x faster than `str.split()` for splitting short strings by a
-short delimiter, about 1.2-1.5x when walking the resulting list, and
-about 1.2x when limiting the number of items returned.
+About 1.5x faster than `str.split()` for splitting short strings by a
+short delimiter, about 1.1-1.3x when walking or transforming the
+resulting list, and about 1.9x when limiting the result to 2 or 3
+parts (a dedicated fast path, see `src/index.ts`).
 
 Note: V8 caches `split()` results (no limit) for internalized strings
 (literals, JSON keys, short JSON values), so splitting the same such
 string repeatedly, as benchmarks over literals do, favors native
 `split()`. Substrings, regex captures and built strings don't hit that
-cache.
+cache, and with many distinct internalized strings the cache is a net
+cost.
 
-Linux x64, node 22.23.3. Counts are operations per ms, splitting the
+Linux x64, node 26.11.1. Counts are operations per ms, splitting the
 string '1.2.3-asdf+foo' (built at runtime) by the delimiter '.',
 transforms calling part.toUpperCase(), and limits at 2 items
 
 ```
-              split 4184.630
-          fastSplit 6030.971
-    splitEmptyCheck 4298.313
-fastSplitEmptyCheck 6618.990
- splitTransformLoop 2656.957
-  splitTransformMap 2729.902
- fastSplitTransform 3440.579
-         splitLimit 5393.705
-     fastSplitLimit 6431.606
+              split 4339.624
+          fastSplit 6849.283
+    splitEmptyCheck 4190.307
+fastSplitEmptyCheck 4803.402
+ splitTransformLoop 2772.453
+  splitTransformMap 2904.390
+ fastSplitTransform 3465.690
+         splitLimit 5491.101
+     fastSplitLimit 10384.471
 ```
 
 ## Usage
@@ -59,6 +61,6 @@ const [first, second, rest] = fastSplit(str, '.', 3)
 // than getting an array and subsequently looping over it
 // pass `-1` as the limit to give us all parts
 const nums = fastSplit(str, '.', -1, (part, parts, index) =>
-  Number(s),
+  Number(part),
 )
 ```
