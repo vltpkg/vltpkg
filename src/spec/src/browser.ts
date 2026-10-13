@@ -97,7 +97,8 @@ export const getOptions = (
 // letters (`C:/x`) and hostnames (`notgithub.com:user/repo`).
 const protocolRE = /^([a-zA-Z][a-zA-Z0-9+-]+):/
 
-const builtinProtocols = new Set([
+/** Spec prefixes handled natively, not usable as alias names. */
+export const builtinProtocols: ReadonlySet<string> = new Set([
   'catalog',
   'workspace',
   'registry',

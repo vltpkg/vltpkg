@@ -136,6 +136,7 @@ export const isRecordField = (s: string): s is RecordField =>
 export const storeLinkers = [
   'auto',
   'hardlink',
+  'clone',
   'copy',
   'unpack',
 ] as const
@@ -261,8 +262,11 @@ export const definition = j
 
                     There is **no** built-in \`npm\` registry URL; the \`npm\`
                     alias must be configured (e.g. via \`vlt setup\`) before it
-                    can be used. The \`gh\` and \`jsr\` aliases have built-in
-                    defaults that can be overridden here.
+                    can be used. The \`gh\` alias has a built-in default
+                    that can be overridden here. A name used by
+                    \`--jsr-registries\` or \`--git-hosts\` (e.g. \`jsr\`,
+                    \`github\`), or a built-in protocol (e.g. \`file\`), is
+                    an error.
 
                     Aliases given on the command line or in
                     \`VLT_REGISTRIES\` (newline-delimited) merge with the
@@ -357,28 +361,35 @@ export const definition = j
       default: cacheDir,
     },
     'store-linker': {
-      hint: 'auto | hardlink | copy | unpack',
+      hint: 'auto | hardlink | clone | copy | unpack',
       description: `How packages are placed in \`node_modules\`. Every
                     linker but \`unpack\` fills a global store under
                     \`cache\` in the background, then places packages
                     from it.
 
                     - auto: Default. On Linux, hardlink from the global
-                      store, copying any file that cannot be linked.
-                      Elsewhere, same as \`unpack\`: a hardlink is the
-                      slowest way to place a file on APFS, so macOS and
-                      Windows unpack by default.
+                      store, copying any file that cannot be linked. On
+                      macOS, clone from it, on a Node with \`node:ffi\`
+                      (26.1 and later, and \`--allow-ffi\` under
+                      \`--permission\`); a hardlink is the slowest way
+                      to place a file on APFS, so macOS without it, and
+                      Windows, unpack by default.
                     - hardlink: Hardlink from the global store on every
                       platform.
+                    - clone: Clone each package directory from the
+                      global store copy-on-write (\`clonefile\`, macOS
+                      on APFS). Files share storage with the store
+                      until edited, so editing in place is safe.
+                      Unpacks where cloning fails.
                     - copy: Copy from the global store. Use this when
                       editing files in \`node_modules\` in place, since
                       a hardlink shares its content with every project.
                     - unpack: Unpack each package tarball, skipping the
                       global store.
 
-                    A package is copied right before its install
-                    scripts run, so they don't change its files in the
-                    store.
+                    A hardlinked package is copied right before its
+                    install scripts run, so they don't change its files
+                    in the store; a cloned one needs no copy.
                     An invalid \`VLT_STORE_LINKER\` warns and uses
                     \`unpack\`.`,
       validOptions: storeLinkers,

@@ -121,10 +121,30 @@ meaningless to every other package manager:
 Putting that in `package.json` is an error; put it in `vlt.json`
 instead.
 
+### Using pnpm workspaces from pnpm-workspace.yaml
+
+If neither `vlt.json` nor the root `package.json` declares workspaces,
+vlt reads the `packages` list of a root `pnpm-workspace.yaml` as-is:
+
+```yaml
+packages:
+  - 'packages/*'
+  - '!packages/legacy'
+```
+
+Other keys in that file are ignored, so `catalog:` specs still need a
+`catalog` in `vlt.json` (see [Catalogs](/client/catalogs)). Only a
+plain list of strings is read; anything else (anchors, tags, unquoted
+`!` patterns) makes vlt ignore the whole list, so declare the
+workspaces in `vlt.json` instead. Workspace names must be unique (pnpm
+allows duplicates); otherwise list workspaces in `vlt.json` without
+them. `vlt init -w` outside these globs copies them into `vlt.json`,
+which then takes precedence.
+
 ### Excluding paths
 
-A pattern beginning with `!` excludes the paths it matches, in both
-`vlt.json` and `package.json`:
+A pattern beginning with `!` excludes the paths it matches, in
+`vlt.json`, `package.json` and `pnpm-workspace.yaml`:
 
 ```json
 {

@@ -1067,9 +1067,14 @@ t.test('store-linker and global store root', async t => {
   const dir = t.testdir({ 'vlt.json': '{}', '.git': {} })
   t.chdir(dir)
   unload()
+  // clonefile(2) through node:ffi: darwin on a recent node only
+  let cloneable = false
+  const clonefile = {
+    '@vltpkg/tar/clonefile': { cloneAvailable: () => cloneable },
+  }
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
-  >('../../src/config/index.ts')
+  >('../../src/config/index.ts', clonefile)
 
   // `auto` only stays `auto` on linux, see below
   t.intercept(process, 'platform', { value: 'linux' })
@@ -1155,7 +1160,7 @@ t.test('store-linker and global store root', async t => {
     unload()
     const { Config: C } = await t.mockImport<
       typeof import('../../src/config/index.ts')
-    >('../../src/config/index.ts')
+    >('../../src/config/index.ts', clonefile)
     clearEnv()
     t.intercept(process, 'platform', { value: 'darwin' })
     const file = await C.load(d, ['install'], true)
@@ -1167,7 +1172,7 @@ t.test('store-linker and global store root', async t => {
     unload()
     const { Config: CC } = await t.mockImport<
       typeof import('../../src/config/index.ts')
-    >('../../src/config/index.ts')
+    >('../../src/config/index.ts', clonefile)
     clearEnv()
     t.intercept(process, 'platform', { value: 'darwin' })
     const cmd = await CC.load(cd, ['install'], true)
@@ -1176,6 +1181,58 @@ t.test('store-linker and global store root', async t => {
 
     t.strictSame(errs(), [], 'never warns')
   })
+
+  await t.test(
+    'auto means clone on darwin with node:ffi',
+    async t => {
+      cloneable = true
+      t.teardown(() => {
+        cloneable = false
+      })
+      // a fresh module: loadEnvDefaults() leaves the env of earlier
+      // loads in the shared jack instance
+      t.chdir(dir)
+      unload()
+      const { Config } = await t.mockImport<
+        typeof import('../../src/config/index.ts')
+      >('../../src/config/index.ts', clonefile)
+      const load = async (
+        platform: string,
+        argv: string[] = [],
+        env?: string,
+      ) => {
+        clearEnv()
+        if (env !== undefined) process.env.VLT_STORE_LINKER = env
+        t.intercept(process, 'platform', { value: platform })
+        return Config.load(dir, ['install', ...argv], true)
+      }
+
+      const c = await load('darwin')
+      t.equal(c.get('store-linker'), 'clone', 'darwin default')
+      t.equal(c.options['store-linker'], 'clone')
+      t.equal(
+        process.env.VLT_STORE_LINKER,
+        'clone',
+        'darwin child sees clone',
+      )
+
+      const linux = await load('linux')
+      t.equal(linux.get('store-linker'), 'auto', 'linux stays auto')
+
+      const cli = await load('darwin', ['--store-linker=auto'])
+      t.equal(cli.explicit['store-linker'], 'clone', 'cli records it')
+
+      const env = await load('darwin', [], 'auto')
+      t.equal(env.explicit['store-linker'], 'clone', 'env records it')
+
+      const hard = await load('darwin', [], 'hardlink')
+      t.equal(hard.get('store-linker'), 'hardlink', 'env opt-in kept')
+
+      const opted = await load('linux', ['--store-linker=clone'])
+      t.equal(opted.get('store-linker'), 'clone', 'cli opt-in kept')
+      t.equal(process.env.VLT_STORE_LINKER, 'clone')
+    },
+  )
 
   clearEnv()
   process.env.VLT_STORE_LINKER = 'hardlink'
@@ -1540,6 +1597,18 @@ t.test('config layers', async t => {
     )
   })
 
+  await t.test('a spec alias colliding across files', async t => {
+    await t.rejects(
+      layered(
+        t,
+        { registries: { acme: 'https://user/' } },
+        { 'jsr-registries': { acme: 'https://project/' } },
+        ['install'],
+      ),
+      { cause: { code: 'ECONFIG', name: 'jsr-registries.acme' } },
+    )
+  })
+
   await t.test(
     'an invalid value is blamed on its own file',
     async t => {
@@ -1814,4 +1883,54 @@ t.test('record fields merge file -> env -> cli', async t => {
   })
 
   t.end()
+})
+
+t.test('colliding spec prefix aliases', async t => {
+  const gh = { registries: { github: 'https://x/' } }
+  const load = async (
+    t: Test,
+    argv: string[],
+    config: Record<string, unknown> = {},
+  ) => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({ config }),
+      '.git': {},
+    })
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    return Config.load(dir, argv, true)
+  }
+  const rejected = {
+    cause: { code: 'ECONFIG', name: 'registries.github' },
+  }
+
+  await t.test('cli', t =>
+    t.rejects(
+      load(t, ['install', '--registries', 'github=https://x/']),
+      rejected,
+    ),
+  )
+  await t.test('vlt.json', t =>
+    t.rejects(load(t, ['install'], gh), rejected),
+  )
+  await t.test('env', async t => {
+    process.env.VLT_REGISTRIES = 'github=https://x/'
+    t.teardown(clearEnv)
+    await t.rejects(load(t, ['install']), rejected)
+  })
+  await t.test('command block', t =>
+    t.rejects(
+      load(t, ['install'], { command: { install: gh } }),
+      rejected,
+    ),
+  )
+  await t.test('other command block', async t => {
+    const c = await load(t, ['ls'], { command: { install: gh } })
+    t.equal(c.getRecord('registries').github, undefined)
+  })
+  await t.test('vlt config is exempt', async t => {
+    const c = await load(t, ['config', 'list'], gh)
+    t.equal(c.getRecord('registries').github, 'https://x/')
+  })
 })

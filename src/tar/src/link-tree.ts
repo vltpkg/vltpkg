@@ -3,6 +3,7 @@ import {
   linkSync,
   lstatSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   renameSync,
   statSync,
@@ -11,6 +12,7 @@ import {
 import { dirname, sep } from 'node:path'
 import { debuglog } from 'node:util'
 import { rimrafSync } from 'rimraf'
+import { cloneDir } from './clonefile.ts'
 import {
   markStoreEntryCopied,
   removeStoreEntry,
@@ -28,20 +30,33 @@ const verify = process.env.VLT_STORE_VERIFY === '1'
 
 /**
  * How reify places packages: `auto` and `hardlink` link from the global
- * store, `copy` copies from it, `unpack` skips it.
+ * store, `clone` clones from it (macOS), `copy` copies from it, `unpack`
+ * skips it.
  */
-export type StoreLinker = 'auto' | 'hardlink' | 'copy' | 'unpack'
+export type StoreLinker =
+  'auto' | 'hardlink' | 'clone' | 'copy' | 'unpack'
 
 /**
- * How a store entry was placed (`copy`: every file copied, for `copy`
- * or a downgrade) and its index, or false on a miss.
+ * How a store entry was placed (`clone`: the whole directory cloned
+ * copy-on-write; `copy`: every file copied, for `copy` or a downgrade)
+ * and its index, or false on a miss.
  */
 export type StoreLinkResult =
-  { how: 'link' | 'copy'; index: StoreIndex } | false
+  { how: 'link' | 'clone' | 'copy'; index: StoreIndex } | false
 
 export type LinkFromStoreOptions = {
   /** copy every file instead of hardlinking */
   copy?: boolean
+  /**
+   * clone the entry directory copy-on-write (`clonefile(2)`: macOS on
+   * APFS) instead of placing files one by one. A failed clone is a
+   * store miss, so the caller unpacks: on APFS, hardlinking file by
+   * file is slower than that. Where a clone cannot work at all (no
+   * clones on this filesystem, another volume), every later call is a
+   * miss without trying. A clone shares no file with the store, so it
+   * needs no copy on top, for `copy` or for install scripts.
+   */
+  clone?: boolean
 }
 
 // Process-wide: once links fail for a reason that will not go away
@@ -51,6 +66,73 @@ let copyAll = false
 const downgrade = (code: string) => {
   copyAll = true
   debug('global store: linking failed, copying from now on', code)
+}
+
+// Same for clones: no clonefile, no clones on this filesystem, another
+// volume, or permissions.
+let cloneNone = false
+
+// Index paths are validated relative '/'-paths: concatenation is safe
+// and much cheaper than join() on the per-file hot path.
+const native = (p: string) =>
+  sep === '/' ? p : p.replaceAll('/', sep)
+
+// false: not cloned
+const cloneEntry = (storeEntry: string, tmp: string): boolean => {
+  const res = cloneDir(storeEntry, tmp)
+  if (res === true) return true
+  if (
+    res === 'ENOTSUP' ||
+    res === 'EXDEV' ||
+    res === 'EPERM' ||
+    res === 'EACCES'
+  ) {
+    cloneNone = true
+    debug('global store: cloning failed, unpacking from now on', res)
+  }
+  // ENOENT (entry gone) and the rest: a miss for this entry only
+  return false
+}
+
+/**
+ * A clone holds whatever the entry holds, so a file missing from the
+ * entry is silently missing from the clone: count the names in every
+ * directory against the index (one readdir per directory, far cheaper
+ * than a stat per file). 'damaged' on any difference, or, with
+ * VLT_STORE_VERIFY=1, when package.json changed size.
+ */
+const checkClone = (
+  tmp: string,
+  index: StoreIndex,
+): 'damaged' | undefined => {
+  const counts = new Map<string, number>([['', 0]])
+  for (const d of index.dirs) counts.set(d, 0)
+  for (const p of [...index.dirs, ...index.files.map(f => f[0])]) {
+    const i = p.lastIndexOf('/')
+    const d = i === -1 ? '' : p.slice(0, i)
+    const n = counts.get(d)
+    // a directory the index does not list: not a valid entry
+    if (n === undefined) return 'damaged'
+    counts.set(d, n + 1)
+  }
+  for (const [d, n] of counts) {
+    let names: string[]
+    try {
+      names = readdirSync(d ? tmp + sep + native(d) : tmp)
+    } catch {
+      // a directory the entry does not have
+      return 'damaged'
+    }
+    if (names.length !== n) return 'damaged'
+  }
+  const pj = index.files.find(f => f[0] === 'package.json')
+  if (
+    verify &&
+    pj &&
+    statSync(tmp + sep + 'package.json').size !== pj[1]
+  ) {
+    return 'damaged'
+  }
 }
 
 // false: the source is gone, i.e. the store entry is damaged
@@ -110,12 +192,6 @@ const fill = (
   index: StoreIndex,
   copy: boolean,
 ): 'damaged' | 'clash' | 'mixed' | undefined => {
-  // Index paths are validated relative '/'-paths: concatenation is
-  // safe and much cheaper than join() on this per-file hot path.
-  const native =
-    sep === '/' ?
-      (p: string) => p
-    : (p: string) => p.replaceAll('/', sep)
   const put = ([p, , exec]: StoreIndexFile) =>
     place(
       storeEntry + sep + native(p),
@@ -153,20 +229,23 @@ const fill = (
 
 /**
  * Materialize a global store entry at `target` from its sidecar index:
- * hardlink each file into a sibling temp dir (package.json last), then
- * rename it into place. Files that cannot be linked are copied; if
- * package.json is copied after another file was linked, the whole
- * package is copied, so a private package.json means nothing is shared.
- * Returns how, with the index, or false, leaving `target` untouched, on
- * a store miss (no valid index, entry not a directory, symlinked target
- * parent), a name clash on a case-insensitive target, or a damaged
- * entry, which is removed.
+ * hardlink each file into a sibling temp dir (package.json last), or
+ * with `clone` clone the whole entry there, then rename it into place.
+ * Files that cannot be linked are copied; if package.json is copied
+ * after another file was linked, the whole package is copied, so a
+ * private package.json means nothing is shared. Returns how, with the
+ * index, or false, leaving `target` untouched, on a store miss (no
+ * valid index, entry not a directory, symlinked target parent, a
+ * failed clone), a name clash on a case-insensitive target, or a
+ * damaged entry, which is removed.
  */
 export const linkFromStore = (
   storeEntry: string,
   target: string,
-  { copy = false }: LinkFromStoreOptions = {},
+  { copy = false, clone = false }: LinkFromStoreOptions = {},
 ): StoreLinkResult => {
+  // no clones here: a miss, without reading anything
+  if (clone && cloneNone) return false
   const index = readStoreIndex(storeEntry)
   if (!index || !lstatSync(storeEntry, noThrow)?.isDirectory()) {
     return false
@@ -179,9 +258,16 @@ export const linkFromStore = (
   const og = tmp + '.ORIGINAL'
   let succeeded = false
   try {
-    mkdirSync(tmp)
-    let copied = copy
-    let miss = fill(storeEntry, tmp, index, copied)
+    // whatever a failed clone left in tmp goes with it, below
+    if (clone && !cloneEntry(storeEntry, tmp)) return false
+    // a clone is copy-on-write: nothing written into it reaches the
+    // store, so it needs no copy on top
+    let copied = !clone && copy
+    if (!clone) mkdirSync(tmp)
+    let miss =
+      clone ?
+        checkClone(tmp, index)
+      : fill(storeEntry, tmp, index, copied)
     if (miss === 'mixed') {
       rimrafSync(tmp)
       mkdirSync(tmp)
@@ -204,10 +290,20 @@ export const linkFromStore = (
     if (targetExists) renameSync(target, og)
     renameSync(tmp, target)
     if (targetExists) rimrafSync(og)
-    // nlink stays 1: tell prune-store it is used
-    if (copied || copyAll) markStoreEntryCopied(storeEntry)
+    // nlink stays 1 (a clone shares blocks, not inodes; reify copies
+    // a linked package right before its install scripts run): tell
+    // prune-store it was used, and when
+    if (clone || copied || copyAll || index.scripts) {
+      markStoreEntryCopied(storeEntry)
+    }
     succeeded = true
-    return { how: copied || copyAll ? 'copy' : 'link', index }
+    return {
+      how:
+        clone ? 'clone'
+        : copied || copyAll ? 'copy'
+        : 'link',
+      index,
+    }
   } finally {
     if (!succeeded) {
       /* c8 ignore start */

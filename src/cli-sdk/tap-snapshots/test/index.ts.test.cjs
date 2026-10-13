@@ -5,6 +5,20 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > config error > colliding alias > must match snapshot 1`] = `
+Config Error
+\`github:\` spec prefix defined in both git-hosts.github (built-in) and registries.github
+  Field: registries.github
+  Found: github
+  Wanted: a registries name not used by git-hosts
+`
+
+exports[`test/index.ts > TAP > config error > reserved registries name > must match snapshot 1`] = `
+Problem in Config File {CWD}/.tap/fixtures/test-index.ts-config-error-reserved-registries-name/vlt.json
+Reserved character found in registries name
+  Found: "a~b"
+`
+
 exports[`test/index.ts > TAP > invalid config in file > must match snapshot 1`] = `
 Problem in Config File {CWD}/.tap/fixtures/test-index.ts-invalid-config-in-file/vlt.json
 Invalid value string for color, expected boolean
@@ -15,17 +29,17 @@ Invalid value string for color, expected boolean
 `
 
 exports[`test/index.ts > TAP > invalid workspace - no vlt.json > must match snapshot 1`] = `
-Error: No matching workspaces found. Make sure the vlt.json config, or the "workspaces" field of the root package.json, contains the correct workspaces.
+Error: No matching workspaces found. Make sure the vlt.json config, the "workspaces" field of the root package.json, or the "packages" list of pnpm-workspace.yaml contains the correct workspaces.
   Workspace: [ 'src/bar' ]
 `
 
 exports[`test/index.ts > TAP > invalid workspace > must match snapshot 1`] = `
-Error: No matching workspaces found. Make sure the vlt.json config, or the "workspaces" field of the root package.json, contains the correct workspaces.
+Error: No matching workspaces found. Make sure the vlt.json config, the "workspaces" field of the root package.json, or the "packages" list of pnpm-workspace.yaml contains the correct workspaces.
   Workspace: [ 'src/bar' ]
 `
 
 exports[`test/index.ts > TAP > invalid workspace-group > must match snapshot 1`] = `
-Error: No matching workspaces found. Make sure the vlt.json config, or the "workspaces" field of the root package.json, contains the correct workspaces.
+Error: No matching workspaces found. Make sure the vlt.json config, the "workspaces" field of the root package.json, or the "packages" list of pnpm-workspace.yaml contains the correct workspaces.
   Workspace Group: [ 'a' ]
 `
 
@@ -91,7 +105,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --scoped-registries=<@scope=url>
     --script-shell=<program>
     --stale-while-revalidate-factor=<n>
-    --store-linker=<auto | hardlink | copy | unpack>
+    --store-linker=<auto | hardlink | clone | copy | unpack>
     --tag=<tag>
     --target=<query>
     --telemetry

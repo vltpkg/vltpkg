@@ -48,10 +48,11 @@ cached under it:
 register(cachePath, myKey, storeRoot, integrity)
 ```
 
-When `VLT_STORE_LINKER` is `auto`, `hardlink` or `copy`, the child
-also explodes each tarball entry with a sha512 `integrity` header into
-`<storeRoot>/<integrity-hex>/`, with its sidecar index next to it at
-`<integrity-hex>.json`. Unset or `unpack`: nothing is written there.
+When `VLT_STORE_LINKER` is `auto`, `hardlink`, `clone` or `copy`, the
+child also explodes each tarball entry with a sha512 `integrity`
+header into `<storeRoot>/<integrity-hex>/`, with its sidecar index
+next to it at `<integrity-hex>.json`. Unset or `unpack`: nothing is
+written there.
 
 - Existing entries are skipped, unless their sidecar is missing or
   invalid: then they are redone. Bad tarballs are skipped too.

@@ -281,6 +281,51 @@ jobs:
       - name: Run Tests
         run: vlr --recursive test
 
+  # clonefile(2) through node:ffi needs macOS and a Node with node:ffi,
+  # which the matrix above never runs on PRs: everywhere else the tests
+  # only see a mock of it
+  clonefile:
+    name: Test - macOS clonefile - 26.x
+    needs: [pre-check, changes]
+    if: needs.changes.outputs.src == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26.x'
+          check-latest: true
+
+      - name: Setup vlt
+        uses: vltpkg/setup-vlt@v1
+
+      - name: Install Dependencies with known good version of vlt
+        run: vlt install
+
+      - name: Build source version of vlt
+        run: node --run build:bundle
+
+      - name: Add source version of vlt to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+
+      - name: Install Dependencies with source of vlt
+        run: |
+          # see the test job
+          ./scripts/rm-node-nodules.ts
+          git checkout -- vlt-lock.json
+          vlt install --view=human
+
+      - name: Prepare
+        run: vlr --recursive prepare
+
+      - name: Run Tests
+        run: |
+          vlr --workspace src/tar test
+          vlr --workspace infra/smoke-test test test/cache-unzip.ts
+
   on-failure:
     name: Notify on Failure
     runs-on: ubuntu-latest

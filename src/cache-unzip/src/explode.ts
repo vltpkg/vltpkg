@@ -20,7 +20,7 @@ import { debuglog } from 'node:util'
 const debug = debuglog('vlt')
 
 /** `store-linker` values that read from the global store. */
-const linkers = new Set(['auto', 'hardlink', 'copy'])
+const linkers = new Set(['auto', 'hardlink', 'clone', 'copy'])
 
 /** True when `VLT_STORE_LINKER` enables the global store. */
 export const storeEnabled = () =>

@@ -1,6 +1,6 @@
 ---
 description: Workspace configuration, filtering, and monorepo operations
-globs: src/workspaces/src/index.ts,src/cli-sdk/src/index.ts,src/cli-sdk/src/exec-command.ts,www/docs/src/content/docs/cli/workspaces.mdx
+globs: src/workspaces/src/index.ts,src/cli-sdk/src/index.ts,src/cli-sdk/src/exec-command.ts,www/docs/src/content/docs/cli/workspaces.mdx,src/workspaces/src/pnpm-workspace.ts
 alwaysApply: false
 ---
 # Workspaces (`@vltpkg/workspaces`)
@@ -24,6 +24,8 @@ All canonicalized to `WorkspaceConfigObject = Record<string, string[]>` via `asW
 ```
 
 A workspace can belong to multiple groups. Glob patterns matched via `globSync`.
+
+Config source (`resolveWSConfig`): vlt.json `workspaces` > root package.json `workspaces` > `pnpm-workspace.yaml` `packages` (tiny parser in `src/pnpm-workspace.ts`, never throws).
 
 ## CLI Flags
 

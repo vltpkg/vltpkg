@@ -78,6 +78,8 @@ named `build`, and if none matches, look for a `package.json` script.
 
 pnpm reads registry config from `.npmrc` and workspace config from
 `pnpm-workspace.yaml`. vlt consolidates everything into `vlt.json`.
+vlt also reads the `packages` list of `pnpm-workspace.yaml` directly,
+so moving it is optional until that file is removed.
 
 **pnpm configuration:**
 
@@ -293,7 +295,10 @@ pnpm defines workspaces in `pnpm-workspace.yaml`:
 
 ### vlt
 
-vlt defines workspaces in `vlt.json`:
+vlt reads that `packages` list as-is, so it works unchanged (see
+[Workspaces](/client/workspaces)). vlt's own place for workspaces is
+`vlt.json`, needed for named groups or once `pnpm-workspace.yaml` is
+removed:
 
 <Code
   code={JSON.stringify(
@@ -352,7 +357,9 @@ See [Workspaces](/client/workspaces) for full details.
 
 If you use pnpm's catalog feature (`pnpm-workspace.yaml`), vlt has
 direct support for [catalogs](/client/catalogs) with compatible
-syntax.
+syntax. vlt doesn't read `catalog`/`catalogs` from
+`pnpm-workspace.yaml`; move them to `vlt.json`, else `catalog:` specs
+fail with `Named catalog not found`.
 
 **pnpm:**
 
@@ -480,8 +487,9 @@ Some pnpm-specific features don't have direct equivalents:
 ## Migration Checklist
 
 1. Install vlt: `npm install -g vlt`
-2. Create `vlt.json` combining your `.npmrc` registry config and
-   `pnpm-workspace.yaml` workspace definitions
+2. Create `vlt.json` with your `.npmrc` registry config
+   (`pnpm-workspace.yaml` `packages` are read as-is; moving them is
+   optional)
 3. Move scoped registry config from `.npmrc` to `vlt.json`
 4. Move catalogs from `pnpm-workspace.yaml` to `vlt.json` (`catalog`
    and `catalogs` fields)
@@ -493,4 +501,5 @@ Some pnpm-specific features don't have direct equivalents:
    `vlt install --frozen-lockfile && vlt build`
 9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
 10. Update any `pnpm dlx` usage to `vlx`
-11. Remove `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings
+11. Move `packages` to `workspaces` in `vlt.json`, then remove
+    `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings

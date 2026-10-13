@@ -39,10 +39,9 @@ changes are:
 ### What Stays the Same
 
 - Your `package.json` files don't change (dependencies, scripts, etc.)
-- npm and yarn workspaces declared in the root `package.json` are read
-  as-is, so an existing monorepo needs no workspace config changes
-  (pnpm's `pnpm-workspace.yaml` is the exception, and does need
-  moving)
+- Workspaces declared in the root `package.json` (npm, yarn) or in
+  `pnpm-workspace.yaml` `packages` (pnpm) are read as-is, so an
+  existing monorepo needs no workspace config changes
 - `node_modules` structure is compatible — your code runs the same way
 - Registry authentication uses tokens, just stored differently
 - Workspace packages still use `workspace:` protocol references

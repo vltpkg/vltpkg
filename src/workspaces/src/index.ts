@@ -13,6 +13,7 @@ import { minimatch } from 'minimatch'
 import { basename, posix, resolve } from 'node:path'
 import type { Path } from 'path-scurry'
 import { PathScurry } from 'path-scurry'
+import { readPnpmWorkspacePackages } from './pnpm-workspace.ts'
 
 /**
  * Check if an error (potentially wrapped by @vltpkg/error-cause) is
@@ -193,14 +194,15 @@ export const asManifestWSConfig = (
 /**
  * Which file a project's workspace definitions came from.
  */
-export type WorkspaceConfigSource = 'vlt.json' | 'package.json'
+export type WorkspaceConfigSource =
+  'vlt.json' | 'package.json' | 'pnpm-workspace.yaml'
 
 export type ResolvedWorkspaceConfig = {
   config: WorkspaceConfigObject
   /**
-   * The file the config came from, or `undefined` when neither
-   * `vlt.json` nor the root `package.json` declares any workspaces at
-   * all -- ie, when the project is not a monorepo.
+   * The file the config came from, or `undefined` when none of
+   * `vlt.json`, the root `package.json` or `pnpm-workspace.yaml`
+   * declares any workspaces -- ie, when the project is not a monorepo.
    */
   source?: WorkspaceConfigSource
 }
@@ -210,7 +212,8 @@ export type ResolvedWorkspaceConfig = {
  *
  * `vlt.json` wins whenever it has a `workspaces` field; otherwise the
  * npm/yarn-style `workspaces` field of the project root's
- * `package.json` is used. Note the precedence is keyed on the *field*,
+ * `package.json` is used, then the `packages` list of a root
+ * `pnpm-workspace.yaml`. Note the precedence is keyed on the *field*,
  * not the file: a `vlt.json` that exists but says nothing about
  * workspaces still falls through to `package.json`.
  */
@@ -225,7 +228,12 @@ export const resolveWSConfig = (
   // maybeRead, because a project root need not have a package.json at
   // all, and an unreadable one is not this module's error to report.
   const workspaces = packageJson.maybeRead(projectRoot)?.workspaces
-  if (workspaces === undefined) return { config: {} }
+  if (workspaces === undefined) {
+    const packages = readPnpmWorkspacePackages(projectRoot)
+    return packages ?
+        { config: { packages }, source: 'pnpm-workspace.yaml' }
+      : { config: {} }
+  }
   return {
     config: asManifestWSConfig(
       workspaces,
@@ -276,9 +284,9 @@ export type MonorepoOptions = {
    */
   scurry?: PathScurry
   /**
-   * Parsed normalized contents of the workspaces, from either a
-   * `vlt.json` or a `package.json` file. If set, the file is not read
-   * again.
+   * Parsed normalized contents of the workspaces, from `vlt.json`,
+   * `package.json` or `pnpm-workspace.yaml`. If set, the file is not
+   * read again.
    */
   config?: WorkspaceConfigObject
   /**
@@ -323,9 +331,10 @@ export class Monorepo {
   }
 
   /**
-   * Load the workspace definitions from vlt.json, or from the root
-   * package.json when vlt.json declares none, canonicalizing the result
-   * into the effective `{[group:string]:string[]}` form.
+   * Load the workspace definitions from vlt.json, else the root
+   * package.json, else pnpm-workspace.yaml (see {@link resolveWSConfig}),
+   * canonicalizing the result into the effective
+   * `{[group:string]:string[]}` form.
    *
    * Eg:
    * - `"src/*"` => `{packages:["src/*"]}`
@@ -821,8 +830,9 @@ export class Monorepo {
   /**
    * Convenience method to instantiate and load in one call.
    * Returns undefined if the project is not a monorepo workspaces root,
-   * meaning neither `vlt.json` nor the root `package.json` declares any
-   * workspaces. Otherwise returns the loaded Monorepo.
+   * meaning none of `vlt.json`, the root `package.json` or
+   * `pnpm-workspace.yaml` declares any workspaces. Otherwise returns
+   * the loaded Monorepo.
    */
   static maybeLoad(
     projectRoot: string,

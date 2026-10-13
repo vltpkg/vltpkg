@@ -169,8 +169,10 @@ Prefixes can be used as a package alias. For example:
 
 The `npm:` prefix is **not** pre-registered to any URL — configure it
 (for example with `vlt setup`) before bare specs or `npm:` aliases can
-resolve. The built-in `gh:` and `jsr:` prefixes are pre-registered but
-remain overridable here.
+resolve. The built-in `gh:` prefix is pre-registered but remains
+overridable here. A name used by `--jsr-registries` or `--git-hosts`
+(e.g. `jsr`, `github`), or a built-in protocol (e.g. `file`), is an
+error.
 
 Aliases given on the command line or in `VLT_REGISTRIES` merge with
 the configured ones, later sources winning per key. Pass
@@ -235,28 +237,33 @@ Can be set multiple times
 Location of the vlt on-disk cache. Defaults to the platform-specific
 directory recommended by the XDG specification.
 
-### `--store-linker=<auto | hardlink | copy | unpack>`
+### `--store-linker=<auto | hardlink | clone | copy | unpack>`
 
 How packages are placed in `node_modules`. Every linker but `unpack`
 fills a global store under `cache` in the background, then places
 packages from it.
 
 - auto: Default. On Linux, hardlink from the global store, copying any
-  file that cannot be linked. Elsewhere, same as `unpack`: a hardlink
-  is the slowest way to place a file on APFS, so macOS and Windows
-  unpack by default.
+  file that cannot be linked. On macOS, clone from it, on a Node with
+  `node:ffi` (26.1 and later, and `--allow-ffi` under `--permission`);
+  a hardlink is the slowest way to place a file on APFS, so macOS
+  without it, and Windows, unpack by default.
 - hardlink: Hardlink from the global store on every platform.
+- clone: Clone each package directory from the global store
+  copy-on-write (`clonefile`, macOS on APFS). Files share storage with
+  the store until edited, so editing in place is safe. Unpacks where
+  cloning fails.
 - copy: Copy from the global store. Use this when editing files in
   `node_modules` in place, since a hardlink shares its content with
   every project.
 - unpack: Unpack each package tarball, skipping the global store.
 
-A package is copied right before its install scripts run, so they
-don't change its files in the store. An invalid `VLT_STORE_LINKER`
-warns and uses `unpack`. See
+A hardlinked package is copied right before its install scripts run,
+so they don't change its files in the store; a cloned one needs no
+copy. An invalid `VLT_STORE_LINKER` warns and uses `unpack`. See
 [Global store](/client/commands/cache#global-store).
 
-Valid options: "auto", "hardlink", "copy", "unpack"
+Valid options: "auto", "hardlink", "clone", "copy", "unpack"
 
 ### `--brotli-tarballs`
 

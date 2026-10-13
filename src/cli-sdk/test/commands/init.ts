@@ -503,3 +503,34 @@ t.test('workspaces declared in package.json', async t => {
     },
   )
 })
+
+t.test('workspaces declared in pnpm-workspace.yaml', async t => {
+  for (const [name, workspace, want] of [
+    ['covered by an existing pattern', 'packages/a', undefined],
+    [
+      'not covered: seeds vlt.json first',
+      'apps/b',
+      ['packages/*', 'apps/b'],
+    ],
+  ] as const) {
+    await t.test(name, async t => {
+      const dir = t.testdir({
+        '.git': {},
+        'package.json': JSON.stringify({ name: 'root' }),
+        'pnpm-workspace.yaml': "packages:\n  - 'packages/*'\n",
+      })
+      t.chdir(dir)
+      delete vltJsonData.workspaces
+      inited.length = 0
+
+      await command({
+        values: { workspace: [workspace] },
+        options: { projectRoot: dir },
+        get: () => undefined,
+      } as unknown as LoadedConfig)
+
+      t.strictSame(inited, [resolve(dir, workspace)])
+      t.strictSame(vltJsonData.workspaces, want)
+    })
+  }
+})

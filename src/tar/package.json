@@ -56,6 +56,11 @@
         "default": "./src/index.ts"
       }
     },
+    "./clonefile": {
+      "import": {
+        "default": "./src/clonefile.ts"
+      }
+    },
     "./link-tree": {
       "import": {
         "default": "./src/link-tree.ts"
