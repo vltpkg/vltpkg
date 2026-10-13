@@ -3130,7 +3130,10 @@ t.test('global store', async t => {
     ])
   })
 
-  t.test('git specs untouched', async t => {
+  // clones a git repo into the fixture, which Windows cannot always
+  // remove right away (EPERM on the .git dir in teardown), so keep the
+  // fixture there like the `extract` test above does
+  t.test('git specs untouched', opts, async t => {
     const { dir, links, registered, client } = await setup(t)
     const pi = await client({ 'store-linker': 'hardlink' })
     await pi.extract(
