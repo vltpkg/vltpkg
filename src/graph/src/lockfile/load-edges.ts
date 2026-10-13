@@ -102,11 +102,9 @@ export const loadEdges = (
     const vrSplit = valRest?.lastIndexOf(' ') ?? -1
 
     // not a valid edge record
-    /* c8 ignore start */
     if (!valRest || !depType || !fromId || !specName || vrSplit < 1) {
       continue
     }
-    /* c8 ignore stop */
 
     // Validate dependency type early
     if (!isDependencyTypeShort(depType)) {

@@ -9,25 +9,32 @@ to quickly parse a small-to-medium sized string by a given delimiter.
 
 ## How Fast Is It!?
 
-This is about 10% faster for splitting short strings by a short
-delimiter. When we have to walk the resulting list for any reason, or
-limit the number of items returned, it's an even bigger difference.
+About 1.5x faster than `str.split()` for splitting short strings by a
+short delimiter, about 1.1-1.3x when walking or transforming the
+resulting list, and about 1.9x when limiting the result to 2 or 3
+parts (a dedicated fast path, see `src/index.ts`).
 
-2024 M1 macbook pro, using node 20.11.0, v8 version 11.3.244.8-node.17
-Counts are operations per ms, splitting the string '1.2.3-asdf+foo' by
-the delimiter '.', transforms calling part.toUpperCase(), and limits
-at 2 items
+Note: V8 caches `split()` results (no limit) for internalized strings
+(literals, JSON keys, short JSON values), so splitting the same such
+string repeatedly, as benchmarks over literals do, favors native
+`split()`. Substrings, regex captures and built strings don't hit that
+cache, and with many distinct internalized strings the cache is a net
+cost.
+
+Linux x64, node 26.11.1. Counts are operations per ms, splitting the
+string '1.2.3-asdf+foo' (built at runtime) by the delimiter '.',
+transforms calling part.toUpperCase(), and limits at 2 items
 
 ```
-              split 10385.779
-          fastSplit 10718.341
-    splitEmptyCheck  9563.721
-fastSplitEmptyCheck 11273.537
- splitTransformLoop  5722.724
-  splitTransformMap  6136.161
- fastSplitTransform  6438.606
-         splitLimit  7076.179
-     fastSplitLimit 13257.948
+              split 4339.624
+          fastSplit 6849.283
+    splitEmptyCheck 4190.307
+fastSplitEmptyCheck 4803.402
+ splitTransformLoop 2772.453
+  splitTransformMap 2904.390
+ fastSplitTransform 3465.690
+         splitLimit 5491.101
+     fastSplitLimit 10384.471
 ```
 
 ## Usage
@@ -54,6 +61,6 @@ const [first, second, rest] = fastSplit(str, '.', 3)
 // than getting an array and subsequently looping over it
 // pass `-1` as the limit to give us all parts
 const nums = fastSplit(str, '.', -1, (part, parts, index) =>
-  Number(s),
+  Number(part),
 )
 ```

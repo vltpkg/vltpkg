@@ -10,6 +10,35 @@ export type VoidReplace<T, R = string> =
   undefined extends T ? NullReplace<Exclude<T, void>, R> | R
   : NullReplace<T, R>
 
+// A `limit` of 2 or 3 with no `onPart` is the "split off a prefix" case
+// (`a b` => [a, b], `M.m.p-rest` => [M, m, p-rest]). These build the
+// result as a fixed-shape array literal, which V8 allocates exactly
+// sized, where the generic loop's push-grown array starts with a 17-slot
+// backing store: that allocation is most of the cost for such short
+// results. They are separate functions on purpose: adding this code
+// inline pushes fastSplit past V8's bytecode budget for inlining it into
+// callers (~460 bytes), which made the generic path ~30% slower.
+const splitTwo = (str: string, delim: string): string[] => {
+  const a = str.indexOf(delim)
+  return a === -1 ?
+      [str]
+    : [str.substring(0, a), str.substring(a + delim.length)]
+}
+
+const splitThree = (str: string, delim: string): string[] => {
+  const a = str.indexOf(delim)
+  if (a === -1) return [str]
+  const l = delim.length
+  const b = str.indexOf(delim, a + l)
+  return b === -1 ?
+      [str.substring(0, a), str.substring(a + l)]
+    : [
+        str.substring(0, a),
+        str.substring(a + l, b),
+        str.substring(b + l),
+      ]
+}
+
 /**
  * Split a string by a string delimiter, optionally limiting the number
  * of parts parsed, and/or transforming the string parts into some other
@@ -42,7 +71,7 @@ export type VoidReplace<T, R = string> =
  * // providing the onPart method, which will be slightly faster
  * // than getting an array and subsequently looping over it
  * // pass `-1` as the limit to give us all parts
- * const nums = fastSplit(str, '.', -1, (part, parts, index) => Number(s))
+ * const nums = fastSplit(str, '.', -1, (part, parts, index) => Number(part))
  * ```
  */
 export function fastSplit<T = string>(
@@ -66,6 +95,11 @@ export function fastSplit<T = string>(
     i: number,
   ) => T | undefined,
 ): NullToString<T>[] {
+  if (onPart === undefined) {
+    if (limit === 2) return splitTwo(str, delim) as NullToString<T>[]
+    if (limit === 3)
+      return splitThree(str, delim) as NullToString<T>[]
+  }
   let i = 0
   let p = 0
   const l = delim.length

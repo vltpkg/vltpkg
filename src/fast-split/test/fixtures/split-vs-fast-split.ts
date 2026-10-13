@@ -3,7 +3,8 @@
 import t from 'tap'
 import { fastSplit } from '../../src/index.ts'
 
-const str = '1.2.3-asdf+foo'
+// built at runtime: V8 caches split() of literals
+const str = ['1', '2', '3-asdf+foo'].join('.')
 
 const test = (fn: () => void, howLong = 1000) => {
   const start = performance.now()
@@ -27,7 +28,7 @@ t.test('basic splitting', t => {
   t.comment('split', s)
   t.comment('fastSplit', fs)
   t.comment('factor', factor)
-  t.ok(factor > 0.7, '0.7x faster')
+  t.ok(factor > 1, 'faster')
   t.end()
 })
 
@@ -48,7 +49,7 @@ t.test('empty method', t => {
   t.comment('split', s)
   t.comment('fastSplit', fs)
   t.comment('factor', factor)
-  t.ok(factor > 0.8, '0.75x faster')
+  t.ok(factor > 1, 'faster')
   t.end()
 })
 
@@ -76,8 +77,8 @@ t.test('transform', t => {
   t.comment('fastSplit transform', fs)
   t.comment('loop factor', loopFactor)
   t.comment('map factor', mapFactor)
-  t.ok(loopFactor > 0.8, '0.8x faster than split+loop')
-  t.ok(mapFactor > 0.8, '0.8x faster than split+map')
+  t.ok(loopFactor > 1, 'faster than split+loop')
+  t.ok(mapFactor > 1, 'faster than split+map')
   t.end()
 })
 
@@ -91,6 +92,6 @@ t.test('limits', t => {
   t.comment('splitLimit', s)
   t.comment('fastSplitLimit', fs)
   t.comment('factor', factor)
-  t.ok(factor > 1, '1x faster')
+  t.ok(factor > 1, 'faster')
   t.end()
 })
