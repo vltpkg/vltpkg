@@ -6,7 +6,6 @@
 ![Package Downloads](https://img.shields.io/npm/dm/vlt?logo=npm&label=Downloads)
 ![GitHub Branch Status](https://img.shields.io/github/checks-status/vltpkg/vltpkg/main?logo=github&label=GitHub)
 ![Discord Server Status](https://img.shields.io/discord/1093366081067954178?logo=discord&label=Discord)
-[![Socket Security Status](https://socket.dev/api/badge/npm/package/vlt)](https://socket.dev/npm/package/vlt)
 
 **Develop. Run. Distribute.**
 
