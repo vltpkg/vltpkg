@@ -41,6 +41,10 @@ export const command: CommandFn<ReturnType> = async conf => { /* impl */ }
 2. Create `src/cli-sdk/src/commands/your-command.ts`
 3. Add tests in `src/cli-sdk/test/commands/your-command.ts`
 
+## Command Errors
+
+`outputCommand` prints the error, calls `conf.abort()` (aborts `conf.options.signal`, so registry requests stop) and returns with `process.exitCode` set. No `process.exit`: the process exits once idle. Multi-workspace runs pass the workspace visit signal to the spawn, so a failure kills the rest.
+
 ## Config Precedence
 
 CLI args → project vlt.json → user vlt.json → defaults. Command-specific: `command.{name}` in vlt.json.

@@ -617,6 +617,9 @@ const fetchManifestsForDeps = async (
             throw er
           })
 
+    // awaited below; a throw before that must not leave it unhandled
+    manifestPromise.catch(() => {})
+
     const fetchTask: ManifestFetchTask = {
       spec,
       type,
@@ -632,6 +635,9 @@ const fetchManifestsForDeps = async (
 
     fetchTasks.push(fetchTask)
   }
+
+  // fail on the first rejection, not once the ones before it settle
+  await Promise.all(fetchTasks.map(t => t.manifestPromise))
 
   // Create placement tasks from fetch tasks
   for (const fetchTask of fetchTasks) {

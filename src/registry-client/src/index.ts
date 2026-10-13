@@ -10,6 +10,7 @@ import { randomUUID } from 'node:crypto'
 import { closeSync, openSync, readFileSync, readSync } from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
+import { setMaxListeners } from 'node:events'
 import { pipeline } from 'node:stream'
 import type { Readable } from 'node:stream'
 import { setTimeout } from 'node:timers/promises'
@@ -55,6 +56,7 @@ import { getTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { getWebAuthChallenge } from './web-auth-challenge.ts'
 import { collectHeaders, readBody } from './response.ts'
+import { retry } from './retry.ts'
 import { storeRoot } from './store-root.ts'
 import { oidc } from './oidc.ts'
 import type { OidcOptions } from './oidc.ts'
@@ -156,6 +158,9 @@ export type RegistryClientOptions = RegistryURLs & {
    * explicitly allowed by the server's `cache-control` header.
    */
   'stale-while-revalidate-factor'?: number
+
+  /** aborts every request this client makes */
+  signal?: AbortSignal
 }
 
 export type RegistryClientRequestOptions = Omit<
@@ -322,8 +327,22 @@ export class RegistryClient {
   #decoded = new WeakMap<Uint8Array, CacheEntry>()
   // request() calls not settled yet, awaited by drain()
   #inFlight = new Set<Promise<void>>()
+  #signal?: AbortSignal
+
+  /** the request's own signal joined with the client's */
+  #withSignal<S>(
+    own: S | null | undefined,
+  ): S | AbortSignal | undefined {
+    const c = this.#signal
+    return !c || own === c || !(own instanceof AbortSignal) ?
+        (own ?? c)
+      : AbortSignal.any([own, c])
+  }
 
   constructor(options: RegistryClientOptions) {
+    this.#signal = options.signal
+    // undici adds a listener per request in flight
+    if (options.signal) setMaxListeners(0, options.signal)
     const {
       cache = xdg.cache(),
       'fetch-retry-factor': timeoutFactor = 2,
@@ -359,6 +378,7 @@ export class RegistryClient {
       minTimeout,
       maxTimeout,
       retryAfter: true,
+      retry,
       errorCodes: [
         'ECONNREFUSED',
         'ECONNRESET',
@@ -828,6 +848,7 @@ export class RegistryClient {
     const u = typeof url === 'string' ? new URL(url) : url
     const o = {
       ...options,
+      signal: this.#withSignal(options.signal),
       method: options.method ?? 'GET',
       path: u.pathname.replace(/\/+$/, '') + u.search,
       origin: u.origin,
@@ -894,6 +915,7 @@ export class RegistryClient {
     url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
+    options.signal = this.#withSignal(options.signal)
     // tracked apart from the #request() promise: a second reaction on
     // that one would make V8 drop the caller's async frames from the
     // stack of any error #request() throws. redirect and otp hops call

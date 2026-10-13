@@ -1,6 +1,8 @@
 import { promiseSpawn } from '@vltpkg/promise-spawn'
 import type { Manifest } from '@vltpkg/types'
+import EventEmitter from 'node:events'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import t from 'tap'
 import {
   exec,
@@ -23,6 +25,12 @@ const shellCmd = (cmd: string, args: string[]) =>
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
 const NODE_OPTIONS = '--no-warnings --experimental-strip-types'
+
+// fake promiseSpawn() result
+const spawned = <T>(result: T) =>
+  Object.assign(Promise.resolve(result), {
+    process: new EventEmitter(),
+  })
 
 const node =
   process.execPath.includes(' ') ?
@@ -1024,9 +1032,9 @@ t.test(
       typeof import('../src/index.ts')
     >('../src/index.ts', {
       '@vltpkg/promise-spawn': {
-        promiseSpawn: async (cmd: string) => {
+        promiseSpawn: (cmd: string) => {
           executedCommands.push(cmd)
-          return {
+          return spawned({
             command: cmd,
             args: [],
             cwd: '',
@@ -1034,7 +1042,7 @@ t.test(
             signal: null,
             stdout: '',
             stderr: '',
-          }
+          })
         },
       },
       'foreground-child': {
@@ -1267,9 +1275,9 @@ t.test('shell-escaping is shell-aware', async t => {
     typeof import('../src/index.ts')
   >('../src/index.ts', {
     '@vltpkg/promise-spawn': {
-      promiseSpawn: async (cmd: string, args: string[]) => {
+      promiseSpawn: (cmd: string, args: string[]) => {
         captured = { cmd, args }
-        return {
+        return spawned({
           command: cmd,
           args,
           cwd: '',
@@ -1277,7 +1285,7 @@ t.test('shell-escaping is shell-aware', async t => {
           signal: null,
           stdout: '',
           stderr: '',
-        }
+        })
       },
     },
     'foreground-child/proxy-signals': { proxySignals: () => {} },
@@ -1441,4 +1449,39 @@ t.test('exec bg FORCE_COLOR respects isTTY', async t => {
     t.equal(result.status, 0)
     t.equal(result.stdout.trim(), '0')
   })
+})
+
+t.test('exec bg aborted by signal', async t => {
+  // not a testdir: on Windows the orphan holds its cwd (EBUSY)
+  const cwd = import.meta.dirname
+  const mod = pathToFileURL(
+    resolve(import.meta.dirname, '../src/index.ts'),
+  ).href
+  // the shell's child outlives the killed shell (Windows: for 25s)
+  const arg0 = `${node} -e "setInterval(function () { console.log(1) }, 100); setTimeout(function () { process.exit() }, 25000)"`
+  const code = `
+const { exec } = await import(${JSON.stringify(mod)})
+const ac = new AbortController()
+setTimeout(() => ac.abort(), 500)
+await exec({
+  arg0: ${JSON.stringify(arg0)},
+  cwd: ${JSON.stringify(cwd)},
+  projectRoot: ${JSON.stringify(cwd)},
+  'script-shell': true,
+  signal: ac.signal,
+}).catch(er => console.log(er.cause.cause.name))
+`
+  const result = await promiseSpawn(
+    process.execPath,
+    ['--input-type=module', '-e', code],
+    {
+      env: { NODE_OPTIONS },
+      acceptFail: true,
+      // pipes left open keep it alive until this kills it
+      timeout: 20_000,
+    },
+  )
+  t.equal(result.signal, null, 'not killed')
+  t.equal(result.status, 0, result.stderr)
+  t.equal(result.stdout.trim(), 'AbortError')
 })

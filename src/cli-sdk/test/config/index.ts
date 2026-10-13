@@ -278,6 +278,8 @@ t.test(
     t.ok(packageJson, 'always includes a packageJson')
     t.ok(packageInfo, 'always includes a packageInfo')
     t.equal(conf.options, opts, 'memoized')
+    t.type(opts.signal, AbortSignal)
+    t.notOk(opts.signal.aborted)
 
     await conf.writeConfigFile('project', {
       'git-hosts': [
@@ -297,6 +299,15 @@ t.test(
       },
       'converted to record if all k=v values',
     )
+    conf.resetOptions(t.testdirName)
+    t.not(conf.options, opts, 'options reset')
+    t.equal(
+      conf.options.signal,
+      opts.signal,
+      'same signal after reset',
+    )
+    conf.abort()
+    t.ok(opts.signal.aborted, 'abort() aborts options.signal')
   },
 )
 

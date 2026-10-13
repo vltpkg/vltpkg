@@ -214,16 +214,19 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
     // run across workspaces
     let failed = false as boolean
-    const runInDir = async (cwd: string, label: string) => {
-      const result = await this.bg(this.bgArg(cwd)).catch(
-        (er: unknown) => {
-          if (isErrorWithCause(er) && isRunResult(er.cause)) {
-            this.printResult(label, er.cause)
-          }
-          failed = true
-          throw er
-        },
-      )
+    const runInDir = async (
+      cwd: string,
+      label: string,
+      signal?: AbortSignal,
+    ) => {
+      const arg = { ...this.bgArg(cwd), signal }
+      const result = await this.bg(arg).catch((er: unknown) => {
+        if (isErrorWithCause(er) && isRunResult(er.cause)) {
+          this.printResult(label, er.cause)
+        }
+        failed = true
+        throw er
+      })
       // If we are allowed to ignore missing commands, then command might be
       // an emptry string. If so, we don't print anything and return null to
       // be filtered out later.
@@ -239,8 +242,9 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         if (result) resultMap.set(label, result)
       }
     } else if (this.#monorepo) {
-      const wsResultMap = await this.#monorepo.run(ws =>
-        runInDir(ws.fullpath, ws.path),
+      // aborted on the first failure, killing the rest
+      const wsResultMap = await this.#monorepo.run((ws, signal) =>
+        runInDir(ws.fullpath, ws.path, signal),
       )
       for (const [ws, result] of wsResultMap) {
         if (result) resultMap.set(ws.path, result)

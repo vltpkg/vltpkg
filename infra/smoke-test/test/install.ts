@@ -1,6 +1,8 @@
 import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
 import { readFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { join } from 'node:path'
 import { stripVTControlCharacters } from 'node:util'
 import { ansiToAnsi } from 'ansi-to-pre'
@@ -92,3 +94,37 @@ t.test(
     t.match(output, 'vlt install')
   },
 )
+
+t.test('failed install exits on its own', async t => {
+  // 404 for all but `hang`, which never gets an answer
+  const server = createServer((req, res) => {
+    if (req.url?.includes('hang')) return
+    res.statusCode = 404
+    res.setHeader('content-type', 'application/json')
+    res.end('{"error":"not found"}')
+  })
+  await new Promise<void>(r => server.listen(0, '127.0.0.1', r))
+  t.teardown(() => {
+    server.closeAllConnections()
+    server.close()
+  })
+  const { port } = server.address() as AddressInfo
+  const reg = `http://127.0.0.1:${port}/`
+  const { status, signal, output } = await runMultiple(
+    t,
+    ['install'],
+    {
+      packageJson: {
+        name: 'x',
+        dependencies: { hang: '1', missing: '1' },
+      },
+      env: { VLT_REGISTRY: reg, VLT_REGISTRIES: `npm=${reg}` },
+      timeout: 30_000,
+      match: ['status'],
+    },
+  )
+  t.equal(signal, null, 'not killed')
+  t.equal(status, 1)
+  t.match(output, 'failed to fetch packument: 404')
+  t.notMatch(output, /Node\.js v\d/, 'no crash')
+})

@@ -8,7 +8,9 @@ import { exec, execFG } from '@vltpkg/run'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { LoadedConfig } from '../src/config/index.ts'
 import { ExecCommand } from '../src/exec-command.ts'
+import type { RunnerOptions } from '../src/exec-command.ts'
 import { resolve } from 'node:path'
+import { setTimeout as delay } from 'node:timers/promises'
 import { unload } from '@vltpkg/vlt-json'
 
 t.test('basic', t => {
@@ -119,4 +121,40 @@ t.test('getCwd', async t => {
     await e.run()
     t.equal(e.getCwd(), resolve(dir, 'src/a'))
   }
+})
+
+t.test('a failed workspace aborts the others', async t => {
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+    'package.json': '{}',
+    src: {
+      a: { 'package.json': JSON.stringify({ name: 'a' }) },
+      b: { 'package.json': JSON.stringify({ name: 'b' }) },
+    },
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../src/config/index.ts')
+  >('../src/config/index.ts')
+  unload()
+  const conf = await Config.load(t.testdirName, ['exec', 'x'])
+  conf.projectRoot = dir
+  conf.values.recursive = true
+  const signals = new Map<string, AbortSignal | undefined>()
+  const bg = (async ({ cwd, signal }: RunnerOptions) => {
+    signals.set(cwd, signal)
+    if (cwd === resolve(dir, 'src/a')) {
+      // b is running by now
+      await delay(50)
+      throw new Error('a failed')
+    }
+    await new Promise(r => signal?.addEventListener('abort', r))
+    throw new Error('aborted')
+  }) as any
+  const e = new ExecCommand(conf, bg, bg)
+  await t.rejects(e.run(), {
+    cause: { cause: { message: 'a failed' } },
+  })
+  t.equal(signals.get(resolve(dir, 'src/b'))?.aborted, true)
 })
