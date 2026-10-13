@@ -9,14 +9,17 @@ const acceptsMarkdown = {
   value: '.*text/markdown.*',
 } as const
 
+// extensionless pages; skips the markdown route itself and anything with a file extension
+// (`.md` urls, llms.txt, sitemap.xml, openapi.json), which has no markdown twin
+const pages = '/:path((?!llms\\.mdx/)(?!.*\\.[a-z0-9]+$).+)'
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: true,
   partialPrefetching: true,
   rewrites: async () => ({
     // agents that ask for markdown get it at the page's own url; runs before the filesystem, which would
-    // otherwise match the html page first. the path skips the markdown route itself and anything with a
-    // file extension (`.md` urls, llms.txt, sitemap.xml, openapi.json), which has no markdown twin
+    // otherwise match the html page first
     beforeFiles: [
       {
         source: '/',
@@ -24,7 +27,7 @@ const nextConfig: NextConfig = {
         destination: '/llms.mdx',
       },
       {
-        source: '/:path((?!llms\\.mdx/)(?!.*\\.[a-z0-9]+$).+)',
+        source: pages,
         has: [acceptsMarkdown],
         destination: '/llms.mdx/:path',
       },
@@ -34,6 +37,12 @@ const nextConfig: NextConfig = {
       { source: '/:path+.md', destination: '/llms.mdx/:path+' },
     ],
   }),
+  // those urls answer with html or markdown depending on `Accept`, so caches must key on it
+  headers: async () =>
+    ['/', pages].map(source => ({
+      source,
+      headers: [{ key: 'Vary', value: 'Accept' }],
+    })),
   // the old Starlight site's URLs
   redirects: async () => [
     {
