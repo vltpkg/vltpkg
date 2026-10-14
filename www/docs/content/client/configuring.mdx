@@ -268,6 +268,15 @@ A leading `~` is the home directory. Relative paths on the command
 line or in `VLT_GLOBAL_BIN_DIR` resolve from the current directory; in
 the user config the path must be absolute.
 
+### `--no-modify-path`
+
+Never edit shell config files to add a folder to your `PATH`: turns
+off
+[`vlt setup --path`](/client/commands/setup#add-global-bins-to-your-path)
+edits and the `vlt install -g` offer; the line to add is printed
+instead. Set `VLT_NO_MODIFY_PATH=1` (any value but `0`) in images or
+on machines whose dotfiles are managed elsewhere.
+
 ### `--store-linker=<auto | hardlink | clone | copy | unpack>`
 
 How packages are placed in `node_modules`. Every linker but `unpack`

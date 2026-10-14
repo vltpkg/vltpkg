@@ -1,6 +1,12 @@
 import { isObject } from '@vltpkg/types'
 import { randomBytes } from 'node:crypto'
-import { readFile, rename, rm, writeFile } from 'node:fs/promises'
+import {
+  chmod,
+  readFile,
+  rename,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
 import { isAbsolute, resolve } from 'node:path'
 
 /** state of the global project that is not config */
@@ -9,6 +15,8 @@ export type GlobalState = {
   binDirs?: string[]
   /** the ~/.local/bin notice was shown */
   localBinNoticed?: boolean
+  /** 'declined': the install -g PATH offer was answered no */
+  pathSetup?: 'declined'
   /** keys of other features, kept as-is */
   [key: string]: unknown
 }
@@ -36,23 +44,37 @@ export const readGlobalState = async (
   } else delete state.binDirs
   if (typeof localBinNoticed !== 'boolean')
     delete state.localBinNoticed
+  if (state.pathSetup !== 'declined') delete state.pathSetup
   return state
 }
 
-/** write `data` as JSON via temp file + rename */
-export const writeJsonAtomic = async (
+/** write `data` via temp file + rename, with `mode` if set */
+export const writeFileAtomic = async (
   file: string,
-  data: unknown,
+  data: string | Uint8Array,
+  mode?: number,
 ): Promise<void> => {
   const tmp = `${file}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`
   try {
-    await writeFile(tmp, JSON.stringify(data, null, 2) + '\n')
+    await writeFile(tmp, data, {
+      flag: 'wx',
+      ...(mode === undefined ? {} : { mode }),
+    })
+    // umask-proof
+    if (mode !== undefined) await chmod(tmp, mode)
     await rename(tmp, file)
   } catch (er) {
     await rm(tmp, { force: true })
     throw er
   }
 }
+
+/** write `data` as JSON via temp file + rename */
+export const writeJsonAtomic = (
+  file: string,
+  data: unknown,
+): Promise<void> =>
+  writeFileAtomic(file, JSON.stringify(data, null, 2) + '\n')
 
 /** read, change and write the state file */
 export const updateGlobalState = async (
