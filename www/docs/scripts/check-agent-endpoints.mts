@@ -133,3 +133,10 @@ void test('/api/search is a deprecated alias of /api/v1/search', async () => {
     /<\/api\/v1\/search>; rel="successor-version"/,
   )
 })
+
+void test('/llms.txt links the OpenAPI spec', async () => {
+  assert.match(
+    await (await get('/llms.txt')).text(),
+    /\/openapi\.json\)/,
+  )
+})

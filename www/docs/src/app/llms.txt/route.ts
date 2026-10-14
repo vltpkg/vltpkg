@@ -21,6 +21,7 @@ Every page is available as Markdown: append \`.md\` to its URL, or request the p
 
 - New to the registry: start at [Quick Start](${md('/registry')}). New to the client: start at [Getting Started with the vlt CLI](${md('/client')}). Moving an existing repository onto a vlt.io registry: follow the [${registryMigrationSkill.name} skill](${abs(registryMigrationSkill.url)}).
 - Commands and config: [CLI Commands](${md('/client/commands')}) links every command's page; [Configuring the vlt CLI](${md('/client/configuring')}) covers options and config files. [Reference](${md('/reference')}) is a glossary of terms.
+- The site's own HTTP API (search, Markdown pages) is described at [openapi.json](${abs('/openapi.json')}).
 - Before running anything that changes a vlt.io account (publishing, unpublishing, deprecating packages, changing access, or creating and revoking tokens), confirm with the user first.
 
 ## Agent skills
