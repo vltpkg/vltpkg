@@ -1180,6 +1180,56 @@ t.test('checkNeededBuild is called during reification', async t => {
   t.type(result.buildQueue, Array, 'buildQueue should be an array')
 })
 
+t.test('keepNodes reach deleteNodes', async t => {
+  const dir = t.testdir({
+    project: {
+      'vlt.json': JSON.stringify({ monorepo: { packages: [] } }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { lodash: '4' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    remover: new RollbackRemove(),
+  })
+  let kept: unknown
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    '../../src/reify/delete-nodes.ts': {
+      deleteNodes: (...args: unknown[]) => {
+        kept = args[3]
+        return []
+      },
+    },
+  })
+  const keepNodes = new Set<DepID>([
+    joinDepIDTuple(['registry', '', 'x@1.0.0']),
+  ])
+  await reify({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    graph,
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+    keepNodes,
+  })
+  t.equal(kept, keepNodes)
+})
+
 t.test(
   'reify sets buildState on nodes that need building',
   async t => {

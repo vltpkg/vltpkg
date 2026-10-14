@@ -1,3 +1,4 @@
+import type { DepID } from '@vltpkg/dep-id'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions } from './actual/load.ts'
 import { load as actualLoad } from './actual/load.ts'
@@ -15,6 +16,8 @@ import { resolve } from 'node:path'
 export type UninstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   allowScripts: string
+  /** store dirs of these nodes are never removed, eg the running vlt */
+  keepNodes?: ReadonlySet<DepID>
 }
 
 export const uninstall = async (

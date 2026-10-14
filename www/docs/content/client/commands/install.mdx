@@ -318,6 +318,32 @@ supported with `-g`, and the dependency type flags (`--save-dev`,
 `--save-types`, etc.) are ignored. `-g` is supported by `install`,
 `uninstall`, `list`, `query` and `build`.
 
+### Updating vlt
+
+`vlt install -g vlt` updates the `vlt` your shell runs (the one in
+your `PATH`), the way it was installed:
+
+- installed with npm (e.g. by the install script): runs that npm,
+  `npm install -g vlt@<version>`
+- installed as a global package: re-installs it like any global
+  package
+- installed some other way: says how to update it instead (e.g.
+  `brew upgrade vlt`)
+
+If vlt can't write where it is installed, it installs itself as a
+global package instead and links its bins like any other. The old
+`vlt` keeps running until that folder comes before it in your `PATH`.
+
+A bare `vlt` never downgrades: when `latest` is older than the running
+`vlt`, it says so. Use `vlt@latest` or a version to install it anyway.
+
+<Code
+  code={`$ vlt install -g vlt
+$ vlt install -g vlt@latest`}
+  title="Terminal"
+  lang="bash"
+/>
+
 ## Phased Package Installations
 
 Traditional package managers run lifecycle scripts automatically

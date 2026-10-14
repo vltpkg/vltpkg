@@ -33,6 +33,8 @@ export type InstallOptions = LoadOptions & {
   allowScripts: string
   saveExact?: boolean
   savePrefix?: string
+  /** store dirs of these nodes are never removed, eg the running vlt */
+  keepNodes?: ReadonlySet<DepID>
 }
 
 export const install = async (
