@@ -52,8 +52,11 @@ vlt install vitest@catalog:testing
 
 ## Errors
 
-- `"Named catalog not found"` — catalog name doesn't exist in `catalogs`
-- `"Name not found in catalog"` — package name not in the specified catalog
+All `ECONFIG`. The not-found errors set `wanted` (catalogs defining the dep) and `validOptions` (all defined catalogs) as `catalog:<name>` refs, when non-empty. Graph adds `from` (declaring `package.json` + dep type) via `asDependencySpecError`.
+
+- `Default catalog not found for <spec>` / `Catalog "<name>" not found for <spec>` — catalog not defined (an empty default catalog counts as undefined)
+- `Package "<dep>" not found in default catalog` / `... in catalog "<name>"` — package name not in the catalog
+- `Catalog entry "<dep>" in ... cannot be a catalog: spec` — catalog entries can't reference other catalogs
 
 ## Tip
 
