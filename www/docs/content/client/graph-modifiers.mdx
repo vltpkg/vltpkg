@@ -86,6 +86,25 @@ version `^18.2.0`.
 Only overrides `react` when it’s a direct dependency of `next`, which
 is a direct dependency of the root project.
 
+### Removing Dependencies
+
+```json
+{
+  "modifiers": {
+    ":root > #left-pad": "-",
+    "#some-pkg > #unwanted-dep": "-"
+  }
+}
+```
+
+The value `"-"` removes the selected dependency: it is not resolved,
+installed or saved to `vlt-lock.json`, nor is anything only it pulled
+in. Its `package.json` entry is left as is. An explicit
+`vlt install left-pad` fails with a config error until the modifier is
+removed. Normal selector rules apply: the most specific matching
+modifier wins, whatever its value (see
+[Specificity Resolution](#specificity-resolution)).
+
 ### Adding Comments to Selectors
 
 ```json

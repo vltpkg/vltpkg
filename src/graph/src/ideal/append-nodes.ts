@@ -424,6 +424,13 @@ const fetchManifestsForDeps = async (
       spec = activeModifier.modifier.spec
       // bareSpec of '-' means "remove this dependency"
       if (spec.bareSpec === '-') {
+        // nothing to install or save for an explicit request
+        if (isExplicit) {
+          throw error(
+            `Cannot add ${originalSpec.name}: it is removed by a graph modifier`,
+            { code: 'ECONFIG', found: queryModifier },
+          )
+        }
         continue
       }
     }

@@ -484,6 +484,85 @@ t.test('GraphModifier', async t => {
     )
   })
 
+  await t.test('removesImporterEdge', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #abbrev': '-',
+          '#lone': '-',
+          ':root > #unused > #deep': '-',
+          ':root > #q:semver(^1.0.0)': '-',
+          '#x': '-',
+          ':root > #x': '1.0.0',
+          '#y': '1.0.0',
+          ':root > #y': '-',
+          '#swap': '2.0.0',
+          '#tie:semver(^1.0.0)': '-',
+          ':root > #tie': '1.0.0',
+          ':workspace > #wsdep': '-',
+        },
+      }),
+    })
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    const root = { mainImporter: true, importer: true } as Node
+    const ws = { mainImporter: false, importer: true } as Node
+    const spec = (name: string, bareSpec = '*') =>
+      Spec.parse(name, bareSpec, mockSpecOptions)
+    // the `-` selector the traversal itself applies (see appendNodes)
+    const enginePick = (importer: Node, s: Spec) => {
+      const engine = new GraphModifier({ ...mockSpecOptions })
+      engine.tryImporter(importer)
+      const active = engine.tryNewDependency(importer, s)
+      const complete =
+        active?.interactiveBreadcrumb.current ===
+        active?.modifier.breadcrumb.last
+      return complete && active?.modifier.value === '-' ?
+          active.modifier.query
+        : undefined
+    }
+    const cases: [Node, Spec, string | undefined, string][] = [
+      [root, spec('abbrev'), ':root > #abbrev', 'direct root edge'],
+      [ws, spec('abbrev'), undefined, ':root skips a workspace'],
+      [root, spec('lone'), '#lone', 'lone selector, root edge'],
+      [ws, spec('lone'), '#lone', 'lone selector, workspace edge'],
+      [root, spec('deep'), undefined, 'a deeper scope is not it'],
+      [
+        root,
+        spec('q', '^1.2.0'),
+        ':root > #q:semver(^1.0.0)',
+        ':semver qualifier accepts the spec',
+      ],
+      [root, spec('q', '^2.0.0'), undefined, 'qualifier rejects it'],
+      [root, spec('x'), undefined, 'more specific swap wins'],
+      [ws, spec('x'), '#x', 'lone removal where the swap is not'],
+      [root, spec('y'), ':root > #y', 'more specific removal wins'],
+      [
+        root,
+        spec('tie', '^1.0.0'),
+        undefined,
+        'importer-anchored entry wins a specificity tie',
+      ],
+      [ws, spec('wsdep'), ':workspace > #wsdep', ':workspace'],
+      [root, spec('swap'), undefined, 'non-removal value'],
+      [root, spec('unrelated'), undefined, 'unrelated name'],
+    ]
+    for (const [importer, s, expected, msg] of cases) {
+      t.equal(
+        modifier.removesImporterEdge(importer, s),
+        expected,
+        msg,
+      )
+      t.equal(
+        enginePick(importer, s),
+        expected,
+        `${msg}, engine agrees`,
+      )
+    }
+  })
+
   await t.test('config getter', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({ modifiers: validStringConfig }),

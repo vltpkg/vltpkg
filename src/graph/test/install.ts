@@ -1,12 +1,14 @@
 import t from 'tap'
 import type { Test } from 'tap'
 import {
+  existsSync,
   readFileSync,
   statSync,
   utimesSync,
   writeFileSync,
 } from 'node:fs'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
 import { mockPackageInfo as mockPackageInfoBase } from './fixtures/reify.ts'
@@ -407,6 +409,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -521,6 +524,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
@@ -601,6 +605,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -676,6 +681,7 @@ t.test('install with frozenLockfile and spec changes', async t => {
     },
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
+        removedEdges: new Set(),
         add: Object.assign(new Map(), {
           modifiedDependencies: false,
         }),
@@ -843,6 +849,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
@@ -934,6 +941,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
@@ -1022,6 +1030,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -1168,6 +1177,7 @@ t.test(
       },
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
+          removedEdges: new Set(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(removeMap, {
@@ -2007,6 +2017,7 @@ t.test('install with frozenLockfile and changed options', async t => {
     },
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
+        removedEdges: new Set(),
         add: Object.assign(new Map(), {
           modifiedDependencies: false,
         }),
@@ -2497,6 +2508,360 @@ t.test('a project with modifiers stays in sync', async t => {
       `${f} was left alone`,
     )
   }
+})
+
+t.test('a "-" modifier removes dependencies', async t => {
+  const pj = JSON.stringify({
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { abbrev: '^2.0.0', which: '^2.0.1' },
+  })
+  const projectRoot = t.testdir({
+    'package.json': pj,
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #abbrev': '-', '#which > #isexe': '-' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  // the cli always passes an add map
+  const noAdd = () =>
+    Object.assign(new Map(), {
+      modifiedDependencies: false,
+    }) as AddImportersDependenciesMap
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(opts(), noAdd())
+  t.notOk(graph.mainImporter.edgesOut.get('abbrev'), 'no abbrev edge')
+  t.ok(graph.mainImporter.edgesOut.get('which')?.to, 'which kept')
+  t.notOk(graph.nodesByName.get('isexe'), 'no isexe node')
+  t.notOk(
+    existsSync(resolve(projectRoot, 'node_modules/abbrev')),
+    'abbrev not installed',
+  )
+  t.equal(read('package.json'), pj, 'package.json untouched')
+  const lock = JSON.parse(read('vlt-lock.json')) as {
+    nodes: Record<string, unknown>
+    edges: Record<string, string>
+  }
+  t.notMatch(
+    Object.keys(lock.nodes).join('\n'),
+    /~(abbrev|isexe)@/,
+    'no removed nodes in lockfile',
+  )
+  t.notMatch(
+    Object.keys(lock.edges).join('\n'),
+    / (abbrev|isexe)$/m,
+    'no removed edges in lockfile',
+  )
+
+  const stamp = new Date(0)
+  for (const f of lockfiles) {
+    utimesSync(resolve(projectRoot, f), stamp, stamp)
+  }
+  await install(opts(), noAdd())
+  for (const f of lockfiles) {
+    t.equal(
+      statSync(resolve(projectRoot, f)).mtimeMs,
+      0,
+      `${f} was left alone`,
+    )
+  }
+
+  await t.resolves(
+    install(opts({ frozenLockfile: true }), noAdd()),
+    'frozen install passes',
+  )
+  await t.resolves(
+    install(opts({ lockfileOnly: true }), noAdd()),
+    'lockfile-only install passes',
+  )
+
+  // `which` is not removed, so the check moves on to abbrev
+  const add = Object.assign(
+    new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map(
+          ['which@^2.0.1', 'abbrev@2.0.0'].map(arg => {
+            const spec = Spec.parse(arg)
+            return [spec.name, asDependency({ spec, type: 'prod' })]
+          }),
+        ),
+      ],
+    ]),
+    { modifiedDependencies: true },
+  )
+  await t.rejects(
+    install(opts(), add),
+    {
+      message: 'Cannot add abbrev: it is removed by a graph modifier',
+      cause: { code: 'ECONFIG', found: ':root > #abbrev' },
+    },
+    'an explicit add of a removed dep fails',
+  )
+  t.ok(
+    existsSync(resolve(projectRoot, 'node_modules/.vlt-lock.json')),
+    'caught before the build, hidden lockfile kept',
+  )
+})
+
+t.test(
+  'adding a "-" modifier removes an installed dependency',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          which: '^2.0.1',
+          isexe: '^2.0.0',
+          abbrev: '2.0.0',
+        },
+      }),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    t.teardown(() => unload('project'))
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        registries: { npm: 'https://registry.npmjs.org/' },
+        ...extra,
+      }) as unknown as InstallOptions
+    // the cli always passes an add map
+    const noAdd = () =>
+      Object.assign(new Map(), {
+        modifiedDependencies: false,
+      }) as AddImportersDependenciesMap
+    // removed links go to a detached rm process, which holds the fixture
+    // cwd on windows (EBUSY); let tap sweep it instead. each import also
+    // gets a fresh vlt.json cache
+    const mockInstall = async () =>
+      (
+        await t.mockImport<typeof import('../src/install.ts')>(
+          '../src/install.ts',
+          {
+            '@vltpkg/rollback-remove': {
+              RollbackRemove: class extends RollbackRemove {
+                confirm() {}
+              },
+            },
+          },
+        )
+      ).install
+    let install = await mockInstall()
+    const exists = (f: string) => existsSync(resolve(projectRoot, f))
+    const store = (id: string) =>
+      exists(
+        `node_modules/.vlt/${joinDepIDTuple(['registry', 'npm', id])}`,
+      )
+
+    await install(opts(), noAdd())
+    t.ok(exists('node_modules/abbrev'), 'abbrev installed')
+    t.ok(exists('node_modules/isexe'), 'isexe installed')
+    t.ok(store('abbrev@2.0.0'), 'abbrev in store')
+
+    writeFileSync(
+      resolve(projectRoot, 'vlt.json'),
+      JSON.stringify({
+        modifiers: { ':root > #abbrev': '-', ':root > #isexe': '-' },
+      }),
+    )
+    install = await mockInstall()
+    await install(opts(), noAdd())
+    t.notOk(exists('node_modules/abbrev'), 'abbrev link removed')
+    t.notOk(exists('node_modules/isexe'), 'isexe link removed')
+    t.notOk(store('abbrev@2.0.0'), 'abbrev store dir removed')
+    t.ok(store('isexe@2.0.0'), 'isexe still used by which')
+
+    await t.resolves(
+      install(opts({ frozenLockfile: true }), noAdd()),
+      'frozen install passes',
+    )
+    const { diff } = await install(opts(), noAdd())
+    t.equal(diff?.hasChanges(), false, 'nothing left to reify')
+  },
+)
+
+t.test(
+  'a qualified "-" modifier drops an edge it starts to match',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { abbrev: '2.0.0' },
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: { ':root > #abbrev:semver(^1.0.0)': '-' },
+      }),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        registries: { npm: 'https://registry.npmjs.org/' },
+        ...extra,
+      }) as unknown as InstallOptions
+    const noAdd = () =>
+      Object.assign(new Map(), {
+        modifiedDependencies: false,
+      }) as AddImportersDependenciesMap
+    // see 'adding a "-" modifier removes an installed dependency'
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: class extends RollbackRemove {
+          confirm() {}
+        },
+      },
+    })
+    const exists = (f: string) => existsSync(resolve(projectRoot, f))
+    const read = (f: string) =>
+      readFileSync(resolve(projectRoot, f), 'utf8')
+
+    await install(opts(), noAdd())
+    t.ok(exists('node_modules/abbrev'), '2.0.0 is out of the range')
+
+    // ^1.1.0 is in range now, and modifiers are unchanged: the lockfile
+    // options match, so nothing else resets the old edge
+    const pj = JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { abbrev: '^1.1.0' },
+    })
+    writeFileSync(resolve(projectRoot, 'package.json'), pj)
+    await t.rejects(
+      install(opts({ frozenLockfile: true }), noAdd()),
+      { message: /\.: abbrev is removed by a graph modifier/ },
+      'frozen install is out of sync',
+    )
+
+    const { graph } = await install(opts(), noAdd())
+    t.notOk(graph.mainImporter.edgesOut.get('abbrev'), 'edge dropped')
+    t.notOk(graph.nodesByName.get('abbrev'), 'node gone')
+    t.notOk(exists('node_modules/abbrev'), 'link removed')
+    t.notOk(
+      exists(
+        `node_modules/.vlt/${joinDepIDTuple(['registry', 'npm', 'abbrev@2.0.0'])}`,
+      ),
+      'store dir removed',
+    )
+    const { nodes, edges } = JSON.parse(read('vlt-lock.json')) as {
+      nodes: object
+      edges: object
+    }
+    t.strictSame({ nodes, edges }, { nodes: {}, edges: {} })
+    t.equal(read('package.json'), pj, 'package.json untouched')
+
+    await t.resolves(
+      install(opts({ frozenLockfile: true }), noAdd()),
+      'frozen install passes',
+    )
+  },
+)
+
+t.test('explicit adds are checked against "-" modifiers', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({
+      workspaces: { packages: ['packages/*'] },
+      modifiers: { '#abbrev': '-' },
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+    },
+    node_modules: { '.vlt-lock.json': '{}' },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const opts = () =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+    }) as unknown as InstallOptions
+  const addMap = (entries: [DepID, string][]) =>
+    Object.assign(
+      new Map(
+        entries.map(([id, arg]) => {
+          const spec = Spec.parse(arg)
+          const dep = asDependency({ spec, type: 'prod' })
+          return [id, new Map([[spec.name, dep]])]
+        }),
+      ),
+      { modifiedDependencies: true },
+    )
+  const { install } = await import('../src/install.ts')
+
+  // root `which` passes, the workspace abbrev does not
+  await t.rejects(
+    install(
+      opts(),
+      addMap([
+        [joinDepIDTuple(['file', '.']), 'which@^2.0.1'],
+        [joinDepIDTuple(['workspace', 'packages/a']), 'abbrev@2.0.0'],
+      ]),
+    ),
+    { cause: { code: 'ECONFIG', found: '#abbrev' } },
+    'a workspace importer is checked',
+  )
+  t.equal(
+    readFileSync(
+      resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+      'utf8',
+    ),
+    '{}',
+    'hidden lockfile kept',
+  )
+  // not an importer: left to the build, which fails on its own
+  await t.rejects(
+    install(
+      opts(),
+      addMap([
+        [joinDepIDTuple(['file', 'not-a-dep']), 'abbrev@2.0.0'],
+      ]),
+    ),
+    { message: /not a dependency of this project/ },
+    'a nested folder is skipped',
+  )
 })
 
 // a modifier that does not govern the root's own abbrev edge leaves the

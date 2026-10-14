@@ -13,6 +13,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > adding to a non existing impor
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(0) {},
   transientAdd: Map(1) {
     'file~nested+folder' => Map(1) {
@@ -93,6 +94,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to r
     },
     modifiedDependencies: true
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(1) {
     @vltpkg/graph.Edge {
       from: 'file~_d',
@@ -171,6 +173,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
     },
     modifiedDependencies: true
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(1) {
     @vltpkg/graph.Edge {
       from: 'file~_d',
@@ -201,6 +204,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > installing over a dangling edg
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(0) {},
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}
@@ -215,6 +219,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > removing from a non existing i
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(0) {},
   transientAdd: Map(0) {},
   transientRemove: Map(1) {
@@ -233,6 +238,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd and transientRemo
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(0) {},
   transientAdd: Map(1) {
     'file~nested+folder' => Map(1) {
@@ -258,6 +264,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientAdd from file-type di
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(0) {},
   transientAdd: Map(1) {
     'file~nested' => Map(2) {
@@ -289,6 +296,7 @@ exports[`test/ideal/get-importer-specs.ts > TAP > transientRemove from file-type
   remove: RemoveImportersDependenciesMapImpl(0) {
     modifiedDependencies: false
   },
+  removedEdges: Set(0) {},
   staleSpecs: Map(0) {},
   transientAdd: Map(0) {},
   transientRemove: Map(0) {}

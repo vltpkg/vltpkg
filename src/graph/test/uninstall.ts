@@ -400,3 +400,71 @@ t.test('uninstall --workspace-group keeps other groups', t =>
     { groups: ['apps'] },
   ),
 )
+
+t.test('uninstall keeps graph modifiers', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      dependencies: { abbrev: '2.0.0', which: '^2.0.1' },
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { '#which > #isexe': '-' },
+    }),
+  })
+  t.chdir(dir)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const opts = () =>
+    ({
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      registries: { npm: 'https://registry.npmjs.org/' },
+      lockfileOnly: false,
+      allowScripts: ':not(*)',
+    }) as unknown as UninstallOptions
+  const read = (f: string) => readFileSync(resolve(dir, f), 'utf8')
+  const store = () =>
+    readdirSync(resolve(dir, 'node_modules/.vlt')).join('\n')
+  const { install } = await import('../src/install.ts')
+  // see wsLockfile: the real remover holds the cwd on windows
+  const { uninstall } = await t.mockImport<
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class {
+        async rm(path: string) {
+          await rm(path, { recursive: true, force: true })
+        }
+        confirm() {}
+        async rollback() {}
+      },
+    },
+  })
+
+  await install(opts())
+  t.notMatch(store(), /isexe@/, 'isexe removed by modifier')
+
+  await uninstall(
+    opts(),
+    Object.assign(
+      new Map([[joinDepIDTuple(['file', '.']), new Set(['abbrev'])]]),
+      { modifiedDependencies: true },
+    ),
+  )
+  const lock = JSON.parse(read('vlt-lock.json')) as {
+    options: { modifiers?: Record<string, string> }
+    nodes: Record<string, unknown>
+  }
+  const nodeIds = Object.keys(lock.nodes).join('\n')
+  t.strictSame(
+    lock.options.modifiers,
+    { '#which > #isexe': '-' },
+    'modifiers kept in lockfile',
+  )
+  t.notMatch(nodeIds, /~(abbrev|isexe)@/, 'no abbrev or isexe node')
+  t.notMatch(store(), /(abbrev|isexe)@/, 'not in store')
+  t.notOk(existsSync(resolve(dir, 'node_modules/abbrev')))
+})

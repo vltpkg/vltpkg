@@ -161,7 +161,12 @@ export const reify = async (
   const hasLockfiles =
     !!scurry.lstatSync('vlt-lock.json') &&
     !!scurry.lstatSync('node_modules/.vlt-lock.json')
-  const skipOptionalOnly = noModifiedDependencies && diff.optionalOnly
+  // a removal is never optional-only: deleting is what reify is for
+  const skipOptionalOnly =
+    noModifiedDependencies &&
+    diff.optionalOnly &&
+    !diff.nodes.delete.size &&
+    !diff.edges.delete.size
   const skippable =
     skipOptionalOnly && !options.update && hasLockfiles
   const res: ReifyResult = { diff }
