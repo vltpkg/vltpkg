@@ -500,9 +500,13 @@ const loadPath = async (
     changed?: boolean
     planError?: Error
     answer?: string | Error
+    env?: NodeJS.ProcessEnv
+    plan?: PathSetupPlan
   } = {},
 ) => {
-  t.intercept(process, 'env', { value: { SHELL: '/bin/zsh' } })
+  t.intercept(process, 'env', {
+    value: o.env ?? { SHELL: '/bin/zsh' },
+  })
   const real = await import('../../src/shell-setup/index.ts')
   const calls = {
     plan: [] as PathSetupOptions[],
@@ -510,7 +514,7 @@ const loadPath = async (
     asked: [] as string[],
   }
   const action = o.changed === false ? 'unchanged' : 'append'
-  const plan: PathSetupPlan = {
+  const plan: PathSetupPlan = o.plan ?? {
     globalDir: '/g',
     dir: '/b',
     shell: 'zsh',
@@ -546,7 +550,11 @@ const loadPath = async (
           dir: p.dir,
           shell: p.shell,
           files: real.pathSetupFiles(p),
-          backups: ['/g/backups/.zshrc.1.bak'],
+          backups: [
+            p.registry ?
+              '/g/backups/Path.1.bak'
+            : '/g/backups/.zshrc.1.bak',
+          ],
         }
       },
       ask: async (q: string) => {
@@ -559,7 +567,7 @@ const loadPath = async (
   return {
     mod,
     calls,
-    source: real.sourceCommand('zsh', '/g'),
+    source: real.sourceCommand('zsh', '/g', '/b'),
     command: shellPathCommand('zsh', '/b'),
   }
 }
@@ -656,7 +664,7 @@ t.test('--path', async t => {
     const { mod, calls } = await loadPath(t)
     t.intercept(process.stdin, 'isTTY', { value: false })
     await t.rejects(mod.command(pathConf()), {
-      message: 'Not a terminal: pass --yes to edit shell config',
+      message: 'Not a terminal: pass --yes to add it to your PATH',
       cause: { code: 'EUSAGE' },
     })
     t.equal(calls.apply, 0)
@@ -716,6 +724,65 @@ t.test('--path', async t => {
     t.equal(calls.plan.length, 1)
   })
 
+  t.test('win32: user Path', async t => {
+    const registry = {
+      key: 'HKCU\\Environment',
+      dir: '/b',
+      action: 'prepend',
+      previous: 'C:\\a',
+      data: '/b;C:\\a',
+    } as const
+    const loadWin = async (t: Test) => {
+      const r = await loadPath(t, {
+        env: {},
+        plan: {
+          globalDir: '/g',
+          dir: '/b',
+          shell: 'cmd',
+          changes: [],
+          registry,
+        },
+      })
+      t.intercept(process, 'platform', { value: 'win32' })
+      return r
+    }
+
+    t.test('asks', async t => {
+      const { mod, calls } = await loadWin(t)
+      t.intercept(process.stdin, 'isTTY', { value: true })
+      t.match(await mod.command(pathConf()), {
+        path: { status: 'added', backups: ['/g/backups/Path.1.bak'] },
+      })
+      t.strictSame(calls.asked, [
+        'Add /b to your PATH in your Windows user environment? (Y/n) ',
+      ])
+      t.equal(calls.plan.length, 2, 'planned again after asking')
+      t.equal(calls.apply, 1)
+    })
+
+    t.test('--yes', async t => {
+      const { mod, calls } = await loadWin(t)
+      t.strictSame(await mod.command(pathConf({ yes: true })), {
+        path: {
+          dir: '/b',
+          shell: 'cmd',
+          files: [
+            {
+              file: 'HKCU\\Environment',
+              kind: 'registry',
+              action: 'prepend',
+            },
+          ],
+          backups: ['/g/backups/Path.1.bak'],
+          command: 'set "PATH=%PATH%;/b"',
+          source: 'set "PATH=%PATH%;/b"',
+          status: 'added',
+        },
+      })
+      t.match(calls.plan, [{ shell: 'cmd' }])
+    })
+  })
+
   t.test('views', async t => {
     const { mod } = await loadPath(t)
     const r = {
@@ -754,13 +821,51 @@ t.test('--path', async t => {
       '✅ /b is already added to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"',
     )
     t.equal(view('in-path'), '✅ /b is already on your PATH')
+    t.intercept(process, 'platform', { value: 'linux' })
     t.equal(
       view('disabled'),
-      'ℹ️  no-modify-path is set, so shell config was not changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"',
+      'ℹ️  no-modify-path is set, so nothing was changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"',
     )
     t.equal(
       view('cancelled'),
-      'Shell config not changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"',
+      'Nothing changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"',
+    )
+    t.intercept(process, 'platform', { value: 'win32' })
+    const keep =
+      '\n  To keep it: Start > "Edit environment variables for your account" > Path'
+    t.equal(
+      view('disabled'),
+      'ℹ️  no-modify-path is set, so nothing was changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"' +
+        keep,
+    )
+    t.equal(
+      view('cancelled'),
+      'Nothing changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"' +
+        keep,
+    )
+    const reg = (status: 'added' | 'unchanged') =>
+      mod.views.human({
+        path: {
+          ...r,
+          files: [
+            {
+              file: 'HKCU\\Environment',
+              kind: 'registry',
+              action: 'prepend',
+            },
+          ],
+          backups: [],
+          source: 'set "PATH=%PATH%;/b"',
+          status,
+        },
+      })
+    t.equal(
+      reg('added'),
+      '✅ Added /b to your PATH in your Windows user environment\n   Open a new terminal (restart editors like VS Code), or run: set "PATH=%PATH%;/b"',
+    )
+    t.equal(
+      reg('unchanged'),
+      '✅ /b is already added to your PATH in your Windows user environment\n   Open a new terminal, or run: set "PATH=%PATH%;/b"',
     )
   })
 })

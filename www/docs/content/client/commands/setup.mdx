@@ -99,8 +99,9 @@ Add global bins to your `PATH`:
 folder isn't on your `PATH`; in a terminal it offers to run this for
 you once (`--yes` accepts without asking).
 
-It writes `<global-dir>/env` (and `env.fish`), which adds the folder
-to `PATH`, and a section that loads it into your shell config:
+On macOS and Linux, it writes `<global-dir>/env` (and `env.fish`),
+which adds the folder to `PATH`, and a section that loads it into your
+shell config:
 
 | Shell         | File                                                                                                                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -117,10 +118,15 @@ if [ -f "$HOME/.local/share/vlt/global/env" ]; then . "$HOME/.local/share/vlt/gl
   lang="bash"
 />
 
+On Windows it adds the folder to the start of your user `Path` (_Edit
+environment variables for your account_) instead, whatever the shell.
+If the folder changes, the new one is added and the old entry stays.
+
 - Asks first, unless `--yes` (required without a terminal).
-- Backs files up to `<global-dir>/backups`.
-- Running it again changes nothing. If the folder changes, only `env`
-  is rewritten.
+- Backs files (on Windows, the old `Path`) up to
+  `<global-dir>/backups`.
+- Running it again changes nothing. On macOS and Linux, if the folder
+  changes, only `env` is rewritten.
 - Already in your `PATH`: nothing changes, unless `--force`.
 - A different `# vlt` section, or a symlinked file (dotfile managers):
   fails without writing anything, unless `--force`.
@@ -128,10 +134,11 @@ if [ -f "$HOME/.local/share/vlt/global/env" ]; then . "$HOME/.local/share/vlt/gl
 - `VLT_NO_MODIFY_PATH=1` (any value but `0`), or `--no-modify-path`,
   turns this and the install offer off; the line to add is printed
   instead.
-- Other shells and Windows aren't supported yet: it prints the line to
-  add.
+- Other shells (like nu) aren't supported on macOS and Linux yet: it
+  prints the line to add.
 
-Open a new terminal afterwards, or run the `source` line it prints.
+Open a new terminal afterwards (on Windows, also restart editors like
+VS Code), or run the line it prints.
 
 ## See also
 
