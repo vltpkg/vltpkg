@@ -102,3 +102,24 @@ void test('unknown /api paths are json 404s', async () => {
     assert.ok(error.message && error.hint)
   }
 })
+
+void test('/ has Organization and SoftwareApplication JSON-LD', async () => {
+  const html = await (await get('/', 'text/html')).text()
+  const script =
+    /<script type="application\/ld\+json">([^<]*)<\/script>/.exec(
+      html,
+    )?.[1]
+  assert.ok(script, 'json-ld script on the homepage')
+  const ld = JSON.parse(script) as {
+    '@context': string
+    '@graph': { '@type': string; contactPoint?: { email?: string } }[]
+  }
+  assert.equal(ld['@context'], 'https://schema.org')
+  const types = ld['@graph'].map(node => node['@type'])
+  assert.deepEqual(types, [
+    'Organization',
+    'WebSite',
+    'SoftwareApplication',
+  ])
+  assert.ok(ld['@graph'][0]?.contactPoint?.email)
+})
