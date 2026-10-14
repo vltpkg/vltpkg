@@ -105,6 +105,10 @@ export const posixPath = (
   o: ShellOptions = {},
 ): string => `"${posixInner(dir, o, shChars)}"`
 
+/** `dir` double-quoted for fish, `$HOME` late-bound */
+export const fishPath = (dir: string, o: ShellOptions = {}): string =>
+  `"${posixInner(dir, o, /[\\"$]/g)}"`
+
 /** the line that adds `dir` to the `PATH` in `shell` */
 export const shellPathCommand = (
   shell: Shell,
@@ -115,7 +119,7 @@ export const shellPathCommand = (
   const rest = homeRest(dir, home, win32)
   switch (shell) {
     case 'fish':
-      return `fish_add_path "${posixInner(dir, o, /[\\"$]/g)}"`
+      return `fish_add_path ${fishPath(dir, o)}`
     case 'nu':
       return `$env.PATH = ($env.PATH | prepend "${escape(dir, /[\\"]/g)}")`
     case 'pwsh': {
@@ -142,11 +146,11 @@ export const shellRcFile = (
     case 'zsh':
       return prettyPath(`${env.ZDOTDIR || home}/.zshrc`, home, win32)
     case 'bash': {
-      if (platform !== 'darwin') return '~/.bashrc'
+      const has = (f: string) => existsSync(`${home}/${f}`)
+      // like `vlt setup --path`: never a new .bashrc
+      if (platform !== 'darwin' && has('.bashrc')) return '~/.bashrc'
       // a new .bash_profile would shadow .profile
-      const f = ['.bash_profile', '.bash_login'].find(f =>
-        existsSync(`${home}/${f}`),
-      )
+      const f = ['.bash_profile', '.bash_login'].find(has)
       return `~/${f ?? '.profile'}`
     }
     case 'sh':

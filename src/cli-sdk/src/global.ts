@@ -56,6 +56,7 @@ import {
   shellRcFile,
 } from './shell.ts'
 import type { Shell, ShellOptions } from './shell.ts'
+import { canSetupPath } from './shell-setup/index.ts'
 
 /**
  * Bins linked by a global install. `conflicts` are names skipped because
@@ -616,9 +617,15 @@ export const globalBinsLines = (
   if (!g.inPath && (g.bins.length || g.conflicts.length)) {
     const rc = shellRcFile(shell, opts)
     const what = g.bins.length ? g.bins.join(', ') : 'global bins'
+    const fix =
+      canSetupPath(shell, platform) ?
+        'Run `vlt setup --path` to add it'
+      : 'Set --global-bin-dir to a folder on your PATH'
     lines.push(
+      // a paragraph of its own: the install offer follows it
+      '',
       `⚠️  ${dir} is not on your PATH, so ${what} can't be run yet.`,
-      `   Set --global-bin-dir to a folder on your PATH, or ${rc ? `add this line to ${rc}` : 'run'}:`,
+      `   ${fix}, or ${rc ? `add this line to ${rc}` : 'run'}:`,
       `     ${shellPathCommand(shell, g.binDir, { ...opts, home })}`,
     )
   }

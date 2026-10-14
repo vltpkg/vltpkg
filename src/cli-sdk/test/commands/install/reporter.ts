@@ -7,14 +7,25 @@ import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
 import type { InstallResult } from '../../../src/commands/install.ts'
 import type { LoadedConfig } from '../../../src/config/index.ts'
+import type { OfferOptions } from '../../../src/shell-setup/index.ts'
 
 let out = ''
 const stdout = Object.assign(new PassThrough(), { columns: 200 })
 stdout.on('data', (c: Buffer) => (out = c.toString()))
 
+const offers: [unknown, OfferOptions][] = []
+let onOffer = (_o: OfferOptions) => {}
+
 const { InstallReporter } = await t.mockImport<
   typeof import('../../../src/commands/install/reporter.ts')
 >('../../../src/commands/install/reporter.ts', {
+  '../../../src/shell-setup/index.ts': {
+    ...(await import('../../../src/shell-setup/index.ts')),
+    offerPathSetup: async (g: unknown, o: OfferOptions) => {
+      offers.push([g, o])
+      onOffer(o)
+    },
+  },
   '@vltpkg/output': await import('@vltpkg/output'),
   react: await import('react'),
   ink: {
@@ -28,7 +39,11 @@ const { InstallReporter } = await t.mockImport<
   },
 })
 
-const reporter = () => new InstallReporter({}, {} as LoadedConfig)
+const reporter = (vals: Record<string, unknown> = {}) =>
+  new InstallReporter({}, {
+    projectRoot: '/g',
+    get: (k: string) => vals[k],
+  } as unknown as LoadedConfig)
 const request = (state: Events['request']['state']) =>
   emitter.emit('request', { url: 'https://x/', state })
 
@@ -363,4 +378,45 @@ t.test('global', async t => {
     t.equal(out.includes('PATH'), hint, `hint: ${hint}`)
     r.error(new Error('x'))
   }
+})
+
+t.test('PATH offer', async t => {
+  offers.length = 0
+  t.teardown(() => {
+    onOffer = () => {}
+  })
+  const global = {
+    binDir: '/g/bin',
+    source: 'global-dir',
+    otherDirs: [],
+    bins: ['a'],
+    conflicts: [],
+    inPath: false,
+  }
+  const r = reporter({ yes: true, 'no-modify-path': false })
+  r.start()
+  // ink in CI writes only a newline on unmount in debug mode
+  let frame = ''
+  onOffer = o => {
+    frame = out
+    o.beforeOutput?.()
+  }
+  await r.done({ global } as unknown as InstallResult, { time: 8 })
+  t.match(offers, [
+    [global, { globalDir: '/g', yes: true, noModifyPath: false }],
+  ])
+  t.match(frame, 'Done in 8ms', 'final frame drawn before the offer')
+  t.match(frame, '/g/bin is not on your PATH')
+  r.error(new Error('x'))
+
+  offers.length = 0
+  const r2 = reporter({ 'no-modify-path': true })
+  await r2.done({ global } as unknown as InstallResult, { time: 9 })
+  t.match(offers, [[global, { yes: false, noModifyPath: true }]])
+  offers[0]?.[1].beforeOutput?.()
+  r2.error(new Error('x'))
+
+  offers.length = 0
+  await reporter().done({} as InstallResult, { time: 1 })
+  t.strictSame(offers, [], 'not global')
 })

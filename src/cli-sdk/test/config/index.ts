@@ -1085,6 +1085,28 @@ t.test('read catalogs from config file', async t => {
   )
 })
 
+t.test('VLT_NO_MODIFY_PATH: any value but 0 is set', async t => {
+  const dir = t.testdir({ 'vlt.json': '{}', '.git': {} })
+  t.chdir(dir)
+  unload()
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  for (const [env, set] of [
+    ['1', true],
+    ['true', true],
+    ['yes', true],
+    ['0', false],
+    ['', false],
+    [undefined, false],
+  ] as const) {
+    clearEnv()
+    if (env !== undefined) process.env.VLT_NO_MODIFY_PATH = env
+    const c = await Config.load(dir, ['install'], true)
+    t.equal(!!c.get('no-modify-path'), set, String(env))
+  }
+})
+
 t.test('store-linker and global store root', async t => {
   const dir = t.testdir({ 'vlt.json': '{}', '.git': {} })
   t.chdir(dir)
@@ -2159,6 +2181,63 @@ t.test('--global', async t => {
     const { Config, cwd, dflt } = await setup(t, { 'global-dir': '' })
     const conf = await Config.load(cwd, ['install', '-g'], true)
     t.equal(conf.globalRoot, dflt)
+  })
+
+  t.test('setup --path', async t => {
+    const { Config, cwd, g } = await setup(t)
+    const conf = await Config.load(
+      cwd,
+      ['setup', '--path', `--global-dir=${g}`],
+      true,
+    )
+    t.equal(conf.globalRoot, g)
+    t.equal(conf.projectRoot, g)
+    t.ok(existsSync(resolve(g, 'package.json')), 'skeleton')
+    t.equal(conf.get('registry'), undefined, 'cwd config not read')
+    t.equal(conf.get('path'), true)
+    t.notOk('path' in conf.options, 'not a request option')
+    clearEnv()
+    process.env.VLT_GLOBAL_DIR = g
+    const env = await Config.load(cwd, ['setup', '--path'], true)
+    t.equal(env.globalRoot, g, 'global-dir from env')
+    clearEnv()
+    const bin = await Config.load(
+      cwd,
+      ['setup', '--path', `--global-dir=${g}`, '--global-bin-dir=/b'],
+      true,
+    )
+    t.equal(bin.globalBinDir, resolve('/b'))
+    for (const argv of [
+      ['setup'],
+      ['install', '--path'],
+      ['setup', '--path', '--help'],
+    ]) {
+      clearEnv()
+      const c = await Config.load(
+        cwd,
+        [...argv, `--global-dir=${g}`],
+        true,
+      )
+      t.equal(c.globalRoot, undefined, argv.join(' '))
+    }
+    clearEnv()
+    process.env.VLT_PATH = '1'
+    const vltPath = await Config.load(
+      cwd,
+      ['setup', `--global-dir=${g}`],
+      true,
+    )
+    t.equal(vltPath.globalRoot, undefined, 'VLT_PATH ignored')
+  })
+
+  t.test('setup with path in user config', async t => {
+    const { Config, cwd, g } = await setup(t, { path: true })
+    const conf = await Config.load(
+      cwd,
+      ['setup', `--global-dir=${g}`],
+      true,
+    )
+    t.equal(conf.globalRoot, undefined)
   })
 
   t.test('global-bin-dir', async t => {

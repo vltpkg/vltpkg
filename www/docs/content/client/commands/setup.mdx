@@ -6,7 +6,12 @@ sidebar:
 
 Usage:
 
-<Code code="$ vlt setup [<account>]" title="Terminal" lang="bash" />
+<Code
+  code={`$ vlt setup [<account>]
+$ vlt setup --path`}
+  title="Terminal"
+  lang="bash"
+/>
 
 Configure the registry aliases for your vlt.io account so that
 `vlt install` and `vlx` work out of the box.
@@ -51,11 +56,13 @@ project.
 
 ## Options
 
-| Flag                       | Description                                                                         |
-| -------------------------- | ----------------------------------------------------------------------------------- |
-| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.   |
-| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.  |
-| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs. |
+| Flag                       | Description                                                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                       |
+| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                      |
+| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs. With `--path`: edit without asking. |
+| `--path`                   | Add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                   |
+| `--global-bin-dir=<path>`  | With `--path`: the folder to add.                                                                                       |
 
 ## Examples
 
@@ -78,6 +85,53 @@ Write to the project's `vlt.json` instead of your user config:
   title="Terminal"
   lang="bash"
 />
+
+Add global bins to your `PATH`:
+
+<Code code="$ vlt setup --path" title="Terminal" lang="bash" />
+
+## Add global bins to your PATH
+
+`vlt setup --path` adds the global bin folder (see
+[Global installs](/client/commands/install#global-installs)) to your
+`PATH` in new terminals. Only needed when `vlt install -g` says that
+folder isn't on your `PATH`; in a terminal it offers to run this for
+you once (`--yes` accepts without asking).
+
+It writes `<global-dir>/env` (and `env.fish`), which adds the folder
+to `PATH`, and a section that loads it into your shell config:
+
+| Shell         | File                                                                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| zsh           | `$ZDOTDIR/.zshrc` or `~/.zshrc`                                                                                                                                          |
+| bash          | each of `~/.bash_profile`, `~/.bash_login`, `~/.bashrc` that exists, and `~/.profile` when there's none (on macOS: when there's no `~/.bash_profile` or `~/.bash_login`) |
+| sh, dash, ksh | `$ENV` or `~/.profile`                                                                                                                                                   |
+| fish          | `~/.config/fish/conf.d/vlt.fish` (`$XDG_CONFIG_HOME` when set)                                                                                                           |
+
+<Code
+  code={`# vlt
+if [ -f "$HOME/.local/share/vlt/global/env" ]; then . "$HOME/.local/share/vlt/global/env"; fi
+# vlt end`}
+  title="~/.zshrc"
+  lang="bash"
+/>
+
+- Asks first, unless `--yes` (required without a terminal).
+- Backs files up to `<global-dir>/backups`.
+- Running it again changes nothing. If the folder changes, only `env`
+  is rewritten.
+- Already in your `PATH`: nothing changes.
+- A different `# vlt` section is replaced.
+- A symlinked file (dotfile managers) is followed: its target is
+  edited and the link is kept.
+- `--global-bin-dir=<path>` picks the folder.
+- `VLT_NO_MODIFY_PATH=1` (any value but `0`), or `--no-modify-path`,
+  turns this and the install offer off; the line to add is printed
+  instead.
+- Other shells and Windows aren't supported yet: it prints the line to
+  add.
+
+Open a new terminal afterwards, or run the `source` line it prints.
 
 ## See also
 
