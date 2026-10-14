@@ -5,6 +5,11 @@
       "title": "vlt registry",
       "description": "Move a repository, its CI and its coding agents onto a vlt.io registry.",
       "skills": ["vlt-registry-migration"]
+    },
+    {
+      "title": "vlt client",
+      "description": "Query, filter and security-audit a project's dependencies with the vlt CLI.",
+      "skills": ["dss-query"]
     }
   ]
 }
