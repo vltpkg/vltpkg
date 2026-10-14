@@ -1334,19 +1334,35 @@ t.test('globalBinsLines', async t => {
   })
 
   t.test('no vlt setup --path', async t => {
-    for (const [shell, platform] of [
-      ['nu', 'linux'],
-      ['bash', 'win32'],
-    ] as const) {
-      t.match(
-        globalBinsLines(g({ conflicts: [] }), {
-          ...o,
-          shell,
-          platform,
-        })[3],
-        /^ {3}Set --global-bin-dir to a folder on your PATH, or /,
-        `${shell} ${platform}`,
-      )
-    }
+    t.match(
+      globalBinsLines(g({ conflicts: [] }), { ...o, shell: 'nu' })[3],
+      /^ {3}Set --global-bin-dir to a folder on your PATH, or /,
+    )
+  })
+
+  t.test('win32: vlt setup --path', async t => {
+    const w = {
+      home: 'C:\\Users\\me',
+      platform: 'win32',
+      env: {},
+    } as const
+    const binDir = 'C:\\Users\\me\\AppData\\Local\\vlt\\bin'
+    t.strictSame(
+      globalBinsLines(g({ binDir, conflicts: [] }), {
+        ...w,
+        shell: 'cmd',
+      }).slice(-2),
+      [
+        '   Run `vlt setup --path` to add it, or run:',
+        '     set "PATH=%PATH%;%USERPROFILE%\\AppData\\Local\\vlt\\bin"',
+      ],
+    )
+    t.equal(
+      globalBinsLines(g({ binDir, conflicts: [] }), {
+        ...w,
+        shell: 'pwsh',
+      }).at(-2),
+      '   Run `vlt setup --path` to add it, or add this line to $PROFILE:',
+    )
   })
 })

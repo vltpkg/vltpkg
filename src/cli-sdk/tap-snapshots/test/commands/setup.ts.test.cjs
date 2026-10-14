@@ -17,7 +17,7 @@ Configure the registry aliases for your vlt.io account so that \`vlt install\` a
 
 Sign up or log in at https://www.vlt.io first. The wizard authenticates against your account, stores the token for both the \`npm\` and \`main\` registries, and writes those aliases (and any additional aliases you add) to your user \`vlt.json\`.
 
-With \`--path\`, add the global bin folder (\`--global-bin-dir\`) to your \`PATH\` instead: writes \`<global-dir>/env\` and a marked section that loads it into your shell config.
+With \`--path\`, add the global bin folder (\`--global-bin-dir\`) to your \`PATH\` instead: writes \`<global-dir>/env\` and a marked section that loads it into your shell config. On Windows it adds it to your user \`Path\` (\`HKCU\\\\Environment\`).
 
 ## Options
 
@@ -47,7 +47,7 @@ Skip interactive prompts (requires <account> and does not open a browser for aut
 
 ### path
 
-Add the global bin folder to your PATH via your shell config.
+Add the global bin folder to your PATH via your shell config (user Path on Windows).
 
 \`\`\`
 --path

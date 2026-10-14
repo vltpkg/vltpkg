@@ -37,7 +37,12 @@ import {
   rcList,
   sourceCommand,
 } from '../../src/shell-setup/index.ts'
-import type { PathSetupOptions } from '../../src/shell-setup/index.ts'
+import type {
+  PathSetupFile,
+  PathSetupOptions,
+  PathSetupPlan,
+} from '../../src/shell-setup/index.ts'
+import type { WindowsPathChange } from '../../src/shell-setup/windows.ts'
 
 const posix = process.platform !== 'win32'
 
@@ -74,14 +79,59 @@ const opts = (
 
 const read = (f: string) => readFileSync(f, 'utf8')
 
+const change = (
+  o: Partial<WindowsPathChange> = {},
+): WindowsPathChange => ({
+  key: 'HKCU\\Environment',
+  dir: 'C:\\x\\bin',
+  action: 'prepend',
+  previous: 'C:\\a',
+  data: 'C:\\x\\bin;C:\\a',
+  ...o,
+})
+
+const regFile: PathSetupFile = {
+  file: 'HKCU\\Environment',
+  kind: 'registry',
+  action: 'prepend',
+}
+
+// never spawns reg
+const winMocks = async (
+  o: { plan?: WindowsPathChange | Error; applyError?: Error } = {},
+) => {
+  const calls = {
+    plan: [] as unknown[][],
+    apply: [] as WindowsPathChange[],
+    applyOpts: [] as unknown[],
+  }
+  const mocks = {
+    '../../src/shell-setup/windows.ts': {
+      ...(await import('../../src/shell-setup/windows.ts')),
+      planWindowsPath: async (...a: unknown[]) => {
+        calls.plan.push(a)
+        if (o.plan instanceof Error) throw o.plan
+        return o.plan ?? change()
+      },
+      applyWindowsPath: async (c: WindowsPathChange, ao: unknown) => {
+        calls.apply.push(c)
+        calls.applyOpts.push(ao)
+        if (o.applyError) throw o.applyError
+      },
+    },
+  }
+  return { calls, mocks }
+}
+
 t.test('canSetupPath', async t => {
   for (const shell of ['bash', 'zsh', 'fish', 'sh'] as const) {
     t.equal(canSetupPath(shell, 'linux'), true, shell)
     t.equal(canSetupPath(shell, 'darwin'), true, shell)
-    t.equal(canSetupPath(shell, 'win32'), false, shell)
+    t.equal(canSetupPath(shell, 'win32'), true, shell)
   }
   for (const shell of ['nu', 'unknown', 'pwsh', 'cmd'] as const) {
     t.equal(canSetupPath(shell, 'linux'), false, shell)
+    t.equal(canSetupPath(shell, 'win32'), true, `${shell} win32`)
   }
   t.intercept(process, 'platform', { value: 'linux' })
   t.equal(canSetupPath('zsh'), true, 'default platform')
@@ -102,16 +152,6 @@ t.test('planPathSetup unsupported', async t => {
   await t.rejects(planPathSetup({ ...o, shell: 'unknown' }), {
     message: `vlt setup --path doesn't support your shell yet. Add it to your PATH yourself:\n  export PATH="/opt/b:$PATH"`,
   })
-  await t.rejects(
-    planPathSetup({ ...o, shell: 'bash', platform: 'win32' }),
-    { message: /^vlt setup --path doesn't support Windows yet/ },
-  )
-  t.intercept(process, 'platform', { value: 'win32' })
-  await t.rejects(
-    planPathSetup({ ...o, shell: 'zsh', platform: undefined }),
-    { message: /doesn't support Windows/ },
-    'default platform',
-  )
 })
 
 t.test('zsh: plan, apply, again, new dir', async t => {
@@ -351,21 +391,28 @@ t.test('rcList, sourceCommand, pathSetupLines', async t => {
   )
   const o = { home: '/home/me', platform: 'linux' } as const
   const g = '/home/me/g'
-  t.equal(sourceCommand('sh', g, o), `. ${posixPath(envFile(g), o)}`)
+  const b = '/home/me/b'
+  t.equal(
+    sourceCommand('sh', g, b, o),
+    `. ${posixPath(envFile(g), o)}`,
+  )
   for (const shell of ['bash', 'zsh'] as const) {
     t.equal(
-      sourceCommand(shell, g, o),
+      sourceCommand(shell, g, b, o),
       `source ${posixPath(envFile(g), o)}`,
     )
   }
   t.equal(
-    sourceCommand('fish', g, o),
+    sourceCommand('fish', g, b, o),
     `source ${fishPath(envFishFile(g), o)}`,
   )
-  t.match(sourceCommand('zsh', g), /^source "/)
   if (posix) {
-    t.equal(sourceCommand('sh', g, o), '. "$HOME/g/env"')
+    t.equal(sourceCommand('sh', g, b, o), '. "$HOME/g/env"')
   }
+  t.test('default options', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.match(sourceCommand('zsh', g, b), /^source "/)
+  })
 
   const r = {
     dir: '/home/me/b',
@@ -493,7 +540,7 @@ t.test('offerPathSetup', async t => {
       gb: g({ binDir: s.bin }),
       zshrc: resolve(s.home, '.zshrc'),
       rcs: prettyPath(resolve(s.home, '.zshrc'), s.home),
-      source: sourceCommand('zsh', s.globalDir, base),
+      source: sourceCommand('zsh', s.globalDir, s.bin, base),
     }
   }
 
@@ -556,15 +603,6 @@ t.test('offerPathSetup', async t => {
           mod.offerPathSetup(f.gb, {
             ...f.base,
             env: { SHELL: '/usr/bin/nu' },
-          }),
-      ],
-      [
-        'win32',
-        f =>
-          mod.offerPathSetup(f.gb, {
-            ...f.base,
-            env: { SHELL: '/bin/bash' },
-            platform: 'win32',
           }),
       ],
     ]
@@ -699,5 +737,242 @@ t.test('offerPathSetup', async t => {
       '\n',
       '⚠️  Could not add it to your PATH: boom\n',
     ])
+  })
+
+  t.test('win32', async t => {
+    const winBase = (f: ReturnType<typeof fixture>) =>
+      ({ ...f.base, env: {}, platform: 'win32' }) as const
+
+    t.test('added', async t => {
+      const { calls, mocks } = await winMocks()
+      const { mod, asked } = await load(t, 'y', mocks)
+      const f = fixture(t)
+      const base = winBase(f)
+      await mod.offerPathSetup(f.gb, base)
+      t.strictSame(asked, [
+        'Add it to your Windows user environment now? (Y/n) ',
+      ])
+      t.equal(calls.plan.length, 2, 'planned again after asking')
+      t.strictSame(calls.apply, [change()])
+      const source = sourceCommand('cmd', f.globalDir, f.bin, base)
+      t.match(source, /^set "PATH=%PATH%;/)
+      t.strictSame(f.written, [
+        '\n',
+        `✅ Added ${prettyPath(f.bin, f.home)} to your PATH in your Windows user environment\n`,
+        `   Open a new terminal (restart editors like VS Code), or run: ${source}\n`,
+        `   Backups in ${prettyPath(resolve(f.globalDir, 'backups'), f.home)}\n`,
+      ])
+      t.notOk(existsSync(f.zshrc), 'no rc file')
+      t.notOk(existsSync(envFile(f.globalDir)), 'no env file')
+    })
+
+    t.test('already added', async t => {
+      const { calls, mocks } = await winMocks({
+        plan: change({ action: 'unchanged' }),
+      })
+      const { mod, asked } = await load(t, 'y', mocks)
+      const f = fixture(t)
+      const base = winBase(f)
+      await mod.offerPathSetup(f.gb, base)
+      t.strictSame(f.written, [
+        '\n',
+        `ℹ️  It's already added in your Windows user environment: open a new terminal, or run: ${sourceCommand('cmd', f.globalDir, f.bin, base)}\n`,
+      ])
+      t.strictSame(asked, [])
+      t.strictSame(calls.apply, [])
+    })
+
+    t.test('plan fails', async t => {
+      const { calls, mocks } = await winMocks({
+        plan: new Error('denied'),
+      })
+      const { mod, asked } = await load(t, 'y', mocks)
+      const f = fixture(t)
+      await mod.offerPathSetup(f.gb, winBase(f))
+      t.strictSame(f.written, [])
+      t.equal(f.before(), 0)
+      t.strictSame(asked, [])
+      t.strictSame(calls.apply, [])
+    })
+  })
+})
+
+t.test('win32', async t => {
+  t.test('planPathSetup', async t => {
+    const { calls, mocks } = await winMocks()
+    const mod = await t.mockImport<
+      typeof import('../../src/shell-setup/index.ts')
+    >('../../src/shell-setup/index.ts', mocks)
+    const { globalDir, bin, o } = opts(t, 'bash', {}, 'win32')
+    const env = { USERPROFILE: 'C:\\Users\\me' }
+    const want = {
+      globalDir,
+      dir: bin,
+      shell: 'bash',
+      changes: [],
+      registry: change(),
+      env,
+    }
+    t.strictSame(await mod.planPathSetup({ ...o, env }), want)
+    t.strictSame(calls.plan, [[bin, { env }]])
+    for (const shell of ['nu', 'unknown'] as const) {
+      t.strictSame(
+        await mod.planPathSetup({ ...o, env, shell }),
+        { ...want, shell },
+        `${shell}: user Path too`,
+      )
+    }
+    t.intercept(process, 'platform', { value: 'win32' })
+    t.strictSame(
+      await mod.planPathSetup({ ...o, env, platform: undefined }),
+      want,
+      'default platform',
+    )
+  })
+
+  t.test('planPathSetup rejects', async t => {
+    const { mocks } = await winMocks({ plan: new Error('denied') })
+    const mod = await t.mockImport<
+      typeof import('../../src/shell-setup/index.ts')
+    >('../../src/shell-setup/index.ts', mocks)
+    const { o } = opts(t, 'cmd', {}, 'win32')
+    await t.rejects(mod.planPathSetup(o), { message: 'denied' })
+  })
+
+  t.test('pathSetupChanged, pathSetupFiles, rcList', async t => {
+    const plan = (c: WindowsPathChange): PathSetupPlan => ({
+      globalDir: '/g',
+      dir: c.dir,
+      shell: 'cmd',
+      changes: [],
+      registry: c,
+    })
+    t.equal(
+      pathSetupChanged(plan(change({ action: 'unchanged' }))),
+      false,
+    )
+    t.equal(pathSetupChanged(plan(change())), true)
+    t.equal(
+      pathSetupChanged(plan(change({ action: 'create' }))),
+      true,
+    )
+    t.strictSame(pathSetupFiles(plan(change())), [regFile])
+    t.equal(rcList([regFile]), 'your Windows user environment')
+    t.equal(
+      rcList(
+        [
+          { file: '/home/me/.bashrc', kind: 'rc', action: 'append' },
+          { file: '/g/env', kind: 'env', action: 'create' },
+          regFile,
+        ],
+        '/home/me',
+      ),
+      '~/.bashrc, your Windows user environment',
+    )
+  })
+
+  t.test('applyPathSetup', async t => {
+    const { calls, mocks } = await winMocks()
+    const mod = await t.mockImport<
+      typeof import('../../src/shell-setup/index.ts')
+    >('../../src/shell-setup/index.ts', mocks)
+    const { home, globalDir } = setup(t)
+    const plan = (c: WindowsPathChange): PathSetupPlan => ({
+      globalDir,
+      dir: c.dir,
+      shell: 'cmd',
+      changes: [],
+      registry: c,
+    })
+    const env = { SystemRoot: 'D:\\Win' }
+    const r = await mod.applyPathSetup({ ...plan(change()), env })
+    t.strictSame(calls.apply, [change()])
+    t.strictSame(calls.applyOpts, [{ env }], 'env the plan read with')
+    t.strictSame(r, {
+      dir: 'C:\\x\\bin',
+      shell: 'cmd',
+      files: [regFile],
+      backups: r.backups,
+    })
+    t.equal(r.backups.length, 1)
+    const [b = ''] = r.backups
+    t.equal(dirname(b), resolve(globalDir, 'backups'))
+    t.match(b, /[\\/]Path\.\d{4}-\d\d-\d\dT\d\d-\d\d-\d\d-\d+Z\.bak$/)
+    t.equal(read(b), 'C:\\a')
+    t.notOk(existsSync(envFile(globalDir)), 'no env file')
+    t.strictSame(readdirSync(home), [], 'no rc files')
+
+    calls.apply.length = 0
+    const created = change({
+      action: 'create',
+      previous: undefined,
+      data: 'C:\\x\\bin',
+    })
+    t.strictSame(
+      (await mod.applyPathSetup(plan(created))).backups,
+      [],
+    )
+    t.strictSame(calls.apply, [created])
+
+    calls.apply.length = 0
+    await mod.applyPathSetup(plan(change({ action: 'unchanged' })))
+    t.strictSame(calls.apply, [])
+  })
+
+  t.test('applyPathSetup rejects, backup kept', async t => {
+    const { mocks } = await winMocks({
+      applyError: new Error('denied'),
+    })
+    const mod = await t.mockImport<
+      typeof import('../../src/shell-setup/index.ts')
+    >('../../src/shell-setup/index.ts', mocks)
+    const { globalDir } = setup(t)
+    await t.rejects(
+      mod.applyPathSetup({
+        globalDir,
+        dir: 'C:\\x\\bin',
+        shell: 'cmd',
+        changes: [],
+        registry: change(),
+      }),
+      { message: 'denied' },
+    )
+    const backups = resolve(globalDir, 'backups')
+    const [b = ''] = readdirSync(backups)
+    t.equal(read(resolve(backups, b)), 'C:\\a')
+  })
+
+  t.test('sourceCommand, pathSetupLines', async t => {
+    const o = { home: 'C:\\Users\\me', platform: 'win32' } as const
+    const dir = 'C:\\x\\bin'
+    t.equal(
+      sourceCommand('cmd', 'C:\\g', dir, o),
+      'set "PATH=%PATH%;C:\\x\\bin"',
+    )
+    t.equal(
+      sourceCommand('pwsh', 'C:\\g', dir, o),
+      '$env:PATH += ";C:\\x\\bin"',
+    )
+    t.equal(
+      sourceCommand('bash', 'C:\\g', 'C:\\Users\\me\\.vlt\\bin', o),
+      'export PATH="$HOME/.vlt/bin:$PATH"',
+    )
+    t.strictSame(
+      pathSetupLines(
+        { dir, shell: 'cmd', files: [regFile], backups: [] },
+        'set x',
+        o.home,
+      ),
+      [
+        '✅ Added C:\\x\\bin to your PATH in your Windows user environment',
+        '   Open a new terminal (restart editors like VS Code), or run: set x',
+      ],
+    )
+    t.intercept(process, 'platform', { value: 'win32' })
+    t.equal(
+      sourceCommand('cmd', 'C:\\g', dir, { home: o.home }),
+      'set "PATH=%PATH%;C:\\x\\bin"',
+      'default platform',
+    )
   })
 })
