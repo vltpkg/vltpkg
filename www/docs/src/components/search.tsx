@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/dialog'
 import { useSidebar } from '@/components/ui/sidebar'
 
-const client = fetchClient({ api: '/api/search' })
+const client = fetchClient({ api: '/api/v1/search' })
 const icons = {
   page: FileTextIcon,
   heading: HashIcon,

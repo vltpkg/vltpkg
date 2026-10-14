@@ -68,14 +68,14 @@ void test('/openapi.json describes endpoints that exist', async () => {
   for (const path of Object.keys(spec.paths)) {
     const res = await get(
       path.replace('{path}', 'client/auth') +
-        (path === '/api/search' ? '?query=install' : ''),
+        (path.endsWith('/search') ? '?query=install' : ''),
     )
     assert.equal(res.status, 200, path)
   }
 })
 
-void test('/api/search returns json results', async () => {
-  const res = await get('/api/search?query=install')
+void test('/api/v1/search returns json results', async () => {
+  const res = await get('/api/v1/search?query=install')
   assert.match(type(res), /^application\/json/)
   const results = (await res.json()) as {
     url: string
@@ -122,4 +122,14 @@ void test('/ has Organization and SoftwareApplication JSON-LD', async () => {
     'SoftwareApplication',
   ])
   assert.ok(ld['@graph'][0]?.contactPoint?.email)
+})
+
+void test('/api/search is a deprecated alias of /api/v1/search', async () => {
+  const res = await get('/api/search?query=install')
+  assert.equal(res.status, 200)
+  assert.match(res.headers.get('deprecation') ?? '', /^@\d+$/)
+  assert.match(
+    res.headers.get('link') ?? '',
+    /<\/api\/v1\/search>; rel="successor-version"/,
+  )
 })

@@ -4,11 +4,20 @@
     "title": "vlt docs",
     "version": "1.0.0",
     "summary": "Read-only HTTP API of the vlt documentation site.",
-    "description": "Search the vlt docs and fetch pages as Markdown. Every endpoint is public and needs no authentication. This describes the documentation site only, not the vlt.io registry (which speaks the npm registry protocol at https://registry.vlt.io)."
+    "description": "Search the vlt docs and fetch pages as Markdown. Every endpoint is public and needs no authentication. This describes the documentation site only, not the vlt.io registry (which speaks the npm registry protocol at https://registry.vlt.io). Versioned in the URL path (`/api/v1/`). Breaking changes ship under a new version. A version being retired answers with a `Deprecation` header (RFC 9745) and a `Link` to its successor, then a `Sunset` header (RFC 8594) with the removal date before it is removed.",
+    "license": {
+      "name": "BSD-2-Clause-Patent",
+      "identifier": "BSD-2-Clause-Patent"
+    }
   },
-  "servers": [{ "url": "/" }],
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [],
   "paths": {
-    "/api/search": {
+    "/api/v1/search": {
       "get": {
         "operationId": "searchDocs",
         "summary": "Full-text search over the docs",
@@ -17,13 +26,17 @@
             "name": "query",
             "in": "query",
             "description": "Search terms. An empty or missing query returns an empty list.",
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "tag",
             "in": "query",
             "description": "Comma-separated sections to search within.",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "example": "registry,client"
           }
         ],
@@ -44,6 +57,63 @@
         }
       }
     },
+    "/api/search": {
+      "get": {
+        "operationId": "searchDocsUnversioned",
+        "summary": "Unversioned alias of /api/v1/search",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "description": "Search terms. An empty or missing query returns an empty list.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "Comma-separated sections to search within.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "registry,client"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matches, each page followed by the heading and text hits within it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchResult"
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Deprecation": {
+                "description": "RFC 9745 deprecation date.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "@1791936000"
+              },
+              "Link": {
+                "description": "The successor version.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "</api/v1/search>; rel=\"successor-version\""
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
     "/llms.txt": {
       "get": {
         "operationId": "getIndex",
@@ -52,7 +122,11 @@
           "200": {
             "description": "The llms.txt index.",
             "content": {
-              "text/plain": { "schema": { "type": "string" } }
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
@@ -66,7 +140,11 @@
           "200": {
             "description": "The docs as one Markdown document.",
             "content": {
-              "text/plain": { "schema": { "type": "string" } }
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
@@ -83,7 +161,9 @@
             "in": "path",
             "required": true,
             "description": "The page's path as listed in /llms.txt; it may contain slashes.",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "example": "client/auth"
           }
         ],
@@ -91,13 +171,21 @@
           "200": {
             "description": "The page.",
             "content": {
-              "text/markdown": { "schema": { "type": "string" } }
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "404": {
             "description": "No such page. The body links to /llms.txt and the sitemap.",
             "content": {
-              "text/markdown": { "schema": { "type": "string" } }
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           }
         }
@@ -110,19 +198,25 @@
         "type": "object",
         "required": ["id", "url", "type", "content"],
         "properties": {
-          "id": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
           "url": {
             "type": "string",
             "description": "Site-relative URL of the page, with a #fragment for heading and text hits."
           },
-          "type": { "enum": ["page", "heading", "text"] },
+          "type": {
+            "enum": ["page", "heading", "text"]
+          },
           "content": {
             "type": "string",
             "description": "Markdown, with <mark> around the matched terms."
           },
           "breadcrumbs": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -135,9 +229,16 @@
             "type": "object",
             "required": ["code", "message", "hint"],
             "properties": {
-              "code": { "type": "string", "example": "not_found" },
-              "message": { "type": "string" },
-              "hint": { "type": "string" }
+              "code": {
+                "type": "string",
+                "example": "not_found"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
             }
           }
         }
