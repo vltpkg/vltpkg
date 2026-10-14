@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { AgentPrompt } from '@/components/agent-prompt'
 import { Book } from '@/components/book'
 import { dssQuerySkill, registryMigrationSkill } from '@/lib/skills'
+import { siteUrl } from '@/lib/site-url'
 
 const lede =
   'Most registries treat your packages as files to store. vlt treats them as a dependency graph to understand.'
@@ -36,6 +37,53 @@ export const metadata: Metadata = {
 }
 
 const docs = 'https://docs.vlt.sh'
+
+// who publishes vlt and what it is, for agents and search engines (schema.org JSON-LD).
+// sameAs mirrors the sidebar's social links; the client is free and BSD-2-Clause-Patent licensed
+const org = {
+  '@type': 'Organization',
+  '@id': 'https://www.vlt.io/#organization',
+  name: 'vlt',
+  legalName: 'vlt technology inc.',
+  url: 'https://www.vlt.io',
+  logo: new URL('/icon1.png', siteUrl).href,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: 'support@vlt.sh',
+  },
+  sameAs: [
+    'https://github.com/vltpkg',
+    'https://www.linkedin.com/company/vltpkg/',
+    'https://x.com/vltpkg',
+    'https://bsky.app/profile/vlt.sh',
+  ],
+}
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    org,
+    {
+      '@type': 'WebSite',
+      name: 'vlt docs',
+      url: siteUrl.href,
+      description: lede,
+      publisher: { '@id': org['@id'] },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'vlt',
+      description:
+        'An npm-compatible package manager for JavaScript, and the client for vlt.io registries.',
+      applicationCategory: 'DeveloperApplication',
+      url: siteUrl.href,
+      downloadUrl: 'https://www.npmjs.com/package/vlt',
+      license: 'https://opensource.org/license/bsd-2-clause-patent',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      publisher: { '@id': org['@id'] },
+    },
+  ],
+}
 
 const prompt = `Help me use vlt in this project. Start by reading ${docs}/llms.txt, which lists every page of the vlt docs. Any page is available as Markdown by adding .md to its URL (for example ${docs}/client/auth.md), and ${docs}/llms-full.txt has the whole site in one file.
 
@@ -263,6 +311,12 @@ const CardGrid = ({ cards }: { cards: Card[] }) => (
 
 const Home = () => (
   <div className="typeset-docs mx-auto w-full max-w-6xl">
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+      }}
+    />
     <section className="max-w-3xl">
       <h1 className="text-5xl font-semibold tracking-tighter text-balance sm:text-6xl sm:leading-[1.05]">
         Install, publish, and query with vlt

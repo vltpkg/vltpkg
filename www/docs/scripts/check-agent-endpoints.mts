@@ -68,14 +68,14 @@ void test('/openapi.json describes endpoints that exist', async () => {
   for (const path of Object.keys(spec.paths)) {
     const res = await get(
       path.replace('{path}', 'client/auth') +
-        (path === '/api/search' ? '?query=install' : ''),
+        (path.endsWith('/search') ? '?query=install' : ''),
     )
     assert.equal(res.status, 200, path)
   }
 })
 
-void test('/api/search returns json results', async () => {
-  const res = await get('/api/search?query=install')
+void test('/api/v1/search returns json results', async () => {
+  const res = await get('/api/v1/search?query=install')
   assert.match(type(res), /^application\/json/)
   const results = (await res.json()) as {
     url: string
@@ -83,6 +83,20 @@ void test('/api/search returns json results', async () => {
   }[]
   assert.ok(results.length > 0)
   assert.equal(results[0]?.type, 'page')
+
+  // no query is an empty list, not an error
+  const empty = await get('/api/v1/search')
+  assert.equal(empty.status, 200)
+  assert.deepEqual(await empty.json(), [])
+
+  // `tag` narrows to one section, which the unfiltered results span
+  assert.ok(results.some(r => !r.url.startsWith('/registry')))
+  const tagged = (await (
+    await get('/api/v1/search?query=install&tag=registry')
+  ).json()) as { url: string }[]
+  assert.ok(tagged.length > 0)
+  for (const { url } of tagged)
+    assert.match(url, /^\/registry(\/|#|$)/)
 })
 
 void test('unknown /api paths are json 404s', async () => {
@@ -101,4 +115,42 @@ void test('unknown /api paths are json 404s', async () => {
     assert.equal(error.code, 'not_found')
     assert.ok(error.message && error.hint)
   }
+})
+
+void test('/ has Organization and SoftwareApplication JSON-LD', async () => {
+  const html = await (await get('/', 'text/html')).text()
+  const script =
+    /<script type="application\/ld\+json">([^<]*)<\/script>/.exec(
+      html,
+    )?.[1]
+  assert.ok(script, 'json-ld script on the homepage')
+  const ld = JSON.parse(script) as {
+    '@context': string
+    '@graph': { '@type': string; contactPoint?: { email?: string } }[]
+  }
+  assert.equal(ld['@context'], 'https://schema.org')
+  const types = ld['@graph'].map(node => node['@type'])
+  assert.deepEqual(types, [
+    'Organization',
+    'WebSite',
+    'SoftwareApplication',
+  ])
+  assert.ok(ld['@graph'][0]?.contactPoint?.email)
+})
+
+void test('/api/search is a deprecated alias of /api/v1/search', async () => {
+  const res = await get('/api/search?query=install')
+  assert.equal(res.status, 200)
+  assert.match(res.headers.get('deprecation') ?? '', /^@\d+$/)
+  assert.match(
+    res.headers.get('link') ?? '',
+    /<\/api\/v1\/search>; rel="successor-version"/,
+  )
+})
+
+void test('/llms.txt links the OpenAPI spec', async () => {
+  assert.match(
+    await (await get('/llms.txt')).text(),
+    /\/openapi\.json\)/,
+  )
 })
