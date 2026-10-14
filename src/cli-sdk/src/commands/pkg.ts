@@ -9,6 +9,7 @@ import { SecurityArchive } from '@vltpkg/security-archive'
 import { views as initViews } from './init.ts'
 import { commandUsage } from '../config/usage.ts'
 import { createHostContextsMap } from '../query-host-contexts.ts'
+import { sortScopeLocations } from '../sort-scope-locations.ts'
 import { minimatch } from 'minimatch'
 import type { Graph } from '@vltpkg/graph'
 import type { PackageJson } from '@vltpkg/package-json'
@@ -158,6 +159,7 @@ export const command: CommandFn = async conf => {
       signal: new AbortController().signal,
     })
 
+    const found: string[] = []
     for (const node of resultNodes) {
       const location = node.location
       assert(
@@ -167,9 +169,10 @@ export const command: CommandFn = async conf => {
         }),
       )
       if (node.id !== VIRTUAL_ROOT_ID) {
-        locations.push(resolve(node.projectRoot, location))
+        found.push(resolve(node.projectRoot, location))
       }
     }
+    locations.push(...sortScopeLocations(found, options.monorepo))
   } else if (paths?.length || groups?.length || recursive) {
     for (const workspace of options.monorepo ?? []) {
       if (paths?.length) {

@@ -6,6 +6,7 @@ import * as Command from '../../src/commands/pkg.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import { setupEnv } from '../fixtures/util.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { Monorepo } from '@vltpkg/workspaces'
 
 const kNewline = Symbol.for('newline')
 const kIndent = Symbol.for('indent')
@@ -745,6 +746,90 @@ t.test('scope functionality', async t => {
       .description,
     'should remove description from workspace b via scope',
   )
+})
+
+t.test('scope results in dependency order', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({
+      workspaces: { packages: ['./packages/*'] },
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'workspace-a',
+          version: '1.0.0',
+          dependencies: { 'workspace-b': 'workspace:*' },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'workspace-b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  t.chdir(dir)
+
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/pkg.ts')
+  >('../../src/commands/pkg.ts', {
+    '@vltpkg/graph': {
+      actual: {
+        load: () => ({ nodes: new Map() }),
+      },
+      install: () => {},
+      uninstall: () => {},
+      reify: {},
+      ideal: {},
+      asDependency: () => {},
+      createVirtualRoot: () => {},
+      GraphModifier: {
+        maybeLoad: () => undefined,
+      },
+      VIRTUAL_ROOT_ID: joinDepIDTuple(['file', 'virtual-root']),
+    },
+    '@vltpkg/query': {
+      Query: class {
+        static hasSecuritySelectors() {
+          return false
+        }
+        search = async () => ({
+          nodes: ['a', 'b'].map(x => ({
+            id: `workspace-${x}-id`,
+            location: `packages/${x}`,
+            projectRoot: dir,
+          })),
+        })
+      },
+    },
+    '../../src/query-host-contexts.ts': {
+      createHostContextsMap: async () => new Map(),
+    },
+  })
+
+  const config = makeTestConfig({
+    projectRoot: dir,
+    options: {
+      packageJson: new PackageJson(),
+      projectRoot: dir,
+      monorepo: new Monorepo(dir, {
+        config: { packages: ['./packages/*'] },
+        load: {},
+      }),
+    },
+    values: { scope: ':workspace' },
+    positionals: ['get', 'name'],
+  })
+
+  t.strictSame(await Command.command(config), [
+    'workspace-b',
+    'workspace-a',
+  ])
 })
 
 t.test('scope with no matching workspaces', async t => {
