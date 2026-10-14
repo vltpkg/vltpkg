@@ -8,6 +8,7 @@ import {
   parseGlobalRemoveArgs,
   removeGlobalPackages,
 } from '../global.ts'
+import { resolveGlobalBinDir } from '../global-bin-dir.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
@@ -66,6 +67,11 @@ export const command: CommandFn<UninstallResult> = async conf => {
   const { monorepo, scurry } = conf.options
   const global =
     conf.globalRoot ? parseGlobalRemoveArgs(conf) : undefined
+  // only swept, so a bad --global-bin-dir must not block it
+  const binDir =
+    global ?
+      await resolveGlobalBinDir(conf).catch(() => undefined)
+    : undefined
   const { remove } = global ?? parseRemoveArgs(conf, scurry, monorepo)
   /* c8 ignore start */
   const allowScripts =
@@ -81,7 +87,12 @@ export const command: CommandFn<UninstallResult> = async conf => {
     },
     remove,
   )
-  if (global)
-    await removeGlobalPackages(conf.projectRoot, global.dirs)
+  if (global) {
+    await removeGlobalPackages(
+      conf.projectRoot,
+      global.dirs,
+      binDir?.dir ?? conf.globalBinDir,
+    )
+  }
   return { graph }
 }

@@ -23,6 +23,7 @@ const Command = await t.mockImport<
       if (mockError) throw mockError
       return { success: [], failure: [] }
     },
+    actual: { load: () => ({}) },
   },
 })
 
@@ -351,4 +352,103 @@ t.test('command execution', async t => {
   )
 
   t.end()
+})
+
+t.test('--global', async t => {
+  let glog = ''
+  let failResolve = false
+  const binDir = {
+    dir: '/g/bin',
+    source: 'global-dir',
+    inPath: false,
+  }
+  const graph = {}
+  const global = {
+    binDir: '/g/bin',
+    source: 'global-dir' as const,
+    bins: ['a'],
+    conflicts: [],
+    inPath: false,
+    otherDirs: [],
+  }
+  const Cmd = await t.mockImport<
+    typeof import('../../src/commands/build.ts')
+  >('../../src/commands/build.ts', {
+    '@vltpkg/graph': {
+      build: async () => {
+        glog += 'build\n'
+        return { success: [], failure: [] }
+      },
+      actual: {
+        load: (o: {
+          projectRoot: string
+          mainManifest: unknown
+          loadManifests: boolean
+        }) => {
+          glog += `load ${o.projectRoot} ${JSON.stringify(o.mainManifest)} ${o.loadManifests}\n`
+          return graph
+        },
+      },
+    },
+    '../../src/global-bin-dir.ts': {
+      resolveGlobalBinDir: async (
+        _: unknown,
+        o?: { selfUnwritable?: boolean },
+      ) => {
+        glog += `resolve ${!!o?.selfUnwritable}\n`
+        if (failResolve) throw new Error('resolve')
+        return binDir
+      },
+    },
+    '../../src/global.ts': {
+      globalBinsLines: () => [],
+      linkGlobalBins: async (
+        g: unknown,
+        opts: {
+          projectRoot: string
+          force: boolean
+          binDir: unknown
+          fallback: () => Promise<unknown>
+        },
+        importers?: unknown,
+      ) => {
+        glog += `link ${g === graph} ${opts.projectRoot} ${opts.force} ${opts.binDir === binDir} ${importers}\n`
+        await opts.fallback()
+        return global
+      },
+    },
+  })
+  const conf = (globalRoot?: string) =>
+    Object.assign(
+      makeTestConfig({
+        packageJson: { read: () => ({ name: 'vlt-global' }) },
+        force: true,
+      }),
+      { projectRoot: '/g', globalRoot },
+    )
+
+  const res = await Cmd.command(conf('/g'))
+  t.equal(res.global, global)
+  t.equal(
+    glog,
+    'resolve false\nbuild\nload /g {"name":"vlt-global"} true\nlink true /g true true undefined\nresolve true\n',
+  )
+
+  glog = ''
+  failResolve = true
+  await t.rejects(Cmd.command(conf('/g')), { message: 'resolve' })
+  t.equal(glog, 'resolve false\n', 'nothing built')
+  failResolve = false
+
+  glog = ''
+  t.equal((await Cmd.command(conf())).global, undefined)
+  t.equal(glog, 'build\n', 'not global')
+
+  t.test('views', async t => {
+    const result = { success: [], failure: [], global }
+    const human = Command.views.human(result)
+    t.match(human, '🔗 Linked a in /g/bin')
+    t.match(human, '/g/bin is not on your PATH')
+    t.match(Command.views.json(result), { global })
+  })
 })

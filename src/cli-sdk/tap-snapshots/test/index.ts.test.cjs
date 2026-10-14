@@ -78,6 +78,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --git-shallow
     --git-tag-version
     --global
+    --global-bin-dir=<path>
     --global-dir=<path>
     --help
     --identity=<name>
@@ -156,6 +157,7 @@ Unknown config option: asdf
     git-shallow
     git-tag-version
     global
+    global-bin-dir
     global-dir
     help
     identity

@@ -14,9 +14,18 @@ export const globalCommands: ReadonlySet<string> = new Set([
 /** folder holding one workspace per global package */
 export const globalWorkspacesDir = 'packages'
 
-/** where bins of global packages are linked */
+/** fallback dir for bins of global packages */
 export const globalBinDir = (root: string): string =>
   resolve(root, 'bin')
+
+/** same path, case-insensitive on win32 */
+export const samePath = (a: string, b: string): boolean => {
+  const norm = (p: string) => {
+    const r = resolve(p)
+    return process.platform === 'win32' ? r.toLowerCase() : r
+  }
+  return norm(a) === norm(b)
+}
 
 const validName = /^(?:@[a-z0-9][\w.~-]*\/)?[a-z0-9~][\w.~-]*$/i
 

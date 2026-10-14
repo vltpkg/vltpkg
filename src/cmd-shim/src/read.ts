@@ -13,24 +13,28 @@ const extractPath = (path: string, cmdshimContents: string) => {
   }
 }
 
+// win32 cross-drive shims hold an absolute target, no basedir prefix
 const extractPathFromPowershell = (cmdshimContents: string) => {
-  const matches = /"[$]basedir\/([^"]+?)"\s+[$]args/.exec(
-    cmdshimContents,
-  )
+  const matches =
+    /"(?:[$]basedir\/|(?=[a-zA-Z]:[\\/]))([^"]+?)"\s+[$]args/.exec(
+      cmdshimContents,
+    )
   return matches?.[1]?.replace(/\\/g, '/')
 }
 
 const extractPathFromCmd = (cmdshimContents: string) => {
-  const matches = /"%(?:~dp0|dp0%)\\([^"]+?)"\s+%[*]/.exec(
-    cmdshimContents,
-  )
+  const matches =
+    /"(?:%(?:~dp0|dp0%)\\|(?=[a-zA-Z]:[\\/]))([^"]+?)"\s+%[*]/.exec(
+      cmdshimContents,
+    )
   return matches?.[1]?.replace(/\\/g, '/')
 }
 
 const extractPathFromCygwin = (cmdshimContents: string) => {
-  const matches = /"[$]basedir\/([^"]+?)"\s+"[$]@"/.exec(
-    cmdshimContents,
-  )
+  const matches =
+    /"(?:[$]basedir\/|(?=[a-zA-Z]:[\\/]))([^"]+?)"\s+"[$]@"/.exec(
+      cmdshimContents,
+    )
   return matches?.[1]?.replace(/\\/g, '/')
 }
 

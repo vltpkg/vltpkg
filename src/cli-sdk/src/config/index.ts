@@ -446,6 +446,12 @@ export class Config {
   globalRoot?: string
 
   /**
+   * `--global-bin-dir` from cli, env or user config, set with
+   * `globalRoot`.
+   */
+  globalBinDir?: string
+
+  /**
    * `Record<alias, canonical name>` to dereference command aliases.
    */
   commands: Commands
@@ -551,12 +557,23 @@ export class Config {
     if (cmdOrFallback !== 'config') {
       assertSpecAliases(pairsToRecords(p.values))
     }
+    // a project vlt.json global-bin-dir must not reach a nested vlt -g
+    const binDirKey = envKey('global-bin-dir')
+    const keepBinDir =
+      !this.globalRoot && !cliKeys.includes('global-bin-dir')
+    const binDirEnv = process.env[binDirKey]
     this.jack.writeEnv(p)
     // scripts and nested vlt act on their own project
     delete process.env[envKey('global')]
     // but use the same global dir, even from another cwd
     if (this.globalRoot) {
       process.env[envKey('global-dir')] = this.globalRoot
+      if (this.globalBinDir)
+        process.env[binDirKey] = this.globalBinDir
+      else delete process.env[binDirKey]
+    } else if (keepBinDir) {
+      if (binDirEnv === undefined) delete process.env[binDirKey]
+      else process.env[binDirKey] = binDirEnv
     }
     process.env[kParentEnv] = JSON.stringify({
       explicit,
@@ -944,6 +961,7 @@ export class Config {
           cause,
         })
       }
+      this.globalBinDir = this.#globalBinDir(args)
       unload('project')
       this.globalRoot = this.projectRoot = root
     }
@@ -980,6 +998,29 @@ export class Config {
     }
     // normalize separators (`~/g` on win32)
     return resolve(user)
+  }
+
+  // cli > env > user config, like `#globalRoot`
+  #globalBinDir(args: string[]): string | undefined {
+    const { values } = this.jack.parseRaw(args)
+    // empty means unset
+    const dir =
+      values['global-bin-dir'] ||
+      process.env[envKey('global-bin-dir')]
+    if (dir) return resolve(expandHome(dir))
+    const user = this.#defaults()['global-bin-dir']
+    if (typeof user !== 'string' || !user) return
+    const p = expandHome(user)
+    if (!isAbsolute(p)) {
+      throw error(
+        'global-bin-dir in the user config must be absolute',
+        {
+          code: 'ECONFIG',
+          found: p,
+        },
+      )
+    }
+    return resolve(p)
   }
 
   /**
