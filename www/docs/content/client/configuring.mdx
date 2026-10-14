@@ -254,6 +254,20 @@ A leading `~` is the home directory. Relative paths on the command
 line or in `VLT_GLOBAL_DIR` resolve from the current directory; in the
 user config the path must be absolute.
 
+### `--global-bin-dir=<path>`
+
+Folder where bins of global packages are linked. Defaults to the
+folder of the `vlt` found in your `PATH` when it is writable, so bins
+run right away. If it is not writable, `~/.local/bin` is used when it
+is in your `PATH` (not on Windows), otherwise `<global-dir>/bin`. Only
+read from the command line, environment or the user config, never from
+a project `vlt.json`, so set it with
+`vlt config set --config=user global-bin-dir=<path>`.
+
+A leading `~` is the home directory. Relative paths on the command
+line or in `VLT_GLOBAL_BIN_DIR` resolve from the current directory; in
+the user config the path must be absolute.
+
 ### `--store-linker=<auto | hardlink | clone | copy | unpack>`
 
 How packages are placed in `node_modules`. Every linker but `unpack`

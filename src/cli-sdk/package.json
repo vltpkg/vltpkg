@@ -36,6 +36,7 @@
     "@vltpkg/url-open": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
     "@vltpkg/vlx": "workspace:*",
+    "@vltpkg/which": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.6",

@@ -1,13 +1,13 @@
 import { exec, execFG } from '@vltpkg/run'
 import type { PromptFn } from '@vltpkg/vlx'
 import * as vlx from '@vltpkg/vlx'
-import { homedir } from 'node:os'
 import { createInterface } from 'node:readline/promises'
 import { commandUsage } from '../config/usage.ts'
 import type { ExecResult } from '../exec-command.ts'
 import { ExecCommand } from '../exec-command.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { styleTextStdout } from '../output.ts'
+import { prettyPath } from '../shell.ts'
 export { views } from '../exec-command.ts'
 
 export const needsRegistry = true
@@ -56,9 +56,7 @@ export const usage: CommandUsage = () =>
     },
   })
 
-const HOME = homedir()
-export const prettyPath = (path: string) =>
-  path.startsWith(HOME) ? `~${path.substring(HOME.length)}` : path
+export { prettyPath }
 
 export const promptFn: PromptFn = async (
   pkgSpec,

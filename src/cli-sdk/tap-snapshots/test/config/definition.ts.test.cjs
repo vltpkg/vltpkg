@@ -339,10 +339,21 @@ Object {
     "description": String(
       Operate on the global project instead of the current one. Supported by \`install\`, \`uninstall\`, \`list\`, \`query\` and \`build\`.
       
-      Each global package is installed in its own workspace of the project in \`--global-dir\`, and its bins are linked into \`<global-dir>/bin\`. Add that folder to your \`PATH\` to run them.
+      Each global package is installed in its own workspace of the project in \`--global-dir\`, and its bins are linked into \`--global-bin-dir\`.
     ),
     "short": "g",
     "type": "boolean",
+  },
+  "global-bin-dir": Object {
+    "description": String(
+      Folder where bins of global packages are linked.
+      
+      Defaults to the folder of the \`vlt\` found in your \`PATH\` when it is writable, so bins run right away. If it is not writable, \`~/.local/bin\` is used when it is in your \`PATH\` (not on Windows). Otherwise \`<global-dir>/bin\`.
+      
+      Only read from the command line, environment or the user config, never from a project \`vlt.json\`. A leading \`~\` is the home directory. Must be absolute in the user config.
+    ),
+    "hint": "path",
+    "type": "string",
   },
   "global-dir": Object {
     "description": String(
@@ -739,6 +750,7 @@ Array [
   "--git-shallow",
   "--git-tag-version",
   "--global",
+  "--global-bin-dir=<path>",
   "--global-dir=<path>",
   "--help",
   "--identity=<name>",
@@ -817,6 +829,7 @@ Array [
   "git-shallow",
   "git-tag-version",
   "global",
+  "global-bin-dir",
   "global-dir",
   "help",
   "identity",

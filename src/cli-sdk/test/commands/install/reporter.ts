@@ -299,6 +299,8 @@ t.test('global', async t => {
       buildQueue: [joinDepIDTuple(['registry', '', 'a@1.0.0'])],
       global: {
         binDir: '/g/bin',
+        source: 'global-dir',
+        otherDirs: [],
         bins: ['a', 'b'],
         conflicts: ['c'],
         inPath: false,
@@ -310,8 +312,8 @@ t.test('global', async t => {
   t.match(out, 'vlt query -g :scripts')
   t.match(out, 'vlt build -g')
   t.match(out, 'Linked a, b in /g/bin')
-  t.match(out, 'Skipped c: already linked by another global package')
-  t.match(out, 'Add /g/bin to your PATH')
+  t.match(out, 'Skipped c: already in /g/bin')
+  t.match(out, '/g/bin is not on your PATH, so a, b')
   r.error(new Error('x'))
 
   const r2 = reporter()
@@ -320,6 +322,8 @@ t.test('global', async t => {
     {
       global: {
         binDir: '/g/bin',
+        source: 'global-dir',
+        otherDirs: [],
         bins: [],
         conflicts: [],
         inPath: true,
@@ -345,6 +349,8 @@ t.test('global', async t => {
       {
         global: {
           binDir: '/g/bin',
+          source: 'global-dir',
+          otherDirs: [],
           bins: [],
           conflicts,
           inPath: false,
