@@ -56,3 +56,23 @@ t.strictSame(removed, [
 ])
 
 t.equal(edgesDeleted[0], mockEdge, 'deleted incoming edge')
+
+t.test('keep', async t => {
+  const id = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+  removed.length = 0
+  edgesDeleted.length = 0
+  await Promise.all(
+    deleteNodes(diff, mockRemover, scurry, new Set([id])),
+  )
+  t.strictSame(removed, [], 'store dir kept')
+  t.equal(edgesDeleted[0], mockEdge, 'edge still deleted')
+  await Promise.all(
+    deleteNodes(
+      diff,
+      mockRemover,
+      scurry,
+      new Set([joinDepIDTuple(['registry', '', 'bar@1.0.0'])]),
+    ),
+  )
+  t.equal(removed.length, 1, 'others removed')
+})

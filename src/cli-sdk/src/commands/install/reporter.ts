@@ -12,6 +12,10 @@ import {
 import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
+import {
+  isSelfUpdateArgs,
+  selfUpdateLines,
+} from '../../self-update.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
 import {
   keptLine,
@@ -127,6 +131,7 @@ const App = ({ trailer }: { trailer?: string }) => {
 
 export class InstallReporter extends ViewClass {
   #instance: Instance | null = null
+  #plain = false
 
   start() {
     // Ink measures the terminal on every render, and when stdout has no
@@ -140,11 +145,20 @@ export class InstallReporter extends ViewClass {
       process.stdout.columns ||=
         Number.isInteger(cols) && cols > 0 ? cols : 80
     }
+    // npm may write to the terminal: no live view
+    if (isSelfUpdateArgs(this.config)) {
+      this.#plain = true
+      return
+    }
     this.#instance = render($(App))
   }
 
-  async done(_result: InstallResult, { time }: { time: number }) {
-    let out = `Done in ${time}ms`
+  async done(
+    _result: Partial<InstallResult>,
+    { time }: { time: number },
+  ) {
+    const { self } = _result
+    let out = self && !_result.graph ? '' : `Done in ${time}ms`
 
     // prints a very complete message explaining users the next steps
     // in case there are packages to be built
@@ -154,8 +168,16 @@ export class InstallReporter extends ViewClass {
       out += `🔎 Run \`vlt query${g} :scripts\` to list them\n`
       out += `🔨 Run \`vlt build${g}\` to run all required scripts to build installed packages.\n`
     }
+    if (self) {
+      for (const l of selfUpdateLines(self)) out += out ? `\n${l}` : l
+    }
     if (_result.global) {
-      for (const l of globalBinsLines(_result.global)) out += `\n${l}`
+      // the self-update line says why
+      const bins =
+        self?.status === 'updated' && self.case === 'bootstrap' ?
+          { ..._result.global, notWritable: undefined }
+        : _result.global
+      for (const l of globalBinsLines(bins)) out += `\n${l}`
     }
     const {
       linked = [],
@@ -205,7 +227,10 @@ export class InstallReporter extends ViewClass {
     const a = _result.allowSkills
     if (a?.stored) out += `\n${keptLine(a.stored)}`
     else if (a) out += `\n${savedLine(a.query, 'project')}`
-    this.#instance?.rerender($(App, { trailer: out }))
+    // failed: npm already said why
+    if (!out) return undefined
+    if (this.#plain) this.#instance = render($(Text, null, out))
+    else this.#instance?.rerender($(App, { trailer: out }))
     if (_result.global) {
       await offerPathSetup(_result.global, {
         globalDir: this.config.projectRoot,

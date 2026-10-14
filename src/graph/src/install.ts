@@ -48,6 +48,8 @@ export type InstallOptions = LoadOptions & {
    * none
    */
   skillsDirs?: string[]
+  /** store dirs of these nodes are never removed, eg the running vlt */
+  keepNodes?: ReadonlySet<DepID>
 }
 
 /**

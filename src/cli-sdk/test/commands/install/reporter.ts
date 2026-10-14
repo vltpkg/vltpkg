@@ -7,6 +7,8 @@ import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
 import type { InstallResult } from '../../../src/commands/install.ts'
 import type { LoadedConfig } from '../../../src/config/index.ts'
+import type { GlobalBins } from '../../../src/global.ts'
+import type { SelfUpdate } from '../../../src/self-update.ts'
 import type { OfferOptions } from '../../../src/shell-setup/index.ts'
 
 let out = ''
@@ -216,7 +218,7 @@ t.test('allow-skills saved or kept', async t => {
   const done = async (allowSkills: InstallResult['allowSkills']) => {
     const r = reporter()
     r.start()
-    await r.done({ allowSkills } as InstallResult, { time: 1 })
+    await r.done({ allowSkills }, { time: 1 })
     await setTimeout(50)
     const res = out
     r.error(new Error('x'))
@@ -244,7 +246,7 @@ t.test('allow-skills saved or kept', async t => {
 
 t.test('no start, no persisted config', async t => {
   const r = reporter()
-  t.equal(await r.done({} as InstallResult, { time: 1 }), undefined)
+  t.equal(await r.done({}, { time: 1 }), undefined)
   r.error(new Error('x'))
 })
 
@@ -417,6 +419,133 @@ t.test('PATH offer', async t => {
   r2.error(new Error('x'))
 
   offers.length = 0
-  await reporter().done({} as InstallResult, { time: 1 })
+  await reporter().done({}, { time: 1 })
   t.strictSame(offers, [], 'not global')
+})
+
+t.test('vlt install -g vlt', async t => {
+  const conf = {
+    command: 'install',
+    globalRoot: '/g',
+    projectRoot: '/g',
+    positionals: ['vlt'],
+    get: () => undefined,
+  } as unknown as LoadedConfig
+  const self: SelfUpdate = {
+    case: 'npm',
+    status: 'updated',
+    from: '1.0.0',
+    to: '1.1.0',
+    dir: '/g/bin',
+  }
+  const global: GlobalBins = {
+    binDir: '/g/bin',
+    source: 'global-dir',
+    otherDirs: [],
+    bins: ['vlt'],
+    conflicts: [],
+    inPath: true,
+  }
+  const run = async (result: Partial<InstallResult>) => {
+    const r = new InstallReporter({}, conf)
+    out = ''
+    r.start()
+    await setTimeout(50)
+    t.equal(out, '', 'no live view')
+    t.equal(await r.done(result, { time: 5 }), undefined)
+    await setTimeout(50)
+    // read before unmount: ink in CI writes a newline on unmount
+    const o = out
+    r.error(new Error('x'))
+    return o
+  }
+
+  t.test('self only', async t => {
+    offers.length = 0
+    const o = await run({ self })
+    t.match(o, '⬆️  Updated vlt 1.0.0 → 1.1.0 in /g/bin (via npm)')
+    t.notMatch(o, 'Done in')
+    t.match(
+      await run({ self: { ...self, status: 'up-to-date' } }),
+      '✅ vlt 1.1.0 is already up to date',
+    )
+    t.match(
+      await run({
+        self: { ...self, status: 'newer-running', tag: 'latest' },
+      }),
+      'ℹ️  vlt 1.0.0 is running but "latest" is 1.1.0; run `vlt i -g vlt@latest` to downgrade',
+    )
+    t.equal(
+      await run({ self: { ...self, status: 'failed' } }),
+      '',
+      'npm already said why',
+    )
+    const no = await run({
+      self: {
+        status: 'refused',
+        from: '1.0.0',
+        dir: '/b',
+        message: 'vlt at /b was installed by Homebrew.',
+      },
+    })
+    t.match(no, 'vlt at /b was installed by Homebrew.')
+    t.notMatch(no, 'Done in')
+    t.strictSame(offers, [], 'nothing linked: no PATH offer')
+  })
+
+  t.test('global-project', async t => {
+    const o = await run({
+      graph: {} as InstallResult['graph'],
+      self: { ...self, case: 'global-project' },
+      global,
+    })
+    t.match(
+      o,
+      /Done in 5ms\n⬆️ {2}Updated vlt 1\.0\.0 → 1\.1\.0 in \/g\/bin\n🔗 Linked vlt in \/g\/bin/,
+    )
+    t.notMatch(o, 'via npm')
+  })
+
+  t.test('bootstrap', async t => {
+    const boot: SelfUpdate = {
+      ...self,
+      case: 'bootstrap',
+      notWritable: '/usr/bin',
+    }
+    const result = {
+      graph: {} as InstallResult['graph'],
+      self: boot,
+      global: { ...global, notWritable: '/usr/bin' },
+    }
+    const o = await run(result)
+    t.match(
+      o,
+      'ℹ️  /usr/bin is not writable, so vlt 1.1.0 was installed as a global package.',
+    )
+    t.notMatch(o, 'Using')
+    t.notMatch(o, 'earlier in your PATH')
+    t.match(
+      await run({
+        ...result,
+        self: { ...boot, shadowedBy: '/usr/bin' },
+      }),
+      '⚠️  /usr/bin is earlier in your PATH, so `vlt` still runs vlt 1.0.0.',
+    )
+
+    // linked off PATH: offer after the plain frame
+    offers.length = 0
+    let frame = ''
+    onOffer = o => {
+      frame = out
+      o.beforeOutput?.()
+    }
+    t.teardown(() => {
+      onOffer = () => {}
+    })
+    const off = { ...result.global, inPath: false }
+    await run({ ...result, global: off })
+    t.match(offers, [[off, { globalDir: '/g' }]])
+    t.match(frame, 'was installed as a global package')
+    t.match(frame, '/g/bin is not on your PATH')
+  })
 })

@@ -16,6 +16,9 @@ import type { Command } from '../src/index.ts'
 import type { ViewFn, ViewOptions } from '../src/view.ts'
 import * as view from '../src/view.ts'
 import * as printErr from '../src/print-err.ts'
+import * as globalState from '../src/global-state.ts'
+
+const swept: string[] = []
 
 // make sure these are loaded after the isTTY intercept
 const {
@@ -34,6 +37,11 @@ const {
       },
     }),
     '../src/view.ts': view,
+    '../src/global-state.ts': t.createMock(globalState, {
+      sweepPendingRemove: async (root: string) => {
+        swept.push(root)
+      },
+    }),
   },
 )
 
@@ -565,6 +573,7 @@ t.test('outputCommand', async t => {
 
   t.test('lazy view class success', async t => {
     let startCalled = false
+    const order: string[] = []
 
     class MyView extends view.ViewClass<true> {
       start() {
@@ -574,16 +583,22 @@ t.test('outputCommand', async t => {
 
     const cliCommand: Command<true> = {
       async command() {
+        order.push('command')
         return true
       },
       usage: () => ({ usage: () => 'usage' }) as Jack,
       views: {
-        human: view.lazyView(async () => MyView),
+        human: view.lazyView(async () => {
+          order.push('load')
+          return MyView
+        }),
       },
     }
 
     await outputCommand(cliCommand, confHuman)
     t.ok(startCalled, 'lazy view class was loaded and started')
+    // self-update replaces the running files during command()
+    t.strictSame(order, ['load', 'command'], 'view loaded first')
   })
 })
 
@@ -632,6 +647,7 @@ t.test('--global', async t => {
 
   t.test('from user config only, ignored', async t => {
     const logs = t.capture(console, 'log').args
+    swept.length = 0
     await outputCommand(globalCommand, {
       command: 'run',
       explicit: {},
@@ -639,10 +655,12 @@ t.test('--global', async t => {
       options: {},
     } as unknown as LoadedConfig)
     t.strictSame(logs(), [['true']])
+    t.strictSame(swept, [], 'not global: no sweep')
   })
 
   t.test('switched to global root', async t => {
     const logs = t.capture(console, 'log').args
+    swept.length = 0
     await outputCommand(globalCommand, {
       command: 'install',
       globalRoot: '/global',
@@ -651,6 +669,7 @@ t.test('--global', async t => {
       options: {},
     } as unknown as LoadedConfig)
     t.strictSame(logs(), [['true']])
+    t.strictSame(swept, ['/global'], 'pending removals swept')
   })
 
   t.test('--help still answered', async t => {

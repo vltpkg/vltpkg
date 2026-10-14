@@ -64,6 +64,10 @@ export type CommandFixtures = Record<
 
 export type SharedCommandOptions = {
   bin?: Bin
+  /** default: the project dir */
+  cwd?: string
+  /** replaces the variant's command */
+  command?: string[]
   packageJson?: boolean | Record<string, unknown>
   env?: NodeJS.ProcessEnv
   debug?: boolean
@@ -123,7 +127,7 @@ export type MultipleCommandOptions = CommandOptions & {
       run: (
         args?: string[],
         options?: Omit<SpawnCommandOptions, 'dirs'>,
-      ) => Promise<SpawnCommandResult>
+      ) => Promise<Omit<CommandResult, 'dirs'>>
     },
   ) => Promise<void>
 }
@@ -142,10 +146,12 @@ const spawnCommand = async (
     shell,
     cleanOutput = v => v,
     onOutput,
+    cwd = dirs.project,
+    command,
   }: SpawnCommandOptions,
 ) => {
-  const [command, ...commandArgs] = variant.args(bin)
-  assert(command, 'no command')
+  const [cmd, ...commandArgs] = command ?? variant.args(bin)
+  assert(cmd, 'no command')
 
   // The logs will also be truncated after a certain number of lines because we
   // don't need to see all the output, just whether it happened or not.
@@ -199,14 +205,10 @@ const spawnCommand = async (
       if (tty) {
         return import('node-pty')
           .then(({ spawn: spawnPty }) => {
-            const proc = spawnPty(
-              command,
-              [...commandArgs, ...args],
-              {
-                cwd: dirs.project,
-                env: spawnEnv,
-              },
-            )
+            const proc = spawnPty(cmd, [...commandArgs, ...args], {
+              cwd,
+              env: spawnEnv,
+            })
             const kill = (s: NodeJS.Signals = 'SIGTERM') => {
               debugLog?.('KILL', s)
               proc.kill(s)
@@ -237,8 +239,8 @@ const spawnCommand = async (
           .catch(rej)
       }
 
-      const proc = spawn(command, [...commandArgs, ...args], {
-        cwd: dirs.project,
+      const proc = spawn(cmd, [...commandArgs, ...args], {
+        cwd,
         windowsHide: true,
         env: spawnEnv,
         timeout,

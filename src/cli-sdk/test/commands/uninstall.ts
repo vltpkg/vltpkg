@@ -2,6 +2,7 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { UninstallResult } from '../../src/commands/uninstall.ts'
+import type { SelfRefused } from '../../src/self-update.ts'
 
 const options = { scurry: new PathScurry() }
 let log = ''
@@ -68,7 +69,7 @@ t.notOk(
 )
 
 // passes allow-skills and skills-dir, returns skills
-const res = await Command.command({
+const res = (await Command.command({
   positionals: ['abbrev@2'],
   values: {},
   options,
@@ -76,7 +77,7 @@ const res = await Command.command({
     k === 'allow-skills' ? '*'
     : k === 'skills-dir' ? ['.claude/skills']
     : undefined,
-} as unknown as LoadedConfig)
+} as unknown as LoadedConfig)) as UninstallResult
 t.equal(uninstallOptions?.allowSkills, '*')
 t.strictSame(uninstallOptions?.skillsDirs, ['.claude/skills'])
 t.strictSame(res.skills, { removed: [] })
@@ -93,20 +94,37 @@ t.strictSame(
 t.test('--global', async t => {
   let glog = ''
   let resolveFails = false
+  let keep: string | undefined = 'running'
+  let refused: SelfRefused | undefined = undefined
   const remove = new Map()
   const dirs = ['/g/packages/foo-ws']
   const Command = await t.mockImport<
     typeof import('../../src/commands/uninstall.ts')
   >('../../src/commands/uninstall.ts', {
     '@vltpkg/graph': {
-      async uninstall(_: unknown, r: unknown) {
-        glog += `uninstall ${r === remove}\n`
+      async uninstall(o: { keepNodes?: Set<string> }, r: unknown) {
+        const k = o.keepNodes ? ` ${[...o.keepNodes].join()}` : ''
+        glog += `uninstall ${r === remove}${k}\n`
         return { graph: {} }
       },
     },
     '../../src/parse-add-remove-args.ts': {
       parseRemoveArgs: () => {
         throw new Error('not global')
+      },
+    },
+    '../../src/self-update.ts': {
+      refuseSelfUninstall: async () => {
+        glog += 'self\n'
+        return refused
+      },
+      runningStoreDep: async () => keep,
+      deferSelfRemove: async (
+        root: string,
+        _: unknown,
+        k?: string,
+      ) => {
+        glog += `defer ${root} ${k}\n`
       },
     },
     '../../src/global-bin-dir.ts': {
@@ -146,15 +164,29 @@ t.test('--global', async t => {
   await Command.command(conf())
   t.equal(
     glog,
-    'assert\nparse global\nresolve\nuninstall true\nremove /g true /g/bin\n',
+    'assert\nself\nparse global\nresolve\nuninstall true running\ndefer /g running\nremove /g true /g/bin\n',
   )
 
   // unusable --global-bin-dir: still swept by path
   glog = ''
   resolveFails = true
+  keep = undefined
   await Command.command(conf('/ro'))
   t.equal(
     glog,
-    'assert\nparse global\nresolve\nuninstall true\nremove /g true /ro\n',
+    'assert\nself\nparse global\nresolve\nuninstall true\ndefer /g undefined\nremove /g true /ro\n',
   )
+
+  // vlt that is not a global package
+  glog = ''
+  const no: SelfRefused = {
+    status: 'refused',
+    from: '1.0.0',
+    dir: '/p/bin',
+    message: 'no',
+  }
+  refused = no
+  t.strictSame(await Command.command(conf()), { self: no })
+  t.equal(glog, 'assert\nself\n', 'nothing removed')
+  t.strictSame(Command.views.json({ self: no }), { self: no })
 })
