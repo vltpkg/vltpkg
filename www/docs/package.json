@@ -62,6 +62,7 @@
     "start": "next start",
     "test": "true",
     "posttest": "tsc --noEmit",
+    "test:agents": "node scripts/check-agent-endpoints.mts",
     "typecheck": "tsc --noEmit",
     "typedoc": "node scripts/typedoc.mts",
     "typedoc:check": "node scripts/typedoc.mts --check"
