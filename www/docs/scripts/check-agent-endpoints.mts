@@ -83,6 +83,20 @@ void test('/api/v1/search returns json results', async () => {
   }[]
   assert.ok(results.length > 0)
   assert.equal(results[0]?.type, 'page')
+
+  // no query is an empty list, not an error
+  const empty = await get('/api/v1/search')
+  assert.equal(empty.status, 200)
+  assert.deepEqual(await empty.json(), [])
+
+  // `tag` narrows to one section, which the unfiltered results span
+  assert.ok(results.some(r => !r.url.startsWith('/registry')))
+  const tagged = (await (
+    await get('/api/v1/search?query=install&tag=registry')
+  ).json()) as { url: string }[]
+  assert.ok(tagged.length > 0)
+  for (const { url } of tagged)
+    assert.match(url, /^\/registry(\/|#|$)/)
 })
 
 void test('unknown /api paths are json 404s', async () => {
