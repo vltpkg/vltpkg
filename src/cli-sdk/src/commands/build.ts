@@ -6,8 +6,15 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import { isErrorWithCause } from '@vltpkg/types'
 
-const skippedMessage = (count: number) =>
-  `${count} package${count === 1 ? '' : 's'} not built, security data timed out. Run "vlt build" again later.`
+const skippedMessage = (
+  count: number,
+  reason: BuildResult['skippedReason'],
+) =>
+  `${count} package${count === 1 ? '' : 's'} not built, ${
+    reason === 'unscanned' ?
+      'Socket has not scanned them yet'
+    : 'security data timed out'
+  }. Run "vlt build" again later.`
 
 export const views = {
   human: (result: BuildResult): string => {
@@ -31,7 +38,9 @@ export const views = {
     }
 
     if (skippedCount > 0) {
-      messages.push(`⏳ ${skippedMessage(skippedCount)}`)
+      messages.push(
+        `⏳ ${skippedMessage(skippedCount, result.skippedReason)}`,
+      )
     }
 
     return messages.join('\n')
@@ -49,11 +58,14 @@ export const views = {
     return {
       success: successList,
       failure: failureList,
-      ...(skippedList.length ? { skipped: skippedList } : {}),
+      ...(skippedList.length ?
+        { skipped: skippedList, skippedReason: result.skippedReason }
+      : {}),
       message:
         successList.length > 0 ?
           `Built ${successList.length} package${successList.length === 1 ? '' : 's'}.`
-        : skippedList.length ? skippedMessage(skippedList.length)
+        : skippedList.length ?
+          skippedMessage(skippedList.length, result.skippedReason)
         : 'No packages needed building.',
     }
   },

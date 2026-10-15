@@ -28,12 +28,16 @@ export interface BuildOptions extends LoadOptions {
 
 /**
  * Filter nodes using a DSS query string. `skipped` holds matched nodes
- * left out because their security data timed out.
+ * left out because they have no security data, `skippedReason` says why.
  */
 const filterNodesByQuery = async (
   targetQuery: string,
   graph: Graph,
-): Promise<{ allowed: Set<DepID>; skipped: Set<DepID> }> => {
+): Promise<{
+  allowed: Set<DepID>
+  skipped: Set<DepID>
+  skippedReason: NonNullable<BuildResult['skippedReason']>
+}> => {
   /* c8 ignore start */
   const securityArchive =
     Query.hasSecuritySelectors(targetQuery) ?
@@ -58,12 +62,13 @@ const filterNodesByQuery = async (
     signal: new AbortController().signal,
   })
 
-  // fail closed: never run scripts of pkgs whose security data timed out
+  // fail closed: never run scripts of pkgs with no security data, be it
+  // from a timed out request or not scanned by socket.dev yet
   const allowed = new Set<DepID>()
   const skipped = new Set<DepID>()
   for (const node of resultNodes) {
     if (
-      securityArchive?.timedOut &&
+      securityArchive &&
       !securityArchive.has(node.id) &&
       usesNpmRegistry(node)
     ) {
@@ -72,7 +77,12 @@ const filterNodesByQuery = async (
       allowed.add(node.id)
     }
   }
-  return { allowed, skipped }
+  return {
+    allowed,
+    skipped,
+    skippedReason:
+      securityArchive?.timedOut ? 'timeout' : 'unscanned',
+  }
 }
 
 /**
@@ -110,8 +120,11 @@ export const build = async (
   })
 
   // Filter nodes using target query provided
-  const { allowed: targetFilteredNodes, skipped } =
-    await filterNodesByQuery(target, actualGraph)
+  const {
+    allowed: targetFilteredNodes,
+    skipped,
+    skippedReason,
+  } = await filterNodesByQuery(target, actualGraph)
 
   // Create a total diff including the actual graph as 'to'
   const diff = new Diff(
@@ -162,6 +175,6 @@ export const build = async (
     skipped.has(node.id),
   )
   return skippedNodes.length ?
-      { ...buildResult, skipped: skippedNodes }
+      { ...buildResult, skipped: skippedNodes, skippedReason }
     : buildResult
 }

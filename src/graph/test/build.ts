@@ -444,8 +444,11 @@ t.test('build with target option', async t => {
   t.end()
 })
 
-t.test('security archive timeout fails closed', async t => {
-  const mockBuild = async (timedOut: boolean) => {
+t.test('missing security data fails closed', async t => {
+  const mockBuild = async (
+    timedOut: boolean,
+    scanned: DepID[] = [testPkgId1],
+  ) => {
     // partial mock: graph must only need SecurityArchive from main entry
     const { build } = await t.mockImport<
       typeof import('../src/build.ts')
@@ -454,8 +457,8 @@ t.test('security archive timeout fails closed', async t => {
         SecurityArchive: {
           start: async () => ({
             timedOut,
-            // only target-pkg-1 got scanned
-            has: (id: DepID) => id === testPkgId1,
+            // by default only target-pkg-1 got scanned
+            has: (id: DepID) => scanned.includes(id),
             get: () => undefined,
           }),
         },
@@ -464,7 +467,7 @@ t.test('security archive timeout fails closed', async t => {
     return build
   }
 
-  t.test('skips unscanned registry pkgs', async t => {
+  t.test('skips registry pkgs left out by a timeout', async t => {
     const build = await mockBuild(true)
     const result = await build({
       projectRoot: targetFixture(t),
@@ -482,10 +485,36 @@ t.test('security archive timeout fails closed', async t => {
       ['other-pkg'],
       'should report skipped pkg',
     )
+    t.equal(result.skippedReason, 'timeout', 'should blame timeout')
   })
 
-  t.test('keeps all when not timed out', async t => {
+  t.test('skips registry pkgs not scanned yet', async t => {
     const build = await mockBuild(false)
+    const result = await build({
+      projectRoot: targetFixture(t),
+      packageJson,
+      scurry,
+      target: ':not(:malware)',
+    })
+    t.strictSame(
+      result.success.map(n => n.name),
+      ['target-pkg-1'],
+      'should only build scanned pkg',
+    )
+    t.strictSame(
+      result.skipped?.map(n => n.name),
+      ['other-pkg'],
+      'should report skipped pkg',
+    )
+    t.equal(
+      result.skippedReason,
+      'unscanned',
+      'should blame missing scan',
+    )
+  })
+
+  t.test('keeps all when all scanned', async t => {
+    const build = await mockBuild(false, [testPkgId1, testPkgId2])
     const result = await build({
       projectRoot: targetFixture(t),
       packageJson,
@@ -498,6 +527,7 @@ t.test('security archive timeout fails closed', async t => {
       'should build both pkgs',
     )
     t.equal(result.skipped, undefined, 'should skip nothing')
+    t.equal(result.skippedReason, undefined, 'should have no reason')
   })
 })
 

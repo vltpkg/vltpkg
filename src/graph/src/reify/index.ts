@@ -82,9 +82,10 @@ const filterNodesByQuery = async (
     },
   )
 
-  // fail closed: never run scripts of pkgs whose security data timed out
+  // fail closed: never run scripts of pkgs with no security data, be it
+  // from a timed out request or not scanned by socket.dev yet
   const allowed =
-    securityArchive?.timedOut ?
+    securityArchive ?
       resultNodes.filter(
         node =>
           securityArchive.has(node.id) || !usesNpmRegistry(node),

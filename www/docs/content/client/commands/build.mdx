@@ -101,6 +101,11 @@ By default `vlt build` uses a target value of
 packages that have lifecycle scripts (or a root `binding.gyp`) and do
 not have any malware alerts associated with it.
 
+npm registry packages with no security data, because the request timed
+out or Socket has not scanned them yet, are skipped and reported as
+not built. See
+[Understanding Security Data](/client/security#understanding-security-data).
+
 ## Examples
 
 ### Excluding malware and any package not from a specific scope

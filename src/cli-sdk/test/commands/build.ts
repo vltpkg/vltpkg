@@ -118,7 +118,7 @@ t.test('views', async t => {
     t.matchSnapshot(output, 'should show no packages message')
   })
 
-  t.test('skipped on security timeout', async t => {
+  t.test('skipped for missing security data', async t => {
     const node = (name: string) =>
       ({
         id: `··${name}@1.0.0`,
@@ -130,15 +130,27 @@ t.test('views', async t => {
         success: [],
         failure: [],
         skipped: [node('a'), node('b')],
+        skippedReason: 'timeout',
       }),
       '⏳ 2 packages not built, security data timed out. Run "vlt build" again later.',
       'should not claim all built',
     )
     t.equal(
       Command.views.human({
+        success: [],
+        failure: [],
+        skipped: [node('a'), node('b')],
+        skippedReason: 'unscanned',
+      }),
+      '⏳ 2 packages not built, Socket has not scanned them yet. Run "vlt build" again later.',
+      'should explain pkgs not scanned yet',
+    )
+    t.equal(
+      Command.views.human({
         success: [node('a')],
         failure: [],
         skipped: [node('b')],
+        skippedReason: 'timeout',
       }),
       '🔨 Built 1 package successfully.\n' +
         '⏳ 1 package not built, security data timed out. Run "vlt build" again later.',
@@ -149,15 +161,34 @@ t.test('views', async t => {
         success: [],
         failure: [],
         skipped: [node('a')],
+        skippedReason: 'timeout',
       }),
       {
         success: [],
         failure: [],
         skipped: [{ id: '··a@1.0.0', name: 'a', version: '1.0.0' }],
+        skippedReason: 'timeout',
         message:
           '1 package not built, security data timed out. Run "vlt build" again later.',
       },
       'should list skipped in json',
+    )
+    t.strictSame(
+      Command.views.json({
+        success: [],
+        failure: [],
+        skipped: [node('a')],
+        skippedReason: 'unscanned',
+      }),
+      {
+        success: [],
+        failure: [],
+        skipped: [{ id: '··a@1.0.0', name: 'a', version: '1.0.0' }],
+        skippedReason: 'unscanned',
+        message:
+          '1 package not built, Socket has not scanned them yet. Run "vlt build" again later.',
+      },
+      'should list unscanned in json',
     )
   })
 })

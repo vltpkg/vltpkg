@@ -1353,9 +1353,9 @@ t.test('allowScripts with query selector :scripts', async t => {
   )
 })
 
-t.test('allowScripts fails closed on security timeout', async t => {
-  // reify w/ a timed out archive, returns the script-allowed set
-  const run = async (t: Test, scanned?: string) => {
+t.test('allowScripts fails closed w/o security data', async t => {
+  // reify w/ a security archive, returns the script-allowed set
+  const run = async (t: Test, scanned?: string, timedOut = true) => {
     const dir = t.testdir({
       cache: {},
       project: {
@@ -1399,7 +1399,7 @@ t.test('allowScripts fails closed on security timeout', async t => {
       '@vltpkg/security-archive': {
         SecurityArchive: {
           start: async () => ({
-            timedOut: true,
+            timedOut,
             has: (id: DepID) => graph.nodes.get(id)?.name === scanned,
             get: () => undefined,
           }),
@@ -1420,9 +1420,17 @@ t.test('allowScripts fails closed on security timeout', async t => {
     return [...allowed].map(id => graph.nodes.get(id)?.name).sort()
   }
 
-  t.test('skips unscanned registry pkgs', async t => {
+  t.test('skips registry pkgs left out by a timeout', async t => {
     t.strictSame(
       await run(t),
+      ['test-project'],
+      'should keep only non-registry nodes',
+    )
+  })
+
+  t.test('skips registry pkgs not scanned yet', async t => {
+    t.strictSame(
+      await run(t, undefined, false),
       ['test-project'],
       'should keep only non-registry nodes',
     )
