@@ -904,7 +904,9 @@ export class PackageInfoClient {
         const buf = response.buffer()
 
         try {
-          await (await this.getTarPool()).unpack(buf, target)
+          await (
+            await this.getTarPool()
+          ).unpack(buf, target, tarballFormat(r.resolved))
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -1602,7 +1604,9 @@ export class PackageInfoClient {
           const integrity = storedIntegrity(response)
 
           try {
-            await (await this.getTarPool()).unpack(buf, dir)
+            await (
+              await this.getTarPool()
+            ).unpack(buf, dir, tarballFormat(remoteURL))
           } catch (er) {
             throw this.#resolveError(
               s,

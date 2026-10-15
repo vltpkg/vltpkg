@@ -1371,6 +1371,31 @@ t.test('remote integrity computation', async t => {
   )
 })
 
+t.test('remote .tar.br tarballs', async t => {
+  const track = drainer(t)
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  const url = `${defaultRegistry}brotli-nodigest/-/brotli-nodigest-1.0.0.tar.br`
+  const spec = `abbrev@${url}`
+  const pi = track(
+    new PackageInfoClient({ ...options, cache: dir + '/cache' }),
+  )
+  t.match(
+    await pi.manifest(spec),
+    { name: 'abbrev', version: '2.0.0' },
+    'manifest reads a brotli remote tarball',
+  )
+  await pi.extract(spec, dir + '/br-extract')
+  t.match(
+    JSON.parse(
+      readFileSync(dir + '/br-extract/package.json', 'utf8'),
+    ),
+    { name: 'abbrev', version: '2.0.0' },
+    'extract unpacks a brotli remote tarball',
+  )
+})
+
 t.test('remote tarballs', async t => {
   const url = `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`
   const spec = `abbrev@${url}`
