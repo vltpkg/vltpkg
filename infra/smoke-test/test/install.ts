@@ -14,6 +14,7 @@ import {
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { dirname, join, relative, sep } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters } from 'node:util'
 import { ansiToAnsi } from 'ansi-to-pre'
 
@@ -456,7 +457,9 @@ t.test(
         )
         t.equal(readJSON(pkg).version, '99.0.0')
 
-        const res = await run(['i', '-g', tgzB, '--view=json'], {
+        // win32 `D:\x` paths don't parse as specs
+        const specB = pathToFileURL(tgzB).href
+        const res = await run(['i', '-g', specB, '--view=json'], {
           command: [
             node,
             win32 ?
