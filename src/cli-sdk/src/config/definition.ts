@@ -884,7 +884,7 @@ export const definition = j
       hint: 'query',
       description: `Link the agent skills (folders with a \`SKILL.md\`) shipped by
                     installed packages matching this DSS query into
-                    \`./skills/<package>/<skill>\` after \`install\`,
+                    \`./skills/<skill>\` after \`install\`,
                     \`ci\` or \`update\`.
                     Unset (the default) or \`:not(*)\` links nothing.
 

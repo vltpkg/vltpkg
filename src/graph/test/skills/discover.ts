@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -115,11 +116,9 @@ t.test('discoverSkills', async t => {
       skills: { x: { 'SKILL.md': fm('x', 'not in store') } },
     },
     skills: {
-      foo: {
-        alpha: t.fixture('symlink', `../../${fooStore}/skills/alpha`),
-        // vlt link, but to another skill
-        beta: t.fixture('symlink', `../../${fooStore}/skills/alpha`),
-      },
+      alpha: t.fixture('symlink', `../${fooStore}/skills/alpha`),
+      // vlt link, but to another skill
+      beta: t.fixture('symlink', `../${fooStore}/skills/alpha`),
     },
     node_modules: {
       '.vlt': {
@@ -154,12 +153,15 @@ t.test('discoverSkills', async t => {
           'SKILL.md': fm('long', 'a'.repeat(2000)),
         }),
         ...store('none@1.0.0', 'none', { 'index.js': '' }),
+        // package name never reaches the path
         ...store('node_modules@1.0.0', 'node_modules', {
           'SKILL.md': fm('unsafe', 'unsafe'),
         }),
-        // unscoped, but reads as a scope dir
-        ...store('@at@1.0.0', '@at', { 'SKILL.md': fm('at', 'at') }),
-        // case-insensitive mount collisions
+        // fallback name `@at` is not a safe dir name
+        ...store('@at@1.0.0', '@at', {
+          'SKILL.md': fm('Bad_Name', 'at'),
+        }),
+        // same names from different packages: all listed
         ...store('cas@1.0.0', 'cas', {
           skills: { Same: { 'SKILL.md': fm('x', 'dir') } },
           'SKILL.md': fm('same', 'root'),
@@ -170,6 +172,7 @@ t.test('discoverSkills', async t => {
         ...store('jsonstream@2.0.0', 'jsonstream', {
           'SKILL.md': fm('js', 'lower'),
         }),
+        ...store('rk@1.0.0', 'rk', { 'SKILL.md': fm('same', 'rk') }),
         // duplicates
         ...store('dup@1.0.0', 'dup', { 'SKILL.md': fm('dup', 'v1') }),
         ...store('dup@2.0.0', 'dup', { 'SKILL.md': fm('dup', 'v2') }),
@@ -185,8 +188,8 @@ t.test('discoverSkills', async t => {
         // not semver: DepID order
         ...store('dz@x', 'dz', { 'SKILL.md': fm('dz', 'x') }),
         ...store('dz@y', 'dz', { 'SKILL.md': fm('dz', 'y') }),
-        // a skill named SKILL.md: its container would look like a user
-        // skill dir
+        // a skill named SKILL.md: `skills/SKILL.md` would make the dir
+        // look like a skill
         ...store('smd@1.0.0', 'smd', {
           skills: {
             'SKILL.md': { 'SKILL.md': fm('x', 'x') },
@@ -231,7 +234,8 @@ t.test('discoverSkills', async t => {
   place(root, '@s/bar@1')
   place(root, 'col@1')
   place(root, 'sf@1')
-  place(foo, 'long@1')
+  const long = place(foo, 'long@1')
+  place(foo, 'rk@1')
   place(root, 'none@1')
   // unsafe name, cannot be parsed as a spec
   graph.addNode(id('node_modules@1.0.0'), {
@@ -275,10 +279,11 @@ t.test('discoverSkills', async t => {
   })
   local.location = './local'
 
-  const skills = discoverSkills(
+  const { skills, scanned } = discoverSkills(
     graph.nodes.values(),
     new PathScurry(projectRoot),
     projectRoot,
+    'skills',
   )
   const storeDir = (n: string, name: string) =>
     resolve(
@@ -292,46 +297,80 @@ t.test('discoverSkills', async t => {
   t.strictSame(
     skills.map(s => [s.mount, s.version, s.description, s.linked]),
     [
-      ['skills/@s/bar/bar', '1.0.0', 'Scoped root', false],
-      ['skills/cas/Same', '1.0.0', 'dir', false],
-      ['skills/col/same', '1.0.0', 'dir one', false],
-      ['skills/dk/dk', '2.0.0', 'v2', false],
-      ['skills/dn/dn', '2.0.0', 'v2', false],
+      ['skills/alpha', '1.0.0', 'Alpha skill', true],
+      ['skills/bar', '1.0.0', 'Scoped root', false],
+      ['skills/beta', '1.0.0', undefined, false],
+      ['skills/dk', '2.0.0', 'v2', false],
       // same rank: highest version
-      ['skills/dt/dt', '2.0.0', 'v2', false],
-      ['skills/dup/dup', '3.0.0', 'v3', false],
-      ['skills/dws/dws', '2.0.0', 'v2', false],
-      ['skills/dz/dz', undefined, 'x', false],
-      ['skills/foo/alpha', '1.0.0', 'Alpha skill', true],
-      ['skills/foo/beta', '1.0.0', undefined, false],
-      ['skills/foo/foo-root', '1.0.0', 'Root skill', false],
-      // one of the case-insensitive mount twins
-      ['skills/jsonstream/js', '2.0.0', 'lower', false],
-      ['skills/long/long', '1.0.0', 'a'.repeat(1024), false],
-      ['skills/sf/sf', '1.0.0', '[31mred text', false],
-      ['skills/smd/other', '1.0.0', 'other', false],
+      ['skills/dt', '2.0.0', 'v2', false],
+      ['skills/dup', '3.0.0', 'v3', false],
+      ['skills/dws', '2.0.0', 'v2', false],
+      ['skills/dz', undefined, 'x', false],
+      ['skills/foo-root', '1.0.0', 'Root skill', false],
+      // same name, same rank: DepID order
+      ['skills/js', '1.0.0', 'upper', false],
+      ['skills/js', '2.0.0', 'lower', false],
+      ['skills/long', '1.0.0', 'a'.repeat(1024), false],
+      ['skills/other', '1.0.0', 'other', false],
+      // case-insensitive name: rank, then DepID
+      ['skills/Same', '1.0.0', 'dir', false],
+      ['skills/same', '1.0.0', 'dir one', false],
+      ['skills/same', '1.0.0', 'rk', false],
+      ['skills/sf', '1.0.0', '[31mred text', false],
+      ['skills/unsafe', '1.0.0', 'unsafe', false],
     ],
   )
+  t.strictSame(
+    skills
+      .filter(s => s.skill === 'same' || s.skill === 'js')
+      .map(s => s.name),
+    ['JSONStream', 'jsonstream', 'col', 'rk'],
+  )
   const byMount = new Map(skills.map(s => [s.mount, s]))
-  t.match(byMount.get('skills/@s/bar/bar'), {
+  t.match(byMount.get('skills/bar'), {
     name: '@s/bar',
     id: id('@s/bar@1.0.0'),
     skill: 'bar',
     path: storeDir('@s/bar@1.0.0', '@s/bar'),
   })
   t.equal(
-    byMount.get('skills/foo/alpha')?.path,
+    byMount.get('skills/alpha')?.path,
     resolve(storeDir('foo@1.0.0', 'foo'), 'skills/alpha'),
   )
   t.equal(
-    byMount.get('skills/foo/foo-root')?.path,
+    byMount.get('skills/foo-root')?.path,
     storeDir('foo@1.0.0', 'foo'),
   )
   t.equal(
-    byMount.get('skills/col/same')?.path,
+    skills.find(s => s.name === 'col')?.path,
     resolve(storeDir('col@1.0.0', 'col'), 'skills/same'),
     'dir skill wins over root name collision',
   )
+  t.equal(byMount.get('skills/dws')?.alias, undefined, 'same name')
+  t.equal(byMount.get('skills/long')?.alias, undefined, 'transitive')
+
+  t.test('scanned', async t => {
+    t.strictSame(scanned.get(id('none@1.0.0')), [], 'ships none')
+    t.strictSame(
+      scanned.get(id('dn@1.0.0')),
+      [],
+      'picked, ships none',
+    )
+    t.strictSame(scanned.get(id('dn@2.0.0')), [
+      { skill: 'dn', path: storeDir('dn@2.0.0', 'dn') },
+    ])
+    t.strictSame(scanned.get(long.id), [
+      { skill: 'long', path: storeDir('long@1.0.0', 'long') },
+    ])
+    t.strictSame(
+      scanned.get(foo.id)?.map(f => f.skill),
+      ['alpha', 'beta', 'foo-root'],
+    )
+    t.notOk(scanned.has(tgzId), 'tarball')
+    t.notOk(scanned.has(local.id), 'local')
+    t.notOk(scanned.has(root.id), 'importer')
+    t.notOk(scanned.has(ws.id), 'workspace')
+  })
 
   t.test(
     'skills dir that is a file: links are not followed',
@@ -361,9 +400,158 @@ t.test('discoverSkills', async t => {
           graph.nodes.values(),
           new PathScurry(projectRoot),
           projectRoot,
-        ),
-        [{ mount: 'skills/foo/foo', linked: false }],
+          'skills',
+        ).skills,
+        [{ mount: 'skills/foo', linked: false }],
       )
     },
   )
+
+  t.test('one skill per name, any case', async t => {
+    const projectRoot = t.testdir({
+      'vlt.json': '{}',
+      node_modules: {
+        '.vlt': store('foo@1.0.0', 'foo', {
+          skills: { Foo: { 'SKILL.md': fm('x', 'upper') } },
+        }),
+      },
+    })
+    // case-sensitive fs only
+    const lower = resolve(
+      projectRoot,
+      'node_modules/.vlt',
+      id('foo@1.0.0'),
+      'node_modules/foo/skills/foo',
+    )
+    try {
+      mkdirSync(lower)
+      writeFileSync(resolve(lower, 'SKILL.md'), fm('x', 'lower'))
+    } catch {}
+    const graph = new Graph({
+      ...configData,
+      mainManifest: { name: 'root', version: '1.0.0' },
+      projectRoot,
+    })
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo@1', configData),
+      { name: 'foo', version: '1.0.0' },
+    )
+    t.strictSame(
+      discoverSkills(
+        graph.nodes.values(),
+        new PathScurry(projectRoot),
+        projectRoot,
+        'skills',
+      ).skills.map(s => [s.mount, s.description]),
+      [['skills/Foo', 'upper']],
+    )
+  })
+
+  t.test('alias, version pick, peer forks', async t => {
+    const git = (repo: string, extra?: string) =>
+      joinDepIDTuple(['git', `github:${repo}`, '', extra])
+    const gitId = git('vercel-labs/skills')
+    const pfId = git('a/pf')
+    const pfFork = git('a/pf', 'peer.x')
+    const projectRoot = t.testdir({
+      'vlt.json': '{}',
+      skills: {
+        'find-skills': t.fixture(
+          'symlink',
+          `../node_modules/.vlt/${gitId}/node_modules/skills/skills/find-skills`,
+        ),
+      },
+      node_modules: {
+        '.vlt': {
+          [gitId]: {
+            node_modules: {
+              skills: {
+                skills: {
+                  'find-skills': {
+                    'SKILL.md': fm('find-skills', 'f'),
+                  },
+                },
+              },
+            },
+          },
+          ...store('xv@1.0.0', 'xv', {
+            skills: {
+              xa: { 'SKILL.md': fm('xa', 'v1') },
+              xb: { 'SKILL.md': fm('xb', 'v1') },
+            },
+          }),
+          ...store('xv@2.0.0', 'xv', {
+            skills: { xa: { 'SKILL.md': fm('xa', 'v2') } },
+          }),
+          [pfId]: {
+            node_modules: { pf: { 'SKILL.md': fm('pf', 'base') } },
+          },
+          [pfFork]: {
+            node_modules: { pf: { 'SKILL.md': fm('pf', 'fork') } },
+          },
+        },
+      },
+    })
+    const graph = new Graph({
+      ...configData,
+      mainManifest: { name: 'root', version: '1.0.0' },
+      projectRoot,
+    })
+    const root = graph.mainImporter
+    const place = (from: Node, spec: string, version: string) => {
+      const s = Spec.parse(spec, configData)
+      const name = spec.startsWith('vercelskills') ? 'skills' : s.name
+      const node = graph.placePackage(from, 'prod', s, {
+        name,
+        version,
+      })
+      if (!node) throw new Error('failed to place ' + spec)
+      return node
+    }
+    const vs = place(
+      root,
+      'vercelskills@github:vercel-labs/skills',
+      '1.7.2',
+    )
+    t.equal(vs.id, gitId)
+    place(root, 'xv@2', '2.0.0')
+    place(vs, 'xv@1', '1.0.0')
+    graph.addNode(pfId, { name: 'pf', version: '1.0.0' })
+    graph.addNode(pfFork, { name: 'pf', version: '1.0.0' })
+    const { skills, scanned } = discoverSkills(
+      graph.nodes.values(),
+      new PathScurry(projectRoot),
+      projectRoot,
+      'skills',
+    )
+    t.strictSame(
+      skills.map(s => [
+        s.mount,
+        s.name,
+        s.alias,
+        s.version,
+        s.linked,
+      ]),
+      [
+        [
+          'skills/find-skills',
+          'skills',
+          'vercelskills',
+          '1.7.2',
+          true,
+        ],
+        ['skills/pf', 'pf', undefined, '1.0.0', false],
+        ['skills/xa', 'xv', undefined, '2.0.0', false],
+      ],
+    )
+    t.equal(skills[1]?.id, pfId, 'one row per git package')
+    t.strictSame(
+      scanned.get(id('xv@1.0.0'))?.map(f => f.skill),
+      ['xa', 'xb'],
+      'older version scanned, not listed',
+    )
+    t.ok(scanned.has(pfFork))
+  })
 })

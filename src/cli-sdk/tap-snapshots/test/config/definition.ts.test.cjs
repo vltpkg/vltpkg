@@ -93,7 +93,7 @@ Object {
   },
   "allow-skills": Object {
     "description": String(
-      Link the agent skills (folders with a \`SKILL.md\`) shipped by installed packages matching this DSS query into \`./skills/<package>/<skill>\` after \`install\`, \`ci\` or \`update\`. Unset (the default) or \`:not(*)\` links nothing.
+      Link the agent skills (folders with a \`SKILL.md\`) shipped by installed packages matching this DSS query into \`./skills/<skill>\` after \`install\`, \`ci\` or \`update\`. Unset (the default) or \`:not(*)\` links nothing.
       
       Example: --allow-skills=":root > *" Links skills of the project's direct dependencies.
     ),

@@ -213,10 +213,10 @@ t.test('persists spec config after update', async t => {
 
 t.test('allow-skills', async t => {
   const skills = {
-    linked: [{ mount: 'skills/foo/a' }],
+    linked: [{ mount: 'skills/a' }],
     unchanged: [],
-    removed: ['skills/gone/x'],
-    conflicts: ['skills/bar/b'],
+    removed: ['skills/x'],
+    conflicts: ['skills/b'],
   }
   let allowSkills: unknown
   const Command = await t.mockImport<
@@ -247,9 +247,9 @@ t.test('allow-skills', async t => {
   t.strictSame(Command.views.json(res), {
     graph: {},
     skills: {
-      linked: ['skills/foo/a'],
-      removed: ['skills/gone/x'],
-      conflicts: ['skills/bar/b'],
+      linked: ['skills/a'],
+      removed: ['skills/x'],
+      conflicts: ['skills/b'],
     },
   })
 })

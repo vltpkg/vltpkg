@@ -91,14 +91,19 @@ packages afterwards (see `linkSkills`) and returns the result as
 
 Lists the agent skills (dirs with a `SKILL.md`, see
 https://agentskills.io/specification) shipped by installed packages in
-the vlt store, at `skills/<dir>/SKILL.md` or a root `SKILL.md`.
+the vlt store, at `skills/<dir>/SKILL.md` or a root `SKILL.md`, from
+one version per package (a direct dep, else the highest).
 `options.target` is a DSS query selecting packages (default `*`).
 
 ### `linkSkills(options): Promise<LinkSkillsResult>`
 
 Links the skills of the packages matching `options.target` into
-`./skills/<package>/<skill>` (junctions on Windows), then prunes stale
-links: dangling, or no longer a skill of a linked package. Only links
+`./skills/<skill>` (junctions on Windows). One package per name: the
+one an existing link points to while its skill is installed, else a
+direct dep, then DepID; the others are reported in `conflicts` as
+`<mount> (<package>)`. A link follows its package to the picked
+version. Then removes links whose skill is no longer installed:
+dangling, package not in the graph, or no longer shipped. Only links
 pointing into a `node_modules/.vlt` store are ever replaced or
 removed; anything else in the way is reported in `conflicts`. Linked
 packages get private copies of files hardlinked from the global store.
@@ -112,8 +117,8 @@ files behind live links private.
 
 ### `unlinkSkills(options): Promise<{ removed }>`
 
-Removes the skill links of the packages matching `options.target`
-(default: all), plus any dangling ones.
+Removes the skill links pointing into the packages matching
+`options.target` (default: all), plus any dangling ones.
 
 ### `mermaidOutput(graph): string`
 

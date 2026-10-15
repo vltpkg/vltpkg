@@ -31,9 +31,11 @@ export const usage: CommandUsage = () =>
       (https://agentskills.io/specification). Packages ship them at
       \`skills/<name>/SKILL.md\`, or as a root \`SKILL.md\`.
 
-      Skills are linked into \`./skills/<package>/<skill>\`. Only links
-      made by vlt (pointing into \`node_modules/.vlt\`) are ever replaced
-      or removed; anything else in the way is skipped.
+      Skills are linked into \`./skills/<skill>\`. When packages ship
+      skills with the same name, one is linked and the others are
+      reported. Only links made by vlt (pointing into
+      \`node_modules/.vlt\`) are ever replaced or removed; anything else
+      in the way is skipped.
 
       Use --target or a query after the subcommand to select packages
       using DSS query syntax. Use \`vlt install --allow-skills=<query>\`
@@ -47,9 +49,8 @@ export const usage: CommandUsage = () =>
       link: {
         usage: '[<query>]',
         description: `Link the skills of the selected packages, then
-                      remove stale skill links (dangling, or no longer
-                      a skill of a linked package). Selects
-                      \`:not(:malware)\` by default.`,
+                      remove skill links whose skill is no longer
+                      installed. Selects \`:not(:malware)\` by default.`,
       },
       unlink: {
         usage: '[<query>]',
@@ -77,10 +78,9 @@ const humanList = (skills: Skill[]) => {
     return 'No agent skills found in installed packages.'
   const out = [`Found ${plural(skills.length, 'agent skill')}:`]
   for (const s of skills) {
-    const v = s.version ? `@${s.version}` : ''
-    out.push(
-      `  ${s.name}${v} › ${s.skill}${s.linked ? ' (linked)' : ''}`,
-    )
+    const pkg = s.version ? `${s.name}@${s.version}` : s.name
+    const label = s.alias ? `${s.alias} (${pkg})` : pkg
+    out.push(`  ${label} › ${s.skill}${s.linked ? ' (linked)' : ''}`)
     if (s.description) out.push(`    ${s.description}`)
   }
   return out.join('\n')
@@ -111,7 +111,7 @@ const humanLink = (r: LinkSkillsResult) => {
   if (r.conflicts.length) {
     out.push(
       lines(
-        `⚠️ Skipped ${plural(r.conflicts.length, 'skill')}, path in use:`,
+        `⚠️ Skipped ${plural(r.conflicts.length, 'skill')}, path in use or taken by another package:`,
         r.conflicts,
       ),
     )

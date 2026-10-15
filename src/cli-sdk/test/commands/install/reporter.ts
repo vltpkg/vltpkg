@@ -110,16 +110,19 @@ t.test('skills', async t => {
     r.error(new Error('x'))
     return res
   }
-  const one = await done(1, ['skills/x/y'])
+  const one = await done(1, ['skills/y'])
   t.match(one, 'Linked 1 agent skill into ./skills')
-  t.match(one, '1 skill link skipped, path in use: skills/x/y')
-  const two = await done(2, ['skills/x/y', 'skills/x/z'])
+  t.match(
+    one,
+    '1 skill link skipped, path in use or taken by another package: skills/y',
+  )
+  const two = await done(2, ['skills/y', 'skills/z (bar@1.0.0)'])
   t.match(two, 'Linked 2 agent skills into ./skills')
   t.match(
     two,
-    '2 skill links skipped, path in use: skills/x/y, skills/x/z',
+    '2 skill links skipped, path in use or taken by another package: skills/y, skills/z (bar@1.0.0)',
   )
-  const conflictOnly = await done(0, ['skills/x/y'])
+  const conflictOnly = await done(0, ['skills/y'])
   t.match(
     conflictOnly,
     /Done in 1ms\n⚠️ 1 skill link skipped/,
@@ -128,12 +131,12 @@ t.test('skills', async t => {
   t.notMatch(conflictOnly, 'Linked')
   const none = await done(0, [])
   t.notMatch(none, 'skill')
-  const pruned = await done(0, [], ['skills/x/y'])
-  t.match(pruned, '🧹 Removed 1 stale skill link: skills/x/y')
+  const pruned = await done(0, [], ['skills/y'])
+  t.match(pruned, '🧹 Removed 1 stale skill link: skills/y')
   t.match(pruned, 'Run `vlt skills link <query>` to link again.')
   t.match(
-    await done(0, [], ['skills/x/y', 'skills/x/z']),
-    'Removed 2 stale skill links: skills/x/y, skills/x/z',
+    await done(0, [], ['skills/y', 'skills/z']),
+    'Removed 2 stale skill links: skills/y, skills/z',
   )
 })
 

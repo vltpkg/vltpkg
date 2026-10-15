@@ -7,21 +7,28 @@ import {
 } from 'node:fs'
 import type { Stats } from 'node:fs'
 import { dirname, relative, resolve, sep } from 'node:path'
+import {
+  baseDepID,
+  isDepID,
+  joinDepIDTuple,
+  splitDepID,
+} from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { symlinkSyncMkdirp } from '../reify/symlink-sync.ts'
 import type { Skill } from './discover.ts'
 
 /**
- * A vlt-managed skill link found in `./skills`.
+ * A vlt link in the mount dir.
  */
 export type SkillMount = {
   /** `/`-separated, relative to projectRoot */
   mount: string
   /** absolute link path */
   link: string
-  /** package name from the path, e.g. `@s/bar` */
-  name: string
   /** absolute resolved link target */
   target: string
+  /** DepID of the store dir the link points into */
+  owner?: DepID
 }
 
 /**
@@ -73,65 +80,81 @@ export const mountTarget = (link: string): string | undefined => {
   return norm(target).includes(storeSeg) ? target : undefined
 }
 
+/**
+ * The DepID of the last `node_modules/.vlt/<DepID>` segment of a raw
+ * link target, if valid.
+ */
+export const ownerOf = (target: string): DepID | undefined => {
+  const parts = target.split(sep)
+  const seg = (i: number) =>
+    process.platform === 'win32' ? parts[i]?.toLowerCase() : parts[i]
+  for (let i = parts.length - 3; i >= 0; i--) {
+    if (seg(i) === 'node_modules' && seg(i + 1) === '.vlt') {
+      const id = parts[i + 2]
+      return isDepID(id) ? id : undefined
+    }
+  }
+  return undefined
+}
+
+/**
+ * One key per package: registry + name, else the DepID w/o its extra.
+ */
+export const packageKey = (id: DepID): string => {
+  const t = splitDepID(id)
+  if (t[0] !== 'registry') return baseDepID(id)
+  const spec = t[2]
+  const at = spec.lastIndexOf('@')
+  return joinDepIDTuple([
+    'registry',
+    t[1],
+    at > 0 ? spec.slice(0, at) : spec,
+  ])
+}
+
 const isRealDir = (path: string) => !!lstat(path)?.isDirectory()
 
 /**
- * All vlt-managed links in `./skills/<pkg>/` (scoped:
- * `./skills/@scope/<pkg>/`). Anything else is ignored.
+ * All vlt links in `<dir>/`. Anything else is ignored.
  */
-export const readMounts = (projectRoot: string): SkillMount[] => {
-  const root = resolve(projectRoot, 'skills')
+export const readMounts = (
+  projectRoot: string,
+  dir: string,
+): SkillMount[] => {
+  const root = resolve(projectRoot, dir)
   if (!isRealDir(root)) return []
-  const containers: [string, string][] = []
-  for (const e of readdirSync(root)) {
-    const dir = resolve(root, e)
-    if (!isRealDir(dir)) continue
-    if (!e.startsWith('@')) {
-      containers.push([e, dir])
-      continue
-    }
-    for (const s of readdirSync(dir)) {
-      const sdir = resolve(dir, s)
-      if (isRealDir(sdir)) containers.push([`${e}/${s}`, sdir])
-    }
-  }
   const mounts: SkillMount[] = []
-  for (const [name, dir] of containers) {
-    // a user skill dir, never ours
-    if (lstat(resolve(dir, 'SKILL.md'))) continue
-    for (const e of readdirSync(dir)) {
-      const link = resolve(dir, e)
-      const target = mountTarget(link)
-      if (target) {
-        mounts.push({
-          mount: `skills/${name}/${e}`,
-          link,
-          name,
-          target,
-        })
-      }
+  for (const e of readdirSync(root)) {
+    const link = resolve(root, e)
+    const target = mountTarget(link)
+    if (target) {
+      mounts.push({
+        mount: `${dir}/${e}`,
+        link,
+        target,
+        owner: ownerOf(target),
+      })
     }
   }
   return mounts.sort((a, b) => a.mount.localeCompare(b.mount, 'en'))
 }
 
 /**
- * Link a skill at its mount path. Never touches anything not managed by
+ * Link a skill at `<dir>/<skill>`. Never touches anything not managed by
  * vlt: returns `'conflict'` instead.
  */
 export const mountSkill = (
   skill: Skill,
   projectRoot: string,
+  dir: string,
 ): MountResult => {
-  const link = mountPath(projectRoot, skill.mount)
-  const container = dirname(link)
-  // every parent dir up to the container must be a real dir, if present
-  const parts = skill.mount.split('/').slice(0, -1)
+  const link = mountPath(projectRoot, `${dir}/${skill.skill}`)
+  // every component of dir must be a real dir, if present
+  const parts = dir.split('/')
   for (let i = 1; i <= parts.length; i++) {
     const st = lstat(resolve(projectRoot, ...parts.slice(0, i)))
     if (st && !st.isDirectory()) return 'conflict'
   }
-  if (lstat(resolve(container, 'SKILL.md'))) return 'conflict'
   if (lstat(link)) {
     const target = mountTarget(link)
     if (!target) return 'conflict'
@@ -142,7 +165,11 @@ export const mountSkill = (
   if (process.platform === 'win32') {
     symlinkSyncMkdirp(skill.path, link, 'junction')
   } else {
-    symlinkSyncMkdirp(relative(container, skill.path), link, 'dir')
+    symlinkSyncMkdirp(
+      relative(dirname(link), skill.path),
+      link,
+      'dir',
+    )
   }
   return 'linked'
 }
@@ -155,15 +182,13 @@ const rmdirIfEmpty = (dir: string) => {
 }
 
 /**
- * Remove a managed link, plus any parent dirs it leaves empty.
+ * Remove a vlt link, plus `<dir>` if left empty.
  */
 export const unmountSkill = (
   m: SkillMount,
   projectRoot: string,
+  dir: string,
 ): void => {
   unlinkSync(m.link)
-  const container = dirname(m.link)
-  rmdirIfEmpty(container)
-  if (m.name.includes('/')) rmdirIfEmpty(dirname(container))
-  rmdirIfEmpty(resolve(projectRoot, 'skills'))
+  rmdirIfEmpty(resolve(projectRoot, dir))
 }

@@ -85,7 +85,7 @@ t.test('views', async t => {
     id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
     skill: 'a',
     path: '/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a',
-    mount: 'skills/foo/a',
+    mount: 'skills/a',
     linked: false,
     ...s,
   })
@@ -106,7 +106,30 @@ t.test('views', async t => {
             name: '@s/bar',
             version: undefined,
             skill: 'bar',
-            mount: 'skills/@s/bar/bar',
+            mount: 'skills/bar',
+          }),
+        ],
+      },
+    ],
+    [
+      'list aliased',
+      {
+        action: 'list',
+        skills: [
+          skill({
+            alias: 'vercelskills',
+            name: 'skills',
+            version: '1.7.2',
+            skill: 'find-skills',
+            mount: 'skills/find-skills',
+            linked: true,
+          }),
+          skill({
+            alias: 'mine',
+            name: 'theirs',
+            version: undefined,
+            skill: 'x',
+            mount: 'skills/x',
           }),
         ],
       },
@@ -126,11 +149,11 @@ t.test('views', async t => {
         action: 'link',
         linked: [
           skill({ linked: true }),
-          skill({ skill: 'b', mount: 'skills/foo/b', linked: true }),
+          skill({ skill: 'b', mount: 'skills/b', linked: true }),
         ],
         unchanged: [skill({ linked: true })],
-        removed: ['skills/gone/x'],
-        conflicts: ['skills/bar/b', 'skills/bar/c'],
+        removed: ['skills/x'],
+        conflicts: ['skills/c', 'skills/b (bar@1.0.0)'],
       },
     ],
     [
@@ -139,7 +162,7 @@ t.test('views', async t => {
         action: 'link',
         ...result,
         unchanged: [skill({ linked: true })],
-        conflicts: ['skills/bar/b'],
+        conflicts: ['skills/b'],
       },
     ],
     [
@@ -147,14 +170,14 @@ t.test('views', async t => {
       {
         action: 'link',
         ...result,
-        removed: ['skills/gone/x', 'skills/gone/y'],
+        removed: ['skills/x', 'skills/y'],
       },
     ],
     ['unlink nothing', { action: 'unlink', removed: [] }],
-    ['unlink one', { action: 'unlink', removed: ['skills/foo/a'] }],
+    ['unlink one', { action: 'unlink', removed: ['skills/a'] }],
     [
       'unlink many',
-      { action: 'unlink', removed: ['skills/foo/a', 'skills/foo/b'] },
+      { action: 'unlink', removed: ['skills/a', 'skills/b'] },
     ],
   ]
   for (const [name, r] of cases) {

@@ -30,21 +30,25 @@ them into your project so coding agents can find them.
 
 Only packages installed in the `node_modules/.vlt` store are scanned.
 Workspaces and `file:` dependencies (folders and tarballs) are
-skipped. When several versions of a package ship skills, the one the
-project depends on directly wins, else the highest version.
+skipped. One version of each package is used: the one the project
+depends on directly, else the highest version, even if it ships no
+skills.
+
+When packages ship skills with the same name, one gets the link: the
+package an existing link points to, while that skill is installed,
+else a direct dependency, then the package id. The others are
+reported. `vlt skills unlink <query>` frees a name. A fresh clone (no
+links yet) may pick another package than a machine with older links.
 
 ## Layout
 
-Each skill is linked at `./skills/<package>/<skill>`:
+Each skill is linked at `./skills/<skill>`, named after the skill:
 
 <Code
   code={`skills/
-├── foo/
-│   ├── lint-rules -> ../../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/lint-rules
-│   └── migrate -> ../../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/migrate
-└── @scope/
-    └── bar/
-        └── bar -> ../../../node_modules/.vlt/~npm~@scope+bar@2.0.0/node_modules/@scope/bar`}
+├── lint-rules -> ../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/lint-rules
+├── migrate -> ../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/migrate
+└── bar -> ../node_modules/.vlt/~npm~@scope+bar@2.0.0/node_modules/@scope/bar`}
   title="Layout"
   lang="text"
 />
@@ -70,9 +74,9 @@ $ vlt skills list ":root > *"`}
 
 ### `link`
 
-Links the skills of the selected packages, then removes stale skill
-links: dangling ones, and ones of a linked package that are no longer
-among its skills. Like [`vlt build`](/client/commands/build), selects
+Links the skills of the selected packages, then removes skill links
+whose skill is no longer installed: dangling, package removed, or no
+longer shipped. Like [`vlt build`](/client/commands/build), selects
 `:not(:malware)` by default.
 
 <Code
@@ -116,9 +120,10 @@ $ vlt config set "allow-skills=:root > *"`}
 />
 
 With `--allow-skills`, stale skill links are removed too, like
-`vlt skills link`. An invalid query fails before anything is
-installed. Narrowing `--allow-skills` keeps links that still point to
-an installed package; use `vlt skills unlink` to remove them.
+`vlt skills link`, and a link follows its package to a new version. An
+invalid query fails before anything is installed. Narrowing
+`--allow-skills` keeps links that still point to an installed package;
+use `vlt skills unlink` to remove them.
 
 `vlt install`, `vlt ci`, `vlt update` and `vlt uninstall` always
 remove dangling skill links (package removed or at another version).
@@ -130,8 +135,6 @@ Without `--allow-skills`, a new version is not linked again: run
 - `vlt` only ever replaces or removes links that point into a
   `node_modules/.vlt` store. Anything else at a link path (your own
   files, folders or links) is skipped and reported, never changed.
-- A `./skills/<package>` folder with its own `SKILL.md` is treated as
-  your own skill and left alone.
 - Linked skills are views of installed package files: don't edit them,
   a reinstall replaces them. Files hardlinked from the global store
   get private copies when linked, so edits stay in this project.
@@ -151,8 +154,5 @@ skills your project publishes:
 
 ## Limits
 
-- Skills are linked into `./skills` only, two levels deep:
-  `./skills/<package>/<skill>`. Agents that scan one level
-  (`<dir>/<skill>/SKILL.md`, e.g. `.claude/skills`) need to be pointed
-  at `./skills/<package>`.
+- Skills are linked into `./skills` only.
 - Skills nested deeper than `skills/<name>/SKILL.md` are not found.
