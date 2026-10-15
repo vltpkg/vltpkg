@@ -547,16 +547,20 @@ t.test('--global', async t => {
   let glog = ''
   let fail = false
   let failPersist = false
+  let failResolve = false
   const add = new Map()
   const created = ['/g/packages/foo-global-ws']
   const importers = new Set(['workspace~packages+foo-global-ws'])
   const global = {
     binDir: '/g/bin',
+    source: 'global-dir' as const,
     bins: ['foo'],
     conflicts: [],
     inPath: true,
+    otherDirs: [],
   }
-  const options = { projectRoot: '/g' }
+  const binDir = { dir: '/g/bin', source: 'global-dir', inPath: true }
+  const options = { projectRoot: '/g', scurry: {}, force: true }
   const Command = await t.mockImport<
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
@@ -584,6 +588,16 @@ t.test('--global', async t => {
         if (failPersist) throw new Error('persist')
       },
     },
+    '../../src/global-bin-dir.ts': {
+      resolveGlobalBinDir: async (
+        _: unknown,
+        o?: { selfUnwritable?: boolean },
+      ) => {
+        glog += `resolve ${!!o?.selfUnwritable}\n`
+        if (failResolve) throw new Error('resolve')
+        return binDir
+      },
+    },
     '../../src/global.ts': {
       assertGlobalOptions: () => {
         glog += 'assert\n'
@@ -597,10 +611,23 @@ t.test('--global', async t => {
       },
       linkGlobalBins: async (
         _: unknown,
-        opts: unknown,
+        opts: {
+          projectRoot: string
+          scurry: unknown
+          force: boolean
+          binDir: unknown
+          fallback: () => Promise<unknown>
+        },
         i: unknown,
       ) => {
-        glog += `link ${opts === options} ${i === importers}\n`
+        const { projectRoot, scurry, force } = opts
+        const same =
+          projectRoot === '/g' &&
+          scurry === options.scurry &&
+          force &&
+          opts.binDir === binDir
+        glog += `link ${same} ${i === importers}\n`
+        await opts.fallback()
         return global
       },
     },
@@ -620,7 +647,7 @@ t.test('--global', async t => {
   t.equal(res.global, global)
   t.equal(
     glog,
-    'assert\npersist\nparse global\ninstall true\nlink true true\n',
+    'assert\npersist\nresolve false\nparse global\ninstall true\nlink true true\nresolve true\n',
   )
 
   glog = ''
@@ -637,7 +664,7 @@ t.test('--global', async t => {
   await Command.command(conf('/g', types))
   t.equal(
     glog,
-    'assert\npersist\nparse global\ninstall true\nlink true true\n',
+    'assert\npersist\nresolve false\nparse global\ninstall true\nlink true true\nresolve true\n',
     'no types deps in global ws',
   )
   glog = ''
@@ -651,6 +678,16 @@ t.test('--global', async t => {
   failPersist = false
 
   glog = ''
+  failResolve = true
+  await t.rejects(Command.command(conf('/g')), { message: 'resolve' })
+  t.equal(
+    glog,
+    'assert\npersist\nresolve false\n',
+    'resolved before any workspace is created',
+  )
+  failResolve = false
+
+  glog = ''
   const badOptions = Object.defineProperty(conf('/g'), 'options', {
     get: () => {
       throw new Error('options')
@@ -659,7 +696,7 @@ t.test('--global', async t => {
   await t.rejects(Command.command(badOptions), { message: 'options' })
   t.equal(
     glog,
-    'assert\npersist\nparse global\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nresolve false\nparse global\nremove /g/packages/foo-global-ws\n',
     'removed on any error before install',
   )
 
@@ -668,7 +705,7 @@ t.test('--global', async t => {
   await t.rejects(Command.command(conf('/g')), { message: 'nope' })
   t.equal(
     glog,
-    'assert\npersist\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nresolve false\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
     'created workspaces removed',
   )
 

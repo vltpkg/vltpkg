@@ -13,6 +13,7 @@ import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
+import { globalBinsLines } from '../../global.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -136,16 +137,7 @@ export class InstallReporter extends ViewClass {
       out += `🔨 Run \`vlt build${g}\` to run all required scripts to build installed packages.\n`
     }
     if (_result.global) {
-      const { binDir, bins, conflicts, inPath } = _result.global
-      if (bins.length) {
-        out += `\n🔗 Linked ${bins.join(', ')} in ${binDir}`
-      }
-      if (conflicts.length) {
-        out += `\n⚠️  Skipped ${conflicts.join(', ')}: already linked by another global package (use --force to overwrite)`
-      }
-      if (!inPath && (bins.length || conflicts.length)) {
-        out += `\n⚠️  Add ${binDir} to your PATH to run globally installed bins.`
-      }
+      for (const l of globalBinsLines(_result.global)) out += `\n${l}`
     }
     const saved = _result.persistedConfig
     if (saved) {

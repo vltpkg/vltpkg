@@ -67,6 +67,7 @@ t.strictSame(
 
 t.test('--global', async t => {
   let glog = ''
+  let resolveFails = false
   const remove = new Map()
   const dirs = ['/g/packages/foo-global-ws']
   const Command = await t.mockImport<
@@ -83,6 +84,13 @@ t.test('--global', async t => {
         throw new Error('not global')
       },
     },
+    '../../src/global-bin-dir.ts': {
+      resolveGlobalBinDir: async () => {
+        glog += 'resolve\n'
+        if (resolveFails) throw new Error('not writable')
+        return { dir: '/g/bin', source: 'global-dir', inPath: false }
+      },
+    },
     '../../src/global.ts': {
       assertGlobalOptions: () => {
         glog += 'assert\n'
@@ -91,21 +99,37 @@ t.test('--global', async t => {
         glog += 'parse global\n'
         return { remove, dirs }
       },
-      removeGlobalPackages: async (root: string, d: string[]) => {
-        glog += `remove ${root} ${d === dirs}\n`
+      removeGlobalPackages: async (
+        root: string,
+        d: string[],
+        binDir: string,
+      ) => {
+        glog += `remove ${root} ${d === dirs} ${binDir}\n`
       },
     },
   })
-  await Command.command({
-    globalRoot: '/g',
-    projectRoot: '/g',
-    positionals: ['foo'],
-    values: {},
-    options,
-    get: () => undefined,
-  } as unknown as LoadedConfig)
+  const conf = (globalBinDir?: string) =>
+    ({
+      globalRoot: '/g',
+      globalBinDir,
+      projectRoot: '/g',
+      positionals: ['foo'],
+      values: {},
+      options,
+      get: () => undefined,
+    }) as unknown as LoadedConfig
+  await Command.command(conf())
   t.equal(
     glog,
-    'assert\nparse global\nuninstall true\nremove /g true\n',
+    'assert\nparse global\nresolve\nuninstall true\nremove /g true /g/bin\n',
+  )
+
+  // unusable --global-bin-dir: still swept by path
+  glog = ''
+  resolveFails = true
+  await Command.command(conf('/ro'))
+  t.equal(
+    glog,
+    'assert\nparse global\nresolve\nuninstall true\nremove /g true /ro\n',
   )
 })

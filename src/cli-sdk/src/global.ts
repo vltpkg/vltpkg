@@ -13,16 +13,18 @@ import type {
 } from '@vltpkg/graph'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, realpathSync } from 'node:fs'
 import {
   lstat,
   mkdir,
   readdir,
+  realpath,
   rm,
   stat,
   symlink,
   writeFile,
 } from 'node:fs/promises'
+import { homedir } from 'node:os'
 import {
   basename,
   delimiter,
@@ -33,13 +35,27 @@ import {
 } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { LoadedConfig } from './config/index.ts'
+import type {
+  GlobalBinDirSource,
+  ResolvedGlobalBinDir,
+} from './global-bin-dir.ts'
 import {
   globalBinDir,
   globalWorkspaceName,
   globalWorkspacePath,
   globalWorkspacesDir,
+  samePath,
 } from './global-project.ts'
+import { readGlobalState, updateGlobalState } from './global-state.ts'
+import type { GlobalState } from './global-state.ts'
 import { parseSpecArg } from './require-registry.ts'
+import {
+  detectShell,
+  prettyPath,
+  shellPathCommand,
+  shellRcFile,
+} from './shell.ts'
+import type { Shell, ShellOptions } from './shell.ts'
 
 /**
  * Bins linked by a global install. `conflicts` are names skipped because
@@ -48,9 +64,23 @@ import { parseSpecArg } from './require-registry.ts'
  */
 export type GlobalBins = {
   binDir: string
+  source: GlobalBinDirSource
   bins: string[]
   conflicts: string[]
   inPath: boolean
+  /** other bin dirs that had links removed */
+  otherDirs: string[]
+  /** self dir passed over as unwritable, when worth saying */
+  notWritable?: string
+}
+
+export type LinkGlobalBinsOptions = {
+  projectRoot: string
+  scurry: PathScurry
+  force?: boolean
+  binDir: ResolvedGlobalBinDir
+  /** tried once when the self dir refuses writes */
+  fallback?: () => Promise<ResolvedGlobalBinDir>
 }
 
 export type GlobalAddArgs = {
@@ -254,6 +284,8 @@ const linkFiles = (link: string) =>
     shimExts.map(ext => link + ext)
   : [link]
 
+const realOr = (p: string) => realpath(p).catch(() => p)
+
 const isInside = (dir: string, path: string) => {
   const rel = relative(dir, path)
   return !!rel && !isAbsolute(rel) && rel.split(sep)[0] !== '..'
@@ -268,15 +300,23 @@ export const unlinkGlobalBins = async (
   dirs: string[],
   remover?: RollbackRemove,
 ): Promise<string[]> => {
-  const entries = await readdir(binDir).catch(() => [])
-  const names = new Set(
-    entries.map(e => e.replace(/\.(cmd|ps1|pwsh)$/i, '')),
-  )
+  const entries = await readdir(binDir, {
+    withFileTypes: true,
+  }).catch(() => [])
+  const names = new Set<string>()
+  for (const e of entries) {
+    const name = e.name.replace(/\.(cmd|ps1|pwsh)$/i, '')
+    // never read plain files, they may be big binaries
+    if (name !== e.name || e.isSymbolicLink()) names.add(name)
+  }
+  // links may use either spelling of a symlinked dir
+  const roots = [...dirs, ...(await Promise.all(dirs.map(realOr)))]
   const removed: string[] = []
   for (const name of names) {
     const link = resolve(binDir, name)
     const found = await findCmdShimIfExists(link)
-    if (!found || !dirs.some(dir => isInside(dir, found[1]))) continue
+    if (!found || !roots.some(dir => isInside(dir, found[1])))
+      continue
     await Promise.all(
       linkFiles(link).map(f =>
         remover ? remover.rm(f) : rm(f, { force: true }),
@@ -310,18 +350,62 @@ const safeBin = (bin: string) =>
 const sorted = (s: Set<string>) =>
   [...s].sort((a, b) => a.localeCompare(b, 'en'))
 
-/**
- * Link the bins of the deps of global workspaces into `<root>/bin`,
- * after removing the ones they owned. All workspaces when no
- * `importers` given.
- */
-export const linkGlobalBins = async (
+const dedupe = (dirs: string[]) =>
+  dirs.filter((d, i) => dirs.findIndex(x => samePath(x, d)) === i)
+
+// recorded dirs and `<root>/bin`, but not `current`
+const otherBinDirs = async (
+  root: string,
+  current: string,
+  state: GlobalState,
+) => {
+  const g = await realpath(globalBinDir(root)).catch(() => undefined)
+  return dedupe([...(state.binDirs ?? []), ...(g ? [g] : [])]).filter(
+    d => !samePath(d, current),
+  )
+}
+
+const isDir = (d: string) =>
+  stat(d).then(
+    s => s.isDirectory(),
+    () => false,
+  )
+
+const isPermError = (er: unknown) =>
+  er instanceof Error &&
+  /^(EACCES|EPERM)$/.test(String((er as NodeJS.ErrnoException).code))
+
+// --force in a shared dir: only links and shims, never plain files
+// (other tools' binaries) or the running vlt or node
+const replaceable = async (link: string, keep: string[]) => {
+  if (
+    process.platform !== 'win32' &&
+    !(await lstat(link)).isSymbolicLink()
+  ) {
+    return false
+  }
+  const found = await findCmdShimIfExists(link)
+  if (!found) return false
+  const to = await realOr(found[1])
+  return !keep.some(k => samePath(k, to))
+}
+
+type Linked = {
+  binDir: ResolvedGlobalBinDir
+  state: GlobalState
+  bins: string[]
+  conflicts: string[]
+  otherDirs: string[]
+}
+
+const linkBins = async (
   graph: Graph,
-  opts: { projectRoot: string; scurry: PathScurry; force?: boolean },
+  opts: LinkGlobalBinsOptions,
   importers?: Set<DepID>,
-): Promise<GlobalBins> => {
+): Promise<Linked> => {
   const { projectRoot, scurry, force } = opts
-  const binDir = globalBinDir(projectRoot)
+  const { dir: binDir, source } = opts.binDir
+  const state = await readGlobalState(projectRoot)
   const targets = [...graph.importers]
     .filter(
       i =>
@@ -333,14 +417,30 @@ export const linkGlobalBins = async (
     importers ?
       targets.map(i => i.resolvedLocation(scurry))
     : [resolve(projectRoot, globalWorkspacesDir)]
+  const keep =
+    force && source !== 'global-dir' ?
+      await Promise.all(
+        [process.execPath, ...process.argv.slice(1, 2)].map(realOr),
+      )
+    : undefined
   const remover = new RollbackRemove()
   const bins = new Set<string>()
   const conflicts = new Set<string>()
+  const otherDirs: string[] = []
+  const created: string[] = []
   try {
     await unlinkGlobalBins(binDir, owned, remover)
+    for (const d of await otherBinDirs(projectRoot, binDir, state)) {
+      // best effort, an old dir may be gone or read-only
+      const removed = await unlinkGlobalBins(d, owned, remover).catch(
+        () => [],
+      )
+      if (removed.length) otherDirs.push(d)
+    }
     await mkdir(binDir, { recursive: true })
     for (const importer of targets) {
-      const nm = importer.nodeModules(scurry)
+      // canonical, like binDir: short relative links
+      const nm = await realOr(importer.nodeModules(scurry))
       for (const edge of importer.edgesOut.values()) {
         for (const [bin, path] of Object.entries(
           edge.to?.bins ?? {},
@@ -353,16 +453,21 @@ export const linkGlobalBins = async (
             continue
           }
           const link = resolve(binDir, bin)
-          if (!force && (await exists(link))) {
+          if (
+            (await exists(link)) &&
+            (!force || (keep && !(await replaceable(link, keep))))
+          ) {
             conflicts.add(bin)
             continue
           }
           if (win32) {
+            created.push(link)
             await cmdShimIfExists(target, link, remover)
           } else {
             await remover.rm(link)
             // already moved aside, so ours from this run (--force)
             await rm(link, { force: true })
+            created.push(link)
             await symlink(relative(binDir, target), link)
           }
           bins.add(bin)
@@ -370,24 +475,98 @@ export const linkGlobalBins = async (
       }
     }
   } catch (er) {
+    // the remover only restores what it moved aside
+    await Promise.all(
+      created.flatMap(linkFiles).map(f => rm(f, { force: true })),
+    )
     await remover.rollback()
     throw er
   }
   remover.confirm()
   return {
-    binDir,
+    binDir: opts.binDir,
+    state,
     bins: sorted(bins),
     conflicts: sorted(conflicts),
-    inPath: isInPath(binDir),
+    otherDirs,
   }
 }
 
-/** unlink the bins of the given workspace dirs and remove them */
+// after linking, so a failed write never triggers the fallback
+const recordBinDir = async (
+  projectRoot: string,
+  { binDir, state, bins, conflicts, otherDirs }: Linked,
+): Promise<GlobalBins> => {
+  const { dir, source, inPath, notWritable } = binDir
+  // local-bin notice once, global-dir reason with every PATH warning
+  const shown =
+    (bins.length > 0 || conflicts.length > 0) &&
+    (source === 'global-dir' || !state.localBinNoticed)
+  const why = shown ? notWritable : undefined
+  const notice = !!why && source === 'local-bin'
+  const recorded: string[] = []
+  for (const d of state.binDirs ?? []) {
+    if (await isDir(d)) recorded.push(d)
+  }
+  await updateGlobalState(projectRoot, s => ({
+    ...s,
+    binDirs: dedupe([...recorded, dir]),
+    ...(notice ? { localBinNoticed: true } : {}),
+  }))
+  return {
+    binDir: dir,
+    source,
+    bins,
+    conflicts,
+    inPath,
+    otherDirs,
+    ...(why ? { notWritable: why } : {}),
+  }
+}
+
+/**
+ * Link the bins of the deps of global workspaces into `opts.binDir`,
+ * after removing the ones they owned there and in other bin dirs used
+ * before. All workspaces when no `importers` given.
+ */
+export const linkGlobalBins = async (
+  graph: Graph,
+  opts: LinkGlobalBinsOptions,
+  importers?: Set<DepID>,
+): Promise<GlobalBins> => {
+  let linked: Linked
+  try {
+    linked = await linkBins(graph, opts, importers)
+  } catch (er) {
+    const { binDir, fallback } = opts
+    // access(W_OK) can pass where writes fail: win32, macOS TCC
+    if (binDir.source !== 'self' || !fallback || !isPermError(er)) {
+      throw er
+    }
+    linked = await linkBins(
+      graph,
+      { ...opts, binDir: await fallback() },
+      importers,
+    )
+  }
+  return recordBinDir(opts.projectRoot, linked)
+}
+
+/**
+ * Unlink the bins of the given workspace dirs from `binDir` (default
+ * `<root>/bin`) and other bin dirs used before, and remove them.
+ */
 export const removeGlobalPackages = async (
   projectRoot: string,
   dirs: string[],
+  binDir?: string,
 ): Promise<void> => {
-  await unlinkGlobalBins(globalBinDir(projectRoot), dirs)
+  const current = binDir ?? globalBinDir(projectRoot)
+  await unlinkGlobalBins(current, dirs)
+  const state = await readGlobalState(projectRoot)
+  for (const d of await otherBinDirs(projectRoot, current, state)) {
+    await unlinkGlobalBins(d, dirs).catch(() => [])
+  }
   await removeGlobalWorkspaces(dirs)
 }
 
@@ -395,11 +574,53 @@ export const removeGlobalPackages = async (
 export const isInPath = (
   dir: string,
   PATH = process.env.PATH ?? '',
-): boolean => {
-  const norm = (p: string) => {
-    const r = resolve(p)
-    return process.platform === 'win32' ? r.toLowerCase() : r
+): boolean => PATH.split(delimiter).some(p => !!p && samePath(p, dir))
+
+// bin dirs are canonical, home may not be
+const homeOf = (dir: string, home: string, win32: boolean) => {
+  if (prettyPath(dir, home, win32) !== dir) return home
+  try {
+    return realpathSync.native(home)
+  } catch {
+    return home
   }
-  const d = norm(dir)
-  return PATH.split(delimiter).some(p => !!p && norm(p) === d)
+}
+
+/** human lines about linked bins, with the `PATH` fix when needed */
+export const globalBinsLines = (
+  g: GlobalBins,
+  opts: ShellOptions & { shell?: Shell } = {},
+): string[] => {
+  const {
+    shell = detectShell(opts.env, opts.platform),
+    platform = process.platform,
+  } = opts
+  const win32 = platform === 'win32'
+  const home = homeOf(g.binDir, opts.home ?? homedir(), win32)
+  const pretty = (p: string) => prettyPath(p, home, win32)
+  const dir = pretty(g.binDir)
+  const lines: string[] = []
+  if (g.notWritable) {
+    lines.push(
+      `ℹ️  Using ${dir} because ${pretty(g.notWritable)} is not writable.`,
+    )
+  }
+  if (g.bins.length) {
+    lines.push(`🔗 Linked ${g.bins.join(', ')} in ${dir}`)
+  }
+  if (g.conflicts.length) {
+    lines.push(
+      `⚠️  Skipped ${g.conflicts.join(', ')}: already in ${dir} (use --force to overwrite)`,
+    )
+  }
+  if (!g.inPath && (g.bins.length || g.conflicts.length)) {
+    const rc = shellRcFile(shell, opts)
+    const what = g.bins.length ? g.bins.join(', ') : 'global bins'
+    lines.push(
+      `⚠️  ${dir} is not on your PATH, so ${what} can't be run yet.`,
+      `   Set --global-bin-dir to a folder on your PATH, or ${rc ? `add this line to ${rc}` : 'run'}:`,
+      `     ${shellPathCommand(shell, g.binDir, { ...opts, home })}`,
+    )
+  }
+  return lines
 }

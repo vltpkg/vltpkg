@@ -2160,4 +2160,106 @@ t.test('--global', async t => {
     const conf = await Config.load(cwd, ['install', '-g'], true)
     t.equal(conf.globalRoot, dflt)
   })
+
+  t.test('global-bin-dir', async t => {
+    const gArgs = (g: string, ...a: string[]) => [
+      'install',
+      '-g',
+      `--global-dir=${g}`,
+      ...a,
+    ]
+
+    t.test('cli', async t => {
+      const { Config, cwd, g, home } = await setup(t)
+      for (const [dir, want] of [
+        ['~/b', resolve(home, 'b')],
+        ['b', resolve(cwd, 'b')],
+      ] as const) {
+        const conf = await Config.load(
+          cwd,
+          gArgs(g, `--global-bin-dir=${dir}`),
+          true,
+        )
+        t.equal(conf.globalBinDir, want, dir)
+        t.equal(
+          process.env.VLT_GLOBAL_BIN_DIR,
+          want,
+          'for nested vlt',
+        )
+        clearEnv()
+      }
+    })
+
+    t.test('env', async t => {
+      const { Config, cwd, g } = await setup(t)
+      process.env.VLT_GLOBAL_BIN_DIR = '../b'
+      const conf = await Config.load(cwd, gArgs(g), true)
+      t.equal(conf.globalBinDir, resolve(cwd, '../b'))
+    })
+
+    t.test('user config', async t => {
+      const { Config, cwd, g, home } = await setup(t, {
+        'global-bin-dir': '~/b',
+      })
+      const want = resolve(home, 'b')
+      const conf = await Config.load(cwd, gArgs(g), true)
+      t.equal(conf.globalBinDir, want)
+      clearEnv()
+      const empty = await Config.load(
+        cwd,
+        gArgs(g, '--global-bin-dir='),
+        true,
+      )
+      t.equal(empty.globalBinDir, want, 'empty cli value')
+      clearEnv()
+      process.env.VLT_GLOBAL_BIN_DIR = ''
+      const emptyEnv = await Config.load(cwd, gArgs(g), true)
+      t.equal(emptyEnv.globalBinDir, want, 'empty env value')
+    })
+
+    t.test('relative in user config', async t => {
+      const { Config, cwd, g } = await setup(t, {
+        'global-bin-dir': 'b',
+      })
+      await t.rejects(Config.load(cwd, gArgs(g), true), {
+        message: 'global-bin-dir in the user config must be absolute',
+        cause: { code: 'ECONFIG', found: 'b' },
+      })
+      clearEnv()
+      const conf = await Config.load(cwd, ['install'], true)
+      t.equal(conf.globalBinDir, undefined, 'not read without -g')
+    })
+
+    t.test('never from the global project vlt.json', async t => {
+      const { Config, cwd, g } = await setup(t)
+      writeFileSync(
+        resolve(g, 'vlt.json'),
+        JSON.stringify({
+          workspaces: 'packages/*',
+          config: { 'global-bin-dir': '/x' },
+        }),
+      )
+      const conf = await Config.load(cwd, gArgs(g), true)
+      t.equal(conf.globalBinDir, undefined)
+      t.equal(process.env.VLT_GLOBAL_BIN_DIR, undefined)
+    })
+
+    t.test('project vlt.json value not passed on', async t => {
+      const { Config, cwd } = await setup(t)
+      writeFileSync(
+        resolve(cwd, 'vlt.json'),
+        JSON.stringify({ config: { 'global-bin-dir': '/x' } }),
+      )
+      const conf = await Config.load(cwd, ['install'], true)
+      t.equal(conf.globalBinDir, undefined)
+      t.equal(process.env.VLT_GLOBAL_BIN_DIR, undefined)
+      clearEnv()
+      process.env.VLT_GLOBAL_BIN_DIR = '/y'
+      await Config.load(cwd, ['install'], true)
+      t.equal(process.env.VLT_GLOBAL_BIN_DIR, '/y', 'env kept')
+      clearEnv()
+      await Config.load(cwd, ['install', '--global-bin-dir=/z'], true)
+      t.equal(process.env.VLT_GLOBAL_BIN_DIR, '/z', 'cli passed on')
+    })
+  })
 })

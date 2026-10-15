@@ -8,16 +8,22 @@ import {
   lstatSync,
   readFileSync,
   readlinkSync,
+  realpathSync,
   writeFileSync,
 } from 'node:fs'
+import * as fsp from 'node:fs/promises'
 import { rm } from 'node:fs/promises'
-import { delimiter, resolve } from 'node:path'
+import { delimiter, join, resolve, sep } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Test } from 'tap'
 import type { LoadedConfig } from '../src/config/index.ts'
+import type { GlobalBins } from '../src/global.ts'
+import type { ResolvedGlobalBinDir } from '../src/global-bin-dir.ts'
 
 const removers: MockRemover[] = []
+// rm under this dir throws
+let removeFails: string | undefined
 class MockRemover {
   removed: string[] = []
   confirmed = false
@@ -27,6 +33,9 @@ class MockRemover {
   }
   // like RollbackRemove, a path is only moved aside once
   async rm(path: string) {
+    if (removeFails && path.startsWith(removeFails)) {
+      throw Object.assign(new Error('nope'), { code: 'EACCES' })
+    }
     if (this.removed.includes(path)) return
     this.removed.push(path)
     await rm(path, { force: true })
@@ -40,13 +49,32 @@ class MockRemover {
 }
 
 const shims: [string, string][] = []
+// set: shims also write `to`, the nth (0-based) then throws
+let shimFails: number | undefined
 const mockShim = async (from: string, to: string) => {
   shims.push([from, to])
   writeFileSync(to + '.cmd', from)
+  if (shimFails !== undefined) {
+    writeFileSync(to, from)
+    if (!shimFails--) {
+      throw Object.assign(new Error('nope'), { code: 'EIO' })
+    }
+  }
 }
+
+const inspected: string[] = []
+// symlink(target, path) throws this when path is under `dir`
+let symlinkFails:
+  | { dir: string; code: string; after?: number; notError?: boolean }
+  | undefined
+// rm under this dir throws
+let rmFails: string | undefined
+// rename onto this path throws this code
+let renameFails: { path: string; code: string } | undefined
 
 const {
   assertGlobalOptions,
+  globalBinsLines,
   isInPath,
   linkGlobalBins,
   parseGlobalAddArgs,
@@ -60,6 +88,40 @@ const {
     '@vltpkg/rollback-remove': { RollbackRemove: MockRemover },
     '@vltpkg/cmd-shim': t.createMock(cmdShim, {
       cmdShimIfExists: mockShim,
+      findCmdShimIfExists: async (p: string) => {
+        inspected.push(p)
+        return cmdShim.findCmdShimIfExists(p)
+      },
+    }),
+    'node:fs/promises': t.createMock(fsp, {
+      symlink: async (target: string, path: string) => {
+        const f = symlinkFails
+        if (f && path.startsWith(f.dir)) {
+          if (!f.after) {
+            const er: unknown =
+              f.notError ?
+                { code: f.code }
+              : Object.assign(new Error('nope'), { code: f.code })
+            throw er
+          }
+          f.after--
+        }
+        return fsp.symlink(target, path)
+      },
+      rm: async (path: string, o?: { force?: boolean }) => {
+        if (rmFails && path.startsWith(rmFails)) {
+          throw Object.assign(new Error('nope'), { code: 'EACCES' })
+        }
+        return fsp.rm(path, o)
+      },
+      rename: async (from: string, to: string) => {
+        if (renameFails?.path === to) {
+          throw Object.assign(new Error('nope'), {
+            code: renameFails.code,
+          })
+        }
+        return fsp.rename(from, to)
+      },
     }),
   },
 )
@@ -367,11 +429,28 @@ const mockGraph = (
   return { importers, mainImporter } as unknown as Graph
 }
 
-const opts = (projectRoot: string, force = false) => ({
+// canonical, like a resolved bin dir
+const binOf = (root: string, dir = 'bin') =>
+  resolve(realpathSync.native(root), dir)
+
+const opts = (
+  projectRoot: string,
+  force = false,
+  binDir: Partial<ResolvedGlobalBinDir> = {},
+) => ({
   projectRoot,
   scurry: new PathScurry(projectRoot),
   force,
+  binDir: {
+    dir: binOf(projectRoot),
+    source: 'global-dir' as const,
+    inPath: false,
+    ...binDir,
+  },
 })
+
+const readState = (root: string) =>
+  readJSON(resolve(root, 'global-state.json'))
 
 const target = (root: string, ws: string, dep: string, p: string) =>
   resolve(root, 'packages', ws, 'node_modules', dep, p)
@@ -379,12 +458,18 @@ const target = (root: string, ws: string, dep: string, p: string) =>
 const linkTarget = (root: string, bin: string) =>
   resolve(root, 'bin', readlinkSync(resolve(root, 'bin', bin)))
 
-t.test('linkGlobalBins', async t => {
-  t.beforeEach(() => {
-    removers.length = 0
-    shims.length = 0
-  })
+t.beforeEach(() => {
+  removers.length = 0
+  shims.length = 0
+  shimFails = undefined
+  inspected.length = 0
+  removeFails = undefined
+  symlinkFails = undefined
+  rmFails = undefined
+  renameFails = undefined
+})
 
+t.test('linkGlobalBins', async t => {
   t.test('links bins of targeted workspaces', async t => {
     posix(t)
     const root = t.testdir({
@@ -436,11 +521,14 @@ t.test('linkGlobalBins', async t => {
       new Set([wsId('a-global-ws'), wsId('b-global-ws')]),
     )
     t.strictSame(res, {
-      binDir: resolve(root, 'bin'),
+      binDir: binOf(root),
+      source: 'global-dir',
       bins: ['a', 'b'],
       conflicts: ['dup', 'foreign'],
       inPath: false,
+      otherDirs: [],
     })
+    t.strictSame(readState(root), { binDirs: [binOf(root)] })
     t.equal(
       linkTarget(root, 'a'),
       target(root, 'a-global-ws', 'a', 'bin/a.js'),
@@ -541,16 +629,20 @@ t.test('linkGlobalBins', async t => {
     t.notOk(existsSync(resolve(root, 'bin/gone')))
   })
 
-  t.test('inPath', async t => {
+  t.test('inPath passed through', async t => {
     posix(t)
     const root = t.testdir()
-    setPath(t, resolve(root, 'bin'))
-    const res = await linkGlobalBins(mockGraph(root, {}), opts(root))
+    const res = await linkGlobalBins(
+      mockGraph(root, {}),
+      opts(root, false, { inPath: true, source: 'config' }),
+    )
     t.strictSame(res, {
-      binDir: resolve(root, 'bin'),
+      binDir: binOf(root),
+      source: 'config',
       bins: [],
       conflicts: [],
       inPath: true,
+      otherDirs: [],
     })
   })
 
@@ -574,10 +666,71 @@ t.test('linkGlobalBins', async t => {
     t.strictSame(res.conflicts, ['taken'])
     t.strictSame(shims, [
       [
-        target(root, 'a-global-ws', 'a', 'a.js'),
-        resolve(root, 'bin/a'),
+        target(realpathSync.native(root), 'a-global-ws', 'a', 'a.js'),
+        resolve(binOf(root), 'a'),
       ],
     ])
+  })
+
+  t.test('--force in a shared dir', async t => {
+    posix(t)
+    const root = t.testdir({
+      self: {
+        plain: 'a binary',
+        link: t.fixture('symlink', '../npm/link.js'),
+        vlt: t.fixture('symlink', '../npm/vlt.js'),
+      },
+      npm: { 'vlt.js': '' },
+    })
+    const self = binOf(root, 'self')
+    const vlt = resolve(root, 'npm/vlt.js')
+    t.intercept(process, 'argv', { value: [process.execPath, vlt] })
+    const res = await linkGlobalBins(
+      mockGraph(root, {
+        'a-global-ws': {
+          a: { bins: { plain: 'p.js', link: 'l.js', vlt: 'v.js' } },
+        },
+      }),
+      opts(root, true, { dir: self, source: 'self', inPath: true }),
+    )
+    t.strictSame(res.bins, ['link'])
+    t.strictSame(res.conflicts, ['plain', 'vlt'])
+    t.equal(readFileSync(resolve(self, 'plain'), 'utf8'), 'a binary')
+    t.equal(
+      realpathSync.native(resolve(self, 'vlt')),
+      realpathSync.native(vlt),
+      'running vlt kept',
+    )
+    t.equal(
+      resolve(self, readlinkSync(resolve(self, 'link'))),
+      target(realpathSync.native(root), 'a-global-ws', 'a', 'l.js'),
+    )
+  })
+
+  t.test('--force in a shared dir, win32', async t => {
+    t.intercept(process, 'platform', { value: 'win32' })
+    const root = t.testdir({
+      self: {
+        'taken.cmd': '@echo off',
+        shim: 'exec "$basedir/../npm/s.js" "$@"\n',
+      },
+      packages: {
+        'a-global-ws': {
+          node_modules: { a: { 't.js': '', 's.js': '' } },
+        },
+      },
+    })
+    const self = binOf(root, 'self')
+    const res = await linkGlobalBins(
+      mockGraph(root, {
+        'a-global-ws': {
+          a: { bins: { taken: 't.js', shim: 's.js' } },
+        },
+      }),
+      opts(root, true, { dir: self, source: 'self', inPath: true }),
+    )
+    t.strictSame(res.bins, ['shim'])
+    t.strictSame(res.conflicts, ['taken'])
   })
 
   t.test('rollback on error', async t => {
@@ -588,6 +741,390 @@ t.test('linkGlobalBins', async t => {
     })
     t.equal(removers[0]?.rolledBack, true)
     t.equal(removers[0]?.confirmed, false)
+  })
+
+  const aGraph = (root: string, bins: Record<string, string>) =>
+    mockGraph(root, { 'a-global-ws': { a: { bins } } })
+  const aLink = (p: string) =>
+    t.fixture(
+      'symlink',
+      `../packages/a-global-ws/node_modules/a/${p}`,
+    )
+  const noLink = (p: string) => t.throws(() => lstatSync(p), p)
+
+  t.test('sweeps other bin dirs', async t => {
+    posix(t)
+    const root = t.testdir({
+      old: {
+        a: aLink('a.js'),
+        foreign: t.fixture('symlink', '../x/x'),
+      },
+      bin: { b: aLink('b.js') },
+      self: {},
+      packages: {},
+    })
+    const [old, self] = [binOf(root, 'old'), binOf(root, 'self')]
+    writeFileSync(
+      resolve(root, 'global-state.json'),
+      JSON.stringify({
+        binDirs: [old, binOf(root, 'gone')],
+        pathSetup: 'declined',
+      }),
+    )
+    const res = await linkGlobalBins(
+      aGraph(root, { a: 'a.js' }),
+      opts(root, false, { dir: self, source: 'self', inPath: true }),
+    )
+    t.strictSame(res, {
+      binDir: self,
+      source: 'self',
+      bins: ['a'],
+      conflicts: [],
+      inPath: true,
+      otherDirs: [old, binOf(root)],
+    })
+    noLink(resolve(old, 'a'))
+    noLink(resolve(root, 'bin/b'))
+    t.ok(
+      lstatSync(resolve(old, 'foreign')).isSymbolicLink(),
+      'foreign',
+    )
+    t.equal(
+      resolve(self, readlinkSync(resolve(self, 'a'))),
+      target(realpathSync.native(root), 'a-global-ws', 'a', 'a.js'),
+    )
+    t.strictSame(readState(root), {
+      binDirs: [old, self],
+      pathSetup: 'declined',
+    })
+  })
+
+  t.test('other bin dir failure tolerated', async t => {
+    posix(t)
+    const root = t.testdir({ old: { a: aLink('a.js') }, self: {} })
+    const [old, self] = [binOf(root, 'old'), binOf(root, 'self')]
+    writeFileSync(
+      resolve(root, 'global-state.json'),
+      JSON.stringify({ binDirs: [old] }),
+    )
+    removeFails = old
+    const res = await linkGlobalBins(
+      aGraph(root, { a: 'a.js' }),
+      opts(root, false, { dir: self, source: 'self', inPath: true }),
+    )
+    t.strictSame(res.otherDirs, [])
+    t.strictSame(res.bins, ['a'])
+    t.ok(lstatSync(resolve(old, 'a')).isSymbolicLink())
+  })
+
+  t.test('malformed state', async t => {
+    posix(t)
+    const root = t.testdir({ 'global-state.json': '{' })
+    await linkGlobalBins(mockGraph(root, {}), opts(root))
+    t.strictSame(readState(root), { binDirs: [binOf(root)] })
+  })
+
+  t.test('global root via a dir symlink', async t => {
+    posix(t)
+    const dir = t.testdir({
+      real: { bin: {} },
+      link: t.fixture('symlink', 'real'),
+    })
+    const root = resolve(dir, 'link')
+    const res = await linkGlobalBins(mockGraph(root, {}), opts(root))
+    t.equal(res.binDir, binOf(dir, 'real/bin'))
+    t.strictSame(res.otherDirs, [])
+    t.strictSame(readState(root), {
+      binDirs: [binOf(dir, 'real/bin')],
+    })
+  })
+
+  for (const code of ['EACCES', 'EPERM']) {
+    t.test(`self dir refuses writes, ${code}`, async t => {
+      posix(t)
+      const root = t.testdir({ self: {}, local: {} })
+      const [self, local] = [
+        binOf(root, 'self'),
+        binOf(root, 'local'),
+      ]
+      symlinkFails = { dir: self, code }
+      let fallbacks = 0
+      const res = await linkGlobalBins(aGraph(root, { a: 'a.js' }), {
+        ...opts(root, false, {
+          dir: self,
+          source: 'self',
+          inPath: true,
+        }),
+        fallback: async () => {
+          fallbacks++
+          return {
+            dir: local,
+            source: 'local-bin',
+            inPath: true,
+            notWritable: self,
+          }
+        },
+      })
+      t.equal(fallbacks, 1)
+      t.strictSame(res, {
+        binDir: local,
+        source: 'local-bin',
+        bins: ['a'],
+        conflicts: [],
+        inPath: true,
+        otherDirs: [],
+        notWritable: self,
+      })
+      t.ok(lstatSync(resolve(local, 'a')).isSymbolicLink())
+      noLink(resolve(self, 'a'))
+      t.strictSame(readState(root), {
+        binDirs: [local],
+        localBinNoticed: true,
+      })
+    })
+  }
+
+  t.test('no fallback', async t => {
+    posix(t)
+    const root = t.testdir({ self: {} })
+    const self = binOf(root, 'self')
+    const fallback = async (): Promise<ResolvedGlobalBinDir> => {
+      throw new Error('not called')
+    }
+    const graph = aGraph(root, { a: 'a.js' })
+    symlinkFails = { dir: self, code: 'EACCES' }
+    await t.rejects(
+      linkGlobalBins(
+        graph,
+        opts(root, false, {
+          dir: self,
+          source: 'self',
+          inPath: true,
+        }),
+      ),
+      { code: 'EACCES' },
+      'none given',
+    )
+    await t.rejects(
+      linkGlobalBins(graph, {
+        ...opts(root, false, { dir: self, source: 'config' }),
+        fallback,
+      }),
+      { code: 'EACCES' },
+      'not the self dir',
+    )
+    symlinkFails = { dir: self, code: 'EEXIST' }
+    await t.rejects(
+      linkGlobalBins(graph, {
+        ...opts(root, false, {
+          dir: self,
+          source: 'self',
+          inPath: true,
+        }),
+        fallback,
+      }),
+      { code: 'EEXIST' },
+      'not a permission error',
+    )
+  })
+
+  t.test('notWritable notices', async t => {
+    posix(t)
+    const root = t.testdir({ local: {} })
+    const graph = aGraph(root, { a: 'a.js' })
+    const local = opts(root, false, {
+      dir: binOf(root, 'local'),
+      source: 'local-bin',
+      inPath: true,
+      notWritable: '/self',
+    })
+    t.equal((await linkGlobalBins(graph, local)).notWritable, '/self')
+    t.equal(
+      (await linkGlobalBins(graph, local)).notWritable,
+      undefined,
+      'local-bin once',
+    )
+    t.match(readState(root), { localBinNoticed: true })
+    const g = opts(root, false, { notWritable: '/self' })
+    t.equal((await linkGlobalBins(graph, g)).notWritable, '/self')
+    t.equal(
+      (await linkGlobalBins(graph, g)).notWritable,
+      '/self',
+      'global-dir every run',
+    )
+    t.match(readState(root), { localBinNoticed: true })
+  })
+
+  t.test('no notice when nothing linked', async t => {
+    posix(t)
+    const root = t.testdir({ local: {} })
+    const graph = mockGraph(root, {})
+    const local = opts(root, false, {
+      dir: binOf(root, 'local'),
+      source: 'local-bin',
+      inPath: true,
+      notWritable: '/self',
+    })
+    t.equal(
+      (await linkGlobalBins(graph, local)).notWritable,
+      undefined,
+    )
+    t.notMatch(
+      readState(root),
+      { localBinNoticed: true },
+      'not used up',
+    )
+    const g = opts(root, false, { notWritable: '/self' })
+    t.equal((await linkGlobalBins(graph, g)).notWritable, undefined)
+  })
+
+  t.test('state write failure is not a link error', async t => {
+    posix(t)
+    const root = t.testdir({ self: {} })
+    const self = binOf(root, 'self')
+    renameFails = {
+      path: resolve(root, 'global-state.json'),
+      code: 'EPERM',
+    }
+    await t.rejects(
+      linkGlobalBins(aGraph(root, { a: 'a.js' }), {
+        ...opts(root, false, {
+          dir: self,
+          source: 'self',
+          inPath: true,
+        }),
+        fallback: async () => {
+          throw new Error('not called')
+        },
+      }),
+      { code: 'EPERM' },
+    )
+    t.ok(lstatSync(resolve(self, 'a')).isSymbolicLink(), 'link kept')
+  })
+
+  t.test('non-Error rejection is rethrown', async t => {
+    posix(t)
+    const root = t.testdir({ self: {} })
+    const self = binOf(root, 'self')
+    symlinkFails = { dir: self, code: 'EACCES', notError: true }
+    await t.rejects(
+      linkGlobalBins(aGraph(root, { a: 'a.js' }), {
+        ...opts(root, false, {
+          dir: self,
+          source: 'self',
+          inPath: true,
+        }),
+        fallback: async () => {
+          throw new Error('not called')
+        },
+      }),
+      { code: 'EACCES' },
+    )
+  })
+
+  t.test('created shims removed on rollback, win32', async t => {
+    t.intercept(process, 'platform', { value: 'win32' })
+    const root = t.testdir({
+      packages: {
+        'a-global-ws': {
+          node_modules: { a: { 'a.js': '', 'b.js': '' } },
+        },
+      },
+    })
+    shimFails = 1
+    await t.rejects(
+      linkGlobalBins(
+        aGraph(root, { a: 'a.js', b: 'b.js' }),
+        opts(root),
+      ),
+      { code: 'EIO' },
+    )
+    t.equal(shims.length, 2)
+    for (const f of ['a', 'a.cmd', 'b', 'b.cmd']) {
+      t.notOk(existsSync(resolve(binOf(root), f)), f)
+    }
+  })
+
+  t.test(
+    'global root via a dir symlink, relative old links',
+    async t => {
+      posix(t)
+      const dir = t.testdir({
+        real: {
+          bin: {
+            a: t.fixture(
+              'symlink',
+              '../packages/a-global-ws/node_modules/a/old.js',
+            ),
+          },
+          packages: {
+            'a-global-ws': { node_modules: { a: { 'a.js': '' } } },
+          },
+        },
+        link: t.fixture('symlink', 'real'),
+      })
+      const root = resolve(dir, 'link')
+      const res = await linkGlobalBins(
+        aGraph(root, { a: 'a.js' }),
+        opts(root),
+      )
+      t.strictSame(res.bins, ['a'], 'old link owned')
+      t.strictSame(res.conflicts, [])
+      t.equal(
+        readlinkSync(resolve(dir, 'real/bin/a')),
+        join(
+          '..',
+          'packages',
+          'a-global-ws',
+          'node_modules',
+          'a',
+          'a.js',
+        ),
+        'short, canonical',
+      )
+    },
+  )
+
+  t.test('created links removed on rollback', async t => {
+    posix(t)
+    const root = t.testdir()
+    symlinkFails = { dir: binOf(root), code: 'EIO', after: 1 }
+    await t.rejects(
+      linkGlobalBins(
+        aGraph(root, { a: 'a.js', b: 'b.js' }),
+        opts(root),
+      ),
+      { code: 'EIO' },
+    )
+    noLink(resolve(binOf(root), 'a'))
+    noLink(resolve(binOf(root), 'b'))
+    t.equal(removers[0]?.rolledBack, true)
+  })
+
+  t.test('symlinked PATH entry (fnm)', async t => {
+    posix(t)
+    const root = t.testdir({
+      real: { bin: {} },
+      shell: t.fixture('symlink', 'real'),
+      packages: {
+        'a-global-ws': { node_modules: { a: { 'a.js': '' } } },
+      },
+    })
+    const dir = realpathSync.native(resolve(root, 'shell/bin'))
+    t.equal(dir, binOf(root, 'real/bin'))
+    await linkGlobalBins(
+      aGraph(root, { a: 'a.js' }),
+      opts(root, false, { dir, source: 'self', inPath: true }),
+    )
+    const want = realpathSync.native(
+      target(root, 'a-global-ws', 'a', 'a.js'),
+    )
+    t.equal(realpathSync.native(resolve(root, 'real/bin/a')), want)
+    t.equal(realpathSync.native(resolve(root, 'shell/bin/a')), want)
+    t.strictSame(
+      await unlinkGlobalBins(dir, [resolve(root, 'packages')]),
+      ['a'],
+    )
   })
 })
 
@@ -622,6 +1159,22 @@ t.test('unlinkGlobalBins', async t => {
     t.ok(lstatSync(resolve(root, 'bin/other')).isSymbolicLink())
     t.ok(existsSync(resolve(root, 'bin/packages.cmd')))
   })
+
+  t.test('never reads plain files', async t => {
+    posix(t)
+    const root = t.testdir({
+      bin: {
+        node: 'a big binary',
+        a: t.fixture('symlink', '../packages/a-global-ws/a.js'),
+        'x.cmd': 'shim',
+      },
+    })
+    await unlinkGlobalBins(resolve(root, 'bin'), [resolve(root, 'x')])
+    t.strictSame(inspected.sort(), [
+      resolve(root, 'bin/a'),
+      resolve(root, 'bin/x'),
+    ])
+  })
 })
 
 t.test('removeGlobalWorkspaces / removeGlobalPackages', async t => {
@@ -645,6 +1198,36 @@ t.test('removeGlobalWorkspaces / removeGlobalPackages', async t => {
   await removeGlobalWorkspaces([ws('b-global-ws'), ws('c-global-ws')])
   t.notOk(existsSync(ws('b-global-ws')))
   t.notOk(existsSync(ws('c-global-ws')))
+
+  t.test('all recorded bin dirs', async t => {
+    const a = t.fixture('symlink', '../packages/a-global-ws/a.js')
+    const root = t.testdir({
+      cur: { a },
+      old: { a },
+      bad: { a },
+      bin: { a },
+      packages: { 'a-global-ws': { 'package.json': '{}' } },
+    })
+    const [old, bad] = [binOf(root, 'old'), binOf(root, 'bad')]
+    writeFileSync(
+      resolve(root, 'global-state.json'),
+      JSON.stringify({ binDirs: [old, bad] }),
+    )
+    rmFails = bad
+    await removeGlobalPackages(
+      root,
+      [resolve(root, 'packages/a-global-ws')],
+      binOf(root, 'cur'),
+    )
+    for (const d of ['cur', 'old', 'bin']) {
+      t.throws(() => lstatSync(resolve(root, d, 'a')), d)
+    }
+    t.ok(
+      lstatSync(resolve(bad, 'a')).isSymbolicLink(),
+      'failure tolerated',
+    )
+    t.notOk(existsSync(resolve(root, 'packages/a-global-ws')))
+  })
 })
 
 t.test('isInPath', async t => {
@@ -666,5 +1249,99 @@ t.test('isInPath', async t => {
   t.test('case-insensitive on win32', async t => {
     t.intercept(process, 'platform', { value: 'win32' })
     t.equal(isInPath(dir, dir.toUpperCase()), true)
+  })
+})
+
+t.test('globalBinsLines', async t => {
+  const dir = '/h/me/.local/share/vlt/global/bin'
+  const g = (o: Partial<GlobalBins> = {}): GlobalBins => ({
+    binDir: dir,
+    source: 'global-dir',
+    bins: ['a', 'b'],
+    conflicts: ['c'],
+    inPath: false,
+    otherDirs: [],
+    ...o,
+  })
+  const o = { home: '/h/me', platform: 'linux', env: {} } as const
+  const pretty = '~/.local/share/vlt/global/bin'
+  t.strictSame(
+    globalBinsLines(g({ notWritable: '/usr/bin' }), {
+      ...o,
+      shell: 'zsh',
+    }),
+    [
+      `ℹ️  Using ${pretty} because /usr/bin is not writable.`,
+      `🔗 Linked a, b in ${pretty}`,
+      `⚠️  Skipped c: already in ${pretty} (use --force to overwrite)`,
+      `⚠️  ${pretty} is not on your PATH, so a, b can't be run yet.`,
+      '   Set --global-bin-dir to a folder on your PATH, or add this line to ~/.zshrc:',
+      '     export PATH="$HOME/.local/share/vlt/global/bin:$PATH"',
+    ],
+  )
+  t.strictSame(
+    globalBinsLines(g({ bins: [], notWritable: '/h/me/bin' }), {
+      ...o,
+      shell: 'fish',
+    }),
+    [
+      `ℹ️  Using ${pretty} because ~/bin is not writable.`,
+      `⚠️  Skipped c: already in ${pretty} (use --force to overwrite)`,
+      `⚠️  ${pretty} is not on your PATH, so global bins can't be run yet.`,
+      '   Set --global-bin-dir to a folder on your PATH, or run:',
+      '     fish_add_path "$HOME/.local/share/vlt/global/bin"',
+    ],
+  )
+  t.strictSame(
+    globalBinsLines(g({ conflicts: [], inPath: true }), o),
+    [`🔗 Linked a, b in ${pretty}`],
+    'in PATH',
+  )
+  t.strictSame(
+    globalBinsLines(g({ bins: [], conflicts: [] }), o),
+    [],
+    'nothing linked',
+  )
+
+  t.test('symlinked home', async t => {
+    const d = t.testdir({
+      real: { bin: {} },
+      link: t.fixture('symlink', 'real'),
+    })
+    const lines = globalBinsLines(
+      g({ binDir: binOf(d, 'real/bin'), bins: ['a'], conflicts: [] }),
+      { home: resolve(d, 'link'), env: {}, shell: 'bash' },
+    )
+    t.equal(lines[0], `🔗 Linked a in ~${sep}bin`)
+    t.equal(lines.at(-1), '     export PATH="$HOME/bin:$PATH"')
+  })
+
+  t.test('missing home', async t => {
+    t.equal(
+      globalBinsLines(g(), { ...o, home: '/no/such/home' })[0],
+      `🔗 Linked a, b in ${dir}`,
+    )
+  })
+
+  t.test('platform from opts', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.equal(
+      globalBinsLines(g({ binDir: 'C:\\Users\\me\\bin' }), {
+        home: 'C:\\Users\\me',
+        platform: 'win32',
+        env: {},
+        shell: 'cmd',
+      })[0],
+      '🔗 Linked a, b in ~\\bin',
+    )
+  })
+
+  t.test('detects the shell', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.intercept(process, 'env', { value: { SHELL: '/bin/bash' } })
+    t.strictSame(globalBinsLines(g({ conflicts: [] })).slice(-2), [
+      '   Set --global-bin-dir to a folder on your PATH, or add this line to ~/.bashrc:',
+      `     export PATH="${dir}:$PATH"`,
+    ])
   })
 })
