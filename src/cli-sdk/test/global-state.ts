@@ -1,10 +1,11 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import {
   globalStateFile,
   readGlobalState,
   updateGlobalState,
+  writeFileAtomic,
   writeJsonAtomic,
 } from '../src/global-state.ts'
 
@@ -38,10 +39,20 @@ t.test('readGlobalState', async t => {
   )
   t.strictSame(
     await read(
-      JSON.stringify({ binDirs: abs, localBinNoticed: 'yes', x: 1 }),
+      JSON.stringify({
+        binDirs: abs,
+        localBinNoticed: 'yes',
+        pathSetup: 'x',
+        x: 1,
+      }),
     ),
     { x: 1 },
     'mistyped keys dropped',
+  )
+  t.strictSame(
+    await read(JSON.stringify({ pathSetup: true })),
+    {},
+    'pathSetup other than declined dropped',
   )
 })
 
@@ -78,4 +89,27 @@ t.test('writeJsonAtomic', async t => {
   const root = t.testdir({ dir: {} })
   await t.rejects(writeJsonAtomic(resolve(root, 'dir'), {}))
   t.strictSame(readdirSync(root), ['dir'], 'no tmp left')
+})
+
+t.test('writeFileAtomic', async t => {
+  const root = t.testdir({ dir: {}, f: 'old' })
+  await writeFileAtomic(resolve(root, 'f'), 'new')
+  t.equal(readFileSync(resolve(root, 'f'), 'utf8'), 'new')
+  const umask = process.umask(0o077)
+  t.teardown(() => process.umask(umask))
+  await writeFileAtomic(resolve(root, 'm'), 'x', 0o644)
+  t.equal(readFileSync(resolve(root, 'm'), 'utf8'), 'x')
+  if (process.platform !== 'win32') {
+    t.equal(
+      statSync(resolve(root, 'm')).mode & 0o777,
+      0o644,
+      'umask-proof',
+    )
+  }
+  await t.rejects(writeFileAtomic(resolve(root, 'dir'), 'x', 0o600))
+  t.strictSame(
+    readdirSync(root).sort(),
+    ['dir', 'f', 'm'],
+    'no tmp left',
+  )
 })

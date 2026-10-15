@@ -258,7 +258,11 @@ Global packages live in a regular vlt project at `--global-dir`
   isn't writable, vlt uses `~/.local/bin` when it's in your `PATH`
   (not on Windows), else (or when `vlt` wasn't run from your `PATH`)
   `<global-dir>/bin`, and prints the line that adds it to your `PATH`.
-  Set `--global-bin-dir` to pick the folder.
+  Set `--global-bin-dir` to pick the folder. Or run
+  [`vlt setup --path`](/client/commands/setup#add-global-bins-to-your-path);
+  in a terminal, `vlt install -g` offers to do it once (answer `n` and
+  it won't ask again). `--yes` adds it without asking. Not on Windows
+  yet.
 
 The current project is never read or changed by a global install,
 including its `vlt.json`. `global`, `global-dir` and `global-bin-dir`
@@ -267,10 +271,11 @@ can be set on the command line, via env (`VLT_GLOBAL`,
 
 With Node.js from the nodejs.org macOS installer, `vlt` is in a
 root-owned `/usr/local/bin`, so bins usually go to
-`~/Library/Application Support/vlt/global/bin`. Use Node.js from
-Homebrew, nvm or fnm, or set `--global-bin-dir` to a folder in your
-`PATH`. A `--global-bin-dir` with spaces needs no escaping in the user
-config (quote it on the command line as usual).
+`~/Library/Application Support/vlt/global/bin`. Run
+`vlt setup --path`, use Node.js from Homebrew, nvm or fnm, or set
+`--global-bin-dir` to a folder in your `PATH`. A `--global-bin-dir`
+with spaces needs no escaping in the user config (quote it on the
+command line as usual).
 
 A package name with no version installs the `latest` dist-tag (or
 `--tag`), like `npm install -g`, so re-running it upgrades. Use a

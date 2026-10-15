@@ -14,6 +14,7 @@ import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
 import { globalBinsLines } from '../../global.ts'
+import { offerPathSetup } from '../../shell-setup/index.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -146,6 +147,18 @@ export class InstallReporter extends ViewClass {
       }
     }
     this.#instance?.rerender($(App, { trailer: out }))
+    if (_result.global) {
+      await offerPathSetup(_result.global, {
+        globalDir: this.config.projectRoot,
+        yes: !!this.config.get('yes'),
+        noModifyPath: !!this.config.get('no-modify-path'),
+        // ink owns the terminal until unmounted
+        beforeOutput: () => {
+          this.#instance?.unmount()
+          this.#instance = null
+        },
+      })
+    }
     return undefined
   }
 

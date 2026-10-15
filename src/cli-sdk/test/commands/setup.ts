@@ -1,8 +1,15 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import { normalizeRegistryKey } from '@vltpkg/registry-client'
 import type { Token } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import type { SetupResult } from '../../src/commands/setup.ts'
+import type {
+  PathSetupOptions,
+  PathSetupPlan,
+} from '../../src/shell-setup/index.ts'
+import { shellPathCommand } from '../../src/shell.ts'
 
 type Added = [string, Record<string, unknown>]
 
@@ -63,7 +70,19 @@ const loadSetup = async (
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
     },
   })
-  return { mod, loginCalls, questions, logged, kcWrites, stored }
+  return {
+    mod: {
+      ...mod,
+      // registry wizard: no globalRoot
+      command: (conf: LoadedConfig) =>
+        mod.command(conf) as Promise<SetupResult>,
+    },
+    loginCalls,
+    questions,
+    logged,
+    kcWrites,
+    stored,
+  }
 }
 
 const makeConf = (
@@ -473,3 +492,275 @@ t.test(
     t.equal(added.length, 1, 'config written before the keychain')
   },
 )
+
+const loadPath = async (
+  t: Test,
+  o: {
+    inPath?: boolean
+    changed?: boolean
+    planError?: Error
+    answer?: string | Error
+  } = {},
+) => {
+  t.intercept(process, 'env', { value: { SHELL: '/bin/zsh' } })
+  const real = await import('../../src/shell-setup/index.ts')
+  const calls = {
+    plan: [] as PathSetupOptions[],
+    apply: 0,
+    asked: [] as string[],
+  }
+  const action = o.changed === false ? 'unchanged' : 'append'
+  const plan: PathSetupPlan = {
+    globalDir: '/g',
+    dir: '/b',
+    shell: 'zsh',
+    changes: [
+      {
+        file: '/h/.zshrc',
+        kind: 'rc',
+        action,
+        content: Buffer.from('x'),
+      },
+    ],
+  }
+  const mod = await t.mockImport<
+    typeof import('../../src/commands/setup.ts')
+  >('../../src/commands/setup.ts', {
+    '../../src/global-bin-dir.ts': {
+      resolveGlobalBinDir: async () => ({
+        dir: '/b',
+        source: 'global-dir',
+        inPath: !!o.inPath,
+      }),
+    },
+    '../../src/shell-setup/index.ts': {
+      ...real,
+      planPathSetup: async (opts: PathSetupOptions) => {
+        calls.plan.push(opts)
+        if (o.planError) throw o.planError
+        return plan
+      },
+      applyPathSetup: async (p: PathSetupPlan) => {
+        calls.apply++
+        return {
+          dir: p.dir,
+          shell: p.shell,
+          files: real.pathSetupFiles(p),
+          backups: ['/g/backups/.zshrc.1.bak'],
+        }
+      },
+      ask: async (q: string) => {
+        calls.asked.push(q)
+        if (o.answer instanceof Error) throw o.answer
+        return o.answer ?? ''
+      },
+    },
+  })
+  return {
+    mod,
+    calls,
+    source: real.sourceCommand('zsh', '/g'),
+    command: shellPathCommand('zsh', '/b'),
+  }
+}
+
+const pathConf = (
+  o: {
+    positionals?: string[]
+    force?: boolean
+    yes?: boolean
+    noModifyPath?: boolean
+  } = {},
+) =>
+  ({
+    globalRoot: '/g',
+    projectRoot: '/g',
+    positionals: o.positionals ?? [],
+    get: (k: string) =>
+      k === 'force' ? o.force
+      : k === 'yes' ? o.yes
+      : k === 'no-modify-path' ? o.noModifyPath
+      : undefined,
+  }) as unknown as LoadedConfig
+
+const rc = [{ file: '/h/.zshrc', kind: 'rc', action: 'append' }]
+
+t.test('--path', async t => {
+  t.test('no arguments', async t => {
+    const { mod } = await loadPath(t)
+    await t.rejects(mod.command(pathConf({ positionals: ['x'] })), {
+      message: '`vlt setup --path` takes no arguments',
+      cause: { code: 'EUSAGE', found: 'x' },
+    })
+  })
+
+  t.test('in path', async t => {
+    const { mod, calls, source, command } = await loadPath(t, {
+      inPath: true,
+    })
+    t.strictSame(await mod.command(pathConf()), {
+      path: {
+        dir: '/b',
+        shell: 'zsh',
+        files: [],
+        backups: [],
+        command,
+        source,
+        status: 'in-path',
+      },
+    })
+    t.strictSame(calls.plan, [])
+  })
+
+  t.test('in path + force edits', async t => {
+    const { mod, calls } = await loadPath(t, { inPath: true })
+    t.match(await mod.command(pathConf({ force: true, yes: true })), {
+      path: { status: 'added' },
+    })
+    t.match(calls.plan, [
+      { globalDir: '/g', dir: '/b', shell: 'zsh', force: true },
+    ])
+  })
+
+  t.test('no-modify-path', async t => {
+    const { mod, calls, command } = await loadPath(t)
+    t.match(await mod.command(pathConf({ noModifyPath: true })), {
+      path: { status: 'disabled', command },
+    })
+    t.strictSame(calls.plan, [])
+  })
+
+  t.test('plan fails', async t => {
+    const { mod } = await loadPath(t, {
+      planError: Object.assign(new Error('nope'), {
+        cause: { code: 'ECONFIG' },
+      }),
+    })
+    await t.rejects(mod.command(pathConf({ yes: true })), {
+      message: 'nope',
+    })
+  })
+
+  t.test('unchanged', async t => {
+    const { mod, calls } = await loadPath(t, { changed: false })
+    t.match(await mod.command(pathConf()), {
+      path: {
+        status: 'unchanged',
+        files: [{ ...rc[0], action: 'unchanged' }],
+      },
+    })
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('not a terminal', async t => {
+    const { mod, calls } = await loadPath(t)
+    t.intercept(process.stdin, 'isTTY', { value: false })
+    await t.rejects(mod.command(pathConf()), {
+      message: 'Not a terminal: pass --yes to edit shell config',
+      cause: { code: 'EUSAGE' },
+    })
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('answer no', async t => {
+    const { mod, calls } = await loadPath(t, { answer: 'n' })
+    t.intercept(process.stdin, 'isTTY', { value: true })
+    t.match(await mod.command(pathConf()), {
+      path: { status: 'cancelled', files: rc, backups: [] },
+    })
+    t.strictSame(calls.asked, [
+      'Add /b to your PATH in /h/.zshrc? (Y/n) ',
+    ])
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('answer default', async t => {
+    const { mod, calls } = await loadPath(t)
+    t.intercept(process.stdin, 'isTTY', { value: true })
+    t.match(await mod.command(pathConf()), {
+      path: {
+        status: 'added',
+        files: rc,
+        backups: ['/g/backups/.zshrc.1.bak'],
+      },
+    })
+    t.equal(calls.asked.length, 1)
+    t.equal(calls.plan.length, 2, 'planned again after asking')
+    t.equal(calls.apply, 1)
+  })
+
+  t.test('Ctrl-C cancels', async t => {
+    const abort = Object.assign(new Error('Aborted with Ctrl+C'), {
+      name: 'AbortError',
+    })
+    const { mod, calls } = await loadPath(t, { answer: abort })
+    t.intercept(process.stdin, 'isTTY', { value: true })
+    t.match(await mod.command(pathConf()), {
+      path: { status: 'cancelled' },
+    })
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('prompt error', async t => {
+    const { mod } = await loadPath(t, { answer: new Error('boom') })
+    t.intercept(process.stdin, 'isTTY', { value: true })
+    await t.rejects(mod.command(pathConf()), { message: 'boom' })
+  })
+
+  t.test('--yes', async t => {
+    const { mod, calls } = await loadPath(t, { answer: 'n' })
+    t.match(await mod.command(pathConf({ yes: true })), {
+      path: { status: 'added' },
+    })
+    t.strictSame(calls.asked, [])
+    t.equal(calls.plan.length, 1)
+  })
+
+  t.test('views', async t => {
+    const { mod } = await loadPath(t)
+    const r = {
+      dir: '/b',
+      shell: 'zsh',
+      files: rc,
+      backups: [],
+      command: 'export PATH="/b:$PATH"',
+      source: 'source "/g/env"',
+    } as const
+    const view = (
+      status:
+        'added' | 'unchanged' | 'in-path' | 'disabled' | 'cancelled',
+      backups: string[] = [],
+    ) =>
+      mod.views.human({
+        path: {
+          ...r,
+          files: [
+            { file: '/h/.zshrc', kind: 'rc', action: 'append' },
+          ],
+          backups,
+          status,
+        },
+      })
+    t.equal(
+      view('added'),
+      '✅ Added /b to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"',
+    )
+    t.equal(
+      view('added', ['/g/backups/x.bak']),
+      '✅ Added /b to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"\n   Backups in /g/backups',
+    )
+    t.equal(
+      view('unchanged'),
+      '✅ /b is already added to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"',
+    )
+    t.equal(view('in-path'), '✅ /b is already on your PATH')
+    t.equal(
+      view('disabled'),
+      'ℹ️  no-modify-path is set, so shell config was not changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"',
+    )
+    t.equal(
+      view('cancelled'),
+      'Shell config not changed. To add /b to your PATH, run:\n  export PATH="/b:$PATH"',
+    )
+  })
+})
