@@ -17,7 +17,7 @@ exports[`test/config/index.ts > TAP > load both configs, layers merge with proje
   },
   projectRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-layers-merge-with-project-taking-precedence',
   storeRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-layers-merge-with-project-taking-precedence/store/v1',
-  catalog: undefined,
+  catalog: {},
   catalogs: undefined,
   'jsr-registries': { jsr: 'https://npm.jsr.io/' },
   registry: undefined,

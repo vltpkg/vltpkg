@@ -1,6 +1,10 @@
 import { longDependencyTypes } from '@vltpkg/types'
 import type { DependencyTypeLong } from '@vltpkg/types'
-import { shorten, asDependency } from '../dependencies.ts'
+import {
+  shorten,
+  asDependency,
+  asDependencySpecError,
+} from '../dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   Dependency,
@@ -124,7 +128,12 @@ export const getImporterSpecs = (
         continue
       }
 
-      const spec = Spec.parse(depName, depSpec, options)
+      let spec: Spec
+      try {
+        spec = Spec.parse(depName, depSpec, options)
+      } catch (er) {
+        throw asDependencySpecError(er, importer, type)
+      }
 
       // a `-` modifier removes this dependency, nothing to place; an
       // edge from before (e.g. a qualifier now matching) has to go
@@ -204,11 +213,14 @@ export const getImporterSpecs = (
           if (edge?.to && edge.spec.bareSpec === depSpec) continue
 
           // add the dependency to the addDeps map
-          const dependency = asDependency({
-            spec: Spec.parse(depName, depSpec, options),
-            type: shorten(depType, depName, manifest),
-          })
-          addDeps.set(depName, dependency)
+          const type = shorten(depType, depName, manifest)
+          let spec: Spec
+          try {
+            spec = Spec.parse(depName, depSpec, options)
+          } catch (er) {
+            throw asDependencySpecError(er, node, type)
+          }
+          addDeps.set(depName, asDependency({ spec, type }))
         }
       }
 
