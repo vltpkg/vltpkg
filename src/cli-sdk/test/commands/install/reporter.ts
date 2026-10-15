@@ -78,20 +78,29 @@ t.test('steps, requests and trailer', async t => {
 })
 
 t.test('skills', async t => {
+  type Row = { id: string; skill: string; dir: string }
+  const row = (skill: string, dir = '.agents/skills'): Row => ({
+    id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    skill,
+    dir,
+  })
   const done = async (
-    linked: number,
+    linked: Row[],
     conflicts: string[],
     removed: string[] = [],
+    notes: { skipped?: string[]; gitignore?: string[] } = {},
   ) => {
     const r = reporter()
     r.start()
     await r.done(
       {
         skills: {
-          linked: Array(linked).fill({}),
+          linked,
           unchanged: [],
           removed,
           conflicts,
+          dirs: [],
+          ...notes,
         },
       } as unknown as InstallResult,
       { time: 1 },
@@ -102,34 +111,58 @@ t.test('skills', async t => {
     r.error(new Error('x'))
     return res
   }
-  const one = await done(1, ['skills/y'])
-  t.match(one, 'Linked 1 agent skill into ./skills')
+  const one = await done([row('a')], ['.agents/skills/y'])
+  t.match(one, 'Linked 1 agent skill into .agents/skills')
   t.match(
     one,
-    '1 skill link skipped, path in use or taken by another package: skills/y',
+    '1 skill link skipped, path in use or taken by another package: .agents/skills/y',
   )
-  const two = await done(2, ['skills/y', 'skills/z (bar@1.0.0)'])
-  t.match(two, 'Linked 2 agent skills into ./skills')
+  const two = await done(
+    [
+      row('a'),
+      row('a', '.claude/skills'),
+      row('b'),
+      row('b', '.claude/skills'),
+    ],
+    ['.agents/skills/y', '.claude/skills/z (bar@1.0.0)'],
+  )
   t.match(
     two,
-    '2 skill links skipped, path in use or taken by another package: skills/y, skills/z (bar@1.0.0)',
+    'Linked 2 agent skills into .agents/skills, .claude/skills',
+    'distinct skills, distinct dirs',
   )
-  const conflictOnly = await done(0, ['skills/y'])
+  t.match(
+    two,
+    '2 skill links skipped, path in use or taken by another package: .agents/skills/y, .claude/skills/z (bar@1.0.0)',
+  )
+  const conflictOnly = await done([], ['.agents/skills/y'])
   t.match(
     conflictOnly,
     /Done in 1ms\n⚠️ 1 skill link skipped/,
     'own line when nothing linked',
   )
   t.notMatch(conflictOnly, 'Linked')
-  const none = await done(0, [])
+  const none = await done([], [])
   t.notMatch(none, 'skill')
-  const pruned = await done(0, [], ['skills/y'])
-  t.match(pruned, '🧹 Removed 1 stale skill link: skills/y')
+  const pruned = await done([], [], ['.agents/skills/y'])
+  t.match(pruned, '🧹 Removed 1 stale skill link: .agents/skills/y')
   t.match(pruned, 'Run `vlt skills link <query>` to link again.')
   t.match(
-    await done(0, [], ['skills/y', 'skills/z']),
-    'Removed 2 stale skill links: skills/y, skills/z',
+    await done([], [], ['.agents/skills/y', '.claude/skills/z']),
+    'Removed 2 stale skill links: .agents/skills/y, .claude/skills/z',
   )
+  const notes = await done([], [], [], {
+    skipped: [
+      '.claude/skills (outside the project)',
+      '.kiro/skills (not a directory)',
+    ],
+    gitignore: ['.agents/skills/.gitignore'],
+  })
+  t.match(
+    notes,
+    '⚠️ Skipped .claude/skills (outside the project), .kiro/skills (not a directory)',
+  )
+  t.match(notes, '⚠️ Could not update .agents/skills/.gitignore')
 })
 
 t.test('no start, no persisted config', async t => {

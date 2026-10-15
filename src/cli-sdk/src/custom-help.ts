@@ -218,7 +218,7 @@ const commandHelp = {
     defaultOrder: 0,
   },
   skills: {
-    args: '[list|link|unlink]',
+    args: '[list|link]',
     desc: 'Manage agent skills from installed packages',
   },
   token: {

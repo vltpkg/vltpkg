@@ -10,7 +10,6 @@ Usage:
   vlt skills
   vlt skills list [<query>]
   vlt skills link [<query>]
-  vlt skills unlink [<query>]
 
 Manage the agent skills shipped by installed packages.
 
@@ -18,10 +17,12 @@ A skill is a folder with a \`SKILL.md\` file
 (https://agentskills.io/specification). Packages ship them at
 \`skills/<name>/SKILL.md\`, or as a root \`SKILL.md\`.
 
-Skills are linked into \`./skills/<skill>\`. When packages ship skills with the
-same name, one is linked and the others are reported. Only links made by vlt
-(pointing into \`node_modules/.vlt\`) are ever replaced or removed; anything else
-in the way is skipped.
+Skills are linked into the project's agent skill dirs: \`.agents/skills\`, plus
+\`<folder>/skills\` for each agent folder at the project root (e.g. \`.claude/\`),
+or the \`skills-dir\` config. When packages ship skills with the same name, one is
+linked and the others are reported. Only links made by vlt (pointing into
+\`node_modules/.vlt\`) are ever replaced or removed; anything else in the way is
+skipped.
 
 Use --target or a query after the subcommand to select packages using DSS query
 syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
@@ -35,16 +36,10 @@ syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
       ​vlt skills list [<query>]
 
     link
-      Link the skills of the selected packages, then remove skill links whose
-      skill is no longer installed. Selects \`:not(:malware)\` by default.
+      Link the skills of the selected packages, and remove every other vlt skill
+      link in the agent skill dirs. Selects \`:not(:malware)\` by default.
 
       ​vlt skills link [<query>]
-
-    unlink
-      Remove the skill links of the selected packages, plus any dangling ones.
-      Removes all by default.
-
-      ​vlt skills unlink [<query>]
 
   Options
 
@@ -57,13 +52,16 @@ syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
 
 exports[`test/commands/skills.ts > TAP > views > human link all 1`] = `
 🔗 Linked 2 agent skills:
-  skills/a
-  skills/b
-🧹 Removed 1 stale skill link:
-  skills/x
+  .agents/skills/a
+  .claude/skills/a
+  .agents/skills/b
+🧹 Removed 1 skill link:
+  .agents/skills/x
 ⚠️ Skipped 2 skills, path in use or taken by another package:
-  skills/c
-  skills/b (bar@1.0.0)
+  .claude/skills/b
+  .agents/skills/c (bar@1.0.0)
+⚠️ Skipped .kiro/skills (not a directory)
+⚠️ Could not update .claude/skills/.gitignore
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link nothing 1`] = `
@@ -72,54 +70,56 @@ No agent skills found to link.
 
 exports[`test/commands/skills.ts > TAP > views > human link one 1`] = `
 🔗 Linked 1 agent skill:
-  skills/a
+  .agents/skills/a
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link removed only 1`] = `
-🧹 Removed 2 stale skill links:
-  skills/x
-  skills/y
+🧹 Removed 2 skill links:
+  .agents/skills/x
+  .claude/skills/y
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link unchanged 1`] = `
 1 agent skill already linked.
 ⚠️ Skipped 1 skill, path in use or taken by another package:
-  skills/b
+  .agents/skills/b
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list aliased 1`] = `
+Agent skill dirs: .agents/skills
 Found 2 agent skills:
   vercelskills (skills@1.7.2) › find-skills (linked)
   mine (theirs) › x
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list empty 1`] = `
+Agent skill dirs: .agents/skills, .claude/skills
 No agent skills found in installed packages.
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list many 1`] = `
-Found 2 agent skills:
+Agent skill dirs: .agents/skills, .claude/skills
+Found 3 agent skills:
   foo@1.0.0 › a (linked)
+  foo@1.0.0 › b (linked in .claude/skills)
   @s/bar › bar
 `
 
+exports[`test/commands/skills.ts > TAP > views > human list no dirs 1`] = `
+Agent skill dirs: none (skills-dir is empty)
+Found 1 agent skill:
+  foo@1.0.0 › a (linked in .agents/skills)
+`
+
 exports[`test/commands/skills.ts > TAP > views > human list one 1`] = `
+Agent skill dirs: .agents/skills, .claude/skills
 Found 1 agent skill:
   foo@1.0.0 › a
     does a
 `
 
-exports[`test/commands/skills.ts > TAP > views > human unlink many 1`] = `
-🧹 Removed 2 skill links:
-  skills/a
-  skills/b
-`
-
-exports[`test/commands/skills.ts > TAP > views > human unlink nothing 1`] = `
-No skill links to remove.
-`
-
-exports[`test/commands/skills.ts > TAP > views > human unlink one 1`] = `
-🧹 Removed 1 skill link:
-  skills/a
+exports[`test/commands/skills.ts > TAP > views > human list skipped 1`] = `
+Agent skill dirs: none
+⚠️ Skipped .claude/skills (outside the project)
+No agent skills found in installed packages.
 `

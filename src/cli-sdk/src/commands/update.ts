@@ -1,4 +1,5 @@
 import { update } from '@vltpkg/graph'
+import type { LinkSkillsResult } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
@@ -41,10 +42,20 @@ export const usage: CommandUsage = () =>
       'allow-skills': {
         value: '<query>',
         description:
-          'Link agent skills of packages matching this DSS query into ./skills.',
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs.",
       },
     },
   })
+
+// link mounts; `unchanged` left out
+const skillsJson = ({
+  linked,
+  unchanged: _,
+  ...rest
+}: LinkSkillsResult) => ({
+  linked: linked.map(s => s.mount),
+  ...rest,
+})
 
 export const views = {
   json: i => ({
@@ -58,15 +69,7 @@ export const views = {
     ...(i.persistedConfig ?
       { persistedConfig: i.persistedConfig }
     : null),
-    ...(i.skills ?
-      {
-        skills: {
-          linked: i.skills.linked.map(s => s.mount),
-          removed: i.skills.removed,
-          conflicts: i.skills.conflicts,
-        },
-      }
-    : null),
+    ...(i.skills ? { skills: skillsJson(i.skills) } : null),
   }),
   human: lazyView(
     async () =>
@@ -93,6 +96,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     ...conf.options,
     allowScripts,
     allowSkills: conf.get('allow-skills'),
+    skillsDirs: conf.get('skills-dir'),
   }).catch((er: unknown) => {
     throw asUnknownSpecPrefix(er)
   })

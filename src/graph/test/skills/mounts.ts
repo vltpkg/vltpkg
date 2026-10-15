@@ -1,13 +1,19 @@
 import { baseDepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import * as fs from 'node:fs'
-import { existsSync, lstatSync, readlinkSync } from 'node:fs'
+import {
+  existsSync,
+  lstatSync,
+  readdirSync,
+  readlinkSync,
+  realpathSync,
+} from 'node:fs'
 import * as path from 'node:path'
 import { dirname, isAbsolute, relative, resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
-import type { Skill } from '../../src/skills/discover.ts'
+import { skillsDirs } from '../../src/skills/dirs.ts'
+import type { SkillsDir } from '../../src/skills/dirs.ts'
 import {
-  mountPath,
   mountSkill,
   mountTarget,
   ownerOf,
@@ -25,10 +31,15 @@ const barId = joinDepIDTuple(['registry', '', '@s/bar@1.0.0'])
 
 type Dir = NonNullable<Parameters<typeof t.testdir>[0]>
 
-const project = (t: Test, skills?: Dir) =>
+const project = (
+  t: Test,
+  skills?: Dir,
+  more: Record<string, Dir> = {},
+) =>
   t.testdir({
     'vlt.json': '{}',
     ...(skills ? { skills } : {}),
+    ...more,
     outside: {
       a: { 'SKILL.md': '' },
       // another project's store, eg, before a move/copy
@@ -55,27 +66,33 @@ const project = (t: Test, skills?: Dir) =>
     },
   })
 
-const skill = (
-  projectRoot: string,
-  name: string,
-  s: string,
-  pkgDir = store,
-): Skill => ({
-  name,
-  id: joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+const skill = (projectRoot: string, s: string, pkgDir = store) => ({
   skill: s,
   path: resolve(projectRoot, pkgDir, 'skills', s),
-  mount: `skills/${s}`,
-  linked: false,
+})
+
+// a skills dir, not created
+const sd = (projectRoot: string, dir = 'skills'): SkillsDir => ({
+  dir,
+  real: resolve(realpathSync(projectRoot), dir),
 })
 
 const target = (link: string) =>
   resolve(dirname(link), readlinkSync(link))
 
-t.test('samePath + mountPath', async t => {
+t.test('samePath', async t => {
   t.ok(samePath('/a/b/../c', '/a/c'))
   t.notOk(samePath('/a/b', '/a/c'))
-  t.equal(mountPath('/p', 'skills/x'), resolve('/p/skills/x'))
+  const dir = project(t, {
+    a: t.fixture('symlink', `../${store}/skills/a`),
+  })
+  t.ok(
+    samePath(
+      resolve(dir, 'skills/a'),
+      resolve(dir, store, 'skills/a'),
+    ),
+    'link vs real path',
+  )
   t.intercept(process, 'platform', { value: 'linux' })
   t.notOk(samePath('/a/B', '/a/b'), 'case-sensitive on posix')
   t.intercept(process, 'platform', { value: 'win32' })
@@ -232,19 +249,11 @@ t.test('packageKey', async t => {
 })
 
 t.test('readMounts', async t => {
-  t.strictSame(readMounts(project(t), 'skills'), [], 'no skills dir')
+  t.strictSame(readMounts([sd(project(t))]), [], 'no skills dir')
   t.strictSame(
-    readMounts(project(t, 'a file'), 'skills'),
+    readMounts([sd(project(t, 'a file'))]),
     [],
     'skills is a file',
-  )
-  t.strictSame(
-    readMounts(
-      project(t, t.fixture('symlink', './outside')),
-      'skills',
-    ),
-    [],
-    'skills is a link',
   )
 
   const dir = project(t, {
@@ -255,34 +264,65 @@ t.test('readMounts', async t => {
     bar: t.fixture('symlink', `../${scopedStore}`),
     x: t.fixture('symlink', '../outside/node_modules/.vlt/x/a'),
   })
-  t.strictSame(readMounts(dir, 'skills'), [
+  const d = sd(dir)
+  const other = sd(dir, 'outside')
+  t.strictSame(readMounts([d, other]), [
     {
+      dir: d,
+      name: 'a',
       mount: 'skills/a',
-      link: resolve(dir, 'skills/a'),
+      link: resolve(d.real, 'a'),
       target: resolve(dir, store, 'skills/a'),
       owner: fooId,
     },
     {
+      dir: d,
+      name: 'bar',
       mount: 'skills/bar',
-      link: resolve(dir, 'skills/bar'),
+      link: resolve(d.real, 'bar'),
       target: resolve(dir, scopedStore),
       owner: barId,
     },
     {
+      dir: d,
+      name: 'x',
       mount: 'skills/x',
-      link: resolve(dir, 'skills/x'),
+      link: resolve(d.real, 'x'),
       target: resolve(dir, 'outside/node_modules/.vlt/x/a'),
       owner: undefined,
     },
   ])
+
+  t.test('through a symlinked dir', async t => {
+    // target first: a junction on win32
+    const dir = project(t, t.fixture('symlink', './real'), {
+      real: {},
+    })
+    const [d] = skillsDirs({
+      projectRoot: dir,
+      configured: ['real'],
+      create: true,
+    }).targets
+    if (!d) throw new Error('no dir')
+    const [link] = skillsDirs({
+      projectRoot: dir,
+      configured: ['skills'],
+    }).targets
+    t.equal(link?.real, d.real, 'real path')
+    t.equal(mountSkill(skill(dir, 'a'), d), 'linked')
+    t.match(readMounts([link!]), [
+      { mount: 'skills/a', target: resolve(dir, store, 'skills/a') },
+    ])
+  })
 })
 
 t.test('mountSkill', async t => {
   t.test('links, then unchanged, then re-points', async t => {
     const dir = project(t)
-    const a = skill(dir, 'foo', 'a')
+    const d = sd(dir)
+    const a = skill(dir, 'a')
     const link = resolve(dir, 'skills/a')
-    t.equal(mountSkill(a, dir, 'skills'), 'linked')
+    t.equal(mountSkill(a, d), 'linked')
     t.equal(target(link), a.path)
     if (process.platform !== 'win32') {
       t.notOk(
@@ -290,17 +330,14 @@ t.test('mountSkill', async t => {
         'relative link on posix',
       )
     }
-    t.equal(mountSkill(a, dir, 'skills'), 'unchanged')
+    t.equal(mountSkill(a, d), 'unchanged')
     // same mount, another store dir
     const moved = { ...a, path: resolve(dir, store, 'skills/b') }
-    t.equal(mountSkill(moved, dir, 'skills'), 'linked')
+    t.equal(mountSkill(moved, d), 'linked')
     t.equal(target(link), moved.path)
 
-    const bar = {
-      ...skill(dir, '@s/bar', 'bar', scopedStore),
-      path: resolve(dir, scopedStore),
-    }
-    t.equal(mountSkill(bar, dir, 'skills'), 'linked', 'root skill')
+    const bar = { skill: 'bar', path: resolve(dir, scopedStore) }
+    t.equal(mountSkill(bar, d), 'linked', 'root skill')
     t.equal(target(resolve(dir, 'skills/bar')), bar.path)
   })
 
@@ -308,9 +345,9 @@ t.test('mountSkill', async t => {
     const dir = project(t, {
       a: t.fixture('symlink', '../outside/node_modules/.vlt/x/a'),
     })
-    const a = skill(dir, 'foo', 'a')
-    t.equal(readMounts(dir, 'skills').length, 1, 'managed')
-    t.equal(mountSkill(a, dir, 'skills'), 'linked')
+    const a = skill(dir, 'a')
+    t.equal(readMounts([sd(dir)]).length, 1, 'managed')
+    t.equal(mountSkill(a, sd(dir)), 'linked')
     t.equal(target(resolve(dir, 'skills/a')), a.path)
   })
 
@@ -326,28 +363,75 @@ t.test('mountSkill', async t => {
       },
     })
     const dir = project(t)
-    const a = skill(dir, 'foo', 'a')
-    const link = resolve(dir, 'skills/a')
-    t.equal(mountSkill(a, dir, 'skills'), 'linked')
+    const d = sd(dir)
+    const a = skill(dir, 'a')
+    t.equal(mountSkill(a, d), 'linked')
     t.strictSame(calls, [
-      [relative(resolve(dir, 'skills'), a.path), link, 'dir'],
+      [relative(d.real, a.path), resolve(d.real, 'a'), 'dir'],
     ])
   })
 
   t.test('win32 junction w/ absolute target', async t => {
     t.intercept(process, 'platform', { value: 'win32' })
     const dir = project(t)
-    const a = skill(dir, 'foo', 'a')
-    t.equal(mountSkill(a, dir, 'skills'), 'linked')
+    const a = skill(dir, 'a')
+    t.equal(mountSkill(a, sd(dir)), 'linked')
     const link = resolve(dir, 'skills/a')
     t.ok(isAbsolute(readlinkSync(link)), 'absolute target')
     t.equal(target(link), a.path)
   })
 
+  t.test('nested dir from skillsDirs', async t => {
+    const dir = project(t)
+    const [d] = skillsDirs({
+      projectRoot: dir,
+      configured: ['.claude/skills'],
+      create: true,
+    }).targets
+    if (!d) throw new Error('no dir')
+    t.equal(mountSkill(skill(dir, 'a'), d), 'linked')
+    t.equal(
+      target(resolve(dir, '.claude/skills/a')),
+      resolve(dir, store, 'skills/a'),
+    )
+  })
+
+  t.test('projectRoot behind a symlink', async t => {
+    const dir = resolve(
+      t.testdir({
+        link: t.fixture('symlink', './p'),
+        p: {
+          'vlt.json': '{}',
+          node_modules: {
+            '.vlt': {
+              '~npm~foo@1.0.0': {
+                node_modules: {
+                  foo: { skills: { a: { 'SKILL.md': '' } } },
+                },
+              },
+            },
+          },
+        },
+      }),
+      'link',
+    )
+    const [d] = skillsDirs({
+      projectRoot: dir,
+      configured: ['skills'],
+      create: true,
+    }).targets
+    if (!d) throw new Error('no dir')
+    const a = {
+      skill: 'a',
+      path: realpathSync(resolve(dir, store, 'skills/a')),
+    }
+    t.equal(mountSkill(a, d), 'linked')
+    t.equal(mountSkill(a, d), 'unchanged')
+    t.equal(readMounts([d])[0]?.link, resolve(d.real, 'a'))
+  })
+
   t.test('conflicts', async t => {
     const cases: [string, Dir][] = [
-      ['skills is a file', 'x'],
-      ['skills is a link', t.fixture('symlink', './outside')],
       ['mount is a real dir', { a: {} }],
       [
         'mount is a link outside the store',
@@ -356,59 +440,23 @@ t.test('mountSkill', async t => {
     ]
     for (const [name, skills] of cases) {
       const dir = project(t, skills)
-      t.equal(
-        mountSkill(skill(dir, 'foo', 'a'), dir, 'skills'),
-        'conflict',
-        name,
-      )
+      t.equal(mountSkill(skill(dir, 'a'), sd(dir)), 'conflict', name)
     }
   })
 })
 
 t.test('unmountSkill', async t => {
-  t.test('last link: ./skills removed', async t => {
-    const dir = project(t)
-    const a = skill(dir, 'foo', 'a')
-    mountSkill(a, dir, 'skills')
-    const [m] = readMounts(dir, 'skills')
-    if (!m) throw new Error('no mount')
-    unmountSkill(m, dir, 'skills')
-    t.notOk(existsSync(resolve(dir, 'skills')), 'skills removed')
-    t.ok(existsSync(a.path), 'target kept')
-  })
-
-  t.test('keeps a non-empty ./skills', async t => {
-    const dir = project(t, { 'README.md': 'x' })
-    mountSkill(skill(dir, 'foo', 'a'), dir, 'skills')
-    mountSkill(skill(dir, 'foo', 'b'), dir, 'skills')
-    const [a] = readMounts(dir, 'skills')
-    if (!a) throw new Error('no mount')
-    unmountSkill(a, dir, 'skills')
-    t.notOk(lstatSync(a.link, { throwIfNoEntry: false }))
-    t.ok(lstatSync(resolve(dir, 'skills/b')).isSymbolicLink())
-    t.ok(existsSync(resolve(dir, 'skills/README.md')), 'skills kept')
-  })
-
-  t.test('ignores rmdir errors', async t => {
-    const dir = project(t)
-    const link = resolve(dir, 'skills/a')
-    mountSkill(skill(dir, 'foo', 'a'), dir, 'skills')
-    const { unmountSkill } = await t.mockImport<
-      typeof import('../../src/skills/mounts.ts')
-    >('../../src/skills/mounts.ts', {
-      'node:fs': {
-        ...fs,
-        rmdirSync: () => {
-          throw Object.assign(new Error('nope'), { code: 'EPERM' })
-        },
-      },
-    })
-    unmountSkill(
-      { mount: 'skills/a', link, target: '' },
-      dir,
-      'skills',
-    )
-    t.notOk(lstatSync(link, { throwIfNoEntry: false }), 'link gone')
-    t.ok(existsSync(resolve(dir, 'skills')), 'busy dir kept')
-  })
+  const dir = project(t, { 'README.md': 'x' })
+  const d = sd(dir)
+  mountSkill(skill(dir, 'a'), d)
+  mountSkill(skill(dir, 'b'), d)
+  const [a, b] = readMounts([d])
+  if (!a || !b) throw new Error('no mount')
+  unmountSkill(a)
+  t.notOk(lstatSync(a.link, { throwIfNoEntry: false }))
+  t.ok(lstatSync(b.link).isSymbolicLink())
+  t.ok(existsSync(a.target), 'target kept')
+  fs.rmSync(resolve(dir, 'skills/README.md'))
+  unmountSkill(b)
+  t.strictSame(readdirSync(d.real), [], 'empty dir kept')
 })

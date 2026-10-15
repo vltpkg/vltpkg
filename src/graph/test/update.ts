@@ -406,7 +406,11 @@ t.test(
 )
 
 t.test('allowSkills', async t => {
-  type SyncOpts = { allowSkills?: string; graph: unknown }
+  type SyncOpts = {
+    allowSkills?: string
+    skillsDirs?: string[]
+    graph: unknown
+  }
   const setup = async (
     t: Test,
     syncSkills: (o: SyncOpts) => unknown,
@@ -475,9 +479,13 @@ t.test('allowSkills', async t => {
       calls.push(o)
       return skills
     })
-    const result = await run({ allowSkills: '#foo' })
+    const result = await run({
+      allowSkills: '#foo',
+      skillsDirs: ['.claude/skills'],
+    })
     t.equal(calls.length, 1)
     t.equal(calls[0]?.allowSkills, '#foo')
+    t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
     t.equal(calls[0]?.graph, graph, 'uses the updated graph')
     t.equal(result.skills, skills)
   })
@@ -498,6 +506,16 @@ t.test('allowSkills', async t => {
     const { run, log } = await setup(t, () => called++, false)
     await t.rejects(run({ allowSkills: ':nope' }), {
       cause: { code: 'EUSAGE', found: ':nope' },
+    })
+    t.strictSame(log, [], 'nothing built or initialized')
+    t.equal(called, 0)
+  })
+
+  t.test('invalid skills-dir fails before updating', async t => {
+    let called = 0
+    const { run, log } = await setup(t, () => called++, false)
+    await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
+      cause: { code: 'EUSAGE', found: '../x' },
     })
     t.strictSame(log, [], 'nothing built or initialized')
     t.equal(called, 0)

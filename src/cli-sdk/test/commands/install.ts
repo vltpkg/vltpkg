@@ -545,18 +545,22 @@ t.test('json view includes persistedConfig', async t => {
 
 t.test('allow-skills', async t => {
   const skills = {
-    linked: [{ mount: 'skills/a' }],
-    unchanged: [],
-    removed: ['skills/x'],
-    conflicts: ['skills/b'],
+    linked: [{ mount: '.agents/skills/a' }],
+    unchanged: [{ mount: '.agents/skills/c' }],
+    removed: ['.agents/skills/x'],
+    conflicts: ['.claude/skills/b'],
+    dirs: ['.agents/skills', '.claude/skills'],
   }
-  let allowSkills: unknown
+  let seen: unknown
   const Command = await t.mockImport<
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
-      async install(opts: { allowSkills?: string }) {
-        allowSkills = opts.allowSkills
+      async install(opts: {
+        allowSkills?: string
+        skillsDirs?: string[]
+      }) {
+        seen = [opts.allowSkills, opts.skillsDirs]
         return {
           graph: {},
           ...(opts.allowSkills ? { skills } : null),
@@ -568,30 +572,41 @@ t.test('allow-skills', async t => {
     },
     '../../src/save-types.ts': { addTypesDeps: async () => {} },
   })
-  const run = (value?: string) =>
+  const run = (value?: string, dirs?: string[]) =>
     Command.command({
       positionals: [],
       values: {},
       options: {},
-      get: (k: string) => (k === 'allow-skills' ? value : undefined),
+      get: (k: string) =>
+        k === 'allow-skills' ? value
+        : k === 'skills-dir' ? dirs
+        : undefined,
     } as unknown as LoadedConfig)
 
-  const res = await run('#foo')
-  t.equal(allowSkills, '#foo', 'passed to install')
+  const res = await run('#foo', ['.claude/skills'])
+  t.strictSame(
+    seen,
+    ['#foo', ['.claude/skills']],
+    'passed to install',
+  )
   t.equal(res.skills, skills, 'returned')
   t.notOk('skills' in (await run()), 'no skills key when unset')
 
-  t.match(
+  const json = (s: object) =>
     Command.views.json({
       graph: {},
-      skills,
-    } as unknown as InstallResult),
-    {
-      skills: {
-        linked: ['skills/a'],
-        removed: ['skills/x'],
-        conflicts: ['skills/b'],
-      },
-    },
-  )
+      skills: s,
+    } as unknown as InstallResult).skills
+  const out = {
+    linked: ['.agents/skills/a'],
+    removed: ['.agents/skills/x'],
+    conflicts: ['.claude/skills/b'],
+    dirs: ['.agents/skills', '.claude/skills'],
+  }
+  t.strictSame(json(skills), out)
+  const notes = {
+    skipped: ['.kiro/skills (outside the project)'],
+    gitignore: ['.claude/skills/.gitignore'],
+  }
+  t.strictSame(json({ ...skills, ...notes }), { ...out, ...notes })
 })

@@ -17,7 +17,12 @@ const Command = await t.mockImport<
         graph: {},
         buildQueue: ['··a@1.0.0'],
         ...(opts.allowSkills ?
-          { skills: { allowSkills: opts.allowSkills } }
+          {
+            skills: {
+              allowSkills: opts.allowSkills,
+              skillsDirs: opts.skillsDirs,
+            },
+          }
         : null),
       }
     },
@@ -64,9 +69,16 @@ t.test('allow-skills option', async t => {
     positionals: [],
     values: {},
     options,
-    get: (k: string) => (k === 'allow-skills' ? '#foo' : undefined),
+    get: (k: string) =>
+      k === 'allow-skills' ? '#foo'
+      : k === 'skills-dir' ? ['.claude/skills']
+      : undefined,
   } as unknown as LoadedConfig)
-  t.strictSame(res.skills, { allowSkills: '#foo' }, 'passed through')
+  t.strictSame(
+    res.skills,
+    { allowSkills: '#foo', skillsDirs: ['.claude/skills'] },
+    'passed through',
+  )
   const none = await Command.command({
     positionals: [],
     values: {},

@@ -5,13 +5,8 @@ import type { DepID } from '@vltpkg/dep-id'
 import { parse } from '@vltpkg/semver'
 import type { PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
-import {
-  lstat,
-  mountPath,
-  mountTarget,
-  packageKey,
-  samePath,
-} from './mounts.ts'
+import { lstat, norm, packageKey, realOr } from './mounts.ts'
+import type { SkillMount } from './mounts.ts'
 
 /**
  * An agent skill (a dir with a `SKILL.md`) shipped by an installed
@@ -33,19 +28,17 @@ export type Skill = {
   skill: string
   /** frontmatter description (folded to one line, control chars stripped) */
   description?: string
-  /** absolute path of the dir holding SKILL.md */
+  /** realpath of the dir holding SKILL.md */
   path: string
-  /** `/`-separated mount path relative to projectRoot: `skills/<skill>` */
-  mount: string
-  /** true when `mount` is a vlt link to `path` */
-  linked: boolean
+  /** dirs holding a vlt link named `skill` to `path` */
+  linked: string[]
 }
 
 /**
  * Result of {@link discoverSkills}.
  */
 export type DiscoveredSkills = {
-  /** skills of the picked version of each package, sorted by mount */
+  /** skills of the picked version of each package, sorted by name */
   skills: Skill[]
   /** every scanned package version, w/ the skills it ships */
   scanned: Map<DepID, Pick<Skill, 'skill' | 'path'>[]>
@@ -228,14 +221,23 @@ const aliasOf = (node: Node) => {
  * package is picked, even if it ships none: a dep of the main
  * importer, else of any importer, else the highest version, then
  * DepID. Same-name skills of different packages are all returned,
- * sorted by rank then DepID (`linkSkills` resolves them).
+ * sorted by rank then DepID (`linkSkills` resolves them). `mounts`
+ * set each skill's `linked` dirs.
  */
 export const discoverSkills = (
   nodes: Iterable<Node>,
   scurry: PathScurry,
-  projectRoot: string,
-  dir: string,
+  mounts: SkillMount[] = [],
 ): DiscoveredSkills => {
+  const key = (name: string, path: string) =>
+    `${lc(name)}\0${norm(path)}`
+  const linkedIn = new Map<string, string[]>()
+  for (const m of mounts) {
+    const k = key(m.name, realOr(m.target))
+    const dirs = linkedIn.get(k) ?? []
+    if (!dirs.includes(m.dir.dir)) dirs.push(m.dir.dir)
+    linkedIn.set(k, dirs)
+  }
   const scanned: DiscoveredSkills['scanned'] = new Map()
   const byPkg = new Map<string, { node: Node; found: Found[] }[]>()
   for (const node of nodes) {
@@ -247,7 +249,10 @@ export const discoverSkills = (
     ) {
       continue
     }
-    const found = scan(node.resolvedLocation(scurry), node.name)
+    const found = scan(
+      realOr(node.resolvedLocation(scurry)),
+      node.name,
+    )
     scanned.set(
       node.id,
       found.map(({ skill, path }) => ({ skill, path })),
@@ -263,8 +268,6 @@ export const discoverSkills = (
       compare(a.node, b.node) <= 0 ? a : b,
     )
     for (const { skill, path, description } of found) {
-      const mount = `${dir}/${skill}`
-      const target = mountTarget(mountPath(projectRoot, mount))
       rows.push([
         {
           name: node.name,
@@ -274,8 +277,7 @@ export const discoverSkills = (
           skill,
           description: sanitize(description),
           path,
-          mount,
-          linked: !!target && samePath(target, path),
+          linked: linkedIn.get(key(skill, path)) ?? [],
         },
         rank(node),
       ])
@@ -284,7 +286,7 @@ export const discoverSkills = (
   const skills = rows
     .sort(
       ([a, ra], [b, rb]) =>
-        lc(a.mount).localeCompare(lc(b.mount), 'en') ||
+        lc(a.skill).localeCompare(lc(b.skill), 'en') ||
         ra - rb ||
         a.id.localeCompare(b.id, 'en'),
     )

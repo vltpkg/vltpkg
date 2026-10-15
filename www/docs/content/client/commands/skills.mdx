@@ -7,7 +7,7 @@ sidebar:
 Usage:
 
 <Code
-  code="$ vlt skills [list|link|unlink] [<query>]"
+  code="$ vlt skills [list|link] [<query>]"
   title="Terminal"
   lang="bash"
 />
@@ -17,7 +17,8 @@ Manage the agent skills shipped by your installed dependencies.
 An agent skill is a folder with a `SKILL.md` file, as defined by the
 [Agent Skills specification](https://agentskills.io/specification).
 Packages can ship them alongside their code, and `vlt skills` links
-them into your project so coding agents can find them.
+them into your project's agent skill dirs so coding agents can find
+them.
 
 ## Where packages ship skills
 
@@ -34,21 +35,81 @@ skipped. One version of each package is used: the one the project
 depends on directly, else the highest version, even if it ships no
 skills.
 
-When packages ship skills with the same name, one gets the link: the
-package an existing link points to, while that skill is installed,
-else a direct dependency, then the package id. The others are
-reported. `vlt skills unlink <query>` frees a name. A fresh clone (no
-links yet) may pick another package than a machine with older links.
+When packages ship skills with the same name, one gets the link in
+every dir: the package an existing link points to, while that skill is
+installed, else a direct dependency, then the package id. The others
+are reported. Installs keep a dir's link to another installed skill;
+`vlt skills link` re-points it. Narrowing the query and running
+`vlt skills link <query>` frees a name. A fresh clone (no links yet)
+may pick another package than a machine with older links.
+
+## Where skills are linked
+
+Unless `skills-dir` is set, skills are linked into:
+
+- `.agents/skills`, always. Codex, Cursor, GitHub Copilot, Gemini CLI
+  and many other agents read it.
+- `<folder>/skills` for each agent folder at the project root:
+  `.claude/` gives `.claude/skills`, `.kiro/` gives `.kiro/skills`,
+  and so on (`.tabnine/` gives `.tabnine/agent/skills`,
+  `.posit/assistant/` gives `.posit/assistant/skills`). Missing dirs
+  are created. Only the project root is checked, not workspaces.
+- `.claude/skills` when run inside Claude Code (`CLAUDECODE` is set),
+  even without a `.claude/` folder. Once created, `.claude/` keeps it
+  a target outside Claude Code too.
+- Any existing `.<name>/skills` dir, such as `.cursor/skills` or
+  `.github/skills`. These are never created.
+
+`.github/` alone is not an agent folder. Home dirs (`~/.claude`) are
+not read, so in a plain terminal a project with no `.claude/` gets
+`.agents/skills` only: run `mkdir .claude`, or set `skills-dir`.
+
+Dirs are created only when a selected package ships a skill.
+
+### `skills-dir`
+
+Set `skills-dir` to a list of dirs, relative to the project root, to
+replace detection:
+
+<Code
+  code={`# link into .claude/skills only
+$ vlt config set skills-dir=.claude/skills
+# or for one install
+$ vlt install --allow-skills="*" --skills-dir=.claude/skills`}
+  title="Terminal"
+  lang="bash"
+/>
+
+- A dir outside the project or in `node_modules` is an error; one that
+  links outside is skipped.
+- `[]` in `vlt.json` (or `--skills-dir=`) links nothing.
+- `null` in `vlt.json` goes back to detection.
+- This is also how to drop `.agents/skills` or an unwanted agent dir.
+
+Links in a dir that is no longer a target stay until the next
+`vlt skills link`, which removes them. A custom dir dropped from
+`skills-dir` (not named `.<name>/skills`) is no longer scanned: remove
+its links by hand.
+
+### Symlinked dirs
+
+A symlinked dir or agent folder is followed when it points inside the
+project, and skipped and reported when it points outside or into
+`node_modules`. So is a dir that can't be read or created. A dir
+reached twice (e.g. `.claude/skills -> ../.agents/skills`) gets each
+link once.
 
 ## Layout
 
-Each skill is linked at `./skills/<skill>`, named after the skill:
+Each skill is linked into every dir, named after the skill:
 
 <Code
-  code={`skills/
-├── lint-rules -> ../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/lint-rules
-├── migrate -> ../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/migrate
-└── bar -> ../node_modules/.vlt/~npm~@scope+bar@2.0.0/node_modules/@scope/bar`}
+  code={`.agents/skills/
+├── lint-rules -> ../../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/lint-rules
+└── bar -> ../../node_modules/.vlt/~npm~@scope+bar@2.0.0/node_modules/@scope/bar
+.claude/skills/
+├── lint-rules -> ../../node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/lint-rules
+└── bar -> ../../node_modules/.vlt/~npm~@scope+bar@2.0.0/node_modules/@scope/bar`}
   title="Layout"
   lang="text"
 />
@@ -62,8 +123,9 @@ to re-point them.
 
 ### `list`
 
-The default. Lists the skills of installed packages, marking the ones
-already linked. Selects all packages (`*`) by default.
+The default. Lists the agent skill dirs and the skills of installed
+packages, marking the ones already linked (`linked in <dirs>` when not
+in every dir). Selects all packages (`*`) by default. Creates nothing.
 
 <Code
   code={`$ vlt skills
@@ -74,28 +136,19 @@ $ vlt skills list ":root > *"`}
 
 ### `link`
 
-Links the skills of the selected packages, then removes skill links
-whose skill is no longer installed: dangling, package removed, or no
-longer shipped. Like [`vlt build`](/client/commands/build), selects
+Links the skills of the selected packages into the agent skill dirs,
+and removes every other `vlt` skill link in them: links of packages
+not selected, links whose skill is gone, and links in dirs that are no
+longer targets. Like [`vlt build`](/client/commands/build), selects
 `:not(:malware)` by default.
 
 <Code
   code={`# every package without malware alerts
 $ vlt skills link
 # a single package
-$ vlt skills link "#my-package"`}
-  title="Terminal"
-  lang="bash"
-/>
-
-### `unlink`
-
-Removes the skill links of the selected packages, plus any dangling
-ones. Removes them all by default.
-
-<Code
-  code={`$ vlt skills unlink
-$ vlt skills unlink "#my-package"`}
+$ vlt skills link "#my-package"
+# remove every skill link
+$ vlt skills link ":not(*)"`}
   title="Terminal"
   lang="bash"
 />
@@ -106,9 +159,9 @@ argument.
 
 ## Linking on install
 
-`vlt install`, `vlt ci` and `vlt update` link no skills by default.
-Use `--allow-skills` to link the skills of matching packages after a
-successful install:
+`vlt install`, `vlt ci`, `vlt update` and `vlt uninstall` link no
+skills by default. Use `--allow-skills` to link the skills of matching
+packages after a successful install:
 
 <Code
   code={`# link the skills of direct dependencies
@@ -119,40 +172,46 @@ $ vlt config set "allow-skills=:root > *"`}
   lang="bash"
 />
 
-With `--allow-skills`, stale skill links are removed too, like
-`vlt skills link`, and a link follows its package to a new version. An
-invalid query fails before anything is installed. Narrowing
-`--allow-skills` keeps links that still point to an installed package;
-use `vlt skills unlink` to remove them.
-
-`vlt install`, `vlt ci`, `vlt update` and `vlt uninstall` always
-remove dangling skill links (package removed or at another version).
-Without `--allow-skills`, a new version is not linked again: run
-`vlt skills link <query>`.
+With `--allow-skills`, installs add links and remove links whose skill
+is gone: dangling, package removed, or skill no longer shipped. A link
+follows its package to a new version, in every dir. Installs never
+remove links to installed skills: after narrowing `--allow-skills`,
+run `vlt skills link <query>`. Dir changes take effect for new links;
+old ones go on the next `vlt skills link`. An invalid query or
+`skills-dir` fails before anything is installed.
 
 ## Safety
 
 - `vlt` only ever replaces or removes links that point into a
   `node_modules/.vlt` store. Anything else at a link path (your own
-  files, folders or links) is skipped and reported, never changed.
+  skills, other tools' copies or links) is skipped and reported for
+  that dir, never changed.
+- Dirs are never removed.
 - Linked skills are views of installed package files: don't edit them,
   a reinstall replaces them. Files hardlinked from the global store
   get private copies when linked, so edits stay in this project.
 
 ## Ignoring linked skills in git
 
-Skill links are generated by install, so ignore them while keeping any
-skills your project publishes:
+Links dangle in a fresh clone until install, so `vlt` keeps their
+names in a marked block of each dir's `.gitignore`:
 
 <Code
-  code={`# .gitignore
-/skills/*
-!/skills/my-own-skill/`}
-  title=".gitignore"
+  code={`# >>> vlt agent skills (links into node_modules)
+/bar
+/lint-rules
+# <<< vlt agent skills`}
+  title=".claude/skills/.gitignore"
   lang="text"
 />
 
+Lines are added for new links and removed with them, or when your own
+entry takes the name. The rest of the file is kept, and the file is
+never deleted: committed, it keeps the dir in a fresh clone. A dir
+with no `vlt` links is never touched. A `.gitignore` that is a
+symlink, not a file or can't be written is left alone and reported.
+
 ## Limits
 
-- Skills are linked into `./skills` only.
 - Skills nested deeper than `skills/<name>/SKILL.md` are not found.
+- Skills are linked at the project root only, not per workspace.

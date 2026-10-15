@@ -1,10 +1,16 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
-import type { Skill } from '@vltpkg/graph'
+import type { Skill, SkillRow } from '@vltpkg/graph'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { SkillsResult } from '../../src/commands/skills.ts'
 
-type Call = { fn: string; target?: string; projectRoot?: string }
+type Call = {
+  fn: string
+  target?: string
+  projectRoot?: string
+  skillsDirs?: string[]
+  apply?: boolean
+}
 let calls: Call[] = []
 t.beforeEach(() => (calls = []))
 
@@ -13,34 +19,49 @@ const result = {
   unchanged: [],
   removed: [],
   conflicts: [],
+  dirs: ['.agents/skills'],
 }
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/skills.ts')
 >('../../src/commands/skills.ts', {
   '@vltpkg/graph': {
-    listSkills: async ({ target, projectRoot }: Call) => {
-      calls.push({ fn: 'list', target, projectRoot })
-      return []
+    listSkills: async ({ target, projectRoot, skillsDirs }: Call) => {
+      calls.push({ fn: 'list', target, projectRoot, skillsDirs })
+      return { skills: [], dirs: ['.agents/skills'] }
     },
-    linkSkills: async ({ target, projectRoot }: Call) => {
-      calls.push({ fn: 'link', target, projectRoot })
+    linkSkills: async ({
+      target,
+      projectRoot,
+      skillsDirs,
+      apply,
+    }: Call) => {
+      calls.push({
+        fn: 'link',
+        target,
+        projectRoot,
+        skillsDirs,
+        apply,
+      })
       return result
-    },
-    unlinkSkills: async ({ target, projectRoot }: Call) => {
-      calls.push({ fn: 'unlink', target, projectRoot })
-      return { removed: [] }
     },
   },
 })
 
-const run = (positionals: string[], target?: string) =>
+const run = (
+  positionals: string[],
+  target?: string,
+  skillsDir?: string[],
+) =>
   Command.command({
     projectRoot: '/project',
     positionals,
     values: {},
     options: {},
-    get: (k: string) => (k === 'target' ? target : undefined),
+    get: (k: string) =>
+      k === 'target' ? target
+      : k === 'skills-dir' ? skillsDir
+      : undefined,
   } as unknown as LoadedConfig)
 
 t.test('usage', async t => {
@@ -48,34 +69,64 @@ t.test('usage', async t => {
 })
 
 t.test('command', async t => {
-  t.strictSame(await run([]), { action: 'list', skills: [] })
-  t.strictSame(await run(['ls', '#foo']), {
+  const list = {
     action: 'list',
     skills: [],
-  })
+    dirs: ['.agents/skills'],
+  }
+  t.strictSame(await run([]), list)
+  t.strictSame(await run(['ls', '#foo']), list)
   t.strictSame(await run(['link']), { action: 'link', ...result })
   await run(['link', '#foo'])
-  await run(['link', '#foo'], '#bar')
-  t.strictSame(await run(['unlink']), {
-    action: 'unlink',
-    removed: [],
-  })
-  await run(['unlink', '#foo'])
-  await run(['list'], '#bar')
+  await run(['link', '#foo'], '#bar', ['.claude/skills'])
+  await run(['list'], '#bar', [])
+  const p = '/project'
   t.strictSame(calls, [
-    { fn: 'list', target: undefined, projectRoot: '/project' },
-    { fn: 'list', target: '#foo', projectRoot: '/project' },
-    { fn: 'link', target: ':not(:malware)', projectRoot: '/project' },
-    { fn: 'link', target: '#foo', projectRoot: '/project' },
-    { fn: 'link', target: '#bar', projectRoot: '/project' },
-    { fn: 'unlink', target: undefined, projectRoot: '/project' },
-    { fn: 'unlink', target: '#foo', projectRoot: '/project' },
-    { fn: 'list', target: '#bar', projectRoot: '/project' },
+    {
+      fn: 'list',
+      target: undefined,
+      projectRoot: p,
+      skillsDirs: undefined,
+    },
+    {
+      fn: 'list',
+      target: '#foo',
+      projectRoot: p,
+      skillsDirs: undefined,
+    },
+    {
+      fn: 'link',
+      target: ':not(:malware)',
+      projectRoot: p,
+      skillsDirs: undefined,
+      apply: true,
+    },
+    {
+      fn: 'link',
+      target: '#foo',
+      projectRoot: p,
+      skillsDirs: undefined,
+      apply: true,
+    },
+    {
+      fn: 'link',
+      target: '#bar',
+      projectRoot: p,
+      skillsDirs: ['.claude/skills'],
+      apply: true,
+    },
+    { fn: 'list', target: '#bar', projectRoot: p, skillsDirs: [] },
   ])
-  await t.rejects(run(['#foo']), {
-    message: 'Unknown skills subcommand',
-    cause: { code: 'EUSAGE', found: '#foo' },
-  })
+  for (const sub of ['#foo', 'unlink']) {
+    await t.rejects(run([sub]), {
+      message: 'Unknown skills subcommand',
+      cause: {
+        code: 'EUSAGE',
+        found: sub,
+        validOptions: ['list', 'ls', 'link'],
+      },
+    })
+  }
 })
 
 t.test('views', async t => {
@@ -85,28 +136,54 @@ t.test('views', async t => {
     id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
     skill: 'a',
     path: '/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a',
-    mount: 'skills/a',
-    linked: false,
+    linked: [],
     ...s,
   })
+  const row = (dir: string, s: Partial<Skill> = {}): SkillRow => {
+    const r = skill(s)
+    return { ...r, dir, mount: `${dir}/${r.skill}` }
+  }
+  const dirs = ['.agents/skills', '.claude/skills']
   const { human, json } = Command.views
   const cases: [string, SkillsResult][] = [
-    ['list empty', { action: 'list', skills: [] }],
+    ['list empty', { action: 'list', skills: [], dirs }],
+    [
+      'list no dirs',
+      {
+        action: 'list',
+        skills: [skill({ linked: ['.agents/skills'] })],
+        dirs: [],
+      },
+    ],
+    [
+      'list skipped',
+      {
+        action: 'list',
+        skills: [],
+        dirs: [],
+        skipped: ['.claude/skills (outside the project)'],
+      },
+    ],
     [
       'list one',
-      { action: 'list', skills: [skill({ description: 'does a' })] },
+      {
+        action: 'list',
+        skills: [skill({ description: 'does a' })],
+        dirs,
+      },
     ],
     [
       'list many',
       {
         action: 'list',
+        dirs,
         skills: [
-          skill({ linked: true }),
+          skill({ linked: dirs }),
+          skill({ skill: 'b', linked: ['.claude/skills'] }),
           skill({
             name: '@s/bar',
             version: undefined,
             skill: 'bar',
-            mount: 'skills/bar',
           }),
         ],
       },
@@ -115,21 +192,20 @@ t.test('views', async t => {
       'list aliased',
       {
         action: 'list',
+        dirs: ['.agents/skills'],
         skills: [
           skill({
             alias: 'vercelskills',
             name: 'skills',
             version: '1.7.2',
             skill: 'find-skills',
-            mount: 'skills/find-skills',
-            linked: true,
+            linked: ['.agents/skills'],
           }),
           skill({
             alias: 'mine',
             name: 'theirs',
             version: undefined,
             skill: 'x',
-            mount: 'skills/x',
           }),
         ],
       },
@@ -140,7 +216,7 @@ t.test('views', async t => {
       {
         action: 'link',
         ...result,
-        linked: [skill({ linked: true })],
+        linked: [row('.agents/skills')],
       },
     ],
     [
@@ -148,12 +224,19 @@ t.test('views', async t => {
       {
         action: 'link',
         linked: [
-          skill({ linked: true }),
-          skill({ skill: 'b', mount: 'skills/b', linked: true }),
+          row('.agents/skills'),
+          row('.claude/skills'),
+          row('.agents/skills', { skill: 'b' }),
         ],
-        unchanged: [skill({ linked: true })],
-        removed: ['skills/x'],
-        conflicts: ['skills/c', 'skills/b (bar@1.0.0)'],
+        unchanged: [row('.claude/skills', { skill: 'c' })],
+        removed: ['.agents/skills/x'],
+        conflicts: [
+          '.claude/skills/b',
+          '.agents/skills/c (bar@1.0.0)',
+        ],
+        dirs,
+        skipped: ['.kiro/skills (not a directory)'],
+        gitignore: ['.claude/skills/.gitignore'],
       },
     ],
     [
@@ -161,8 +244,8 @@ t.test('views', async t => {
       {
         action: 'link',
         ...result,
-        unchanged: [skill({ linked: true })],
-        conflicts: ['skills/b'],
+        unchanged: [row('.agents/skills'), row('.claude/skills')],
+        conflicts: ['.agents/skills/b'],
       },
     ],
     [
@@ -170,14 +253,8 @@ t.test('views', async t => {
       {
         action: 'link',
         ...result,
-        removed: ['skills/x', 'skills/y'],
+        removed: ['.agents/skills/x', '.claude/skills/y'],
       },
-    ],
-    ['unlink nothing', { action: 'unlink', removed: [] }],
-    ['unlink one', { action: 'unlink', removed: ['skills/a'] }],
-    [
-      'unlink many',
-      { action: 'unlink', removed: ['skills/a', 'skills/b'] },
     ],
   ]
   for (const [name, r] of cases) {

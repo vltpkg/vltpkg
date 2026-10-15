@@ -84,41 +84,45 @@ High-level install orchestration that handles graph building, reify,
 and lockfile management. Supports `--frozen-lockfile`,
 `--clean-install`, and `--lockfile-only` modes. With `allowSkills` (a
 DSS query, validated up front), links the agent skills of matching
-packages afterwards (see `linkSkills`) and returns the result as
-`skills`. Unset: removes dangling skill links (see `syncSkills`).
+packages afterwards (see `linkSkills`) into `skillsDirs` (unset:
+detected) and returns the result as `skills`.
 
-### `listSkills(options): Promise<Skill[]>`
+### `listSkills(options): Promise<{ skills, dirs, skipped? }>`
 
 Lists the agent skills (dirs with a `SKILL.md`, see
 https://agentskills.io/specification) shipped by installed packages in
 the vlt store, at `skills/<dir>/SKILL.md` or a root `SKILL.md`, from
-one version per package (a direct dep, else the highest).
-`options.target` is a DSS query selecting packages (default `*`).
+one version per package (a direct dep, else the highest), with the
+agent skill dirs each is linked in. `options.target` is a DSS query
+selecting packages (default `*`). Creates nothing.
 
 ### `linkSkills(options): Promise<LinkSkillsResult>`
 
-Links the skills of the packages matching `options.target` into
-`./skills/<skill>` (junctions on Windows). One package per name: the
-one an existing link points to while its skill is installed, else a
-direct dep, then DepID; the others are reported in `conflicts` as
-`<mount> (<package>)`. A link follows its package to the picked
+Links the skills of the packages matching `options.target` into each
+agent skill dir (junctions on Windows): `options.skillsDirs`, else
+`.agents/skills`, plus `<folder>/skills` for each agent folder at the
+project root, `.claude/skills` inside Claude Code (`options.env`), and
+existing `.<name>/skills` dirs. Dirs must resolve inside the project,
+not in `node_modules` (else `skipped`, as are fs errors) and are
+created only when a skill is found. One package per name, in every
+dir: the one the first existing link points to while its skill is
+installed, else a direct dep, then DepID; the others are reported in
+`conflicts` as `<mount> (<package>)`. Installs keep a dir's link to
+another installed skill. A link follows its package to the picked
 version. Then removes links whose skill is no longer installed:
-dangling, package not in the graph, or no longer shipped. Only links
-pointing into a `node_modules/.vlt` store are ever replaced or
-removed; anything else in the way is reported in `conflicts`. Linked
+dangling, package not in the graph, or no longer shipped. With
+`options.apply`, also removes every other vlt link in the scanned
+dirs. Only links pointing into a `node_modules/.vlt` store are ever
+replaced or removed; anything else in the way is reported in
+`conflicts`. Keeps a marked block of link names in each dir's
+`.gitignore` (`gitignore` lists the ones it could not edit). Linked
 packages get private copies of files hardlinked from the global store.
 
 ### `syncSkills(options): Promise<LinkSkillsResult | undefined>`
 
 Run by `install`, `update` and `uninstall` after reify. With
-`options.allowSkills`, runs `linkSkills` for it. Else best effort:
-removes dangling skill links (returned as `removed`, if any) and keeps
-files behind live links private.
-
-### `unlinkSkills(options): Promise<{ removed }>`
-
-Removes the skill links pointing into the packages matching
-`options.target` (default: all), plus any dangling ones.
+`options.allowSkills` (not `:not(*)`), runs `linkSkills` for it. Else
+does nothing.
 
 ### `mermaidOutput(graph): string`
 

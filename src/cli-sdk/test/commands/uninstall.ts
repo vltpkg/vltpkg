@@ -16,6 +16,7 @@ const Command = await t.mockImport<
       log += 'uninstall\n'
       return {
         graph: {},
+        ...(opts.allowSkills ? { skills: { removed: [] } } : null),
       }
     },
   },
@@ -55,6 +56,30 @@ await Command.command({
   get: (_key: string) => undefined,
 } as unknown as LoadedConfig)
 t.equal(uninstallOptions?.lockfileOnly, true)
+t.notOk(
+  'skills' in
+    (await Command.command({
+      positionals: [],
+      values: {},
+      options,
+      get: (_key: string) => undefined,
+    } as unknown as LoadedConfig)),
+  'no skills key when unset',
+)
+
+// passes allow-skills and skills-dir, returns skills
+const res = await Command.command({
+  positionals: ['abbrev@2'],
+  values: {},
+  options,
+  get: (k: string) =>
+    k === 'allow-skills' ? '*'
+    : k === 'skills-dir' ? ['.claude/skills']
+    : undefined,
+} as unknown as LoadedConfig)
+t.equal(uninstallOptions?.allowSkills, '*')
+t.strictSame(uninstallOptions?.skillsDirs, ['.claude/skills'])
+t.strictSame(res.skills, { removed: [] })
 
 t.strictSame(
   Command.views.json({

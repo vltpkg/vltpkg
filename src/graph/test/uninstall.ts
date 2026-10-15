@@ -190,60 +190,119 @@ t.test('uninstall with lockfileOnly option', async t => {
   t.notOk(rolledBack, 'and not rolled back')
 })
 
-t.test('uninstall prunes skill links after reify', async t => {
-  const dir = t.testdir({
-    'package.json': JSON.stringify({
-      name: 'test',
-      version: '1.0.0',
-    }),
-  })
-  const graph = { nodes: new Map(), importers: [], projectRoot: dir }
-  const log: string[] = []
-  const { uninstall } = await t.mockImport<
-    typeof import('../src/uninstall.ts')
-  >('../src/uninstall.ts', {
-    '../src/ideal/build.ts': { build: async () => graph },
-    '../src/reify/index.ts': {
-      reify: async () => {
-        log.push('reify')
-      },
-    },
-    '../src/index.ts': {
-      lockfile: {
-        save: () => {
-          log.push('save')
+t.test('uninstall links skills after reify', async t => {
+  type SyncOpts = {
+    allowSkills?: string
+    skillsDirs?: string[]
+    graph: unknown
+  }
+  const setup = async (
+    t: Test,
+    syncSkills: (o: SyncOpts) => unknown,
+  ) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      node_modules: { '.vlt-lock.json': '{}' },
+    })
+    const graph = {
+      nodes: new Map(),
+      importers: [],
+      projectRoot: dir,
+    }
+    const log: string[] = []
+    const { uninstall } = await t.mockImport<
+      typeof import('../src/uninstall.ts')
+    >('../src/uninstall.ts', {
+      '../src/ideal/build.ts': {
+        build: async () => {
+          log.push('build')
+          return graph
         },
       },
-    },
-    '../src/skills/index.ts': {
-      syncSkills: async (o: {
-        allowSkills?: string
-        graph: unknown
-      }) => {
-        t.equal(o.graph, graph, 'the new graph')
-        t.equal(o.allowSkills, undefined, 'prune only')
-        log.push('syncSkills')
+      '../src/reify/index.ts': {
+        reify: async () => {
+          log.push('reify')
+        },
       },
-    },
+      '../src/index.ts': {
+        lockfile: {
+          save: () => {
+            log.push('save')
+          },
+        },
+      },
+      '../src/skills/index.ts': {
+        syncSkills: async (o: SyncOpts) => {
+          t.equal(o.graph, graph, 'the new graph')
+          log.push('syncSkills')
+          return syncSkills(o)
+        },
+      },
+    })
+    const run = (extra: Partial<UninstallOptions>) =>
+      uninstall(
+        {
+          projectRoot: dir,
+          scurry: new PathScurry(dir),
+          packageJson: new PackageJson(),
+          packageInfo: mockPackageInfo,
+          allowScripts: ':not(*)',
+          ...extra,
+        },
+        new Map() as RemoveImportersDependenciesMap,
+      )
+    return { dir, log, run }
+  }
+
+  t.test('links, returns skills', async t => {
+    const calls: SyncOpts[] = []
+    const skills = { removed: ['.agents/skills/a'] }
+    const { log, run } = await setup(t, o => {
+      calls.push(o)
+      return skills
+    })
+    const result = await run({
+      allowSkills: '*',
+      skillsDirs: ['.claude/skills'],
+    })
+    t.strictSame(log, ['build', 'reify', 'syncSkills'])
+    t.equal(calls[0]?.allowSkills, '*')
+    t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
+    t.equal(result.skills, skills)
+    log.length = 0
+    t.notOk('skills' in (await run({ lockfileOnly: true })))
+    t.strictSame(log, ['build', 'save'], 'not on lockfileOnly')
   })
-  const run = (lockfileOnly: boolean) =>
-    uninstall(
-      {
-        projectRoot: dir,
-        scurry: new PathScurry(dir),
-        packageJson: new PackageJson(),
-        packageInfo: mockPackageInfo,
-        allowScripts: ':not(*)',
-        allowSkills: '*',
-        lockfileOnly,
-      } as unknown as UninstallOptions,
-      new Map() as RemoveImportersDependenciesMap,
+
+  t.test('nothing synced: no skills result', async t => {
+    const { run } = await setup(t, () => undefined)
+    t.notOk('skills' in (await run({})))
+  })
+
+  t.test('invalid options fail before uninstalling', async t => {
+    const { log, run } = await setup(t, () => undefined)
+    await t.rejects(run({ allowSkills: ':nope' }), {
+      cause: { code: 'EUSAGE', found: ':nope' },
+    })
+    await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
+      cause: { code: 'EUSAGE', found: '../x' },
+    })
+    t.strictSame(log, [], 'nothing built')
+  })
+
+  t.test('a link failure does not undo the uninstall', async t => {
+    const { dir, run } = await setup(t, () => {
+      throw new Error('link failed')
+    })
+    await t.rejects(run({ allowSkills: '*' }), /link failed/)
+    t.ok(
+      existsSync(resolve(dir, 'node_modules/.vlt-lock.json')),
+      'hidden lockfile kept',
     )
-  await run(false)
-  t.strictSame(log, ['reify', 'syncSkills'])
-  log.length = 0
-  await run(true)
-  t.strictSame(log, ['save'], 'not on lockfileOnly')
+  })
 })
 
 t.test(

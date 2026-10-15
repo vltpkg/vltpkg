@@ -28,6 +28,7 @@ import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { Diff } from './diff.ts'
 import { syncSkills } from './skills/index.ts'
+import { assertSkillsDirs } from './skills/dirs.ts'
 import { assertQuery } from './filter-nodes-by-query.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
 
@@ -38,10 +39,15 @@ export type InstallOptions = LoadOptions & {
   saveExact?: boolean
   savePrefix?: string
   /**
-   * DSS query: packages whose agent skills get linked into `./skills`
-   * after install. Unset or `:not(*)`: none.
+   * DSS query: packages whose agent skills get linked into the
+   * project's agent skill dirs after install. Unset or `:not(*)`: none.
    */
   allowSkills?: string
+  /**
+   * agent skill dirs, relative to projectRoot. Unset: detect; `[]`:
+   * none
+   */
+  skillsDirs?: string[]
 }
 
 /**
@@ -69,7 +75,10 @@ export const install = async (
   const { allowSkills } = options
   const skills = !!allowSkills && allowSkills !== ':not(*)'
   // fail before installing, not after
-  if (skills) await assertQuery(allowSkills, 'allow-skills')
+  if (skills) {
+    await assertQuery(allowSkills, 'allow-skills')
+    assertSkillsDirs(options.projectRoot, options.skillsDirs)
+  }
 
   if (options.expectLockfile || options.frozenLockfile) {
     const lockfilePath = resolve(options.projectRoot, 'vlt-lock.json')
