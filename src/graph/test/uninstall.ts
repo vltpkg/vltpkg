@@ -191,14 +191,16 @@ t.test('uninstall with lockfileOnly option', async t => {
 })
 
 t.test('uninstall links skills after reify', async t => {
-  type SyncOpts = {
-    allowSkills?: string
+  type LinkOpts = {
+    target: string
     skillsDirs?: string[]
     graph: unknown
+    apply?: boolean
   }
+  // no `linkSkills`: loading the skills module throws
   const setup = async (
     t: Test,
-    syncSkills: (o: SyncOpts) => unknown,
+    linkSkills?: (o: LinkOpts) => unknown,
   ) => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -235,10 +237,13 @@ t.test('uninstall links skills after reify', async t => {
         },
       },
       '../src/skills/index.ts': {
-        syncSkills: async (o: SyncOpts) => {
-          t.equal(o.graph, graph, 'the new graph')
-          log.push('syncSkills')
-          return syncSkills(o)
+        get linkSkills() {
+          if (!linkSkills) throw new Error('skills module loaded')
+          return async (o: LinkOpts) => {
+            t.equal(o.graph, graph, 'the new graph')
+            log.push('linkSkills')
+            return linkSkills(o)
+          }
         },
       },
     })
@@ -258,35 +263,52 @@ t.test('uninstall links skills after reify', async t => {
   }
 
   t.test('links, returns skills', async t => {
-    const calls: SyncOpts[] = []
+    const calls: LinkOpts[] = []
     const skills = { removed: ['.agents/skills/a'] }
     const { log, run } = await setup(t, o => {
       calls.push(o)
       return skills
     })
     const result = await run({
-      allowSkills: '*',
+      allowSkills: '#foo:skill(x)',
       skillsDirs: ['.claude/skills'],
     })
-    t.strictSame(log, ['build', 'reify', 'syncSkills'])
-    t.equal(calls[0]?.allowSkills, '*')
+    t.strictSame(log, ['build', 'reify', 'linkSkills'])
+    t.equal(calls[0]?.target, '#foo:skill(x)')
+    t.notOk(calls[0]?.apply, 'never apply')
     t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
     t.equal(result.skills, skills)
-    log.length = 0
-    t.notOk('skills' in (await run({ lockfileOnly: true })))
-    t.strictSame(log, ['build', 'save'], 'not on lockfileOnly')
   })
 
-  t.test('nothing synced: no skills result', async t => {
-    const { run } = await setup(t, () => undefined)
-    t.notOk('skills' in (await run({})))
+  t.test('fast path: skills module never loaded', async t => {
+    const { log, run } = await setup(t)
+    for (const extra of [
+      {},
+      { allowSkills: ':not(*)' },
+      { skillsDirs: ['../x'] },
+    ]) {
+      t.notOk('skills' in (await run(extra)), JSON.stringify(extra))
+    }
+    log.length = 0
+    t.notOk(
+      'skills' in
+        (await run({ allowSkills: '*', lockfileOnly: true })),
+    )
+    t.strictSame(log, ['build', 'save'], 'not on lockfileOnly')
+    await t.rejects(
+      run({ allowSkills: '*' }),
+      /skills module loaded/,
+      'set: loaded',
+    )
   })
 
   t.test('invalid options fail before uninstalling', async t => {
-    const { log, run } = await setup(t, () => undefined)
-    await t.rejects(run({ allowSkills: ':nope' }), {
-      cause: { code: 'EUSAGE', found: ':nope' },
-    })
+    const { log, run } = await setup(t)
+    for (const q of [':nope', '#foo:skill(x) > *']) {
+      await t.rejects(run({ allowSkills: q }), {
+        cause: { code: 'EUSAGE', found: q },
+      })
+    }
     await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
       cause: { code: 'EUSAGE', found: '../x' },
     })

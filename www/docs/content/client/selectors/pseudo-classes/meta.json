@@ -15,6 +15,7 @@
     "type",
     "diff",
     "hostname",
-    "registry"
+    "registry",
+    "skill"
   ]
 }

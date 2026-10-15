@@ -15,7 +15,6 @@ import { resolve } from 'node:path'
 import { assertQuery } from './filter-nodes-by-query.ts'
 import type { Graph } from './graph.ts'
 import { assertSkillsDirs } from './skills/dirs.ts'
-import { syncSkills } from './skills/index.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
 
 export type UninstallOptions = LoadOptions & {
@@ -23,8 +22,8 @@ export type UninstallOptions = LoadOptions & {
   allowScripts: string
   /**
    * DSS query: packages whose agent skills get linked into the
-   * project's agent skill dirs after uninstall. Unset or `:not(*)`:
-   * none.
+   * project's agent skill dirs after uninstall. Selectors may end with
+   * `:skill()`. Unset or `:not(*)`: none.
    */
   allowSkills?: string
   /**
@@ -48,10 +47,15 @@ export const uninstall = async (
   options: UninstallOptions,
   remove?: RemoveImportersDependenciesMap,
 ): Promise<UninstallResult> => {
-  const { allowSkills } = options
+  // unset or `:not(*)`: no skills work at all, the skills code never
+  // loads
+  const allowSkills =
+    options.allowSkills === ':not(*)' ?
+      undefined
+    : options.allowSkills
   // fail before uninstalling, not after
-  if (allowSkills && allowSkills !== ':not(*)') {
-    await assertQuery(allowSkills, 'allow-skills')
+  if (allowSkills) {
+    await assertQuery(allowSkills, 'allow-skills', ['skill'])
     assertSkillsDirs(options.projectRoot, options.skillsDirs)
   }
   const mainManifest = options.packageJson.read(options.projectRoot)
@@ -139,7 +143,12 @@ export const uninstall = async (
   /* c8 ignore stop */
 
   // after the try: a link failure must not roll back the uninstall
-  const synced = await syncSkills({ ...options, graph: result.graph })
-  if (synced) result.skills = synced
+  if (!allowSkills) return result
+  const { linkSkills } = await import('./skills/index.ts')
+  result.skills = await linkSkills({
+    ...options,
+    graph: result.graph,
+    target: allowSkills,
+  })
   return result
 }

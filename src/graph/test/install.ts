@@ -2941,14 +2941,16 @@ t.test('the frozen error names the changed option', async t => {
 })
 
 t.test('allowSkills', async t => {
-  type SyncOpts = {
-    allowSkills?: string
+  type LinkOpts = {
+    target: string
     skillsDirs?: string[]
     graph: unknown
+    apply?: boolean
   }
+  // no `linkSkills`: loading the skills module throws
   const setup = async (
     t: Test,
-    syncSkills: (o: SyncOpts) => unknown,
+    linkSkills?: (o: LinkOpts) => unknown,
   ) => {
     const dir = t.testdir({
       'package.json': JSON.stringify({
@@ -2978,7 +2980,10 @@ t.test('allowSkills', async t => {
       },
       '../src/index.ts': { lockfile: { save: () => {} } },
       '../src/skills/index.ts': {
-        syncSkills: async (o: never) => syncSkills(o),
+        get linkSkills() {
+          if (!linkSkills) throw new Error('skills module loaded')
+          return async (o: LinkOpts) => linkSkills(o)
+        },
       },
     })
     const run = (extra: Partial<InstallOptions>) =>
@@ -2997,7 +3002,7 @@ t.test('allowSkills', async t => {
   }
 
   t.test('links matching skills', async t => {
-    const calls: SyncOpts[] = []
+    const calls: LinkOpts[] = []
     const skills = {
       linked: [],
       unchanged: [],
@@ -3013,57 +3018,54 @@ t.test('allowSkills', async t => {
       skillsDirs: ['.claude/skills'],
     })
     t.equal(calls.length, 1)
-    t.equal(calls[0]?.allowSkills, '#foo')
+    t.equal(calls[0]?.target, '#foo')
+    t.notOk(calls[0]?.apply, 'installs never apply')
     t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
     t.equal(calls[0]?.graph, graph, 'uses the installed graph')
     t.equal(result.skills, skills)
+    await run({ allowSkills: '#foo:skill(x)' })
+    t.equal(calls[1]?.target, '#foo:skill(x)', ':skill() accepted')
   })
 
-  t.test('unset or :not(*): no skills result', async t => {
-    const calls: SyncOpts[] = []
-    const { run } = await setup(t, o => {
-      calls.push(o)
-      return undefined
-    })
-    for (const extra of [{}, { allowSkills: ':not(*)' }]) {
+  t.test('unset or :not(*): skills module never loaded', async t => {
+    const { run } = await setup(t)
+    for (const extra of [
+      {},
+      { allowSkills: ':not(*)' },
+      { skillsDirs: ['../x'] },
+    ]) {
       const result = await run(extra)
       t.notOk('skills' in result, JSON.stringify(extra))
     }
-    t.strictSame(
-      calls.map(c => c.allowSkills),
-      [undefined, ':not(*)'],
-      'still called: returns undefined',
+    await t.rejects(
+      run({ allowSkills: '*' }),
+      /skills module loaded/,
+      'set: loaded',
     )
   })
 
-  t.test('skipped on lockfileOnly', async t => {
-    let called = 0
-    const { run } = await setup(t, () => called++)
+  t.test('lockfileOnly: skills module never loaded', async t => {
+    const { run } = await setup(t)
     const result = await run({ allowSkills: '*', lockfileOnly: true })
     t.notOk('skills' in result)
-    t.equal(called, 0)
   })
 
   t.test('invalid query fails before installing', async t => {
-    let called = 0
-    const { run, built } = await setup(t, () => called++)
-    await t.rejects(run({ allowSkills: ':nope' }), {
-      cause: { code: 'EUSAGE', found: ':nope' },
-    })
+    const { run, built } = await setup(t)
+    for (const q of [':nope', '#foo:skill(x) > *']) {
+      await t.rejects(run({ allowSkills: q }), {
+        cause: { code: 'EUSAGE', found: q },
+      })
+    }
     t.equal(built(), 0, 'nothing built')
-    t.equal(called, 0)
   })
 
   t.test('invalid skills-dir fails before installing', async t => {
-    let called = 0
-    const { run, built } = await setup(t, () => called++)
+    const { run, built } = await setup(t)
     await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
       cause: { code: 'EUSAGE', found: '../x' },
     })
     t.equal(built(), 0, 'nothing built')
-    t.equal(called, 0)
-    await run({ skillsDirs: ['../x'] })
-    t.equal(called, 1, 'not checked w/o allowSkills')
   })
 
   t.test('a link failure does not undo the install', async t => {

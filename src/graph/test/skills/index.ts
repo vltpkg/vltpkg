@@ -28,11 +28,8 @@ import {
   GITIGNORE_BEGIN,
   GITIGNORE_END,
 } from '../../src/skills/gitignore.ts'
-import {
-  linkSkills,
-  listSkills,
-  syncSkills,
-} from '../../src/skills/index.ts'
+import { linkSkills, listSkills } from '../../src/skills/index.ts'
+import type { LinkSkillsResult } from '../../src/skills/index.ts'
 import { mountSkill } from '../../src/skills/mounts.ts'
 
 type Dir = NonNullable<Parameters<typeof t.testdir>[0]>
@@ -1116,41 +1113,284 @@ t.test('linkSkills: agent dirs', async t => {
   })
 })
 
-t.test('syncSkills', async t => {
-  t.test('links with allowSkills', async t => {
+t.test('linkSkills: :skill()', async t => {
+  const mounts = (r: LinkSkillsResult) => r.linked.map(s => s.mount)
+  // foo's `c`, frontmatter `name: My Skill`
+  const addNamed = (dir: string) => {
+    addSkill(dir, fooDir, 'c')
+    writeFileSync(
+      resolve(dir, fooDir, 'skills/c/SKILL.md'),
+      '---\nname: My Skill\n---\n',
+    )
+  }
+
+  t.test('listSkills applies the mask', async t => {
     const dir = project(t)
-    const res = await syncSkills({
+    const list = async (target: string) =>
+      (await listSkills({ ...opts(dir), target })).skills.map(
+        s => `${s.name} ${s.skill}`,
+      )
+    const all = ['foo a', 'foo b', '@s/bar bar']
+    t.strictSame(await list('#foo:skill(a)'), ['foo a'])
+    t.strictSame(await list('*'), all)
+    t.strictSame(await list(':root > *, #foo:skill(a)'), all, 'union')
+  })
+
+  const picks: [string, string[]][] = [
+    ['#foo:skill(a)', ['skills/a']],
+    ['#foo:skill(*b)', ['skills/b']],
+    ['#foo:skill("my skill")', ['skills/c']],
+    ['#foo:skill(A)', ['skills/a']],
+    [
+      ':root > *, #foo:skill(a)',
+      ['skills/a', 'skills/b', 'skills/bar', 'skills/c'],
+    ],
+    [
+      ':root > *:not(#foo), #foo:skill(a)',
+      ['skills/a', 'skills/bar'],
+    ],
+  ]
+  for (const [target, linked] of picks) {
+    t.test(target, async t => {
+      const dir = project(t)
+      addNamed(dir)
+      const res = await linkSkills({ ...opts(dir), target })
+      t.strictSame(mounts(res), linked)
+      t.notOk('unmatched' in res, 'all matched')
+    })
+  }
+
+  t.test('unmatched: no dir made, cleanup runs', async t => {
+    const dir = project(
+      t,
+      {},
+      {},
+      {
+        '.kiro': {},
+        '.claude': {
+          skills: {
+            gone: t.fixture(
+              'symlink',
+              '../../node_modules/.vlt/~npm~gone@1.0.0/node_modules/gone',
+            ),
+          },
+        },
+      },
+    )
+    const res = await linkSkills({
       ...opts(dir),
-      graph: load(dir),
-      allowSkills: '#foo',
+      skillsDirs: undefined,
+      env: { CLAUDECODE: '1' },
+      target: '#foo:skill(nope)',
+    })
+    t.strictSame(res.unmatched, [
+      { pattern: 'nope', skills: ['a', 'b'] },
+    ])
+    t.strictSame(res.linked, [])
+    t.strictSame(res.removed, ['.claude/skills/gone'])
+    t.notOk(existsSync(resolve(dir, '.agents')))
+    t.notOk(existsSync(resolve(dir, '.kiro/skills')))
+  })
+
+  t.test('narrowing: installs keep links, apply removes', async t => {
+    const dir = project(t)
+    await linkSkills({ ...opts(dir), target: '#foo' })
+    // foo is scanned and still ships b: not gone
+    const kept = await linkSkills({
+      ...opts(dir),
+      target: '#foo:skill(a)',
     })
     t.strictSame(
-      res?.linked.map(s => s.mount),
+      kept.unchanged.map(s => s.mount),
       ['skills/a', 'skills/b'],
+    )
+    t.strictSame(kept.removed, [])
+    const applied = await linkSkills({
+      ...opts(dir),
+      target: '#foo:skill(a)',
+      apply: true,
+    })
+    t.strictSame(applied.removed, ['skills/b'])
+    t.notOk(isLink(dir, 'skills/b'))
+  })
+
+  t.test('rule 2 runs after the mask', async t => {
+    // unmasked, bar would win `same` (DepID)
+    const q = '#foo:skill(same), :root > *:not(#foo):skill(bar)'
+    const setup = (t: Test) => {
+      const dir = project(t)
+      addSkill(dir, fooDir, 'same')
+      addSkill(dir, barDir, 'same')
+      return dir
+    }
+
+    t.test('a skill outside the mask takes no name', async t => {
+      const dir = setup(t)
+      const res = await linkSkills({ ...opts(dir), target: q })
+      t.strictSame(mounts(res), ['skills/bar', 'skills/same'])
+      t.strictSame(res.conflicts, [])
+      t.equal(
+        target(dir, 'skills/same'),
+        resolve(dir, fooDir, 'skills/same'),
+      )
+    })
+
+    t.test(
+      'its live link: installs keep, apply replaces',
+      async t => {
+        const dir = setup(t)
+        await linkSkills({ ...opts(dir), target: ':not(#foo)' })
+        const kept = await linkSkills({ ...opts(dir), target: q })
+        t.strictSame(kept.conflicts, ['skills/same (foo@1.0.0)'])
+        t.equal(
+          target(dir, 'skills/same'),
+          resolve(dir, barDir, 'skills/same'),
+        )
+        const applied = await linkSkills({
+          ...opts(dir),
+          target: q,
+          apply: true,
+        })
+        t.strictSame(mounts(applied), ['skills/same'])
+        t.strictSame(applied.conflicts, [])
+        t.equal(
+          target(dir, 'skills/same'),
+          resolve(dir, fooDir, 'skills/same'),
+        )
+      },
     )
   })
 
-  t.test('unset or :not(*): nothing', async t => {
-    const dir = project(t, {
-      gone: t.fixture(
-        'symlink',
-        '../node_modules/.vlt/~npm~gone@1.0.0/node_modules/gone',
-      ),
-    })
-    for (const allowSkills of [undefined, ':not(*)']) {
+  t.test('re-point under the mask', async t => {
+    const oldId = reg('foo@0.9.0')
+    const old = `node_modules/.vlt/${oldId}/node_modules/foo/skills/a`
+    const setup = (t: Test) =>
+      project(t, { a: t.fixture('symlink', `../${old}`) })
+    const q = '#foo:skill(b)'
+
+    t.test('installs re-point it', async t => {
+      const dir = setup(t)
+      const res = await linkSkills({ ...opts(dir), target: q })
+      t.strictSame(mounts(res), ['skills/a', 'skills/b'])
+      t.strictSame(res.removed, [])
       t.equal(
-        await syncSkills({
-          ...opts(dir),
-          skillsDirs: undefined,
-          env: { CLAUDECODE: '1' },
-          graph: load(dir),
-          allowSkills,
-        }),
-        undefined,
+        target(dir, 'skills/a'),
+        resolve(dir, fooDir, 'skills/a'),
       )
-    }
-    t.ok(isLink(dir, 'skills/gone'), 'dangling link untouched')
-    t.notOk(existsSync(resolve(dir, '.agents')), 'nothing created')
-    t.notOk(existsSync(resolve(dir, '.claude')), 'nothing created')
+    })
+
+    t.test('apply removes it', async t => {
+      const dir = setup(t)
+      const res = await linkSkills({
+        ...opts(dir),
+        target: q,
+        apply: true,
+      })
+      t.strictSame(mounts(res), ['skills/b'])
+      t.strictSame(res.removed, ['skills/a'])
+    })
+
+    t.test('new version lacks it: removed', async t => {
+      const dir = setup(t)
+      rmSync(resolve(dir, fooDir, 'skills/a'), { recursive: true })
+      const res = await linkSkills({ ...opts(dir), target: q })
+      t.strictSame(res.removed, ['skills/a'])
+    })
+  })
+})
+
+t.test('fails closed w/o security data', async t => {
+  // foo: registry pkg w/o security data (timed out)
+  const { linkSkills, listSkills } = await t.mockImport<
+    typeof import('../../src/skills/index.ts')
+  >('../../src/skills/index.ts', {
+    '@vltpkg/security-archive': {
+      ...(await import('@vltpkg/security-archive')),
+      SecurityArchive: {
+        start: async () => ({
+          has: (id: string) => id !== fooId,
+          get: () => undefined,
+          timedOut: true,
+        }),
+      },
+    },
+  })
+  const q = ':not(:malware)'
+  // `~~` ids: npm registry pkgs, eligible for security data
+  const npm = (dir: string) => ({
+    ...opts(dir),
+    registries: { npm: 'https://registry.npmjs.org/' },
+  })
+  const unscanned = ['a (foo@1.0.0)', 'b (foo@1.0.0)']
+
+  t.test('listSkills', async t => {
+    const res = await listSkills({ ...npm(project(t)), target: q })
+    t.strictSame(
+      res.skills.map(s => s.skill),
+      ['bar'],
+    )
+    t.strictSame(res.unscanned, unscanned)
+    t.equal(res.unscannedReason, 'timeout')
+  })
+
+  t.test('reported, not unmatched', async t => {
+    const dir = project(t)
+    const res = await linkSkills({
+      ...npm(dir),
+      target: `${q}:skill(a)`,
+    })
+    t.strictSame(res.linked, [])
+    t.strictSame(res.unscanned, ['a (foo@1.0.0)'])
+    t.notOk('unmatched' in res)
+    t.notOk(existsSync(resolve(dir, 'skills/a')))
+    const bar = await linkSkills({
+      ...npm(dir),
+      target: `${q}:skill(bar)`,
+    })
+    t.strictSame(
+      bar.linked.map(s => s.mount),
+      ['skills/bar'],
+    )
+    t.notOk('unscanned' in bar, 'none of its skills picked')
+  })
+
+  t.test('installs keep links, apply removes', async t => {
+    const dir = project(t)
+    await linkSkills({ ...npm(dir), target: '*' })
+    const kept = await linkSkills({ ...npm(dir), target: q })
+    t.strictSame(kept.removed, [])
+    t.notOk('unscanned' in kept, 'still linked: not left out')
+    t.ok(isLink(dir, 'skills/a'))
+    unlinkSync(resolve(dir, 'skills/b'))
+    const one = await linkSkills({ ...npm(dir), target: q })
+    t.strictSame(one.unscanned, ['b (foo@1.0.0)'])
+    t.notOk(existsSync(resolve(dir, 'skills/b')))
+    const applied = await linkSkills({
+      ...npm(dir),
+      target: q,
+      apply: true,
+    })
+    t.strictSame(applied.removed, ['skills/a'])
+    t.strictSame(applied.unscanned, unscanned)
+  })
+
+  t.test('never re-pointed to it', async t => {
+    const old = `node_modules/.vlt/${reg('foo@0.9.0')}/node_modules/foo/skills/a`
+    const dir = project(t, { a: t.fixture('symlink', `../${old}`) })
+    const res = await linkSkills({ ...npm(dir), target: q })
+    t.strictSame(res.removed, ['skills/a'])
+    t.notOk(isLink(dir, 'skills/a'))
+  })
+
+  t.test('name taken by a scanned pkg: not reported', async t => {
+    const dir = project(t)
+    addSkill(dir, barDir, 'a')
+    const res = await linkSkills({ ...npm(dir), target: q })
+    t.strictSame(
+      res.linked.map(s => s.mount),
+      ['skills/a', 'skills/bar'],
+    )
+    t.equal(target(dir, 'skills/a'), resolve(dir, barDir, 'skills/a'))
+    t.strictSame(res.unscanned, ['b (foo@1.0.0)'])
   })
 })

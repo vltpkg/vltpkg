@@ -13,6 +13,12 @@ import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
+import {
+  keptLine,
+  savedLine,
+  unmatchedLines,
+  unscannedLines,
+} from '../../allow-skills.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -141,6 +147,7 @@ export class InstallReporter extends ViewClass {
       conflicts = [],
       skipped = [],
       gitignore = [],
+      unmatched = [],
     } = _result.skills ?? {}
     const s = (n: number) => (n === 1 ? '' : 's')
     const skills: string[] = []
@@ -153,7 +160,6 @@ export class InstallReporter extends ViewClass {
     if (removed.length) {
       skills.push(
         `🧹 Removed ${removed.length} stale skill link${s(removed.length)}: ${removed.join(', ')}`,
-        '   Run `vlt skills link <query>` to link again.',
       )
     }
     if (conflicts.length) {
@@ -161,12 +167,14 @@ export class InstallReporter extends ViewClass {
         `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use or taken by another package: ${conflicts.join(', ')}`,
       )
     }
+    skills.push(...unmatchedLines(unmatched))
     if (skipped.length) {
       skills.push(`⚠️ Skipped ${skipped.join(', ')}`)
     }
     if (gitignore.length) {
       skills.push(`⚠️ Could not update ${gitignore.join(', ')}`)
     }
+    skills.push(...unscannedLines(_result.skills ?? {}))
     if (skills.length) out += `\n${skills.join('\n')}\n`
     const saved = _result.persistedConfig
     if (saved) {
@@ -178,6 +186,9 @@ export class InstallReporter extends ViewClass {
     if (migrated) {
       out += `\nSaved workspaces from ${migrated.source} to vlt.json`
     }
+    const a = _result.allowSkills
+    if (a?.stored) out += `\n${keptLine(a.stored)}`
+    else if (a) out += `\n${savedLine(a.query, 'project')}`
     this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }

@@ -1,0 +1,79 @@
+---
+title: ':skill()'
+sidebar:
+  label: ':skill()'
+  order: 15
+---
+
+The `:skill()` pseudo-class picks
+[agent skills](/client/commands/skills#pick-skills) by name from the
+packages its selector matched. It only works in `--allow-skills` and
+`vlt skills`.
+
+## Syntax
+
+```
+<selector>:skill(<pattern>[, <pattern>…])
+```
+
+### Parameters
+
+| Parameter | Description                                                                 |
+| --------- | --------------------------------------------------------------------------- |
+| `pattern` | Name (`find-skills`), quoted name (`"my skill"`) or glob (`vercel*`, `*-x`) |
+
+## How it works
+
+- The selector picks packages as usual. `:skill()` picks skills inside
+  them and never filters packages.
+- A pattern matches the skill name or the `name` in its `SKILL.md`,
+  ignoring case. `*` matches any run of characters. Quote names with
+  spaces, with double quotes only.
+- A selector without `:skill()` picks every skill of its packages, the
+  same as `:skill(*)`.
+- `:skill(x)` alone is `*:skill(x)`. `#a :skill(x)` picks skill `x` of
+  every descendant of `a`; use `#a > :skill(x)` for its direct
+  dependencies only.
+- It must end a top-level selector: `#a:skill(x) > *`,
+  `#a:skill(x):prod` and `:not(#a:skill(x))` are errors.
+- Comma lists are a union. `:root > *, #skills:skill(find-skills)`
+  picks every skill of every direct dependency, `skills` included. The
+  narrow form is `:root > *:not(#skills), #skills:skill(find-skills)`.
+- A pattern that matches no skill prints a warning; the install still
+  succeeds.
+- A typo such as `:skills(x)` is an error on its own, and matches
+  nothing inside a comma list, like any unknown pseudo-class.
+- Anywhere else (`vlt query`, `vlt ls`, `--allow-scripts`, …) it is an
+  error. Preview a query with `vlt skills list '<query>'`.
+
+## Examples
+
+Link one skill of the `skills` package:
+
+<Code
+  code={`$ vlt install --allow-skills='#skills:skill(find-skills)'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+List the matching skills of every direct dependency:
+
+<Code
+  code={`$ vlt skills list ':root > *:skill(vercel*, *-review)'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Link skills by glob and by a quoted name:
+
+<Code
+  code={`$ vlt skills link '#agent-skills:skill(react*, "my skill")'`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## See also
+
+- [`vlt skills`](/client/commands/skills#pick-skills) — manage agent
+  skills
+- [`:not()`](/client/selectors/pseudo-classes/not) — exclude packages

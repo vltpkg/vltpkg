@@ -353,6 +353,16 @@ t.test('discoverSkills', async t => {
     resolve(storeDir('col@1.0.0', 'col'), 'skills/same'),
     'dir skill wins over root name collision',
   )
+  t.strictSame(
+    skills.flatMap(s =>
+      s.frontmatterName ? [[s.skill, s.frontmatterName]] : [],
+    ),
+    [
+      ['bar', 'Invalid_Name'],
+      ['Same', 'x'],
+    ],
+    'frontmatter name, when not the skill name',
+  )
   t.equal(byName.get('dws')?.alias, undefined, 'same name')
   t.equal(byName.get('long')?.alias, undefined, 'transitive')
 
@@ -412,6 +422,61 @@ t.test('discoverSkills', async t => {
       )
     },
   )
+
+  t.test('frontmatter name', async t => {
+    const projectRoot = t.testdir({
+      'vlt.json': '{}',
+      node_modules: {
+        '.vlt': {
+          ...store('foo@1.0.0', 'foo', {
+            skills: {
+              a: { 'SKILL.md': fm('My Skill', 'x') },
+              b: { 'SKILL.md': fm('b', 'x') },
+              c: { 'SKILL.md': fm('C', 'x') },
+              d: { 'SKILL.md': 'no frontmatter' },
+              e: { 'SKILL.md': fm('\x1b[1mE2', 'x') },
+            },
+          }),
+          ...store('bar@1.0.0', 'bar', {
+            'SKILL.md': fm('Bad_Name', 'x'),
+          }),
+        },
+      },
+    })
+    const graph = new Graph({
+      ...configData,
+      mainManifest: { name: 'root', version: '1.0.0' },
+      projectRoot,
+    })
+    for (const n of ['foo', 'bar']) {
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse(`${n}@1`, configData),
+        { name: n, version: '1.0.0' },
+      )
+    }
+    const { skills } = discoverSkills(
+      graph.nodes.values(),
+      new PathScurry(projectRoot),
+    )
+    t.strictSame(
+      skills.map(s => [
+        s.skill,
+        'frontmatterName' in s,
+        s.frontmatterName,
+      ]),
+      [
+        ['a', true, 'My Skill'],
+        ['b', false, undefined],
+        ['bar', true, 'Bad_Name'],
+        ['c', false, undefined],
+        ['d', false, undefined],
+        ['e', true, '[1mE2'],
+      ],
+      'set only when it differs from the skill name, sanitized',
+    )
+  })
 
   t.test('one skill per name, any case', async t => {
     const projectRoot = t.testdir({

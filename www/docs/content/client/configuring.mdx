@@ -384,7 +384,8 @@ running the script for all workspaces.
 ### `--config=<all | user | project>`
 
 Specify which configuration to show or operate on when running
-`vlt config` commands.
+`vlt config` commands, and which file `vlt skills link` saves
+`allow-skills` to.
 
 For read operations (`get`, `pick`, `list`): `all` shows merged
 configuration from both user and project files (default).
@@ -514,8 +515,16 @@ or `update`. Values a config file already has are left alone. See
 Link the agent skills (folders with a `SKILL.md`) shipped by installed
 packages matching this DSS query into the project's agent skill dirs
 (see `--skills-dir`) after `install`, `ci`, `update` or `uninstall`.
-Unset (the default) or `:not(*)` links nothing. See
-[`vlt skills`](/client/commands/skills).
+End a selector with `:skill(<name>, …)` to pick single skills (`*`
+globs, double-quoted names). Unset (the default) or `:not(*)` links
+nothing and skips all skills work.
+
+`vlt install --allow-skills=<query>` saves the query to the project
+`vlt.json`; `vlt skills link [<query>]` sets, saves and applies it.
+
+Example: `--allow-skills="#skills:skill(find-skills)"` links the
+`find-skills` skill of the `skills` package. See
+[`vlt skills`](/client/commands/skills#pick-skills).
 
 ### `--skills-dir=<path>`
 

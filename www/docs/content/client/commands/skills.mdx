@@ -41,7 +41,8 @@ installed, else a direct dependency, then the package id. The others
 are reported. Installs keep a dir's link to another installed skill;
 `vlt skills link` re-points it. Narrowing the query and running
 `vlt skills link <query>` frees a name. A fresh clone (no links yet)
-may pick another package than a machine with older links.
+may pick another package than a machine with older links. `:skill()`
+applies first: a skill the query doesn't pick never takes a name.
 
 ## Where skills are linked
 
@@ -64,7 +65,7 @@ Unless `skills-dir` is set, skills are linked into:
 not read, so in a plain terminal a project with no `.claude/` gets
 `.agents/skills` only: run `mkdir .claude`, or set `skills-dir`.
 
-Dirs are created only when a selected package ships a skill.
+Dirs are created only when the query picks a skill.
 
 ### `skills-dir`
 
@@ -99,6 +100,44 @@ project, and skipped and reported when it points outside or into
 reached twice (e.g. `.claude/skills -> ../.agents/skills`) gets each
 link once.
 
+## Pick skills
+
+End a selector with `:skill(<name>, …)` to link only some of its
+packages' skills:
+
+<Code
+  code={`# one skill of one package
+$ vlt skills link "#skills:skill(find-skills)"
+$ vlt skills link '#skills:skill("find-skills")'
+# some skills of every direct dependency
+$ vlt skills link ":root > *:skill(performance, find-skills)"
+# globs
+$ vlt skills link ":root > *:skill(vercel*, *-review)"
+# any package, same as *:skill(find-skills)
+$ vlt skills link ":skill(find-skills)"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+- A pattern matches the skill name (its folder name, or the root
+  `SKILL.md` name) or the `name` in its `SKILL.md` frontmatter, in any
+  case. `*` matches any run of characters. Quote names with spaces:
+  `:skill("my skill")`.
+- A selector without `:skill()` picks every skill of its packages, and
+  comma lists are a union. So `:root > *, #skills:skill(find-skills)`
+  links every skill of every direct dependency, `skills` included. To
+  narrow one package, leave it out of the other selectors:
+  `:root > *:not(#skills), #skills:skill(find-skills)`.
+- `:skill()` must end a top-level selector: `#a:skill(x) > *` is an
+  error. A typo such as `:skills(x)` is an error on its own, but
+  inside a comma list it matches nothing, like any unknown
+  pseudo-class.
+- A pattern that matches no skill of its packages prints a warning
+  listing the skills they ship. The install still succeeds.
+
+Preview a query with `vlt skills list '<query>'` before `link` saves
+it. See [`:skill()`](/client/selectors/pseudo-classes/skill).
+
 ## Layout
 
 Each skill is linked into every dir, named after the skill:
@@ -125,30 +164,69 @@ to re-point them.
 
 The default. Lists the agent skill dirs and the skills of installed
 packages, marking the ones already linked (`linked in <dirs>` when not
-in every dir). Selects all packages (`*`) by default. Creates nothing.
+in every dir). Selects all packages (`*`) by default and applies
+`:skill()`. Creates and saves nothing.
 
 <Code
   code={`$ vlt skills
-$ vlt skills list ":root > *"`}
+$ vlt skills list ":root > *"
+$ vlt skills list "#skills:skill(find-*)"`}
   title="Terminal"
   lang="bash"
 />
 
 ### `link`
 
-Links the skills of the selected packages into the agent skill dirs,
-and removes every other `vlt` skill link in them: links of packages
-not selected, links whose skill is gone, and links in dirs that are no
-longer targets. Like [`vlt build`](/client/commands/build), selects
-`:not(:malware)` by default.
+Sets, saves and applies `allow-skills`. Links what the query selects
+and removes `vlt` links to other skills in every scanned dir: skills
+the query doesn't pick, skills that are gone, and links in dirs that
+are no longer targets. It is the only command that removes links to
+installed skills. With no query, it uses the stored `allow-skills`,
+else `:not(:malware)`, like [`vlt build`](/client/commands/build).
+
+Then it saves the query when it changed: to the project `vlt.json`, or
+to the user one with `--config=user`. A query in the other file is
+never deleted: a project value shadows the user one.
+
+| Query given | Stored | `-y` | TTY | Result                                                                            |
+| ----------- | ------ | ---- | --- | --------------------------------------------------------------------------------- |
+| yes         | no     | any  | any | link it, save it                                                                  |
+| yes         | yes    | no   | yes | `Replace it? [y/N]`: **y** opens the editor with the query, **N** changes nothing |
+| yes         | yes    | yes  | any | link it, save it                                                                  |
+| no          | yes    | no   | yes | `Edit it? [y/N]`: **y** opens the editor with the stored query, **N** links it    |
+| no          | yes    | yes  | any | link the stored query                                                             |
+| no          | no     | no   | yes | the editor, prefilled with `:not(:malware)`                                       |
+| no          | no     | yes  | any | link `:not(:malware)`, save it                                                    |
+| yes         | yes    | no   | no  | error: pass `-y` to replace it                                                    |
+| no          | yes    | no   | no  | link the stored query                                                             |
+| no          | no     | no   | no  | link `:not(:malware)`, save it                                                    |
+
+A query equal to the stored one links without asking or writing.
 
 <Code
-  code={`# every package without malware alerts
-$ vlt skills link
-# a single package
-$ vlt skills link "#my-package"
+  code={`$ vlt skills link ":root > *:skill(find-skills)"
+allow-skills is already set for this project (vlt.json): ":root > *". Replace it? [y/N] y
+The new allow-skills replaces the current one. Make sure it still
+selects every skill you want: skills it no longer selects are unlinked.
+Current allow-skills: :root > *
+New allow-skills: :root > *:skill(find-skills)
+1 agent skill already linked.
+Saved allow-skills=":root > *:skill(find-skills)" to vlt.json`}
+  title="Terminal"
+  lang="bash"
+/>
+
+In the editor, the new query is prefilled: edit it and press Enter. An
+empty answer cancels with no changes, and an invalid query prints the
+error and asks again. `-y` skips the prompts.
+
+<Code
+  code={`# a single package, no prompts
+$ vlt skills link "#my-package" -y
+# save to the user vlt.json
+$ vlt skills link "#my-package" --config=user
 # remove every skill link
-$ vlt skills link ":not(*)"`}
+$ vlt skills link ":not(*)" -y`}
   title="Terminal"
   lang="bash"
 />
@@ -157,28 +235,55 @@ Select packages with a [DSS query](/client/selectors) after the
 subcommand, or with `--target=<query>`, which wins over the positional
 argument.
 
-## Linking on install
-
-`vlt install`, `vlt ci`, `vlt update` and `vlt uninstall` link no
-skills by default. Use `--allow-skills` to link the skills of matching
-packages after a successful install:
+Add skill packages one at a time:
 
 <Code
-  code={`# link the skills of direct dependencies
-$ vlt install --allow-skills=":root > *"
-# persist it for every install
-$ vlt config set "allow-skills=:root > *"`}
+  code={`$ vlt install github:vercel-labs/skills
+$ vlt skills link "#skills:skill(find-skills)"   # saved to vlt.json
+$ vlt install agent-skills@github:vercel-labs/agent-skills
+$ vlt skills link
+# Edit it? y
+# New allow-skills: #skills:skill(find-skills), #agent-skills:skill(react*)
+# on another machine, both are linked
+$ vlt ci`}
   title="Terminal"
   lang="bash"
 />
 
-With `--allow-skills`, installs add links and remove links whose skill
-is gone: dangling, package removed, or skill no longer shipped. A link
-follows its package to a new version, in every dir. Installs never
-remove links to installed skills: after narrowing `--allow-skills`,
-run `vlt skills link <query>`. Dir changes take effect for new links;
-old ones go on the next `vlt skills link`. An invalid query or
-`skills-dir` fails before anything is installed.
+## Linking on install
+
+With `allow-skills` unset (the default) or `:not(*)`, `vlt install`,
+`vlt ci`, `vlt update` and `vlt uninstall` do no skills work at all:
+nothing is scanned, created or removed, and leftover links stay until
+`vlt skills link`.
+
+With `allow-skills` set, on the command line or in `vlt.json`, they
+link what it selects after a successful install:
+
+<Code
+  code={`# link, and save the query to vlt.json
+$ vlt install --allow-skills="#skills:skill(find-skills)"
+Saved allow-skills="#skills:skill(find-skills)" to vlt.json`}
+  title="Terminal"
+  lang="bash"
+/>
+
+- Installs only add links. They re-point a link to the new version of
+  its package, in every dir, and remove links whose skill is gone:
+  dangling, package removed, or skill no longer shipped. They never
+  remove links to installed skills: after narrowing `allow-skills`,
+  run `vlt skills link`.
+- `vlt install` and `vlt update` save `--allow-skills=<query>` to the
+  project `vlt.json`. When another query is stored (`:not(*)` too), it
+  is kept and a hint says so: change it with `vlt skills link`.
+- `vlt ci` never writes config: in a fresh clone, it links what
+  `vlt.json` selects.
+- `--lockfile-only` links and saves nothing.
+- `vlt uninstall` with a stored query removes the removed package's
+  links.
+- Dir changes take effect for new links; old ones go on the next
+  `vlt skills link`. An invalid query or `skills-dir` fails before
+  anything is installed.
 
 ## Safety
 
@@ -187,6 +292,12 @@ old ones go on the next `vlt skills link`. An invalid query or
   skills, other tools' copies or links) is skipped and reported for
   that dir, never changed.
 - Dirs are never removed.
+- Security queries fail closed, like `allow-scripts`: with a security
+  selector such as `:not(:malware)`, skills of npm registry packages
+  with no security data (the request timed out, or Socket has not
+  scanned them yet) are not linked and are reported. Installs keep
+  their existing links, `vlt skills link` removes them: try again
+  later. See [Security](/client/security).
 - Linked skills are views of installed package files: don't edit them,
   a reinstall replaces them. Files hardlinked from the global store
   get private copies when linked, so edits stay in this project.

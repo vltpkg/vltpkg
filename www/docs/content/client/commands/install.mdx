@@ -196,14 +196,16 @@ lang="bash" />
 
 ### Agent skills
 
-| Flag                        | Description                                                                                        |
-| --------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--allow-skills=<selector>` | Link the agent skills of matching packages into the agent skill dirs after install (default: none) |
-| `--skills-dir=<path>`       | Dirs to link agent skills into, replacing detection (`--skills-dir=` links nothing)                |
+| Flag                        | Description                                                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--allow-skills=<selector>` | Link the agent skills of matching packages into the agent skill dirs after install (default: none); saved to `vlt.json` |
+| `--skills-dir=<path>`       | Dirs to link agent skills into, replacing detection (`--skills-dir=` links nothing)                                     |
 
 <Code
   code={`# Link the agent skills of direct dependencies
-$ vlt install --allow-skills=":root > *"`}
+$ vlt install --allow-skills=":root > *"
+# Link one skill of one package
+$ vlt install --allow-skills="#skills:skill(find-skills)"`}
   title="Terminal"
   lang="bash"
 />

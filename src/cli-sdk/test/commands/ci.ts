@@ -76,6 +76,11 @@ t.test('allow-skills option', async t => {
     positionals: [],
     values: {},
     options,
+    explicit: { 'allow-skills': '#foo' },
+    // ci never writes config
+    addConfigToFile: () => {
+      throw new Error('config written')
+    },
     get: (k: string) =>
       k === 'allow-skills' ? '#foo'
       : k === 'skills-dir' ? ['.claude/skills']

@@ -2,6 +2,7 @@ import { update } from '@vltpkg/graph'
 import type { LinkSkillsResult } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
+import { saveAllowSkills } from '../allow-skills.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -42,7 +43,7 @@ export const usage: CommandUsage = () =>
       'allow-skills': {
         value: '<query>',
         description:
-          "Link agent skills of packages matching this DSS query into the project's agent skill dirs.",
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs. Saved to vlt.json.",
       },
     },
   })
@@ -70,6 +71,7 @@ export const views = {
       { persistedConfig: i.persistedConfig }
     : null),
     ...(i.skills ? { skills: skillsJson(i.skills) } : null),
+    ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
   }),
   human: lazyView(
     async () =>
@@ -102,10 +104,12 @@ export const command: CommandFn<InstallResult> = async conf => {
   })
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
+  const allowSkillsSave = await saveAllowSkills(conf)
   return {
     buildQueue,
     graph,
     ...(persist ? { persistedConfig: persist } : null),
     ...(skills ? { skills } : null),
+    ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
   }
 }

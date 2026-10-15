@@ -26,6 +26,11 @@ export type Skill = {
   id: DepID
   /** skill name: its `skills/<dir>` name, or the root SKILL.md `name` */
   skill: string
+  /**
+   * `SKILL.md` frontmatter `name`, when it differs from `skill`
+   * (matched by `:skill()`)
+   */
+  frontmatterName?: string
   /** frontmatter description (folded to one line, control chars stripped) */
   description?: string
   /** realpath of the dir holding SKILL.md */
@@ -35,7 +40,7 @@ export type Skill = {
 }
 
 /**
- * Result of {@link discoverSkills}.
+ * Result of `discoverSkills`.
  */
 export type DiscoveredSkills = {
   /** skills of the picked version of each package, sorted by name */
@@ -135,6 +140,7 @@ const sanitize = (s?: string) => {
 type Found = {
   skill: string
   path: string
+  name?: string
   description?: string
 }
 
@@ -156,8 +162,8 @@ const scan = (dir: string, pkgName: string): Found[] => {
       const path = resolve(skillsDir, d)
       const file = resolve(path, 'SKILL.md')
       if (!isDir(path) || !isFile(file)) continue
-      const { description } = readFrontmatter(file)
-      found.push({ skill: d, path, description })
+      const { name, description } = readFrontmatter(file)
+      found.push({ skill: d, path, name, description })
     }
   }
   const root = resolve(dir, 'SKILL.md')
@@ -172,7 +178,7 @@ const scan = (dir: string, pkgName: string): Found[] => {
       !isSkillMd(skill) &&
       !has(skill)
     ) {
-      found.push({ skill, path: dir, description })
+      found.push({ skill, path: dir, name, description })
     }
   }
   return found
@@ -267,7 +273,8 @@ export const discoverSkills = (
     const { node, found } = list.reduce((a, b) =>
       compare(a.node, b.node) <= 0 ? a : b,
     )
-    for (const { skill, path, description } of found) {
+    for (const { skill, path, name, description } of found) {
+      const fm = sanitize(name)
       rows.push([
         {
           name: node.name,
@@ -275,6 +282,7 @@ export const discoverSkills = (
           version: node.version,
           id: node.id,
           skill,
+          ...(fm && lc(fm) !== lc(skill) && { frontmatterName: fm }),
           description: sanitize(description),
           path,
           linked: linkedIn.get(key(skill, path)) ?? [],

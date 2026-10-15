@@ -27,7 +27,6 @@ import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { Diff } from './diff.ts'
-import { syncSkills } from './skills/index.ts'
 import { assertSkillsDirs } from './skills/dirs.ts'
 import { assertQuery } from './filter-nodes-by-query.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
@@ -40,7 +39,8 @@ export type InstallOptions = LoadOptions & {
   savePrefix?: string
   /**
    * DSS query: packages whose agent skills get linked into the
-   * project's agent skill dirs after install. Unset or `:not(*)`: none.
+   * project's agent skill dirs after install. Selectors may end with
+   * `:skill()`. Unset or `:not(*)`: none.
    */
   allowSkills?: string
   /**
@@ -72,11 +72,15 @@ export const install = async (
     )
   }
 
-  const { allowSkills } = options
-  const skills = !!allowSkills && allowSkills !== ':not(*)'
+  // unset or `:not(*)`: no skills work at all, the skills code never
+  // loads
+  const allowSkills =
+    options.allowSkills === ':not(*)' ?
+      undefined
+    : options.allowSkills
   // fail before installing, not after
-  if (skills) {
-    await assertQuery(allowSkills, 'allow-skills')
+  if (allowSkills) {
+    await assertQuery(allowSkills, 'allow-skills', ['skill'])
     assertSkillsDirs(options.projectRoot, options.skillsDirs)
   }
 
@@ -381,7 +385,12 @@ export const install = async (
   }
 
   // after the try: a link failure must not roll back the install
-  const synced = await syncSkills({ ...options, graph: result.graph })
-  if (synced) result.skills = synced
+  if (!allowSkills) return result
+  const { linkSkills } = await import('./skills/index.ts')
+  result.skills = await linkSkills({
+    ...options,
+    graph: result.graph,
+    target: allowSkills,
+  })
   return result
 }

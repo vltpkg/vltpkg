@@ -3,7 +3,11 @@ import type { DepID } from '@vltpkg/dep-id'
 import type { PathScurry } from 'path-scurry'
 import { load as loadActual } from '../actual/load.ts'
 import type { LoadOptions } from '../actual/load.ts'
-import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
+import { filterNodesByQueryParts } from '../filter-nodes-by-query.ts'
+import type {
+  QueryPartIds,
+  Unscanned,
+} from '../filter-nodes-by-query.ts'
 import type { Graph } from '../graph.ts'
 import { unshare } from '../reify/unshare.ts'
 import { skillsDirs } from './dirs.ts'
@@ -11,6 +15,8 @@ import type { SkillsDir } from './dirs.ts'
 import { discoverSkills } from './discover.ts'
 import type { Skill } from './discover.ts'
 import { editGitignore } from './gitignore.ts'
+import { maskSkills } from './mask.ts'
+import type { UnmatchedPattern } from './mask.ts'
 import {
   mountSkill,
   packageKey,
@@ -23,12 +29,16 @@ import type { SkillMount } from './mounts.ts'
 export * from './discover.ts'
 export type { SkillMount, MountResult } from './mounts.ts'
 export type { SkillsDir } from './dirs.ts'
+export type { UnmatchedPattern } from './mask.ts'
 
 /**
  * Options for {@link listSkills} and {@link linkSkills}.
  */
 export type SkillsOptions = LoadOptions & {
-  /** DSS query selecting packages; default `*` */
+  /**
+   * DSS query selecting packages, selectors may end with `:skill()`;
+   * default `*`
+   */
   target?: string
   /** graph to use instead of loading the actual one */
   graph?: Graph
@@ -66,9 +76,20 @@ export type SkillRow = Skill & {
 }
 
 /**
+ * Skills left out as their packages have no security data (fail
+ * closed).
+ */
+export type UnscannedSkills = {
+  /** `<skill> (<package>)` */
+  unscanned?: string[]
+  /** why: the request timed out, or socket.dev has not scanned them */
+  unscannedReason?: 'timeout' | 'unscanned'
+}
+
+/**
  * Result of {@link listSkills}.
  */
-export type ListSkillsResult = {
+export type ListSkillsResult = UnscannedSkills & {
   skills: Skill[]
   /** target dirs */
   dirs: string[]
@@ -79,7 +100,7 @@ export type ListSkillsResult = {
 /**
  * Result of {@link linkSkills}.
  */
-export type LinkSkillsResult = {
+export type LinkSkillsResult = UnscannedSkills & {
   /** links created or re-pointed */
   linked: SkillRow[]
   /** selected skills already linked */
@@ -100,24 +121,20 @@ export type LinkSkillsResult = {
   skipped?: string[]
   /** `<dir>/.gitignore` files not updated: not a regular file, fs error */
   gitignore?: string[]
-}
-
-/**
- * Options for {@link syncSkills}.
- */
-export type SyncSkillsOptions = SkillsOptions & {
-  graph: Graph
-  /** DSS query: packages whose skills get linked */
-  allowSkills?: string
+  /** `:skill()` patterns that matched no skill of their packages */
+  unmatched?: UnmatchedPattern[]
 }
 
 const lc = (s: string) => s.toLowerCase()
 
 const selectNodes = async (o: SkillsOptions) => {
   const graph = o.graph ?? loadActual({ ...o, loadManifests: true })
-  const ids = await filterNodesByQuery(graph, o.target ?? '*')
+  const { ids, parts, unscanned } = await filterNodesByQueryParts(
+    graph,
+    o.target ?? '*',
+  )
   const nodes = [...graph.nodes.values()].filter(n => ids.has(n.id))
-  return { graph, nodes }
+  return { graph, nodes, parts, unscanned }
 }
 
 const dirsOf = (o: SkillsOptions, create = false) =>
@@ -154,26 +171,59 @@ const label = (s: Skill) => {
   return s.alias ? `${s.alias} (${pkg})` : pkg
 }
 
+// apply the mask; fail closed: skills of `unscanned` pkgs are dropped,
+// and reported unless another package's skill takes the name
+const pick = (
+  found: Skill[],
+  parts: QueryPartIds[],
+  unscanned?: Unscanned,
+) => {
+  const { skills: masked, unmatched } = maskSkills(found, parts)
+  const ok = (s: Skill) => !unscanned?.ids.has(s.id)
+  const picked = masked.filter(ok)
+  const names = new Set(picked.map(s => lc(s.skill)))
+  const dropped = masked.filter(
+    s => !ok(s) && !names.has(lc(s.skill)),
+  )
+  return { skills: found.filter(ok), picked, unmatched, dropped }
+}
+
+const report = (
+  dropped: Skill[],
+  unscanned?: Unscanned,
+): UnscannedSkills =>
+  unscanned && dropped.length ?
+    {
+      unscanned: dropped.map(s => `${s.skill} (${label(s)})`),
+      unscannedReason: unscanned.reason,
+    }
+  : {}
+
 /**
- * List the agent skills shipped by installed packages, and the agent
- * skill dirs. Creates nothing.
+ * List the agent skills shipped by installed packages (`:skill()`
+ * applied, `unscanned` left out), and the agent skill dirs. Creates
+ * nothing.
  */
 export const listSkills = async (
   o: SkillsOptions,
 ): Promise<ListSkillsResult> => {
-  const { nodes } = await selectNodes(o)
+  const { nodes, parts, unscanned } = await selectNodes(o)
   const { targets, scan, skipped } = dirsOf(o)
+  const { skills } = discoverSkills(nodes, o.scurry, readMounts(scan))
+  const { picked, dropped } = pick(skills, parts, unscanned)
   return {
-    skills: discoverSkills(nodes, o.scurry, readMounts(scan)).skills,
+    skills: picked,
     dirs: targets.map(d => d.dir),
     ...(skipped.length ? { skipped } : null),
+    ...report(dropped, unscanned),
   }
 }
 
 /**
  * Link the agent skills of the selected packages into each of the
  * project's agent skill dirs (see `skillsDirs`), created only when a
- * skill is found. One package per name, in every dir: the package of
+ * skill is picked. `target` selectors may end with `:skill()`. One
+ * package per name, among picked skills, in every dir: the package of
  * the first existing link (in dir order), else rank (main importer
  * dep, importer dep, transitive), then DepID; the others are
  * reported. Installs keep a dir's link to another installed skill.
@@ -181,14 +231,22 @@ export const listSkills = async (
  * dir. Then remove vlt links whose skill is no longer installed (with
  * `apply`: every vlt link not made here), and keep each dir's
  * `.gitignore` block in sync. Linked packages get private copies of
- * files hardlinked from the global store.
+ * files hardlinked from the global store. Security queries fail
+ * closed: skills of packages with no security data are not linked,
+ * and reported in `unscanned` unless still linked.
  */
 export const linkSkills = async (
   o: LinkSkillsOptions,
 ): Promise<LinkSkillsResult> => {
-  const { graph, nodes } = await selectNodes(o)
-  const { skills, scanned } = discoverSkills(nodes, o.scurry)
-  const { targets, scan, skipped } = dirsOf(o, skills.length > 0)
+  const { graph, nodes, parts, unscanned } = await selectNodes(o)
+  const { skills: found, scanned } = discoverSkills(nodes, o.scurry)
+  const { skills, picked, unmatched, dropped } = pick(
+    found,
+    parts,
+    unscanned,
+  )
+  const inMask = new Set(picked)
+  const { targets, scan, skipped } = dirsOf(o, picked.length > 0)
   const res: LinkSkillsResult = {
     linked: [],
     unchanged: [],
@@ -222,13 +280,17 @@ export const linkSkills = async (
     const key = m?.owner && packageKey(m.owner)
     return { m, own: group.find(s => packageKey(s.id) === key) }
   }
+  // picked skills only: the others never take a name
+  const cands = (group: Skill[]) => group.filter(s => inMask.has(s))
   // one per name: the first linked package keeps it, re-pointed if needed
   const first = new Map(
-    [...groups].map(([k, group]) => [
-      k,
-      targets.map(d => at(d, k, group).own).find(s => !!s) ??
-        group[0],
-    ]),
+    [...groups].map(([k, group]) => {
+      const c = cands(group)
+      return [
+        k,
+        targets.map(d => at(d, k, c).own).find(s => !!s) ?? c[0],
+      ]
+    }),
   )
   const isTarget = new Set(targets)
   const picks: {
@@ -249,7 +311,7 @@ export const linkSkills = async (
         picks.push({
           dir,
           winner,
-          losers: group.filter(s => s !== winner),
+          losers: cands(group).filter(s => s !== winner),
           m,
         })
       } else if (own && !o.apply) {
@@ -321,17 +383,18 @@ export const linkSkills = async (
   }
   if (skipped.length) res.skipped = skipped
   if (gitignore.length) res.gitignore = gitignore
-  return res
-}
-
-/**
- * Run after a reify: with `allowSkills` (not `:not(*)`), link the
- * skills of matching packages. Else nothing.
- */
-export const syncSkills = async (
-  o: SyncSkillsOptions,
-): Promise<LinkSkillsResult | undefined> => {
-  const { allowSkills } = o
-  if (!allowSkills || allowSkills === ':not(*)') return undefined
-  return linkSkills({ ...o, target: allowSkills })
+  if (unmatched.length) res.unmatched = unmatched
+  // not left out: still linked in every dir (installs keep links)
+  const left = dropped.filter(
+    s =>
+      !targets.every(d =>
+        present.some(
+          m =>
+            m.dir === d &&
+            m.owner === s.id &&
+            lc(m.name) === lc(s.skill),
+        ),
+      ),
+  )
+  return Object.assign(res, report(left, unscanned))
 }

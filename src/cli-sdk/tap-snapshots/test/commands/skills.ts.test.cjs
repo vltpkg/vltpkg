@@ -25,19 +25,24 @@ linked and the others are reported. Only links made by vlt (pointing into
 skipped.
 
 Use --target or a query after the subcommand to select packages using DSS query
-syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
+syntax. End a selector with \`:skill(<name>, …)\` to pick single skills, e.g.
+\`#skills:skill(find-skills)\`. Use \`vlt install --allow-skills=<query>\` to link
+skills on install.
 
   Subcommands
 
     list
       List the skills of installed packages. The default. Selects all packages
-      (\`*\`) by default.
+      (\`*\`) by default. Applies \`:skill()\`: preview a query before \`link\` saves
+      it.
 
       ​vlt skills list [<query>]
 
     link
-      Link the skills of the selected packages, and remove every other vlt skill
-      link in the agent skill dirs. Selects \`:not(:malware)\` by default.
+      Set, save and apply \`allow-skills\`: link what the query selects and remove
+      vlt links to other skills. With no query: the stored one, or
+      \`:not(:malware)\`. Asks before replacing or editing a stored query (-y
+      skips). Saves to the project vlt.json, or the user one with --config=user.
 
       ​vlt skills link [<query>]
 
@@ -47,6 +52,16 @@ syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
       Query selector to filter packages using DSS syntax.
 
       ​--target=<query>
+
+    yes
+      Skip the prompts: replace or keep the stored allow-skills without asking.
+
+      ​--yes
+
+    config
+      vlt.json to save allow-skills to (default: project).
+
+      ​--config=user|project
 
 `
 
@@ -79,10 +94,36 @@ exports[`test/commands/skills.ts > TAP > views > human link removed only 1`] = `
   .claude/skills/y
 `
 
+exports[`test/commands/skills.ts > TAP > views > human link saved project 1`] = `
+🔗 Linked 1 agent skill:
+  .agents/skills/a
+Saved allow-skills="#a:skill(x)" to vlt.json
+`
+
+exports[`test/commands/skills.ts > TAP > views > human link saved user 1`] = `
+🔗 Linked 1 agent skill:
+  .agents/skills/a
+Saved allow-skills="#a" to user vlt.json
+`
+
 exports[`test/commands/skills.ts > TAP > views > human link unchanged 1`] = `
 1 agent skill already linked.
 ⚠️ Skipped 1 skill, path in use or taken by another package:
   .agents/skills/b
+`
+
+exports[`test/commands/skills.ts > TAP > views > human link unmatched 1`] = `
+No agent skills found to link.
+⚠️ No skill matches "nope"; the selected packages ship: a, b
+⚠️ No skill matches "x*"; the selected packages ship: a, b
+⚠️ No skill matches "y"; the selected packages ship no skills
+Saved allow-skills="#a:skill(nope, x*), #b:skill(y)" to vlt.json
+`
+
+exports[`test/commands/skills.ts > TAP > views > human link unscanned 1`] = `
+🧹 Removed 1 skill link:
+  .agents/skills/a
+⏳ 2 skills left out, Socket has not scanned their packages yet: a (foo@1.0.0), b (foo@1.0.0). Try again later.
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list aliased 1`] = `
@@ -122,4 +163,14 @@ exports[`test/commands/skills.ts > TAP > views > human list skipped 1`] = `
 Agent skill dirs: none
 ⚠️ Skipped .claude/skills (outside the project)
 No agent skills found in installed packages.
+`
+
+exports[`test/commands/skills.ts > TAP > views > human list unscanned 1`] = `
+Agent skill dirs: .agents/skills, .claude/skills
+⏳ 1 skill left out, security data timed out: a (foo@1.0.0). Try again later.
+No agent skills found in installed packages.
+`
+
+exports[`test/commands/skills.ts > TAP > views > human unchanged 1`] = `
+No changes made.
 `

@@ -53,6 +53,7 @@ export const pseudoClassNames = [
   'severity',
   'shell',
   'shrinkwrap',
+  'skill',
   'spec',
   'squat',
   'suspicious',
@@ -70,6 +71,14 @@ export const pseudoClassNames = [
   'workspace',
 ] as const
 export type PseudoClassName = (typeof pseudoClassNames)[number]
+
+/**
+ * Part selectors: pseudo-classes that pick a part of the packages
+ * their selector matched, e.g. `:skill()`. They must end a top-level
+ * selector.
+ */
+export const partPseudoNames = ['skill'] as const
+export type PartPseudoName = (typeof partPseudoNames)[number]
 
 /**
  * Combinators supported by DSS.

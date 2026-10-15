@@ -1,5 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
+import { saveAllowSkills } from '../allow-skills.ts'
+import type { AllowSkillsSave } from '../allow-skills.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
@@ -42,6 +44,11 @@ export type InstallResult = {
    * Agent skill links added or removed.
    */
   skills?: LinkSkillsResult
+  /**
+   * `--allow-skills` saved to vlt.json, or kept because another query
+   * is stored.
+   */
+  allowSkills?: AllowSkillsSave
 }
 
 export const needsRegistry = true
@@ -120,7 +127,7 @@ export const usage: CommandUsage = () =>
       'allow-skills': {
         value: '<query>',
         description:
-          "Link agent skills of packages matching this DSS query into the project's agent skill dirs.",
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs. Saved to vlt.json.",
       },
     },
   })
@@ -207,6 +214,7 @@ export const views = {
         { migratedWorkspaces: i.migratedWorkspaces }
       : null),
       ...(i.skills ? { skills: skillsJson(i.skills) } : null),
+      ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
     }
   },
   human: lazyView(
@@ -258,6 +266,9 @@ export const command: CommandFn<InstallResult> = async conf => {
     )
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
+  // nothing linked on --lockfile-only
+  const allowSkillsSave =
+    lockfileOnly ? undefined : await saveAllowSkills(conf)
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(
@@ -275,5 +286,6 @@ export const command: CommandFn<InstallResult> = async conf => {
     ...(persist ? { persistedConfig: persist } : null),
     ...(migrated ? { migratedWorkspaces: migrated } : null),
     ...(skills ? { skills } : null),
+    ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
   }
 }

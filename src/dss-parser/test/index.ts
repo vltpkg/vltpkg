@@ -151,13 +151,28 @@ t.test('valid DSS', async t => {
     ':is([name==x])',
     ':is()',
     ':is(:not(:fake))',
-    ...pseudoClassNames.map(name => `:${name}`),
+    // part selectors
+    '#a:skill(find-skills)',
+    '#a:skill("my skill")',
+    ':root > *:skill(vercel*, *-review)',
+    ':skill(x)',
+    '#a :skill(x)',
+    ':root > :skill(x)',
+    '#a, #b:skill(x)',
+    '#a:skill(x), #b',
+    '#a:skill(x) /* c */',
+    '#a:skill("")',
+    ':is(:skills(x))',
+    ...pseudoClassNames
+      .filter(n => n !== 'skill')
+      .map(name => `:${name}`),
   ]) {
     t.doesNotThrow(() => parse(q), q)
   }
 })
 
-const invalid: [query: string, message: string, found: string][] = [
+type Invalid = [query: string, message: string, found: string]
+const invalid: Invalid[] = [
   [
     ':fake-pseudo',
     'Unsupported pseudo-class: :fake-pseudo',
@@ -194,6 +209,31 @@ const invalid: [query: string, message: string, found: string][] = [
   ['.dev', 'Unsupported selector', '.dev'],
   ['"foo"', 'Unsupported selector', '"foo"'],
   ['[name==x]', 'Unsupported attribute operator: ==', '=='],
+  ...[
+    '#a:skill(x) > *',
+    '#a:skill(x):prod',
+    '#a:skill(x):skill(y)',
+    ':not(#a:skill(x))',
+    ':is(#a:skill(x))',
+    ':has(> #a:skill(x))',
+    ':not(#a:skill())',
+  ].map((q): Invalid => [
+    q,
+    ':skill() must end a top-level selector',
+    ':skill',
+  ]),
+  ...[
+    ':skill',
+    '#a:skill()',
+    '#a:skill( )',
+    '#a:skill(a,)',
+    '#a:skill(/* c */)',
+  ].map((q): Invalid => [
+    q,
+    'Missing skill name in :skill()',
+    ':skill',
+  ]),
+  ['#a:skills(x)', 'Unsupported pseudo-class: :skills', ':skills'],
 ]
 
 const syntax: [query: string, message: string][] = [

@@ -1,17 +1,36 @@
 import { error } from '@vltpkg/error-cause'
-import { linkSkills, listSkills } from '@vltpkg/graph'
+import { assertQuery, linkSkills, listSkills } from '@vltpkg/graph'
 import type {
   LinkSkillsResult,
   ListSkillsResult,
   Skill,
+  UnscannedSkills,
 } from '@vltpkg/graph'
+import type { WhichConfig } from '@vltpkg/vlt-json'
+import {
+  configLabel,
+  savedLine,
+  storedAllowSkills,
+  unmatchedLines,
+  unscannedLines,
+} from '../allow-skills.ts'
+import { configWriteTarget } from '../config/index.ts'
+import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import { confirm, editQuery, interactive } from '../skills-prompt.ts'
 import type { Views } from '../view.ts'
 
 export type SkillsResult =
   | ({ action: 'list' } & ListSkillsResult)
-  | ({ action: 'link' } & LinkSkillsResult)
+  | ({
+      action: 'link'
+      /** the `allow-skills` applied */
+      query: string
+      /** the config file it was saved to, if changed */
+      saved?: WhichConfig
+    } & LinkSkillsResult)
+  | { action: 'unchanged' }
 
 export const needsRegistry = true
 
@@ -34,19 +53,26 @@ export const usage: CommandUsage = () =>
       removed; anything else in the way is skipped.
 
       Use --target or a query after the subcommand to select packages
-      using DSS query syntax. Use \`vlt install --allow-skills=<query>\`
-      to link skills on install.`,
+      using DSS query syntax. End a selector with
+      \`:skill(<name>, …)\` to pick single skills, e.g.
+      \`#skills:skill(find-skills)\`. Use
+      \`vlt install --allow-skills=<query>\` to link skills on install.`,
     subcommands: {
       list: {
         usage: '[<query>]',
         description: `List the skills of installed packages. The default.
-                      Selects all packages (\`*\`) by default.`,
+                      Selects all packages (\`*\`) by default. Applies
+                      \`:skill()\`: preview a query before \`link\` saves
+                      it.`,
       },
       link: {
         usage: '[<query>]',
-        description: `Link the skills of the selected packages, and remove
-                      every other vlt skill link in the agent skill dirs.
-                      Selects \`:not(:malware)\` by default.`,
+        description: `Set, save and apply \`allow-skills\`: link what the
+                      query selects and remove vlt links to other skills.
+                      With no query: the stored one, or
+                      \`:not(:malware)\`. Asks before replacing or editing
+                      a stored query (-y skips). Saves to the project
+                      vlt.json, or the user one with --config=user.`,
       },
     },
     options: {
@@ -54,6 +80,15 @@ export const usage: CommandUsage = () =>
         value: '<query>',
         description:
           'Query selector to filter packages using DSS syntax.',
+      },
+      yes: {
+        description:
+          'Skip the prompts: replace or keep the stored allow-skills without asking.',
+      },
+      config: {
+        value: 'user|project',
+        description:
+          'vlt.json to save allow-skills to (default: project).',
       },
     },
   })
@@ -65,11 +100,14 @@ const lines = (header: string, items: string[]) =>
   [header, ...items.map(i => `  ${i}`)].join('\n')
 
 // warnings shared by list and link
-const notes = (r: { skipped?: string[]; gitignore?: string[] }) => [
+const notes = (
+  r: UnscannedSkills & { skipped?: string[]; gitignore?: string[] },
+) => [
   ...(r.skipped ? [`⚠️ Skipped ${r.skipped.join(', ')}`] : []),
   ...(r.gitignore ?
     [`⚠️ Could not update ${r.gitignore.join(', ')}`]
   : []),
+  ...unscannedLines(r),
 ]
 
 const humanList = (r: ListSkillsResult) => {
@@ -141,9 +179,69 @@ const humanLink = (r: LinkSkillsResult) => {
 
 export const views = {
   human: (r: SkillsResult): string =>
-    r.action === 'list' ? humanList(r) : humanLink(r),
+    r.action === 'list' ? humanList(r)
+    : r.action === 'unchanged' ? 'No changes made.'
+    : [
+        humanLink(r),
+        ...unmatchedLines(r.unmatched),
+        ...(r.saved ? [savedLine(r.query, r.saved)] : []),
+      ].join('\n'),
   json: (r: SkillsResult) => r,
 } as const satisfies Views<SkillsResult>
+
+const defaultQuery = ':not(:malware)'
+
+const where = (which: WhichConfig) =>
+  which === 'user' ?
+    'in the user vlt.json'
+  : 'for this project (vlt.json)'
+
+// the query to link; undefined: no changes
+const pickQuery = async (
+  conf: LoadedConfig,
+  given?: string,
+): Promise<string | undefined> => {
+  const check = (q: string) =>
+    assertQuery(q, 'allow-skills', ['skill'])
+  const stored = storedAllowSkills(conf)
+  const yes = !!conf.get('yes')
+  const tty = interactive()
+  if (given) {
+    await check(given)
+    if (!stored || stored.query === given || yes) return given
+    if (!tty) {
+      throw error(
+        `allow-skills is already set (${configLabel(stored.which)}): "${stored.query}"; pass -y to replace it`,
+        { code: 'EUSAGE', found: given, wanted: stored.query },
+      )
+    }
+    if (
+      !(await confirm(
+        `allow-skills is already set ${where(stored.which)}: "${stored.query}". Replace it? [y/N] `,
+      ))
+    ) {
+      return undefined
+    }
+    return editQuery({ current: stored.query, prefill: given, check })
+  }
+  if (stored) {
+    if (yes || !tty) return stored.query
+    const edit = await confirm(
+      `allow-skills is set ${where(stored.which)}: "${stored.query}". Edit it? [y/N] `,
+    )
+    // ctrl+C/D: cancel
+    if (edit === undefined) return undefined
+    return edit ?
+        editQuery({
+          current: stored.query,
+          prefill: stored.query,
+          check,
+        })
+      : stored.query
+  }
+  if (yes || !tty) return defaultQuery
+  return editQuery({ prefill: defaultQuery, check })
+}
 
 export const command: CommandFn<SkillsResult> = async conf => {
   const [sub = 'list', query] = conf.positionals
@@ -160,15 +258,27 @@ export const command: CommandFn<SkillsResult> = async conf => {
         action: 'list',
         ...(await listSkills({ ...opts, target })),
       }
-    case 'link':
+    case 'link': {
+      const query = await pickQuery(conf, target)
+      if (query === undefined) return { action: 'unchanged' }
+      const res = await linkSkills({
+        ...opts,
+        target: query,
+        apply: true,
+      })
+      // after linking: a link error saves nothing
+      let saved: WhichConfig | undefined
+      if (storedAllowSkills(conf)?.query !== query) {
+        saved = configWriteTarget(conf, 'project')
+        await conf.addConfigToFile(saved, { 'allow-skills': query })
+      }
       return {
         action: 'link',
-        ...(await linkSkills({
-          ...opts,
-          target: target || ':not(:malware)',
-          apply: true,
-        })),
+        query,
+        ...(saved && { saved }),
+        ...res,
       }
+    }
     default:
       throw error('Unknown skills subcommand', {
         code: 'EUSAGE',
