@@ -22,6 +22,13 @@ import { unshare } from './unshare.ts'
 export type BuildResult = {
   success: Node[]
   failure: Node[]
+  /** needed builds skipped as they have no security data */
+  skipped?: Node[]
+  /**
+   * why `skipped` builds have no security data: the request timed
+   * out, or socket.dev has not scanned them yet
+   */
+  skippedReason?: 'timeout' | 'unscanned'
 }
 
 export const build = async (

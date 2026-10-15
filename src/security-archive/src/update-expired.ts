@@ -25,6 +25,8 @@ export type UpdateExpiredPayload = {
   dbPath: string
   /** Number of retries for fetching remote data */
   retries: number
+  /** Max ms for the remote request, incl. retries */
+  timeout: number
   /** TTL in ms to use for new entries */
   ttl: number
   /** Expired entries to revalidate */
@@ -53,7 +55,9 @@ const isMain = (path?: string) =>
 const retrieveRemoteData = async (
   queue: Set<Record<'purl', string>>,
   retries: number,
+  timeout: number,
 ): Promise<string> => {
+  const signal = AbortSignal.timeout(timeout)
   return pRetry(
     async () => {
       const req = await fetch(SOCKET_API_V0_URL, {
@@ -65,6 +69,7 @@ const retrieveRemoteData = async (
         body: JSON.stringify({
           components: Array.from(queue),
         }),
+        signal,
       })
       if (req.status === 404) {
         throw new AbortError('Missing API')
@@ -77,7 +82,7 @@ const retrieveRemoteData = async (
       const str = await req.text()
       return str.trim() + '\n'
     },
-    { retries },
+    { retries, signal },
   )
 }
 
@@ -112,7 +117,7 @@ export const main = async (
     },
   )
 
-  const { dbPath, retries, ttl, expired } = payload
+  const { dbPath, retries, timeout, ttl, expired } = payload
   if (!expired.length) {
     return false
   }
@@ -128,7 +133,7 @@ export const main = async (
   }
 
   // Fetch updated data
-  const res = await retrieveRemoteData(expiredQueue, retries)
+  const res = await retrieveRemoteData(expiredQueue, retries, timeout)
 
   // Parse NDJSON response and collect results
   const now = Date.now()

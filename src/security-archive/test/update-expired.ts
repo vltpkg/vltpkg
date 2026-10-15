@@ -6,6 +6,7 @@ import { joinDepIDTuple, baseDepID } from '@vltpkg/dep-id'
 import { main } from '../src/update-expired.ts'
 import type { UpdateExpiredPayload } from '../src/update-expired.ts'
 import { SecurityArchive } from '../src/index.ts'
+import { hangingFetch } from './fixtures/hanging-fetch.ts'
 
 const englishDaysReport = {
   id: '15713076833',
@@ -153,6 +154,7 @@ t.test('update-expired main()', async t => {
     const payload: UpdateExpiredPayload = {
       dbPath,
       retries: 3,
+      timeout: SecurityArchive.defaultTimeout,
       ttl: SecurityArchive.defaultTtl,
       expired: [
         {
@@ -250,6 +252,7 @@ t.test('update-expired main()', async t => {
       const payload: UpdateExpiredPayload = {
         dbPath,
         retries: 3,
+        timeout: SecurityArchive.defaultTimeout,
         ttl: SecurityArchive.defaultTtl,
         expired: [
           {
@@ -341,6 +344,7 @@ ${JSON.stringify({
       const payload: UpdateExpiredPayload = {
         dbPath,
         retries: 3,
+        timeout: SecurityArchive.defaultTimeout,
         ttl: SecurityArchive.defaultTtl,
         expired: [
           {
@@ -381,6 +385,7 @@ ${JSON.stringify({
     const payload: UpdateExpiredPayload = {
       dbPath: '/tmp/unused.db',
       retries: 3,
+      timeout: SecurityArchive.defaultTimeout,
       ttl: SecurityArchive.defaultTtl,
       expired: [],
     }
@@ -422,6 +427,7 @@ ${JSON.stringify({
       const payload: UpdateExpiredPayload = {
         dbPath,
         retries: 3,
+        timeout: SecurityArchive.defaultTimeout,
         ttl: SecurityArchive.defaultTtl,
         expired: [
           {
@@ -475,6 +481,7 @@ ${JSON.stringify({
       const payload: UpdateExpiredPayload = {
         dbPath,
         retries: 3,
+        timeout: SecurityArchive.defaultTimeout,
         ttl: SecurityArchive.defaultTtl,
         expired: [
           {
@@ -531,6 +538,7 @@ ${JSON.stringify({
     const payload: UpdateExpiredPayload = {
       dbPath,
       retries: 3,
+      timeout: SecurityArchive.defaultTimeout,
       ttl: SecurityArchive.defaultTtl,
       expired: [
         {
@@ -579,6 +587,7 @@ ${JSON.stringify({
     const payload: UpdateExpiredPayload = {
       dbPath,
       retries: 0,
+      timeout: SecurityArchive.defaultTimeout,
       ttl: SecurityArchive.defaultTtl,
       expired: [
         {
@@ -594,6 +603,59 @@ ${JSON.stringify({
       /Failed to fetch security data/,
       'should propagate fetch errors',
     )
+  })
+
+  await t.test('aborts on timeout', async t => {
+    const dir = t.testdir()
+    const dbPath = resolve(dir, 'test.db')
+    const englishDaysId = joinDepIDTuple([
+      'registry',
+      'npm',
+      'english-days@1.0.0',
+    ])
+    const expiredStart =
+      Date.now() - SecurityArchive.defaultTtl - 1000
+    const db = initDB(dbPath, [
+      {
+        depID: englishDaysId,
+        report: JSON.stringify(englishDaysReport),
+        start: expiredStart,
+        ttl: SecurityArchive.defaultTtl,
+      },
+    ])
+
+    t.intercept(global, 'fetch', { value: hangingFetch })
+
+    const payload: UpdateExpiredPayload = {
+      dbPath,
+      retries: 3,
+      timeout: 50,
+      ttl: SecurityArchive.defaultTtl,
+      expired: [
+        {
+          depID: baseDepID(englishDaysId),
+          name: 'english-days',
+          version: '1.0.0',
+        },
+      ],
+    }
+
+    await t.rejects(
+      main(payloadStream(payload)),
+      { name: 'TimeoutError' },
+      'should abort hanging request',
+    )
+
+    const row = db
+      .prepare('SELECT report, start FROM cache WHERE depID = ?')
+      .get(englishDaysId) as { report: string; start: number }
+    t.strictSame(
+      JSON.parse(row.report),
+      englishDaysReport,
+      'should keep db entry unchanged',
+    )
+    t.equal(row.start, expiredStart, 'should keep stale start time')
+    db.close()
   })
 
   await t.test('creates missing directories for db', async t => {
@@ -619,6 +681,7 @@ ${JSON.stringify({
     const payload: UpdateExpiredPayload = {
       dbPath,
       retries: 3,
+      timeout: SecurityArchive.defaultTimeout,
       ttl: SecurityArchive.defaultTtl,
       expired: [
         {

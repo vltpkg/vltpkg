@@ -1353,6 +1353,99 @@ t.test('allowScripts with query selector :scripts', async t => {
   )
 })
 
+t.test('allowScripts fails closed w/o security data', async t => {
+  // reify w/ a security archive, returns the script-allowed set
+  const run = async (t: Test, scanned?: string, timedOut = true) => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const graph = await ideal.build({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      registries,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      remover: new RollbackRemove(),
+    })
+    let allowed = new Set<DepID>()
+    const { reify } = await t.mockImport<
+      typeof import('../../src/reify/index.ts')
+    >('../../src/reify/index.ts', {
+      '../../src/reify/build.ts': {
+        build: async (
+          _diff: unknown,
+          _packageJson: unknown,
+          _scurry: unknown,
+          allowScriptsNodes: Set<DepID>,
+        ) => {
+          allowed = allowScriptsNodes
+          return { success: [], failure: [] }
+        },
+      },
+      '@vltpkg/security-archive': {
+        ...(await import('@vltpkg/security-archive')),
+        SecurityArchive: {
+          start: async () => ({
+            timedOut,
+            has: (id: DepID) => graph.nodes.get(id)?.name === scanned,
+            get: () => undefined,
+          }),
+        },
+      },
+    })
+    await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      registries,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      graph,
+      allowScripts: ':not(:malware)',
+      remover: new RollbackRemove(),
+    })
+    return [...allowed].map(id => graph.nodes.get(id)?.name).sort()
+  }
+
+  t.test('skips registry pkgs left out by a timeout', async t => {
+    t.strictSame(
+      await run(t),
+      ['test-project'],
+      'should keep only non-registry nodes',
+    )
+  })
+
+  t.test('skips registry pkgs not scanned yet', async t => {
+    t.strictSame(
+      await run(t, undefined, false),
+      ['test-project'],
+      'should keep only non-registry nodes',
+    )
+  })
+
+  t.test('keeps scanned registry pkgs', async t => {
+    t.strictSame(
+      await run(t, 'lodash'),
+      ['lodash', 'test-project'],
+      'should keep scanned pkg',
+    )
+  })
+})
+
 t.test(
   'no-op reify still reports buildQueue when nodes need building',
   async t => {
