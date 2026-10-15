@@ -397,6 +397,14 @@ Object {
       "debug",
     ],
   },
+  "migrate-workspaces": Object {
+    "description": String(
+      Save workspaces read from the \`workspaces\` field of the root \`package.json\` or from \`pnpm-workspace.yaml\` to the project \`vlt.json\` on \`vlt install\`. \`vlt.json\` then takes precedence.
+      
+      Set \`--no-migrate-workspaces\` to skip this; an already saved \`workspaces\` field stays until removed.
+    ),
+    "type": "boolean",
+  },
   "no-bail": Object {
     "description": "When running scripts across multiple workspaces, continue on failure, running the script for all workspaces.",
     "short": "B",
@@ -699,6 +707,7 @@ Array [
   "--libc=<libc>",
   "--lockfile-only",
   "--loglevel=<level>",
+  "--migrate-workspaces",
   "--no-bail",
   "--no-color",
   "--node-version=<version>",
@@ -772,6 +781,7 @@ Array [
   "libc",
   "lockfile-only",
   "loglevel",
+  "migrate-workspaces",
   "no-bail",
   "no-color",
   "node-version",

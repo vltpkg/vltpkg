@@ -4,6 +4,8 @@ import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import { addTypesDeps } from '../save-types.ts'
+import { migrateWorkspaces } from '../migrate-workspaces.ts'
+import type { MigratedWorkspaces } from '../migrate-workspaces.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
@@ -32,6 +34,10 @@ export type InstallResult = {
    * Spec config from the cli / env that was saved to a config file.
    */
   persistedConfig?: SpecConfigPersistPlan
+  /**
+   * Workspaces saved to vlt.json from package.json or pnpm-workspace.yaml.
+   */
+  migratedWorkspaces?: MigratedWorkspaces
 }
 
 export const needsRegistry = true
@@ -76,6 +82,10 @@ export const usage: CommandUsage = () =>
       'save-config': {
         description:
           'Save registry and git host options given on the command line or via env (e.g. `--registries name=url`) to the project vlt.json, or the user vlt.json with --config=user.',
+      },
+      'no-migrate-workspaces': {
+        description:
+          "Don't save workspaces read from package.json or pnpm-workspace.yaml to vlt.json.",
       },
       workspace: {
         value: '<path|glob>',
@@ -174,6 +184,9 @@ export const views = {
       ...(i.persistedConfig ?
         { persistedConfig: i.persistedConfig }
       : null),
+      ...(i.migratedWorkspaces ?
+        { migratedWorkspaces: i.migratedWorkspaces }
+      : null),
     }
   },
   human: lazyView(
@@ -216,6 +229,10 @@ export const command: CommandFn<InstallResult> = async conf => {
   ).catch((er: unknown) => {
     throw asUnknownSpecPrefix(er)
   })
+  const migrated =
+    frozenLockfile || expectLockfile ? undefined : (
+      migrateWorkspaces(conf)
+    )
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
   /* c8 ignore next 9 - telemetry is best-effort */
@@ -233,5 +250,6 @@ export const command: CommandFn<InstallResult> = async conf => {
     graph,
     diff,
     ...(persist ? { persistedConfig: persist } : null),
+    ...(migrated ? { migratedWorkspaces: migrated } : null),
   }
 }

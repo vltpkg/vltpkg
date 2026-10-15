@@ -77,9 +77,9 @@ Or even:
 ### Using npm/yarn workspaces from package.json
 
 If your project already declares workspaces the npm or yarn way, in
-the `workspaces` field of the root `package.json`, vlt reads them
-as-is. An existing npm or yarn monorepo works with vlt without a
-`vlt.json` file at all:
+the `workspaces` field of the root `package.json`, vlt reads them, and
+`vlt install` saves them to `vlt.json` (see
+[Saving workspaces to vlt.json](#saving-workspaces-to-vltjson)):
 
 ```json
 {
@@ -90,7 +90,8 @@ as-is. An existing npm or yarn monorepo works with vlt without a
 ```
 
 The yarn-classic object form is also understood, including the
-`nohoist` key, which vlt parses and ignores:
+`nohoist` key, which vlt parses and ignores (and drops when saving to
+`vlt.json`):
 
 ```json
 {
@@ -124,7 +125,8 @@ instead.
 ### Using pnpm workspaces from pnpm-workspace.yaml
 
 If neither `vlt.json` nor the root `package.json` declares workspaces,
-vlt reads the `packages` list of a root `pnpm-workspace.yaml` as-is:
+vlt reads the `packages` list of a root `pnpm-workspace.yaml`, and
+`vlt install` saves it to `vlt.json`:
 
 ```yaml
 packages:
@@ -138,8 +140,42 @@ plain list of strings is read; anything else (anchors, tags, unquoted
 `!` patterns) makes vlt ignore the whole list, so declare the
 workspaces in `vlt.json` instead. Workspace names must be unique (pnpm
 allows duplicates); otherwise list workspaces in `vlt.json` without
-them. `vlt init -w` outside these globs copies them into `vlt.json`,
-which then takes precedence.
+them.
+
+### Saving workspaces to vlt.json
+
+`vlt install` copies workspaces read from `package.json` or
+`pnpm-workspace.yaml` to the `workspaces` field of the project
+`vlt.json` (created if missing, other fields kept), in order, `!`
+exclusions included, and prints:
+
+```
+Saved workspaces from pnpm-workspace.yaml to vlt.json
+```
+
+The source file is left untouched, so other tools keep reading it. An
+existing `workspaces` field in `vlt.json` is never overwritten.
+`vlt init -w` copies them the same way before adding a workspace
+outside these globs. Nothing is written by `vlt ci`,
+`--frozen-lockfile` or `--expect-lockfile`. Commit the updated
+`vlt.json`.
+
+From then on `vlt.json` takes precedence: later edits to
+`package.json` or `pnpm-workspace.yaml` workspaces are ignored by vlt,
+so update `vlt.json` as well. To keep the original file as the only
+source, opt out before the first `vlt install` (or remove the saved
+`workspaces` field) with `--no-migrate-workspaces` or in `vlt.json`:
+
+```json
+{
+  "config": { "migrate-workspaces": false }
+}
+```
+
+`vlt ci` reads workspaces from `vlt.json` only, even with
+`--no-migrate-workspaces`. If they are declared only in `package.json`
+or `pnpm-workspace.yaml`, it warns and ignores them; run `vlt install`
+and commit `vlt.json` first.
 
 ### Excluding paths
 

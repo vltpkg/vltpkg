@@ -532,6 +532,69 @@ t.test('persists spec config after install', async t => {
   t.end()
 })
 
+t.test('migrates workspaces after install', async t => {
+  const migrated = {
+    source: 'package.json' as const,
+    workspaces: ['packages/*'],
+  }
+  const setup = async (
+    options: Record<string, unknown>,
+    fail = false,
+  ) => {
+    const calls: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/install.ts')
+    >('../../src/commands/install.ts', {
+      '@vltpkg/graph': {
+        async install() {
+          calls.push('install')
+          if (fail) throw new Error('install failed')
+          return { graph: {} }
+        },
+      },
+      '../../src/parse-add-remove-args.ts': {
+        parseAddArgs: () => ({ add: new Map() }),
+      },
+      '../../src/save-types.ts': { addTypesDeps: async () => {} },
+      '../../src/migrate-workspaces.ts': {
+        migrateWorkspaces: (c: LoadedConfig) => {
+          calls.push(`migrate ${c === conf}`)
+          return migrated
+        },
+      },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options,
+      get: () => undefined,
+    } as unknown as LoadedConfig
+    return { run: () => Command.command(conf), calls }
+  }
+
+  t.test('saves after install', async t => {
+    const { run, calls } = await setup({})
+    const res = await run()
+    t.strictSame(calls, ['install', 'migrate true'])
+    t.strictSame(res.migratedWorkspaces, migrated)
+    t.match(Command.views.json(res), { migratedWorkspaces: migrated })
+  })
+  for (const flag of ['frozen-lockfile', 'expect-lockfile']) {
+    t.test(`not with --${flag}`, async t => {
+      const { run, calls } = await setup({ [flag]: true })
+      const res = await run()
+      t.strictSame(calls, ['install'])
+      t.equal(res.migratedWorkspaces, undefined)
+    })
+  }
+  t.test('failed install, no write', async t => {
+    const { run, calls } = await setup({}, true)
+    await t.rejects(run(), { message: 'install failed' })
+    t.strictSame(calls, ['install'])
+  })
+  t.end()
+})
+
 t.test('json view includes persistedConfig', async t => {
   const persistedConfig = {
     which: 'project' as const,

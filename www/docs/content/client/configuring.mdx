@@ -489,6 +489,16 @@ registry than `@types/*`.
 Enable for every install with `"config": { "save-types": true }` in
 `vlt.json`; turn off for one run with `--no-save-types`.
 
+### `--migrate-workspaces`
+
+On by default. `vlt install` saves workspaces read from the
+`workspaces` field of the root `package.json` or from
+`pnpm-workspace.yaml` to the project `vlt.json`, which then takes
+precedence. Set `--no-migrate-workspaces` or
+`"config": { "migrate-workspaces": false }` in `vlt.json` to skip
+this; an already saved `workspaces` field stays until removed. See
+[Workspaces](/client/workspaces#saving-workspaces-to-vltjson).
+
 ### `--save-config`
 
 Save the registry and git host options given on the command line or

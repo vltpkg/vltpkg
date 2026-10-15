@@ -81,9 +81,8 @@ type VltProject = {
 
 If `vlt.json` has no `workspaces` field, the npm/yarn-style
 `workspaces` field of the project root's `package.json` is used
-instead, so an existing npm or yarn monorepo works without a
-`vlt.json`. Only the shapes npm and yarn understand are accepted there
--- a glob string, an array of them, or `{packages: [...]}` (plus
+instead. Only the shapes npm and yarn understand are accepted there --
+a glob string, an array of them, or `{packages: [...]}` (plus
 yarn-classic's `nohoist`, which is parsed and ignored). Named groups
 are rejected in `package.json`, because a `package.json` using them
 would be meaningless to every other package manager.
@@ -95,6 +94,10 @@ through to `package.json`. The two are never merged.
 If neither declares workspaces, the `packages` list of a root
 `pnpm-workspace.yaml` is used (plain string lists only; other keys and
 unsupported YAML are ignored).
+
+`vlt install` copies these globs to `vlt.json` (see
+`migratableWSConfig`; opt out with `--no-migrate-workspaces`), and
+`vlt ci` reads `vlt.json` only (`setVltJsonOnly`).
 
 In any of these files, a pattern beginning with `!` excludes the paths
 it matches, following npm's semantics: `!a/b` excludes only that

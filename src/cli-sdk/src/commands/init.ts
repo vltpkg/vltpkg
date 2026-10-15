@@ -6,6 +6,7 @@ import { install } from '@vltpkg/graph'
 import { load, save } from '@vltpkg/vlt-json'
 import {
   assertWSConfig,
+  migratableWSConfig,
   resolveWSConfig,
   splitNegatedPatterns,
 } from '@vltpkg/workspaces'
@@ -73,10 +74,11 @@ export const command: CommandFn<
   if (conf.values.workspace?.length) {
     // the *effective* config, which may come from the root package.json
     // rather than vlt.json
-    const { config: parsedWSConfig, source } = resolveWSConfig(
+    const resolved = resolveWSConfig(
       conf.options.projectRoot,
       conf.options.packageJson,
     )
+    const parsedWSConfig = resolved.config
     // what gets written back to vlt.json. The raw vlt.json value is
     // reused as-is so its existing shape is preserved. When the
     // definitions live in package.json or pnpm-workspace.yaml instead,
@@ -84,7 +86,7 @@ export const command: CommandFn<
     // field here would shadow every workspace already declared there.
     const workspacesConfig =
       load('workspaces', assertWSConfig) ??
-      (source ? Object.values(parsedWSConfig).flat() : undefined)
+      migratableWSConfig(resolved)
     const results: InitFileResults[] = []
     const addToConfig: string[] = []
 

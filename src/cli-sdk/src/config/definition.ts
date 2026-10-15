@@ -791,6 +791,17 @@ export const definition = j
                     \`add\` or \`update\`. Values a config file already
                     has are left alone.`,
     },
+    'migrate-workspaces': {
+      description: `Save workspaces read from the \`workspaces\` field of
+                    the root \`package.json\` or from
+                    \`pnpm-workspace.yaml\` to the project \`vlt.json\` on
+                    \`vlt install\`. \`vlt.json\` then takes precedence.
+
+                    Set \`--no-migrate-workspaces\` to skip this; an
+                    already saved \`workspaces\` field stays until
+                    removed.`,
+      default: true,
+    },
   })
 
   .opt({

@@ -27,6 +27,8 @@ A workspace can belong to multiple groups. Glob patterns matched via `globSync`.
 
 Config source (`resolveWSConfig`): vlt.json `workspaces` > root package.json `workspaces` > `pnpm-workspace.yaml` `packages` (tiny parser in `src/pnpm-workspace.ts`, never throws).
 
+`vlt install` saves fallback globs to vlt.json (`migratableWSConfig`, cli-sdk `src/migrate-workspaces.ts`, `--no-migrate-workspaces` opts out). `vlt ci` reads vlt.json only (`setVltJsonOnly`, set in cli-sdk `run()`) and warns about ignored fallbacks.
+
 ## CLI Flags
 
 - `-w<path> --workspace=<path>` — filter by path/glob (can repeat). Implies `--recursive`

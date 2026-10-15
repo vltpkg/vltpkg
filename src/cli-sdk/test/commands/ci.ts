@@ -6,6 +6,7 @@ import { loadLazyView } from '../../src/view.ts'
 const options = {}
 let log = ''
 t.afterEach(() => (log = ''))
+const warned: unknown[] = []
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/ci.ts')
@@ -19,6 +20,9 @@ const Command = await t.mockImport<
       }
     },
   },
+  '../../src/migrate-workspaces.ts': {
+    warnIgnoredWorkspaces: (conf: LoadedConfig) => warned.push(conf),
+  },
 })
 
 t.test('usage', t => {
@@ -28,12 +32,15 @@ t.test('usage', t => {
 })
 
 t.test('command execution', async t => {
-  const result = await Command.command({
+  const conf = {
     positionals: [],
     values: {},
     options,
     get: () => undefined,
-  } as unknown as LoadedConfig)
+  } as unknown as LoadedConfig
+  warned.length = 0
+  const result = await Command.command(conf)
+  t.strictSame(warned, [conf], 'warns about ignored workspaces')
   t.matchSnapshot(
     log,
     'should call install with expectLockfile and cleanInstall true',
@@ -116,6 +123,9 @@ t.test('lockfile-only flag', async t => {
           graph: {},
         }
       },
+    },
+    '../../src/migrate-workspaces.ts': {
+      warnIgnoredWorkspaces: () => {},
     },
   })
 

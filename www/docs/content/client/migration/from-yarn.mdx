@@ -301,7 +301,8 @@ yarn v2+ is similar but also supports the `workspaces` field in
 **Your existing yarn workspaces just work.** vlt reads the
 `workspaces` field of the root `package.json`, in both the array form
 above and the object form, where the `nohoist` key is parsed and
-ignored:
+ignored. `vlt install` copies the globs to `vlt.json` as a plain
+array, dropping `nohoist`:
 
 <Code
   code={JSON.stringify(
@@ -319,14 +320,16 @@ ignored:
   lang="json"
 />
 
-Exclusion patterns such as `!packages/legacy` are honored too. The
-`workspaces` field of `.yarnrc.yml` is not read, so any yarn v2+
-filtering defined there needs to move.
+Exclusion patterns such as `!packages/legacy` are honored and copied
+too. `package.json` is left as-is for yarn. Commit `vlt.json`:
+`vlt ci` reads workspaces from it only. The `workspaces` field of
+`.yarnrc.yml` is not read, so any yarn v2+ filtering defined there
+needs to move.
 
-You only need to define workspaces in `vlt.json` if you want vlt's
-**named workspace groups** for targeted operations. If `vlt.json` has
-a `workspaces` field it wins outright, and the `package.json` field is
-ignored rather than merged:
+Edit `vlt.json` to use vlt's **named workspace groups** for targeted
+operations. If `vlt.json` has a `workspaces` field it wins outright,
+and the `package.json` field is ignored rather than merged, so later
+`package.json` edits need copying too:
 
 <Code
   code={JSON.stringify(
@@ -435,13 +438,13 @@ Some yarn-specific features don't have direct equivalents:
 2. Create `vlt.json` with your registry configuration
 3. Move scoped registry config from `.yarnrc.yml` / `.npmrc` to
    `vlt.json`
-4. Leave your `workspaces` field in `package.json` — vlt reads it
-   as-is. Move it to `vlt.json` only if you want named groups
+4. Leave your `workspaces` field in `package.json` — `vlt install`
+   copies it to `vlt.json`
 5. Move `resolutions` from `package.json` to `modifiers` in `vlt.json`
 6. If using PnP, remove `.pnp.cjs`, `.pnp.loader.mjs`, and related
    `.yarnrc.yml` settings
 7. Run `vlt install` then `vlt build`
-8. Commit `vlt-lock.json`
+8. Commit `vlt.json` and `vlt-lock.json`
 9. Update CI scripts: replace `yarn install --immutable` with
    `vlt install --expect-lockfile && vlt build`
 10. Update CI auth: replace `YARN_NPM_AUTH_TOKEN` with `VLT_TOKEN`

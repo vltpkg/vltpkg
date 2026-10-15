@@ -84,6 +84,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --libc=<libc>
     --lockfile-only
     --loglevel=<level>
+    --migrate-workspaces
     --no-bail
     --no-color
     --node-version=<version>
@@ -160,6 +161,7 @@ Unknown config option: asdf
     libc
     lockfile-only
     loglevel
+    migrate-workspaces
     no-bail
     no-color
     node-version
