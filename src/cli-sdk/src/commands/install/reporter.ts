@@ -141,6 +141,10 @@ export class InstallReporter extends ViewClass {
         out += `\nSaved ${e} to ${saved.which} vlt.json`
       }
     }
+    const migrated = _result.migratedWorkspaces
+    if (migrated) {
+      out += `\nSaved workspaces from ${migrated.source} to vlt.json`
+    }
     this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }

@@ -6,8 +6,10 @@ import type { Workspace } from '../src/index.ts'
 import {
   asManifestWSConfig,
   asWSConfig,
+  migratableWSConfig,
   Monorepo,
   resolveWSConfig,
+  setVltJsonOnly,
   splitNegatedPatterns,
 } from '../src/index.ts'
 
@@ -785,6 +787,78 @@ t.test('maybeLoad honors a supplied config', async t => {
     load: {},
   })
   t.equal(m?.size, 1, 'short-circuits both files')
+})
+
+t.test('migratableWSConfig', async t => {
+  t.equal(
+    migratableWSConfig({
+      config: { packages: ['a/*'] },
+      source: 'vlt.json',
+    }),
+    undefined,
+    'already in vlt.json',
+  )
+  t.equal(migratableWSConfig({ config: {} }), undefined, 'none')
+  const dir = t.testdir({
+    '.git': {},
+    'package.json': JSON.stringify({
+      name: 'root',
+      workspaces: {
+        packages: ['packages/*', '!packages/skip', 'tools/x'],
+        nohoist: ['**/foo'],
+      },
+    }),
+    'pnpm-workspace.yaml': "packages:\n  - 'apps/*'\n",
+  })
+  t.chdir(dir)
+  unload()
+  t.strictSame(
+    migratableWSConfig(resolveWSConfig(dir)),
+    ['packages/*', '!packages/skip', 'tools/x'],
+    'yarn object: ordered array, nohoist dropped',
+  )
+  t.strictSame(
+    migratableWSConfig({
+      config: { packages: ['apps/*', '!apps/old'] },
+      source: 'pnpm-workspace.yaml',
+    }),
+    ['apps/*', '!apps/old'],
+  )
+})
+
+t.test('setVltJsonOnly', async t => {
+  setVltJsonOnly(true)
+  t.teardown(() => setVltJsonOnly(false))
+  await t.test('ignores manifest workspaces', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'package.json': JSON.stringify({
+        name: 'root',
+        workspaces: ['packages/*'],
+      }),
+      packages: { a: { 'package.json': pkg('a') } },
+    })
+    t.chdir(dir)
+    unload()
+    t.strictSame(resolveWSConfig(dir), { config: {} })
+    t.equal(Monorepo.maybeLoad(dir), undefined)
+    t.equal(
+      resolveWSConfig(dir, undefined, false).source,
+      'package.json',
+      'explicit arg wins',
+    )
+  })
+  await t.test('still reads vlt.json', async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+      packages: { a: { 'package.json': pkg('a') } },
+    })
+    t.chdir(dir)
+    unload()
+    t.equal(resolveWSConfig(dir).source, 'vlt.json')
+    t.equal(Monorepo.maybeLoad(dir)?.size, 1)
+  })
 })
 
 t.test('negation', async t => {

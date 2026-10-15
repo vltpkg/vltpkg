@@ -1,5 +1,6 @@
 import { format } from 'node:util'
 import { asRootError, findRootError } from '@vltpkg/output/error'
+import { setVltJsonOnly } from '@vltpkg/workspaces'
 import { loadPackageJson } from 'package-json-from-dist'
 import {
   getSortedCliOptions,
@@ -81,6 +82,8 @@ const run = async () => {
     return stdout(version)
   }
 
+  // ci reads workspaces from vlt.json only; set before options load
+  setVltJsonOnly(vlt.command === 'ci')
   const { monorepo } = vlt.options
 
   // Infer the workspace by being in that directory.
@@ -97,8 +100,12 @@ const run = async () => {
     (vlt.get('workspace') || vlt.get('workspace-group')) &&
     ![...(monorepo?.values() ?? [])].length
   ) {
+    const where =
+      vlt.command === 'ci' ?
+        'the vlt.json config (vlt ci ignores package.json and pnpm-workspace.yaml)'
+      : 'the vlt.json config, the "workspaces" field of the root package.json, or the "packages" list of pnpm-workspace.yaml'
     stderr(
-      `Error: No matching workspaces found. Make sure the vlt.json config, the "workspaces" field of the root package.json, or the "packages" list of pnpm-workspace.yaml contains the correct workspaces.`,
+      `Error: No matching workspaces found. Make sure ${where} contains the correct workspaces.`,
     )
     if (vlt.get('workspace')) {
       stderr(indent(`Workspace: ${format(vlt.get('workspace'))}`))

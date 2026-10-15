@@ -332,8 +332,8 @@ See [`vlt build`](/client/commands/build) for full details.
 ## Workspaces
 
 **Your existing npm workspaces just work.** vlt reads the `workspaces`
-field of the root `package.json`, so a monorepo like this needs no
-changes at all:
+field of the root `package.json`, and `vlt install` copies it to
+`vlt.json`:
 
 <Code
   code={JSON.stringify(
@@ -347,11 +347,12 @@ changes at all:
   lang="json"
 />
 
-Exclusion patterns such as `!packages/legacy` are honored too.
+Exclusion patterns such as `!packages/legacy` are honored and copied
+too. `package.json` is left as-is for npm. Commit `vlt.json`: `vlt ci`
+reads workspaces from it only.
 
-You only need to define workspaces in `vlt.json` if you want vlt's
-named groups, which let you run operations against a subset of your
-workspaces:
+Edit `vlt.json` to use vlt's named groups, which let you run
+operations against a subset of your workspaces:
 
 <Code
   code={JSON.stringify(
@@ -372,7 +373,8 @@ workspaces:
 
 - **Precedence** — if `vlt.json` has a `workspaces` field it wins
   outright, and the `package.json` field is ignored rather than
-  merged. Keep the list in one place.
+  merged. Once copied, later `package.json` edits are ignored by vlt:
+  update `vlt.json` too.
 - **Named groups** — supported only in `vlt.json`, since a
   `package.json` using them would be meaningless to npm.
 
@@ -435,11 +437,11 @@ match the same dependency.
 2. In your project root, create `vlt.json` with your registry config
    (or use `vlt config set`)
 3. Move any scoped registry config from `.npmrc` to `vlt.json`
-4. Leave your `workspaces` field in `package.json` — vlt reads it
-   as-is. Move it to `vlt.json` only if you want named groups
+4. Leave your `workspaces` field in `package.json` — `vlt install`
+   copies it to `vlt.json`
 5. Move `overrides` from `package.json` to `modifiers` in `vlt.json`
 6. Run `vlt install` then `vlt build`
-7. Commit `vlt-lock.json`
+7. Commit `vlt.json` and `vlt-lock.json`
 8. Update CI scripts: replace `npm ci` with
    `vlt install --expect-lockfile && vlt build`
 9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
