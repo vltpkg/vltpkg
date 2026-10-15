@@ -2,6 +2,7 @@ import t from 'tap'
 import { Query, walk } from '../src/index.ts'
 import {
   getCycleGraph,
+  getMultiNameGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
 } from './fixtures/graph.ts'
@@ -215,6 +216,43 @@ t.test('cycle', async t => {
       `query > "${q}"`,
     )
   }
+})
+
+t.test('package installed under multiple names', async t => {
+  const graph = getMultiNameGraph()
+  const query = new Query({
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
+    securityArchive: undefined,
+  })
+  const queryToExpected = new Set<TestCase>([
+    ['#abbrev', ['abbrev']],
+    ['#ab', ['abbrev']],
+    [':root > #abbrev', ['abbrev']],
+    [':is(#ab)', ['abbrev']],
+    [':root:has(#ab)', ['multi-name-project']],
+    [':root > *:not(#ab)', ['semver']],
+    [':dev', ['abbrev']],
+    [':prod', ['abbrev', 'semver']],
+    ['#semver', ['semver']],
+  ])
+  for (const [q, expected] of queryToExpected) {
+    t.strictSame(
+      (await query.search(q, mockSearchOptions)).nodes
+        .map(i => i.name)
+        .sort(),
+      expected,
+      `query > "${q}"`,
+    )
+  }
+  t.strictSame(
+    (await query.search('#ab', mockSearchOptions)).edges.map(
+      i => i.name,
+    ),
+    ['ab'],
+    'edges for #ab',
+  )
 })
 
 t.test('insights', async t => {

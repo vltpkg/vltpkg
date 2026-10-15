@@ -8,7 +8,7 @@ sidebar:
 ID selectors are a shorthand for selecting packages by name. They work
 like
 [CSS ID selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors)
-but match the `name` field in `package.json`.
+but match the name a package is installed under.
 
 ## Syntax
 
@@ -16,7 +16,10 @@ but match the `name` field in `package.json`.
 #package-name
 ```
 
-This is equivalent to `[name=package-name]`.
+Matches the name a dependency is installed under, usually the same as
+`[name=package-name]`. With an alias like `"ab": "npm:abbrev@2.0.0"`,
+`#ab` selects `abbrev`; a package installed under several names
+matches each.
 
 <Aside type="caution">
   ID selectors only work for **unscoped** packages. For scoped
