@@ -31,6 +31,12 @@ import {
   renderBlock,
 } from './posix.ts'
 import type { FileAction, FileChange, PosixShell } from './posix.ts'
+import {
+  applyWindowsPath,
+  planWindowsPath,
+  userEnvLabel,
+} from './windows.ts'
+import type { WindowsPathChange } from './windows.ts'
 
 export type { FileAction } from './posix.ts'
 
@@ -45,7 +51,9 @@ const posixShells: ReadonlySet<Shell> = new Set([
 export const canSetupPath = (
   shell: Shell,
   platform: NodeJS.Platform = process.platform,
-): boolean => platform !== 'win32' && posixShells.has(shell)
+): boolean =>
+  // win32: the user Path reaches every shell
+  platform === 'win32' || posixShells.has(shell)
 
 export type PathSetupOptions = ShellOptions & {
   /** holds the env files and backups */
@@ -61,12 +69,16 @@ export type PathSetupPlan = {
   dir: string
   shell: Shell
   changes: FileChange[]
+  /** win32: user Path change, instead of files */
+  registry?: WindowsPathChange
+  /** win32: env the user Path was read with */
+  env?: NodeJS.ProcessEnv
 }
 
 export type PathSetupFile = {
   file: string
-  kind: 'env' | 'rc'
-  action: FileAction
+  kind: 'env' | 'rc' | 'registry'
+  action: FileAction | 'prepend'
 }
 
 export type PathSetupResult = {
@@ -81,12 +93,14 @@ export const planPathSetup = async (
   o: PathSetupOptions,
 ): Promise<PathSetupPlan> => {
   const { globalDir, dir, shell, force } = o
+  if ((o.platform ?? process.platform) === 'win32') {
+    const { env } = o
+    const registry = await planWindowsPath(dir, { env })
+    return { globalDir, dir, shell, changes: [], registry, env }
+  }
   const command = shellPathCommand(shell, dir, o)
   if (!canSetupPath(shell, o.platform)) {
-    const what =
-      (o.platform ?? process.platform) === 'win32' ? 'Windows'
-      : shell === 'unknown' ? 'your shell'
-      : shell
+    const what = shell === 'unknown' ? 'your shell' : shell
     throw error(
       `vlt setup --path doesn't support ${what} yet. Add it to your PATH yourself:\n  ${command}`,
       { code: 'ECONFIG', found: shell },
@@ -116,42 +130,63 @@ export const planPathSetup = async (
 }
 
 export const pathSetupChanged = (plan: PathSetupPlan): boolean =>
-  plan.changes.some(c => c.action !== 'unchanged')
+  plan.changes.some(c => c.action !== 'unchanged') ||
+  (!!plan.registry && plan.registry.action !== 'unchanged')
 
 export const pathSetupFiles = (
   plan: PathSetupPlan,
-): PathSetupFile[] =>
-  plan.changes.map(({ file, kind, action }) => ({
-    file,
-    kind,
-    action,
-  }))
+): PathSetupFile[] => {
+  const files: PathSetupFile[] = plan.changes.map(
+    ({ file, kind, action }) => ({ file, kind, action }),
+  )
+  const reg = plan.registry
+  if (reg) {
+    files.push({
+      file: reg.key,
+      kind: 'registry',
+      action: reg.action,
+    })
+  }
+  return files
+}
 
-/** rc files, for display */
+/** rc files or the user Path, for display */
 export const rcList = (
   files: PathSetupFile[],
   home?: string,
 ): string =>
   files
-    .filter(f => f.kind === 'rc')
-    .map(f => prettyPath(f.file, home))
+    .filter(f => f.kind !== 'env')
+    .map(f =>
+      f.kind === 'registry' ? userEnvLabel : prettyPath(f.file, home),
+    )
     .join(', ')
 
-/** write the plan: env files, then rc files, backed up */
+/** write the plan: env files, rc files, user Path, backed up */
 export const applyPathSetup = async (
   plan: PathSetupPlan,
 ): Promise<PathSetupResult> => {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-')
   const backupDir = resolve(plan.globalDir, 'backups')
   const backups: string[] = []
+  const backup = async (
+    name: string,
+    data: Buffer | string,
+    mode?: number,
+  ) => {
+    await mkdir(backupDir, { recursive: true })
+    const b = resolve(backupDir, `${name}.${stamp}.bak`)
+    await writeFile(b, data, { mode })
+    backups.push(b)
+  }
   for (const c of plan.changes) {
     if (c.action === 'unchanged') continue
     if (c.previous !== undefined) {
-      await mkdir(backupDir, { recursive: true })
-      const name = basename(c.file).replace(/^\./, '')
-      const b = resolve(backupDir, `${name}.${stamp}.bak`)
-      await writeFile(b, c.previous, { mode: c.mode })
-      backups.push(b)
+      await backup(
+        basename(c.file).replace(/^\./, ''),
+        c.previous,
+        c.mode,
+      )
     }
     // sudo must not leave root-owned files in the home dir
     const owner = process.getuid?.() === 0 ? c.owner : undefined
@@ -168,6 +203,11 @@ export const applyPathSetup = async (
       for (const f of own) await chown(f, owner.uid, owner.gid)
     }
   }
+  const reg = plan.registry
+  if (reg && reg.action !== 'unchanged') {
+    if (reg.previous !== undefined) await backup('Path', reg.previous)
+    await applyWindowsPath(reg, { env: plan.env })
+  }
   return {
     dir: plan.dir,
     shell: plan.shell,
@@ -176,13 +216,17 @@ export const applyPathSetup = async (
   }
 }
 
-/** loads the env file into the current shell */
+/** loads the env file into the current shell (win32: adds `dir`) */
 export const sourceCommand = (
   shell: Shell,
   globalDir: string,
+  dir: string,
   o: ShellOptions = {},
 ): string =>
-  shell === 'fish' ? `source ${fishPath(envFishFile(globalDir), o)}`
+  // no env file on win32
+  (o.platform ?? process.platform) === 'win32' ?
+    shellPathCommand(shell, dir, o)
+  : shell === 'fish' ? `source ${fishPath(envFishFile(globalDir), o)}`
   : shell === 'sh' ? `. ${posixPath(envFile(globalDir), o)}`
   : `source ${posixPath(envFile(globalDir), o)}`
 
@@ -193,7 +237,7 @@ export const pathSetupLines = (
 ): string[] => {
   const lines = [
     `✅ Added ${prettyPath(r.dir, home)} to your PATH in ${rcList(r.files, home)}`,
-    `   Open a new terminal, or run: ${source}`,
+    `   Open a new terminal${r.files.some(f => f.kind === 'registry') ? ' (restart editors like VS Code)' : ''}, or run: ${source}`,
   ]
   const [b] = r.backups
   if (b) lines.push(`   Backups in ${prettyPath(dirname(b), home)}`)
@@ -232,7 +276,7 @@ export type OfferOptions = ShellOptions & {
 
 /**
  * After `install -g` linked into a dir not in the `PATH`: offer, once,
- * in a terminal, to add it to the shell config. Never throws.
+ * in a terminal, to add it to the PATH. Never throws.
  */
 export const offerPathSetup = async (
   g: GlobalBins,
@@ -262,7 +306,7 @@ export const offerPathSetup = async (
     return
   }
   const rcs = rcList(pathSetupFiles(plan), home)
-  const source = sourceCommand(shell, globalDir, sh)
+  const source = sourceCommand(shell, globalDir, g.binDir, sh)
   const write = (line: string) => output.write(line + '\n')
   o.beforeOutput?.()
   if (!pathSetupChanged(plan)) {

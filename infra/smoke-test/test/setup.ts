@@ -81,3 +81,96 @@ t.test(
     t.equal(res.status, 0)
   },
 )
+
+t.test(
+  'setup --path, Windows user Path',
+  // edits the runner's real user Path
+  { skip: process.platform !== 'win32' || !process.env.CI },
+  async t => {
+    const reg = (a: string[]) =>
+      execFileSync('reg', a, { encoding: 'utf8' })
+    const read = () =>
+      /^ {4}Path {4}(REG_\w+)(?: {4}(.*?))?\r?$/im.exec(
+        reg(['query', 'HKCU\\Environment']),
+      )
+    const prev = read()
+    t.teardown(() => {
+      try {
+        execFileSync(
+          'reg',
+          [
+            'delete',
+            'HKCU\\Environment',
+            '/v',
+            'VLT_PATH_REFRESH',
+            '/f',
+          ],
+          { stdio: 'ignore' },
+        )
+      } catch {}
+      if (prev) {
+        reg([
+          'add',
+          'HKCU\\Environment',
+          '/v',
+          'Path',
+          '/t',
+          String(prev[1]),
+          '/d',
+          prev[2] ?? '',
+          '/f',
+        ])
+      } else {
+        reg(['delete', 'HKCU\\Environment', '/v', 'Path', '/f'])
+      }
+    })
+    const env = {
+      SystemRoot: process.env.SystemRoot,
+      TEMP: process.env.TEMP,
+    }
+    const res = await runMultiple(t, args, {
+      variants: ['Bundle'],
+      match: ['status'],
+      env,
+      test: async ({ t, dirs, run, raw }) => {
+        t.equal(status(raw.stdout), 'added')
+        const { path } = JSON.parse(raw.stdout) as {
+          path: { dir: string; files: unknown[] }
+        }
+        t.match(path.files, [
+          {
+            file: 'HKCU\\Environment',
+            kind: 'registry',
+            action: /^(prepend|create)$/,
+          },
+        ])
+        t.equal(path.files.length, 1)
+        const [first, ...rest] = (read()?.[2] ?? '').split(';')
+        t.equal(first, path.dir, 'dir first')
+        t.equal(rest.join(';'), prev?.[2] ?? '', 'rest kept')
+        t.notMatch(
+          reg(['query', 'HKCU\\Environment']),
+          /^ {4}VLT_PATH_REFRESH /im,
+          'broadcast var removed',
+        )
+        const backups = join(dirs.data, 'vlt', 'global', 'backups')
+        if (prev) {
+          const [b = ''] = readdirSync(backups)
+          t.match(readdirSync(backups), [/^Path\..+\.bak$/])
+          t.equal(
+            readFileSync(join(backups, b), 'utf8'),
+            prev[2] ?? '',
+            'old Path backed up',
+          )
+        } else {
+          t.notOk(existsSync(backups), 'nothing to back up')
+        }
+
+        const again = await run(args, { env })
+        t.equal(again.status, 0)
+        t.equal(status(again.stdout), 'unchanged')
+      },
+    })
+    t.equal(res.status, 0)
+  },
+)
