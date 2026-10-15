@@ -190,6 +190,62 @@ t.test('uninstall with lockfileOnly option', async t => {
   t.notOk(rolledBack, 'and not rolled back')
 })
 
+t.test('uninstall prunes skill links after reify', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'test',
+      version: '1.0.0',
+    }),
+  })
+  const graph = { nodes: new Map(), importers: [], projectRoot: dir }
+  const log: string[] = []
+  const { uninstall } = await t.mockImport<
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
+    '../src/ideal/build.ts': { build: async () => graph },
+    '../src/reify/index.ts': {
+      reify: async () => {
+        log.push('reify')
+      },
+    },
+    '../src/index.ts': {
+      lockfile: {
+        save: () => {
+          log.push('save')
+        },
+      },
+    },
+    '../src/skills/index.ts': {
+      syncSkills: async (o: {
+        allowSkills?: string
+        graph: unknown
+      }) => {
+        t.equal(o.graph, graph, 'the new graph')
+        t.equal(o.allowSkills, undefined, 'prune only')
+        log.push('syncSkills')
+      },
+    },
+  })
+  const run = (lockfileOnly: boolean) =>
+    uninstall(
+      {
+        projectRoot: dir,
+        scurry: new PathScurry(dir),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        allowSkills: '*',
+        lockfileOnly,
+      } as unknown as UninstallOptions,
+      new Map() as RemoveImportersDependenciesMap,
+    )
+  await run(false)
+  t.strictSame(log, ['reify', 'syncSkills'])
+  log.length = 0
+  await run(true)
+  t.strictSame(log, ['save'], 'not on lockfileOnly')
+})
+
 t.test(
   'uninstall with lockfileOnly and removing packages (updatePackageJson)',
   async t => {

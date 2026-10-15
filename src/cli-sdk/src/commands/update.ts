@@ -38,6 +38,11 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      'allow-skills': {
+        value: '<query>',
+        description:
+          'Link agent skills of packages matching this DSS query into ./skills.',
+      },
     },
   })
 
@@ -52,6 +57,15 @@ export const views = {
     graph: i.graph.toJSON(),
     ...(i.persistedConfig ?
       { persistedConfig: i.persistedConfig }
+    : null),
+    ...(i.skills ?
+      {
+        skills: {
+          linked: i.skills.linked.map(s => s.mount),
+          removed: i.skills.removed,
+          conflicts: i.skills.conflicts,
+        },
+      }
     : null),
   }),
   human: lazyView(
@@ -75,9 +89,10 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
-  const { buildQueue, graph } = await update({
+  const { buildQueue, graph, skills } = await update({
     ...conf.options,
     allowScripts,
+    allowSkills: conf.get('allow-skills'),
   }).catch((er: unknown) => {
     throw asUnknownSpecPrefix(er)
   })
@@ -87,5 +102,6 @@ export const command: CommandFn<InstallResult> = async conf => {
     buildQueue,
     graph,
     ...(persist ? { persistedConfig: persist } : null),
+    ...(skills ? { skills } : null),
   }
 }

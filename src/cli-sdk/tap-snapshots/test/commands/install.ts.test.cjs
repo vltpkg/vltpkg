@@ -124,4 +124,9 @@ appropriately.
 
       ​--allow-scripts=<query>
 
+    allow-skills
+      Link agent skills of packages matching this DSS query into ./skills.
+
+      ​--allow-skills=<query>
+
 `
