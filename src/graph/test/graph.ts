@@ -686,6 +686,25 @@ t.test('in-place edge replacement', async t => {
     'edge is still in mainImporter edgesOut',
   )
   t.equal(graph.edges.size, 1, 'graph still has only one edge')
+
+  // a different spec replaces the edge, the old target lets go of it
+  const wsSpec = Spec.parse('bar@1.0.0', configData)
+  const newEdge = graph.addEdge(
+    'prod',
+    wsSpec,
+    graph.mainImporter,
+    bar1,
+  )
+  t.not(newEdge, edge, 'a new edge')
+  t.notOk(bar2.edgesIn.has(edge), 'bar2 lets go of the old edge')
+  graph.gc()
+  t.equal(graph.nodes.get(bar2.id), undefined, 'bar2 collected')
+  t.equal(
+    graph.mainImporter.edgesOut.get('bar'),
+    newEdge,
+    'the new edge survives',
+  )
+  t.strictSame([...graph.edges], [newEdge], 'graph edges match')
 })
 
 t.test('garbage collection', async t => {

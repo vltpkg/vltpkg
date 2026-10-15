@@ -28,6 +28,8 @@ Overrides/resolutions and package extensions via DSS selectors in `vlt.json`.
 
 Importer selectors: `:root` (main), `:workspace` (any workspace), `:project` (any importer)
 
+Trailing `<importer> > :workspace` (e.g. `":project > :workspace": "workspace:*"`) expands lazily, per graph, into one `<importer> > #<name>` entry per named workspace. Other nameless last items throw `Invalid modifier selector`.
+
 ## Key Modules
 
 - `src/graph/src/modifiers.ts` — `GraphModifier` class
