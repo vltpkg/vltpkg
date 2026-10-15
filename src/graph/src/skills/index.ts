@@ -1,4 +1,6 @@
 import { existsSync } from 'node:fs'
+import { basename } from 'node:path'
+import type { DepID } from '@vltpkg/dep-id'
 import type { PathScurry } from 'path-scurry'
 import { load as loadActual } from '../actual/load.ts'
 import type { LoadOptions } from '../actual/load.ts'
@@ -7,7 +9,14 @@ import type { Graph } from '../graph.ts'
 import { unshare } from '../reify/unshare.ts'
 import { discoverSkills } from './discover.ts'
 import type { Skill } from './discover.ts'
-import { mountSkill, readMounts, unmountSkill } from './mounts.ts'
+import {
+  mountSkill,
+  packageKey,
+  readMounts,
+  samePath,
+  unmountSkill,
+} from './mounts.ts'
+import type { SkillMount } from './mounts.ts'
 
 export * from './discover.ts'
 export type { SkillMount, MountResult } from './mounts.ts'
@@ -39,9 +48,15 @@ export type LinkSkillsResult = {
   linked: Skill[]
   /** selected skills already linked */
   unchanged: Skill[]
-  /** stale mounts removed, `/`-separated relative paths */
+  /**
+   * vlt links whose skill is no longer installed, removed:
+   * `/`-separated relative paths
+   */
   removed: string[]
-  /** mount paths skipped: something not managed by vlt is in the way */
+  /**
+   * skipped: path in use (`<mount>`), or name taken by another package
+   * (`<mount> (<package>)`)
+   */
   conflicts: string[]
 }
 
@@ -62,6 +77,9 @@ export type SyncSkillsOptions = SkillsOptions & {
   allowSkills?: string
 }
 
+const dir = 'skills'
+const lc = (s: string) => s.toLowerCase()
+
 const selectNodes = async (o: SkillsOptions) => {
   const graph = o.graph ?? loadActual({ ...o, loadManifests: true })
   const ids = await filterNodesByQuery(graph, o.target ?? '*')
@@ -70,25 +88,29 @@ const selectNodes = async (o: SkillsOptions) => {
 }
 
 // packages behind live vlt links
-const liveNames = (projectRoot: string) =>
-  readMounts(projectRoot)
-    .filter(m => existsSync(m.target))
-    .map(m => m.name)
+const liveOwners = (mounts: SkillMount[]): DepID[] =>
+  mounts.flatMap(m =>
+    m.owner && existsSync(m.target) ? [m.owner] : [],
+  )
 
 // private copies of store-hardlinked files: edits via `./skills` must
 // not reach the global store
 const unshareSkills = async (
   graph: Graph,
-  names: Iterable<string>,
+  ids: Iterable<DepID>,
   scurry: PathScurry,
 ) => {
-  const set = new Set(names)
-  if (!set.size) return
-  for (const node of graph.nodes.values()) {
-    if (!node.importer && node.inVltStore() && set.has(node.name)) {
+  for (const id of new Set(ids)) {
+    const node = graph.nodes.get(id)
+    if (node?.inVltStore())
       await unshare(node.resolvedLocation(scurry))
-    }
   }
+}
+
+// `vlt ls` style
+const label = (s: Skill) => {
+  const pkg = s.version ? `${s.name}@${s.version}` : s.name
+  return s.alias ? `${s.alias} (${pkg})` : pkg
 }
 
 /**
@@ -101,13 +123,17 @@ export const listSkills = async (
     (await selectNodes(o)).nodes,
     o.scurry,
     o.projectRoot,
-  )
+    dir,
+  ).skills
 
 /**
- * Link the agent skills of the selected packages into
- * `./skills/<package>/<skill>`, then prune stale vlt links: dangling,
- * or no longer a skill of a linked package. Linked packages get
- * private copies of files hardlinked from the global store.
+ * Link the agent skills of the selected packages into `./skills/<skill>`.
+ * One package per name: an existing link keeps it while its skill is
+ * installed, else rank (main importer dep, importer dep, transitive),
+ * then DepID; the others are reported. A link follows its package to
+ * the picked version. Then remove vlt links whose skill is no longer
+ * installed. Linked packages get private copies of files
+ * hardlinked from the global store.
  */
 export const linkSkills = async (
   o: LinkSkillsOptions,
@@ -120,52 +146,98 @@ export const linkSkills = async (
     conflicts: [],
   }
   const { graph, nodes } = await selectNodes(o)
-  const skills = discoverSkills(nodes, o.scurry, projectRoot)
+  const { skills, scanned } = discoverSkills(
+    nodes,
+    o.scurry,
+    projectRoot,
+    dir,
+  )
+  const mounts = readMounts(projectRoot, dir)
+  const byMount = new Map(mounts.map(m => [lc(m.mount), m]))
+  // the link's skill is no longer installed: dangling, orphan owner,
+  // or a scanned owner that no longer ships it
+  const stale = (m: SkillMount) =>
+    !m.owner ||
+    !graph.nodes.has(m.owner) ||
+    !existsSync(m.target) ||
+    scanned
+      .get(m.owner)
+      ?.some(
+        f =>
+          lc(f.skill) === lc(basename(m.link)) &&
+          samePath(f.path, m.target),
+      ) === false
+  const groups = new Map<string, Skill[]>()
+  for (const s of skills) {
+    const k = lc(s.skill)
+    groups.set(k, [...(groups.get(k) ?? []), s])
+  }
+  const picks: [
+    Skill | undefined,
+    Skill[],
+    SkillMount | undefined,
+  ][] = []
+  for (const [k, group] of groups) {
+    const m = byMount.get(lc(`${dir}/${k}`))
+    const key = m?.owner && packageKey(m.owner)
+    // the link's package keeps the name, re-pointed if needed
+    const own = group.find(s => packageKey(s.id) === key)
+    // else a live link of another package keeps it
+    const winner = own ?? (m && !stale(m) ? undefined : group[0])
+    picks.push([winner, group.filter(s => s !== winner), m])
+  }
   await unshareSkills(
     graph,
-    [...skills.map(s => s.name), ...liveNames(projectRoot)],
+    [
+      ...picks.flatMap(([w]) => (w ? [w.id] : [])),
+      ...liveOwners(mounts),
+    ],
     o.scurry,
   )
-  for (const skill of skills) {
-    const r = mountSkill(skill, projectRoot)
-    if (r === 'linked') res.linked.push({ ...skill, linked: true })
-    else if (r === 'unchanged') res.unchanged.push(skill)
-    else res.conflicts.push(skill.mount)
+  for (const [winner, losers, m] of picks) {
+    if (winner) {
+      // replaced link named in another case (case-sensitive fs)
+      if (m && m.mount !== winner.mount) {
+        unmountSkill(m, projectRoot, dir)
+      }
+      const r = mountSkill(winner, projectRoot, dir)
+      if (r === 'linked') res.linked.push({ ...winner, linked: true })
+      else if (r === 'unchanged') res.unchanged.push(winner)
+      else res.conflicts.push(winner.mount)
+    }
+    for (const s of losers)
+      res.conflicts.push(`${s.mount} (${label(s)})`)
   }
-  // stale: dangling, or a linked package's mount that is not one of
-  // its current skills (eg, dropped in a new version)
-  const lc = (s: string) => s.toLowerCase()
-  const names = new Set(skills.map(s => lc(s.name)))
-  const mounts = new Set(skills.map(s => lc(s.mount)))
-  for (const m of readMounts(projectRoot)) {
-    const old = names.has(lc(m.name)) && !mounts.has(lc(m.mount))
-    if (!old && existsSync(m.target)) continue
-    unmountSkill(m, projectRoot)
+  for (const m of readMounts(projectRoot, dir)) {
+    if (!stale(m)) continue
+    unmountSkill(m, projectRoot, dir)
     res.removed.push(m.mount)
   }
   return res
 }
 
 /**
- * Remove the vlt skill links of the selected packages, plus any dangling
- * ones. Unset or `*` target removes them all.
+ * Remove the vlt skill links of the selected packages (by the link's
+ * owner), plus any dangling ones. Unset or `*` target removes them all.
  */
 export const unlinkSkills = async (
   o: SkillsOptions,
 ): Promise<UnlinkSkillsResult> => {
   const { projectRoot, target } = o
-  const names =
+  const ids =
     target && target !== '*' ?
-      new Set(
-        (await selectNodes(o)).nodes
-          .filter(n => !n.importer)
-          .map(n => n.name),
-      )
+      new Set((await selectNodes(o)).nodes.map(n => n.id))
     : undefined
   const removed: string[] = []
-  for (const m of readMounts(projectRoot)) {
-    if (names && !names.has(m.name) && existsSync(m.target)) continue
-    unmountSkill(m, projectRoot)
+  for (const m of readMounts(projectRoot, dir)) {
+    if (
+      ids &&
+      !(m.owner && ids.has(m.owner)) &&
+      existsSync(m.target)
+    ) {
+      continue
+    }
+    unmountSkill(m, projectRoot, dir)
     removed.push(m.mount)
   }
   return { removed }
@@ -186,12 +258,13 @@ export const syncSkills = async (
   }
   const removed: string[] = []
   try {
-    for (const m of readMounts(projectRoot)) {
+    const mounts = readMounts(projectRoot, dir)
+    for (const m of mounts) {
       if (existsSync(m.target)) continue
-      unmountSkill(m, projectRoot)
+      unmountSkill(m, projectRoot, dir)
       removed.push(m.mount)
     }
-    await unshareSkills(o.graph, liveNames(projectRoot), o.scurry)
+    await unshareSkills(o.graph, liveOwners(mounts), o.scurry)
   } catch {}
   return removed.length ?
       { linked: [], unchanged: [], removed, conflicts: [] }

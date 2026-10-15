@@ -18,7 +18,8 @@ A skill is a folder with a \`SKILL.md\` file
 (https://agentskills.io/specification). Packages ship them at
 \`skills/<name>/SKILL.md\`, or as a root \`SKILL.md\`.
 
-Skills are linked into \`./skills/<package>/<skill>\`. Only links made by vlt
+Skills are linked into \`./skills/<skill>\`. When packages ship skills with the
+same name, one is linked and the others are reported. Only links made by vlt
 (pointing into \`node_modules/.vlt\`) are ever replaced or removed; anything else
 in the way is skipped.
 
@@ -34,9 +35,8 @@ syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
       ​vlt skills list [<query>]
 
     link
-      Link the skills of the selected packages, then remove stale skill links
-      (dangling, or no longer a skill of a linked package). Selects
-      \`:not(:malware)\` by default.
+      Link the skills of the selected packages, then remove skill links whose
+      skill is no longer installed. Selects \`:not(:malware)\` by default.
 
       ​vlt skills link [<query>]
 
@@ -57,13 +57,13 @@ syntax. Use \`vlt install --allow-skills=<query>\` to link skills on install.
 
 exports[`test/commands/skills.ts > TAP > views > human link all 1`] = `
 🔗 Linked 2 agent skills:
-  skills/foo/a
-  skills/foo/b
+  skills/a
+  skills/b
 🧹 Removed 1 stale skill link:
-  skills/gone/x
-⚠️ Skipped 2 skills, path in use:
-  skills/bar/b
-  skills/bar/c
+  skills/x
+⚠️ Skipped 2 skills, path in use or taken by another package:
+  skills/c
+  skills/b (bar@1.0.0)
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link nothing 1`] = `
@@ -72,19 +72,25 @@ No agent skills found to link.
 
 exports[`test/commands/skills.ts > TAP > views > human link one 1`] = `
 🔗 Linked 1 agent skill:
-  skills/foo/a
+  skills/a
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link removed only 1`] = `
 🧹 Removed 2 stale skill links:
-  skills/gone/x
-  skills/gone/y
+  skills/x
+  skills/y
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link unchanged 1`] = `
 1 agent skill already linked.
-⚠️ Skipped 1 skill, path in use:
-  skills/bar/b
+⚠️ Skipped 1 skill, path in use or taken by another package:
+  skills/b
+`
+
+exports[`test/commands/skills.ts > TAP > views > human list aliased 1`] = `
+Found 2 agent skills:
+  vercelskills (skills@1.7.2) › find-skills (linked)
+  mine (theirs) › x
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list empty 1`] = `
@@ -105,8 +111,8 @@ Found 1 agent skill:
 
 exports[`test/commands/skills.ts > TAP > views > human unlink many 1`] = `
 🧹 Removed 2 skill links:
-  skills/foo/a
-  skills/foo/b
+  skills/a
+  skills/b
 `
 
 exports[`test/commands/skills.ts > TAP > views > human unlink nothing 1`] = `
@@ -115,5 +121,5 @@ No skill links to remove.
 
 exports[`test/commands/skills.ts > TAP > views > human unlink one 1`] = `
 🧹 Removed 1 skill link:
-  skills/foo/a
+  skills/a
 `

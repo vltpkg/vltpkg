@@ -155,7 +155,7 @@ export class InstallReporter extends ViewClass {
     }
     if (conflicts.length) {
       skills.push(
-        `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use: ${conflicts.join(', ')}`,
+        `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use or taken by another package: ${conflicts.join(', ')}`,
       )
     }
     if (skills.length) out += `\n${skills.join('\n')}\n`

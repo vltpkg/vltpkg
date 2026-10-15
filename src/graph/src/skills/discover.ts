@@ -3,10 +3,15 @@ import { resolve } from 'node:path'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { parse } from '@vltpkg/semver'
-import { isPathSafeName } from '@vltpkg/spec'
 import type { PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
-import { lstat, mountPath, mountTarget, samePath } from './mounts.ts'
+import {
+  lstat,
+  mountPath,
+  mountTarget,
+  packageKey,
+  samePath,
+} from './mounts.ts'
 
 /**
  * An agent skill (a dir with a `SKILL.md`) shipped by an installed
@@ -15,6 +20,11 @@ import { lstat, mountPath, mountTarget, samePath } from './mounts.ts'
 export type Skill = {
   /** package name, e.g. `@s/bar` */
   name: string
+  /**
+   * name a direct dep is installed under, when not `name`, as `vlt ls`
+   * shows it
+   */
+  alias?: string
   /** package version */
   version?: string
   /** package DepID */
@@ -25,10 +35,20 @@ export type Skill = {
   description?: string
   /** absolute path of the dir holding SKILL.md */
   path: string
-  /** `/`-separated mount path relative to projectRoot: `skills/<name>/<skill>` */
+  /** `/`-separated mount path relative to projectRoot: `skills/<skill>` */
   mount: string
   /** true when `mount` is a vlt link to `path` */
   linked: boolean
+}
+
+/**
+ * Result of {@link discoverSkills}.
+ */
+export type DiscoveredSkills = {
+  /** skills of the picked version of each package, sorted by mount */
+  skills: Skill[]
+  /** every scanned package version, w/ the skills it ships */
+  scanned: Map<DepID, Pick<Skill, 'skill' | 'path'>[]>
 }
 
 /**
@@ -125,17 +145,21 @@ type Found = {
   description?: string
 }
 
+const lc = (s: string) => s.toLowerCase()
 const isDir = (path: string) => !!lstat(path)?.isDirectory()
 const isFile = (path: string) => !!lstat(path)?.isFile()
-// its container would look like a user skill dir
+// `skills/SKILL.md` would make the dir look like a skill
 const isSkillMd = (name: string) => name.toLowerCase() === 'skill.md'
 
 const scan = (dir: string, pkgName: string): Found[] => {
   const found: Found[] = []
+  const has = (skill: string) =>
+    found.some(f => lc(f.skill) === lc(skill))
   const skillsDir = resolve(dir, 'skills')
   if (isDir(skillsDir)) {
-    for (const d of readdirSync(skillsDir)) {
-      if (!skillDirName.test(d) || isSkillMd(d)) continue
+    // one per name, any case
+    for (const d of readdirSync(skillsDir).sort()) {
+      if (!skillDirName.test(d) || isSkillMd(d) || has(d)) continue
       const path = resolve(skillsDir, d)
       const file = resolve(path, 'SKILL.md')
       if (!isDir(path) || !isFile(file)) continue
@@ -150,10 +174,10 @@ const scan = (dir: string, pkgName: string): Found[] => {
       name && name.length <= 64 && specName.test(name) ?
         name
       : pkgName.slice(pkgName.lastIndexOf('/') + 1)
-    const lc = skill.toLowerCase()
     if (
+      skillDirName.test(skill) &&
       !isSkillMd(skill) &&
-      !found.some(f => f.skill.toLowerCase() === lc)
+      !has(skill)
     ) {
       found.push({ skill, path: dir, description })
     }
@@ -186,67 +210,84 @@ const compare = (a: Node, b: Node) =>
   byVersion(a, b) ||
   a.id.localeCompare(b.id, 'en')
 
+// the name a direct dep is installed under, if not its own
+const aliasOf = (node: Node) => {
+  const edges = [...node.edgesIn]
+  const n = (
+    edges.find(e => e.from.mainImporter) ??
+    edges.find(e => e.from.importer)
+  )?.name
+  return n === node.name ? undefined : n
+}
+
 /**
  * Find the agent skills shipped by the given installed packages.
  *
  * Only packages in the vlt store are scanned, for skills at
- * `skills/<dir>/SKILL.md` and a root `SKILL.md`. When multiple
- * versions of a package ship skills, one is picked: a dep of the main
- * importer, else of any importer, else the highest version.
+ * `skills/<dir>/SKILL.md` and a root `SKILL.md`. One version per
+ * package is picked, even if it ships none: a dep of the main
+ * importer, else of any importer, else the highest version, then
+ * DepID. Same-name skills of different packages are all returned,
+ * sorted by rank then DepID (`linkSkills` resolves them).
  */
 export const discoverSkills = (
   nodes: Iterable<Node>,
   scurry: PathScurry,
   projectRoot: string,
-): Skill[] => {
-  const byName = new Map<string, { node: Node; found: Found[] }[]>()
+  dir: string,
+): DiscoveredSkills => {
+  const scanned: DiscoveredSkills['scanned'] = new Map()
+  const byPkg = new Map<string, { node: Node; found: Found[] }[]>()
   for (const node of nodes) {
-    const { name } = node
     if (
       node.importer ||
       !node.inVltStore() ||
       // lockfile keeps a tarball's path as its location
-      splitDepID(node.id)[0] === 'file' ||
-      !isPathSafeName(name) ||
-      // `@x` would read as a scope dir
-      /^@[^/]*$/.test(name)
+      splitDepID(node.id)[0] === 'file'
     ) {
       continue
     }
-    const found = scan(node.resolvedLocation(scurry), name)
-    if (!found.length) continue
-    const list = byName.get(name) ?? []
+    const found = scan(node.resolvedLocation(scurry), node.name)
+    scanned.set(
+      node.id,
+      found.map(({ skill, path }) => ({ skill, path })),
+    )
+    const key = packageKey(node.id)
+    const list = byPkg.get(key) ?? []
     list.push({ node, found })
-    byName.set(name, list)
+    byPkg.set(key, list)
   }
-  const skills: Skill[] = []
-  for (const [name, list] of byName) {
+  const rows: [Skill, number][] = []
+  for (const list of byPkg.values()) {
     const { node, found } = list.reduce((a, b) =>
       compare(a.node, b.node) <= 0 ? a : b,
     )
     for (const { skill, path, description } of found) {
-      const mount = `skills/${name}/${skill}`
+      const mount = `${dir}/${skill}`
       const target = mountTarget(mountPath(projectRoot, mount))
-      skills.push({
-        name,
-        version: node.version,
-        id: node.id,
-        skill,
-        description: sanitize(description),
-        path,
-        mount,
-        linked: !!target && samePath(target, path),
-      })
+      rows.push([
+        {
+          name: node.name,
+          alias: aliasOf(node),
+          version: node.version,
+          id: node.id,
+          skill,
+          description: sanitize(description),
+          path,
+          mount,
+          linked: !!target && samePath(target, path),
+        },
+        rank(node),
+      ])
     }
   }
-  // one mount per path on case-insensitive filesystems
-  const seen = new Set<string>()
-  return skills
-    .sort((a, b) => a.mount.localeCompare(b.mount, 'en'))
-    .filter(({ mount }) => {
-      const k = mount.toLowerCase()
-      if (seen.has(k)) return false
-      seen.add(k)
-      return true
-    })
+  const skills = rows
+    .sort(
+      ([a, ra], [b, rb]) =>
+        lc(a.mount).localeCompare(lc(b.mount), 'en') ||
+        ra - rb ||
+        a.id.localeCompare(b.id, 'en'),
+    )
+    .map(([s]) => s)
+  return { skills, scanned }
 }

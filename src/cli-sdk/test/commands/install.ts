@@ -545,10 +545,10 @@ t.test('json view includes persistedConfig', async t => {
 
 t.test('allow-skills', async t => {
   const skills = {
-    linked: [{ mount: 'skills/foo/a' }],
+    linked: [{ mount: 'skills/a' }],
     unchanged: [],
-    removed: ['skills/gone/x'],
-    conflicts: ['skills/bar/b'],
+    removed: ['skills/x'],
+    conflicts: ['skills/b'],
   }
   let allowSkills: unknown
   const Command = await t.mockImport<
@@ -588,9 +588,9 @@ t.test('allow-skills', async t => {
     } as unknown as InstallResult),
     {
       skills: {
-        linked: ['skills/foo/a'],
-        removed: ['skills/gone/x'],
-        conflicts: ['skills/bar/b'],
+        linked: ['skills/a'],
+        removed: ['skills/x'],
+        conflicts: ['skills/b'],
       },
     },
   )

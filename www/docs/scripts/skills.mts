@@ -9,8 +9,8 @@ const from = resolve(import.meta.dirname, '../../../skills')
 const to = resolve(import.meta.dirname, '../public/skills')
 
 rmSync(to, { recursive: true, force: true })
-// only folders with their own SKILL.md: skips `vlt skills` mounts
-// (skills/<pkg>/ hold links, no SKILL.md; see #1540)
+// only folders with their own SKILL.md: skips symlinks, like the
+// skill mounts #1540 plans to put here
 for (const d of readdirSync(from, { withFileTypes: true })) {
   if (!d.isDirectory()) continue
   const dir = resolve(from, d.name)
