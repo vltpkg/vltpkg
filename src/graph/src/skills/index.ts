@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs'
-import { basename } from 'node:path'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PathScurry } from 'path-scurry'
 import { load as loadActual } from '../actual/load.ts'
@@ -7,8 +6,11 @@ import type { LoadOptions } from '../actual/load.ts'
 import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
 import type { Graph } from '../graph.ts'
 import { unshare } from '../reify/unshare.ts'
+import { skillsDirs } from './dirs.ts'
+import type { SkillsDir } from './dirs.ts'
 import { discoverSkills } from './discover.ts'
 import type { Skill } from './discover.ts'
+import { editGitignore } from './gitignore.ts'
 import {
   mountSkill,
   packageKey,
@@ -20,16 +22,23 @@ import type { SkillMount } from './mounts.ts'
 
 export * from './discover.ts'
 export type { SkillMount, MountResult } from './mounts.ts'
+export type { SkillsDir } from './dirs.ts'
 
 /**
- * Options for {@link listSkills}, {@link linkSkills} and
- * {@link unlinkSkills}.
+ * Options for {@link listSkills} and {@link linkSkills}.
  */
 export type SkillsOptions = LoadOptions & {
   /** DSS query selecting packages; default `*` */
   target?: string
   /** graph to use instead of loading the actual one */
   graph?: Graph
+  /**
+   * agent skill dirs, relative to projectRoot. Unset: detect; `[]`:
+   * none
+   */
+  skillsDirs?: string[]
+  /** env read by detection; default `process.env` */
+  env?: Record<string, string | undefined>
 }
 
 /**
@@ -38,34 +47,59 @@ export type SkillsOptions = LoadOptions & {
 export type LinkSkillsOptions = SkillsOptions & {
   /** DSS query selecting packages */
   target: string
+  /**
+   * also remove every vlt link this selection does not make, in every
+   * scanned dir (`vlt skills link`). Default: only add links and remove
+   * links whose skill is gone (installs)
+   */
+  apply?: boolean
+}
+
+/**
+ * A skill linked in one dir.
+ */
+export type SkillRow = Skill & {
+  /** the dir */
+  dir: string
+  /** `<dir>/<skill>` */
+  mount: string
+}
+
+/**
+ * Result of {@link listSkills}.
+ */
+export type ListSkillsResult = {
+  skills: Skill[]
+  /** target dirs */
+  dirs: string[]
+  /** targets dropped: `<dir> (<reason>)` */
+  skipped?: string[]
 }
 
 /**
  * Result of {@link linkSkills}.
  */
 export type LinkSkillsResult = {
-  /** mounts created or re-pointed */
-  linked: Skill[]
+  /** links created or re-pointed */
+  linked: SkillRow[]
   /** selected skills already linked */
-  unchanged: Skill[]
+  unchanged: SkillRow[]
   /**
-   * vlt links whose skill is no longer installed, removed:
-   * `/`-separated relative paths
+   * vlt links removed (skill gone, or with `apply`: not selected or dir
+   * no longer a target): `/`-separated relative paths
    */
   removed: string[]
   /**
-   * skipped: path in use (`<mount>`), or name taken by another package
-   * (`<mount> (<package>)`)
+   * skipped per dir: path in use (`<mount>`), or name taken by another
+   * package (`<mount> (<package>)`)
    */
   conflicts: string[]
-}
-
-/**
- * Result of {@link unlinkSkills}.
- */
-export type UnlinkSkillsResult = {
-  /** mounts removed, `/`-separated relative paths */
-  removed: string[]
+  /** target dirs */
+  dirs: string[]
+  /** targets dropped: `<dir> (<reason>)` */
+  skipped?: string[]
+  /** `<dir>/.gitignore` files not updated: not a regular file, fs error */
+  gitignore?: string[]
 }
 
 /**
@@ -77,7 +111,6 @@ export type SyncSkillsOptions = SkillsOptions & {
   allowSkills?: string
 }
 
-const dir = 'skills'
 const lc = (s: string) => s.toLowerCase()
 
 const selectNodes = async (o: SkillsOptions) => {
@@ -87,14 +120,22 @@ const selectNodes = async (o: SkillsOptions) => {
   return { graph, nodes }
 }
 
+const dirsOf = (o: SkillsOptions, create = false) =>
+  skillsDirs({
+    projectRoot: o.projectRoot,
+    configured: o.skillsDirs,
+    env: o.env,
+    create,
+  })
+
 // packages behind live vlt links
 const liveOwners = (mounts: SkillMount[]): DepID[] =>
   mounts.flatMap(m =>
     m.owner && existsSync(m.target) ? [m.owner] : [],
   )
 
-// private copies of store-hardlinked files: edits via `./skills` must
-// not reach the global store
+// private copies of store-hardlinked files: edits via skill links
+// must not reach the global store
 const unshareSkills = async (
   graph: Graph,
   ids: Iterable<DepID>,
@@ -114,46 +155,51 @@ const label = (s: Skill) => {
 }
 
 /**
- * List the agent skills shipped by installed packages.
+ * List the agent skills shipped by installed packages, and the agent
+ * skill dirs. Creates nothing.
  */
 export const listSkills = async (
   o: SkillsOptions,
-): Promise<Skill[]> =>
-  discoverSkills(
-    (await selectNodes(o)).nodes,
-    o.scurry,
-    o.projectRoot,
-    dir,
-  ).skills
+): Promise<ListSkillsResult> => {
+  const { nodes } = await selectNodes(o)
+  const { targets, scan, skipped } = dirsOf(o)
+  return {
+    skills: discoverSkills(nodes, o.scurry, readMounts(scan)).skills,
+    dirs: targets.map(d => d.dir),
+    ...(skipped.length ? { skipped } : null),
+  }
+}
 
 /**
- * Link the agent skills of the selected packages into `./skills/<skill>`.
- * One package per name: an existing link keeps it while its skill is
- * installed, else rank (main importer dep, importer dep, transitive),
- * then DepID; the others are reported. A link follows its package to
- * the picked version. Then remove vlt links whose skill is no longer
- * installed. Linked packages get private copies of files
- * hardlinked from the global store.
+ * Link the agent skills of the selected packages into each of the
+ * project's agent skill dirs (see `skillsDirs`), created only when a
+ * skill is found. One package per name, in every dir: the package of
+ * the first existing link (in dir order), else rank (main importer
+ * dep, importer dep, transitive), then DepID; the others are
+ * reported. Installs keep a dir's link to another installed skill.
+ * A link follows its package to the picked version, in every scanned
+ * dir. Then remove vlt links whose skill is no longer installed (with
+ * `apply`: every vlt link not made here), and keep each dir's
+ * `.gitignore` block in sync. Linked packages get private copies of
+ * files hardlinked from the global store.
  */
 export const linkSkills = async (
   o: LinkSkillsOptions,
 ): Promise<LinkSkillsResult> => {
-  const { projectRoot } = o
+  const { graph, nodes } = await selectNodes(o)
+  const { skills, scanned } = discoverSkills(nodes, o.scurry)
+  const { targets, scan, skipped } = dirsOf(o, skills.length > 0)
   const res: LinkSkillsResult = {
     linked: [],
     unchanged: [],
     removed: [],
     conflicts: [],
+    dirs: targets.map(d => d.dir),
   }
-  const { graph, nodes } = await selectNodes(o)
-  const { skills, scanned } = discoverSkills(
-    nodes,
-    o.scurry,
-    projectRoot,
-    dir,
+  const mounts = readMounts(scan)
+  const byName = new Map(
+    mounts.map(m => [`${m.dir.dir}\0${lc(m.name)}`, m]),
   )
-  const mounts = readMounts(projectRoot, dir)
-  const byMount = new Map(mounts.map(m => [lc(m.mount), m]))
   // the link's skill is no longer installed: dangling, orphan owner,
   // or a scanned owner that no longer ships it
   const stale = (m: SkillMount) =>
@@ -163,110 +209,129 @@ export const linkSkills = async (
     scanned
       .get(m.owner)
       ?.some(
-        f =>
-          lc(f.skill) === lc(basename(m.link)) &&
-          samePath(f.path, m.target),
+        f => lc(f.skill) === lc(m.name) && samePath(f.path, m.target),
       ) === false
   const groups = new Map<string, Skill[]>()
   for (const s of skills) {
     const k = lc(s.skill)
     groups.set(k, [...(groups.get(k) ?? []), s])
   }
-  const picks: [
-    Skill | undefined,
-    Skill[],
-    SkillMount | undefined,
-  ][] = []
-  for (const [k, group] of groups) {
-    const m = byMount.get(lc(`${dir}/${k}`))
+  // the link at `<dir>/<k>`, and its package's skill in `group`
+  const at = (dir: SkillsDir, k: string, group: Skill[]) => {
+    const m = byName.get(`${dir.dir}\0${k}`)
     const key = m?.owner && packageKey(m.owner)
-    // the link's package keeps the name, re-pointed if needed
-    const own = group.find(s => packageKey(s.id) === key)
-    // else a live link of another package keeps it
-    const winner = own ?? (m && !stale(m) ? undefined : group[0])
-    picks.push([winner, group.filter(s => s !== winner), m])
+    return { m, own: group.find(s => packageKey(s.id) === key) }
+  }
+  // one per name: the first linked package keeps it, re-pointed if needed
+  const first = new Map(
+    [...groups].map(([k, group]) => [
+      k,
+      targets.map(d => at(d, k, group).own).find(s => !!s) ??
+        group[0],
+    ]),
+  )
+  const isTarget = new Set(targets)
+  const picks: {
+    dir: SkillsDir
+    winner?: Skill
+    losers: Skill[]
+    m?: SkillMount
+  }[] = []
+  for (const dir of scan) {
+    for (const [k, group] of groups) {
+      const { m, own } = at(dir, k, group)
+      if (isTarget.has(dir)) {
+        // installs keep a link to another installed skill
+        const winner =
+          o.apply ?
+            first.get(k)
+          : (own ?? (m && !stale(m) ? undefined : first.get(k)))
+        picks.push({
+          dir,
+          winner,
+          losers: group.filter(s => s !== winner),
+          m,
+        })
+      } else if (own && !o.apply) {
+        // no longer a target: only re-pointed
+        picks.push({ dir, winner: own, losers: [], m })
+      }
+    }
   }
   await unshareSkills(
     graph,
     [
-      ...picks.flatMap(([w]) => (w ? [w.id] : [])),
+      ...picks.flatMap(({ winner }) => (winner ? [winner.id] : [])),
       ...liveOwners(mounts),
     ],
     o.scurry,
   )
-  for (const [winner, losers, m] of picks) {
+  const gone: SkillMount[] = []
+  // names taken over by entries not vlt's
+  const foreign: { dir: SkillsDir; name: string }[] = []
+  const kept = new Set<string>()
+  const where = new Map<string, string[]>()
+  for (const { dir, winner, losers, m } of picks) {
     if (winner) {
       // replaced link named in another case (case-sensitive fs)
-      if (m && m.mount !== winner.mount) {
-        unmountSkill(m, projectRoot, dir)
+      if (m && m.name !== winner.skill) {
+        unmountSkill(m)
+        gone.push(m)
       }
-      const r = mountSkill(winner, projectRoot, dir)
-      if (r === 'linked') res.linked.push({ ...winner, linked: true })
-      else if (r === 'unchanged') res.unchanged.push(winner)
-      else res.conflicts.push(winner.mount)
+      const mount = `${dir.dir}/${winner.skill}`
+      const r = mountSkill(winner, dir)
+      if (r === 'conflict') {
+        res.conflicts.push(mount)
+        foreign.push({ dir, name: winner.skill })
+      } else {
+        const k = `${winner.id}\0${winner.skill}`
+        const linked = where.get(k) ?? []
+        linked.push(dir.dir)
+        where.set(k, linked)
+        res[r].push({ ...winner, linked, dir: dir.dir, mount })
+        kept.add(mount)
+      }
     }
     for (const s of losers)
-      res.conflicts.push(`${s.mount} (${label(s)})`)
+      res.conflicts.push(`${dir.dir}/${s.skill} (${label(s)})`)
   }
-  for (const m of readMounts(projectRoot, dir)) {
-    if (!stale(m)) continue
-    unmountSkill(m, projectRoot, dir)
+  const after = readMounts(scan)
+  const present: SkillMount[] = []
+  for (const m of after) {
+    if (o.apply ? kept.has(m.mount) : !stale(m)) {
+      present.push(m)
+      continue
+    }
+    unmountSkill(m)
+    gone.push(m)
     res.removed.push(m.mount)
   }
+  const gitignore: string[] = []
+  for (const dir of scan) {
+    const add = present.filter(m => m.dir === dir).map(m => m.name)
+    const remove = [...gone, ...foreign]
+      .filter(m => m.dir === dir && !add.includes(m.name))
+      .map(m => m.name)
+    if (
+      (add.length || remove.length) &&
+      editGitignore(dir.real, { add, remove }) === 'refused'
+    ) {
+      gitignore.push(`${dir.dir}/.gitignore`)
+    }
+  }
+  if (skipped.length) res.skipped = skipped
+  if (gitignore.length) res.gitignore = gitignore
   return res
 }
 
 /**
- * Remove the vlt skill links of the selected packages (by the link's
- * owner), plus any dangling ones. Unset or `*` target removes them all.
- */
-export const unlinkSkills = async (
-  o: SkillsOptions,
-): Promise<UnlinkSkillsResult> => {
-  const { projectRoot, target } = o
-  const ids =
-    target && target !== '*' ?
-      new Set((await selectNodes(o)).nodes.map(n => n.id))
-    : undefined
-  const removed: string[] = []
-  for (const m of readMounts(projectRoot, dir)) {
-    if (
-      ids &&
-      !(m.owner && ids.has(m.owner)) &&
-      existsSync(m.target)
-    ) {
-      continue
-    }
-    unmountSkill(m, projectRoot, dir)
-    removed.push(m.mount)
-  }
-  return { removed }
-}
-
-/**
- * Run after a reify. With `allowSkills` (not `:not(*)`), link the
- * skills of matching packages. Else best effort, never throws: remove
- * dangling vlt links (returned as `removed`, if any), keep store files
- * behind live ones private.
+ * Run after a reify: with `allowSkills` (not `:not(*)`), link the
+ * skills of matching packages. Else nothing.
  */
 export const syncSkills = async (
   o: SyncSkillsOptions,
 ): Promise<LinkSkillsResult | undefined> => {
-  const { allowSkills, projectRoot } = o
-  if (allowSkills && allowSkills !== ':not(*)') {
-    return linkSkills({ ...o, target: allowSkills })
-  }
-  const removed: string[] = []
-  try {
-    const mounts = readMounts(projectRoot, dir)
-    for (const m of mounts) {
-      if (existsSync(m.target)) continue
-      unmountSkill(m, projectRoot, dir)
-      removed.push(m.mount)
-    }
-    await unshareSkills(o.graph, liveOwners(mounts), o.scurry)
-  } catch {}
-  return removed.length ?
-      { linked: [], unchanged: [], removed, conflicts: [] }
-    : undefined
+  const { allowSkills } = o
+  if (!allowSkills || allowSkills === ':not(*)') return undefined
+  return linkSkills({ ...o, target: allowSkills })
 }

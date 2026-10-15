@@ -884,12 +884,27 @@ export const definition = j
       hint: 'query',
       description: `Link the agent skills (folders with a \`SKILL.md\`) shipped by
                     installed packages matching this DSS query into
-                    \`./skills/<skill>\` after \`install\`,
-                    \`ci\` or \`update\`.
+                    the project's agent skill dirs (see \`skills-dir\`)
+                    after \`install\`, \`ci\`, \`update\` or
+                    \`uninstall\`.
                     Unset (the default) or \`:not(*)\` links nothing.
 
                     Example: --allow-skills=":root > *"
                     Links skills of the project's direct dependencies.`,
+    },
+  })
+  .optList({
+    'skills-dir': {
+      hint: 'path',
+      description: `Dirs to link agent skills into (see \`allow-skills\`),
+                    relative to the project root. Replaces detection:
+                    \`.agents/skills\`, plus \`<folder>/skills\` for each
+                    agent folder at the project root (e.g. \`.claude/\`),
+                    \`.claude/skills\` inside Claude Code, and existing
+                    \`.<name>/skills\` dirs. An empty list (\`[]\` in
+                    vlt.json, or \`--skills-dir=\`) links nothing. Each
+                    dir must be inside the project, not in
+                    node_modules.`,
     },
   })
   .opt({

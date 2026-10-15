@@ -93,7 +93,7 @@ Object {
   },
   "allow-skills": Object {
     "description": String(
-      Link the agent skills (folders with a \`SKILL.md\`) shipped by installed packages matching this DSS query into \`./skills/<skill>\` after \`install\`, \`ci\` or \`update\`. Unset (the default) or \`:not(*)\` links nothing.
+      Link the agent skills (folders with a \`SKILL.md\`) shipped by installed packages matching this DSS query into the project's agent skill dirs (see \`skills-dir\`) after \`install\`, \`ci\`, \`update\` or \`uninstall\`. Unset (the default) or \`:not(*)\` links nothing.
       
       Example: --allow-skills=":root > *" Links skills of the project's direct dependencies.
     ),
@@ -560,6 +560,12 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "skills-dir": Object {
+    "description": "Dirs to link agent skills into (see \`allow-skills\`), relative to the project root. Replaces detection: \`.agents/skills\`, plus \`<folder>/skills\` for each agent folder at the project root (e.g. \`.claude/\`), \`.claude/skills\` inside Claude Code, and existing \`.<name>/skills\` dirs. An empty list (\`[]\` in vlt.json, or \`--skills-dir=\`) links nothing. Each dir must be inside the project, not in node_modules.",
+    "hint": "path",
+    "multiple": true,
+    "type": "string",
+  },
   "stale-while-revalidate-factor": Object {
     "description": String(
       If the server does not serve a \`stale-while-revalidate\` value in the \`cache-control\` header, then this multiplier is applied to the \`max-age\` or \`s-maxage\` values.
@@ -741,6 +747,7 @@ Array [
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
+  "--skills-dir=<path>",
   "--stale-while-revalidate-factor=<n>",
   "--store-linker=<auto | hardlink | clone | copy | unpack>",
   "--tag=<tag>",
@@ -816,6 +823,7 @@ Array [
   "scope",
   "scoped-registries",
   "script-shell",
+  "skills-dir",
   "stale-while-revalidate-factor",
   "store-linker",
   "tag",

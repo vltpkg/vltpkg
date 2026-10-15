@@ -18,6 +18,7 @@ import { resolve } from 'node:path'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Diff } from './diff.ts'
 import { assertQuery } from './filter-nodes-by-query.ts'
+import { assertSkillsDirs } from './skills/dirs.ts'
 import { syncSkills } from './skills/index.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
 
@@ -25,10 +26,15 @@ export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   allowScripts: string
   /**
-   * DSS query: packages whose agent skills get linked into `./skills`
-   * after update. Unset or `:not(*)`: none.
+   * DSS query: packages whose agent skills get linked into the
+   * project's agent skill dirs after update. Unset or `:not(*)`: none.
    */
   allowSkills?: string
+  /**
+   * agent skill dirs, relative to projectRoot. Unset: detect; `[]`:
+   * none
+   */
+  skillsDirs?: string[]
 }
 
 /**
@@ -82,6 +88,7 @@ export const update = async (
   // fail before updating, not after
   if (allowSkills && allowSkills !== ':not(*)') {
     await assertQuery(allowSkills, 'allow-skills')
+    assertSkillsDirs(options.projectRoot, options.skillsDirs)
   }
   let mainManifest: NormalizedManifest | undefined = undefined
   try {

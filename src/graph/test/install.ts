@@ -2941,7 +2941,11 @@ t.test('the frozen error names the changed option', async t => {
 })
 
 t.test('allowSkills', async t => {
-  type SyncOpts = { allowSkills?: string; graph: unknown }
+  type SyncOpts = {
+    allowSkills?: string
+    skillsDirs?: string[]
+    graph: unknown
+  }
   const setup = async (
     t: Test,
     syncSkills: (o: SyncOpts) => unknown,
@@ -3004,9 +3008,13 @@ t.test('allowSkills', async t => {
       calls.push(o)
       return skills
     })
-    const result = await run({ allowSkills: '#foo' })
+    const result = await run({
+      allowSkills: '#foo',
+      skillsDirs: ['.claude/skills'],
+    })
     t.equal(calls.length, 1)
     t.equal(calls[0]?.allowSkills, '#foo')
+    t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
     t.equal(calls[0]?.graph, graph, 'uses the installed graph')
     t.equal(result.skills, skills)
   })
@@ -3024,7 +3032,7 @@ t.test('allowSkills', async t => {
     t.strictSame(
       calls.map(c => c.allowSkills),
       [undefined, ':not(*)'],
-      'still synced: prunes dangling links',
+      'still called: returns undefined',
     )
   })
 
@@ -3044,6 +3052,18 @@ t.test('allowSkills', async t => {
     })
     t.equal(built(), 0, 'nothing built')
     t.equal(called, 0)
+  })
+
+  t.test('invalid skills-dir fails before installing', async t => {
+    let called = 0
+    const { run, built } = await setup(t, () => called++)
+    await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
+      cause: { code: 'EUSAGE', found: '../x' },
+    })
+    t.equal(built(), 0, 'nothing built')
+    t.equal(called, 0)
+    await run({ skillsDirs: ['../x'] })
+    t.equal(called, 1, 'not checked w/o allowSkills')
   })
 
   t.test('a link failure does not undo the install', async t => {

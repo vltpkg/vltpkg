@@ -2,11 +2,11 @@ import {
   lstatSync,
   readdirSync,
   readlinkSync,
-  rmdirSync,
+  realpathSync,
   unlinkSync,
 } from 'node:fs'
 import type { Stats } from 'node:fs'
-import { dirname, relative, resolve, sep } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import {
   baseDepID,
   isDepID,
@@ -15,15 +15,20 @@ import {
 } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { symlinkSyncMkdirp } from '../reify/symlink-sync.ts'
+import type { SkillsDir } from './dirs.ts'
 import type { Skill } from './discover.ts'
 
 /**
- * A vlt link in the mount dir.
+ * A vlt link in an agent skills dir.
  */
 export type SkillMount = {
-  /** `/`-separated, relative to projectRoot */
+  /** the dir holding the link */
+  dir: SkillsDir
+  /** entry name */
+  name: string
+  /** `<dir>/<name>`, `/`-separated, relative to projectRoot */
   mount: string
-  /** absolute link path */
+  /** absolute link path, in the real dir */
   link: string
   /** absolute resolved link target */
   target: string
@@ -45,24 +50,26 @@ export const lstat = (path: string): Stats | undefined => {
   }
 }
 
-const norm = (p: string) => {
+/** Resolved path, lowercased on win32. */
+export const norm = (p: string): string => {
   const r = resolve(p)
   return process.platform === 'win32' ? r.toLowerCase() : r
 }
 
-/**
- * Same resolved path? Case-insensitive on win32.
- */
-export const samePath = (a: string, b: string): boolean =>
-  norm(a) === norm(b)
+/** realpath, else the resolved path when missing. */
+export const realOr = (p: string): string => {
+  try {
+    return realpathSync(p)
+  } catch {
+    return resolve(p)
+  }
+}
 
 /**
- * Absolute path of a `/`-separated mount relative to projectRoot.
+ * Same real path? Case-insensitive on win32.
  */
-export const mountPath = (
-  projectRoot: string,
-  mount: string,
-): string => resolve(projectRoot, ...mount.split('/'))
+export const samePath = (a: string, b: string): boolean =>
+  norm(realOr(a)) === norm(realOr(b))
 
 const storeSeg = `${sep}node_modules${sep}.vlt${sep}`
 
@@ -112,28 +119,31 @@ export const packageKey = (id: DepID): string => {
   ])
 }
 
-const isRealDir = (path: string) => !!lstat(path)?.isDirectory()
-
 /**
- * All vlt links in `<dir>/`. Anything else is ignored.
+ * All vlt links in the given dirs. Anything else is ignored.
  */
-export const readMounts = (
-  projectRoot: string,
-  dir: string,
-): SkillMount[] => {
-  const root = resolve(projectRoot, dir)
-  if (!isRealDir(root)) return []
+export const readMounts = (scan: SkillsDir[]): SkillMount[] => {
   const mounts: SkillMount[] = []
-  for (const e of readdirSync(root)) {
-    const link = resolve(root, e)
-    const target = mountTarget(link)
-    if (target) {
-      mounts.push({
-        mount: `${dir}/${e}`,
-        link,
-        target,
-        owner: ownerOf(target),
-      })
+  for (const dir of scan) {
+    let entries: string[]
+    try {
+      entries = readdirSync(dir.real)
+    } catch {
+      continue
+    }
+    for (const name of entries) {
+      const link = join(dir.real, name)
+      const target = mountTarget(link)
+      if (target) {
+        mounts.push({
+          dir,
+          name,
+          mount: `${dir.dir}/${name}`,
+          link,
+          target,
+          owner: ownerOf(target),
+        })
+      }
     }
   }
   return mounts.sort((a, b) => a.mount.localeCompare(b.mount, 'en'))
@@ -144,17 +154,10 @@ export const readMounts = (
  * vlt: returns `'conflict'` instead.
  */
 export const mountSkill = (
-  skill: Skill,
-  projectRoot: string,
-  dir: string,
+  skill: Pick<Skill, 'skill' | 'path'>,
+  dir: SkillsDir,
 ): MountResult => {
-  const link = mountPath(projectRoot, `${dir}/${skill.skill}`)
-  // every component of dir must be a real dir, if present
-  const parts = dir.split('/')
-  for (let i = 1; i <= parts.length; i++) {
-    const st = lstat(resolve(projectRoot, ...parts.slice(0, i)))
-    if (st && !st.isDirectory()) return 'conflict'
-  }
+  const link = join(dir.real, skill.skill)
   if (lstat(link)) {
     const target = mountTarget(link)
     if (!target) return 'conflict'
@@ -165,30 +168,14 @@ export const mountSkill = (
   if (process.platform === 'win32') {
     symlinkSyncMkdirp(skill.path, link, 'junction')
   } else {
-    symlinkSyncMkdirp(
-      relative(dirname(link), skill.path),
-      link,
-      'dir',
-    )
+    symlinkSyncMkdirp(relative(dir.real, skill.path), link, 'dir')
   }
   return 'linked'
 }
 
-// best-effort: not empty, gone, or busy (win32 cwd, AV lock)
-const rmdirIfEmpty = (dir: string) => {
-  try {
-    rmdirSync(dir)
-  } catch {}
-}
-
 /**
- * Remove a vlt link, plus `<dir>` if left empty.
+ * Remove a vlt link. Its dir is kept.
  */
-export const unmountSkill = (
-  m: SkillMount,
-  projectRoot: string,
-  dir: string,
-): void => {
+export const unmountSkill = (m: SkillMount): void => {
   unlinkSync(m.link)
-  rmdirIfEmpty(resolve(projectRoot, dir))
 }

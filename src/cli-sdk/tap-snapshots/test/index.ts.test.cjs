@@ -107,6 +107,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --scope=<query>
     --scoped-registries=<@scope=url>
     --script-shell=<program>
+    --skills-dir=<path>
     --stale-while-revalidate-factor=<n>
     --store-linker=<auto | hardlink | clone | copy | unpack>
     --tag=<tag>
@@ -185,6 +186,7 @@ Unknown config option: asdf
     scope
     scoped-registries
     script-shell
+    skills-dir
     stale-while-revalidate-factor
     store-linker
     tag

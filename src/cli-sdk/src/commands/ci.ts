@@ -38,7 +38,7 @@ export const usage: CommandUsage = () =>
       'allow-skills': {
         value: '<query>',
         description:
-          'Link agent skills of packages matching this DSS query into ./skills.',
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs.",
       },
       'lockfile-only': {
         description:
@@ -62,6 +62,7 @@ export const command: CommandFn<CIResult> = async conf => {
     // same default as install: no scripts
     allowScripts: conf.get('allow-scripts') ?? ':not(*)',
     allowSkills: conf.get('allow-skills'),
+    skillsDirs: conf.get('skills-dir'),
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,

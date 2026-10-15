@@ -139,13 +139,16 @@ export class InstallReporter extends ViewClass {
       linked = [],
       removed = [],
       conflicts = [],
+      skipped = [],
+      gitignore = [],
     } = _result.skills ?? {}
     const s = (n: number) => (n === 1 ? '' : 's')
     const skills: string[] = []
     if (linked.length) {
-      skills.push(
-        `🔗 Linked ${linked.length} agent skill${s(linked.length)} into ./skills`,
-      )
+      // one per skill, linked in any number of dirs
+      const n = new Set(linked.map(r => `${r.id}\0${r.skill}`)).size
+      const dirs = [...new Set(linked.map(r => r.dir))].join(', ')
+      skills.push(`🔗 Linked ${n} agent skill${s(n)} into ${dirs}`)
     }
     if (removed.length) {
       skills.push(
@@ -157,6 +160,12 @@ export class InstallReporter extends ViewClass {
       skills.push(
         `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use or taken by another package: ${conflicts.join(', ')}`,
       )
+    }
+    if (skipped.length) {
+      skills.push(`⚠️ Skipped ${skipped.join(', ')}`)
+    }
+    if (gitignore.length) {
+      skills.push(`⚠️ Could not update ${gitignore.join(', ')}`)
     }
     if (skills.length) out += `\n${skills.join('\n')}\n`
     const saved = _result.persistedConfig

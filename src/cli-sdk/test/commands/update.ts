@@ -213,18 +213,23 @@ t.test('persists spec config after update', async t => {
 
 t.test('allow-skills', async t => {
   const skills = {
-    linked: [{ mount: 'skills/a' }],
+    linked: [{ mount: '.agents/skills/a' }],
     unchanged: [],
-    removed: ['skills/x'],
-    conflicts: ['skills/b'],
+    removed: ['.agents/skills/x'],
+    conflicts: ['.agents/skills/b'],
+    dirs: ['.agents/skills'],
+    skipped: ['.claude/skills (not a directory)'],
   }
-  let allowSkills: unknown
+  let seen: unknown
   const Command = await t.mockImport<
     typeof import('../../src/commands/update.ts')
   >('../../src/commands/update.ts', {
     '@vltpkg/graph': {
-      async update(opts: { allowSkills?: string }) {
-        allowSkills = opts.allowSkills
+      async update(opts: {
+        allowSkills?: string
+        skillsDirs?: string[]
+      }) {
+        seen = [opts.allowSkills, opts.skillsDirs]
         return {
           graph: { toJSON: () => ({}) },
           ...(opts.allowSkills ? { skills } : null),
@@ -232,24 +237,29 @@ t.test('allow-skills', async t => {
       },
     },
   })
-  const run = (value?: string) =>
+  const run = (value?: string, dirs?: string[]) =>
     Command.command({
       positionals: [],
       values: {},
       options: {},
-      get: (k: string) => (k === 'allow-skills' ? value : undefined),
+      get: (k: string) =>
+        k === 'allow-skills' ? value
+        : k === 'skills-dir' ? dirs
+        : undefined,
     } as unknown as LoadedConfig)
 
-  const res = await run('#foo')
-  t.equal(allowSkills, '#foo', 'passed to update')
+  const res = await run('#foo', [])
+  t.strictSame(seen, ['#foo', []], 'passed to update')
   t.equal(res.skills, skills, 'returned')
   t.notOk('skills' in (await run()), 'no skills key when unset')
   t.strictSame(Command.views.json(res), {
     graph: {},
     skills: {
-      linked: ['skills/a'],
-      removed: ['skills/x'],
-      conflicts: ['skills/b'],
+      linked: ['.agents/skills/a'],
+      removed: ['.agents/skills/x'],
+      conflicts: ['.agents/skills/b'],
+      dirs: ['.agents/skills'],
+      skipped: ['.claude/skills (not a directory)'],
     },
   })
 })

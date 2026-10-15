@@ -120,10 +120,20 @@ export const usage: CommandUsage = () =>
       'allow-skills': {
         value: '<query>',
         description:
-          'Link agent skills of packages matching this DSS query into ./skills.',
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs.",
       },
     },
   })
+
+// link mounts; `unchanged` left out
+const skillsJson = ({
+  linked,
+  unchanged: _,
+  ...rest
+}: LinkSkillsResult) => ({
+  linked: linked.map(s => s.mount),
+  ...rest,
+})
 
 export const views = {
   json: i => {
@@ -196,15 +206,7 @@ export const views = {
       ...(i.migratedWorkspaces ?
         { migratedWorkspaces: i.migratedWorkspaces }
       : null),
-      ...(i.skills ?
-        {
-          skills: {
-            linked: i.skills.linked.map(s => s.mount),
-            removed: i.skills.removed,
-            conflicts: i.skills.conflicts,
-          },
-        }
-      : null),
+      ...(i.skills ? { skills: skillsJson(i.skills) } : null),
     }
   },
   human: lazyView(
@@ -241,6 +243,7 @@ export const command: CommandFn<InstallResult> = async conf => {
       expectLockfile,
       allowScripts,
       allowSkills,
+      skillsDirs: conf.get('skills-dir'),
       lockfileOnly,
       saveExact,
       savePrefix,
