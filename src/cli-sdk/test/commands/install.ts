@@ -2,6 +2,8 @@ import { error } from '@vltpkg/error-cause'
 import type { Graph } from '@vltpkg/graph'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import type { InstallResult } from '../../src/commands/install.ts'
+import type { SelfUpdate } from '../../src/self-update.ts'
 
 const options = {}
 const parsedAdd = new Map()
@@ -489,7 +491,10 @@ t.test('persists spec config after install', async t => {
         log += `write ${which} ${JSON.stringify(values)}\n`
       },
     } as unknown as LoadedConfig
-    return { run: () => Command.command(conf), log: () => log }
+    return {
+      run: async () => (await Command.command(conf)) as InstallResult,
+      log: () => log,
+    }
   }
 
   t.test('writes after install', async t => {
@@ -561,12 +566,22 @@ t.test('--global', async t => {
   }
   const binDir = { dir: '/g/bin', source: 'global-dir', inPath: true }
   const options = { projectRoot: '/g', scurry: {}, force: true }
+  const selfResult: SelfUpdate = {
+    case: 'global-project',
+    status: 'updated',
+    from: '1.0.0',
+    to: '1.1.0',
+    dir: '/g/bin',
+  }
+  let selfPlan: unknown = undefined
+  let keep: string | undefined = undefined
   const Command = await t.mockImport<
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
-      async install(_: unknown, a: unknown) {
-        glog += `install ${a === add}\n`
+      async install(o: { keepNodes?: Set<string> }, a: unknown) {
+        const k = o.keepNodes ? ` ${[...o.keepNodes].join()}` : ''
+        glog += `install ${a === add}${k}\n`
         if (fail) throw new Error('nope')
         return { graph: { nodes: new Map() } }
       },
@@ -580,6 +595,20 @@ t.test('--global', async t => {
       parseAddArgs: () => {
         glog += 'parse\n'
         return { add: new Map() }
+      },
+    },
+    '../../src/self-update.ts': {
+      selfUpdate: async () => {
+        glog += 'self\n'
+        return selfPlan
+      },
+      runningStoreDep: async () => keep,
+      deferSelfRemove: async (
+        root: string,
+        _: unknown,
+        k?: string,
+      ) => {
+        glog += `defer ${root} ${k}\n`
       },
     },
     '../../src/persist-spec-config.ts': {
@@ -643,19 +672,20 @@ t.test('--global', async t => {
       get: () => undefined,
     }) as unknown as LoadedConfig
 
-  const res = await Command.command(conf('/g'))
+  const res = (await Command.command(conf('/g'))) as InstallResult
   t.equal(res.global, global)
+  t.equal(res.self, undefined)
   t.equal(
     glog,
-    'assert\npersist\nresolve false\nparse global\ninstall true\nlink true true\nresolve true\n',
+    'assert\npersist\nself\nresolve false\nparse global\ninstall true\ndefer /g undefined\nlink true true\nresolve true\n',
   )
 
   glog = ''
-  const local = await Command.command(conf())
+  const local = (await Command.command(conf())) as InstallResult
   t.equal(local.global, undefined)
   t.equal(
     glog,
-    'persist\nparse\ninstall false\n',
+    'persist\nself\nparse\ninstall false\n',
     'no global helpers',
   )
 
@@ -664,12 +694,43 @@ t.test('--global', async t => {
   await Command.command(conf('/g', types))
   t.equal(
     glog,
-    'assert\npersist\nresolve false\nparse global\ninstall true\nlink true true\nresolve true\n',
+    'assert\npersist\nself\nresolve false\nparse global\ninstall true\ndefer /g undefined\nlink true true\nresolve true\n',
     'no types deps in global ws',
   )
   glog = ''
   await Command.command(conf(undefined, types))
-  t.equal(glog, 'persist\nparse\ntypes\ninstall false\n')
+  t.equal(glog, 'persist\nself\nparse\ntypes\ninstall false\n')
+
+  glog = ''
+  keep = 'running'
+  await Command.command(conf('/g'))
+  t.match(glog, 'install true running\n', 'running vlt kept')
+  t.match(glog, 'defer /g running\n')
+  keep = undefined
+
+  glog = ''
+  selfPlan = { done: selfResult }
+  t.strictSame(await Command.command(conf('/g')), {
+    self: selfResult,
+  })
+  t.equal(glog, 'assert\npersist\nself\n', 'nothing installed')
+
+  glog = ''
+  selfPlan = {
+    selfUnwritable: true,
+    finish: async (g: unknown) => {
+      glog += `finish ${g === global}\n`
+      return selfResult
+    },
+  }
+  const boot = (await Command.command(conf('/g'))) as InstallResult
+  t.equal(boot.self, selfResult)
+  t.equal(boot.global, global)
+  t.equal(
+    glog,
+    'assert\npersist\nself\nresolve true\nparse global\ninstall true\ndefer /g undefined\nlink true true\nresolve true\nfinish true\n',
+  )
+  selfPlan = undefined
 
   glog = ''
   failPersist = true
@@ -682,7 +743,7 @@ t.test('--global', async t => {
   await t.rejects(Command.command(conf('/g')), { message: 'resolve' })
   t.equal(
     glog,
-    'assert\npersist\nresolve false\n',
+    'assert\npersist\nself\nresolve false\n',
     'resolved before any workspace is created',
   )
   failResolve = false
@@ -696,7 +757,7 @@ t.test('--global', async t => {
   await t.rejects(Command.command(badOptions), { message: 'options' })
   t.equal(
     glog,
-    'assert\npersist\nresolve false\nparse global\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nself\nresolve false\nparse global\nremove /g/packages/foo-global-ws\n',
     'removed on any error before install',
   )
 
@@ -705,13 +766,13 @@ t.test('--global', async t => {
   await t.rejects(Command.command(conf('/g')), { message: 'nope' })
   t.equal(
     glog,
-    'assert\npersist\nresolve false\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nself\nresolve false\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
     'created workspaces removed',
   )
 
   glog = ''
   await t.rejects(Command.command(conf()), { message: 'nope' })
-  t.equal(glog, 'persist\nparse\ninstall false\n')
+  t.equal(glog, 'persist\nself\nparse\ninstall false\n')
 
   t.match(
     Command.views.json({
@@ -724,5 +785,18 @@ t.test('--global', async t => {
         '1 packages that will need to be built, run "vlt build -g" to complete the install.',
       global,
     },
+  )
+  t.strictSame(
+    Command.views.json({ self: selfResult }),
+    { self: selfResult },
+    'self only',
+  )
+  t.match(
+    Command.views.json({
+      graph: {} as unknown as Graph,
+      global,
+      self: selfResult,
+    }),
+    { added: 0, global, self: selfResult },
   )
 })

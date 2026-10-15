@@ -75,6 +75,7 @@ let renameFails: { path: string; code: string } | undefined
 const {
   assertGlobalOptions,
   globalBinsLines,
+  globalSpec,
   isInPath,
   linkGlobalBins,
   parseGlobalAddArgs,
@@ -273,6 +274,8 @@ t.test('parseGlobalAddArgs', async t => {
     t.equal(spec?.name, 'tool')
     t.equal(spec?.type, 'file')
     t.equal(resolve(String(spec?.file)), resolve(cwd, 'tool'))
+    t.equal(await globalSpec('./tool', conf), spec)
+    t.equal(calls.length, 1, 'manifest fetched once per conf')
   })
 
   t.test('absolute file and named git specs', async t => {

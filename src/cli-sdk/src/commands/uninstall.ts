@@ -9,6 +9,12 @@ import {
   removeGlobalPackages,
 } from '../global.ts'
 import { resolveGlobalBinDir } from '../global-bin-dir.ts'
+import {
+  deferSelfRemove,
+  refuseSelfUninstall,
+  runningStoreDep,
+} from '../self-update.ts'
+import type { SelfRefused } from '../self-update.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 
@@ -18,6 +24,10 @@ export type UninstallResult = {
    */
   graph: Graph
 }
+
+/** `vlt uninstall -g vlt` of a vlt that is not a global package */
+export type UninstallCommandResult =
+  UninstallResult | { self: SelfRefused }
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -55,15 +65,21 @@ export const usage: CommandUsage = () =>
   })
 
 export const views = {
-  json: i => i.graph.toJSON(),
+  json: i => ('graph' in i ? i.graph.toJSON() : { self: i.self }),
   human: lazyView(
     async () =>
       (await import('./install/reporter.ts')).InstallReporter,
   ),
-} as const satisfies Views<UninstallResult>
+} as const satisfies Views<UninstallCommandResult>
 
-export const command: CommandFn<UninstallResult> = async conf => {
-  if (conf.globalRoot) assertGlobalOptions(conf)
+export const command: CommandFn<
+  UninstallCommandResult
+> = async conf => {
+  if (conf.globalRoot) {
+    assertGlobalOptions(conf)
+    const refused = await refuseSelfUninstall(conf)
+    if (refused) return { self: refused }
+  }
   const { monorepo, scurry } = conf.options
   const global =
     conf.globalRoot ? parseGlobalRemoveArgs(conf) : undefined
@@ -79,15 +95,22 @@ export const command: CommandFn<UninstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
+  // never removed from under itself
+  const keep =
+    conf.globalRoot ?
+      await runningStoreDep(conf.globalRoot)
+    : undefined
   const { graph } = await uninstall(
     {
       ...conf.options,
       allowScripts,
       lockfileOnly: conf.options['lockfile-only'],
+      ...(keep ? { keepNodes: new Set([keep]) } : null),
     },
     remove,
   )
   if (global) {
+    await deferSelfRemove(conf.projectRoot, graph, keep)
     await removeGlobalPackages(
       conf.projectRoot,
       global.dirs,

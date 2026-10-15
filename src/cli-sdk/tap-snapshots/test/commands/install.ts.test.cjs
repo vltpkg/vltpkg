@@ -120,7 +120,7 @@ appropriately.
 
     global
       Install packages globally, each in its own workspace of the global
-      project, linking their bins.
+      project, linking their bins. \`vlt install -g vlt\` updates vlt itself.
 
       ​--global
 

@@ -103,6 +103,38 @@ t.test('uninstall', async t => {
   )
 })
 
+t.test('keepNodes passed to reify', async t => {
+  const keepNodes = new Set([
+    joinDepIDTuple(['registry', '', 'x@1.0.0']),
+  ])
+  const options = {
+    projectRoot: t.testdirName,
+    packageJson: new PackageJsonMock(),
+    scurry: {},
+    keepNodes,
+  } as unknown as UninstallOptions
+  let got: unknown
+  const { uninstall } = await t.mockImport<
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
+    '../src/ideal/build.ts': { build: async () => ({}) },
+    '../src/actual/load.ts': { load: () => ({}) },
+    '../src/reify/index.ts': {
+      reify: async (o: { keepNodes?: unknown }) => {
+        got = o.keepNodes
+      },
+    },
+    '@vltpkg/workspaces': {
+      Monorepo: { maybeLoad: () => undefined },
+    },
+  })
+  await uninstall(
+    options,
+    new Map() as RemoveImportersDependenciesMap,
+  )
+  t.equal(got, keepNodes)
+})
+
 t.test('uninstall with lockfileOnly option', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({

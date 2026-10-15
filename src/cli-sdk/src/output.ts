@@ -7,6 +7,7 @@ import {
 import { createSupportsColor } from 'supports-color'
 import { defaultView } from './config/definition.ts'
 import { globalCommands } from './global-project.ts'
+import { sweepPendingRemove } from './global-state.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
@@ -269,6 +270,7 @@ export const outputCommand = async <T>(
       )
     }
 
+    if (conf.globalRoot) await sweepPendingRemove(conf.globalRoot)
     const output = await onDone(await command(conf))
     stopRequestLog()
 
