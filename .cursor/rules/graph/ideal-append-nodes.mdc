@@ -66,7 +66,7 @@ If first satisfying node fails peer check, lazy-load `graph.nodesByName.get(name
 
 ## Error Handling
 
-- **Optional deps**: `removeOptionalSubgraph()` if parent is optional; skip if edge is optional; throw if required
+- **Optional deps**: `removeOptionalSubgraph()` if parent is optional; skip if edge is optional; throw if required. Skipped or pruned non-explicit importer deps leave the `add` map so reify never saves them
 - **Cycles / duplicates**: `seen` marked at enqueue; a node placed by several parents in one level is queued once (first in sorted order)
 - **Nameless deps**: `fixupAddedNames()` for specs like `github:foo/bar`
 

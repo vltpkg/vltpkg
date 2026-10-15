@@ -4740,7 +4740,10 @@ t.test(
       spec: Spec.parse('foo', 'latest', configData),
       type: 'optional',
     })
-    const call = (explicit?: Map<DepID, Set<string>>) =>
+    const call = (
+      add: Map<string, Dependency>,
+      explicit?: Map<DepID, Set<string>>,
+    ) =>
       appendNodes(
         packageInfo,
         graph,
@@ -4749,7 +4752,7 @@ t.test(
         new PathScurry(t.testdirName),
         configData,
         new Set<DepID>(),
-        new Map([['foo', fooDep]]),
+        add,
         undefined,
         undefined,
         undefined,
@@ -4761,16 +4764,23 @@ t.test(
         explicit,
       )
 
+    const explicitAdd = new Map([['foo', fooDep]])
     await t.rejects(
-      call(new Map([[graph.mainImporter.id, new Set(['foo'])]])),
+      call(
+        explicitAdd,
+        new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+      ),
       { message: 'Could not resolve' },
       'explicit optional add surfaces the resolution error',
     )
+    t.ok(explicitAdd.has('foo'), 'explicit add entry kept')
+    const add = new Map([['foo', fooDep]])
     await t.resolves(
-      call(),
+      call(add),
       'a manifest-derived optional dep is still swallowed',
     )
     t.notOk(graph.mainImporter.edgesOut.get('foo')?.to)
+    t.notOk(add.has('foo'), 'skipped dep dropped from add map')
   },
 )
 
@@ -4792,7 +4802,10 @@ t.test('a nameless explicit optional add throws too', async t => {
   const dep = asDependency({ spec, type: 'optional' })
   const key = spec.spec
   t.equal(spec.name, '(unknown)', 'the spec has no name')
-  const call = (explicit?: Map<DepID, Set<string>>) =>
+  const call = (
+    add: Map<string, Dependency>,
+    explicit?: Map<DepID, Set<string>>,
+  ) =>
     appendNodes(
       packageInfo,
       graph,
@@ -4801,7 +4814,7 @@ t.test('a nameless explicit optional add throws too', async t => {
       new PathScurry(t.testdirName),
       configData,
       new Set<DepID>(),
-      new Map([[key, dep]]),
+      add,
       undefined,
       undefined,
       undefined,
@@ -4814,14 +4827,78 @@ t.test('a nameless explicit optional add throws too', async t => {
     )
 
   await t.rejects(
-    call(new Map([[graph.mainImporter.id, new Set([key])]])),
+    call(
+      new Map([[key, dep]]),
+      new Map([[graph.mainImporter.id, new Set([key])]]),
+    ),
     { message: 'Could not resolve' },
     'the spec-string key is recognized as explicit',
   )
+  const add = new Map([[key, dep]])
   await t.resolves(
-    call(),
+    call(add),
     'without it the optional miss is swallowed',
   )
+  t.notOk(add.has(key), 'nameless skipped dep dropped from add map')
+})
+
+t.test('an optional dep pruned with its subgraph', async t => {
+  const manifests: Record<string, Manifest> = {
+    foo: {
+      name: 'foo',
+      version: '1.0.0',
+      dependencies: { baz: '1' },
+    },
+    baz: {
+      name: 'baz',
+      version: '1.0.0',
+      dependencies: { bar: '1' },
+    },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const m = manifests[spec.name]
+      if (!m) throw error('Could not resolve')
+      return m
+    },
+  } as unknown as PackageInfoClient
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', '1', configData),
+    type: 'optional',
+  })
+  const call = async (explicit?: Set<string>) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const add = new Map([['foo', fooDep]])
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+      add,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      explicit && new Map([[graph.mainImporter.id, explicit]]),
+    )
+    t.equal(graph.nodes.size, 1, 'only the importer left')
+    t.notOk(graph.mainImporter.edgesOut.get('foo')?.to, 'foo pruned')
+    return add
+  }
+
+  t.notOk((await call()).has('foo'), 'dropped from add map')
+  t.ok((await call(new Set(['foo']))).has('foo'), 'explicit add kept')
 })
 
 t.test(

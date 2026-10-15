@@ -695,6 +695,7 @@ const processPlacementTasks = async (
   remover?: RollbackRemove,
   transientAdd?: TransientAddMap,
   transientRemove?: TransientRemoveMap,
+  explicit?: ExplicitAddMap,
 ): Promise<ProcessPlacementResult> => {
   const childDepsToProcess: ProcessPlacementResult = []
 
@@ -720,18 +721,30 @@ const processPlacementTasks = async (
     // using the correct names retrieved from the manifest data
     const additiveMap =
       fromNode.importer ? add : transientAdd?.get(fromNode.id)
+    // a nameless explicit add is known by its fixed up name from here on
+    const explicitKeys = explicit?.get(fromNode.id)
+    const wasExplicit = explicitKeys?.has(addKey(spec))
     spec = fixupAddedNames(additiveMap, manifest, options, spec)
+    if (wasExplicit) explicitKeys?.add(spec.name)
 
     // handles missing manifest resolution
     if (!manifest) {
       if (!edgeOptional && fromNode.isOptional()) {
         // failed resolution of a non-optional dep of an optional node
         // have to clean up the dependents
-        removeOptionalSubgraph(graph, fromNode)
+        for (const n of removeOptionalSubgraph(graph, fromNode)) {
+          // pruned importer deps: nothing to save, unless requested
+          for (const { from, name } of n.edgesIn) {
+            if (from.importer && !explicit?.get(from.id)?.has(name)) {
+              add?.delete(name)
+            }
+          }
+        }
         continue
       } else if (edgeOptional) {
-        // failed resolution of an optional dep, just ignore it,
-        // nothing to prune because we never added it in the first place.
+        // failed resolution of an optional dep: skip it and drop it
+        // from the add map, nothing to prune or save
+        additiveMap?.delete(addKey(spec))
         continue
       } else {
         throw error('failed to resolve dependency', {
@@ -1155,6 +1168,7 @@ export const appendNodes = async (
         remover,
         transientAdd,
         transientRemove,
+        explicit,
       )
 
       levelResults.push(placed)

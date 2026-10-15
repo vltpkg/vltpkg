@@ -2619,6 +2619,129 @@ t.test('a "-" modifier removes dependencies', async t => {
   )
 })
 
+t.test('an unresolvable optional dep is skipped', async t => {
+  const pj = JSON.stringify({
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { which: '^2.0.1' },
+    optionalDependencies: { missing: '^1.0.0', foo: 'file:./foo' },
+    peerDependencies: { 'missing-peer': '^1.0.0' },
+    peerDependenciesMeta: { 'missing-peer': { optional: true } },
+  })
+  const projectRoot = t.testdir({
+    'package.json': pj,
+    'vlt.json': '{}',
+    // resolves, but its own dep does not
+    foo: {
+      'package.json': JSON.stringify({
+        name: 'foo',
+        version: '1.0.0',
+        dependencies: { 'missing-sub': '^1.0.0' },
+      }),
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const packageInfo = createMockPackageInfo({
+    manifest: async (spec, options) => {
+      if (String(spec).startsWith('missing')) {
+        throw error('404 Not Found', { spec })
+      }
+      return mockPackageInfoBase.manifest(spec, options)
+    },
+  })
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const noAdd = () =>
+    Object.assign(new Map(), {
+      modifiedDependencies: false,
+    }) as AddImportersDependenciesMap
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const { install } = await import('../src/install.ts')
+
+  const { graph } = await install(opts(), noAdd())
+  const edges = graph.mainImporter.edgesOut
+  t.notOk(edges.get('missing'), 'no missing edge')
+  t.notOk(edges.get('missing-peer'), 'no missing-peer edge')
+  t.notOk(edges.get('foo')?.to, 'foo pruned')
+  t.ok(edges.get('which')?.to, 'which placed')
+  t.equal(read('package.json'), pj, 'package.json untouched')
+  t.notMatch(read('vlt-lock.json'), /missing/, 'not in lockfile')
+
+  const stamp = new Date(0)
+  for (const f of lockfiles) {
+    utimesSync(resolve(projectRoot, f), stamp, stamp)
+  }
+  await install(opts(), noAdd())
+  for (const f of lockfiles) {
+    t.equal(
+      statSync(resolve(projectRoot, f)).mtimeMs,
+      0,
+      `${f} was left alone`,
+    )
+  }
+
+  const addOne = (
+    key: string,
+    spec: Spec,
+    type: 'prod' | 'optional',
+  ) =>
+    Object.assign(
+      new Map([
+        [
+          joinDepIDTuple(['file', '.']),
+          new Map([[key, asDependency({ spec, type })]]),
+        ],
+      ]),
+      { modifiedDependencies: true },
+    )
+  await t.resolves(
+    install(
+      opts(),
+      addOne('abbrev', Spec.parse('abbrev@2.0.0'), 'prod'),
+    ),
+    'adding another dep works',
+  )
+  const saved = JSON.parse(read('package.json')) as {
+    dependencies: Record<string, string>
+    optionalDependencies: Record<string, string>
+  }
+  t.equal(saved.dependencies.abbrev, '2.0.0', 'abbrev saved')
+  t.strictSame(
+    saved.optionalDependencies,
+    { missing: '^1.0.0', foo: 'file:./foo' },
+    'optional entries kept',
+  )
+
+  await t.resolves(
+    install(opts({ lockfileOnly: true }), noAdd()),
+    'lockfile-only install passes',
+  )
+
+  // an explicit add has nothing to save if it can't be placed
+  const nameless = Spec.parseArgs('file:./foo')
+  for (const [key, spec] of [
+    ['foo', Spec.parse('foo@file:./foo')],
+    [nameless.spec, nameless],
+  ] as const) {
+    await t.rejects(
+      install(opts(), addOne(key, spec, 'optional')),
+      { message: 'Dependency node could not be found: foo' },
+      `explicit ${key} add fails`,
+    )
+  }
+})
+
 t.test(
   'adding a "-" modifier removes an installed dependency',
   async t => {
