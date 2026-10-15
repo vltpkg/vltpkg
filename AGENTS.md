@@ -62,7 +62,8 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `skills.sh.json`. Root ones also need a `!/skills/<name>/` line in
   `.gitignore` (`/skills/*` is gitignored for #1540 mounts) and an
   entry in `www/docs/src/lib/skills.ts`; `www/docs` copies them into
-  `public/skills` at prebuild/predev.
+  `public/skills` at prebuild/predev. CI Docs step `lint:skills`
+  checks their docs links and frontmatter.
 
 ## Development
 
