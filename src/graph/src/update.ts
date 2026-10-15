@@ -19,7 +19,6 @@ import type { DepID } from '@vltpkg/dep-id'
 import type { Diff } from './diff.ts'
 import { assertQuery } from './filter-nodes-by-query.ts'
 import { assertSkillsDirs } from './skills/dirs.ts'
-import { syncSkills } from './skills/index.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
 
 export type UpdateOptions = LoadOptions & {
@@ -27,7 +26,8 @@ export type UpdateOptions = LoadOptions & {
   allowScripts: string
   /**
    * DSS query: packages whose agent skills get linked into the
-   * project's agent skill dirs after update. Unset or `:not(*)`: none.
+   * project's agent skill dirs after update. Selectors may end with
+   * `:skill()`. Unset or `:not(*)`: none.
    */
   allowSkills?: string
   /**
@@ -84,10 +84,15 @@ const startingGraph = (
 export const update = async (
   options: UpdateOptions,
 ): Promise<UpdateResult> => {
-  const { allowSkills } = options
+  // unset or `:not(*)`: no skills work at all, the skills code never
+  // loads
+  const allowSkills =
+    options.allowSkills === ':not(*)' ?
+      undefined
+    : options.allowSkills
   // fail before updating, not after
-  if (allowSkills && allowSkills !== ':not(*)') {
-    await assertQuery(allowSkills, 'allow-skills')
+  if (allowSkills) {
+    await assertQuery(allowSkills, 'allow-skills', ['skill'])
     assertSkillsDirs(options.projectRoot, options.skillsDirs)
   }
   let mainManifest: NormalizedManifest | undefined = undefined
@@ -165,7 +170,12 @@ export const update = async (
   /* c8 ignore stop */
 
   // after the try: a link failure must not roll back the update
-  const synced = await syncSkills({ ...options, graph: result.graph })
-  if (synced) result.skills = synced
+  if (!allowSkills) return result
+  const { linkSkills } = await import('./skills/index.ts')
+  result.skills = await linkSkills({
+    ...options,
+    graph: result.graph,
+    target: allowSkills,
+  })
   return result
 }

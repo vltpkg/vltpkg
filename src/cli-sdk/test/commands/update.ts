@@ -171,6 +171,7 @@ t.test('persists spec config after update', async t => {
       positionals: [],
       values: {},
       options: {},
+      explicit: {},
       get: () => undefined,
       addConfigToFile: async (which: string, values: unknown) => {
         log += `write ${which} ${JSON.stringify(values)}\n`
@@ -242,6 +243,7 @@ t.test('allow-skills', async t => {
       positionals: [],
       values: {},
       options: {},
+      explicit: {},
       get: (k: string) =>
         k === 'allow-skills' ? value
         : k === 'skills-dir' ? dirs
@@ -261,5 +263,63 @@ t.test('allow-skills', async t => {
       dirs: ['.agents/skills'],
       skipped: ['.claude/skills (not a directory)'],
     },
+  })
+  const allowSkills = { query: '#foo' }
+  t.match(Command.views.json({ ...res, allowSkills }), {
+    allowSkills,
+  })
+})
+
+t.test('saves --allow-skills after update', async t => {
+  const setup = async (o: { stored?: string; fail?: boolean }) => {
+    const log: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/update.ts')
+    >('../../src/commands/update.ts', {
+      '@vltpkg/graph': {
+        async update() {
+          log.push('update')
+          if (o.fail) throw new Error('update failed')
+          return { graph: {} }
+        },
+      },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: {},
+      explicit: { 'allow-skills': '#foo' },
+      layers:
+        o.stored ? { project: { 'allow-skills': o.stored } } : {},
+      get: (k: string) => (k === 'allow-skills' ? '#foo' : undefined),
+      addConfigToFile: async (which: string, values: unknown) => {
+        log.push(`write ${which} ${JSON.stringify(values)}`)
+      },
+    } as unknown as LoadedConfig
+    return { run: () => Command.command(conf), log }
+  }
+
+  t.test('saved', async t => {
+    const { run, log } = await setup({})
+    t.strictSame((await run()).allowSkills, { query: '#foo' })
+    t.strictSame(log, [
+      'update',
+      'write project {"allow-skills":"#foo"}',
+    ])
+  })
+
+  t.test('another stored: kept', async t => {
+    const { run, log } = await setup({ stored: '#bar' })
+    t.strictSame((await run()).allowSkills, {
+      query: '#foo',
+      stored: { query: '#bar', which: 'project' },
+    })
+    t.strictSame(log, ['update'])
+  })
+
+  t.test('failed update: no write', async t => {
+    const { run, log } = await setup({ fail: true })
+    await t.rejects(run(), { message: 'update failed' })
+    t.strictSame(log, ['update'])
   })
 })

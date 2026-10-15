@@ -406,14 +406,16 @@ t.test(
 )
 
 t.test('allowSkills', async t => {
-  type SyncOpts = {
-    allowSkills?: string
+  type LinkOpts = {
+    target: string
     skillsDirs?: string[]
     graph: unknown
+    apply?: boolean
   }
+  // no `linkSkills`: loading the skills module throws
   const setup = async (
     t: Test,
-    syncSkills: (o: SyncOpts) => unknown,
+    linkSkills?: (o: LinkOpts) => unknown,
     pj = true,
   ) => {
     const dir = t.testdir({
@@ -447,7 +449,10 @@ t.test('allowSkills', async t => {
         reify: async () => ({ buildQueue: [], diff: {} }),
       },
       '../src/skills/index.ts': {
-        syncSkills: async (o: never) => syncSkills(o),
+        get linkSkills() {
+          if (!linkSkills) throw new Error('skills module loaded')
+          return async (o: LinkOpts) => linkSkills(o)
+        },
       },
       '@vltpkg/init': {
         init: async () => {
@@ -468,7 +473,7 @@ t.test('allowSkills', async t => {
   }
 
   t.test('links matching skills', async t => {
-    const calls: SyncOpts[] = []
+    const calls: LinkOpts[] = []
     const skills = {
       linked: [],
       unchanged: [],
@@ -480,45 +485,50 @@ t.test('allowSkills', async t => {
       return skills
     })
     const result = await run({
-      allowSkills: '#foo',
+      allowSkills: '#foo:skill(x)',
       skillsDirs: ['.claude/skills'],
     })
     t.equal(calls.length, 1)
-    t.equal(calls[0]?.allowSkills, '#foo')
+    t.equal(calls[0]?.target, '#foo:skill(x)')
+    t.notOk(calls[0]?.apply, 'updates never apply')
     t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
     t.equal(calls[0]?.graph, graph, 'uses the updated graph')
     t.equal(result.skills, skills)
   })
 
-  t.test('unset: synced, no skills result', async t => {
-    let called = 0
-    const { run } = await setup(t, () => {
-      called++
-      return undefined
-    })
-    t.notOk('skills' in (await run({})))
-    t.equal(called, 1)
+  t.test('unset or :not(*): skills module never loaded', async t => {
+    const { run } = await setup(t)
+    for (const extra of [
+      {},
+      { allowSkills: ':not(*)' },
+      { skillsDirs: ['../x'] },
+    ]) {
+      t.notOk('skills' in (await run(extra)), JSON.stringify(extra))
+    }
+    await t.rejects(
+      run({ allowSkills: '*' }),
+      /skills module loaded/,
+      'set: loaded',
+    )
   })
 
   t.test('invalid query fails before updating', async t => {
-    let called = 0
     // no package.json: init would run first
-    const { run, log } = await setup(t, () => called++, false)
-    await t.rejects(run({ allowSkills: ':nope' }), {
-      cause: { code: 'EUSAGE', found: ':nope' },
-    })
+    const { run, log } = await setup(t, undefined, false)
+    for (const q of [':nope', '#foo:skill(x) > *']) {
+      await t.rejects(run({ allowSkills: q }), {
+        cause: { code: 'EUSAGE', found: q },
+      })
+    }
     t.strictSame(log, [], 'nothing built or initialized')
-    t.equal(called, 0)
   })
 
   t.test('invalid skills-dir fails before updating', async t => {
-    let called = 0
-    const { run, log } = await setup(t, () => called++, false)
+    const { run, log } = await setup(t, undefined, false)
     await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
       cause: { code: 'EUSAGE', found: '../x' },
     })
     t.strictSame(log, [], 'nothing built or initialized')
-    t.equal(called, 0)
   })
 
   t.test('a link failure does not undo the update', async t => {

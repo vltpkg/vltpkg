@@ -3,6 +3,7 @@ import t from 'tap'
 import type { Skill, SkillRow } from '@vltpkg/graph'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { SkillsResult } from '../../src/commands/skills.ts'
+import type { EditQueryOptions } from '../../src/skills-prompt.ts'
 
 type Call = {
   fn: string
@@ -11,8 +12,33 @@ type Call = {
   skillsDirs?: string[]
   apply?: boolean
 }
+// scripted prompts and recorded side effects
+type State = {
+  tty: boolean
+  confirms: (boolean | undefined)[]
+  answers: (string | undefined)[]
+  questions: string[]
+  editors: Pick<EditQueryOptions, 'current' | 'prefill'>[]
+  writes: [string, unknown][]
+  asserts: unknown[][]
+  invalid: string[]
+  linkError?: Error
+}
 let calls: Call[] = []
-t.beforeEach(() => (calls = []))
+let st: State
+t.beforeEach(() => {
+  calls = []
+  st = {
+    tty: false,
+    confirms: [],
+    answers: [],
+    questions: [],
+    editors: [],
+    writes: [],
+    asserts: [],
+    invalid: [],
+  }
+})
 
 const result = {
   linked: [],
@@ -26,6 +52,12 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/skills.ts')
 >('../../src/commands/skills.ts', {
   '@vltpkg/graph': {
+    assertQuery: async (...args: unknown[]) => {
+      st.asserts.push(args)
+      if (st.invalid.includes(args[0] as string)) {
+        throw new Error(`bad query ${String(args[0])}`)
+      }
+    },
     listSkills: async ({ target, projectRoot, skillsDirs }: Call) => {
       calls.push({ fn: 'list', target, projectRoot, skillsDirs })
       return { skills: [], dirs: ['.agents/skills'] }
@@ -43,25 +75,53 @@ const Command = await t.mockImport<
         skillsDirs,
         apply,
       })
+      if (st.linkError) throw st.linkError
       return result
+    },
+  },
+  '../../src/skills-prompt.ts': {
+    interactive: () => st.tty,
+    confirm: async (q: string) => {
+      st.questions.push(q)
+      return st.confirms.length ? st.confirms.shift() : false
+    },
+    editQuery: async ({ check, ...o }: EditQueryOptions) => {
+      st.editors.push(o)
+      const a = st.answers.shift()
+      if (a !== undefined) await check(a)
+      return a
     },
   },
 })
 
-const run = (
-  positionals: string[],
-  target?: string,
-  skillsDir?: string[],
-) =>
+type RunOptions = {
+  target?: string
+  skillsDir?: string[]
+  yes?: boolean
+  config?: string
+  project?: Record<string, unknown>
+  user?: Record<string, unknown>
+}
+const run = (positionals: string[], o: RunOptions = {}) =>
   Command.command({
     projectRoot: '/project',
     positionals,
     values: {},
     options: {},
+    layers: {
+      ...(o.project && { project: o.project }),
+      ...(o.user && { user: o.user }),
+    },
     get: (k: string) =>
-      k === 'target' ? target
-      : k === 'skills-dir' ? skillsDir
-      : undefined,
+      ({
+        target: o.target,
+        'skills-dir': o.skillsDir,
+        yes: o.yes,
+        config: o.config,
+      })[k],
+    addConfigToFile: async (which: string, values: unknown) => {
+      st.writes.push([which, values])
+    },
   } as unknown as LoadedConfig)
 
 t.test('usage', async t => {
@@ -76,10 +136,19 @@ t.test('command', async t => {
   }
   t.strictSame(await run([]), list)
   t.strictSame(await run(['ls', '#foo']), list)
-  t.strictSame(await run(['link']), { action: 'link', ...result })
+  t.strictSame(await run(['link']), {
+    action: 'link',
+    query: ':not(:malware)',
+    saved: 'project',
+    ...result,
+  })
   await run(['link', '#foo'])
-  await run(['link', '#foo'], '#bar', ['.claude/skills'])
-  await run(['list'], '#bar', [])
+  await run(['link', '#foo'], {
+    target: '#bar',
+    skillsDir: ['.claude/skills'],
+  })
+  await run(['list'], { target: '#bar', skillsDir: [] })
+  await run(['list', '#a:skill(x)'])
   const p = '/project'
   t.strictSame(calls, [
     {
@@ -116,6 +185,16 @@ t.test('command', async t => {
       apply: true,
     },
     { fn: 'list', target: '#bar', projectRoot: p, skillsDirs: [] },
+    {
+      fn: 'list',
+      target: '#a:skill(x)',
+      projectRoot: p,
+      skillsDirs: undefined,
+    },
+  ])
+  t.strictSame(st.asserts, [
+    ['#foo', 'allow-skills', ['skill']],
+    ['#bar', 'allow-skills', ['skill']],
   ])
   for (const sub of ['#foo', 'unlink']) {
     await t.rejects(run([sub]), {
@@ -127,6 +206,219 @@ t.test('command', async t => {
       },
     })
   }
+})
+
+t.test('link: set, save and apply allow-skills', async t => {
+  const S = ':root > *'
+  const project = { 'allow-skills': S }
+  const user = { 'allow-skills': S }
+  const replaceQ = `allow-skills is already set for this project (vlt.json): "${S}". Replace it? [y/N] `
+  const editQ = `allow-skills is set for this project (vlt.json): "${S}". Edit it? [y/N] `
+  // what was linked, written and asked
+  const link = async (positionals: string[], o: RunOptions = {}) => {
+    const res = await run(['link', ...positionals], o)
+    return {
+      res,
+      linked: calls.map(c => c.target),
+      writes: st.writes,
+      questions: st.questions,
+      editors: st.editors,
+    }
+  }
+  const saved = (q: string, which = 'project') => [
+    [which, { 'allow-skills': q }],
+  ]
+
+  t.test('1. q, nothing stored: link q, save it', async t => {
+    for (const tty of [true, false]) {
+      for (const yes of [true, false]) {
+        st = { ...st, tty, writes: [] }
+        calls = []
+        const r = await link(['#a'], { yes })
+        t.strictSame(r.linked, ['#a'])
+        t.strictSame(r.writes, saved('#a'))
+        t.strictSame(r.questions, [])
+        t.match(r.res, {
+          action: 'link',
+          query: '#a',
+          saved: 'project',
+        })
+      }
+    }
+    st.writes = []
+    const r = await link(['#a'], { config: 'user' })
+    t.strictSame(r.writes, saved('#a', 'user'), '--config=user')
+    t.match(r.res, { saved: 'user' })
+  })
+
+  t.test('2. q, stored, TTY: Replace?', async t => {
+    st.tty = true
+    st.confirms = [false, undefined]
+    for (const how of ['N', 'ctrl+C/D']) {
+      t.strictSame(
+        await run(['link', '#a'], { project }),
+        { action: 'unchanged' },
+        how,
+      )
+    }
+    t.strictSame(calls, [])
+    t.strictSame(st.writes, [])
+    t.strictSame(st.questions, [replaceQ, replaceQ])
+
+    st.confirms = [true]
+    st.answers = ['#b']
+    const y = await link(['#a'], { project })
+    t.strictSame(y.editors, [{ current: S, prefill: '#a' }])
+    t.strictSame(y.linked, ['#b'])
+    t.strictSame(y.writes, saved('#b'))
+    t.equal(st.asserts.at(-1)?.[0], '#b', 'editor checks the answer')
+  })
+
+  t.test('2. q, stored, TTY: editor cancel or same', async t => {
+    st.tty = true
+    st.confirms = [true, true]
+    st.answers = [undefined, S]
+    t.strictSame(await run(['link', '#a'], { project }), {
+      action: 'unchanged',
+    })
+    const same = await link(['#a'], { project })
+    t.strictSame(same.linked, [S])
+    t.strictSame(same.writes, [], 'same as stored: no write')
+    t.notOk('saved' in same.res)
+  })
+
+  t.test('3. q, stored, -y: link q, save it', async t => {
+    for (const tty of [true, false]) {
+      st = { ...st, tty, writes: [] }
+      calls = []
+      const r = await link(['#a'], { project, yes: true })
+      t.strictSame(r.linked, ['#a'])
+      t.strictSame(r.writes, saved('#a'))
+      t.strictSame(r.questions, [])
+    }
+  })
+
+  t.test('4. no q, stored, TTY: Edit?', async t => {
+    st.tty = true
+    st.confirms = [true]
+    st.answers = ['#b']
+    const y = await link([], { project })
+    t.strictSame(y.questions, [editQ])
+    t.strictSame(y.editors, [{ current: S, prefill: S }])
+    t.strictSame(y.linked, ['#b'])
+    t.strictSame(y.writes, saved('#b'))
+
+    st = { ...st, confirms: [false], writes: [], editors: [] }
+    calls = []
+    const n = await link([], { project })
+    t.strictSame(n.linked, [S])
+    t.strictSame(n.writes, [])
+    t.strictSame(n.editors, [])
+
+    st.confirms = [undefined]
+    calls = []
+    t.strictSame(
+      await run(['link'], { project }),
+      { action: 'unchanged' },
+      'ctrl+C/D: cancel',
+    )
+    t.strictSame(calls, [])
+    t.strictSame(st.editors, [])
+  })
+
+  t.test('5. no q, stored, -y: link it', async t => {
+    st.tty = true
+    const r = await link([], { project, yes: true })
+    t.strictSame(r.linked, [S])
+    t.strictSame(r.writes, [])
+    t.strictSame(r.questions, [])
+  })
+
+  t.test('6. no q, nothing stored, TTY: editor', async t => {
+    st.tty = true
+    st.answers = [':not(:malware)', undefined]
+    const r = await link([])
+    t.strictSame(r.editors, [{ prefill: ':not(:malware)' }])
+    t.notOk('current' in r.editors[0]!, 'nothing stored: no current')
+    t.strictSame(r.linked, [':not(:malware)'])
+    t.strictSame(r.writes, saved(':not(:malware)'))
+    t.strictSame(await run(['link']), { action: 'unchanged' })
+  })
+
+  t.test('7. no q, nothing stored, -y: link the default', async t => {
+    st.tty = true
+    const r = await link([], { yes: true })
+    t.strictSame(r.linked, [':not(:malware)'])
+    t.strictSame(r.writes, saved(':not(:malware)'))
+  })
+
+  t.test('8. q, stored, no TTY: EUSAGE', async t => {
+    await t.rejects(run(['link', '#a'], { project }), {
+      message: `allow-skills is already set (vlt.json): "${S}"; pass -y to replace it`,
+      cause: { code: 'EUSAGE', found: '#a', wanted: S },
+    })
+    t.strictSame(calls, [])
+    t.strictSame(st.writes, [])
+  })
+
+  t.test('9. no q, stored, no TTY: link it', async t => {
+    const r = await link([], { project })
+    t.strictSame(r.linked, [S])
+    t.strictSame(r.writes, [])
+  })
+
+  t.test(
+    '10. no q, nothing stored, no TTY: link default',
+    async t => {
+      const r = await link([])
+      t.strictSame(r.linked, [':not(:malware)'])
+      t.strictSame(r.writes, saved(':not(:malware)'))
+    },
+  )
+
+  t.test('q equal to stored: no prompt, no write', async t => {
+    st.tty = true
+    const r = await link([S], { project })
+    t.strictSame(r.linked, [S])
+    t.strictSame(r.questions, [])
+    t.strictSame(r.writes, [])
+  })
+
+  t.test('stored in the user file', async t => {
+    st.tty = true
+    st.confirms = [false, false]
+    await run(['link', '#a'], { user })
+    await run(['link'], { user })
+    t.strictSame(st.questions, [
+      `allow-skills is already set in the user vlt.json: "${S}". Replace it? [y/N] `,
+      `allow-skills is set in the user vlt.json: "${S}". Edit it? [y/N] `,
+    ])
+    st.tty = false
+    await t.rejects(run(['link', '#a'], { user }), {
+      message: `allow-skills is already set (user vlt.json): "${S}"; pass -y to replace it`,
+    })
+    // a project `null` drops the user's
+    const r = await link(['#a'], {
+      user,
+      project: { 'allow-skills': null },
+    })
+    t.strictSame(r.linked, [S, '#a'])
+    t.strictSame(r.writes, saved('#a'))
+  })
+
+  t.test('invalid q: no prompt, no link', async t => {
+    st.tty = true
+    st.invalid = ['#bad']
+    await t.rejects(run(['link', '#bad'], { project }), /bad query/)
+    t.strictSame(calls, [])
+    t.strictSame(st.questions, [])
+  })
+
+  t.test('link failure: nothing saved', async t => {
+    st.linkError = new Error('link failed')
+    await t.rejects(run(['link', '#a']), /link failed/)
+    t.strictSame(st.writes, [])
+  })
 })
 
 t.test('views', async t => {
@@ -210,19 +502,56 @@ t.test('views', async t => {
         ],
       },
     ],
-    ['link nothing', { action: 'link', ...result }],
+    ['link nothing', { action: 'link', query: '#a', ...result }],
     [
       'link one',
       {
         action: 'link',
+        query: '#a',
         ...result,
         linked: [row('.agents/skills')],
       },
     ],
     [
+      'link saved project',
+      {
+        action: 'link',
+        query: '#a:skill(x)',
+        saved: 'project',
+        ...result,
+        linked: [row('.agents/skills')],
+      },
+    ],
+    [
+      'link saved user',
+      {
+        action: 'link',
+        query: '#a',
+        saved: 'user',
+        ...result,
+        linked: [row('.agents/skills')],
+      },
+    ],
+    [
+      'link unmatched',
+      {
+        action: 'link',
+        query: '#a:skill(nope, x*), #b:skill(y)',
+        saved: 'project',
+        ...result,
+        unmatched: [
+          { pattern: 'nope', skills: ['a', 'b'] },
+          { pattern: 'x*', skills: ['a', 'b'] },
+          { pattern: 'y', skills: [] },
+        ],
+      },
+    ],
+    ['unchanged', { action: 'unchanged' }],
+    [
       'link all',
       {
         action: 'link',
+        query: '*',
         linked: [
           row('.agents/skills'),
           row('.claude/skills'),
@@ -243,6 +572,7 @@ t.test('views', async t => {
       'link unchanged',
       {
         action: 'link',
+        query: '#a',
         ...result,
         unchanged: [row('.agents/skills'), row('.claude/skills')],
         conflicts: ['.agents/skills/b'],
@@ -252,6 +582,7 @@ t.test('views', async t => {
       'link removed only',
       {
         action: 'link',
+        query: '#a',
         ...result,
         removed: ['.agents/skills/x', '.claude/skills/y'],
       },

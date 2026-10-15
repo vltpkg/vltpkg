@@ -484,6 +484,7 @@ t.test('persists spec config after install', async t => {
       positionals: [],
       values: { 'save-types': true },
       options: {},
+      explicit: {},
       get: () => undefined,
       addConfigToFile: async (which: string, values: unknown) => {
         log += `write ${which} ${JSON.stringify(values)}\n`
@@ -577,6 +578,7 @@ t.test('allow-skills', async t => {
       positionals: [],
       values: {},
       options: {},
+      explicit: {},
       get: (k: string) =>
         k === 'allow-skills' ? value
         : k === 'skills-dir' ? dirs
@@ -609,4 +611,111 @@ t.test('allow-skills', async t => {
     gitignore: ['.claude/skills/.gitignore'],
   }
   t.strictSame(json({ ...skills, ...notes }), { ...out, ...notes })
+  const unmatched = [{ pattern: 'x', skills: ['a'] }]
+  t.strictSame(json({ ...skills, unmatched }), { ...out, unmatched })
+  const allowSkills = { query: '#foo' }
+  t.match(
+    Command.views.json({ graph: {}, allowSkills } as InstallResult),
+    { allowSkills },
+  )
+})
+
+t.test('saves --allow-skills after install', async t => {
+  const setup = async (o: {
+    explicit?: string
+    stored?: string
+    fail?: boolean
+    lockfileOnly?: boolean
+    yes?: boolean
+  }) => {
+    const log: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/install.ts')
+    >('../../src/commands/install.ts', {
+      '@vltpkg/graph': {
+        async install() {
+          log.push('install')
+          if (o.fail) throw new Error('install failed')
+          return { graph: {} }
+        },
+      },
+      '../../src/parse-add-remove-args.ts': {
+        parseAddArgs: () => ({ add: new Map() }),
+      },
+      '../../src/save-types.ts': { addTypesDeps: async () => {} },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: { 'lockfile-only': o.lockfileOnly },
+      explicit: o.explicit ? { 'allow-skills': o.explicit } : {},
+      layers:
+        o.stored ? { project: { 'allow-skills': o.stored } } : {},
+      get: (k: string) =>
+        k === 'allow-skills' ? (o.explicit ?? o.stored)
+        : k === 'yes' ? o.yes
+        : undefined,
+      addConfigToFile: async (which: string, values: unknown) => {
+        log.push(`write ${which} ${JSON.stringify(values)}`)
+      },
+    } as unknown as LoadedConfig
+    return { run: () => Command.command(conf), log }
+  }
+
+  t.test('nothing stored: saved', async t => {
+    const { run, log } = await setup({ explicit: '#foo' })
+    const res = await run()
+    t.strictSame(log, [
+      'install',
+      'write project {"allow-skills":"#foo"}',
+    ])
+    t.strictSame(res.allowSkills, { query: '#foo' })
+  })
+
+  t.test('same stored: no write', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      stored: '#foo',
+    })
+    t.notOk('allowSkills' in (await run()))
+    t.strictSame(log, ['install'])
+  })
+
+  t.test('another stored: kept, -y changes nothing', async t => {
+    for (const yes of [false, true]) {
+      const { run, log } = await setup({
+        explicit: '#foo',
+        stored: '#bar',
+        yes,
+      })
+      t.strictSame((await run()).allowSkills, {
+        query: '#foo',
+        stored: { query: '#bar', which: 'project' },
+      })
+      t.strictSame(log, ['install'])
+    }
+  })
+
+  t.test('stored only, or :not(*): nothing', async t => {
+    for (const o of [{ stored: '#bar' }, { explicit: ':not(*)' }]) {
+      const { run, log } = await setup(o)
+      t.notOk('allowSkills' in (await run()))
+      t.strictSame(log, ['install'])
+    }
+  })
+
+  t.test('failed install: no write', async t => {
+    const { run, log } = await setup({ explicit: '#foo', fail: true })
+    await t.rejects(run(), { message: 'install failed' })
+    t.strictSame(log, ['install'])
+  })
+
+  t.test('lockfile-only: no write', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      lockfileOnly: true,
+    })
+    t.notOk('allowSkills' in (await run()))
+    t.strictSame(log, ['install'])
+  })
 })

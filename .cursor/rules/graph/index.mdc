@@ -48,7 +48,7 @@ After Ideal + Actual, compute `Diff` → apply via `reify()`.
 - `actual.load(options)`, `ideal.build(options)`, `lockfile.load/save`, `reify(options)`
 - `install(options, add?)` — high-level: validates options, loads actual, builds ideal, reifies
 - Visualization: `mermaidOutput()`, `humanReadableOutput()`, `jsonOutput()`, `objectLikeOutput()`
-- Skills (`src/skills/`): `listSkills`, `linkSkills`, `syncSkills` (install/update/uninstall run it after reify)
+- Skills (`src/skills/`): `listSkills`, `linkSkills` (install/update/uninstall load and run it after reify only when `allowSkills` is set)
 
 ## Tips
 

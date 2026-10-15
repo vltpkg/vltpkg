@@ -88,7 +88,11 @@ t.test('skills', async t => {
     linked: Row[],
     conflicts: string[],
     removed: string[] = [],
-    notes: { skipped?: string[]; gitignore?: string[] } = {},
+    notes: {
+      skipped?: string[]
+      gitignore?: string[]
+      unmatched?: { pattern: string; skills: string[] }[]
+    } = {},
   ) => {
     const r = reporter()
     r.start()
@@ -146,7 +150,7 @@ t.test('skills', async t => {
   t.notMatch(none, 'skill')
   const pruned = await done([], [], ['.agents/skills/y'])
   t.match(pruned, '🧹 Removed 1 stale skill link: .agents/skills/y')
-  t.match(pruned, 'Run `vlt skills link <query>` to link again.')
+  t.notMatch(pruned, 'link again')
   t.match(
     await done([], [], ['.agents/skills/y', '.claude/skills/z']),
     'Removed 2 stale skill links: .agents/skills/y, .claude/skills/z',
@@ -163,6 +167,47 @@ t.test('skills', async t => {
     '⚠️ Skipped .claude/skills (outside the project), .kiro/skills (not a directory)',
   )
   t.match(notes, '⚠️ Could not update .agents/skills/.gitignore')
+  const unmatched = await done([], [], [], {
+    unmatched: [
+      { pattern: 'nope', skills: ['a', 'b'] },
+      { pattern: 'x*', skills: [] },
+    ],
+  })
+  t.match(
+    unmatched,
+    '⚠️ No skill matches "nope"; the selected packages ship: a, b\n' +
+      '⚠️ No skill matches "x*"; the selected packages ship no skills',
+  )
+})
+
+t.test('allow-skills saved or kept', async t => {
+  const done = async (allowSkills: InstallResult['allowSkills']) => {
+    const r = reporter()
+    r.start()
+    await r.done({ allowSkills } as InstallResult, { time: 1 })
+    await setTimeout(50)
+    const res = out
+    r.error(new Error('x'))
+    return res
+  }
+  t.match(
+    await done({ query: '#foo' }),
+    'Saved allow-skills="#foo" to vlt.json',
+  )
+  for (const [which, label] of [
+    ['project', 'vlt.json'],
+    ['user', 'user vlt.json'],
+  ] as const) {
+    const kept = await done({
+      query: '#foo',
+      stored: { query: '#bar', which },
+    })
+    t.match(
+      kept,
+      `allow-skills is already set (${label}): "#bar"; not replaced. Run vlt skills link to change it, or edit ${label}`,
+    )
+    t.notMatch(kept, 'Saved')
+  }
 })
 
 t.test('no start, no persisted config', async t => {

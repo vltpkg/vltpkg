@@ -3,7 +3,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import type { PathScurry } from 'path-scurry'
 import { load as loadActual } from '../actual/load.ts'
 import type { LoadOptions } from '../actual/load.ts'
-import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
+import { filterNodesByQueryParts } from '../filter-nodes-by-query.ts'
 import type { Graph } from '../graph.ts'
 import { unshare } from '../reify/unshare.ts'
 import { skillsDirs } from './dirs.ts'
@@ -11,6 +11,8 @@ import type { SkillsDir } from './dirs.ts'
 import { discoverSkills } from './discover.ts'
 import type { Skill } from './discover.ts'
 import { editGitignore } from './gitignore.ts'
+import { maskSkills } from './mask.ts'
+import type { UnmatchedPattern } from './mask.ts'
 import {
   mountSkill,
   packageKey,
@@ -23,12 +25,16 @@ import type { SkillMount } from './mounts.ts'
 export * from './discover.ts'
 export type { SkillMount, MountResult } from './mounts.ts'
 export type { SkillsDir } from './dirs.ts'
+export type { UnmatchedPattern } from './mask.ts'
 
 /**
  * Options for {@link listSkills} and {@link linkSkills}.
  */
 export type SkillsOptions = LoadOptions & {
-  /** DSS query selecting packages; default `*` */
+  /**
+   * DSS query selecting packages, selectors may end with `:skill()`;
+   * default `*`
+   */
   target?: string
   /** graph to use instead of loading the actual one */
   graph?: Graph
@@ -100,24 +106,20 @@ export type LinkSkillsResult = {
   skipped?: string[]
   /** `<dir>/.gitignore` files not updated: not a regular file, fs error */
   gitignore?: string[]
-}
-
-/**
- * Options for {@link syncSkills}.
- */
-export type SyncSkillsOptions = SkillsOptions & {
-  graph: Graph
-  /** DSS query: packages whose skills get linked */
-  allowSkills?: string
+  /** `:skill()` patterns that matched no skill of their packages */
+  unmatched?: UnmatchedPattern[]
 }
 
 const lc = (s: string) => s.toLowerCase()
 
 const selectNodes = async (o: SkillsOptions) => {
   const graph = o.graph ?? loadActual({ ...o, loadManifests: true })
-  const ids = await filterNodesByQuery(graph, o.target ?? '*')
+  const { ids, parts } = await filterNodesByQueryParts(
+    graph,
+    o.target ?? '*',
+  )
   const nodes = [...graph.nodes.values()].filter(n => ids.has(n.id))
-  return { graph, nodes }
+  return { graph, nodes, parts }
 }
 
 const dirsOf = (o: SkillsOptions, create = false) =>
@@ -155,16 +157,17 @@ const label = (s: Skill) => {
 }
 
 /**
- * List the agent skills shipped by installed packages, and the agent
- * skill dirs. Creates nothing.
+ * List the agent skills shipped by installed packages (`:skill()`
+ * applied), and the agent skill dirs. Creates nothing.
  */
 export const listSkills = async (
   o: SkillsOptions,
 ): Promise<ListSkillsResult> => {
-  const { nodes } = await selectNodes(o)
+  const { nodes, parts } = await selectNodes(o)
   const { targets, scan, skipped } = dirsOf(o)
+  const { skills } = discoverSkills(nodes, o.scurry, readMounts(scan))
   return {
-    skills: discoverSkills(nodes, o.scurry, readMounts(scan)).skills,
+    skills: maskSkills(skills, parts).skills,
     dirs: targets.map(d => d.dir),
     ...(skipped.length ? { skipped } : null),
   }
@@ -173,7 +176,8 @@ export const listSkills = async (
 /**
  * Link the agent skills of the selected packages into each of the
  * project's agent skill dirs (see `skillsDirs`), created only when a
- * skill is found. One package per name, in every dir: the package of
+ * skill is picked. `target` selectors may end with `:skill()`. One
+ * package per name, among picked skills, in every dir: the package of
  * the first existing link (in dir order), else rank (main importer
  * dep, importer dep, transitive), then DepID; the others are
  * reported. Installs keep a dir's link to another installed skill.
@@ -186,9 +190,11 @@ export const listSkills = async (
 export const linkSkills = async (
   o: LinkSkillsOptions,
 ): Promise<LinkSkillsResult> => {
-  const { graph, nodes } = await selectNodes(o)
+  const { graph, nodes, parts } = await selectNodes(o)
   const { skills, scanned } = discoverSkills(nodes, o.scurry)
-  const { targets, scan, skipped } = dirsOf(o, skills.length > 0)
+  const { skills: picked, unmatched } = maskSkills(skills, parts)
+  const inMask = new Set(picked)
+  const { targets, scan, skipped } = dirsOf(o, picked.length > 0)
   const res: LinkSkillsResult = {
     linked: [],
     unchanged: [],
@@ -222,13 +228,17 @@ export const linkSkills = async (
     const key = m?.owner && packageKey(m.owner)
     return { m, own: group.find(s => packageKey(s.id) === key) }
   }
+  // picked skills only: the others never take a name
+  const cands = (group: Skill[]) => group.filter(s => inMask.has(s))
   // one per name: the first linked package keeps it, re-pointed if needed
   const first = new Map(
-    [...groups].map(([k, group]) => [
-      k,
-      targets.map(d => at(d, k, group).own).find(s => !!s) ??
-        group[0],
-    ]),
+    [...groups].map(([k, group]) => {
+      const c = cands(group)
+      return [
+        k,
+        targets.map(d => at(d, k, c).own).find(s => !!s) ?? c[0],
+      ]
+    }),
   )
   const isTarget = new Set(targets)
   const picks: {
@@ -249,7 +259,7 @@ export const linkSkills = async (
         picks.push({
           dir,
           winner,
-          losers: group.filter(s => s !== winner),
+          losers: cands(group).filter(s => s !== winner),
           m,
         })
       } else if (own && !o.apply) {
@@ -321,17 +331,6 @@ export const linkSkills = async (
   }
   if (skipped.length) res.skipped = skipped
   if (gitignore.length) res.gitignore = gitignore
+  if (unmatched.length) res.unmatched = unmatched
   return res
-}
-
-/**
- * Run after a reify: with `allowSkills` (not `:not(*)`), link the
- * skills of matching packages. Else nothing.
- */
-export const syncSkills = async (
-  o: SyncSkillsOptions,
-): Promise<LinkSkillsResult | undefined> => {
-  const { allowSkills } = o
-  if (!allowSkills || allowSkills === ':not(*)') return undefined
-  return linkSkills({ ...o, target: allowSkills })
 }

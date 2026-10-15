@@ -1,9 +1,11 @@
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
+import type { Test } from 'tap'
 import {
   assertQuery,
   filterNodesByQuery,
+  filterNodesByQueryParts,
 } from '../src/filter-nodes-by-query.ts'
 import { Graph } from '../src/graph.ts'
 
@@ -12,7 +14,7 @@ const configData = {
   registries: { npm: 'https://registry.npmjs.org/' },
 } satisfies SpecOptions
 
-t.test('filterNodesByQuery', async t => {
+const setup = (t: Test) => {
   const projectRoot = t.testdir({ 'vlt.json': '{}' })
   const graph = new Graph({
     ...configData,
@@ -25,13 +27,18 @@ t.test('filterNodesByQuery', async t => {
     Spec.parse('foo@^1.0.0', configData),
     { name: 'foo', version: '1.0.0' },
   )
-  graph.placePackage(
+  const bar = graph.placePackage(
     graph.mainImporter,
     'prod',
     Spec.parse('bar@^1.0.0', configData),
     { name: 'bar', version: '1.0.0' },
   )
-  if (!foo) throw new Error('failed to place foo')
+  if (!foo || !bar) throw new Error('failed to place deps')
+  return { graph, foo, bar }
+}
+
+t.test('filterNodesByQuery', async t => {
+  const { graph, foo } = setup(t)
 
   for (const q of [undefined, '', ':not(*)']) {
     t.strictSame(
@@ -50,11 +57,78 @@ t.test('filterNodesByQuery', async t => {
     new Set([foo.id]),
     'query selects matches',
   )
+  // allow-scripts, reify: no part selectors
+  await t.rejects(filterNodesByQuery(graph, '#foo:skill(x)'), {
+    message: /:skill\(\) only applies/,
+  })
+})
+
+t.test('filterNodesByQueryParts', async t => {
+  const { graph, foo, bar } = setup(t)
+  for (const q of [undefined, '', ':not(*)']) {
+    t.strictSame(
+      await filterNodesByQueryParts(graph, q),
+      { ids: new Set(), parts: [] },
+      `${q} selects nothing`,
+    )
+  }
+  const all = new Set(graph.nodes.keys())
+  t.strictSame(
+    await filterNodesByQueryParts(graph, '*'),
+    { ids: all, parts: [{ ids: all }] },
+    '* selects all, one plain part',
+  )
+  const { ids, parts } = await filterNodesByQueryParts(
+    graph,
+    '#foo, #bar:skill(x, "a b", v*)',
+  )
+  t.strictSame(ids, new Set([foo.id, bar.id]))
+  t.strictSame(parts, [
+    { ids: new Set([foo.id]) },
+    { ids: new Set([bar.id]), patterns: ['x', 'a b', 'v*'] },
+  ])
+  t.notOk('patterns' in parts[0]!, 'plain part has no patterns')
+  t.strictSame(
+    await filterNodesByQueryParts(graph, '#nope:skill(x)'),
+    { ids: new Set(), parts: [{ ids: new Set(), patterns: ['x'] }] },
+    'a part may match nothing',
+  )
 })
 
 t.test('assertQuery', async t => {
   for (const q of ['*', '#foo', ':root > *', ':not(:malware)']) {
     await t.resolves(assertQuery(q, 'allow-skills'), q)
+  }
+  for (const q of ['#foo:skill(x)', ':root > :skill(a*)']) {
+    await t.resolves(assertQuery(q, 'allow-skills', ['skill']), q)
+  }
+  await t.rejects(assertQuery('#foo:skill(x)', 'allow-scripts'), {
+    message:
+      /^Invalid --allow-scripts query: :skill\(\) only applies/,
+    cause: { code: 'EUSAGE', found: '#foo:skill(x)' },
+  })
+  // typos: suggestions
+  await t.rejects(
+    assertQuery('#foo:skills(x)', 'allow-skills', ['skill']),
+    { cause: { code: 'EUSAGE', validOptions: [':skill'] } },
+  )
+  await t.rejects(assertQuery(':pr', 'allow-skills'), {
+    cause: { validOptions: [':fs', ':is', ':peer', ':prod', ':v'] },
+  })
+  const none = await assertQuery('#foo[', 'allow-skills').then(
+    () => ({ cause: {} }),
+    (e: unknown) => e as { cause: object },
+  )
+  t.notOk('validOptions' in none.cause, 'no suggestions')
+  for (const q of ['#foo:skill(x) > *', '#foo:skills(x)']) {
+    await t.rejects(
+      assertQuery(q, 'allow-skills', ['skill']),
+      {
+        message: /^Invalid --allow-skills query: /,
+        cause: { code: 'EUSAGE', found: q },
+      },
+      q,
+    )
   }
   for (const q of ['#foo[', ':nope', 'a,,b', ':not(']) {
     await t.rejects(

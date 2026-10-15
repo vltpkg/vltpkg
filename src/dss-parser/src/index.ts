@@ -4,6 +4,7 @@ import type { Pseudo, Root, Selector } from 'postcss-selector-parser'
 import {
   attributeOperatorNames,
   combinatorNames,
+  partPseudoNames,
   pseudoClassNames,
 } from './grammar.ts'
 import {
@@ -52,6 +53,7 @@ const hasParamsToEscape = (node: Pseudo) =>
   pseudoCleanUpNeeded.has(node.value)
 
 const pseudoClasses = new Set<string>(pseudoClassNames)
+const partPseudos = new Set<string>(partPseudoNames)
 const combinators = new Set<string>(combinatorNames)
 const attributeOperators = new Set<string>(attributeOperatorNames)
 // pseudo-classes taking selector args, all others take strings
@@ -63,12 +65,14 @@ const invalid = (message: string, found: string) =>
 /**
  * Checks a parsed selector against the DSS grammar.
  * `forgiving`: inside `:is()`, only bare words / strings / empty
- * `#` `[]` are rejected.
+ * `#` `[]` and part selectors are rejected.
+ * `nested`: inside `:not()`/`:is()`/`:has()` (part selectors rejected).
  */
 const validate = (
   selector: Selector,
   query: string,
   forgiving = false,
+  nested = false,
 ): void => {
   const nodes = selector.nodes.filter(n => n.type !== 'comment')
   if (!nodes.length && !forgiving) {
@@ -107,12 +111,33 @@ const validate = (
           node.value,
         )
       }
+      if (partPseudos.has(name)) {
+        if (nested || i < nodes.length - 1) {
+          throw invalid(
+            `:${name}() must end a top-level selector`,
+            node.value,
+          )
+        }
+        // `:skill`, `:skill()`, `:skill(a,)`
+        if (
+          !node.nodes.length ||
+          node.nodes.some(s =>
+            s.nodes.every(n => n.type === 'comment'),
+          )
+        ) {
+          throw invalid(
+            `Missing ${name} name in :${name}()`,
+            node.value,
+          )
+        }
+      }
       if (selectorPseudos.has(name)) {
         for (const n of node.nodes) {
           validate(
             asSelectorNode(n),
             query,
             forgiving || name === 'is',
+            true,
           )
         }
       }

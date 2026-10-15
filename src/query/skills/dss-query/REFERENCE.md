@@ -82,6 +82,7 @@ Package properties:
 | `:diff(ref)`        | files changed vs git ref                | `:diff(main)`                                  |
 | `:hostname(host)`   | upstream hostname                       | `:hostname(github.com)`                        |
 | `:registry(name)`   | configured registry name                | `:registry(npm)`                               |
+| `:skill(names)`     | agent skills; --allow-skills/vlt skills | `#pkg:skill(a, "b c", x*)`                     |
 
 ## Security insights (Socket-powered, network call)
 
