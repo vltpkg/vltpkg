@@ -630,6 +630,20 @@ export class PackageInfoClient {
             this.#storeHits[how]++
             // a copy is no link: report it as a cache hit
             logRequest(r.resolved, how === 'copy' ? 'cache' : 'store')
+            // a `.tar.br` with nothing pinned: hash its cached bytes
+            // (kept as served) so the lockfile gets one, if they are
+            // what was just linked
+            if (!r.integrity && format === 'brotli') {
+              const body = (
+                await this.getRegistryClient()
+              ).cachedBody(r.resolved)?.body
+              const integrity =
+                body &&
+                (`sha512-${createHash('sha512').update(body).digest('base64')}` as const)
+              if (integrity && integrityHex(integrity) === hex) {
+                r.integrity = integrity
+              }
+            }
             return {
               ...r,
               manifest: index.manifest,

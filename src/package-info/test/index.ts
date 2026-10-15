@@ -5256,6 +5256,47 @@ t.test('brotli tarballs', async t => {
       { name: 'abbrev', version: '2.0.0' },
       'the index manifest came along, so it really was the store',
     )
+    t.equal(
+      res.integrity,
+      brAbbrevIntegrity,
+      'hash of the cached bytes',
+    )
+
+    // a lockfile node with no hash hands over the url alone
+    const locked = pi({ cache, 'store-linker': 'hardlink' })
+    const lockedRc = await locked.getRegistryClient()
+    lockedRc.request = () => {
+      throw new Error('requested the tarball')
+    }
+    const b = await locked.extract('brotli@1.0.0', `${dir}/b`, {
+      resolved: brURL,
+    })
+    t.equal(statSync(`${dir}/b/package.json`).nlink, 3, 'linked')
+    t.equal(b.integrity, brAbbrevIntegrity, 'and pinned')
+
+    // no cached body: still linked, nothing to hash
+    const nobody = pi({ cache, 'store-linker': 'hardlink' })
+    const nobodyRc = await nobody.getRegistryClient()
+    nobodyRc.cachedBody = () => undefined
+    const c = await nobody.extract('brotli@1.0.0', `${dir}/c`, {
+      resolved: brURL,
+    })
+    t.equal(statSync(`${dir}/c/package.json`).nlink, 4, 'linked')
+    t.equal(c.integrity, undefined, 'not pinned')
+
+    // damaged cache body: still linked, its hash not pinned
+    const damaged = pi({ cache, 'store-linker': 'hardlink' })
+    const damagedRc = await damaged.getRegistryClient()
+    const cachedBody = damagedRc.cachedBody.bind(damagedRc)
+    damagedRc.cachedBody = (...args) => {
+      const cached = cachedBody(...args)
+      return cached && { ...cached, body: Buffer.from('damaged') }
+    }
+    const d = await damaged.extract('brotli@1.0.0', `${dir}/d`, {
+      resolved: brURL,
+    })
+    t.equal(statSync(`${dir}/d/package.json`).nlink, 5, 'linked')
+    t.equal(d.integrity, undefined, 'not pinned')
   })
 })
 
