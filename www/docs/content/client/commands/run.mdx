@@ -157,13 +157,13 @@ matching workspace directories.
 vlt run build -w packages/app -w packages/lib
 ```
 
-### `--workspace-group`, `-g`
+### `--workspace-group`
 
 Run the script in named workspace groups defined in your project
 configuration.
 
 ```bash
-vlt run test -g frontend -g api
+vlt run test --workspace-group frontend --workspace-group api
 ```
 
 ### `--recursive`, `-r`

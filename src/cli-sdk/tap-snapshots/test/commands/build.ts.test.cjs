@@ -43,6 +43,11 @@ with scripts (:scripts) by default.
 
       ​--target=<query>
 
+    global
+      Build packages installed in the global project.
+
+      ​--global
+
 `
 
 exports[`test/commands/build.ts > TAP > views > human view - build > should return human-readable success message for build 1`] = `

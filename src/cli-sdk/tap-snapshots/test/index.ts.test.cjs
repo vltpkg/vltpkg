@@ -77,6 +77,8 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --git-hosts=<name=template>
     --git-shallow
     --git-tag-version
+    --global
+    --global-dir=<path>
     --help
     --identity=<name>
     --if-present
@@ -153,6 +155,8 @@ Unknown config option: asdf
     git-hosts
     git-shallow
     git-tag-version
+    global
+    global-dir
     help
     identity
     if-present

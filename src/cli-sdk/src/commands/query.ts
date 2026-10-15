@@ -111,6 +111,9 @@ export const usage: CommandUsage = () =>
         description:
           'Output format. Defaults to human-readable or json if no tty. Use svg or png to render the dependency graph as an image and open it. Count outputs the number of dependency relationships in the result.',
       },
+      global: {
+        description: 'Query the global project.',
+      },
     },
   })
 
@@ -172,7 +175,8 @@ export const command: CommandFn<QueryResult> = async conf => {
 
   // optionally load the cwd graph if we found a package.json file
   if (mainManifest) {
-    if (!usesHostContext) {
+    // the global project is always vlt managed
+    if (!usesHostContext && !conf.globalRoot) {
       assertVltInstalled(conf.options.projectRoot, 'query')
     }
     graph = actual.load({

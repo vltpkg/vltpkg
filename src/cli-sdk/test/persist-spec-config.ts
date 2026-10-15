@@ -586,6 +586,9 @@ t.test('through a real Config.load', async t => {
         cache() {
           return dir + '/cache'
         }
+        data() {
+          return dir + '/data'
+        }
       },
     },
   }

@@ -82,3 +82,71 @@ t.test('no start, no persisted config', async t => {
   t.equal(await r.done({} as InstallResult, { time: 1 }), undefined)
   r.error(new Error('x'))
 })
+
+t.test('global', async t => {
+  const r = reporter()
+  r.start()
+  await r.done(
+    {
+      buildQueue: [joinDepIDTuple(['registry', '', 'a@1.0.0'])],
+      global: {
+        binDir: '/g/bin',
+        bins: ['a', 'b'],
+        conflicts: ['c'],
+        inPath: false,
+      },
+    } as unknown as InstallResult,
+    { time: 5 },
+  )
+  await setTimeout(50)
+  t.match(out, 'vlt query -g :scripts')
+  t.match(out, 'vlt build -g')
+  t.match(out, 'Linked a, b in /g/bin')
+  t.match(out, 'Skipped c: already linked by another global package')
+  t.match(out, 'Add /g/bin to your PATH')
+  r.error(new Error('x'))
+
+  const r2 = reporter()
+  r2.start()
+  await r2.done(
+    {
+      global: {
+        binDir: '/g/bin',
+        bins: [],
+        conflicts: [],
+        inPath: true,
+      },
+    } as unknown as InstallResult,
+    { time: 6 },
+  )
+  await setTimeout(50)
+  t.match(out, 'Done in 6ms')
+  t.notMatch(out, 'Linked')
+  t.notMatch(out, 'Skipped')
+  t.notMatch(out, 'PATH')
+  r2.error(new Error('x'))
+
+  // PATH hint only when there are bins
+  for (const [conflicts, hint] of [
+    [[], false],
+    [['c'], true],
+  ] as const) {
+    const r = reporter()
+    r.start()
+    await r.done(
+      {
+        global: {
+          binDir: '/g/bin',
+          bins: [],
+          conflicts,
+          inPath: false,
+        },
+      } as unknown as InstallResult,
+      { time: 7 },
+    )
+    await setTimeout(50)
+    t.match(out, 'Done in 7ms')
+    t.equal(out.includes('PATH'), hint, `hint: ${hint}`)
+    r.error(new Error('x'))
+  }
+})

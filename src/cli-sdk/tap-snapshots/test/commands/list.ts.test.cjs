@@ -208,6 +208,11 @@ workspace.
 
       ​--view=[human | json | mermaid | svg | png | count]
 
+    global
+      List globally installed packages.
+
+      ​--global
+
 `
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in human format 1`] = `
