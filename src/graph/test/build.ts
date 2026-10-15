@@ -449,11 +449,11 @@ t.test('missing security data fails closed', async t => {
     timedOut: boolean,
     scanned: DepID[] = [testPkgId1],
   ) => {
-    // partial mock: graph must only need SecurityArchive from main entry
     const { build } = await t.mockImport<
       typeof import('../src/build.ts')
     >('../src/build.ts', {
       '@vltpkg/security-archive': {
+        ...(await import('@vltpkg/security-archive')),
         SecurityArchive: {
           start: async () => ({
             timedOut,

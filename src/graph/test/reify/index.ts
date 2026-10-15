@@ -1397,6 +1397,7 @@ t.test('allowScripts fails closed w/o security data', async t => {
         },
       },
       '@vltpkg/security-archive': {
+        ...(await import('@vltpkg/security-archive')),
         SecurityArchive: {
           start: async () => ({
             timedOut,

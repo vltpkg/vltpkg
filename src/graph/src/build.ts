@@ -5,8 +5,10 @@ import type { BuildResult } from './reify/build.ts'
 import { Diff } from './diff.ts'
 import { Graph } from './graph.ts'
 import { Query } from '@vltpkg/query'
-import { SecurityArchive } from '@vltpkg/security-archive'
-import { usesNpmRegistry } from '@vltpkg/security-archive/browser'
+import {
+  SecurityArchive,
+  usesNpmRegistry,
+} from '@vltpkg/security-archive'
 import type { LoadOptions } from './actual/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
