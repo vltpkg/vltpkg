@@ -276,7 +276,10 @@ You can also run the top-level command directly (`vlt whoami`). Either
 way, when the target is ambiguous vlt prompts you to pick a registry
 on an interactive terminal, and otherwise falls back to
 [`--default-registry-alias`](#bare-specs-and---default-registry-alias).
-A `--registry=<url>` on the command line always takes precedence.
+A `--registry=<url>` on the command line always takes precedence,
+except that `publish` (and `unpublish` of the package in the current
+directory) use the package's `publishConfig.registry` when set, with
+no other registry config needed.
 
 ## Named Scope Registries (npm Compatibility)
 
