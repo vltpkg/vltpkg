@@ -123,3 +123,15 @@ export const checkNeededBuild = (
 
   return buildData
 }
+
+/**
+ * Copy build state from the actual graph onto ideal nodes that are
+ * not re-extracted, since `vlt-lock.json` does not store it.
+ */
+export const carryBuildState = (diff: Diff): void => {
+  for (const [id, node] of diff.to.nodes) {
+    if (diff.nodes.add.has(node)) continue
+    const prev = diff.from.nodes.get(id)
+    if (prev) node.buildState = prev.buildState
+  }
+}

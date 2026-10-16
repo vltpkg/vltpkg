@@ -6,17 +6,28 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import { isErrorWithCause } from '@vltpkg/types'
 
+const skippedMessage = (
+  count: number,
+  reason: BuildResult['skippedReason'],
+) =>
+  `${count} package${count === 1 ? '' : 's'} not built, ${
+    reason === 'unscanned' ?
+      'Socket has not scanned them yet'
+    : 'security data timed out'
+  }. Run "vlt build" again later.`
+
 export const views = {
   human: (result: BuildResult): string => {
     const successCount = result.success.length
     const failureCount = result.failure.length
+    const skippedCount = result.skipped?.length ?? 0
     const messages: string[] = []
 
     if (successCount > 0) {
       messages.push(
         `🔨 Built ${successCount} package${successCount === 1 ? '' : 's'} successfully.`,
       )
-    } else {
+    } else if (!skippedCount) {
       messages.push('📦 All packages are already built.')
     }
 
@@ -26,26 +37,35 @@ export const views = {
       )
     }
 
+    if (skippedCount > 0) {
+      messages.push(
+        `⏳ ${skippedMessage(skippedCount, result.skippedReason)}`,
+      )
+    }
+
     return messages.join('\n')
   },
   json: (result: BuildResult) => {
-    const successList = result.success.map(node => ({
+    const toJSON = (node: Node) => ({
       id: node.id,
       name: node.name,
       version: node.version,
-    }))
-    const failureList = result.failure.map(node => ({
-      id: node.id,
-      name: node.name,
-      version: node.version,
-    }))
+    })
+    const successList = result.success.map(toJSON)
+    const failureList = result.failure.map(toJSON)
+    const skippedList = result.skipped?.map(toJSON) ?? []
 
     return {
       success: successList,
       failure: failureList,
+      ...(skippedList.length ?
+        { skipped: skippedList, skippedReason: result.skippedReason }
+      : {}),
       message:
         successList.length > 0 ?
           `Built ${successList.length} package${successList.length === 1 ? '' : 's'}.`
+        : skippedList.length ?
+          skippedMessage(skippedList.length, result.skippedReason)
         : 'No packages needed building.',
     }
   },

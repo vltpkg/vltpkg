@@ -64,6 +64,10 @@ t.test('steps, requests and trailer', async t => {
         which: 'project',
         values: { registries: { loc: 'http://u:t@loc/' } },
       },
+      migratedWorkspaces: {
+        source: 'pnpm-workspace.yaml',
+        workspaces: ['packages/*'],
+      },
     } as unknown as InstallResult,
     { time: 5 },
   )
@@ -73,6 +77,10 @@ t.test('steps, requests and trailer', async t => {
   t.match(
     out,
     'Saved registries.loc=http://***@loc/ to project vlt.json',
+  )
+  t.match(
+    out,
+    'Saved workspaces from pnpm-workspace.yaml to vlt.json',
   )
   r.error(new Error('x'))
 })

@@ -207,6 +207,17 @@ export type ResolvedWorkspaceConfig = {
   source?: WorkspaceConfigSource
 }
 
+let vltJsonOnly = false
+
+/**
+ * Process-wide: when true, {@link resolveWSConfig} reads `vlt.json`
+ * only, ignoring `package.json` and `pnpm-workspace.yaml`. Set by
+ * `vlt ci`.
+ */
+export const setVltJsonOnly = (value: boolean): void => {
+  vltJsonOnly = value
+}
+
 /**
  * Resolve the effective workspace definitions for a project.
  *
@@ -216,15 +227,19 @@ export type ResolvedWorkspaceConfig = {
  * `pnpm-workspace.yaml`. Note the precedence is keyed on the *field*,
  * not the file: a `vlt.json` that exists but says nothing about
  * workspaces still falls through to `package.json`.
+ *
+ * `vltJsonOnlyArg` skips both fallbacks (default: {@link setVltJsonOnly}).
  */
 export const resolveWSConfig = (
   projectRoot: string,
   packageJson: PackageJson = new PackageJson(),
+  vltJsonOnlyArg: boolean = vltJsonOnly,
 ): ResolvedWorkspaceConfig => {
   const fromVltJson = load('workspaces', assertWSConfig)
   if (fromVltJson !== undefined) {
     return { config: asWSConfig(fromVltJson), source: 'vlt.json' }
   }
+  if (vltJsonOnlyArg) return { config: {} }
   // maybeRead, because a project root need not have a package.json at
   // all, and an unreadable one is not this module's error to report.
   const workspaces = packageJson.maybeRead(projectRoot)?.workspaces
@@ -242,6 +257,19 @@ export const resolveWSConfig = (
     source: 'package.json',
   }
 }
+
+/**
+ * Globs to save to `vlt.json` for workspaces declared in `package.json`
+ * or `pnpm-workspace.yaml`: plain array, in order, `!` kept (yarn
+ * `nohoist` already dropped). `undefined` if from `vlt.json` or none.
+ */
+export const migratableWSConfig = ({
+  config,
+  source,
+}: ResolvedWorkspaceConfig): string[] | undefined =>
+  source && source !== 'vlt.json' ?
+    Object.values(config).flat()
+  : undefined
 
 /**
  * Split a list of glob patterns into the positive patterns and the

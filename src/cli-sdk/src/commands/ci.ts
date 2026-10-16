@@ -1,5 +1,6 @@
 import { install } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
+import { warnIgnoredWorkspaces } from '../migrate-workspaces.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -47,6 +48,7 @@ export const views = {
 } as const satisfies Views<CIResult>
 
 export const command: CommandFn<CIResult> = async conf => {
+  warnIgnoredWorkspaces(conf)
   const ciOptions = {
     ...conf.options,
     // same default as install: no scripts

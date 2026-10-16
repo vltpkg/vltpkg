@@ -38,6 +38,8 @@ Runs lifecycle scripts selectively using DSS queries.
 
 **Default target**: `:scripts:not(:built):not(:malware)` — excludes already-built and malware-flagged packages.
 
+**Fail closed**: with security selectors in the target (or `--allow-scripts`), npm registry packages with no security data are never built. `vlt build` returns them as `skipped` with `skippedReason`: `timeout` (Socket request timed out) or `unscanned` (Socket has not scanned them yet).
+
 ```bash
 vlt build                          # default target
 vlt build --target="#esbuild"      # specific package

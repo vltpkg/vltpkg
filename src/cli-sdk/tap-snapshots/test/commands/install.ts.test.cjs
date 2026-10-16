@@ -87,6 +87,12 @@ appropriately.
 
       ​--save-config
 
+    no-migrate-workspaces
+      Don't save workspaces read from package.json or pnpm-workspace.yaml to
+      vlt.json.
+
+      ​--no-migrate-workspaces
+
     workspace
       Limit installation targets to matching workspaces.
 

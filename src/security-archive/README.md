@@ -23,7 +23,9 @@ const graph = actual.load({
   projectRoot: process.cwd(),
 })
 
-const archive = await SecurityArchive.start({ graph, specOptions })
+const archive = await SecurityArchive.start({
+  nodes: [...graph.nodes.values()],
+})
 
 if (archive.ok) {
   for (const node of graph.nodes.values()) {
@@ -36,3 +38,14 @@ if (archive.ok) {
   console.warn('Failed to start the SecurityArchive')
 }
 ```
+
+## Options
+
+- `path`: sqlite db location. Defaults to the vlt XDG cache dir.
+- `retries`: retry attempts on failed API requests. Defaults to `3`.
+- `timeout`: max ms to wait for the API, retries included. Defaults to
+  `VLT_SECURITY_ARCHIVE_TIMEOUT` env or `30000`. Must be a positive
+  integer, other values are ignored. On timeout a warning is printed,
+  missing packages stay unscanned, `ok` is `false`, `timedOut` is
+  `true` and nothing is cached.
+- `ttl`: ms to cache newly fetched entries for. Defaults to 3 hours.

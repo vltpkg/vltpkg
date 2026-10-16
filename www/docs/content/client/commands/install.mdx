@@ -216,6 +216,7 @@ lang="bash" />
 | --------------------------- | ----- | -------------------------------------- |
 | `--workspace=<ws>`          | `-w`  | Limit operation to specific workspaces |
 | `--workspace-group=<group>` | `-g`  | Operate on named workspace groups      |
+| `--no-migrate-workspaces`   |       | Don't save workspaces to `vlt.json`    |
 
 <Code
   code={`# Install in specific workspace
@@ -332,6 +333,10 @@ For more details, see the
   from `package.json`
 - The lockfile (`vlt-lock.json`) ensures reproducible installs across
   environments
+- Workspaces read from `package.json` or `pnpm-workspace.yaml` are
+  saved to `vlt.json` (not with `--frozen-lockfile` /
+  `--expect-lockfile`), see
+  [Workspaces](/client/workspaces#saving-workspaces-to-vltjson)
 - Use [`vlt ci`](/client/commands/ci) in CI pipelines: removes
   `node_modules`, installs exactly from `vlt-lock.json` (like
   `--expect-lockfile`) and, like `vlt install`, runs no dependency

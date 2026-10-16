@@ -60,6 +60,12 @@ nothing is configured (neither `--registry` nor the
 so usage is readable with nothing set up. Inside a command, use the
 `requireRegistry(conf)` helper rather than a non-null assertion.
 
+`publish` and `unpublish` skip that gate: a package's
+`publishConfig.registry` alone is enough, so they resolve the registry
+in-command and throw the same `ECONFIG` error when neither it nor any
+configured registry is set. `publish` resolves every target's registry
+before running scripts or uploading anything.
+
 Commands that install packages (`install`, `update`, `uninstall`,
 `ci`, `exec`/`vlx`) also export `needsNpmRegistry = true`. That gate
 lives next to `needsRegistry` in `outputCommand()` and throws when the

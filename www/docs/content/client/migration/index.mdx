@@ -40,8 +40,9 @@ changes are:
 
 - Your `package.json` files don't change (dependencies, scripts, etc.)
 - Workspaces declared in the root `package.json` (npm, yarn) or in
-  `pnpm-workspace.yaml` `packages` (pnpm) are read as-is, so an
-  existing monorepo needs no workspace config changes
+  `pnpm-workspace.yaml` `packages` (pnpm) are read, and `vlt install`
+  copies them to `vlt.json` (commit it; `vlt ci` reads `vlt.json`
+  only)
 - `node_modules` structure is compatible — your code runs the same way
 - Registry authentication uses tokens, just stored differently
 - Workspace packages still use `workspace:` protocol references

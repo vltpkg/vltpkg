@@ -12,7 +12,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 ## Flow
 
 1. Load Actual (if not provided) with `loadManifests: true`
-2. Compute `Diff(actual, ideal)` — return early if no changes
+2. Compute `Diff(actual, ideal)`, copy Actual `buildState` onto kept nodes (`carryBuildState`) — return early if no changes
 3. Prepare `RollbackRemove` for reversibility
 4. **Extract nodes**: `pruneUnsupportedOptional()` first (after lockfile data captured) drops optional adds failing platform/deprecated check + `gc()`, so they're never extracted/linked. Then `addNodes()` → fetch/extract into `.vlt` store (existing targets moved away first). Optional deps use `optionalFail()` to prune subgraphs instead of failing
 5. **Delete edges**: `deleteEdges()` → remove outdated links + bins

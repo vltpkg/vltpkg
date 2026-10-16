@@ -22,7 +22,10 @@ import { addEdges } from './add-edges.ts'
 import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
-import { checkNeededBuild } from './check-needed-build.ts'
+import {
+  carryBuildState,
+  checkNeededBuild,
+} from './check-needed-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
 import { internalHoist } from './internal-hoist.ts'
 import { pruneUnsupportedOptional } from './optional-fail.ts'
@@ -30,7 +33,10 @@ import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
 import { Query } from '@vltpkg/query'
-import { SecurityArchive } from '@vltpkg/security-archive'
+import {
+  SecurityArchive,
+  usesNpmRegistry,
+} from '@vltpkg/security-archive'
 import type { NodeLike } from '@vltpkg/types'
 import { binChmodAll } from './bin-chmod.ts'
 
@@ -81,7 +87,16 @@ const filterNodesByQuery = async (
     },
   )
 
-  return new Set(resultNodes.map(node => node.id))
+  // fail closed: never run scripts of pkgs with no security data, be it
+  // from a timed out request or not scanned by socket.dev yet
+  const allowed =
+    securityArchive ?
+      resultNodes.filter(
+        node =>
+          securityArchive.has(node.id) || !usesNpmRegistry(node),
+      )
+    : resultNodes
+  return new Set(allowed.map(node => node.id))
 }
 
 // - [ ] depid's with peer resolutions
@@ -131,6 +146,7 @@ export const reify = async (
     })
 
   const diff = new Diff(actual, graph)
+  carryBuildState(diff)
 
   // normalise importer edge specs and compute the package.json changes
   // before deciding whether anything needs reifying: an add whose target
@@ -280,7 +296,7 @@ const reify_ = async (
 
   // set the buildQueue on the result object containing
   // an array with all the ids of nodes that need building
-  res.buildQueue = [...diff.nodes.add]
+  res.buildQueue = [...diff.to.nodes.values()]
     .filter(node => node.buildState === 'needed')
     .map(node => node.id)
 

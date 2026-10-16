@@ -79,6 +79,7 @@ t.test('createHostContextsMap', async t => {
             },
           },
           '@vltpkg/security-archive': {
+            ...(await import('@vltpkg/security-archive')),
             SecurityArchive: {
               start: async () => ({
                 get: () => undefined,

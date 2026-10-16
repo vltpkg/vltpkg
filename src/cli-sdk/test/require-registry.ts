@@ -358,7 +358,7 @@ t.test('asUnknownSpecPrefix', async t => {
     new Error('x'),
     'str',
     error('Protocol x: is not defined', { found: 'x:' }),
-    error('Named catalog not found', {
+    error('Catalog "x" not found for a@catalog:x', {
       spec: 'a@catalog:x',
       found: 'x:',
     }),

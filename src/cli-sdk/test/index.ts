@@ -93,6 +93,39 @@ t.test('infer workspace from package.json workspaces', async t => {
   )
 })
 
+t.test('ci ignores package.json workspaces', async t => {
+  const dir = t.testdir({
+    '.git': {},
+    'package.json': JSON.stringify({
+      name: '@acme/root',
+      workspaces: ['packages/*'],
+    }),
+    packages: {
+      foo: { 'package.json': JSON.stringify({ name: '@acme/foo' }) },
+    },
+  })
+  const cwd = join(dir, 'packages/foo')
+  const ci = await run(t, { argv: ['ci'], cwd })
+  t.equal(ci.config.get('workspace'), undefined)
+  t.equal(ci.config.options.monorepo, undefined)
+  const install = await run(t, { argv: ['install'], cwd })
+  t.strictSame(install.config.get('workspace'), ['packages/foo'])
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      throw new Error(`exit ${code}`)
+    },
+  })
+  const filtered = await run(t, {
+    argv: ['ci', '-w', 'packages/foo'],
+    cwd: dir,
+  })
+  t.match(filtered.error, { message: 'exit 1' })
+  t.match(
+    filtered.logs[0],
+    /vlt ci ignores package\.json and pnpm-workspace\.yaml/,
+  )
+})
+
 t.test('print version', async t => {
   const { logs } = await run(t, { argv: ['-v'] })
   t.matchOnly(logs[0], /^\d\.\d\.\d/)

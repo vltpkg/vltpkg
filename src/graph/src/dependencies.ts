@@ -1,5 +1,6 @@
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec/browser'
 import type { SpecOptions } from '@vltpkg/spec'
 import type {
@@ -10,6 +11,8 @@ import type {
   NodeLike,
 } from '@vltpkg/types'
 import {
+  isErrorWithCause,
+  isObject,
   dependencyTypes,
   longDependencyTypes,
   shortDependencyTypes,
@@ -219,6 +222,59 @@ export const getRawDependencies = (node: NodeLike) => {
 }
 
 /**
+ * Maps short dependency types to the `package.json` field declaring them.
+ */
+export const longDependencyTypeNames: Record<
+  DependencyTypeShort,
+  DependencyTypeLong
+> = {
+  prod: 'dependencies',
+  dev: 'devDependencies',
+  optional: 'optionalDependencies',
+  peer: 'peerDependencies',
+  peerOptional: 'peerDependencies',
+}
+
+// `./`-relative unless already relative or absolute
+const manifestPath = ({ location = '.' }: NodeLike) =>
+  `${/^(?:\.\.?(?:\/|$)|\/|[a-z]:)/i.test(location) ? '' : './'}${location}/package.json`
+
+/**
+ * Point an `ECONFIG` spec error (eg: an undefined `catalog:`) at the
+ * package.json & dependency type that declared it. `source` names the
+ * file the spec was read from when not the manifest (eg: a lockfile).
+ * Other values are returned as is.
+ */
+export const asDependencySpecError = (
+  er: unknown,
+  from: NodeLike,
+  type: DependencyTypeShort,
+  source?: string,
+): unknown => {
+  if (
+    !isErrorWithCause(er) ||
+    !isObject(er.cause) ||
+    er.cause.code !== 'ECONFIG'
+  ) {
+    return er
+  }
+  const pj = manifestPath(from)
+  const depType = longDependencyTypeNames[type]
+  return error(
+    er.message,
+    {
+      ...(er.cause as ErrorCauseOptions),
+      from:
+        source ?
+          `${source} (${pj} ${depType})`
+        : `${pj} (${depType})`,
+      cause: er,
+    },
+    asDependencySpecError,
+  )
+}
+
+/**
  * Retrieves a map of all dependencies, of all types, that can be inferred
  * from a given node manifest, including missing dependencies.
  */
@@ -230,12 +286,17 @@ export const getDependencies = (
   const dependencies = getRawDependencies(node)
   for (const { name, type, bareSpec } of dependencies.values()) {
     const depType = shorten(type, name, node.manifest)
-    const spec = Spec.parse(name, bareSpec, {
-      ...options,
-      // fall back to options.registry so deps don't lose the configured
-      // registry when the node itself has none. see vltpkg/vltpkg#1580.
-      registry: node.registry ?? options.registry,
-    })
+    let spec: Spec
+    try {
+      spec = Spec.parse(name, bareSpec, {
+        ...options,
+        // fall back to options.registry so deps don't lose the configured
+        // registry when the node itself has none. see vltpkg/vltpkg#1580.
+        registry: node.registry ?? options.registry,
+      })
+    } catch (er) {
+      throw asDependencySpecError(er, node, depType)
+    }
     res.set(name, {
       spec,
       type: depType,

@@ -24,6 +24,7 @@ import { pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
@@ -1352,6 +1353,99 @@ t.test('allowScripts with query selector :scripts', async t => {
   )
 })
 
+t.test('allowScripts fails closed w/o security data', async t => {
+  // reify w/ a security archive, returns the script-allowed set
+  const run = async (t: Test, scanned?: string, timedOut = true) => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          version: '1.0.0',
+          dependencies: {
+            lodash: '4',
+          },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const graph = await ideal.build({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      registries,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      remover: new RollbackRemove(),
+    })
+    let allowed = new Set<DepID>()
+    const { reify } = await t.mockImport<
+      typeof import('../../src/reify/index.ts')
+    >('../../src/reify/index.ts', {
+      '../../src/reify/build.ts': {
+        build: async (
+          _diff: unknown,
+          _packageJson: unknown,
+          _scurry: unknown,
+          allowScriptsNodes: Set<DepID>,
+        ) => {
+          allowed = allowScriptsNodes
+          return { success: [], failure: [] }
+        },
+      },
+      '@vltpkg/security-archive': {
+        ...(await import('@vltpkg/security-archive')),
+        SecurityArchive: {
+          start: async () => ({
+            timedOut,
+            has: (id: DepID) => graph.nodes.get(id)?.name === scanned,
+            get: () => undefined,
+          }),
+        },
+      },
+    })
+    await reify({
+      projectRoot,
+      packageInfo: mockPackageInfo,
+      registries,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      graph,
+      allowScripts: ':not(:malware)',
+      remover: new RollbackRemove(),
+    })
+    return [...allowed].map(id => graph.nodes.get(id)?.name).sort()
+  }
+
+  t.test('skips registry pkgs left out by a timeout', async t => {
+    t.strictSame(
+      await run(t),
+      ['test-project'],
+      'should keep only non-registry nodes',
+    )
+  })
+
+  t.test('skips registry pkgs not scanned yet', async t => {
+    t.strictSame(
+      await run(t, undefined, false),
+      ['test-project'],
+      'should keep only non-registry nodes',
+    )
+  })
+
+  t.test('keeps scanned registry pkgs', async t => {
+    t.strictSame(
+      await run(t, 'lodash'),
+      ['lodash', 'test-project'],
+      'should keep scanned pkg',
+    )
+  })
+})
+
 t.test(
   'no-op reify still reports buildQueue when nodes need building',
   async t => {
@@ -1496,6 +1590,121 @@ t.test('binding.gyp found past a stale path cache', async t => {
   const id = joinDepIDTuple(['registry', '', 'lodash@4.17.21'])
   t.strictSame(result.buildQueue, [id])
   t.equal(graph.nodes.get(id)?.buildState, 'needed')
+})
+
+t.test('pending build state survives later reify', async t => {
+  const lodashId = joinDepIDTuple(['registry', '', 'lodash@4.17.21'])
+  // lodash gets a binding.gyp, so it needs a build
+  const packageInfo = createMockPackageInfo({
+    extract: async (spec, target, options) => {
+      const res = await mockPackageInfoBase.extract(
+        spec,
+        target,
+        options,
+      )
+      if (String(spec).includes('lodash'))
+        writeFileSync(resolve(target, 'binding.gyp'), '{}')
+      return res
+    },
+  })
+  const setup = async (t: Test) => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'x',
+          version: '1.0.0',
+          dependencies: { lodash: '4' },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const opts = () => ({
+      projectRoot,
+      registries,
+      packageInfo,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      remover: new RollbackRemove(),
+      allowScripts: ':not(*)',
+    })
+    const hidden = () =>
+      JSON.parse(
+        readFileSync(
+          resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+          'utf8',
+        ),
+      ) as LockfileData
+    const o = opts()
+    const res = await reify({ ...o, graph: await ideal.build(o) })
+    t.strictSame(res.buildQueue, [lodashId])
+    t.equal(hidden().nodes[lodashId]?.[9], 1, 'pending after install')
+    return { projectRoot, opts, hidden }
+  }
+
+  t.test('unrelated add', async t => {
+    const { opts, hidden } = await setup(t)
+    const o = opts()
+    const act = actual.load({ ...o, loadManifests: true })
+    const add = Object.assign(
+      new Map([
+        [
+          joinDepIDTuple(['file', '.']),
+          new Map([
+            [
+              'underscore',
+              asDependency({
+                spec: Spec.parse('underscore', '1.13.7', {
+                  registries,
+                }),
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]),
+      { modifiedDependencies: true },
+    )
+    const graph = await ideal.build({ ...o, actual: act, add })
+    const res = await reify({ ...o, actual: act, add, graph })
+    const { nodes } = hidden()
+    t.ok(
+      nodes[joinDepIDTuple(['registry', '', 'underscore@1.13.7'])],
+      'hidden lockfile rewritten',
+    )
+    t.equal(nodes[lodashId]?.[9], 1, 'still pending')
+    t.strictSame(res.buildQueue, [lodashId])
+  })
+
+  t.test('changed spec, same node', async t => {
+    const { projectRoot, opts, hidden } = await setup(t)
+    writeFileSync(
+      resolve(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { lodash: '4.17.21' },
+      }),
+    )
+    const o = opts()
+    const act = actual.load({ ...o, loadManifests: true })
+    const graph = await ideal.build({ ...o, actual: act })
+    const res = await reify({ ...o, actual: act, graph })
+    t.equal(res.diff.hasChanges(), false)
+    const { edges, nodes } = hidden()
+    t.strictSame(
+      edges,
+      {
+        [`${joinDepIDTuple(['file', '.'])} lodash`]: `prod 4.17.21 ${lodashId}`,
+      },
+      'hidden lockfile rewritten',
+    )
+    t.equal(nodes[lodashId]?.[9], 1, 'still pending')
+  })
 })
 
 t.test('reify recreates deleted workspace node_modules', async t => {
