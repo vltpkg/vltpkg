@@ -140,9 +140,6 @@ export const mockPackageInfo = {
 
   // the fixtures answer every manifest() directly, nothing to prefetch
   prefetchResolve: () => () => {},
-
-  // reify closes the tar pool's link workers when placement is done
-  closeTarPool: async () => {},
 }
 
 const addFixture = async (spec: Spec) => {

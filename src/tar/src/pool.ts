@@ -4,7 +4,6 @@ import type {
   LinkFromStoreOptions,
   StoreLinkResult,
 } from './link-tree.ts'
-import { LinkPool } from './link-pool.ts'
 import type { StoreIndex } from './store-index.ts'
 import type { TarballFormat } from '@vltpkg/types'
 import {
@@ -47,8 +46,6 @@ const mode = process.env.VLT_TAR_SYNC
  * lower and elsewhere, by `UV_THREADPOOL_SIZE` (4 by default).
  */
 export class Pool {
-  #linkPool?: LinkPool
-
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
    * placed. Resolves when the tarball has been extracted.
@@ -91,31 +88,13 @@ export class Pool {
    * Hardlink (or copy) a global store entry into `target`. Resolves
    * how, with the index, or false on a store miss. See
    * {@link linkFromStore}.
-   *
-   * The hardlink and copy paths place a package one file at a time, so
-   * they run on a {@link LinkPool} of worker threads to place several
-   * packages at once. A `clone` is already a single syscall for the
-   * whole package, so it stays inline on the main thread, leaving macOS
-   * placement exactly as it was.
    */
   async linkFromStore(
     storeEntry: string,
     target: string,
     opts?: LinkFromStoreOptions,
   ): Promise<StoreLinkResult> {
-    if (opts?.clone) return linkFromStore(storeEntry, target, opts)
-    this.#linkPool ??= new LinkPool()
-    return this.#linkPool.linkFromStore(storeEntry, target, opts)
-  }
-
-  /**
-   * Terminate the link worker threads, if any were started. The pool
-   * works without this -- idle workers do not keep the process alive --
-   * but reify calls it when an install's placement is done, to free the
-   * threads promptly.
-   */
-  async close(): Promise<void> {
-    await this.#linkPool?.close()
+    return linkFromStore(storeEntry, target, opts)
   }
 
   /**
