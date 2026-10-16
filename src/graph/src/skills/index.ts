@@ -90,6 +90,8 @@ export type UnscannedSkills = {
  * Result of {@link listSkills}.
  */
 export type ListSkillsResult = UnscannedSkills & {
+  /** main importer name, the tree root */
+  project: string
   skills: Skill[]
   /** target dirs */
   dirs: string[]
@@ -207,11 +209,12 @@ const report = (
 export const listSkills = async (
   o: SkillsOptions,
 ): Promise<ListSkillsResult> => {
-  const { nodes, parts, unscanned } = await selectNodes(o)
+  const { graph, nodes, parts, unscanned } = await selectNodes(o)
   const { targets, scan, skipped } = dirsOf(o)
   const { skills } = discoverSkills(nodes, o.scurry, readMounts(scan))
   const { picked, dropped } = pick(skills, parts, unscanned)
   return {
+    project: graph.mainImporter.name,
     skills: picked,
     dirs: targets.map(d => d.dir),
     ...(skipped.length ? { skipped } : null),

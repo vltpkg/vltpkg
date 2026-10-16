@@ -1,4 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { mermaidTree } from '@vltpkg/graph'
 import t from 'tap'
 import type { Skill, SkillRow } from '@vltpkg/graph'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -52,6 +53,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/skills.ts')
 >('../../src/commands/skills.ts', {
   '@vltpkg/graph': {
+    mermaidTree,
     assertQuery: async (...args: unknown[]) => {
       st.asserts.push(args)
       if (st.invalid.includes(args[0] as string)) {
@@ -60,7 +62,11 @@ const Command = await t.mockImport<
     },
     listSkills: async ({ target, projectRoot, skillsDirs }: Call) => {
       calls.push({ fn: 'list', target, projectRoot, skillsDirs })
-      return { skills: [], dirs: ['.agents/skills'] }
+      return {
+        project: 'my-project',
+        skills: [],
+        dirs: ['.agents/skills'],
+      }
     },
     linkSkills: async ({
       target,
@@ -131,6 +137,7 @@ t.test('usage', async t => {
 t.test('command', async t => {
   const list = {
     action: 'list',
+    project: 'my-project',
     skills: [],
     dirs: ['.agents/skills'],
   }
@@ -436,13 +443,15 @@ t.test('views', async t => {
     return { ...r, dir, mount: `${dir}/${r.skill}` }
   }
   const dirs = ['.agents/skills', '.claude/skills']
-  const { human, json } = Command.views
+  const project = 'my-project'
+  const { human, json, mermaid } = Command.views
   const cases: [string, SkillsResult][] = [
-    ['list empty', { action: 'list', skills: [], dirs }],
+    ['list empty', { action: 'list', project, skills: [], dirs }],
     [
       'list no dirs',
       {
         action: 'list',
+        project,
         skills: [skill({ linked: ['.agents/skills'] })],
         dirs: [],
       },
@@ -451,6 +460,7 @@ t.test('views', async t => {
       'list skipped',
       {
         action: 'list',
+        project,
         skills: [],
         dirs: [],
         skipped: ['.claude/skills (outside the project)'],
@@ -460,6 +470,7 @@ t.test('views', async t => {
       'list unscanned',
       {
         action: 'list',
+        project,
         skills: [],
         dirs,
         unscanned: ['a (foo@1.0.0)'],
@@ -470,6 +481,7 @@ t.test('views', async t => {
       'list one',
       {
         action: 'list',
+        project,
         skills: [skill({ description: 'does a' })],
         dirs,
       },
@@ -478,6 +490,7 @@ t.test('views', async t => {
       'list many',
       {
         action: 'list',
+        project,
         dirs,
         skills: [
           skill({ linked: dirs }),
@@ -494,6 +507,7 @@ t.test('views', async t => {
       'list aliased',
       {
         action: 'list',
+        project,
         dirs: ['.agents/skills'],
         skills: [
           skill({
@@ -611,6 +625,12 @@ t.test('views', async t => {
   ]
   for (const [name, r] of cases) {
     t.matchSnapshot(human(r), `human ${name}`)
-    t.equal(json(r), r, `json ${name}`)
+    if (r.action === 'list') {
+      t.matchSnapshot(mermaid(r), `mermaid ${name}`)
+      t.matchSnapshot(json(r), `json ${name}`)
+    } else {
+      t.equal(mermaid(r), human(r), `mermaid ${name}`)
+      t.equal(json(r), r, `json ${name}`)
+    }
   }
 })

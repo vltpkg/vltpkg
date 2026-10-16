@@ -198,6 +198,7 @@ const isLink = (dir: string, mount: string) =>
 t.test('listSkills', async t => {
   const dir = project(t)
   const all = await listSkills(opts(dir))
+  t.equal(all.project, 'proj', 'main importer name')
   t.strictSame(all.dirs, ['skills'])
   t.strictSame(
     all.skills.map(s => [
@@ -226,7 +227,7 @@ t.test('listSkills', async t => {
   })
   t.strictSame(
     await listSkills(opts(empty)),
-    { skills: [], dirs: ['skills'] },
+    { project: 'e', skills: [], dirs: ['skills'] },
     'nothing installed',
   )
 

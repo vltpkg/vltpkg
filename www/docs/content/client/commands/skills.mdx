@@ -7,7 +7,7 @@ sidebar:
 Usage:
 
 <Code
-  code="$ vlt skills [list|link] [<query>]"
+  code="$ vlt skills [list|link] [<query>] [--view=human|json|mermaid]"
   title="Terminal"
   lang="bash"
 />
@@ -162,18 +162,29 @@ to re-point them.
 
 ### `list`
 
-The default. Lists the agent skill dirs and the skills of installed
-packages, marking the ones already linked (`linked in <dirs>` when not
-in every dir). Selects all packages (`*`) by default and applies
-`:skill()`. Creates and saves nothing.
+The default. Lists the skills of installed packages as a tree, like
+`vlt ls`: `<skill> (<package>)`, marked `(linked)` when linked in
+every agent skill dir, `(linked in <dirs>)` when only in some.
+Warnings follow the tree. Selects all packages (`*`) by default and
+applies `:skill()`. Creates and saves nothing.
 
 <Code
   code={`$ vlt skills
+my-project
+├── find-skills (skills@1.7.2) (linked)
+└── get-tsconfig (get-tsconfig@5.0.0-beta.6)
 $ vlt skills list ":root > *"
 $ vlt skills list "#skills:skill(find-*)"`}
   title="Terminal"
   lang="bash"
 />
+
+- `--view=json`: each skill's `name` is the skill, `dependency-name`
+  the dependency it is installed as, `package-name` the package's own
+  name when aliased, plus `version`, `id`, `path`, `description` and
+  the dirs it is `linked` in; `dirs` lists the agent skill dirs.
+- `--view=mermaid`: a [Mermaid](https://mermaid.js.org/) flowchart of
+  the same tree, warnings as `%%` comments. List only.
 
 ### `link`
 

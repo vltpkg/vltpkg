@@ -89,16 +89,16 @@ front), links the agent skills of matching packages afterwards (see
 result as `skills`. Unset or `:not(*)`: no skills work, the skills
 code is not loaded. `update` and `uninstall` take `allowSkills` too.
 
-### `listSkills(options): Promise<{ skills, dirs, skipped? }>`
+### `listSkills(options): Promise<{ project, skills, dirs, skipped? }>`
 
 Lists the agent skills (dirs with a `SKILL.md`, see
 https://agentskills.io/specification) shipped by installed packages in
 the vlt store, at `skills/<dir>/SKILL.md` or a root `SKILL.md`, from
 one version per package (a direct dep, else the highest), with the
-agent skill dirs each is linked in. `options.target` is a DSS query
-selecting packages (default `*`); a selector ending with
-`:skill(<name>, …)` keeps only those skills of its packages. Creates
-nothing.
+agent skill dirs each is linked in, and `project`: the main importer
+name. `options.target` is a DSS query selecting packages (default
+`*`); a selector ending with `:skill(<name>, …)` keeps only those
+skills of its packages. Creates nothing.
 
 ### `linkSkills(options): Promise<LinkSkillsResult>`
 
@@ -135,6 +135,10 @@ Throws `EUSAGE` unless `selector` is a valid DSS query.
 ### `mermaidOutput(graph): string`
 
 Generates Mermaid flowchart syntax from graph data.
+
+### `mermaidTree(root, items): string`
+
+Mermaid flowchart of `root` linked to each `{ label, edge? }` item.
 
 ### `humanReadableOutput(graph, options): string`
 

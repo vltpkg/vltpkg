@@ -1,5 +1,10 @@
 import { error } from '@vltpkg/error-cause'
-import { assertQuery, linkSkills, listSkills } from '@vltpkg/graph'
+import {
+  assertQuery,
+  linkSkills,
+  listSkills,
+  mermaidTree,
+} from '@vltpkg/graph'
 import type {
   LinkSkillsResult,
   ListSkillsResult,
@@ -90,6 +95,10 @@ export const usage: CommandUsage = () =>
         description:
           'vlt.json to save allow-skills to (default: project).',
       },
+      view: {
+        value: '[human | json | mermaid]',
+        description: 'Output format. mermaid: list only.',
+      },
     },
   })
 
@@ -110,34 +119,60 @@ const notes = (
   ...unscannedLines(r),
 ]
 
-const humanList = (r: ListSkillsResult) => {
-  const { skills, dirs } = r
-  const out = [
-    `Agent skill dirs: ${
-      dirs.length ? dirs.join(', ')
-      : r.skipped ? 'none'
-      : 'none (skills-dir is empty)'
-    }`,
-    ...notes(r),
-  ]
-  if (!skills.length) {
-    out.push('No agent skills found in installed packages.')
-    return out.join('\n')
-  }
-  out.push(`Found ${plural(skills.length, 'agent skill')}:`)
-  for (const s of skills) {
-    const pkg = s.version ? `${s.name}@${s.version}` : s.name
-    const label = s.alias ? `${s.alias} (${pkg})` : pkg
-    const linked =
-      dirs.length && dirs.every(d => s.linked.includes(d)) ?
-        ' (linked)'
-      : s.linked.length ? ` (linked in ${s.linked.join(', ')})`
-      : ''
-    out.push(`  ${label} › ${s.skill}${linked}`)
-    if (s.description) out.push(`    ${s.description}`)
-  }
-  return out.join('\n')
+// `vlt ls` style
+const pkgLabel = (s: Skill) => {
+  const pkg = s.version ? `${s.name}@${s.version}` : s.name
+  return s.alias ? `${s.alias} (${pkg})` : pkg
 }
+
+const linkedSuffix = (s: Skill, dirs: string[]) =>
+  dirs.length && dirs.every(d => s.linked.includes(d)) ? ' (linked)'
+  : s.linked.length ? ` (linked in ${s.linked.join(', ')})`
+  : ''
+
+const row = (s: Skill, dirs: string[]) =>
+  `${s.skill} (${pkgLabel(s)})${linkedSuffix(s, dirs)}`
+
+const listNotes = (r: ListSkillsResult) => [
+  ...(!r.dirs.length && !r.skipped ?
+    ['No agent skill dirs: skills-dir is empty']
+  : []),
+  ...notes(r),
+]
+
+const humanList = (r: ListSkillsResult) => {
+  const rows = r.skills.map(s => row(s, r.dirs))
+  const last = rows.length - 1
+  return [
+    ...(rows.length ?
+      [
+        r.project,
+        ...rows.map((x, i) => `${i === last ? '└──' : '├──'} ${x}`),
+      ]
+    : ['No agent skills found in installed packages.']),
+    ...listNotes(r),
+  ].join('\n')
+}
+
+const mermaidList = (r: ListSkillsResult) =>
+  [
+    mermaidTree(
+      r.project,
+      r.skills.map(s => ({
+        edge: pkgLabel(s),
+        label: `${s.skill}${linkedSuffix(s, r.dirs)}`,
+      })),
+    ),
+    ...listNotes(r).map(n => `%% ${n}`),
+  ].join('\n')
+
+// `name`: the skill, `dependency-name`: the dep it's installed as
+const jsonSkill = ({ skill, name, alias, ...rest }: Skill) => ({
+  name: skill,
+  'dependency-name': alias ?? name,
+  ...(alias !== undefined && { 'package-name': name }),
+  ...rest,
+})
 
 // distinct skills, in any number of dirs
 const count = (rows: Skill[]) =>
@@ -177,16 +212,25 @@ const humanLink = (r: LinkSkillsResult) => {
   return out.join('\n') || 'No agent skills found to link.'
 }
 
+const human = (r: SkillsResult): string =>
+  r.action === 'list' ? humanList(r)
+  : r.action === 'unchanged' ? 'No changes made.'
+  : [
+      humanLink(r),
+      ...unmatchedLines(r.unmatched),
+      ...(r.saved ? [savedLine(r.query, r.saved)] : []),
+    ].join('\n')
+
 export const views = {
-  human: (r: SkillsResult): string =>
-    r.action === 'list' ? humanList(r)
-    : r.action === 'unchanged' ? 'No changes made.'
-    : [
-        humanLink(r),
-        ...unmatchedLines(r.unmatched),
-        ...(r.saved ? [savedLine(r.query, r.saved)] : []),
-      ].join('\n'),
-  json: (r: SkillsResult) => r,
+  human,
+  json: (r: SkillsResult) => {
+    if (r.action !== 'list') return r
+    // key order kept
+    const { project, ...rest } = r
+    return { ...rest, skills: rest.skills.map(jsonSkill) }
+  },
+  mermaid: (r: SkillsResult) =>
+    r.action === 'list' ? mermaidList(r) : human(r),
 } as const satisfies Views<SkillsResult>
 
 const defaultQuery = ':not(:malware)'

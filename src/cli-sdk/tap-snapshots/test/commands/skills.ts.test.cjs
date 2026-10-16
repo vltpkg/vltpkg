@@ -63,6 +63,11 @@ skills on install.
 
       ​--config=user|project
 
+    view
+      Output format. mermaid: list only.
+
+      ​--view=[human | json | mermaid]
+
 `
 
 exports[`test/commands/skills.ts > TAP > views > human link all 1`] = `
@@ -127,50 +132,237 @@ exports[`test/commands/skills.ts > TAP > views > human link unscanned 1`] = `
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list aliased 1`] = `
-Agent skill dirs: .agents/skills
-Found 2 agent skills:
-  vercelskills (skills@1.7.2) › find-skills (linked)
-  mine (theirs) › x
+my-project
+├── find-skills (vercelskills (skills@1.7.2)) (linked)
+└── x (mine (theirs))
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list empty 1`] = `
-Agent skill dirs: .agents/skills, .claude/skills
 No agent skills found in installed packages.
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list many 1`] = `
-Agent skill dirs: .agents/skills, .claude/skills
-Found 3 agent skills:
-  foo@1.0.0 › a (linked)
-  foo@1.0.0 › b (linked in .claude/skills)
-  @s/bar › bar
+my-project
+├── a (foo@1.0.0) (linked)
+├── b (foo@1.0.0) (linked in .claude/skills)
+└── bar (@s/bar)
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list no dirs 1`] = `
-Agent skill dirs: none (skills-dir is empty)
-Found 1 agent skill:
-  foo@1.0.0 › a (linked in .agents/skills)
+my-project
+└── a (foo@1.0.0) (linked in .agents/skills)
+No agent skill dirs: skills-dir is empty
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list one 1`] = `
-Agent skill dirs: .agents/skills, .claude/skills
-Found 1 agent skill:
-  foo@1.0.0 › a
-    does a
+my-project
+└── a (foo@1.0.0)
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list skipped 1`] = `
-Agent skill dirs: none
-⚠️ Skipped .claude/skills (outside the project)
 No agent skills found in installed packages.
+⚠️ Skipped .claude/skills (outside the project)
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list unscanned 1`] = `
-Agent skill dirs: .agents/skills, .claude/skills
-⏳ 1 skill left out, security data timed out: a (foo@1.0.0). Try again later.
 No agent skills found in installed packages.
+⏳ 1 skill left out, security data timed out: a (foo@1.0.0). Try again later.
 `
 
 exports[`test/commands/skills.ts > TAP > views > human unchanged 1`] = `
 No changes made.
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list aliased 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [
+    ".agents/skills",
+  ],
+  "skills": Array [
+    Object {
+      "dependency-name": "vercelskills",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [
+        ".agents/skills",
+      ],
+      "name": "find-skills",
+      "package-name": "skills",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": "1.7.2",
+    },
+    Object {
+      "dependency-name": "mine",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [],
+      "name": "x",
+      "package-name": "theirs",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": undefined,
+    },
+  ],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list empty 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [
+    ".agents/skills",
+    ".claude/skills",
+  ],
+  "skills": Array [],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list many 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [
+    ".agents/skills",
+    ".claude/skills",
+  ],
+  "skills": Array [
+    Object {
+      "dependency-name": "foo",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [
+        ".agents/skills",
+        ".claude/skills",
+      ],
+      "name": "a",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": "1.0.0",
+    },
+    Object {
+      "dependency-name": "foo",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [
+        ".claude/skills",
+      ],
+      "name": "b",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": "1.0.0",
+    },
+    Object {
+      "dependency-name": "@s/bar",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [],
+      "name": "bar",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": undefined,
+    },
+  ],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list no dirs 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [],
+  "skills": Array [
+    Object {
+      "dependency-name": "foo",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [
+        ".agents/skills",
+      ],
+      "name": "a",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": "1.0.0",
+    },
+  ],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list one 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [
+    ".agents/skills",
+    ".claude/skills",
+  ],
+  "skills": Array [
+    Object {
+      "dependency-name": "foo",
+      "description": "does a",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [],
+      "name": "a",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": "1.0.0",
+    },
+  ],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list skipped 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [],
+  "skills": Array [],
+  "skipped": Array [
+    ".claude/skills (outside the project)",
+  ],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list unscanned 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [
+    ".agents/skills",
+    ".claude/skills",
+  ],
+  "skills": Array [],
+  "unscanned": Array [
+    "a (foo@1.0.0)",
+  ],
+  "unscannedReason": "timeout",
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list aliased 1`] = `
+flowchart TD
+a("my-project")
+a -->|"vercelskills (skills#64;1.7.2)"| b("find-skills (linked)")
+a -->|"mine (theirs)"| c("x")
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list empty 1`] = `
+flowchart TD
+a("my-project")
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list many 1`] = `
+flowchart TD
+a("my-project")
+a -->|"foo#64;1.0.0"| b("a (linked)")
+a -->|"foo#64;1.0.0"| c("b (linked in .claude/skills)")
+a -->|"#64;s/bar"| d("bar")
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list no dirs 1`] = `
+flowchart TD
+a("my-project")
+a -->|"foo#64;1.0.0"| b("a (linked in .agents/skills)")
+%% No agent skill dirs: skills-dir is empty
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list one 1`] = `
+flowchart TD
+a("my-project")
+a -->|"foo#64;1.0.0"| b("a")
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list skipped 1`] = `
+flowchart TD
+a("my-project")
+%% ⚠️ Skipped .claude/skills (outside the project)
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list unscanned 1`] = `
+flowchart TD
+a("my-project")
+%% ⏳ 1 skill left out, security data timed out: a (foo@1.0.0). Try again later.
 `
