@@ -13,6 +13,7 @@ import {
   brotliTarballUrl,
   expandNormalizedManifestSymbols,
   tarballFormat,
+  getTypeTarget,
 } from '@vltpkg/types'
 import type {
   Dist,
@@ -170,6 +171,9 @@ export class Node implements NodeLike {
    * The manifest this node represents in the graph.
    */
   manifest?: NormalizedManifest
+
+  /** target package name, retained when the package is removed. */
+  typeTarget?: string
 
   /**
    * Whether this node's artifact is the `.tar.br`: from the manifest's
@@ -382,6 +386,7 @@ export class Node implements NodeLike {
       !!brotliAlternate(manifest?.dist)
 
     this.#name = name || this.manifest?.name
+    this.typeTarget = getTypeTarget(this.#name)
     this.version = version || this.manifest?.version
   }
 
@@ -546,6 +551,7 @@ export class Node implements NodeLike {
     this.#rawManifest = confused
     this.confused = true
     this.#name = this.manifest.name
+    this.typeTarget = getTypeTarget(this.#name)
   }
 
   /**
@@ -585,6 +591,9 @@ export class Node implements NodeLike {
       modifier: this.modifier,
       platform: this.platform,
       buildState: this.buildState,
+      ...(this.typeTarget ?
+        { typeTarget: this.typeTarget }
+      : undefined),
       ...(this.peerSetHash ?
         { peerSetHash: this.peerSetHash }
       : undefined),

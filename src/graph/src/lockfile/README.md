@@ -61,6 +61,11 @@ const data = lockfile.lockfileData({ graph, saveManifests: true })
 
 ## Lockfile Format
 
+Node tuple index 10 stores the optional `typeTarget` package name. It
+stays set when the target is removed and does not create a dependency
+edge. For older lockfiles, the loader infers it from the `@types/*`
+name.
+
 ```ts
 type LockfileData = {
   lockfileVersion: number

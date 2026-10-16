@@ -97,7 +97,12 @@ const transferData: TransferData = {
 }
 
 t.test('load graph', async () => {
-  const result = load(transferData)
+  const data = structuredClone(transferData)
+  data.lockfile.nodes['~~bar@1.0.0']![10] = 'bar-target'
+  const result = load(data)
+  const bar = result.graph.nodes.get('~~bar@1.0.0')
+  t.equal(bar?.typeTarget, 'bar-target')
+  t.equal(bar?.toJSON().typeTarget, 'bar-target')
   t.matchSnapshot(
     humanReadableOutput(
       {

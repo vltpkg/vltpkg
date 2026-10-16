@@ -5,16 +5,18 @@ import {
 } from '@vltpkg/dss-parser'
 import { removeDanglingEdges, removeNode } from './helpers.ts'
 import type { ParserState } from '../types.ts'
+import { typePackages } from './types.ts'
 
 /**
- * :type(str) Pseudo-Element will match only nodes that are of
- * the same type as the value used. The type is determined by the
- * first part of the dependency ID.
+ * :type matches type definitions; :type(orphan) requires a missing target.
+ * :type(str) matches the source type encoded in the dep id.
  */
 export const type = async (state: ParserState) => {
   const type = asPostcssNodeWithChildren(state.current)
+  if (!type.nodes.length) return typePackages(state)
   const selector = asPostcssNodeWithChildren(type.nodes[0])
   const name = asTagNode(selector.nodes[0]).value
+  if (name === 'orphan') return typePackages(state, true)
   for (const node of state.partial.nodes) {
     const nodeType = splitDepID(node.id)[0]
     if (nodeType !== name) {
