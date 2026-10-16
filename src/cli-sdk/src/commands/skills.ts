@@ -14,6 +14,7 @@ import type {
 import type { WhichConfig } from '@vltpkg/vlt-json'
 import {
   configLabel,
+  fieldLines,
   savedLine,
   storedAllowSkills,
   unmatchedLines,
@@ -110,12 +111,17 @@ const lines = (header: string, items: string[]) =>
 
 // warnings shared by list and link
 const notes = (
-  r: UnscannedSkills & { skipped?: string[]; gitignore?: string[] },
+  r: UnscannedSkills & {
+    skipped?: string[]
+    gitignore?: string[]
+    fieldNotes?: string[]
+  },
 ) => [
   ...(r.skipped ? [`⚠️ Skipped ${r.skipped.join(', ')}`] : []),
   ...(r.gitignore ?
     [`⚠️ Could not update ${r.gitignore.join(', ')}`]
   : []),
+  ...fieldLines(r.fieldNotes),
   ...unscannedLines(r),
 ]
 

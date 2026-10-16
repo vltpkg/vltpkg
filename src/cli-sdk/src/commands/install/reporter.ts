@@ -14,6 +14,7 @@ import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
 import {
+  fieldLines,
   keptLine,
   savedLine,
   unmatchedLines,
@@ -148,6 +149,7 @@ export class InstallReporter extends ViewClass {
       skipped = [],
       gitignore = [],
       unmatched = [],
+      fieldNotes,
     } = _result.skills ?? {}
     const s = (n: number) => (n === 1 ? '' : 's')
     const skills: string[] = []
@@ -168,6 +170,7 @@ export class InstallReporter extends ViewClass {
       )
     }
     skills.push(...unmatchedLines(unmatched))
+    skills.push(...fieldLines(fieldNotes))
     if (skipped.length) {
       skills.push(`⚠️ Skipped ${skipped.join(', ')}`)
     }

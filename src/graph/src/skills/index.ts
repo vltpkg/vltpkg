@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import type { DepID } from '@vltpkg/dep-id'
+import { Query } from '@vltpkg/query'
 import type { PathScurry } from 'path-scurry'
 import { load as loadActual } from '../actual/load.ts'
 import type { LoadOptions } from '../actual/load.ts'
@@ -14,6 +15,7 @@ import { skillsDirs } from './dirs.ts'
 import type { SkillsDir } from './dirs.ts'
 import { discoverSkills } from './discover.ts'
 import type { Skill } from './discover.ts'
+import { fieldSkills } from './field.ts'
 import { editGitignore } from './gitignore.ts'
 import { maskSkills } from './mask.ts'
 import type { UnmatchedPattern } from './mask.ts'
@@ -97,6 +99,8 @@ export type ListSkillsResult = UnscannedSkills & {
   dirs: string[]
   /** targets dropped: `<dir> (<reason>)` */
   skipped?: string[]
+  /** package.json `skills` field issues: `<file> "skills": <msg>` */
+  fieldNotes?: string[]
 }
 
 /**
@@ -125,18 +129,38 @@ export type LinkSkillsResult = UnscannedSkills & {
   gitignore?: string[]
   /** `:skill()` patterns that matched no skill of their packages */
   unmatched?: UnmatchedPattern[]
+  /** package.json `skills` field issues: `<file> "skills": <msg>` */
+  fieldNotes?: string[]
 }
 
 const lc = (s: string) => s.toLowerCase()
 
+// the query's nodes and parts, plus the selected projects'
+// package.json `skills` fields
 const selectNodes = async (o: SkillsOptions) => {
   const graph = o.graph ?? loadActual({ ...o, loadManifests: true })
+  const target = o.target ?? '*'
   const { ids, parts, unscanned } = await filterNodesByQueryParts(
     graph,
-    o.target ?? '*',
+    target,
   )
-  const nodes = [...graph.nodes.values()].filter(n => ids.has(n.id))
-  return { graph, nodes, parts, unscanned }
+  const field = fieldSkills(
+    graph,
+    ids,
+    Query.hasSecuritySelectors(target),
+  )
+  const all = new Set([
+    ...ids,
+    ...field.parts.flatMap(p => [...p.ids]),
+  ])
+  const nodes = [...graph.nodes.values()].filter(n => all.has(n.id))
+  return {
+    graph,
+    nodes,
+    parts: [...parts, ...field.parts],
+    unscanned,
+    fieldNotes: field.notes,
+  }
 }
 
 const dirsOf = (o: SkillsOptions, create = false) =>
@@ -203,13 +227,15 @@ const report = (
 
 /**
  * List the agent skills shipped by installed packages (`:skill()`
- * applied, `unscanned` left out), and the agent skill dirs. Creates
- * nothing.
+ * applied, `unscanned` left out), and the agent skill dirs. Selected
+ * projects' package.json `skills` fields add their `npm:` deps'
+ * skills. Creates nothing.
  */
 export const listSkills = async (
   o: SkillsOptions,
 ): Promise<ListSkillsResult> => {
-  const { graph, nodes, parts, unscanned } = await selectNodes(o)
+  const { graph, nodes, parts, unscanned, fieldNotes } =
+    await selectNodes(o)
   const { targets, scan, skipped } = dirsOf(o)
   const { skills } = discoverSkills(nodes, o.scurry, readMounts(scan))
   const { picked, dropped } = pick(skills, parts, unscanned)
@@ -218,6 +244,7 @@ export const listSkills = async (
     skills: picked,
     dirs: targets.map(d => d.dir),
     ...(skipped.length ? { skipped } : null),
+    ...(fieldNotes.length ? { fieldNotes } : null),
     ...report(dropped, unscanned),
   }
 }
@@ -225,7 +252,8 @@ export const listSkills = async (
 /**
  * Link the agent skills of the selected packages into each of the
  * project's agent skill dirs (see `skillsDirs`), created only when a
- * skill is picked. `target` selectors may end with `:skill()`. One
+ * skill is picked. `target` selectors may end with `:skill()`, and
+ * selected projects' package.json `skills` fields add skills. One
  * package per name, among picked skills, in every dir: the package of
  * the first existing link (in dir order), else rank (main importer
  * dep, importer dep, transitive), then DepID; the others are
@@ -241,7 +269,8 @@ export const listSkills = async (
 export const linkSkills = async (
   o: LinkSkillsOptions,
 ): Promise<LinkSkillsResult> => {
-  const { graph, nodes, parts, unscanned } = await selectNodes(o)
+  const { graph, nodes, parts, unscanned, fieldNotes } =
+    await selectNodes(o)
   const { skills: found, scanned } = discoverSkills(nodes, o.scurry)
   const { skills, picked, unmatched, dropped } = pick(
     found,
@@ -387,6 +416,7 @@ export const linkSkills = async (
   if (skipped.length) res.skipped = skipped
   if (gitignore.length) res.gitignore = gitignore
   if (unmatched.length) res.unmatched = unmatched
+  if (fieldNotes.length) res.fieldNotes = fieldNotes
   // not left out: still linked in every dir (installs keep links)
   const left = dropped.filter(
     s =>

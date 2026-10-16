@@ -140,6 +140,56 @@ $ vlt skills link ":skill(find-skills)"`}
 Preview a query with `vlt skills list '<query>'` before `link` saves
 it. See [`:skill()`](/client/selectors/pseudo-classes/skill).
 
+## package.json `skills` field
+
+A project can list the skills it wants in a top-level `skills` field
+of its `package.json`, in the format defined by
+[skills-npm](https://github.com/antfu/skills-npm/blob/main/SPEC.md):
+
+<Code
+  code={`{
+  "dependencies": {
+    "@vueuse/skills": "^14.2.0",
+    "skills": "github:vercel-labs/skills"
+  },
+  "skills": [
+    "npm:@vueuse/skills",
+    { "source": "npm:skills", "skills": ["find-skills"] }
+  ]
+}`}
+  title="package.json"
+  lang="json"
+/>
+
+`allow-skills` still decides: the field is read only for the project
+and workspaces the query selects. Once saved, installs link entries
+added later; `vlt skills link` unlinks removed ones.
+
+<Code
+  code={`$ vlt skills link ":root"   # workspaces too: ":project"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+- `npm:<name>` is a dependency of that `package.json`, by the name it
+  is installed as. `skills` names match like `:skill()` patterns;
+  omitted or empty: every skill.
+- With the field above, `:root` links the same as
+  `:root, :root > #@vueuse/skills, :root > #skills:skill(find-skills)`.
+  `*` and `:not(:malware)` already select every package: with them,
+  the field only adds warnings.
+- A selector's `:skill()` doesn't filter field entries:
+  `:skill(find-skills)` selects the project too, so it also links
+  every skill of `@vueuse/skills`. To narrow, leave the project out:
+  `:not(:project):skill(find-skills)`.
+- A query with security selectors, like `:not(:malware)`, filters the
+  field's dependencies too: `:root:not(:malware)` links none of them.
+- Not linked, and reported as warnings (never an error): remote
+  sources (git, GitHub shorthand), local paths, `ref` with `npm:`,
+  invalid entries, names that are not installed dependencies, and
+  dependencies filtered out by security selectors.
+- The `skills` fields of dependencies are ignored.
+
 ## Layout
 
 Each skill is linked into every dir, named after the skill:
@@ -340,3 +390,5 @@ symlink, not a file or can't be written is left alone and reported.
 
 - Skills nested deeper than `skills/<name>/SKILL.md` are not found.
 - Skills are linked at the project root only, not per workspace.
+- `skills` fields of dependencies (skill packs) and remote `skills`
+  field sources are not supported.

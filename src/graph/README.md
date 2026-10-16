@@ -98,7 +98,10 @@ one version per package (a direct dep, else the highest), with the
 agent skill dirs each is linked in, and `project`: the main importer
 name. `options.target` is a DSS query selecting packages (default
 `*`); a selector ending with `:skill(<name>, …)` keeps only those
-skills of its packages. Creates nothing.
+skills of its packages. Each `npm:<dep>` entry of a selected
+importer's package.json `skills` field adds that dep's skills (names
+as `:skill()` patterns; with security selectors, the dep must match
+too); field issues are returned in `fieldNotes`. Creates nothing.
 
 ### `linkSkills(options): Promise<LinkSkillsResult>`
 

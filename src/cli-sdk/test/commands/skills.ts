@@ -526,6 +526,20 @@ t.test('views', async t => {
         ],
       },
     ],
+    [
+      'list field',
+      {
+        action: 'list',
+        project,
+        skills: [skill({ linked: dirs })],
+        dirs,
+        fieldNotes: [
+          'package.json "skills": "./x" not linked, local paths are not allowed',
+        ],
+        unscanned: ['b (foo@1.0.0)'],
+        unscannedReason: 'timeout',
+      },
+    ],
     ['link nothing', { action: 'link', query: '#a', ...result }],
     [
       'link one',
@@ -579,6 +593,21 @@ t.test('views', async t => {
         removed: ['.agents/skills/a'],
         unscanned: ['a (foo@1.0.0)', 'b (foo@1.0.0)'],
         unscannedReason: 'unscanned',
+      },
+    ],
+    [
+      'link field',
+      {
+        action: 'link',
+        query: ':root',
+        saved: 'project',
+        ...result,
+        linked: [row('.agents/skills')],
+        unmatched: [{ pattern: 'nope', skills: ['a'] }],
+        fieldNotes: [
+          'package.json "skills": "o/r@x" not linked, only npm: sources are supported',
+          'packages/a/package.json "skills": "npm:foo" not linked, not an installed dependency',
+        ],
       },
     ],
     ['unchanged', { action: 'unchanged' }],

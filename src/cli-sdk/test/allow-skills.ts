@@ -1,6 +1,7 @@
 import t from 'tap'
 import {
   configLabel,
+  fieldLines,
   keptLine,
   saveAllowSkills,
   savedLine,
@@ -115,6 +116,11 @@ t.test('lines', async t => {
       '⚠️ No skill matches "y"; the selected packages ship no skills',
       '⚠️ No skill matches "z"; no installed package matches its selector',
     ],
+  )
+  t.strictSame(fieldLines(), [])
+  t.strictSame(
+    fieldLines(['package.json "skills": must be an array']),
+    ['⚠️ package.json "skills": must be an array'],
   )
   t.strictSame(unscannedLines({}), [])
   t.strictSame(

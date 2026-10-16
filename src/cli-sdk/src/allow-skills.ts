@@ -63,6 +63,10 @@ export const unmatchedLines = (
       }`,
   )
 
+/** package.json `skills` field issues. */
+export const fieldLines = (notes: string[] = []): string[] =>
+  notes.map(n => `⚠️ ${n}`)
+
 /** Skills left out: their packages have no security data. */
 export const unscannedLines = ({
   unscanned = [],

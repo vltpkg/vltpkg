@@ -100,6 +100,7 @@ t.test('skills', async t => {
       skipped?: string[]
       gitignore?: string[]
       unmatched?: { pattern: string; skills: string[] }[]
+      fieldNotes?: string[]
       unscanned?: string[]
       unscannedReason?: 'timeout' | 'unscanned'
     } = {},
@@ -187,6 +188,17 @@ t.test('skills', async t => {
     unmatched,
     '⚠️ No skill matches "nope"; the selected packages ship: a, b\n' +
       '⚠️ No skill matches "x*"; the selected packages ship no skills',
+  )
+  t.match(
+    await done([], [], [], {
+      unmatched: [{ pattern: 'nope', skills: ['a'] }],
+      fieldNotes: [
+        'package.json "skills": "./x" not linked, local paths are not allowed',
+      ],
+    }),
+    '⚠️ No skill matches "nope"; the selected packages ship: a\n' +
+      '⚠️ package.json "skills": "./x" not linked, local paths are not allowed',
+    'field notes after unmatched',
   )
   t.match(
     await done([], [], [], {

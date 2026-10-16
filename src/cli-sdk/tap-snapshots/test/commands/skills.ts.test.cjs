@@ -84,6 +84,15 @@ exports[`test/commands/skills.ts > TAP > views > human link all 1`] = `
 ⚠️ Could not update .claude/skills/.gitignore
 `
 
+exports[`test/commands/skills.ts > TAP > views > human link field 1`] = `
+🔗 Linked 1 agent skill:
+  .agents/skills/a
+⚠️ package.json "skills": "o/r@x" not linked, only npm: sources are supported
+⚠️ packages/a/package.json "skills": "npm:foo" not linked, not an installed dependency
+⚠️ No skill matches "nope"; the selected packages ship: a
+Saved allow-skills=":root" to vlt.json
+`
+
 exports[`test/commands/skills.ts > TAP > views > human link nothing 1`] = `
 No agent skills found to link.
 `
@@ -139,6 +148,13 @@ my-project
 
 exports[`test/commands/skills.ts > TAP > views > human list empty 1`] = `
 No agent skills found in installed packages.
+`
+
+exports[`test/commands/skills.ts > TAP > views > human list field 1`] = `
+my-project
+└── a (foo@1.0.0) (linked)
+⚠️ package.json "skills": "./x" not linked, local paths are not allowed
+⏳ 1 skill left out, security data timed out: b (foo@1.0.0). Try again later.
 `
 
 exports[`test/commands/skills.ts > TAP > views > human list many 1`] = `
@@ -212,6 +228,36 @@ Object {
     ".claude/skills",
   ],
   "skills": Array [],
+}
+`
+
+exports[`test/commands/skills.ts > TAP > views > json list field 1`] = `
+Object {
+  "action": "list",
+  "dirs": Array [
+    ".agents/skills",
+    ".claude/skills",
+  ],
+  "fieldNotes": Array [
+    "package.json \\"skills\\": \\"./x\\" not linked, local paths are not allowed",
+  ],
+  "skills": Array [
+    Object {
+      "dependency-name": "foo",
+      "id": "~npm~foo@1.0.0",
+      "linked": Array [
+        ".agents/skills",
+        ".claude/skills",
+      ],
+      "name": "a",
+      "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
+      "version": "1.0.0",
+    },
+  ],
+  "unscanned": Array [
+    "b (foo@1.0.0)",
+  ],
+  "unscannedReason": "timeout",
 }
 `
 
@@ -332,6 +378,14 @@ a -->|"mine (theirs)"| c("x")
 exports[`test/commands/skills.ts > TAP > views > mermaid list empty 1`] = `
 flowchart TD
 a("my-project")
+`
+
+exports[`test/commands/skills.ts > TAP > views > mermaid list field 1`] = `
+flowchart TD
+a("my-project")
+a -->|"foo#64;1.0.0"| b("a (linked)")
+%% ⚠️ package.json "skills": "./x" not linked, local paths are not allowed
+%% ⏳ 1 skill left out, security data timed out: b (foo@1.0.0). Try again later.
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list many 1`] = `

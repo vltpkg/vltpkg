@@ -127,6 +127,18 @@ const addSkill = (dir: string, pkgDir: string, s: string) => {
   writeFileSync(resolve(dir, pkgDir, 'skills', s, 'SKILL.md'), '')
 }
 
+// root package.json w/ a `skills` field
+const withField = (dir: string, skills: unknown) =>
+  writeFileSync(
+    resolve(dir, 'package.json'),
+    JSON.stringify({
+      name: 'proj',
+      version: '1.0.0',
+      dependencies: { foo: '1.0.0', '@s/bar': '1.0.0' },
+      skills,
+    }),
+  )
+
 const opts = (projectRoot: string) => ({
   projectRoot,
   packageJson: new PackageJson(),
@@ -1300,6 +1312,66 @@ t.test('linkSkills: :skill()', async t => {
   })
 })
 
+t.test('package.json skills field', async t => {
+  const field = [
+    { source: 'npm:foo', skills: ['A'] },
+    'npm:@s/bar',
+    './x',
+  ]
+  const note =
+    'package.json "skills": "./x" not linked, local paths are not allowed'
+
+  t.test('listSkills', async t => {
+    const dir = project(t)
+    withField(dir, field)
+    const res = await listSkills({ ...opts(dir), target: ':root' })
+    t.strictSame(
+      res.skills.map(s => `${s.name} ${s.skill}`),
+      ['foo a', '@s/bar bar'],
+    )
+    t.strictSame(res.fieldNotes, [note])
+    const other = await listSkills({
+      ...opts(dir),
+      target: '#foo:skill(b)',
+    })
+    t.strictSame(
+      other.skills.map(s => s.skill),
+      ['b'],
+      'project not selected: field not read',
+    )
+    t.notOk('fieldNotes' in other)
+    const all = await listSkills(opts(dir))
+    t.strictSame(
+      all.skills.map(s => s.skill),
+      ['a', 'b', 'bar'],
+      'a union',
+    )
+    t.strictSame(all.fieldNotes, [note])
+  })
+
+  t.test('linkSkills', async t => {
+    const dir = project(t)
+    withField(dir, [
+      ...field,
+      { source: 'npm:foo', skills: ['nope'] },
+    ])
+    const res = await linkSkills({
+      ...opts(dir),
+      target: ':root',
+      apply: true,
+    })
+    t.strictSame(
+      res.linked.map(s => s.mount),
+      ['skills/a', 'skills/bar'],
+    )
+    t.strictSame(res.unmatched, [
+      { pattern: 'nope', skills: ['a', 'b'] },
+    ])
+    t.strictSame(res.fieldNotes, [note])
+    t.equal(target(dir, 'skills/a'), resolve(dir, fooDir, 'skills/a'))
+  })
+})
+
 t.test('fails closed w/o security data', async t => {
   // foo: registry pkg w/o security data (timed out)
   const { linkSkills, listSkills } = await t.mockImport<
@@ -1381,6 +1453,29 @@ t.test('fails closed w/o security data', async t => {
     const res = await linkSkills({ ...npm(dir), target: q })
     t.strictSame(res.removed, ['skills/a'])
     t.notOk(isLink(dir, 'skills/a'))
+  })
+
+  t.test('package.json skills field', async t => {
+    const dir = project(t)
+    withField(dir, ['npm:foo', 'npm:@s/bar'])
+    const root = await listSkills({
+      ...npm(dir),
+      target: `:root${q}`,
+    })
+    t.strictSame(root.skills, [], 'deps not selected by the query')
+    t.strictSame(
+      root.fieldNotes,
+      ['foo', '@s/bar'].map(
+        n =>
+          `package.json "skills": "npm:${n}" not linked, not selected by the query`,
+      ),
+    )
+    const all = await listSkills({ ...npm(dir), target: q })
+    t.strictSame(
+      all.skills.map(s => s.skill),
+      ['bar'],
+    )
+    t.strictSame(all.unscanned, unscanned, 'still left out')
   })
 
   t.test('name taken by a scanned pkg: not reported', async t => {
