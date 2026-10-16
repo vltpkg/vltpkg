@@ -47,6 +47,12 @@ export type GetAuthHeader = (
 ) => Promise<string | undefined>
 
 /**
+ * Whether an installed package ships agent skills; for `:skills`.
+ * Keeps fs out of this package.
+ */
+export type HasSkills = (node: NodeLike) => Promise<boolean>
+
+/**
  * One top-level selector of a query and the nodes it matched. `name`
  * and `patterns` are set when it ends in a part selector, e.g.
  * `#a:skill(x, y*)`.
@@ -65,6 +71,7 @@ export type ParserState = {
   current: PostcssNode
   diffFiles?: DiffFilesProvider
   getAuthHeader?: GetAuthHeader
+  hasSkills?: HasSkills
   hostContexts?: HostContextsMap
   importers: Set<NodeLike>
   initial: GraphSelectionState

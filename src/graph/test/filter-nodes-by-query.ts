@@ -2,6 +2,7 @@ import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
 import type { Test } from 'tap'
+import type { NodeLike } from '@vltpkg/types'
 import {
   assertQuery,
   filterNodesByQuery,
@@ -145,6 +146,29 @@ t.test('fails closed w/o security data', async t => {
   )
 })
 
+t.test(':skills', async t => {
+  const { graph, foo } = setup(t)
+  const { filterNodesByQuery, filterNodesByQueryParts } =
+    await t.mockImport<
+      typeof import('../src/filter-nodes-by-query.ts')
+    >('../src/filter-nodes-by-query.ts', {
+      '../src/skills/lazy.ts': {
+        hasSkills: async (n: NodeLike) => n.name === 'foo',
+      },
+    })
+  t.strictSame(
+    await filterNodesByQuery(graph, ':skills'),
+    new Set([foo.id]),
+  )
+  t.strictSame(
+    await filterNodesByQueryParts(graph, ':skills:skill(x)'),
+    {
+      ids: new Set([foo.id]),
+      parts: [{ ids: new Set([foo.id]), patterns: ['x'] }],
+    },
+  )
+})
+
 t.test('assertQuery', async t => {
   for (const q of ['*', '#foo', ':root > *', ':not(:malware)']) {
     await t.resolves(assertQuery(q, 'allow-skills'), q)
@@ -157,10 +181,15 @@ t.test('assertQuery', async t => {
       /^Invalid --allow-scripts query: :skill\(\) only applies/,
     cause: { code: 'EUSAGE', found: '#foo:skill(x)' },
   })
+  await t.resolves(assertQuery(':skills', 'allow-scripts'))
   // typos: suggestions
   await t.rejects(
     assertQuery('#foo:skills(x)', 'allow-skills', ['skill']),
-    { cause: { code: 'EUSAGE', validOptions: [':skill'] } },
+    {
+      message:
+        'Invalid --allow-skills query: :skills takes no arguments',
+      cause: { code: 'EUSAGE', validOptions: [':skill'] },
+    },
   )
   await t.rejects(assertQuery(':pr', 'allow-skills'), {
     cause: { validOptions: [':fs', ':is', ':peer', ':prod', ':v'] },

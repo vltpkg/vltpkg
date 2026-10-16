@@ -132,6 +132,11 @@ with `unscannedReason` (by `linkSkills`: unless still linked).
 Throws `EUSAGE` unless `selector` is a valid DSS query.
 `partSelectors` (e.g. `['skill']`) allows `:skill()`.
 
+### `hasSkills(node): Promise<boolean>`
+
+`:skills` provider for `Query`: true when an installed package ships
+agent skills, as `listSkills` finds them.
+
 ### `mermaidOutput(graph): string`
 
 Generates Mermaid flowchart syntax from graph data.

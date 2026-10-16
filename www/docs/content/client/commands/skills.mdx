@@ -129,9 +129,11 @@ $ vlt skills link ":skill(find-skills)"`}
   narrow one package, leave it out of the other selectors:
   `:root > *:not(#skills), #skills:skill(find-skills)`.
 - `:skill()` must end a top-level selector: `#a:skill(x) > *` is an
-  error. A typo such as `:skills(x)` is an error on its own, but
-  inside a comma list it matches nothing, like any unknown
-  pseudo-class.
+  error.
+- [`:skills`](/client/selectors/pseudo-states#skills) (no `()`)
+  matches packages that ship skills. `:skills(x)` is an error (did you
+  mean `:skill(x)`?) on its own, and matches nothing inside a comma
+  list.
 - A pattern that matches no skill of its packages prints a warning
   listing the skills they ship. The install still succeeds.
 

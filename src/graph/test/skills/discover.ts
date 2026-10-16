@@ -10,6 +10,7 @@ import type { Node } from '../../src/node.ts'
 import {
   discoverSkills,
   readFrontmatter,
+  shipsSkills,
 } from '../../src/skills/discover.ts'
 import type { SkillsDir } from '../../src/skills/dirs.ts'
 import { readMounts } from '../../src/skills/mounts.ts'
@@ -670,4 +671,58 @@ t.test('discoverSkills', async t => {
     t.equal(s?.path, path, 'realpath')
     t.strictSame(s?.linked, ['.agents/skills', '.claude/skills'])
   })
+})
+
+t.test('shipsSkills', async t => {
+  const id = (n: string) => joinDepIDTuple(['registry', '', n])
+  const tgzId = joinDepIDTuple(['file', 'pkgs/tgz.tgz'])
+  const pkg = (name: string, files: Dir) => ({
+    node_modules: { [name]: files },
+  })
+  // fresh objects: t.testdir() rejects shared ones
+  const skill = () => ({ 'SKILL.md': fm('x', 'x') })
+  const projectRoot = t.testdir({
+    'vlt.json': '{}',
+    'SKILL.md': fm('root', 'importer'),
+    local: { skills: { x: skill() } },
+    node_modules: {
+      '.vlt': {
+        [id('dir@1.0.0')]: pkg('dir', { skills: { x: skill() } }),
+        [id('root@1.0.0')]: pkg('root', skill()),
+        [id('none@1.0.0')]: pkg('none', { 'index.js': '' }),
+        [id('bad@1.0.0')]: pkg('bad', {
+          skills: { '.hidden': skill(), 'bad name': skill() },
+        }),
+        [id('smd@1.0.0')]: pkg('smd', { skills: skill() }),
+        [id('loc@1.0.0')]: pkg('loc', skill()),
+        [tgzId]: pkg('tgz', skill()),
+      },
+    },
+  })
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'root', version: '1.0.0' },
+    projectRoot,
+  })
+  const node = (n: string) => {
+    const s = Spec.parse(`${n}@1`, configData)
+    const placed = graph.placePackage(graph.mainImporter, 'prod', s, {
+      name: n,
+      version: '1.0.0',
+    })
+    if (!placed) throw new Error('failed to place ' + n)
+    return placed
+  }
+  t.equal(shipsSkills(node('dir')), true, 'skills dir')
+  t.equal(shipsSkills(node('root')), true, 'root SKILL.md')
+  t.equal(shipsSkills(node('none')), false, 'nothing')
+  t.equal(shipsSkills(node('bad')), false, 'bad dir names only')
+  t.equal(shipsSkills(node('smd')), false, 'skills/SKILL.md only')
+  t.equal(shipsSkills(graph.mainImporter), false, 'importer')
+  const loc = node('loc')
+  loc.location = './local'
+  t.equal(shipsSkills(loc), false, 'not in the store')
+  const tgz = graph.addNode(tgzId, { name: 'tgz', version: '1.0.0' })
+  t.ok(tgz.inVltStore())
+  t.equal(shipsSkills(tgz), false, 'tarball')
 })

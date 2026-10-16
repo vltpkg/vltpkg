@@ -9,6 +9,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { asError } from '@vltpkg/types'
 import type { NodeLike } from '@vltpkg/types'
 import type { Graph } from './graph.ts'
+import { hasSkills } from './skills/lazy.ts'
 
 /**
  * One top-level selector of a query: the ids it matched, and its
@@ -47,6 +48,7 @@ const search = async (
     nodes: new Set<NodeLike>(graph.nodes.values()),
     importers: graph.importers,
     securityArchive,
+    hasSkills,
     partSelectors,
   }).search(selector, { signal: new AbortController().signal })
   if (!securityArchive) return res
@@ -129,6 +131,7 @@ export const assertQuery = async (
       nodes: new Set(),
       importers: new Set(),
       securityArchive: new Map(),
+      hasSkills,
       partSelectors,
     }).search(selector, { signal: new AbortController().signal })
   } catch (cause) {

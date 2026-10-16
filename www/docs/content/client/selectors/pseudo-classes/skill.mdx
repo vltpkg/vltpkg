@@ -41,10 +41,12 @@ packages its selector matched. It only works in `--allow-skills` and
   narrow form is `:root > *:not(#skills), #skills:skill(find-skills)`.
 - A pattern that matches no skill prints a warning; the install still
   succeeds.
-- A typo such as `:skills(x)` is an error on its own, and matches
-  nothing inside a comma list, like any unknown pseudo-class.
 - Anywhere else (`vlt query`, `vlt ls`, `--allow-scripts`, …) it is an
   error. Preview a query with `vlt skills list '<query>'`.
+- [`:skills`](/client/selectors/pseudo-states#skills) (no `()`)
+  matches packages that ship skills. `:skills(x)` is an error (did you
+  mean `:skill(x)`?) on its own, and matches nothing inside a comma
+  list.
 
 ## Examples
 
@@ -77,3 +79,5 @@ Link skills by glob and by a quoted name:
 - [`vlt skills`](/client/commands/skills#pick-skills) — manage agent
   skills
 - [`:not()`](/client/selectors/pseudo-classes/not) — exclude packages
+- [`:skills`](/client/selectors/pseudo-states#skills) — packages that
+  ship skills

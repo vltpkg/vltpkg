@@ -179,7 +179,7 @@ t.test('opt-in', async t => {
 
 t.test('typo', async t => {
   const er = await errorOf('#a:skills(x)')
-  t.equal(er.message, 'Unsupported pseudo-class: :skills')
+  t.equal(er.message, ':skills takes no arguments')
   t.equal(er.cause.wanted, ':skill')
   // loose in a comma list: silently empty
   t.strictSame(await parts('#a, #b:skills(x)'), [

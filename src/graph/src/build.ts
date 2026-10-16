@@ -13,6 +13,7 @@ import type { LoadOptions } from './actual/load.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/types'
 import { saveHidden } from './lockfile/save.ts'
+import { hasSkills } from './skills/lazy.ts'
 
 /**
  * Options for the build process
@@ -58,6 +59,7 @@ const filterNodesByQuery = async (
     nodes,
     importers,
     securityArchive,
+    hasSkills,
   })
 
   const { nodes: resultNodes } = await query.search(targetQuery, {

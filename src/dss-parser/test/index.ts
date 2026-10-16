@@ -233,7 +233,7 @@ const invalid: Invalid[] = [
     'Missing skill name in :skill()',
     ':skill',
   ]),
-  ['#a:skills(x)', 'Unsupported pseudo-class: :skills', ':skills'],
+  ['#a:skilz(x)', 'Unsupported pseudo-class: :skilz', ':skilz'],
 ]
 
 const syntax: [query: string, message: string][] = [

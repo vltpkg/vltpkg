@@ -24,6 +24,7 @@ import type {
 import type {
   DiffFilesProvider,
   GetAuthHeader,
+  HasSkills,
   HostContextsMap,
   ParsedSelectorToken,
   ParserState,
@@ -177,6 +178,8 @@ export type QueryOptions = {
   hostContexts?: HostContextsMap
   diffFiles?: DiffFilesProvider
   getAuthHeader?: GetAuthHeader
+  /** for `:skills`; unset: `:skills` throws */
+  hasSkills?: HasSkills
   /** part selectors to allow, e.g. `['skill']`; others throw */
   partSelectors?: readonly PartPseudoName[]
 }
@@ -237,6 +240,7 @@ export class Query {
   #cache: Map<string, QueryResponse>
   #diffFiles: DiffFilesProvider | undefined
   #getAuthHeader: GetAuthHeader | undefined
+  #hasSkills: HasSkills | undefined
   #edges: Set<EdgeLike>
   #nodes: Set<NodeLike>
   #importers: Set<NodeLike>
@@ -297,12 +301,14 @@ export class Query {
     hostContexts,
     diffFiles,
     getAuthHeader,
+    hasSkills,
     partSelectors,
   }: QueryOptions) {
     this.#partSelectors = new Set(partSelectors)
     this.#cache = new Map()
     this.#diffFiles = diffFiles
     this.#getAuthHeader = getAuthHeader
+    this.#hasSkills = hasSkills
     this.#edges = edges
     this.#nodes = nodes
     this.#importers = importers
@@ -562,6 +568,7 @@ export class Query {
       comment: '',
       diffFiles: this.#diffFiles,
       getAuthHeader: this.#getAuthHeader,
+      hasSkills: this.#hasSkills,
       loose,
       importers,
       partial: { nodes, edges },

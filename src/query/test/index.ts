@@ -355,6 +355,33 @@ t.test('parts', async t => {
   )
 })
 
+t.test(':skills', async t => {
+  const graph = getSimpleGraph()
+  const query = new Query({
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
+    securityArchive: undefined,
+    hasSkills: async node => node.name === 'c' || node.name === 'e',
+  })
+  const names = async (q: string) =>
+    (await query.search(q, mockSearchOptions)).nodes
+      .map(n => n.name)
+      .sort()
+  t.strictSame(await names(':skills'), ['c', 'e'])
+  t.strictSame(await names(':root > :skills'), ['e'])
+  t.strictSame(await names(':not(:skills)'), [
+    '@x/y',
+    'a',
+    'b',
+    'd',
+    'f',
+    'my-project',
+  ])
+  t.strictSame(await names(':is(:skills)'), ['c', 'e'])
+  t.strictSame(await names(':has(:skills)'), ['b', 'd', 'my-project'])
+})
+
 t.test('bad selector type', async t => {
   await t.rejects(
     walk(testBrokenState()),

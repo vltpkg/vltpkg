@@ -55,6 +55,7 @@ import { severity } from './pseudo/severity.ts'
 import { spec } from './pseudo/spec.ts'
 import { shrinkwrap } from './pseudo/shrinkwrap.ts'
 import { skill } from './pseudo/skill.ts'
+import { skills } from './pseudo/skills.ts'
 import { squat } from './pseudo/squat.ts'
 import { suspicious } from './pseudo/suspicious.ts'
 import { tracker } from './pseudo/tracker.ts'
@@ -100,6 +101,7 @@ const has = async (state: ParserState) => {
           nodes: new Set(state.partial.nodes),
         },
         diffFiles: state.diffFiles,
+        hasSkills: state.hasSkills,
         loose: state.loose,
         hostContexts: state.hostContexts,
         importers: state.importers,
@@ -183,6 +185,7 @@ const is = async (state: ParserState) => {
         },
         current: node,
         diffFiles: state.diffFiles,
+        hasSkills: state.hasSkills,
         initial: state.initial,
         loose: true,
         partial: {
@@ -230,6 +233,7 @@ const not = async (state: ParserState) => {
         },
         current: node,
         diffFiles: state.diffFiles,
+        hasSkills: state.hasSkills,
         initial: state.initial,
         loose: state.loose,
         partial: {
@@ -360,6 +364,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     shell,
     shrinkwrap,
     skill,
+    skills,
     squat,
     suspicious,
     tracker,

@@ -219,6 +219,18 @@ const aliasOf = (node: Node) => {
   return n === node.name ? undefined : n
 }
 
+// store pkgs only: lockfile keeps a tarball's path as its location
+const scannable = (node: Node) =>
+  !node.importer &&
+  node.inVltStore() &&
+  splitDepID(node.id)[0] !== 'file'
+
+/** Ships agent skills, as `discoverSkills` finds them. */
+export const shipsSkills = (node: Node): boolean =>
+  scannable(node) &&
+  scan(realOr(resolve(node.projectRoot, node.location)), node.name)
+    .length > 0
+
 /**
  * Find the agent skills shipped by the given installed packages.
  *
@@ -247,14 +259,7 @@ export const discoverSkills = (
   const scanned: DiscoveredSkills['scanned'] = new Map()
   const byPkg = new Map<string, { node: Node; found: Found[] }[]>()
   for (const node of nodes) {
-    if (
-      node.importer ||
-      !node.inVltStore() ||
-      // lockfile keeps a tarball's path as its location
-      splitDepID(node.id)[0] === 'file'
-    ) {
-      continue
-    }
+    if (!scannable(node)) continue
     const found = scan(
       realOr(node.resolvedLocation(scurry)),
       node.name,

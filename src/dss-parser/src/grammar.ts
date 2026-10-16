@@ -54,6 +54,7 @@ export const pseudoClassNames = [
   'shell',
   'shrinkwrap',
   'skill',
+  'skills',
   'spec',
   'squat',
   'suspicious',

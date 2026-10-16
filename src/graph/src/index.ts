@@ -32,7 +32,7 @@ export type {
   UnmatchedPattern,
   UnscannedSkills,
 } from './skills/index.ts'
-export { linkSkills, listSkills } from './skills/lazy.ts'
+export { hasSkills, linkSkills, listSkills } from './skills/lazy.ts'
 export { assertQuery } from './filter-nodes-by-query.ts'
 
 import { load as actualLoad } from './actual/load.ts'

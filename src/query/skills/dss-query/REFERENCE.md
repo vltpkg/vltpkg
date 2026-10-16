@@ -62,6 +62,7 @@ Package properties:
 | `:prerelease` | version has prerelease part (`1.0.0-beta.1`) |
 | `:built`      | built during reify                           |
 | `:scanned`    | has Socket security metadata                 |
+| `:skills`     | ships agent skills (`SKILL.md`)              |
 
 ## Pseudo-classes (take arguments)
 
