@@ -15,6 +15,9 @@ import { storeIndexPath } from '../src/store-index.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
+// the global store test places through the link worker pool; free the
+// threads when the file is done
+t.teardown(() => p.close())
 
 const makePkg = (name: string, version: string): Buffer => {
   const pj = { name, version }
@@ -207,6 +210,10 @@ for (const sync of ['0', '1', undefined] as const) {
     t.ok(lstatSync(out), 'and always after')
   })
 }
+
+t.test('close is a no-op before any linking', async t => {
+  await t.resolves(new Pool().close())
+})
 
 t.test('global store', async t => {
   const d = t.testdir()

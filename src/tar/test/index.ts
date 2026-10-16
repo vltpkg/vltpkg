@@ -2,6 +2,7 @@ import t from 'tap'
 import * as unpack from '../src/unpack.ts'
 import * as clonefile from '../src/clonefile.ts'
 import * as linkTree from '../src/link-tree.ts'
+import * as linkPool from '../src/link-pool.ts'
 import * as pool from '../src/pool.ts'
 import * as storeEntry from '../src/store-entry.ts'
 import * as storeIndex from '../src/store-index.ts'
@@ -14,6 +15,7 @@ t.strictSame(
     unpackToStoreSync: unpack.unpackToStoreSync,
     cloneAvailable: clonefile.cloneAvailable,
     ...linkTree,
+    ...linkPool,
     ...pool,
     ...storeEntry,
     readStoreIndex: storeIndex.readStoreIndex,

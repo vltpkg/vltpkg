@@ -864,9 +864,13 @@ t.test('lazy registry and tar accessors reuse instances', async t => {
   const rc1 = await pi.getRegistryClient()
   const rc2 = await pi.getRegistryClient()
   t.equal(rc1, rc2)
+  // closing before the pool exists is a no-op
+  await t.resolves(pi.closeTarPool())
   const tar1 = await pi.getTarPool()
   const tar2 = await pi.getTarPool()
   t.equal(tar1, tar2)
+  // closing the created pool frees its link worker threads
+  await t.resolves(pi.closeTarPool())
 })
 
 t.test('packument', async t => {
