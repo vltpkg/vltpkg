@@ -14,7 +14,7 @@ import {
   save,
   saveHidden,
 } from '../../src/lockfile/save.ts'
-import { load } from '../../src/lockfile/load.ts'
+import { load, loadHidden } from '../../src/lockfile/load.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
 
 const configData = {
@@ -29,6 +29,7 @@ t.test('save', async t => {
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
+    devDependencies: { '@types/foo': '^1.0.0' },
     dependencies: {
       baz: 'custom:^1.0.0',
       foo: '^1.0.0',
@@ -94,6 +95,16 @@ t.test('save', async t => {
   )
   if (!baz) throw new Error('no baz node')
   baz.optional = true
+  const types = graph.placePackage(
+    graph.mainImporter,
+    'dev',
+    Spec.parse('@types/foo@^1.0.0'),
+    {
+      name: '@types/foo',
+      version: '1.0.0',
+    },
+  )
+  if (!types) throw new Error('missing @types/foo')
   save({ ...configData, graph })
   t.matchSnapshot(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
@@ -103,6 +114,16 @@ t.test('save', async t => {
 
   await t.test('save normal (no manifests)', async t => {
     save({ ...configData, graph })
+    const restored = load({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    t.equal(
+      restored.nodes.get(types.id)?.typeTarget,
+      'foo',
+      'main lockfile preserves the target without manifests',
+    )
     t.matchSnapshot(
       readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
         encoding: 'utf8',
@@ -112,6 +133,16 @@ t.test('save', async t => {
 
   await t.test('save hidden (yes manifests)', async t => {
     saveHidden({ ...configData, graph })
+    const restored = loadHidden({
+      ...configData,
+      projectRoot,
+      mainManifest,
+    })
+    t.equal(
+      restored.nodes.get(types.id)?.typeTarget,
+      'foo',
+      'hidden lockfile preserves the target',
+    )
     t.matchSnapshot(
       readFileSync(
         resolve(projectRoot, 'node_modules/.vlt-lock.json'),

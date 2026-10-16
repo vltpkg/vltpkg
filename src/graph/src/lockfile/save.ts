@@ -134,6 +134,10 @@ const formatNodes = (
       }
     }
 
+    if (node.typeTarget) {
+      lockfileNode[10] = node.typeTarget
+    }
+
     res[node.id] = lockfileNode
   }
   return res

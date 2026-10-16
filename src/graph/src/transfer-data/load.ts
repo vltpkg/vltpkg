@@ -204,6 +204,9 @@ export const load = (transfered: TransferData): LoadResult => {
             dev: this.dev,
             optional: this.optional,
             confused: this.confused,
+            ...(this.typeTarget ?
+              { typeTarget: this.typeTarget }
+            : undefined),
             ...(this.confused ?
               { rawManifest: this.rawManifest }
             : undefined),
