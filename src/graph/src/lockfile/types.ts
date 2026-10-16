@@ -156,6 +156,7 @@ export type LockfileNode = [
   platform?: LockfilePlatform | null,
   bins?: Record<string, string> | null,
   buildState?: LockfileBuildState | null,
+  typeTarget?: string | null,
 ]
 
 /**
