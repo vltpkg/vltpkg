@@ -57,7 +57,6 @@ t.test('install', async t => {
     async extract(spec: Spec) {
       return { resolved: '', spec }
     },
-    async closeTarPool() {},
   } as unknown as PackageInfoClient
 
   const projectRoot = t.testdir({
@@ -2136,7 +2135,6 @@ t.test('a dev flag lost to a removed prod edge heals', async t => {
     async extract(spec: Spec) {
       return { resolved: '', spec }
     },
-    async closeTarPool() {},
   } as unknown as PackageInfoClient
   const projectRoot = t.testdir({})
   t.chdir(projectRoot)
@@ -2223,7 +2221,6 @@ t.test('explicit adds carry the saved value everywhere', async t => {
     async extract(spec: Spec) {
       return { resolved: '', spec }
     },
-    async closeTarPool() {},
   } as unknown as PackageInfoClient
 
   const setup = (t: Test, deps?: Record<string, string>) => {
