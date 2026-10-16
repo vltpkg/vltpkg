@@ -113,7 +113,7 @@ t.test('a worker error rejects as that error', async t => {
     '../src/link-worker.ts': {
       __CODE_SPLIT_SCRIPT_NAME: resolve(
         import.meta.dirname,
-        'fixtures/error-worker.ts',
+        'fixtures/error-worker.mjs',
       ),
     },
   })
