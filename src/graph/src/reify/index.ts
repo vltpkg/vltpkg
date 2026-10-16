@@ -228,6 +228,8 @@ export const reify = async (
     success = true
     res.buildQueue = buildQueue
   } finally {
+    // free the link worker threads now that placement is done
+    await options.packageInfo.closeTarPool()
     /* c8 ignore start */
     if (!success) {
       await rollback(remover, diff, scurry).catch(() => {})
