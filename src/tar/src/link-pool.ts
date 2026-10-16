@@ -107,7 +107,13 @@ export class LinkPool {
     worker.on('message', (reply: LinkReply) =>
       this.#onReply(worker, reply),
     )
-    worker.on('error', (er: Error) => this.#onError(worker, er))
+    // a worker can die two ways: 'error' for an uncaught exception, and
+    // 'exit' for anything else (a process.exit, an OOM kill). Both are
+    // terminal and both reach #onLost, which ignores the second.
+    worker.on('error', (er: Error) => this.#onLost(worker, er))
+    worker.on('exit', () =>
+      this.#onLost(worker, new Error('link worker exited')),
+    )
     worker.unref()
     this.#workers.push(worker)
     return worker
@@ -145,11 +151,13 @@ export class LinkPool {
     }
   }
 
-  // A worker thread died outright (not a job that threw, which comes
-  // back as a reply): fail its in-flight job and drop it. Each worker
-  // holds at most one job at a time.
-  /* c8 ignore start - a hard worker crash is not reproducible in tests */
-  #onError(worker: Worker, er: Error): void {
+  // A worker died outright, not a job that threw (that comes back as a
+  // reply). Drop it, reject the one job it was running, and keep the
+  // queue moving so no placement promise is left hanging: queued jobs go
+  // to a surviving or freshly spawned worker. 'error' and 'exit' both
+  // land here, so the first call drops the worker and the second returns.
+  #onLost(worker: Worker, er: Error): void {
+    if (!this.#workers.includes(worker)) return
     this.#workers = this.#workers.filter(w => w !== worker)
     this.#idle = this.#idle.filter(w => w !== worker)
     for (const [id, pending] of this.#pending) {
@@ -158,15 +166,29 @@ export class LinkPool {
         pending.reject(er)
       }
     }
+    // close() empties #workers, so a closed pool always returns at the
+    // guard above and never reaches here to re-dispatch into dead workers
+    const queued = this.#queue
+    this.#queue = []
+    for (const job of queued) this.#dispatch(job)
   }
-  /* c8 ignore stop */
 
-  /** Terminate every worker. Safe to call more than once. */
+  /**
+   * Terminate every worker. Safe to call more than once. Any placement
+   * still assigned or queued is rejected rather than left hanging, since
+   * terminating a worker stops it before it can reply.
+   */
   async close(): Promise<void> {
     this.#closed = true
     const workers = this.#workers
     this.#workers = []
     this.#idle = []
+    this.#queue = []
+    const er = new Error('link pool closed')
+    for (const [id, pending] of this.#pending) {
+      this.#pending.delete(id)
+      pending.reject(er)
+    }
     await Promise.all(workers.map(w => w.terminate()))
   }
 }

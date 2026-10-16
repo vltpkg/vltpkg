@@ -488,6 +488,9 @@ export class PackageInfoClient {
    * was never created or ran inline.
    */
   async closeTarPool() {
+    // wait out an in-flight getTarPool() so a pool created concurrently
+    // is not missed, then close whatever exists
+    await this.#tarPoolPromise
     await this.#tarPool?.close()
   }
 

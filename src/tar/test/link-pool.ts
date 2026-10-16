@@ -1,4 +1,5 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import { resolve } from 'node:path'
 import { statSync, writeFileSync, renameSync } from 'node:fs'
 import { LinkPool, linkThreads } from '../src/link-pool.ts'
@@ -106,19 +107,26 @@ t.test('placement runs inline once closed', async t => {
   t.match(result, { how: 'link' }, 'still placed, on the main thread')
 })
 
-t.test('a worker error rejects as that error', async t => {
+// A pool backed by the stub worker, whose behaviour is chosen per job
+// by its storeEntry (see fixtures/stub-worker.ts).
+const stubPool = async (t: Test, size: number) => {
   const { LinkPool } = await t.mockImport<
     typeof import('../src/link-pool.ts')
   >('../src/link-pool.ts', {
     '../src/link-worker.ts': {
       __CODE_SPLIT_SCRIPT_NAME: resolve(
         import.meta.dirname,
-        'fixtures/error-worker.ts',
+        'fixtures/stub-worker.ts',
       ),
     },
   })
-  const pool = new LinkPool(2)
+  const pool = new LinkPool(size)
   t.teardown(() => pool.close())
+  return pool
+}
+
+t.test('a worker error reply rejects as that error', async t => {
+  const pool = await stubPool(t, 2)
   await t.rejects(
     pool.linkFromStore('whatever', 'target'),
     { message: 'boom', code: 'EBOOM' },
@@ -129,4 +137,54 @@ t.test('a worker error rejects as that error', async t => {
     { message: 'bare' },
     'an error with no stack or code still rejects',
   )
+})
+
+t.test('a worker that crashes rejects its in-flight job', async t => {
+  const pool = await stubPool(t, 2)
+  // 'crash' throws in the worker: an uncaught 'error' event, followed
+  // by an 'exit' the pool must ignore
+  await t.rejects(pool.linkFromStore('crash', 'target'), {
+    message: 'worker boom',
+  })
+})
+
+t.test('a worker that exits rejects its in-flight job', async t => {
+  const pool = await stubPool(t, 2)
+  await t.rejects(pool.linkFromStore('exit', 'target'), {
+    message: 'link worker exited',
+  })
+})
+
+t.test('queued jobs survive a worker that dies', async t => {
+  const pool = await stubPool(t, 2)
+  // two workers: 'crash' dies on one, 'hang' holds the other, so 'boom'
+  // has to queue. When the crashed worker is dropped its queued job must
+  // move to a fresh worker, not hang.
+  const crashed = pool.linkFromStore('crash', 'a')
+  const blocker = pool.linkFromStore('hang', 'b')
+  const queued = pool.linkFromStore('boom', 'c')
+  await t.rejects(crashed, { message: 'worker boom' })
+  await t.rejects(
+    queued,
+    { message: 'boom' },
+    'redispatched, not stuck',
+  )
+  // the blocker never replies; close() settles it
+  const closing = pool.close()
+  await t.rejects(blocker, { message: 'link pool closed' })
+  await closing
+})
+
+t.test('close settles jobs still in flight or queued', async t => {
+  const pool = await stubPool(t, 2)
+  // 'hang' never replies: two jobs occupy both workers, a third queues
+  const hung = [
+    pool.linkFromStore('hang', 'a'),
+    pool.linkFromStore('hang', 'b'),
+    pool.linkFromStore('hang', 'c'),
+  ]
+  const closing = pool.close()
+  for (const p of hung)
+    await t.rejects(p, { message: 'link pool closed' })
+  await closing
 })
