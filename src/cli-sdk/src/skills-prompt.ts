@@ -1,5 +1,6 @@
 import { createInterface } from 'node:readline/promises'
 import { asError } from '@vltpkg/types'
+import { styleTextStdout } from './output.ts'
 
 /** Streams to prompt on; default stdin and stdout. */
 export type PromptStreams = {
@@ -78,16 +79,21 @@ export const editQuery = async ({
   const output = s.output ?? process.stdout
   if (current !== undefined) {
     output.write(
-      'The new allow-skills replaces the current one. Make sure it still\n' +
-        'selects every skill you want: skills it no longer selects are unlinked.\n' +
-        `Current allow-skills: ${current}\n`,
+      '\n⚠️ The new allow-skills replaces the current one. Make sure it still\n' +
+        'selects every skill you want: skills it no longer selects are unlinked.\n\n' +
+        styleTextStdout(
+          'yellow',
+          `Current allow-skills: ${current}`,
+        ) +
+        '\n',
     )
   }
+  const prompt = styleTextStdout('cyan', 'New allow-skills: ')
   const { rl, ask } = open(s)
   try {
     let fill = prefill
     for (;;) {
-      const a = (await ask('New allow-skills: ', fill))?.trim()
+      const a = (await ask(prompt, fill))?.trim()
       if (!a) return undefined
       try {
         await check(a)

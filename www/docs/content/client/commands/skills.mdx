@@ -217,9 +217,9 @@ A query equal to the stored one links without asking or writing.
 <Code
   code={`$ vlt skills link ":root > *:skill(find-skills)"
 allow-skills is already set for this project (vlt.json): ":root > *". Replace it? [y/N] y
-The new allow-skills replaces the current one. Make sure it still
+\n⚠️ The new allow-skills replaces the current one. Make sure it still
 selects every skill you want: skills it no longer selects are unlinked.
-Current allow-skills: :root > *
+\nCurrent allow-skills: :root > *
 New allow-skills: :root > *:skill(find-skills)
 1 agent skill already linked.
 Saved allow-skills=":root > *:skill(find-skills)" to vlt.json`}
@@ -229,7 +229,8 @@ Saved allow-skills=":root > *:skill(find-skills)" to vlt.json`}
 
 In the editor, the new query is prefilled: edit it and press Enter. An
 empty answer cancels with no changes, and an invalid query prints the
-error and asks again. `-y` skips the prompts.
+error and asks again. `-y` skips the prompts. `Current` and `New` are
+colored when colors are on.
 
 <Code
   code={`# a single package, no prompts

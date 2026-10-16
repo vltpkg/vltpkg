@@ -79,6 +79,7 @@ t.test('editQuery', async t => {
   )
   t.notMatch(accept.out, 'Current allow-skills')
   t.notMatch(accept.out, 'replaces the current one')
+  t.notMatch(accept.out, '⚠️')
   t.equal((await edit('\x15abc \n')).answer, 'abc', 'edited')
   t.equal((await edit('\x15\n')).answer, undefined, 'empty: cancel')
   t.equal(
@@ -90,12 +91,35 @@ t.test('editQuery', async t => {
   const cur = await edit('\n', ':root > *')
   t.ok(
     cur.out.startsWith(
-      'The new allow-skills replaces the current one. Make sure it still\n' +
-        'selects every skill you want: skills it no longer selects are unlinked.\n' +
+      '\n⚠️ The new allow-skills replaces the current one. Make sure it still\n' +
+        'selects every skill you want: skills it no longer selects are unlinked.\n\n' +
         'Current allow-skills: :root > *\n',
     ),
-    'intro and current query',
+    'padded intro and current query',
   )
+
+  t.test('colors', async t => {
+    const { editQuery } = await t.mockImport<
+      typeof import('../src/skills-prompt.ts')
+    >('../src/skills-prompt.ts', {
+      '../src/output.ts': {
+        styleTextStdout: (f: string, s: string) =>
+          `<${f}>${s}</${f}>`,
+      },
+    })
+    const { input, output, out, type } = io()
+    const p = editQuery({
+      input,
+      output,
+      current: 'S',
+      prefill: 'p',
+      check: ok,
+    })
+    await type('New allow-skills: </cyan>', '\n')
+    t.equal(await p, 'p')
+    t.match(out(), '<yellow>Current allow-skills: S</yellow>\n')
+    t.match(out(), '<cyan>New allow-skills: </cyan>')
+  })
 
   t.test('closed input', async t => {
     const { input, output } = io()
