@@ -483,6 +483,18 @@ export class PackageInfoClient {
   }
 
   /**
+   * Terminate the tar pool's link worker threads, if any were started.
+   * Reify calls this once placement is done; it is a no-op when the pool
+   * was never created or ran inline.
+   */
+  async closeTarPool() {
+    // wait out an in-flight getTarPool() so a pool created concurrently
+    // is not missed, then close whatever exists
+    await this.#tarPoolPromise
+    await this.#tarPool?.close()
+  }
+
+  /**
    * A version's Brotli (`.tar.br`) alternate: its absolute URL, plus its
    * hash if the registry sent one. Returns undefined if the version has no
    * alternate, if it has one this client does not use (see
