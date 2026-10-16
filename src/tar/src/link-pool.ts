@@ -166,11 +166,23 @@ export class LinkPool {
         pending.reject(er)
       }
     }
-    // close() empties #workers, so a closed pool always returns at the
-    // guard above and never reaches here to re-dispatch into dead workers
+    // A surviving worker drains the queue as it finishes (see #onReply),
+    // and a worker is only idle when the queue is empty, so queued jobs
+    // are never stranded while any worker remains -- and nothing is
+    // spawned here, where a failed `new Worker` would escape this event
+    // handler. With no workers left nothing will ever run the queue, so
+    // reject it rather than let those promises hang.
+    if (this.#workers.length) return
     const queued = this.#queue
     this.#queue = []
-    for (const job of queued) this.#dispatch(job)
+    for (const job of queued) {
+      const pending = this.#pending.get(job.id)
+      /* c8 ignore next */
+      if (pending) {
+        this.#pending.delete(job.id)
+        pending.reject(er)
+      }
+    }
   }
 
   /**

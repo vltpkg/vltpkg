@@ -155,36 +155,61 @@ t.test('a worker that exits rejects its in-flight job', async t => {
   })
 })
 
-t.test('queued jobs survive a worker that dies', async t => {
+t.test(
+  'a surviving worker drains the queue after a death',
+  async t => {
+    const pool = await stubPool(t, 2)
+    // two workers: one dies on 'crash', the other replies to 'boom' and
+    // then has to pick the queued 'bare' up, rather than let it hang.
+    // attach all assertions synchronously (via Promise.all) so a
+    // rejection is never momentarily unhandled
+    await Promise.all([
+      t.rejects(pool.linkFromStore('crash', 'a'), {
+        message: 'worker boom',
+      }),
+      t.rejects(pool.linkFromStore('boom', 'b'), { message: 'boom' }),
+      t.rejects(
+        pool.linkFromStore('bare', 'c'),
+        { message: 'bare' },
+        'drained, not stuck',
+      ),
+    ])
+  },
+)
+
+t.test('queued jobs are rejected when every worker dies', async t => {
   const pool = await stubPool(t, 2)
-  // two workers: 'crash' dies on one, 'hang' holds the other, so 'boom'
-  // has to queue. When the crashed worker is dropped its queued job must
-  // move to a fresh worker, not hang.
-  const crashed = pool.linkFromStore('crash', 'a')
-  const blocker = pool.linkFromStore('hang', 'b')
-  const queued = pool.linkFromStore('boom', 'c')
-  await t.rejects(crashed, { message: 'worker boom' })
-  await t.rejects(
-    queued,
-    { message: 'boom' },
-    'redispatched, not stuck',
-  )
-  // the blocker never replies; close() settles it
-  const closing = pool.close()
-  await t.rejects(blocker, { message: 'link pool closed' })
-  await closing
+  // both workers die; the queued job can never run, so it must reject
+  await Promise.all([
+    t.rejects(pool.linkFromStore('crash', 'a'), {
+      message: 'worker boom',
+    }),
+    t.rejects(pool.linkFromStore('crash', 'b'), {
+      message: 'worker boom',
+    }),
+    t.rejects(
+      pool.linkFromStore('boom', 'c'),
+      { message: 'worker boom' },
+      'not left hanging',
+    ),
+  ])
 })
 
 t.test('close settles jobs still in flight or queued', async t => {
   const pool = await stubPool(t, 2)
-  // 'hang' never replies: two jobs occupy both workers, a third queues
-  const hung = [
-    pool.linkFromStore('hang', 'a'),
-    pool.linkFromStore('hang', 'b'),
-    pool.linkFromStore('hang', 'c'),
-  ]
-  const closing = pool.close()
-  for (const p of hung)
-    await t.rejects(p, { message: 'link pool closed' })
-  await closing
+  // 'hang' never replies: two jobs occupy both workers, a third queues.
+  // attach the assertions before close() rejects them.
+  const settled = Promise.all([
+    t.rejects(pool.linkFromStore('hang', 'a'), {
+      message: 'link pool closed',
+    }),
+    t.rejects(pool.linkFromStore('hang', 'b'), {
+      message: 'link pool closed',
+    }),
+    t.rejects(pool.linkFromStore('hang', 'c'), {
+      message: 'link pool closed',
+    }),
+  ])
+  await pool.close()
+  await settled
 })
