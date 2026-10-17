@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
-import { statSync } from 'node:fs'
+import { lstatSync, readFileSync, statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
@@ -74,11 +74,66 @@ const vltInstallFixture = (t: Test) =>
       ),
       '.bin': {
         bar: t.fixture('symlink', '../bar/bar.js'),
-        'bar.cmd': 'cmd shim',
-        'bar.ps1': 'powershell shim',
+        'bar.cmd': '"%dp0%\\..\\bar\\bar.js" %*',
+        'bar.ps1': '"$basedir/../bar/bar.js" $args',
       },
     },
   })
+
+const sharedBin = async (
+  t: Test,
+  deleteEdge: typeof import('../../src/reify/delete-edge.ts').deleteEdge,
+  projectRoot: string,
+) => {
+  const opts = { projectRoot, graph: {} as GraphLike }
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  root.location = '.'
+  const foo = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    fooManifest,
+  )
+  foo.bins = { bar: 'foo.js' }
+  const bar = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'bar@1.2.3']),
+    barManifest,
+  )
+  bar.bins = barManifest.bin
+  const bin = resolve(projectRoot, 'node_modules/.bin/bar')
+  const suffixes = ['', '.cmd', '.ps1']
+  const before = suffixes.map(suffix =>
+    readFileSync(bin + suffix, 'utf8'),
+  )
+  const scurry = new PathScurry(projectRoot)
+
+  await deleteEdge(
+    new Edge('prod', Spec.parse('foo@'), root, foo),
+    scurry,
+    mockRemover,
+  )
+  t.throws(
+    () => lstatSync(resolve(projectRoot, 'node_modules/foo')),
+    'removed dependency is unlinked',
+  )
+  statSync(resolve(projectRoot, 'node_modules/bar/bar.js'))
+  t.same(
+    suffixes.map(suffix => readFileSync(bin + suffix, 'utf8')),
+    before,
+    'shared bin and shims are unchanged',
+  )
+
+  await deleteEdge(
+    new Edge('prod', Spec.parse('bar@'), root, bar),
+    scurry,
+    mockRemover,
+  )
+  for (const suffix of process.platform === 'win32' ?
+    suffixes
+  : ['']) {
+    t.throws(() => lstatSync(bin + suffix), 'owned bin is removed')
+  }
+}
 
 t.test('posix', async t => {
   t.intercept(process, 'platform', { value: 'linux' })
@@ -132,6 +187,7 @@ t.test('posix', async t => {
   // these not touched, because not windows
   statSync(fooNM + '/.bin/bar.cmd')
   statSync(fooNM + '/.bin/bar.ps1')
+  await sharedBin(t, deleteEdge, projectRoot)
 })
 
 t.test('win32', async t => {
@@ -186,6 +242,7 @@ t.test('win32', async t => {
   // these not touched, because not windows
   t.throws(() => statSync(fooNM + '/.bin/bar.cmd'))
   t.throws(() => statSync(fooNM + '/.bin/bar.ps1'))
+  await sharedBin(t, deleteEdge, projectRoot)
 })
 
 t.test('scoped', async t => {
