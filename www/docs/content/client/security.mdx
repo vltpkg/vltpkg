@@ -297,7 +297,10 @@ query uses security selectors, eligible packages (see below) with no
 security data never run their scripts, be it because the request timed
 out or because Socket has not scanned them yet, e.g. a version
 published minutes ago. `vlt build` reports them as not built along
-with the reason; run `vlt build` later to build them.
+with the reason; run `vlt build` later to build them. `allow-skills`
+queries fail closed the same way: those packages' skills are reported
+and not linked, and [`vlt skills link`](/client/commands/skills)
+removes their links.
 
 Packages are eligible when their origin is the public npm registry
 (`https://registry.npmjs.org/`) or whatever URL is configured as

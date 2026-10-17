@@ -1,6 +1,7 @@
 import {
   actual,
   asNode,
+  hasSkills,
   humanReadableOutput,
   jsonOutput,
   mermaidOutput,
@@ -183,6 +184,7 @@ export const command: CommandFn<ListResult> = async conf => {
       securityArchive,
       hostContexts,
       getAuthHeader,
+      hasSkills,
     })
     const { nodes: resultNodes } = await scopeQuery.search(
       scopeQueryString,
@@ -245,6 +247,7 @@ export const command: CommandFn<ListResult> = async conf => {
     securityArchive,
     hostContexts,
     getAuthHeader,
+    hasSkills,
   })
   const query =
     queryString ||

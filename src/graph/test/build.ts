@@ -441,6 +441,27 @@ t.test('build with target option', async t => {
     )
   })
 
+  t.test(':skills builds pkgs that ship skills', async t => {
+    const { build } = await t.mockImport<
+      typeof import('../src/build.ts')
+    >('../src/build.ts', {
+      '../src/skills/lazy.ts': {
+        hasSkills: async (n: { name: string }) =>
+          n.name === 'other-pkg',
+      },
+    })
+    const result = await build({
+      projectRoot: targetFixture(t),
+      packageJson,
+      scurry,
+      target: ':skills',
+    })
+    t.strictSame(
+      result.success.map(n => n.name),
+      ['other-pkg'],
+    )
+  })
+
   t.end()
 })
 

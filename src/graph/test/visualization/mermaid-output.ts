@@ -8,6 +8,7 @@ import { save } from '../../src/lockfile/save.ts'
 import { load } from '../../src/lockfile/load.ts'
 import {
   mermaidOutput,
+  mermaidTree,
   generateShortId,
 } from '../../src/visualization/mermaid-output.ts'
 import { loadActualGraph } from '../fixtures/actual.ts'
@@ -412,4 +413,26 @@ t.test('large scale identifier generation', async t => {
     /^[a-zA-Z]+$/.test(largeId),
     'should only contain letters for large index',
   )
+})
+
+t.test('mermaidTree', async t => {
+  t.equal(
+    mermaidTree('my-project', []),
+    'flowchart TD\na("my-project")',
+  )
+  t.matchSnapshot(
+    mermaidTree('@s/"root"', [
+      { label: 'find-skills (linked)', edge: 'skills@1.7.2' },
+      { label: 'say "hi"', edge: 'a (@s/b@1.0.0)' },
+      { label: 'no-edge' },
+    ]),
+    'edges, no edge, escaped',
+  )
+  const many = mermaidTree(
+    'root',
+    Array.from({ length: 27 }, (_, i) => ({ label: `s${i}` })),
+  ).split('\n')
+  t.equal(many[26], 'a --> z("s24")')
+  t.equal(many[27], 'a --> A("s25")')
+  t.equal(many[28], 'a --> B("s26")')
 })

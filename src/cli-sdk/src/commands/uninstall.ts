@@ -1,5 +1,5 @@
 import { uninstall } from '@vltpkg/graph'
-import type { Graph } from '@vltpkg/graph'
+import type { Graph, LinkSkillsResult } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
@@ -11,6 +11,10 @@ export type UninstallResult = {
    * The resulting graph structure at the end of an uninstall.
    */
   graph: Graph
+  /**
+   * Agent skill links added or removed.
+   */
+  skills?: LinkSkillsResult
 }
 
 export const needsRegistry = true
@@ -61,13 +65,15 @@ export const command: CommandFn<UninstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
-  const { graph } = await uninstall(
+  const { graph, skills } = await uninstall(
     {
       ...conf.options,
       allowScripts,
+      allowSkills: conf.get('allow-skills'),
+      skillsDirs: conf.get('skills-dir'),
       lockfileOnly: conf.options['lockfile-only'],
     },
     remove,
   )
-  return { graph }
+  return { graph, ...(skills ? { skills } : null) }
 }

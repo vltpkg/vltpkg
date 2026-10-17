@@ -17,6 +17,14 @@ const Command = await t.mockImport<
       return {
         graph: {},
         buildQueue: ['··a@1.0.0'],
+        ...(opts.allowSkills ?
+          {
+            skills: {
+              allowSkills: opts.allowSkills,
+              skillsDirs: opts.skillsDirs,
+            },
+          }
+        : null),
       }
     },
   },
@@ -61,6 +69,35 @@ t.test('allow-scripts option overrides default', async t => {
       k === 'allow-scripts' ? ':root > *' : undefined,
   } as unknown as LoadedConfig)
   t.match(log, /allowScripts=:root > \*/)
+})
+
+t.test('allow-skills option', async t => {
+  const res = await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    explicit: { 'allow-skills': '#foo' },
+    // ci never writes config
+    addConfigToFile: () => {
+      throw new Error('config written')
+    },
+    get: (k: string) =>
+      k === 'allow-skills' ? '#foo'
+      : k === 'skills-dir' ? ['.claude/skills']
+      : undefined,
+  } as unknown as LoadedConfig)
+  t.strictSame(
+    res.skills,
+    { allowSkills: '#foo', skillsDirs: ['.claude/skills'] },
+    'passed through',
+  )
+  const none = await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+  t.notOk('skills' in none, 'no skills key when unset')
 })
 
 t.test('views', async t => {

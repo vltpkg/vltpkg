@@ -6,7 +6,10 @@ import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
 
-export type CIResult = Pick<InstallResult, 'buildQueue' | 'graph'>
+export type CIResult = Pick<
+  InstallResult,
+  'buildQueue' | 'graph' | 'skills'
+>
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -32,6 +35,11 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      'allow-skills': {
+        value: '<query>',
+        description:
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs.",
+      },
       'lockfile-only': {
         description:
           'Only update lockfile and package.json files; skip node_modules operations.',
@@ -53,12 +61,14 @@ export const command: CommandFn<CIResult> = async conf => {
     ...conf.options,
     // same default as install: no scripts
     allowScripts: conf.get('allow-scripts') ?? ':not(*)',
+    allowSkills: conf.get('allow-skills'),
+    skillsDirs: conf.get('skills-dir'),
     expectLockfile: true,
     frozenLockfile: true,
     cleanInstall: true,
     lockfileOnly: conf.options['lockfile-only'],
   }
 
-  const { buildQueue, graph } = await install(ciOptions)
-  return { buildQueue, graph }
+  const { buildQueue, graph, skills } = await install(ciOptions)
+  return { buildQueue, graph, ...(skills ? { skills } : null) }
 }

@@ -171,6 +171,7 @@ t.test('persists spec config after update', async t => {
       positionals: [],
       values: {},
       options: {},
+      explicit: {},
       get: () => undefined,
       addConfigToFile: async (which: string, values: unknown) => {
         log += `write ${which} ${JSON.stringify(values)}\n`
@@ -209,4 +210,116 @@ t.test('persists spec config after update', async t => {
     t.equal(log(), 'plan\n')
   })
   t.end()
+})
+
+t.test('allow-skills', async t => {
+  const skills = {
+    linked: [{ mount: '.agents/skills/a' }],
+    unchanged: [],
+    removed: ['.agents/skills/x'],
+    conflicts: ['.agents/skills/b'],
+    dirs: ['.agents/skills'],
+    skipped: ['.claude/skills (not a directory)'],
+  }
+  let seen: unknown
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/update.ts')
+  >('../../src/commands/update.ts', {
+    '@vltpkg/graph': {
+      async update(opts: {
+        allowSkills?: string
+        skillsDirs?: string[]
+      }) {
+        seen = [opts.allowSkills, opts.skillsDirs]
+        return {
+          graph: { toJSON: () => ({}) },
+          ...(opts.allowSkills ? { skills } : null),
+        }
+      },
+    },
+  })
+  const run = (value?: string, dirs?: string[]) =>
+    Command.command({
+      positionals: [],
+      values: {},
+      options: {},
+      explicit: {},
+      get: (k: string) =>
+        k === 'allow-skills' ? value
+        : k === 'skills-dir' ? dirs
+        : undefined,
+    } as unknown as LoadedConfig)
+
+  const res = await run('#foo', [])
+  t.strictSame(seen, ['#foo', []], 'passed to update')
+  t.equal(res.skills, skills, 'returned')
+  t.notOk('skills' in (await run()), 'no skills key when unset')
+  t.strictSame(Command.views.json(res), {
+    graph: {},
+    skills: {
+      linked: ['.agents/skills/a'],
+      removed: ['.agents/skills/x'],
+      conflicts: ['.agents/skills/b'],
+      dirs: ['.agents/skills'],
+      skipped: ['.claude/skills (not a directory)'],
+    },
+  })
+  const allowSkills = { query: '#foo' }
+  t.match(Command.views.json({ ...res, allowSkills }), {
+    allowSkills,
+  })
+})
+
+t.test('saves --allow-skills after update', async t => {
+  const setup = async (o: { stored?: string; fail?: boolean }) => {
+    const log: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/update.ts')
+    >('../../src/commands/update.ts', {
+      '@vltpkg/graph': {
+        async update() {
+          log.push('update')
+          if (o.fail) throw new Error('update failed')
+          return { graph: {} }
+        },
+      },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: {},
+      explicit: { 'allow-skills': '#foo' },
+      layers:
+        o.stored ? { project: { 'allow-skills': o.stored } } : {},
+      get: (k: string) => (k === 'allow-skills' ? '#foo' : undefined),
+      addConfigToFile: async (which: string, values: unknown) => {
+        log.push(`write ${which} ${JSON.stringify(values)}`)
+      },
+    } as unknown as LoadedConfig
+    return { run: () => Command.command(conf), log }
+  }
+
+  t.test('saved', async t => {
+    const { run, log } = await setup({})
+    t.strictSame((await run()).allowSkills, { query: '#foo' })
+    t.strictSame(log, [
+      'update',
+      'write project {"allow-skills":"#foo"}',
+    ])
+  })
+
+  t.test('another stored: kept', async t => {
+    const { run, log } = await setup({ stored: '#bar' })
+    t.strictSame((await run()).allowSkills, {
+      query: '#foo',
+      stored: { query: '#bar', which: 'project' },
+    })
+    t.strictSame(log, ['update'])
+  })
+
+  t.test('failed update: no write', async t => {
+    const { run, log } = await setup({ fail: true })
+    await t.rejects(run(), { message: 'update failed' })
+    t.strictSame(log, ['update'])
+  })
 })

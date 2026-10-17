@@ -2939,3 +2939,143 @@ t.test('the frozen error names the changed option', async t => {
     'the only detail line is the catalog entry',
   )
 })
+
+t.test('allowSkills', async t => {
+  type LinkOpts = {
+    target: string
+    skillsDirs?: string[]
+    graph: unknown
+    apply?: boolean
+  }
+  // no `linkSkills`: loading the skills module throws
+  const setup = async (
+    t: Test,
+    linkSkills?: (o: LinkOpts) => unknown,
+  ) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+      }),
+      'vlt.json': '{}',
+      node_modules: { '.vlt-lock.json': '{}' },
+    })
+    const graph = {
+      nodes: new Map(),
+      importers: [],
+      projectRoot: dir,
+    }
+    let built = 0
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/ideal/build.ts': {
+        build: async () => {
+          built++
+          return graph
+        },
+      },
+      '../src/reify/index.ts': {
+        reify: async () => ({ buildQueue: [], diff: {} }),
+      },
+      '../src/index.ts': { lockfile: { save: () => {} } },
+      '../src/skills/index.ts': {
+        get linkSkills() {
+          if (!linkSkills) throw new Error('skills module loaded')
+          return async (o: LinkOpts) => linkSkills(o)
+        },
+      },
+    })
+    const run = (extra: Partial<InstallOptions>) =>
+      install(
+        {
+          projectRoot: dir,
+          scurry: new PathScurry(dir),
+          packageJson: new PackageJson(),
+          packageInfo: mockPackageInfo,
+          allowScripts: ':not(*)',
+          ...extra,
+        },
+        new Map() as AddImportersDependenciesMap,
+      )
+    return { dir, graph, run, built: () => built }
+  }
+
+  t.test('links matching skills', async t => {
+    const calls: LinkOpts[] = []
+    const skills = {
+      linked: [],
+      unchanged: [],
+      removed: [],
+      conflicts: [],
+    }
+    const { graph, run } = await setup(t, o => {
+      calls.push(o)
+      return skills
+    })
+    const result = await run({
+      allowSkills: '#foo',
+      skillsDirs: ['.claude/skills'],
+    })
+    t.equal(calls.length, 1)
+    t.equal(calls[0]?.target, '#foo')
+    t.notOk(calls[0]?.apply, 'installs never apply')
+    t.strictSame(calls[0]?.skillsDirs, ['.claude/skills'])
+    t.equal(calls[0]?.graph, graph, 'uses the installed graph')
+    t.equal(result.skills, skills)
+    await run({ allowSkills: '#foo:skill(x)' })
+    t.equal(calls[1]?.target, '#foo:skill(x)', ':skill() accepted')
+  })
+
+  t.test('unset or :not(*): skills module never loaded', async t => {
+    const { run } = await setup(t)
+    for (const extra of [
+      {},
+      { allowSkills: ':not(*)' },
+      { skillsDirs: ['../x'] },
+    ]) {
+      const result = await run(extra)
+      t.notOk('skills' in result, JSON.stringify(extra))
+    }
+    await t.rejects(
+      run({ allowSkills: '*' }),
+      /skills module loaded/,
+      'set: loaded',
+    )
+  })
+
+  t.test('lockfileOnly: skills module never loaded', async t => {
+    const { run } = await setup(t)
+    const result = await run({ allowSkills: '*', lockfileOnly: true })
+    t.notOk('skills' in result)
+  })
+
+  t.test('invalid query fails before installing', async t => {
+    const { run, built } = await setup(t)
+    for (const q of [':nope', '#foo:skill(x) > *']) {
+      await t.rejects(run({ allowSkills: q }), {
+        cause: { code: 'EUSAGE', found: q },
+      })
+    }
+    t.equal(built(), 0, 'nothing built')
+  })
+
+  t.test('invalid skills-dir fails before installing', async t => {
+    const { run, built } = await setup(t)
+    await t.rejects(run({ allowSkills: '*', skillsDirs: ['../x'] }), {
+      cause: { code: 'EUSAGE', found: '../x' },
+    })
+    t.equal(built(), 0, 'nothing built')
+  })
+
+  t.test('a link failure does not undo the install', async t => {
+    const { dir, run } = await setup(t, () => {
+      throw new Error('link failed')
+    })
+    await t.rejects(run({ allowSkills: '*' }), /link failed/)
+    t.ok(
+      statSync(resolve(dir, 'node_modules/.vlt-lock.json')).isFile(),
+      'hidden lockfile kept',
+    )
+  })
+})

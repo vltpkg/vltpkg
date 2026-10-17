@@ -129,6 +129,7 @@ Matches dependencies that have an override applied (via the
 | `:prerelease` | Packages with prerelease versions        |
 | `:built`      | Packages successfully built during reify |
 | `:scanned`    | Packages with security metadata          |
+| `:skills`     | Packages that ship agent skills          |
 
 ### `:private`
 
@@ -177,6 +178,27 @@ metadata. See [Security Insights](/client/selectors/security-insights)
 for security-specific selectors.
 
 <Code code="$ vlt query ':scanned'" title="Terminal" lang="bash" />
+
+### `:skills`
+
+Matches installed packages that ship
+[agent skills](/client/commands/skills): a `skills/<dir>/SKILL.md` or
+a root `SKILL.md`, found as `vlt skills` finds them. The project and
+its workspaces never match, nor do `file:` packages.
+
+<Code code="$ vlt query ':skills'" title="Terminal" lang="bash" />
+
+Direct dependencies that ship skills:
+
+<Code
+  code="$ vlt ls --target=':root > :skills'"
+  title="Terminal"
+  lang="bash"
+/>
+
+Works in `vlt query`, `vlt ls`, `vlt build`, `--allow-skills`,
+`--allow-scripts` and `vlt skills`. Elsewhere (other commands'
+`--target`/`--scope`) it is an error.
 
 ## What gets selected
 

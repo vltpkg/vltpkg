@@ -59,6 +59,14 @@ d -->|"foo#64;^1.0.0"| b
 a -->|"missing#64;^1.0.0"| missing-0(Missing)
 `
 
+exports[`test/visualization/mermaid-output.ts > TAP > mermaidTree > edges, no edge, escaped 1`] = `
+flowchart TD
+a("#64;s/#quot;root#quot;")
+a -->|"skills#64;1.7.2"| b("find-skills (linked)")
+a -->|"a (#64;s/b#64;1.0.0)"| c("say #quot;hi#quot;")
+a --> d("no-edge")
+`
+
 exports[`test/visualization/mermaid-output.ts > TAP > workspaces > should print workspaces mermaid output 1`] = `
 flowchart TD
 a("root:my-project")

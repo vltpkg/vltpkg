@@ -62,6 +62,7 @@ Package properties:
 | `:prerelease` | version has prerelease part (`1.0.0-beta.1`) |
 | `:built`      | built during reify                           |
 | `:scanned`    | has Socket security metadata                 |
+| `:skills`     | ships agent skills (`SKILL.md`)              |
 
 ## Pseudo-classes (take arguments)
 
@@ -82,6 +83,7 @@ Package properties:
 | `:diff(ref)`        | files changed vs git ref                | `:diff(main)`                                  |
 | `:hostname(host)`   | upstream hostname                       | `:hostname(github.com)`                        |
 | `:registry(name)`   | configured registry name                | `:registry(npm)`                               |
+| `:skill(names)`     | agent skills; --allow-skills/vlt skills | `#pkg:skill(a, "b c", x*)`                     |
 
 ## Security insights (Socket-powered, network call)
 

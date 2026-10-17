@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import type { InstallResult } from '../../src/commands/install.ts'
 
 const options = {}
 const parsedAdd = new Map()
@@ -483,6 +484,7 @@ t.test('persists spec config after install', async t => {
       positionals: [],
       values: { 'save-types': true },
       options: {},
+      explicit: {},
       get: () => undefined,
       addConfigToFile: async (which: string, values: unknown) => {
         log += `write ${which} ${JSON.stringify(values)}\n`
@@ -566,6 +568,7 @@ t.test('migrates workspaces after install', async t => {
     const conf = {
       positionals: [],
       values: {},
+      explicit: {},
       options,
       get: () => undefined,
     } as unknown as LoadedConfig
@@ -602,5 +605,181 @@ t.test('json view includes persistedConfig', async t => {
   }
   t.match(Command.views.json({ graph: {} as any, persistedConfig }), {
     persistedConfig,
+  })
+})
+
+t.test('allow-skills', async t => {
+  const skills = {
+    linked: [{ mount: '.agents/skills/a' }],
+    unchanged: [{ mount: '.agents/skills/c' }],
+    removed: ['.agents/skills/x'],
+    conflicts: ['.claude/skills/b'],
+    dirs: ['.agents/skills', '.claude/skills'],
+  }
+  let seen: unknown
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      async install(opts: {
+        allowSkills?: string
+        skillsDirs?: string[]
+      }) {
+        seen = [opts.allowSkills, opts.skillsDirs]
+        return {
+          graph: {},
+          ...(opts.allowSkills ? { skills } : null),
+        }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseAddArgs: () => ({ add: new Map() }),
+    },
+    '../../src/save-types.ts': { addTypesDeps: async () => {} },
+  })
+  const run = (value?: string, dirs?: string[]) =>
+    Command.command({
+      positionals: [],
+      values: {},
+      options: {},
+      explicit: {},
+      get: (k: string) =>
+        k === 'allow-skills' ? value
+        : k === 'skills-dir' ? dirs
+        : undefined,
+    } as unknown as LoadedConfig)
+
+  const res = await run('#foo', ['.claude/skills'])
+  t.strictSame(
+    seen,
+    ['#foo', ['.claude/skills']],
+    'passed to install',
+  )
+  t.equal(res.skills, skills, 'returned')
+  t.notOk('skills' in (await run()), 'no skills key when unset')
+
+  const json = (s: object) =>
+    Command.views.json({
+      graph: {},
+      skills: s,
+    } as unknown as InstallResult).skills
+  const out = {
+    linked: ['.agents/skills/a'],
+    removed: ['.agents/skills/x'],
+    conflicts: ['.claude/skills/b'],
+    dirs: ['.agents/skills', '.claude/skills'],
+  }
+  t.strictSame(json(skills), out)
+  const notes = {
+    skipped: ['.kiro/skills (outside the project)'],
+    gitignore: ['.claude/skills/.gitignore'],
+  }
+  t.strictSame(json({ ...skills, ...notes }), { ...out, ...notes })
+  const unmatched = [{ pattern: 'x', skills: ['a'] }]
+  t.strictSame(json({ ...skills, unmatched }), { ...out, unmatched })
+  const allowSkills = { query: '#foo' }
+  t.match(
+    Command.views.json({ graph: {}, allowSkills } as InstallResult),
+    { allowSkills },
+  )
+})
+
+t.test('saves --allow-skills after install', async t => {
+  const setup = async (o: {
+    explicit?: string
+    stored?: string
+    fail?: boolean
+    lockfileOnly?: boolean
+    yes?: boolean
+  }) => {
+    const log: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/install.ts')
+    >('../../src/commands/install.ts', {
+      '@vltpkg/graph': {
+        async install() {
+          log.push('install')
+          if (o.fail) throw new Error('install failed')
+          return { graph: {} }
+        },
+      },
+      '../../src/parse-add-remove-args.ts': {
+        parseAddArgs: () => ({ add: new Map() }),
+      },
+      '../../src/save-types.ts': { addTypesDeps: async () => {} },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: { 'lockfile-only': o.lockfileOnly },
+      explicit: o.explicit ? { 'allow-skills': o.explicit } : {},
+      layers:
+        o.stored ? { project: { 'allow-skills': o.stored } } : {},
+      get: (k: string) =>
+        k === 'allow-skills' ? (o.explicit ?? o.stored)
+        : k === 'yes' ? o.yes
+        : undefined,
+      addConfigToFile: async (which: string, values: unknown) => {
+        log.push(`write ${which} ${JSON.stringify(values)}`)
+      },
+    } as unknown as LoadedConfig
+    return { run: () => Command.command(conf), log }
+  }
+
+  t.test('nothing stored: saved', async t => {
+    const { run, log } = await setup({ explicit: '#foo' })
+    const res = await run()
+    t.strictSame(log, [
+      'install',
+      'write project {"allow-skills":"#foo"}',
+    ])
+    t.strictSame(res.allowSkills, { query: '#foo' })
+  })
+
+  t.test('same stored: no write', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      stored: '#foo',
+    })
+    t.notOk('allowSkills' in (await run()))
+    t.strictSame(log, ['install'])
+  })
+
+  t.test('another stored: kept, -y changes nothing', async t => {
+    for (const yes of [false, true]) {
+      const { run, log } = await setup({
+        explicit: '#foo',
+        stored: '#bar',
+        yes,
+      })
+      t.strictSame((await run()).allowSkills, {
+        query: '#foo',
+        stored: { query: '#bar', which: 'project' },
+      })
+      t.strictSame(log, ['install'])
+    }
+  })
+
+  t.test('stored only, or :not(*): nothing', async t => {
+    for (const o of [{ stored: '#bar' }, { explicit: ':not(*)' }]) {
+      const { run, log } = await setup(o)
+      t.notOk('allowSkills' in (await run()))
+      t.strictSame(log, ['install'])
+    }
+  })
+
+  t.test('failed install: no write', async t => {
+    const { run, log } = await setup({ explicit: '#foo', fail: true })
+    await t.rejects(run(), { message: 'install failed' })
+    t.strictSame(log, ['install'])
+  })
+
+  t.test('lockfile-only: no write', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      lockfileOnly: true,
+    })
+    t.notOk('allowSkills' in (await run()))
+    t.strictSame(log, ['install'])
   })
 })

@@ -53,6 +53,7 @@ Object {
   "rx": "run-exec",
   "setup": "setup",
   "show": "view",
+  "skills": "skills",
   "token": "token",
   "u": "update",
   "uninstall": "uninstall",
@@ -86,6 +87,17 @@ Object {
     "description": String(
       Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.  
       Example: --allow-scripts=":root > *, #my-package" Runs scripts only for direct dependencies of the current project and any occurrences of a specific dependency with the name "my-package" anywhere in the dependency graph.
+    ),
+    "hint": "query",
+    "type": "string",
+  },
+  "allow-skills": Object {
+    "description": String(
+      Link the agent skills (folders with a \`SKILL.md\`) shipped by installed packages matching this DSS query into the project's agent skill dirs (see \`skills-dir\`) after \`install\`, \`ci\`, \`update\` or \`uninstall\`. End a selector with \`:skill(<name>, …)\` to pick single skills (\`*\` globs, double-quoted names). Unset (the default) or \`:not(*)\` links nothing and skips all skills work.
+      
+      \`vlt install --allow-skills=<query>\` saves the query to the project \`vlt.json\`; \`vlt skills link [<query>]\` sets, saves and applies it.
+      
+      Example: --allow-skills="#skills:skill(find-skills)" Links the find-skills skill of the skills package.
     ),
     "hint": "query",
     "type": "string",
@@ -144,7 +156,7 @@ Object {
     "type": "boolean",
   },
   "config": Object {
-    "description": "Specify which configuration to show or operate on when running \`vlt config\` commands. For read operations (get, pick, list): \`all\` shows merged configuration from both user and project files (default). For write operations (set, delete, edit): defaults to \`project\`. \`user\` shows/modifies only user-level configuration, \`project\` shows/modifies only project-level configuration.",
+    "description": "Specify which configuration to show or operate on when running \`vlt config\` commands, and which file \`vlt skills link\` saves \`allow-skills\` to. For read operations (get, pick, list): \`all\` shows merged configuration from both user and project files (default). For write operations (set, delete, edit): defaults to \`project\`. \`user\` shows/modifies only user-level configuration, \`project\` shows/modifies only project-level configuration.",
     "hint": "all | user | project",
     "type": "string",
     "validOptions": Array [
@@ -243,6 +255,7 @@ Object {
       "run-exec",
       "run",
       "setup",
+      "skills",
       "token",
       "uninstall",
       "unpublish",
@@ -549,6 +562,12 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "skills-dir": Object {
+    "description": "Dirs to link agent skills into (see \`allow-skills\`), relative to the project root. Replaces detection: \`.agents/skills\`, plus \`<folder>/skills\` for each agent folder at the project root (e.g. \`.claude/\`), \`.claude/skills\` inside Claude Code, and existing \`.<name>/skills\` dirs. An empty list (\`[]\` in vlt.json, or \`--skills-dir=\`) links nothing. Each dir must be inside the project, not in node_modules.",
+    "hint": "path",
+    "multiple": true,
+    "type": "string",
+  },
   "stale-while-revalidate-factor": Object {
     "description": String(
       If the server does not serve a \`stale-while-revalidate\` value in the \`cache-control\` header, then this multiplier is applied to the \`max-age\` or \`s-maxage\` values.
@@ -674,6 +693,7 @@ Array [
   "--access=<access>",
   "--all",
   "--allow-scripts=<query>",
+  "--allow-skills=<query>",
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
@@ -729,6 +749,7 @@ Array [
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
+  "--skills-dir=<path>",
   "--stale-while-revalidate-factor=<n>",
   "--store-linker=<auto | hardlink | clone | copy | unpack>",
   "--tag=<tag>",
@@ -748,6 +769,7 @@ Array [
   "access",
   "all",
   "allow-scripts",
+  "allow-skills",
   "arch",
   "bail",
   "before",
@@ -803,6 +825,7 @@ Array [
   "scope",
   "scoped-registries",
   "script-shell",
+  "skills-dir",
   "stale-while-revalidate-factor",
   "store-linker",
   "tag",

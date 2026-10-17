@@ -4,7 +4,7 @@ import type {
   PackageScore,
 } from '@vltpkg/security-archive'
 import type { DepID } from '@vltpkg/dep-id'
-import type { PostcssNode } from '@vltpkg/dss-parser'
+import type { PartPseudoName, PostcssNode } from '@vltpkg/dss-parser'
 
 export type HostContextsMapResult = {
   initialEdges: EdgeLike[]
@@ -46,6 +46,24 @@ export type GetAuthHeader = (
   url: string,
 ) => Promise<string | undefined>
 
+/**
+ * Whether an installed package ships agent skills; for `:skills`.
+ * Keeps fs out of this package.
+ */
+export type HasSkills = (node: NodeLike) => Promise<boolean>
+
+/**
+ * One top-level selector of a query and the nodes it matched. `name`
+ * and `patterns` are set when it ends in a part selector, e.g.
+ * `#a:skill(x, y*)`.
+ */
+export type QueryPart<N = QueryResponseNode> = {
+  name?: PartPseudoName
+  /** as typed, `*` = glob; for matching only, never paths */
+  patterns?: string[]
+  nodes: N[]
+}
+
 export type ParserState = {
   cancellable: () => Promise<void>
   collect: GraphSelectionState
@@ -53,6 +71,7 @@ export type ParserState = {
   current: PostcssNode
   diffFiles?: DiffFilesProvider
   getAuthHeader?: GetAuthHeader
+  hasSkills?: HasSkills
   hostContexts?: HostContextsMap
   importers: Set<NodeLike>
   initial: GraphSelectionState
@@ -63,6 +82,12 @@ export type ParserState = {
   signal: AbortSignal
   walk: ParserFn
   partial: GraphSelectionState
+  /** set by `:skill()`, read and cleared by `walk()` */
+  part?: Pick<QueryPart, 'name' | 'patterns'>
+  /** one entry per top-level selector, only when opted in */
+  parts?: QueryPart<NodeLike>[]
+  /** part selectors this consumer allows */
+  partSelectors?: ReadonlySet<PartPseudoName>
   retries: number
   securityArchive: SecurityArchiveLike | undefined
   scopeIDs?: DepID[]
@@ -75,6 +100,11 @@ export type QueryResponse = {
   importers: QueryResponseNode[]
   comment: string
   specificity: Specificity
+  /**
+   * one entry per top-level selector, only with `partSelectors` and
+   * a non-empty query
+   */
+  parts?: QueryPart[]
 }
 
 export type QueryResponseEdge = Omit<EdgeLike, 'from' | 'to'> & {

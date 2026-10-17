@@ -15,6 +15,25 @@ export * from './update.ts'
 export * from './diff.ts'
 export * from './modifiers.ts'
 export * from './virtual-root.ts'
+// types only: the skills code loads when first used (installs with
+// allow-skills unset never load it)
+export type {
+  DiscoveredSkills,
+  LinkSkillsOptions,
+  LinkSkillsResult,
+  ListSkillsResult,
+  MountResult,
+  Skill,
+  SkillFrontmatter,
+  SkillMount,
+  SkillRow,
+  SkillsDir,
+  SkillsOptions,
+  UnmatchedPattern,
+  UnscannedSkills,
+} from './skills/index.ts'
+export { hasSkills, linkSkills, listSkills } from './skills/lazy.ts'
+export { assertQuery } from './filter-nodes-by-query.ts'
 
 import { load as actualLoad } from './actual/load.ts'
 import type { LoadOptions as ActualLoadOptions } from './actual/load.ts'

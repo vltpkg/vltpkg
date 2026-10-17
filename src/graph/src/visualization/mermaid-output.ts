@@ -273,3 +273,23 @@ export function mermaidOutput(options: MermaidOutputGraph) {
 
   return 'flowchart TD\n' + graphOutput + styleDefinition
 }
+
+/** A child of {@link mermaidTree}: node label, optional edge label. */
+export type MermaidTreeItem = { label: string; edge?: string }
+
+const escapeLabel = (s: string) =>
+  s.replaceAll('"', '#quot;').replaceAll('@', '#64;')
+
+/** Flowchart of `root` linked to each item. */
+export const mermaidTree = (
+  root: string,
+  items: MermaidTreeItem[],
+): string =>
+  [
+    'flowchart TD',
+    `a("${escapeLabel(root)}")`,
+    ...items.map(
+      ({ label, edge }, i) =>
+        `a -->${edge === undefined ? '' : `|"${escapeLabel(edge)}"|`} ${generateShortId(i + 1)}("${escapeLabel(label)}")`,
+    ),
+  ].join('\n')
