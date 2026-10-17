@@ -29,11 +29,16 @@ export const run = async (
     logs: [] as string[],
     config: {} as LoadedConfig,
     error: null as unknown,
+    notifications: [] as string[],
   }
   t.chdir(cwd)
   const index = await t.mockImport<typeof import('../src/index.ts')>(
     '../src/index.ts',
     {
+      '../src/update-notifier.ts': {
+        notifyUpdate: (_: LoadedConfig, version: string) =>
+          state.notifications.push(version),
+      },
       '../src/output.ts': {
         stdout: (v: string) => state.logs.push(v),
         stderr: (v: string) => state.logs.push(v),
@@ -62,8 +67,9 @@ t.test('infer workspace', async t => {
     },
   })
   t.chdir(join(dir, 'src/foo'))
-  const { config } = await run(t)
+  const { config, notifications } = await run(t)
   t.strictSame(config.get('workspace'), ['src/foo'])
+  t.matchOnly(notifications, [/^\d+\./])
 })
 
 t.test('infer workspace from package.json workspaces', async t => {
@@ -147,8 +153,9 @@ t.test('no workspace inferred for the global project', async t => {
 })
 
 t.test('print version', async t => {
-  const { logs } = await run(t, { argv: ['-v'] })
+  const { logs, notifications } = await run(t, { argv: ['-v'] })
   t.matchOnly(logs[0], /^\d\.\d\.\d/)
+  t.strictSame(notifications, [])
 })
 
 t.test('unknown config', async t => {

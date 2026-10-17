@@ -118,6 +118,8 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --tag=<tag>
     --target=<query>
     --telemetry
+    --update-check-interval=<seconds>
+    --update-notifier
     --verbose
     --version
     --view=<output>
@@ -202,6 +204,8 @@ Unknown config option: asdf
     tag
     target
     telemetry
+    update-check-interval
+    update-notifier
     verbose
     version
     view
