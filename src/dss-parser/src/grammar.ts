@@ -59,6 +59,7 @@ export const pseudoClassNames = [
   'tracker',
   'trivial',
   'type',
+  'types',
   'undesirable',
   'unknown',
   'unmaintained',

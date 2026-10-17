@@ -6,6 +6,8 @@ import type { Spec, SpecLikeBase, SpecOptions } from '@vltpkg/spec'
 import { posix } from 'node:path'
 import { debuglog } from 'node:util'
 
+export { getTypeTarget } from './type-target.ts'
+
 const debug = debuglog('vlt')
 
 /**
@@ -1713,6 +1715,8 @@ export type GraphLike = {
 }
 
 export type NodeLike = {
+  /** package this node provides type definitions for. */
+  typeTarget?: string
   id: DepID
   confused: boolean
   edgesIn: Set<EdgeLike>
@@ -1772,6 +1776,7 @@ export type NodeLike = {
     | 'buildState'
     | 'buildAllowed'
     | 'buildBlocked'
+    | 'typeTarget'
   > & {
     rawManifest?: NodeLike['manifest']
   }

@@ -525,6 +525,36 @@ t.test('Node', async t => {
     version: '1.0.0',
   })
   t.matchSnapshot(String(wsMani), 'should stringify workspace node')
+
+  const types = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', '@types/react@1.0.0']),
+    {
+      name: '@types/react',
+      version: '1.0.0',
+    },
+  )
+  t.equal(types.typeTarget, 'react')
+  t.equal(types.toJSON().typeTarget, 'react')
+  types.setConfusedManifest({
+    name: '@types/scope__name',
+    version: '1.0.0',
+  })
+  t.equal(
+    types.typeTarget,
+    '@scope/name',
+    'updates the target after name correction',
+  )
+  types.setConfusedManifest({
+    name: 'ordinary-package',
+    version: '1.0.0',
+  })
+  t.equal(
+    types.typeTarget,
+    undefined,
+    'clears the target after correcting to a non-types package',
+  )
+  t.notOk('typeTarget' in types.toJSON())
 })
 
 t.test('nodeModules path and inVltStore flag', t => {

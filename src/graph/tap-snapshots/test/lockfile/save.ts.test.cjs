@@ -161,10 +161,12 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
   },
   "nodes": {
     "~custom~baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"],
+    "~npm~@types+foo@1.0.0": [2,"@types/foo",null,null,null,null,null,null,null,null,"foo"],
     "~npm~bar@1.0.0": [3,"bar"],
     "~npm~foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
   },
   "edges": {
+    "file~_d @types/foo": "dev ^1.0.0 ~npm~@types+foo@1.0.0",
     "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
     "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
     "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
@@ -198,6 +200,22 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
         }
       }
     ],
+    "~npm~@types+foo@1.0.0": [
+      2,
+      "@types/foo",
+      null,
+      null,
+      null,
+      {
+        "name": "@types/foo",
+        "version": "1.0.0"
+      },
+      null,
+      null,
+      null,
+      null,
+      "foo"
+    ],
     "~npm~bar@1.0.0": [
       3,
       "bar",
@@ -225,6 +243,7 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
     ]
   },
   "edges": {
+    "file~_d @types/foo": "dev ^1.0.0 ~npm~@types+foo@1.0.0",
     "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
     "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
     "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
@@ -244,10 +263,12 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
   },
   "nodes": {
     "~custom~baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"],
+    "~npm~@types+foo@1.0.0": [2,"@types/foo",null,null,null,null,null,null,null,null,"foo"],
     "~npm~bar@1.0.0": [3,"bar"],
     "~npm~foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"]
   },
   "edges": {
+    "file~_d @types/foo": "dev ^1.0.0 ~npm~@types+foo@1.0.0",
     "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
     "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
     "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
