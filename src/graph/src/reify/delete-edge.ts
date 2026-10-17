@@ -1,21 +1,19 @@
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
+import { readCmdShimIfExists } from '@vltpkg/cmd-shim'
 import { resolve } from 'node:path'
 import type { PathScurry } from 'path-scurry'
 import type { Edge } from '../edge.ts'
 
-const rmBinPosix = (remover: RollbackRemove, bin: string) => {
-  return [remover.rm(bin)]
-}
+const binPathsPosix = (bin: string) => [bin]
 
-const rmBinWin32 = (remover: RollbackRemove, bin: string) => {
-  return [
-    remover.rm(bin),
-    remover.rm(bin + '.cmd'),
-    remover.rm(bin + '.ps1'),
-  ]
-}
+const binPathsWin32 = (bin: string) => [
+  bin,
+  bin + '.cmd',
+  bin + '.ps1',
+]
 
-const rmBin = process.platform === 'win32' ? rmBinWin32 : rmBinPosix
+const binPaths =
+  process.platform === 'win32' ? binPathsWin32 : binPathsPosix
 
 export const deleteEdge = async (
   edge: Edge,
@@ -34,9 +32,13 @@ export const deleteEdge = async (
   promises.push(remover.rm(path))
   const bins = to?.bins
   if (bins) {
-    for (const key of Object.keys(bins)) {
-      const bin = resolve(binRoot, key)
-      promises.push(...rmBin(remover, bin))
+    for (const [key, value] of Object.entries(bins)) {
+      for (const bin of binPaths(resolve(binRoot, key))) {
+        const target = await readCmdShimIfExists(bin)
+        // another dependency may provide the same command.
+        if (target && target !== resolve(path, value)) continue
+        promises.push(remover.rm(bin))
+      }
     }
   }
   await Promise.all(promises)
