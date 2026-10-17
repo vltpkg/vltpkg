@@ -1,6 +1,10 @@
 import t from 'tap'
 import { id } from '../src/id.ts'
-import { getAliasedGraph, getSimpleGraph } from './fixtures/graph.ts'
+import {
+  getAliasedGraph,
+  getMultiNameGraph,
+  getSimpleGraph,
+} from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
@@ -91,6 +95,40 @@ t.test('id', async t => {
       )
     }
   })
+})
+
+t.test('node installed under multiple names', async t => {
+  const graph = getMultiNameGraph()
+  const all: GraphSelectionState = {
+    edges: new Set<EdgeLike>(graph.edges),
+    nodes: new Set<NodeLike>(graph.nodes.values()),
+  }
+  const abEdge = [...graph.edges].find(e => e.name === 'ab')!
+  const onlyAb: GraphSelectionState = {
+    edges: new Set([abEdge]),
+    nodes: new Set([abEdge.to!]),
+  }
+  const cases: [string, GraphSelectionState, string[], string[]][] = [
+    ['#abbrev', all, ['abbrev'], ['abbrev']],
+    ['#ab', all, ['ab'], ['abbrev']],
+    ['#abbrev', onlyAb, [], []],
+    ['#semver', all, ['semver'], ['semver']],
+  ]
+  for (const [query, partial, edges, nodes] of cases) {
+    const res = await testId(
+      query,
+      copyGraphSelectionState(all),
+      copyGraphSelectionState(partial),
+    )
+    t.strictSame(
+      {
+        edges: res.edges.map(i => i.name).sort(),
+        nodes: res.nodes.map(i => i.name).sort(),
+      },
+      { edges, nodes },
+      query,
+    )
+  }
 })
 
 t.test('bad selector type', async t => {
