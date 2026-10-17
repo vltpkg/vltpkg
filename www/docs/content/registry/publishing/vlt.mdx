@@ -82,8 +82,9 @@ export VLT_TOKEN=<your token>
 export VLT_REGISTRY=https://registry.vlt.io/acme/npm/
 ```
 
-`VLT_TOKEN` with `VLT_REGISTRY` covers the default registry. For
-`scoped-registries`, also export that registry's
+`VLT_TOKEN` covers the default registry: `registry` (or
+`VLT_REGISTRY`) if set, else the `default-registry-alias` alias
+(`npm`). For `scoped-registries`, also export that registry's
 `VLT_TOKEN_<registry>`, e.g.
 `VLT_TOKEN_https_registry_vlt_io_acme_main` (see
 [Authentication](/client/auth#ci-and-other-headless-environments)).

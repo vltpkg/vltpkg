@@ -400,6 +400,41 @@ t.test('list includes keychain-only registries', async t => {
   t.equal(result?.registries[2]?.localToken, undefined)
 })
 
+t.test('list uses VLT_TOKEN default registry key', async t => {
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      async getToken(
+        key: string,
+        _identity: string,
+        def?: string,
+      ): Promise<Token | undefined> {
+        return key === def ? 'Bearer env_tok' : undefined
+      },
+      RegistryClient: class MockRegistryClient {
+        defaultRegistryKey = 'https://r.io/acme/npm'
+        async scroll<T>(): Promise<T[]> {
+          return [] as T[]
+        }
+      },
+    },
+  })
+
+  const result = await cmd({
+    options: {
+      registry: 'https://r.io/acme/npm/',
+      registries: { main: 'https://r.io/acme/main/' },
+      identity: '',
+    },
+    positionals: ['list'],
+  } as unknown as LoadedConfig)
+
+  t.equal(result?.registries[0]?.localToken, 'Bearer env_tok')
+  t.equal(result?.registries[1]?.localToken, undefined)
+})
+
 t.test('list with named identity', async t => {
   const { command: cmd } = await t.mockImport<
     typeof import('../../src/commands/token.ts')

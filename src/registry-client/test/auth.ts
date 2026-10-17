@@ -1,5 +1,7 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import {
+  defaultRegistryKey,
   isToken,
   normalizeRegistryKey,
   registryBase,
@@ -552,6 +554,120 @@ t.test('getTokenByURL configured registries', async t => {
     await getTokenByURL('https://r.io/acme/npm/lodash', '', keys),
     'Bearer rt',
     'runtime beats env',
+  )
+})
+
+// clear env tokens, restored on teardown (`vlr test` sets VLT_REGISTRY)
+const cleanEnv = (t: Test) => {
+  const saved = [
+    'VLT_REGISTRY',
+    'VLT_TOKEN',
+    'VLT_TOKEN_https_r_io_acme_npm',
+  ].map(k => [k, process.env[k]] as const)
+  for (const [k] of saved) delete process.env[k]
+  t.teardown(() => {
+    for (const [k, v] of saved) {
+      if (v === undefined) delete process.env[k]
+      else process.env[k] = v
+    }
+  })
+}
+
+t.test('defaultRegistryKey', async t => {
+  const registries = {
+    npm: 'https://r.io/acme/npm/',
+    main: 'https://r.io/acme/main/',
+    bad: 'not a url',
+  }
+  t.equal(defaultRegistryKey({}), undefined)
+  t.equal(defaultRegistryKey({ registries }), 'https://r.io/acme/npm')
+  t.equal(
+    defaultRegistryKey({
+      registries,
+      'default-registry-alias': 'main',
+    }),
+    'https://r.io/acme/main',
+  )
+  // `registry` reaches getToken as VLT_REGISTRY, not here
+  t.equal(
+    defaultRegistryKey({ registry: 'https://r.io/', registries }),
+    'https://r.io/acme/npm',
+  )
+  t.equal(
+    defaultRegistryKey({ registry: 'https://r.io/' }),
+    undefined,
+  )
+  t.equal(
+    defaultRegistryKey({
+      registries,
+      'default-registry-alias': 'bad',
+    }),
+    undefined,
+  )
+  t.equal(
+    defaultRegistryKey({ registries, 'default-registry-alias': 'x' }),
+    undefined,
+  )
+})
+
+t.test('getToken VLT_TOKEN for default registry', async t => {
+  const { getToken, getKC, setRuntimeToken, clearRuntimeTokens } =
+    await t.mockImport<typeof import('../src/auth.ts')>(
+      '../src/auth.ts',
+      mocks,
+    )
+  cleanEnv(t)
+  t.teardown(clearRuntimeTokens)
+  process.env.VLT_TOKEN = 'env'
+  const def = 'https://r.io/acme/npm'
+  t.equal(await getToken(`${def}/`, '', def), 'Bearer env')
+  t.equal(
+    await getToken('https://r.io/acme/main/', '', def),
+    undefined,
+  )
+  t.equal(await getToken(def, ''), undefined, 'no default key')
+  process.env.VLT_TOKEN_https_r_io_acme_npm = 'per-key'
+  getKC('').set(def, 'Bearer kc')
+  t.equal(await getToken(def, '', def), 'Bearer env', 'beats others')
+  t.equal(await getToken(def, ''), 'Bearer per-key')
+  // VLT_REGISTRY set: it alone gets VLT_TOKEN
+  process.env.VLT_REGISTRY = 'https://r.io/acme/main/'
+  t.equal(await getToken(def, '', def), 'Bearer per-key')
+  t.equal(
+    await getToken('https://r.io/acme/main', '', def),
+    'Bearer env',
+  )
+  setRuntimeToken(def, 'Bearer rt')
+  delete process.env.VLT_REGISTRY
+  t.equal(await getToken(def, '', def), 'Bearer rt', 'runtime wins')
+})
+
+t.test('getTokenByURL VLT_TOKEN for default registry', async t => {
+  const { getTokenByURL } = await t.mockImport<
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
+  cleanEnv(t)
+  process.env.VLT_TOKEN = 'env'
+  const def = 'https://r.io/acme/npm'
+  const keys = [def, 'https://r.io/acme/main']
+  const cases: [string, string | undefined][] = [
+    ['https://r.io/acme/npm/lodash', 'Bearer env'],
+    ['https://r.io/acme/main/@acme%2futils', undefined],
+    ['https://r.io/acme-npm/x', undefined],
+    ['https://r.io/x', undefined],
+  ]
+  for (const [url, tok] of cases) {
+    t.equal(await getTokenByURL(url, '', keys, def), tok, url)
+  }
+  t.equal(
+    await getTokenByURL(`${def}/lodash`, '', [], def),
+    'Bearer env',
+    'default key not in keys',
+  )
+  t.equal(
+    await getTokenByURL(`${def}/lodash`, '', keys),
+    undefined,
+    'no default key',
   )
 })
 

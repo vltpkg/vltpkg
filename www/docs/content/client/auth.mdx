@@ -56,7 +56,10 @@ a redirect changes origin.
 ## CI (and Other Headless Environments)
 
 A token for the default registry can be provided in the `VLT_TOKEN`
-environment variable.
+environment variable. The default registry is the `registry` option
+(or `VLT_REGISTRY`) if set, else the `registries` alias named by
+`default-registry-alias` (`npm` by default; `vlt setup` writes
+`registries.npm`).
 
 For example:
 
@@ -79,6 +82,9 @@ These variables apply to configured registries (`registry`,
 and `jsr` included) and to registries you've logged in to. The token
 is only sent to URLs under that registry URL (plus same-origin
 redirects, see above).
+
+For the same registry, `VLT_TOKEN` beats `VLT_TOKEN_{...}`, and both
+beat keychain tokens.
 
 ## OIDC (OpenID Connect)
 
