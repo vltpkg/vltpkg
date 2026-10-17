@@ -22,3 +22,16 @@ const bundleResult = await bundle({ outdir: './bundle', bins })
 ```bash
 vlt-build --outdir=bundle --bins=vlt bundle
 ```
+
+**Standalone executable (experimental)**
+
+Requires Bun 1.4 or later. From this workspace:
+
+```bash
+node src/compile.ts ../../.build-bun/vlt
+```
+
+The executable embeds the bundle, assets, and background helpers. Node
+and Bun are only needed when package scripts require them. Additional
+arguments are passed to `bun build`, for example
+`--target=bun-linux-x64`. Target platforms still need runtime testing.

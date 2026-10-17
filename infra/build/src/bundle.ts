@@ -67,8 +67,8 @@ const nodeImports: esbuild.Plugin = {
 const resvgWasmExternal: esbuild.Plugin = {
   name: 'resvg-wasm-external',
   setup({ onResolve }) {
-    onResolve({ filter: /^@resvg\/resvg-wasm/ }, args => ({
-      path: args.path,
+    onResolve({ filter: /^@resvg\/resvg-wasm$/ }, () => ({
+      path: './node_modules/@resvg/resvg-wasm/index.mjs',
       external: true,
     }))
   },
@@ -259,6 +259,7 @@ export const bundle = async ({
 
   const define = {
     CLI_PACKAGE_JSON: 'cli-package.json',
+    RESVG_WASM: './node_modules/@resvg/resvg-wasm/index_bg.wasm',
     LIVE_RELOAD: false,
     ...internalDefine,
   }
@@ -328,7 +329,7 @@ export const bundle = async ({
   const cliRequire = createRequire(join(CLI, 'package.json'))
   try {
     const resvgSrc = dirname(
-      cliRequire.resolve('@resvg/resvg-wasm/package.json'),
+      cliRequire.resolve('@resvg/resvg-wasm/index_bg.wasm'),
     )
     const resvgDest = join(
       outdir,
@@ -351,5 +352,10 @@ export const bundle = async ({
   }
   /* c8 ignore stop */
 
-  return { outdir }
+  return {
+    outdir,
+    scripts: [
+      ...new Set(codeSplit.paths().map(({ out }) => `${out}.js`)),
+    ],
+  }
 }
