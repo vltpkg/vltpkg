@@ -17,6 +17,7 @@ import {
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
 import { mark } from '@vltpkg/output/trace'
+import { notifyUpdate } from './update-notifier.ts'
 
 export type {
   Command,
@@ -134,6 +135,7 @@ const run = async () => {
   mark('command', { command: vlt.command })
   const command = await loadCommand(vlt.command)
   await outputCommand(command, vlt, { start, vltVersion: version })
+  notifyUpdate(vlt, version)
 }
 
 export default run
