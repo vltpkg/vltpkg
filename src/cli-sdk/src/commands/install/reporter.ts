@@ -121,6 +121,14 @@ export class InstallReporter extends ViewClass {
   #instance: Instance | null = null
 
   start() {
+    // Ink measures the terminal on every render, and when stdout has no
+    // width (a pipe, a CI log) it does so by spawning `tput cols` and
+    // `tput lines`: thousands of processes over one install. Give a
+    // non-TTY stdout the width Ink would fall back to anyway, so the
+    // output is the same and nothing is spawned.
+    if (!process.stdout.isTTY) {
+      process.stdout.columns ||= Number(process.env.COLUMNS) || 80
+    }
     this.#instance = render($(App))
   }
 

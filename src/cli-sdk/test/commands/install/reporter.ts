@@ -90,3 +90,51 @@ t.test('no start, no persisted config', async t => {
   t.equal(await r.done({} as InstallResult, { time: 1 }), undefined)
   r.error(new Error('x'))
 })
+
+t.test('a non-TTY stdout is given a width before render', async t => {
+  // without one, Ink spawns tput on every render
+  const real = process.stdout as unknown as {
+    isTTY?: boolean
+    columns?: number
+  }
+  const prev = {
+    isTTY: real.isTTY,
+    columns: real.columns,
+    COLUMNS: process.env.COLUMNS,
+  }
+  t.teardown(() => {
+    real.isTTY = prev.isTTY
+    real.columns = prev.columns
+    if (prev.COLUMNS === undefined) delete process.env.COLUMNS
+    else process.env.COLUMNS = prev.COLUMNS
+  })
+  const start = () => {
+    const r = reporter()
+    r.start()
+    r.error(new Error('x'))
+  }
+
+  real.isTTY = false
+  real.columns = undefined
+  delete process.env.COLUMNS
+  start()
+  t.equal(
+    real.columns,
+    80,
+    "Ink's own fallback, so output is unchanged",
+  )
+
+  real.columns = undefined
+  process.env.COLUMNS = '120'
+  start()
+  t.equal(real.columns, 120, 'COLUMNS in the environment wins')
+
+  real.columns = 33
+  start()
+  t.equal(real.columns, 33, 'a width already present is left alone')
+
+  real.isTTY = true
+  real.columns = undefined
+  start()
+  t.equal(real.columns, undefined, 'a real terminal is left alone')
+})
