@@ -127,7 +127,10 @@ export class InstallReporter extends ViewClass {
     // non-TTY stdout the width Ink would fall back to anyway, so the
     // output is the same and nothing is spawned.
     if (!process.stdout.isTTY) {
-      process.stdout.columns ||= Number(process.env.COLUMNS) || 80
+      // only a sane COLUMNS counts; -1 or Infinity would be truthy
+      const cols = Number(process.env.COLUMNS)
+      process.stdout.columns ||=
+        Number.isInteger(cols) && cols > 0 ? cols : 80
     }
     this.#instance = render($(App))
   }

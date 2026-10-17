@@ -129,6 +129,16 @@ t.test('a non-TTY stdout is given a width before render', async t => {
   start()
   t.equal(real.columns, 120, 'COLUMNS in the environment wins')
 
+  real.columns = undefined
+  process.env.COLUMNS = '-1'
+  start()
+  t.equal(real.columns, 80, 'a non-positive COLUMNS falls back')
+
+  real.columns = undefined
+  process.env.COLUMNS = 'Infinity'
+  start()
+  t.equal(real.columns, 80, 'a non-integer COLUMNS falls back')
+
   real.columns = 33
   start()
   t.equal(real.columns, 33, 'a width already present is left alone')
