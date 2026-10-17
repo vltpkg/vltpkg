@@ -202,7 +202,10 @@ t.test('updatePackageJson', async t => {
           graph: emptyGraph,
           add,
         })(),
-      /Dependency node could not be found/,
+      {
+        message: 'Dependency node could not be found: foo',
+        cause: { from: '.' },
+      },
       'should throw a missing dependency node error',
     )
   })

@@ -111,7 +111,10 @@ const addOrRemoveDeps = (
       }
       const edge = node.edgesOut.get(name)
       if (!edge?.to) {
-        throw error('Dependency node could not be found')
+        throw error(`Dependency node could not be found: ${name}`, {
+          spec: dep.spec,
+          from: node.location,
+        })
       }
       const n = edge.to
       const [nodeType] = splitDepID(n.id)
