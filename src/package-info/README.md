@@ -52,9 +52,11 @@ ever sees `auto` from the CLI on Linux. A gzipped cached tarball that
 is not store-linked (`unpack`, git or remote tarballs, no sha512
 integrity) is queued too, so the child un-gzips it.
 
-Packages with install scripts are linked too; reify copies them in
-place right before their scripts run. A clone is copy-on-write, so
-with `clone` they are cloned like any other package, and reify finds
+Packages with install scripts are linked too, unless `extract()` gets
+`copyScripts: true` (reify sets it when `allowScripts` is `*` or
+contains `:scripts`): then copied. Reify copies a linked one in place
+right before its scripts run. A clone is copy-on-write, so with
+`clone` they are cloned like any other package, and reify finds
 nothing to copy.
 
 A store link logs its request as `store`, a copy from the store as

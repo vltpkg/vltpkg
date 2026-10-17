@@ -38,8 +38,8 @@ export type StoreLinker =
 
 /**
  * How a store entry was placed (`clone`: the whole directory cloned
- * copy-on-write; `copy`: every file copied, for `copy` or a downgrade)
- * and its index, or false on a miss.
+ * copy-on-write; `copy`: every file copied, for `copy`, `copyScripts`
+ * or a downgrade) and its index, or false on a miss.
  */
 export type StoreLinkResult =
   { how: 'link' | 'clone' | 'copy'; index: StoreIndex } | false
@@ -57,6 +57,8 @@ export type LinkFromStoreOptions = {
    * needs no copy on top, for `copy` or for install scripts.
    */
   clone?: boolean
+  /** copy, not link, an entry whose index has install scripts */
+  copyScripts?: boolean
 }
 
 // Process-wide: once links fail for a reason that will not go away
@@ -242,7 +244,11 @@ const fill = (
 export const linkFromStore = (
   storeEntry: string,
   target: string,
-  { copy = false, clone = false }: LinkFromStoreOptions = {},
+  {
+    copy = false,
+    clone = false,
+    copyScripts = false,
+  }: LinkFromStoreOptions = {},
 ): StoreLinkResult => {
   // no clones here: a miss, without reading anything
   if (clone && cloneNone) return false
@@ -262,7 +268,7 @@ export const linkFromStore = (
     if (clone && !cloneEntry(storeEntry, tmp)) return false
     // a clone is copy-on-write: nothing written into it reaches the
     // store, so it needs no copy on top
-    let copied = !clone && copy
+    let copied = !clone && (copy || (copyScripts && index.scripts))
     if (!clone) mkdirSync(tmp)
     let miss =
       clone ?

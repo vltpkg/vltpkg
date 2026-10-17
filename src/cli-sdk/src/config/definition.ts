@@ -387,9 +387,12 @@ export const definition = j
                     - unpack: Unpack each package tarball, skipping the
                       global store.
 
-                    A hardlinked package is copied right before its
-                    install scripts run, so they don't change its files
-                    in the store; a cloned one needs no copy.
+                    A package with install scripts is copied, not
+                    hardlinked, when \`allow-scripts\` is \`*\` or
+                    contains \`:scripts\`, and a hardlinked one is
+                    copied right before its install scripts run, so
+                    they don't change its files in the store; a cloned
+                    one needs no copy.
                     An invalid \`VLT_STORE_LINKER\` warns and uses
                     \`unpack\`.`,
       validOptions: storeLinkers,
