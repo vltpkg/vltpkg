@@ -90,6 +90,9 @@ const getClient = (): PostHogClient | undefined => {
           host: string
           flushAt: number
           flushInterval: number
+          fetchRetryCount: number
+          requestTimeout: number
+          fetch: (url: string, init: RequestInit) => Promise<Response>
         },
       ) => PostHogClient
     }
@@ -99,9 +102,16 @@ const getClient = (): PostHogClient | undefined => {
       // call shutdown at the end so this is just a safety net.
       flushAt: 20,
       flushInterval: 10_000,
+      // one attempt, capped like flush(); failed sends resolve as 204
+      // so offline or erroring runs neither wait nor log
+      fetchRetryCount: 0,
+      requestTimeout: SHUTDOWN_TIMEOUT_MS,
+      fetch: async (url, init) => {
+        const res = await fetch(url, init).catch(() => undefined)
+        return res?.ok ? res : new Response(null, { status: 204 })
+      },
     })
     return _posthog
-    /* c8 ignore next 4 */
   } catch {
     _initFailed = true
     return undefined
