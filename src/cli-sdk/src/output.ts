@@ -28,7 +28,7 @@ import {
 import { startRequestLog } from './verbose-log.ts'
 
 /* c8 ignore start - CI env detection is a best-effort heuristic */
-const isCI = (): boolean =>
+export const isCI = (): boolean =>
   !!(
     process.env.CI ||
     process.env.GITHUB_ACTIONS ||

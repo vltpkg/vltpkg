@@ -509,6 +509,35 @@ the user one with `--config=user`) after a successful `install`, `add`
 or `update`. Values a config file already has are left alone. See
 [Registries](/client/registries#saving-registries-given-to-install).
 
+### `--update-notifier`
+
+On by default. Checks for newer vlt versions in a detached process, at
+most once every 24 hours. A later command prints a cached update
+notice to stderr after its output. The same notice is shown at most
+once per check interval.
+
+Disable with `--no-update-notifier`,
+`"config": { "update-notifier": false }` in `vlt.json`,
+`VLT_NO_UPDATE_NOTIFIER=1`, or `NO_UPDATE_NOTIFIER=1`.
+`VLT_UPDATE_NOTIFIER=false` also works through the normal config
+environment variables.
+
+Checks are skipped in CI, with non-TTY stderr, with any view other
+than `human`, and for development builds and ephemeral installs
+through `vlx` or `npx`. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
+`npm_config_offline=true` also suppress checks. This does not put
+other vlt commands into an offline mode.
+
+The check uses the configured registry. Registries requiring
+authentication may decline the request; failures stay silent. State is
+stored in `update-check.json` under vlt's XDG state directory.
+
+### `--update-check-interval`
+
+Seconds between update checks and repeated notices. Defaults to
+`86400` (24 hours); must be a positive number. Can also be set as
+`VLT_UPDATE_CHECK_INTERVAL` or in the `config` object in `vlt.json`.
+
 ### `-v --version`
 
 Print the version

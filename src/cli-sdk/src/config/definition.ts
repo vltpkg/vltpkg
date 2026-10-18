@@ -437,6 +437,14 @@ export const definition = j
     },
   })
   .num({
+    'update-check-interval': {
+      hint: 'seconds',
+      default: 86_400,
+      validate: n =>
+        typeof n === 'number' && Number.isFinite(n) && n > 0,
+      description:
+        'Seconds between background checks for a newer vlt version.',
+    },
     'fetch-retries': {
       hint: 'n',
       description: `Number of retries to perform when encountering network
@@ -924,6 +932,11 @@ export const definition = j
 
                     Set \`--no-telemetry\` or \`VLT_TELEMETRY=0\` or
                     \`DO_NOT_TRACK=1\` to opt out.`,
+      default: true,
+    },
+    'update-notifier': {
+      description:
+        'Show a notice when a newer vlt version is available. Disable with --no-update-notifier.',
       default: true,
     },
   })
