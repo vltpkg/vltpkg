@@ -99,7 +99,11 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
       'update-notifier': true,
       'update-check-interval': 86_400,
     },
-    options: { registry },
+    options: {
+      registry,
+      registries: {},
+      'default-registry-alias': 'npm',
+    },
   } as LoadedConfig
   return {
     ...module,
@@ -142,9 +146,12 @@ t.test(
       version,
       lastCheck: 0,
     })
+    const fresh = (now - 29_999) / 1000
+    fs.utimesSync(`${s.file}.lock`, fresh, fresh)
     s.notifyUpdate(s.conf, version)
     t.equal(s.spawned.length, 1, 'another process holds the lock')
-    fs.utimesSync(`${s.file}.lock`, 0, 0)
+    const expired = (now - 30_000) / 1000
+    fs.utimesSync(`${s.file}.lock`, expired, expired)
     s.notifyUpdate(s.conf, version)
     t.equal(s.spawned.length, 2, 'an abandoned lock expires')
     s.child.emit('error', new Error('worker failed'))
@@ -163,6 +170,9 @@ t.test(
       latest: '2.0.0',
     }
     writeUpdateState(s.file, state)
+    fs.writeFileSync(`${s.file}.lock`, '')
+    const expired = (now - 30_000) / 1000
+    fs.utimesSync(`${s.file}.lock`, expired, expired)
     s.notifyUpdate(s.conf, version)
     t.strictSame(s.messages, [
       'Update available: vlt 1.0.0 -> 2.0.0\nnpm install -g vlt@latest',
@@ -284,6 +294,28 @@ t.test(
         t.notOk(fs.existsSync(s.file))
       })
     }
+  },
+)
+
+t.test(
+  'uses the default registry alias unless a scalar is set',
+  async t => {
+    const s = await setup(t)
+    s.conf.options['default-registry-alias'] = 'mirror'
+    s.conf.options.registries = {
+      npm: registry,
+      mirror: 'https://mirror.test/npm',
+    }
+    for (const scalar of [undefined, registry]) {
+      s.conf.options.registry = scalar
+      s.notifyUpdate(s.conf, version)
+      t.equal(
+        readUpdateState(s.file)?.registry,
+        scalar ?? 'https://mirror.test/npm/',
+      )
+      fs.rmSync(`${s.file}.lock`)
+    }
+    t.equal(s.spawned.length, 2)
   },
 )
 

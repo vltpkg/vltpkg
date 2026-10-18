@@ -50,7 +50,9 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
     )
       return
     const current = parse(version)
-    const registry = conf.options.registry
+    const registry =
+      conf.options.registry ??
+      conf.options.registries[conf.options['default-registry-alias']]
     if (!current || !registry) return
     const executable = realpathSync(process.argv[1] ?? '')
     const normalized = executable.replaceAll('\\', '/')
@@ -100,8 +102,7 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
     mkdirSync(dirname(file), { recursive: true })
     const lock = `${file}.lock`
     try {
-      if (now - statSync(lock).mtimeMs >= Math.max(interval, 30_000))
-        rmSync(lock)
+      if (now - statSync(lock).mtimeMs >= 30_000) rmSync(lock)
     } catch {}
     writeFileSync(lock, '', { flag: 'wx', mode: 0o600 })
     let started = false
