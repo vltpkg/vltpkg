@@ -24,7 +24,10 @@ export type Skill = {
   version?: string
   /** package DepID */
   id: DepID
-  /** skill name: its `skills/<dir>` name, or the root SKILL.md `name` */
+  /**
+   * skill name: its dir name (`skills/<dir>`, `dist/skills/<dir>`,
+   * `.agents/skills/<dir>`), or the root SKILL.md `name`
+   */
   skill: string
   /**
    * `SKILL.md` frontmatter `name`, when it differs from `skill`
@@ -150,12 +153,38 @@ const isFile = (path: string) => !!lstat(path)?.isFile()
 // `skills/SKILL.md` would make the dir look like a skill
 const isSkillMd = (name: string) => name.toLowerCase() === 'skill.md'
 
+// where packages ship skills, in precedence order (a name found first
+// wins), after a root SKILL.md
+const shipDirs = ['skills', 'dist/skills', '.agents/skills']
+
+// a real dir, no symlink on the way: skills stay inside the package
+const subdir = (dir: string, sub: string) => {
+  let path = dir
+  for (const seg of sub.split('/')) {
+    path = resolve(path, seg)
+    if (!isDir(path)) return undefined
+  }
+  return path
+}
+
 const scan = (dir: string, pkgName: string): Found[] => {
   const found: Found[] = []
   const has = (skill: string) =>
     found.some(f => lc(f.skill) === lc(skill))
-  const skillsDir = resolve(dir, 'skills')
-  if (isDir(skillsDir)) {
+  const root = resolve(dir, 'SKILL.md')
+  if (isFile(root)) {
+    const { name, description } = readFrontmatter(root)
+    const skill =
+      name && name.length <= 64 && specName.test(name) ?
+        name
+      : pkgName.slice(pkgName.lastIndexOf('/') + 1)
+    if (skillDirName.test(skill) && !isSkillMd(skill)) {
+      found.push({ skill, path: dir, name, description })
+    }
+  }
+  for (const sub of shipDirs) {
+    const skillsDir = subdir(dir, sub)
+    if (!skillsDir) continue
     // one per name, any case
     for (const d of readdirSync(skillsDir).sort()) {
       if (!skillDirName.test(d) || isSkillMd(d) || has(d)) continue
@@ -164,21 +193,6 @@ const scan = (dir: string, pkgName: string): Found[] => {
       if (!isDir(path) || !isFile(file)) continue
       const { name, description } = readFrontmatter(file)
       found.push({ skill: d, path, name, description })
-    }
-  }
-  const root = resolve(dir, 'SKILL.md')
-  if (isFile(root)) {
-    const { name, description } = readFrontmatter(root)
-    const skill =
-      name && name.length <= 64 && specName.test(name) ?
-        name
-      : pkgName.slice(pkgName.lastIndexOf('/') + 1)
-    if (
-      skillDirName.test(skill) &&
-      !isSkillMd(skill) &&
-      !has(skill)
-    ) {
-      found.push({ skill, path: dir, name, description })
     }
   }
   return found
@@ -234,8 +248,9 @@ export const shipsSkills = (node: Node): boolean =>
 /**
  * Find the agent skills shipped by the given installed packages.
  *
- * Only packages in the vlt store are scanned, for skills at
- * `skills/<dir>/SKILL.md` and a root `SKILL.md`. One version per
+ * Only packages in the vlt store are scanned, for a root `SKILL.md`,
+ * then `<dir>/SKILL.md` in `skills/`, `dist/skills/` and
+ * `.agents/skills/`: the first skill of a name wins. One version per
  * package is picked, even if it ships none: a dep of the main
  * importer, else of any importer, else the highest version, then
  * DepID. Same-name skills of different packages are all returned,

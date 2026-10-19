@@ -182,9 +182,10 @@ for security-specific selectors.
 ### `:skills`
 
 Matches installed packages that ship
-[agent skills](/client/commands/skills): a `skills/<dir>/SKILL.md` or
-a root `SKILL.md`, found as `vlt skills` finds them. The project and
-its workspaces never match, nor do `file:` packages.
+[agent skills](/client/commands/skills): a root `SKILL.md`, or a
+`<dir>/SKILL.md` in `skills/`, `dist/skills/` or `.agents/skills/`,
+found as `vlt skills` finds them. The project and its workspaces never
+match, nor do `file:` packages.
 
 <Code code="$ vlt query ':skills'" title="Terminal" lang="bash" />
 

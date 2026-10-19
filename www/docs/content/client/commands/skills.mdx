@@ -22,12 +22,17 @@ them.
 
 ## Where packages ship skills
 
-`vlt` looks for skills inside each installed package at:
+`vlt` looks for skills inside each installed package, in this order:
 
-- `skills/<name>/SKILL.md` – one folder per skill, named `<name>`
-- `SKILL.md` at the package root – a single skill, named after the
-  `name` field of its frontmatter (or the package name, without its
-  scope)
+1. `SKILL.md` at the package root – a single skill, named after the
+   `name` field of its frontmatter (or the package name, without its
+   scope)
+2. `skills/<name>/SKILL.md` – one folder per skill, named `<name>`
+3. `dist/skills/<name>/SKILL.md` – same, for built packages
+4. `.agents/skills/<name>/SKILL.md` – same
+
+When a package ships the same skill name (in any case) in more than
+one place, the first one in this order is used.
 
 Only packages installed in the `node_modules/.vlt` store are scanned.
 Workspaces and `file:` dependencies (folders and tarballs) are
@@ -355,5 +360,5 @@ symlink, not a file or can't be written is left alone and reported.
 
 ## Limits
 
-- Skills nested deeper than `skills/<name>/SKILL.md` are not found.
+- Skills nested deeper than `<dir>/<name>/SKILL.md` are not found.
 - Skills are linked at the project root only, not per workspace.

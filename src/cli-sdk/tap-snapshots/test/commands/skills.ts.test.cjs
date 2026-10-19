@@ -23,8 +23,9 @@ Usage:
 Manage the agent skills shipped by installed packages.
 
 A skill is a folder with a \`SKILL.md\` file
-(https://agentskills.io/specification). Packages ship them at
-\`skills/<name>/SKILL.md\`, or as a root \`SKILL.md\`.
+(https://agentskills.io/specification). Packages ship them as a root \`SKILL.md\`,
+or at \`<name>/SKILL.md\` in \`skills/\`, \`dist/skills/\` or \`.agents/skills/\`: the
+first skill of a name wins.
 
 Skills are linked into the project's agent skill dirs: \`.agents/skills\`, plus
 \`<folder>/skills\` for each agent folder at the project root (e.g. \`.claude/\`),

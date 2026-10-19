@@ -323,9 +323,9 @@ t.test('discoverSkills', async t => {
       ['js', '2.0.0', 'lower', []],
       ['long', '1.0.0', 'a'.repeat(1024), []],
       ['other', '1.0.0', 'other', []],
-      // case-insensitive name: rank, then DepID
-      ['Same', '1.0.0', 'dir', []],
-      ['same', '1.0.0', 'dir one', []],
+      // root SKILL.md first; case-insensitive name: rank, then DepID
+      ['same', '1.0.0', 'root', []],
+      ['same', '1.0.0', 'root one', []],
       ['same', '1.0.0', 'rk', []],
       ['sf', '1.0.0', '[31mred text', []],
       ['unsafe', '1.0.0', 'unsafe', []],
@@ -335,7 +335,7 @@ t.test('discoverSkills', async t => {
     skills
       .filter(s => s.skill === 'same' || s.skill === 'js')
       .map(s => s.name),
-    ['JSONStream', 'jsonstream', 'col', 'rk'],
+    ['JSONStream', 'jsonstream', 'cas', 'col', 'rk'],
   )
   const byName = new Map(skills.map(s => [s.skill, s]))
   t.match(byName.get('bar'), {
@@ -351,17 +351,14 @@ t.test('discoverSkills', async t => {
   t.equal(byName.get('foo-root')?.path, storeDir('foo@1.0.0', 'foo'))
   t.equal(
     skills.find(s => s.name === 'col')?.path,
-    resolve(storeDir('col@1.0.0', 'col'), 'skills/same'),
-    'dir skill wins over root name collision',
+    storeDir('col@1.0.0', 'col'),
+    'root SKILL.md wins a name collision',
   )
   t.strictSame(
     skills.flatMap(s =>
       s.frontmatterName ? [[s.skill, s.frontmatterName]] : [],
     ),
-    [
-      ['bar', 'Invalid_Name'],
-      ['Same', 'x'],
-    ],
+    [['bar', 'Invalid_Name']],
     'frontmatter name, when not the skill name',
   )
   t.equal(byName.get('dws')?.alias, undefined, 'same name')
@@ -382,7 +379,7 @@ t.test('discoverSkills', async t => {
     ])
     t.strictSame(
       scanned.get(foo.id)?.map(f => f.skill),
-      ['alpha', 'beta', 'foo-root'],
+      ['foo-root', 'alpha', 'beta'],
     )
     t.notOk(scanned.has(tgzId), 'tarball')
     t.notOk(scanned.has(local.id), 'local')
@@ -423,6 +420,67 @@ t.test('discoverSkills', async t => {
       )
     },
   )
+
+  t.test('dist/skills, .agents/skills', async t => {
+    const skill = (d: string) => ({ 'SKILL.md': fm('x', d) })
+    const projectRoot = t.testdir({
+      'vlt.json': '{}',
+      node_modules: {
+        '.vlt': {
+          ...store('foo@1.0.0', 'foo', {
+            skills: { a: skill('src') },
+            dist: { skills: { A: skill('dist'), b: skill('dist') } },
+            '.agents': {
+              skills: { b: skill('agents'), c: skill('agents') },
+            },
+          }),
+          // not followed: symlinks, files
+          ...store('bar@1.0.0', 'bar', {
+            real: { skills: { x: skill('real') } },
+            dist: t.fixture('symlink', './real'),
+            '.agents': {
+              skills: t.fixture('symlink', '../real/skills'),
+            },
+          }),
+          ...store('baz@1.0.0', 'baz', {
+            dist: 'a file',
+            '.agents': { skills: 'a file' },
+          }),
+        },
+      },
+    })
+    const graph = new Graph({
+      ...configData,
+      mainManifest: { name: 'root', version: '1.0.0' },
+      projectRoot,
+    })
+    for (const n of ['foo', 'bar', 'baz']) {
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse(`${n}@1`, configData),
+        { name: n, version: '1.0.0' },
+      )
+    }
+    const pkg = resolve(
+      realpathSync(projectRoot),
+      'node_modules/.vlt',
+      id('foo@1.0.0'),
+      'node_modules/foo',
+    )
+    t.strictSame(
+      discoverSkills(
+        graph.nodes.values(),
+        new PathScurry(projectRoot),
+      ).skills.map(s => [s.skill, s.description, s.path]),
+      [
+        ['a', 'src', resolve(pkg, 'skills/a')],
+        ['b', 'dist', resolve(pkg, 'dist/skills/b')],
+        ['c', 'agents', resolve(pkg, '.agents/skills/c')],
+      ],
+      'first name wins: skills, dist/skills, .agents/skills',
+    )
+  })
 
   t.test('frontmatter name', async t => {
     const projectRoot = t.testdir({
@@ -689,6 +747,12 @@ t.test('shipsSkills', async t => {
       '.vlt': {
         [id('dir@1.0.0')]: pkg('dir', { skills: { x: skill() } }),
         [id('root@1.0.0')]: pkg('root', skill()),
+        [id('dist@1.0.0')]: pkg('dist', {
+          dist: { skills: { x: skill() } },
+        }),
+        [id('agents@1.0.0')]: pkg('agents', {
+          '.agents': { skills: { x: skill() } },
+        }),
         [id('none@1.0.0')]: pkg('none', { 'index.js': '' }),
         [id('bad@1.0.0')]: pkg('bad', {
           skills: { '.hidden': skill(), 'bad name': skill() },
@@ -715,6 +779,8 @@ t.test('shipsSkills', async t => {
   }
   t.equal(shipsSkills(node('dir')), true, 'skills dir')
   t.equal(shipsSkills(node('root')), true, 'root SKILL.md')
+  t.equal(shipsSkills(node('dist')), true, 'dist/skills')
+  t.equal(shipsSkills(node('agents')), true, '.agents/skills')
   t.equal(shipsSkills(node('none')), false, 'nothing')
   t.equal(shipsSkills(node('bad')), false, 'bad dir names only')
   t.equal(shipsSkills(node('smd')), false, 'skills/SKILL.md only')

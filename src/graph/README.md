@@ -93,12 +93,13 @@ code is not loaded. `update` and `uninstall` take `allowSkills` too.
 
 Lists the agent skills (dirs with a `SKILL.md`, see
 https://agentskills.io/specification) shipped by installed packages in
-the vlt store, at `skills/<dir>/SKILL.md` or a root `SKILL.md`, from
-one version per package (a direct dep, else the highest), with the
-agent skill dirs each is linked in, `project`: the main importer name,
-and the `graph`. `options.target` is a DSS query selecting packages
-(default `*`); a selector ending with `:skill(<name>, …)` keeps only
-those skills of its packages. Creates nothing.
+the vlt store (a root `SKILL.md`, then `<dir>/SKILL.md` in `skills/`,
+`dist/skills/` and `.agents/skills/`; the first skill of a name wins),
+from one version per package (a direct dep, else the highest), with
+the agent skill dirs each is linked in, `project`: the main importer
+name, and the `graph`. `options.target` is a DSS query selecting
+packages (default `*`); a selector ending with `:skill(<name>, …)`
+keeps only those skills of its packages. Creates nothing.
 
 ### `linkSkills(options): Promise<LinkSkillsResult>`
 
