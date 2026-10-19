@@ -186,7 +186,24 @@ $ vlt skills list "#skills:skill(find-*)"`}
   name when aliased, plus `version`, `id`, `path`, `description` and
   the dirs it is `linked` in; `dirs` lists the agent skill dirs.
 - `--view=mermaid`: a [Mermaid](https://mermaid.js.org/) flowchart of
-  the same tree, warnings as `%%` comments. List only.
+  the dependency graph, as `vlt query --view=mermaid` draws it, from
+  the project down to each package with skills, its skills as
+  highlighted leaves. Warnings follow as `%%` comments. List only.
+
+<Code
+  code={`$ vlt skills list --view=mermaid
+flowchart TD
+a("root:my-project")
+a -->|"skills#64;github:vercel-labs/skills"| b("git(github:vercel-labs/skills):skills#64;1.7.2")
+b -->|"skills#64;1.7.2"| f("find-skills (linked)"):::b
+b -->|"obuild#64;^0.4.22 (dev)"| c("npm:obuild#64;0.4.45")
+c -->|"rolldown-plugin-dts#64;^0.28.8"| d("npm:rolldown-plugin-dts#64;0.28.8")
+d -->|"get-tsconfig#64;5.0.0-beta.6"| e("npm:get-tsconfig#64;5.0.0-beta.6")
+e -->|"get-tsconfig#64;5.0.0-beta.6"| g("get-tsconfig"):::b
+classDef b fill:turquoise,color:#242424`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ### `link`
 

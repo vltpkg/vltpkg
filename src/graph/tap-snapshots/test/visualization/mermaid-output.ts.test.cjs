@@ -41,6 +41,19 @@ c -->|"ipsum#64;^1.0.0 (dev)"| m("npm:ipsum#64;1.0.0")
 c -->|"foo#64;^1.0.0 (dev)"| l
 `
 
+exports[`test/visualization/mermaid-output.ts > TAP > children > paths to the nodes, leaves under them 1`] = `
+flowchart TD
+a("root:my-project")
+a -->|"foo#64;^1.0.0"| b("npm:foo#64;1.0.0")
+b -->|"foo#64;1.0.0"| f("a (linked)"):::b
+b --> g("say #quot;hi#quot;"):::b
+a -->|"bar#64;^1.0.0"| d("npm:bar#64;1.0.0")
+d -->|"baz#64;^1.0.0"| e("npm:baz#64;1.0.0")
+e -->|"x (baz#64;1.0.0)"| h("c"):::b
+e -->|"foo#64;^1.0.0"| b
+classDef b fill:turquoise,color:#242424
+`
+
 exports[`test/visualization/mermaid-output.ts > TAP > cycle > should print cycle mermaid output 1`] = `
 flowchart TD
 a("root:my-project")
@@ -57,14 +70,6 @@ a -->|"bar#64;^1.0.0"| c("npm:bar#64;1.0.0")
 c -->|"baz#64;^1.0.0"| d("npm:baz#64;1.0.0")
 d -->|"foo#64;^1.0.0"| b
 a -->|"missing#64;^1.0.0"| missing-0(Missing)
-`
-
-exports[`test/visualization/mermaid-output.ts > TAP > mermaidTree > edges, no edge, escaped 1`] = `
-flowchart TD
-a("#64;s/#quot;root#quot;")
-a -->|"skills#64;1.7.2"| b("find-skills (linked)")
-a -->|"a (#64;s/b#64;1.0.0)"| c("say #quot;hi#quot;")
-a --> d("no-edge")
 `
 
 exports[`test/visualization/mermaid-output.ts > TAP > workspaces > should print workspaces mermaid output 1`] = `

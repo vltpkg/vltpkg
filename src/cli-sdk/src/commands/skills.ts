@@ -1,13 +1,15 @@
 import { error } from '@vltpkg/error-cause'
+import type { DepID } from '@vltpkg/dep-id'
 import {
   assertQuery,
   linkSkills,
   listSkills,
-  mermaidTree,
+  mermaidOutput,
 } from '@vltpkg/graph'
 import type {
   LinkSkillsResult,
   ListSkillsResult,
+  MermaidChild,
   Skill,
   UnscannedSkills,
 } from '@vltpkg/graph'
@@ -154,17 +156,30 @@ const humanList = (r: ListSkillsResult) => {
   ].join('\n')
 }
 
-const mermaidList = (r: ListSkillsResult) =>
-  [
-    mermaidTree(
-      r.project,
-      r.skills.map(s => ({
-        edge: pkgLabel(s),
-        label: `${s.skill}${linkedSuffix(s, r.dirs)}`,
-      })),
-    ),
+// the dependency graph down to each package, its skills as leaves
+const mermaidList = (r: ListSkillsResult) => {
+  const children = new Map<DepID, MermaidChild[]>()
+  for (const s of r.skills) {
+    const list = children.get(s.id) ?? []
+    list.push({
+      edge: pkgLabel(s),
+      label: `${s.skill}${linkedSuffix(s, r.dirs)}`,
+    })
+    children.set(s.id, list)
+  }
+  const { graph } = r
+  return [
+    mermaidOutput({
+      edges: [],
+      importers: new Set([graph.mainImporter]),
+      nodes: [...graph.nodes.values()].filter(
+        n => n === graph.mainImporter || children.has(n.id),
+      ),
+      children,
+    }),
     ...listNotes(r).map(n => `%% ${n}`),
   ].join('\n')
+}
 
 // `name`: the skill, `dependency-name`: the dep it's installed as
 const jsonSkill = ({ skill, name, alias, ...rest }: Skill) => ({
@@ -226,7 +241,7 @@ export const views = {
   json: (r: SkillsResult) => {
     if (r.action !== 'list') return r
     // key order kept
-    const { project, ...rest } = r
+    const { project, graph, ...rest } = r
     return { ...rest, skills: rest.skills.map(jsonSkill) }
   },
   mermaid: (r: SkillsResult) =>

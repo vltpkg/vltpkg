@@ -5,6 +5,15 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/commands/skills.ts > TAP > mermaid workspaces > workspace under the project 1`] = `
+flowchart TD
+a("root:my-project")
+a -->|"a#64;workspace:*"| b("workspace:a")
+b -->|"x#64;1"| c("npm:x#64;1.0.0")
+c -->|"x#64;1.0.0"| d("s"):::b
+classDef b fill:turquoise,color:#242424
+`
+
 exports[`test/commands/skills.ts > TAP > usage > usage 1`] = `
 Usage:
   vlt skills
@@ -182,7 +191,7 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "vercelskills",
-      "id": "~npm~foo@1.0.0",
+      "id": "~npm~skills@1.7.2",
       "linked": Array [
         ".agents/skills",
       ],
@@ -193,7 +202,7 @@ Object {
     },
     Object {
       "dependency-name": "mine",
-      "id": "~npm~foo@1.0.0",
+      "id": "~npm~theirs@1.0.0",
       "linked": Array [],
       "name": "x",
       "package-name": "theirs",
@@ -246,7 +255,7 @@ Object {
     },
     Object {
       "dependency-name": "@s/bar",
-      "id": "~npm~foo@1.0.0",
+      "id": "~npm~@s+bar@1.0.0",
       "linked": Array [],
       "name": "bar",
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
@@ -324,45 +333,55 @@ Object {
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list aliased 1`] = `
 flowchart TD
-a("my-project")
-a -->|"vercelskills (skills#64;1.7.2)"| b("find-skills (linked)")
-a -->|"mine (theirs)"| c("x")
+a("root:my-project")
+a -->|"vercelskills#64;npm:skills#64;1"| d("npm:skills#64;1.7.2")
+d -->|"vercelskills (skills#64;1.7.2)"| g("find-skills (linked)"):::b
+a -->|"mine#64;npm:theirs#64;1"| e("npm:theirs#64;1.0.0")
+e -->|"mine (theirs)"| h("x"):::b
+classDef b fill:turquoise,color:#242424
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list empty 1`] = `
 flowchart TD
-a("my-project")
+a("root:my-project")
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list many 1`] = `
 flowchart TD
-a("my-project")
-a -->|"foo#64;1.0.0"| b("a (linked)")
-a -->|"foo#64;1.0.0"| c("b (linked in .claude/skills)")
-a -->|"#64;s/bar"| d("bar")
+a("root:my-project")
+a -->|"foo#64;1"| b("npm:foo#64;1.0.0")
+b -->|"foo#64;1.0.0"| g("a (linked)"):::b
+b -->|"foo#64;1.0.0"| h("b (linked in .claude/skills)"):::b
+b -->|"#64;s/bar#64;1"| c("npm:#64;s/bar#64;1.0.0")
+c -->|"#64;s/bar"| i("bar"):::b
+classDef b fill:turquoise,color:#242424
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list no dirs 1`] = `
 flowchart TD
-a("my-project")
-a -->|"foo#64;1.0.0"| b("a (linked in .agents/skills)")
+a("root:my-project")
+a -->|"foo#64;1"| b("npm:foo#64;1.0.0")
+b -->|"foo#64;1.0.0"| g("a (linked in .agents/skills)"):::b
+classDef b fill:turquoise,color:#242424
 %% No agent skill dirs: skills-dir is empty
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list one 1`] = `
 flowchart TD
-a("my-project")
-a -->|"foo#64;1.0.0"| b("a")
+a("root:my-project")
+a -->|"foo#64;1"| b("npm:foo#64;1.0.0")
+b -->|"foo#64;1.0.0"| g("a"):::b
+classDef b fill:turquoise,color:#242424
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list skipped 1`] = `
 flowchart TD
-a("my-project")
+a("root:my-project")
 %% ⚠️ Skipped .claude/skills (outside the project)
 `
 
 exports[`test/commands/skills.ts > TAP > views > mermaid list unscanned 1`] = `
 flowchart TD
-a("my-project")
+a("root:my-project")
 %% ⏳ 1 skill left out, security data timed out: a (foo@1.0.0). Try again later.
 `

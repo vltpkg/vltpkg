@@ -1,7 +1,10 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { mermaidTree } from '@vltpkg/graph'
+import { Graph, mermaidOutput } from '@vltpkg/graph'
+import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
+import { Monorepo } from '@vltpkg/workspaces'
 import t from 'tap'
-import type { Skill, SkillRow } from '@vltpkg/graph'
+import type { Node, Skill, SkillRow } from '@vltpkg/graph'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { SkillsResult } from '../../src/commands/skills.ts'
 import type { EditQueryOptions } from '../../src/skills-prompt.ts'
@@ -53,7 +56,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/skills.ts')
 >('../../src/commands/skills.ts', {
   '@vltpkg/graph': {
-    mermaidTree,
+    mermaidOutput,
     assertQuery: async (...args: unknown[]) => {
       st.asserts.push(args)
       if (st.invalid.includes(args[0] as string)) {
@@ -444,14 +447,50 @@ t.test('views', async t => {
   }
   const dirs = ['.agents/skills', '.claude/skills']
   const project = 'my-project'
+  const specOptions = {
+    registry: 'https://registry.npmjs.org/',
+    registries: { npm: 'https://registry.npmjs.org/' },
+  }
+  const graph = new Graph({
+    ...specOptions,
+    projectRoot: '/project',
+    mainManifest: { name: project, version: '1.0.0' },
+  })
+  const place = (from: Node, spec: string, name: string) => {
+    const node = graph.placePackage(
+      from,
+      'prod',
+      Spec.parse(spec, specOptions),
+      { name, version: name === 'skills' ? '1.7.2' : '1.0.0' },
+    )
+    if (!node) throw new Error('failed to place ' + spec)
+    return node
+  }
+  const foo = place(graph.mainImporter, 'foo@1', 'foo')
+  const bar = place(foo, '@s/bar@1', '@s/bar')
+  const vs = place(
+    graph.mainImporter,
+    'vercelskills@npm:skills@1',
+    'skills',
+  )
+  const mine = place(
+    graph.mainImporter,
+    'mine@npm:theirs@1',
+    'theirs',
+  )
+  place(graph.mainImporter, 'none@1', 'none')
   const { human, json, mermaid } = Command.views
   const cases: [string, SkillsResult][] = [
-    ['list empty', { action: 'list', project, skills: [], dirs }],
+    [
+      'list empty',
+      { action: 'list', project, graph, skills: [], dirs },
+    ],
     [
       'list no dirs',
       {
         action: 'list',
         project,
+        graph,
         skills: [skill({ linked: ['.agents/skills'] })],
         dirs: [],
       },
@@ -461,6 +500,7 @@ t.test('views', async t => {
       {
         action: 'list',
         project,
+        graph,
         skills: [],
         dirs: [],
         skipped: ['.claude/skills (outside the project)'],
@@ -471,6 +511,7 @@ t.test('views', async t => {
       {
         action: 'list',
         project,
+        graph,
         skills: [],
         dirs,
         unscanned: ['a (foo@1.0.0)'],
@@ -482,6 +523,7 @@ t.test('views', async t => {
       {
         action: 'list',
         project,
+        graph,
         skills: [skill({ description: 'does a' })],
         dirs,
       },
@@ -491,6 +533,7 @@ t.test('views', async t => {
       {
         action: 'list',
         project,
+        graph,
         dirs,
         skills: [
           skill({ linked: dirs }),
@@ -498,6 +541,7 @@ t.test('views', async t => {
           skill({
             name: '@s/bar',
             version: undefined,
+            id: bar.id,
             skill: 'bar',
           }),
         ],
@@ -508,12 +552,14 @@ t.test('views', async t => {
       {
         action: 'list',
         project,
+        graph,
         dirs: ['.agents/skills'],
         skills: [
           skill({
             alias: 'vercelskills',
             name: 'skills',
             version: '1.7.2',
+            id: vs.id,
             skill: 'find-skills',
             linked: ['.agents/skills'],
           }),
@@ -521,6 +567,7 @@ t.test('views', async t => {
             alias: 'mine',
             name: 'theirs',
             version: undefined,
+            id: mine.id,
             skill: 'x',
           }),
         ],
@@ -633,4 +680,57 @@ t.test('views', async t => {
       t.equal(json(r), r, `json ${name}`)
     }
   }
+})
+
+t.test('mermaid workspaces', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({ name: 'my-project' }),
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    packages: {
+      a: { 'package.json': JSON.stringify({ name: 'a' }) },
+    },
+  })
+  t.chdir(dir)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const specOptions = {
+    registry: 'https://registry.npmjs.org/',
+    registries: { npm: 'https://registry.npmjs.org/' },
+  }
+  const graph = new Graph({
+    ...specOptions,
+    projectRoot: dir,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    monorepo: Monorepo.load(dir),
+  })
+  const [ws] = [...graph.importers].filter(n => !n.mainImporter)
+  if (!ws) throw new Error('no workspace')
+  const x = graph.placePackage(
+    ws,
+    'prod',
+    Spec.parse('x@1', specOptions),
+    {
+      name: 'x',
+      version: '1.0.0',
+    },
+  )
+  if (!x) throw new Error('failed to place x')
+  const out = Command.views.mermaid({
+    action: 'list',
+    project: 'my-project',
+    graph,
+    dirs: ['.agents/skills'],
+    skills: [
+      {
+        name: 'x',
+        version: '1.0.0',
+        id: x.id,
+        skill: 's',
+        path: '/s',
+        linked: [],
+      },
+    ],
+  })
+  t.matchSnapshot(out, 'workspace under the project')
+  t.match(out, /^a -->.*workspace:a/m, 'project to workspace edge')
 })

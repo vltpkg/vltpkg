@@ -92,6 +92,8 @@ export type UnscannedSkills = {
 export type ListSkillsResult = UnscannedSkills & {
   /** main importer name, the tree root */
   project: string
+  /** the graph the skills were found in */
+  graph: Graph
   skills: Skill[]
   /** target dirs */
   dirs: string[]
@@ -215,6 +217,7 @@ export const listSkills = async (
   const { picked, dropped } = pick(skills, parts, unscanned)
   return {
     project: graph.mainImporter.name,
+    graph,
     skills: picked,
     dirs: targets.map(d => d.dir),
     ...(skipped.length ? { skipped } : null),

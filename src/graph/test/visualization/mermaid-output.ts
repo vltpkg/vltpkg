@@ -8,7 +8,6 @@ import { save } from '../../src/lockfile/save.ts'
 import { load } from '../../src/lockfile/load.ts'
 import {
   mermaidOutput,
-  mermaidTree,
   generateShortId,
 } from '../../src/visualization/mermaid-output.ts'
 import { loadActualGraph } from '../fixtures/actual.ts'
@@ -415,24 +414,62 @@ t.test('large scale identifier generation', async t => {
   )
 })
 
-t.test('mermaidTree', async t => {
+t.test('children', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+  const place = (from: typeof graph.mainImporter, name: string) => {
+    const node = graph.placePackage(
+      from,
+      'prod',
+      Spec.parse(name, '^1.0.0'),
+      { name, version: '1.0.0' },
+    )
+    if (!node) throw new Error('failed to place ' + name)
+    return node
+  }
+  const foo = place(graph.mainImporter, 'foo')
+  place(graph.mainImporter, 'other')
+  const bar = place(graph.mainImporter, 'bar')
+  const baz = place(bar, 'baz')
+  graph.addEdge('prod', Spec.parse('foo', '^1.0.0'), baz, foo)
+  const children = new Map([
+    [
+      foo.id,
+      [
+        { label: 'a (linked)', edge: 'foo@1.0.0' },
+        { label: 'say "hi"' },
+      ],
+    ],
+    [baz.id, [{ label: 'c', edge: 'x (baz@1.0.0)' }]],
+    [bar.id, []],
+    [
+      joinDepIDTuple(['registry', '', 'gone@1.0.0']),
+      [{ label: 'g' }],
+    ],
+  ])
+  const out = mermaidOutput({
+    edges: [],
+    importers: graph.importers,
+    nodes: [foo, baz],
+    children,
+  })
+  t.matchSnapshot(out, 'paths to the nodes, leaves under them')
+  t.notMatch(out, 'other', 'not on a path')
   t.equal(
-    mermaidTree('my-project', []),
-    'flowchart TD\na("my-project")',
+    out.match(/"a \(linked\)"/g)?.length,
+    1,
+    'leaves drawn once',
   )
-  t.matchSnapshot(
-    mermaidTree('@s/"root"', [
-      { label: 'find-skills (linked)', edge: 'skills@1.7.2' },
-      { label: 'say "hi"', edge: 'a (@s/b@1.0.0)' },
-      { label: 'no-edge' },
-    ]),
-    'edges, no edge, escaped',
+  t.notMatch(
+    mermaidOutput({
+      edges: [],
+      importers: graph.importers,
+      nodes: [foo],
+    }),
+    'classDef b',
+    'no children, no class',
   )
-  const many = mermaidTree(
-    'root',
-    Array.from({ length: 27 }, (_, i) => ({ label: `s${i}` })),
-  ).split('\n')
-  t.equal(many[26], 'a --> z("s24")')
-  t.equal(many[27], 'a --> A("s25")')
-  t.equal(many[28], 'a --> B("s26")')
 })

@@ -225,11 +225,15 @@ t.test('listSkills', async t => {
     'package.json': JSON.stringify({ name: 'e', version: '1.0.0' }),
     'vlt.json': '{}',
   })
+  const { graph: emptyGraph, ...nothing } = await listSkills(
+    opts(empty),
+  )
   t.strictSame(
-    await listSkills(opts(empty)),
+    nothing,
     { project: 'e', skills: [], dirs: ['skills'] },
     'nothing installed',
   )
+  t.equal(emptyGraph.mainImporter.name, 'e', 'the loaded graph')
 
   const graph = new Graph({
     projectRoot: dir,

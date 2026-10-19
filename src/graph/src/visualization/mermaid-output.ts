@@ -3,11 +3,16 @@ import { Edge } from '../edge.ts'
 import { Node } from '../node.ts'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 
+/** A leaf drawn under a graph node: node label, optional edge label. */
+export type MermaidChild = { label: string; edge?: string }
+
 export type MermaidOutputGraph = {
   edges: EdgeLike[]
   importers: Set<NodeLike>
   nodes: NodeLike[]
   highlightSelection?: boolean
+  /** leaves to draw under included nodes (class `b`), eg: skills */
+  children?: Map<DepID, MermaidChild[]>
 }
 
 type TraverseItem = {
@@ -16,6 +21,9 @@ type TraverseItem = {
 }
 
 let missingCount = 0
+
+const escapeLabel = (s: string) =>
+  s.replaceAll('"', '#quot;').replaceAll('@', '#64;')
 
 const isSelected = (
   options: MermaidOutputGraph,
@@ -122,6 +130,7 @@ function parseNode(
   includedItems: Map<EdgeLike | NodeLike, boolean>,
   depIdMapping: Map<DepID, string>,
   options: MermaidOutputGraph,
+  leaves: Map<DepID, string>,
   node: NodeLike,
   isImporter = false,
 ) {
@@ -140,17 +149,20 @@ function parseNode(
     ...node.edgesOut.values(),
     ...(node.workspaces?.values() ?? []),
   ]
-  const edges: string = allEdges
-    .map(e =>
+  const edges: string = [
+    leaves.get(node.id),
+    ...allEdges.map(e =>
       parseEdge(
         seenNodes,
         labeledNodes,
         includedItems,
         depIdMapping,
         options,
+        leaves,
         e,
       ),
-    )
+    ),
+  ]
     .filter(Boolean)
     .join('\n')
   // Only render node standalone for importers, others are rendered as part of edges
@@ -167,6 +179,7 @@ function parseEdge(
   includedItems: Map<EdgeLike | NodeLike, boolean>,
   depIdMapping: Map<DepID, string>,
   options: MermaidOutputGraph,
+  leaves: Map<DepID, string>,
   edge: EdgeLike,
 ) {
   if (!includedItems.get(edge)) {
@@ -193,6 +206,7 @@ function parseEdge(
     includedItems,
     depIdMapping,
     options,
+    leaves,
     edge.to,
   )
   return edgeResult + toRef + (childEdges ? '\n' + childEdges : '')
@@ -202,7 +216,8 @@ function parseEdge(
  * Returns a mermaid string representation of the graph.
  */
 export function mermaidOutput(options: MermaidOutputGraph) {
-  const { edges, importers, nodes, highlightSelection } = options
+  const { edges, importers, nodes, highlightSelection, children } =
+    options
   const seen = new Set<EdgeLike | NodeLike>()
   const includedItems = new Map<EdgeLike | NodeLike, boolean>()
   const traverse = new Set<TraverseItem>(
@@ -247,6 +262,23 @@ export function mermaidOutput(options: MermaidOutputGraph) {
   // Create DepID to short identifier mapping
   const depIdMapping = createDepIdMapping(importers)
 
+  // leaf lines per node, ids after the graph's
+  const leaves = new Map<DepID, string>()
+  let leafIndex = depIdMapping.size
+  for (const [id, items] of children ?? []) {
+    const from = depIdMapping.get(id)
+    if (!from || !items.length) continue
+    leaves.set(
+      id,
+      items
+        .map(
+          ({ label, edge }) =>
+            `${from} -->${edge === undefined ? '' : `|"${escapeLabel(edge)}"|`} ${generateShortId(leafIndex++)}("${escapeLabel(label)}"):::b`,
+        )
+        .join('\n'),
+    )
+  }
+
   // Track nodes that have had their label printed (shared across all importers)
   const labeledNodes = new Set<DepID>()
 
@@ -261,6 +293,7 @@ export function mermaidOutput(options: MermaidOutputGraph) {
         includedItems,
         depIdMapping,
         options,
+        leaves,
         i,
         true, // isImporter
       ),
@@ -269,27 +302,10 @@ export function mermaidOutput(options: MermaidOutputGraph) {
     .join('\n')
 
   const styleDefinition =
-    highlightSelection ? '\nclassDef a fill:gold,color:#242424' : ''
+    (highlightSelection ?
+      '\nclassDef a fill:gold,color:#242424'
+    : '') +
+    (leaves.size ? '\nclassDef b fill:turquoise,color:#242424' : '')
 
   return 'flowchart TD\n' + graphOutput + styleDefinition
 }
-
-/** A child of {@link mermaidTree}: node label, optional edge label. */
-export type MermaidTreeItem = { label: string; edge?: string }
-
-const escapeLabel = (s: string) =>
-  s.replaceAll('"', '#quot;').replaceAll('@', '#64;')
-
-/** Flowchart of `root` linked to each item. */
-export const mermaidTree = (
-  root: string,
-  items: MermaidTreeItem[],
-): string =>
-  [
-    'flowchart TD',
-    `a("${escapeLabel(root)}")`,
-    ...items.map(
-      ({ label, edge }, i) =>
-        `a -->${edge === undefined ? '' : `|"${escapeLabel(edge)}"|`} ${generateShortId(i + 1)}("${escapeLabel(label)}")`,
-    ),
-  ].join('\n')
