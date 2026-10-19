@@ -458,6 +458,12 @@ t.test('deleteProperty', async t => {
   })
 
   t.equal(deleteProperty({}, 'constructor'), false)
+
+  const fixture6 = { keywords: ['alpha', 'beta'] }
+  t.equal(deleteProperty(fixture6, 'keywords.missing'), false)
+  t.strictSame(fixture6, { keywords: ['alpha', 'beta'] })
+  t.equal(deleteProperty(fixture6, 'keywords[1]'), true)
+  t.strictSame(fixture6, { keywords: ['alpha'] })
 })
 
 t.test('hasProperty', async t => {
