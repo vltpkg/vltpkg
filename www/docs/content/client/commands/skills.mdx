@@ -20,9 +20,37 @@ Packages can ship them alongside their code, and `vlt skills` links
 them into your project's agent skill dirs so coding agents can find
 them.
 
-## Where packages ship skills
+## How `vlt` finds skills
 
-`vlt` looks for skills inside each installed package, in this order:
+`vlt` only looks in installed packages, it never downloads skills:
+
+1. Install the package as usual, e.g. `vlt install agent-browser`.
+2. A [DSS query](/client/selectors) picks the packages to look in:
+   `allow-skills` on install, or the query given to `vlt skills` (`*`
+   for `list` by default).
+3. `vlt` scans each picked package for skills (below), then keeps the
+   ones `:skill()` picks.
+4. Each skill is linked into the project's
+   [agent skill dirs](#where-skills-are-linked), named after the
+   skill. Agents read skills from these dirs.
+
+`vlt skills list` shows what `vlt` finds, and `vlt query ':skills'`
+lists the packages that ship skills.
+
+### Which packages
+
+- Packages installed in the `node_modules/.vlt` store, direct or
+  transitive.
+- Not the project or its workspaces, and not `file:` dependencies
+  (folders and tarballs).
+- One version per package: the one the project depends on directly,
+  else a workspace's, else the highest version, even if it ships no
+  skills. Different origins (e.g. registry and git) are different
+  packages.
+
+### Where in a package
+
+`vlt` looks for skills in each package, in this order:
 
 1. `SKILL.md` at the package root – a single skill, named after the
    `name` field of its frontmatter (or the package name, without its
@@ -31,14 +59,47 @@ them.
 3. `dist/skills/<name>/SKILL.md` – same, for built packages
 4. `.agents/skills/<name>/SKILL.md` – same
 
-When a package ships the same skill name (in any case) in more than
-one place, the first one in this order is used.
+A package can ship skills in several of these places. When the same
+skill name (in any case) is in more than one, the first one in this
+order is used.
 
-Only packages installed in the `node_modules/.vlt` store are scanned.
-Workspaces and `file:` dependencies (folders and tarballs) are
-skipped. One version of each package is used: the one the project
-depends on directly, else the highest version, even if it ships no
-skills.
+### What counts as a skill
+
+- A folder with a `SKILL.md` file, directly in one of the dirs above:
+  `skills/group/<name>/SKILL.md` is not found.
+- Folder names use letters, digits, `.`, `_` and `-`, and start with a
+  letter or digit. Other folders, and one named `SKILL.md`, are
+  skipped.
+- Symlinks are not followed: a symlinked skill folder or `SKILL.md`,
+  or a symlinked dir on the way (`skills/`, `dist/`, `dist/skills/`,
+  `.agents/`, `.agents/skills/`), is skipped, so a skill always lives
+  inside its package.
+- A root `SKILL.md` is named after its frontmatter `name` when that is
+  a valid skill name (lowercase letters, digits and single `-`, up to
+  64 characters), else after the package.
+- `vlt` reads `name` and `description` from the `SKILL.md`
+  frontmatter. A missing or invalid frontmatter doesn't hide the
+  skill. `:skill()` matches the skill name or the frontmatter `name`.
+
+### Shipping skills in a package
+
+<Code
+  code={`my-tool/
+├── package.json
+├── dist/
+└── skills/
+    └── my-skill/
+        └── SKILL.md`}
+  title="Layout"
+  lang="text"
+/>
+
+- Publish the skills: if `package.json` has `files`, add the skill
+  dirs (or a root `SKILL.md`) to it. Check with `vlt pack --dry-run`.
+- A package that is a single skill can put `SKILL.md` at its root.
+- Skills built into `dist/skills/` are found too.
+
+### Same name in different packages
 
 When packages ship skills with the same name, one gets the link in
 every dir: the package an existing link points to, while that skill is
@@ -48,6 +109,17 @@ are reported. Installs keep a dir's link to another installed skill;
 `vlt skills link <query>` frees a name. A fresh clone (no links yet)
 may pick another package than a machine with older links. `:skill()`
 applies first: a skill the query doesn't pick never takes a name.
+
+### A skill isn't found
+
+- `vlt skills list "#<package>"` lists what `vlt` finds in it.
+- Check the package is installed from a registry, git or a remote
+  tarball, not a workspace or `file:` dependency.
+- Check the layout and folder name rules above.
+- `vlt skills link` and installs warn about a `:skill()` pattern that
+  matches nothing, listing the skills its packages ship.
+- With a security selector such as `:not(:malware)`, packages with no
+  security data are left out and reported. See [Safety](#safety).
 
 ## Where skills are linked
 
@@ -298,8 +370,8 @@ link what it selects after a successful install:
 
 <Code
   code={`# link, and save the query to vlt.json
-$ vlt install --allow-skills="#skills:skill(find-skills)"
-Saved allow-skills="#skills:skill(find-skills)" to vlt.json`}
+$ vlt install --allow-skills="#agent-browser:skill(agent-browser)"
+Saved allow-skills="#agent-browser:skill(agent-browser)" to vlt.json`}
   title="Terminal"
   lang="bash"
 />

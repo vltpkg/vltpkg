@@ -897,8 +897,8 @@ export const definition = j
                     to the project \`vlt.json\`; \`vlt skills link
                     [<query>]\` sets, saves and applies it.
 
-                    Example: --allow-skills="#skills:skill(find-skills)"
-                    Links the find-skills skill of the skills package.`,
+                    Example: --allow-skills="#agent-browser:skill(agent-browser)"
+                    Links the agent-browser skill from a package with the same name.`,
     },
   })
   .optList({
