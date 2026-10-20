@@ -724,6 +724,50 @@ t.test('human colors', async t => {
   t.notMatch(human(r), '\x1b', 'no colors')
 })
 
+t.test('json keys', async t => {
+  const r: SkillsResult = {
+    action: 'list',
+    project: 'my-project',
+    graph: {} as Graph,
+    dirs: ['.agents/skills'],
+    skills: [
+      {
+        name: 'skills',
+        alias: 'vercelskills',
+        version: '1.7.2',
+        id: joinDepIDTuple(['registry', '', 'skills@1.7.2']),
+        skill: 'find-skills',
+        description: 'd',
+        path: '/s',
+        linked: [],
+      },
+    ],
+  }
+  const { skills } = Command.views.json(r) as {
+    skills: Record<string, unknown>[]
+  }
+  t.strictSame(skills[0], {
+    name: 'find-skills',
+    'dependency-name': 'vercelskills',
+    'package-name': 'skills',
+    'package-version': '1.7.2',
+    'package-id': joinDepIDTuple(['registry', '', 'skills@1.7.2']),
+    description: 'd',
+    path: '/s',
+    linked: [],
+  })
+  t.strictSame(Object.keys(skills[0] ?? {}), [
+    'name',
+    'dependency-name',
+    'package-name',
+    'package-version',
+    'package-id',
+    'description',
+    'path',
+    'linked',
+  ])
+})
+
 t.test('mermaid workspaces', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({ name: 'my-project' }),

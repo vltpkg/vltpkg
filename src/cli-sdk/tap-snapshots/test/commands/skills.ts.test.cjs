@@ -230,23 +230,23 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "vercelskills",
-      "id": "~npm~skills@1.7.2",
       "linked": Array [
         ".agents/skills",
       ],
       "name": "find-skills",
+      "package-id": "~npm~skills@1.7.2",
       "package-name": "skills",
+      "package-version": "1.7.2",
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": "1.7.2",
     },
     Object {
       "dependency-name": "mine",
-      "id": "~npm~theirs@1.0.0",
       "linked": Array [],
       "name": "x",
+      "package-id": "~npm~theirs@1.0.0",
       "package-name": "theirs",
+      "package-version": undefined,
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": undefined,
     },
   ],
 }
@@ -273,32 +273,32 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "foo",
-      "id": "~npm~foo@1.0.0",
       "linked": Array [
         ".agents/skills",
         ".claude/skills",
       ],
       "name": "a",
+      "package-id": "~npm~foo@1.0.0",
+      "package-version": "1.0.0",
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": "1.0.0",
     },
     Object {
       "dependency-name": "foo",
-      "id": "~npm~foo@1.0.0",
       "linked": Array [
         ".claude/skills",
       ],
       "name": "b",
+      "package-id": "~npm~foo@1.0.0",
+      "package-version": "1.0.0",
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": "1.0.0",
     },
     Object {
       "dependency-name": "@s/bar",
-      "id": "~npm~@s+bar@1.0.0",
       "linked": Array [],
       "name": "bar",
+      "package-id": "~npm~@s+bar@1.0.0",
+      "package-version": undefined,
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": undefined,
     },
   ],
 }
@@ -311,13 +311,13 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "foo",
-      "id": "~npm~foo@1.0.0",
       "linked": Array [
         ".agents/skills",
       ],
       "name": "a",
+      "package-id": "~npm~foo@1.0.0",
+      "package-version": "1.0.0",
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": "1.0.0",
     },
   ],
 }
@@ -334,11 +334,11 @@ Object {
     Object {
       "dependency-name": "foo",
       "description": "does a",
-      "id": "~npm~foo@1.0.0",
       "linked": Array [],
       "name": "a",
+      "package-id": "~npm~foo@1.0.0",
+      "package-version": "1.0.0",
       "path": "/project/node_modules/.vlt/~npm~foo@1.0.0/node_modules/foo/skills/a",
-      "version": "1.0.0",
     },
   ],
 }
