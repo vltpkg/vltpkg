@@ -17,12 +17,8 @@ import {
   selfUpdateLines,
 } from '../../self-update.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
-import {
-  keptLine,
-  savedLine,
-  unmatchedLines,
-  unscannedLines,
-} from '../../allow-skills.ts'
+import { keptLine, savedLine } from '../../allow-query.ts'
+import { unmatchedLines, unscannedLines } from '../../allow-skills.ts'
 import { globalBinsLines } from '../../global.ts'
 import { offerPathSetup } from '../../shell-setup/index.ts'
 
@@ -225,8 +221,9 @@ export class InstallReporter extends ViewClass {
       out += `\nSaved workspaces from ${migrated.source} to vlt.json`
     }
     const a = _result.allowSkills
-    if (a?.stored) out += `\n${keptLine(a.stored)}`
-    else if (a) out += `\n${savedLine(a.query, 'project')}`
+    if (a?.stored) out += `\n${keptLine('allow-skills', a.stored)}`
+    else if (a)
+      out += `\n${savedLine('allow-skills', a.query, 'project')}`
     // failed: npm already said why
     if (!out) return undefined
     if (this.#plain) this.#instance = render($(Text, null, out))

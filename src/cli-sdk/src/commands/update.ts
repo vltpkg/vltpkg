@@ -2,7 +2,7 @@ import { update } from '@vltpkg/graph'
 import type { LinkSkillsResult } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
-import { saveAllowSkills } from '../allow-skills.ts'
+import { saveAllow } from '../allow-query.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -104,7 +104,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   })
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
-  const allowSkillsSave = await saveAllowSkills(conf)
+  const allowSkillsSave = await saveAllow(conf, 'allow-skills')
   return {
     buildQueue,
     graph,

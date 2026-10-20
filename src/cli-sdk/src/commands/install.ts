@@ -1,7 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
-import { saveAllowSkills } from '../allow-skills.ts'
-import type { AllowSkillsSave } from '../allow-skills.ts'
+import { saveAllow } from '../allow-query.ts'
+import type { AllowSave } from '../allow-query.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import {
   assertGlobalOptions,
@@ -68,7 +68,7 @@ export type InstallResult = {
    * `--allow-skills` saved to vlt.json, or kept because another query
    * is stored.
    */
-  allowSkills?: AllowSkillsSave
+  allowSkills?: AllowSave
   /**
    * Bins linked by a `--global` install.
    */
@@ -326,7 +326,7 @@ export const command: CommandFn<
   const allowSkillsSave =
     conf.options['lockfile-only'] ?
       undefined
-    : await saveAllowSkills(conf)
+    : await saveAllow(conf, 'allow-skills')
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(
