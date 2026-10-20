@@ -203,7 +203,7 @@ const mermaidList = (r: ListSkillsResult) => {
 }
 
 // `name`: the skill, `dependency-name`: the dep it's installed as,
-// `package-*`: its package
+// `package-id`: its package
 const jsonSkill = ({
   skill,
   name,
@@ -214,8 +214,6 @@ const jsonSkill = ({
 }: Skill) => ({
   name: skill,
   'dependency-name': alias ?? name,
-  ...(alias !== undefined && { 'package-name': name }),
-  'package-version': version,
   'package-id': id,
   ...rest,
 })
