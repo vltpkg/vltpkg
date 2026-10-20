@@ -42,16 +42,16 @@ Runs lifecycle scripts selectively using DSS queries.
 **Fail closed**: with security selectors in the target (or `--allow-scripts`), npm registry packages with no security data are never built. `vlt build` returns them as `skipped` with `skippedReason`: `timeout` (Socket request timed out) or `unscanned` (Socket has not scanned them yet).
 
 ```bash
-vlt build                          # default target
-vlt build --target="#esbuild"      # specific package
-vlt build ":root > *"              # positional arg = target
+vlt build                          # stored allow-scripts, else default
+vlt build ":root > *"              # sets, saves, applies allow-scripts
+vlt build --target="#esbuild"      # once: no prompt, never saved
 ```
 
 ### Build State
 
 Tracked per node: `'none' | 'needed' | 'built' | 'failed'`. Query with `:built`, `:scripts`, `:scripts:not(:built)`.
 
-Persist target: `vlt config set "command.build.target=<query>"`
+Persist: `vlt build <query>` saves `allow-scripts` (installs run it; asks before replacing a stored one, `-y` skips). `--target`/`command.build.target`: never saved, wins.
 
 ## `InstallOptions` Type
 

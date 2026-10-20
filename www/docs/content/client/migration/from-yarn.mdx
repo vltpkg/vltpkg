@@ -260,13 +260,13 @@ packages that need building and aren't flagged as malware by
 You can target scripts precisely:
 
 <Code
-  code={`# Only allow specific trusted packages
-$ vlt build --target="#esbuild, #node-gyp"
+  code={`# Only allow specific trusted packages, saved as allow-scripts
+$ vlt build "#esbuild, #node-gyp"`}
+  title="Terminal"
+  lang="bash"
+/>
 
-# Persist your choice
-
-$ vlt config set "command.build.target=#esbuild, #node-gyp"`}
-title="Terminal" lang="bash" />
+Installs then run those scripts.
 
 See [`vlt build`](/client/commands/build) for full details.
 
