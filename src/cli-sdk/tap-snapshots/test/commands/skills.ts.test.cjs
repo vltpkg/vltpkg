@@ -80,6 +80,44 @@ skills on install.
 
 `
 
+exports[`test/commands/skills.ts > TAP > views > human colors list aliased 1`] = `
+[0mmy-project
+├── [33mfind-skills (vercelskills (skills@1.7.2)) (linked)[39m
+└── x (mine (theirs))[0m
+`
+
+exports[`test/commands/skills.ts > TAP > views > human colors list empty 1`] = `
+No agent skills found in installed packages.
+`
+
+exports[`test/commands/skills.ts > TAP > views > human colors list many 1`] = `
+[0mmy-project
+├── [33ma (foo@1.0.0) (linked)[39m
+├── [33mb (foo@1.0.0) (linked in .claude/skills)[39m
+└── bar (@s/bar)[0m
+`
+
+exports[`test/commands/skills.ts > TAP > views > human colors list no dirs 1`] = `
+[0mmy-project
+└── [33ma (foo@1.0.0) (linked in .agents/skills)[39m[0m
+No agent skill dirs: skills-dir is empty
+`
+
+exports[`test/commands/skills.ts > TAP > views > human colors list one 1`] = `
+[0mmy-project
+└── a (foo@1.0.0)[0m
+`
+
+exports[`test/commands/skills.ts > TAP > views > human colors list skipped 1`] = `
+No agent skills found in installed packages.
+⚠️ Skipped .claude/skills (outside the project)
+`
+
+exports[`test/commands/skills.ts > TAP > views > human colors list unscanned 1`] = `
+No agent skills found in installed packages.
+⏳ 1 skill left out, security data timed out: a (foo@1.0.0). Try again later.
+`
+
 exports[`test/commands/skills.ts > TAP > views > human link all 1`] = `
 🔗 Linked 2 agent skills:
   .agents/skills/a

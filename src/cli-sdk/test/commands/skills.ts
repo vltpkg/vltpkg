@@ -673,6 +673,10 @@ t.test('views', async t => {
   for (const [name, r] of cases) {
     t.matchSnapshot(human(r), `human ${name}`)
     if (r.action === 'list') {
+      t.matchSnapshot(
+        human(r, { colors: true }),
+        `human colors ${name}`,
+      )
       t.matchSnapshot(mermaid(r), `mermaid ${name}`)
       t.matchSnapshot(json(r), `json ${name}`)
     } else {
@@ -680,6 +684,44 @@ t.test('views', async t => {
       t.equal(json(r), r, `json ${name}`)
     }
   }
+})
+
+t.test('human colors', async t => {
+  const { human } = Command.views
+  const skill = (n: string, linked: string[]): Skill => ({
+    name: 'foo',
+    version: '1.0.0',
+    id: joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    skill: n,
+    path: `/s/${n}`,
+    linked,
+  })
+  const r: SkillsResult = {
+    action: 'list',
+    project: 'my-project',
+    // not read by the human view
+    graph: {} as Graph,
+    dirs: ['.agents/skills', '.claude/skills'],
+    skills: [
+      skill('a', ['.agents/skills', '.claude/skills']),
+      skill('b', ['.claude/skills']),
+      skill('c', []),
+    ],
+  }
+  const out = human(r, { colors: true }).split('\n')
+  t.equal(out[0], '\x1b[0mmy-project', 'reset, like vlt ls')
+  t.equal(
+    out[1],
+    '├── \x1b[33ma (foo@1.0.0) (linked)\x1b[39m',
+    'linked: yellow',
+  )
+  t.equal(
+    out[2],
+    '├── \x1b[33mb (foo@1.0.0) (linked in .claude/skills)\x1b[39m',
+    'linked in some dirs: yellow',
+  )
+  t.equal(out[3], '└── c (foo@1.0.0)\x1b[0m', 'not linked: plain')
+  t.notMatch(human(r), '\x1b', 'no colors')
 })
 
 t.test('mermaid workspaces', async t => {

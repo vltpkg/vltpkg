@@ -1,3 +1,4 @@
+import { styleText } from 'node:util'
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
 import {
@@ -26,7 +27,7 @@ import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { confirm, editQuery, interactive } from '../skills-prompt.ts'
-import type { Views } from '../view.ts'
+import type { ViewOptions, Views } from '../view.ts'
 
 export type SkillsResult =
   | ({ action: 'list' } & ListSkillsResult)
@@ -144,14 +145,32 @@ const listNotes = (r: ListSkillsResult) => [
   ...notes(r),
 ]
 
-const humanList = (r: ListSkillsResult) => {
-  const rows = r.skills.map(s => row(s, r.dirs))
+// colors as `vlt ls` / `vlt query`: linked skills = selected nodes
+const humanList = (
+  r: ListSkillsResult,
+  { colors }: ViewOptions = {},
+) => {
+  const style =
+    (format: 'reset' | 'yellow') =>
+    (s: string): string =>
+      colors ? styleText(format, s, { validateStream: false }) : s
+  const yellow = style('yellow')
+  const rows = r.skills.map(s => {
+    const x = row(s, r.dirs)
+    return s.linked.length ? yellow(x) : x
+  })
   const last = rows.length - 1
   return [
     ...(rows.length ?
       [
-        r.project,
-        ...rows.map((x, i) => `${i === last ? '└──' : '├──'} ${x}`),
+        style('reset')(
+          [
+            r.project,
+            ...rows.map(
+              (x, i) => `${i === last ? '└──' : '├──'} ${x}`,
+            ),
+          ].join('\n'),
+        ),
       ]
     : ['No agent skills found in installed packages.']),
     ...listNotes(r),
@@ -229,8 +248,8 @@ const humanLink = (r: LinkSkillsResult) => {
   return out.join('\n') || 'No agent skills found to link.'
 }
 
-const human = (r: SkillsResult): string =>
-  r.action === 'list' ? humanList(r)
+const human = (r: SkillsResult, o?: ViewOptions): string =>
+  r.action === 'list' ? humanList(r, o)
   : r.action === 'unchanged' ? 'No changes made.'
   : [
       humanLink(r),

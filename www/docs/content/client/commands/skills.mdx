@@ -243,9 +243,10 @@ to re-point them.
 
 The default. Lists the skills of installed packages as a tree, like
 `vlt ls`: `<skill> (<package>)`, marked `(linked)` when linked in
-every agent skill dir, `(linked in <dirs>)` when only in some.
-Warnings follow the tree. Selects all packages (`*`) by default and
-applies `:skill()`. Creates and saves nothing.
+every agent skill dir, `(linked in <dirs>)` when only in some. With
+colors on, linked skills are highlighted like the packages `vlt query`
+selects. Warnings follow the tree. Selects all packages (`*`) by
+default and applies `:skill()`. Creates and saves nothing.
 
 <Code
   code={`$ vlt skills
