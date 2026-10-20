@@ -4,7 +4,14 @@ import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+} from 'node:fs'
+import type { Stats } from 'node:fs'
+import type { ReadEntry } from 'tar'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
@@ -205,7 +212,7 @@ const readIgnoreFile = (
 export const buildPackFilter = (
   manifest: NormalizedManifest,
   packDir: string,
-): ((path: string) => boolean) => {
+): ((path: string, entry: Stats | ReadEntry) => boolean) => {
   const manifestWithFiles = manifest as NormalizedManifest & {
     files?: string[]
   }
@@ -230,7 +237,25 @@ export const buildPackFilter = (
     }
   }
 
-  return (path: string) => {
+  // `files` entries are normalized like npm does: a leading `./` or `/`
+  // and trailing slashes are dropped, empty entries are skipped
+  const files = (manifestWithFiles.files ?? [])
+    .map(pattern => pattern.replace(/^\.?\//, '').replace(/\/+$/, ''))
+    .filter(Boolean)
+
+  // dirs that only partially match a `files` glob (e.g. `dist/nested` for
+  // `dist/**/*.js`) are descended, unless unreadable: npm's glob expansion
+  // skips those too
+  const isReadableDir = (dir: string): boolean => {
+    try {
+      readdirSync(join(packDir, dir))
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  return (path, entry) => {
     const normalizedPath = path.replace(/^\.\//, '')
 
     if (path === '.' || normalizedPath === '') {
@@ -262,33 +287,23 @@ export const buildPackFilter = (
       return false
     }
 
-    if (hasFilesField && manifestWithFiles.files) {
-      return manifestWithFiles.files.some((pattern: string) => {
-        if (pattern.endsWith('/')) {
-          const dirName = pattern.slice(0, -1)
-          const globPattern = pattern.replace(/\/$/, '/**')
-          const matchesDir = normalizedPath === dirName
-          const matchesContents = minimatch(
-            normalizedPath,
-            globPattern,
-            { dot: true },
-          )
-          return matchesDir || matchesContents
-        }
-
-        const directMatch = minimatch(normalizedPath, pattern, {
-          dot: true,
-        })
-        const isParentDir =
-          pattern.includes('/') &&
-          pattern.startsWith(normalizedPath + '/')
-        const isChildOfPattern = minimatch(
-          normalizedPath,
-          pattern + '/**',
-          { dot: true },
-        )
-        return directMatch || isParentDir || isChildOfPattern
-      })
+    if (hasFilesField) {
+      const isDir = 'isDirectory' in entry && entry.isDirectory()
+      return (
+        files.some(
+          pattern =>
+            minimatch(normalizedPath, pattern, { dot: true }) ||
+            minimatch(normalizedPath, `${pattern}/**`, { dot: true }),
+        ) ||
+        (isDir &&
+          files.some(pattern =>
+            minimatch(normalizedPath, pattern, {
+              dot: true,
+              partial: true,
+            }),
+          ) &&
+          isReadableDir(normalizedPath))
+      )
     }
 
     // Ignore-file mode: apply .npmignore or .gitignore deny patterns
