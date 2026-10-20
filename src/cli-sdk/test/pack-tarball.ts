@@ -1,6 +1,8 @@
 import t from 'tap'
+import * as fs from 'node:fs'
 import { resolve } from 'node:path'
 import { readFile } from 'node:fs/promises'
+import { list as tarList } from 'tar'
 import { packTarball } from '../src/pack-tarball.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
@@ -1618,4 +1620,107 @@ t.test('ignore file support', async t => {
       )
     },
   )
+})
+
+const tarEntries = async (data: Buffer): Promise<string[]> => {
+  const entries: string[] = []
+  await new Promise<void>((res, rej) => {
+    tarList({ onentry: e => entries.push(e.path) })
+      .on('end', () => res())
+      .on('error', rej)
+      .end(data)
+  })
+  return entries
+}
+
+t.test('files globs include nested matches', async t => {
+  const dir = t.testdir({
+    'README.md': '# readme',
+    dist: {
+      'top.js': 'x',
+      nested: { 'index.js': 'x', 'a.txt': 'x' },
+      assets: { 'a.css': 'x' },
+    },
+    src: { 'index.js': 'x', deep: { 'x.ts': 'x' } },
+    lib: { a: { 'x.js': 'x' }, b: { c: { 'x.js': 'x' } } },
+    a: { 'one.txt': 'x' },
+    b: { two: { 'z.txt': 'x' } },
+    '.hidden': { 'h.js': 'x' },
+    docs: { 'guide.md': 'x' },
+    node_modules: { dep: { 'index.js': 'x' } },
+    '.git': { 'hook.js': 'x' },
+  })
+  const cases: [string[], string[]][] = [
+    [['dist/**/*.js'], ['dist/nested/index.js', 'dist/top.js']],
+    [
+      ['**/*.js'],
+      [
+        '.hidden/h.js',
+        'dist/nested/index.js',
+        'dist/top.js',
+        'lib/a/x.js',
+        'lib/b/c/x.js',
+        'src/index.js',
+      ],
+    ],
+    [['lib/*/x.js'], ['lib/a/x.js']],
+    [['src/deep/x.ts'], ['src/deep/x.ts']],
+    [['lib/*/'], ['lib/a/x.js', 'lib/b/c/x.js']],
+    [['dist/nested/'], ['dist/nested/a.txt', 'dist/nested/index.js']],
+    [['{a,b}/**'], ['a/one.txt', 'b/two/z.txt']],
+  ]
+  for (const [files, expected] of cases) {
+    const manifest = { name: 'glob-pkg', version: '1.0.0', files }
+    const result = await packTarball(
+      manifest,
+      dir,
+      createMockConfig(dir),
+    )
+    t.strictSame(
+      result.files.sort(),
+      ['README.md', 'package.json', ...expected].sort(),
+      files.join(),
+    )
+    const entries = await tarEntries(result.tarballData)
+    t.strictSame(
+      entries.filter(
+        e =>
+          e.endsWith('/') &&
+          e !== 'package/' &&
+          !entries.some(f => !f.endsWith('/') && f.startsWith(e)),
+      ),
+      [],
+      `${files.join()}: no empty dirs`,
+    )
+  }
+})
+
+t.test('files glob lookahead readdir error', async t => {
+  const { packTarball } = await t.mockImport<
+    typeof import('../src/pack-tarball.ts')
+  >('../src/pack-tarball.ts', {
+    'node:fs': {
+      ...fs,
+      readdirSync: () => {
+        throw new Error('nope')
+      },
+    },
+  })
+  const dir = t.testdir({
+    dist: { nested: { 'index.js': 'x' } },
+  })
+  const manifest = {
+    name: 'glob-pkg',
+    version: '1.0.0',
+    files: ['dist/**/*.js'],
+  }
+  const result = await packTarball(
+    manifest,
+    dir,
+    createMockConfig(dir),
+  )
+  t.strictSame(result.files.sort(), [
+    'dist/nested/index.js',
+    'package.json',
+  ])
 })

@@ -4,7 +4,14 @@ import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
 import assert from 'node:assert'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+} from 'node:fs'
+import type { Stats } from 'node:fs'
+import type { ReadEntry } from 'tar'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
@@ -205,7 +212,7 @@ const readIgnoreFile = (
 export const buildPackFilter = (
   manifest: NormalizedManifest,
   packDir: string,
-): ((path: string) => boolean) => {
+): ((path: string, entry: Stats | ReadEntry) => boolean) => {
   const manifestWithFiles = manifest as NormalizedManifest & {
     files?: string[]
   }
@@ -230,7 +237,25 @@ export const buildPackFilter = (
     }
   }
 
-  return (path: string) => {
+  // dirs only partially matching a `files` glob: kept if they hold a match
+  const dirHasMatch = new Map<string, boolean>()
+  const hasMatch = (dir: string): boolean => {
+    let found = dirHasMatch.get(dir)
+    if (found === undefined) {
+      try {
+        found = readdirSync(join(packDir, dir), {
+          withFileTypes: true,
+        }).some(d => include(`${dir}/${d.name}`, d.isDirectory()))
+      } catch {
+        // let tar read and report it
+        found = true
+      }
+      dirHasMatch.set(dir, found)
+    }
+    return found
+  }
+
+  const include = (path: string, isDir: boolean): boolean => {
     const normalizedPath = path.replace(/^\.\//, '')
 
     if (path === '.' || normalizedPath === '') {
@@ -263,7 +288,8 @@ export const buildPackFilter = (
     }
 
     if (hasFilesField && manifestWithFiles.files) {
-      return manifestWithFiles.files.some((pattern: string) => {
+      const files = manifestWithFiles.files
+      const matches = files.some((pattern: string) => {
         if (pattern.endsWith('/')) {
           const dirName = pattern.slice(0, -1)
           const globPattern = pattern.replace(/\/$/, '/**')
@@ -279,16 +305,23 @@ export const buildPackFilter = (
         const directMatch = minimatch(normalizedPath, pattern, {
           dot: true,
         })
-        const isParentDir =
-          pattern.includes('/') &&
-          pattern.startsWith(normalizedPath + '/')
         const isChildOfPattern = minimatch(
           normalizedPath,
           pattern + '/**',
           { dot: true },
         )
-        return directMatch || isParentDir || isChildOfPattern
+        return directMatch || isChildOfPattern
       })
+      if (matches || !isDir) return matches
+      // dir that may hold matches, e.g. `dist/nested` for `dist/**/*.js`
+      return (
+        files.some(pattern =>
+          minimatch(normalizedPath, pattern.replace(/\/$/, '/**'), {
+            dot: true,
+            partial: true,
+          }),
+        ) && hasMatch(normalizedPath)
+      )
     }
 
     // Ignore-file mode: apply .npmignore or .gitignore deny patterns
@@ -298,6 +331,9 @@ export const buildPackFilter = (
 
     return true
   }
+
+  return (path, entry) =>
+    include(path, 'isDirectory' in entry && entry.isDirectory())
 }
 
 /**
