@@ -79,16 +79,27 @@ export const addEdge = async (
 
   if (bins) {
     for (const [key, val] of Object.entries(bins)) {
-      const link = resolve(binRoot, key)
-      const absTarget = resolve(path, val)
-      const target = relative(binRoot, absTarget)
-      // TODO: bash/cmd/ps1 shims on Windows
-      promises.push(
-        process.platform === 'win32' ?
-          cmdShimIfExists(absTarget, link, remover)
-        : clobberSymlink(target, link, remover),
-      )
+      promises.push(linkBin(path, binRoot, key, val, remover))
     }
   }
   if (promises.length) await Promise.all(promises)
+}
+
+/**
+ * link the `key` bin of the package at `path` into `binRoot`
+ */
+export const linkBin = (
+  path: string,
+  binRoot: string,
+  key: string,
+  val: string,
+  remover: RollbackRemove,
+) => {
+  const link = resolve(binRoot, key)
+  const absTarget = resolve(path, val)
+  const target = relative(binRoot, absTarget)
+  // TODO: bash/cmd/ps1 shims on Windows
+  return process.platform === 'win32' ?
+      cmdShimIfExists(absTarget, link, remover)
+    : clobberSymlink(target, link, remover)
 }
