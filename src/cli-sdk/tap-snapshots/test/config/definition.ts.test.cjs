@@ -87,7 +87,7 @@ Object {
     "description": String(
       Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.
       
-      \`vlt build [<query>]\` sets, saves and applies it.
+      \`vlt install\` and \`vlt update\` save \`--allow-scripts=<query>\` to the project \`vlt.json\`; \`vlt build [<query>]\` sets, saves and applies it.
       
       Example: --allow-scripts=":root > *, #my-package" Runs scripts only for direct dependencies of the current project and any occurrences of a specific dependency with the name "my-package" anywhere in the dependency graph.
     ),
