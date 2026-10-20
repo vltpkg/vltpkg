@@ -210,9 +210,11 @@ const jsonSkill = ({
   alias,
   version,
   id,
+  description,
   ...rest
 }: Skill) => ({
   name: skill,
+  description,
   'dependency-name': alias ?? name,
   'package-id': id,
   ...rest,

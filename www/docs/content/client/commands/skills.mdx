@@ -259,10 +259,10 @@ $ vlt skills list "#skills:skill(find-*)"`}
   lang="bash"
 />
 
-- `--view=json`: each skill's `name` is the skill, `dependency-name`
-  the dependency it is installed as, `package-id` its package id, plus
-  `path`, `description` and the dirs it is `linked` in; `dirs` lists
-  the agent skill dirs.
+- `--view=json`: each skill's `name` is the skill, then its
+  `description`, `dependency-name` the dependency it is installed as,
+  `package-id` its package id, `path` and the dirs it is `linked` in;
+  `dirs` lists the agent skill dirs.
 - `--view=mermaid`: a [Mermaid](https://mermaid.js.org/) flowchart of
   the dependency graph, as `vlt query --view=mermaid` draws it, from
   the project down to each package with skills, its skills as

@@ -748,17 +748,17 @@ t.test('json keys', async t => {
   }
   t.strictSame(skills[0], {
     name: 'find-skills',
+    description: 'd',
     'dependency-name': 'vercelskills',
     'package-id': joinDepIDTuple(['registry', '', 'skills@1.7.2']),
-    description: 'd',
     path: '/s',
     linked: [],
   })
   t.strictSame(Object.keys(skills[0] ?? {}), [
     'name',
+    'description',
     'dependency-name',
     'package-id',
-    'description',
     'path',
     'linked',
   ])

@@ -230,6 +230,7 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "vercelskills",
+      "description": undefined,
       "linked": Array [
         ".agents/skills",
       ],
@@ -239,6 +240,7 @@ Object {
     },
     Object {
       "dependency-name": "mine",
+      "description": undefined,
       "linked": Array [],
       "name": "x",
       "package-id": "~npm~theirs@1.0.0",
@@ -269,6 +271,7 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "foo",
+      "description": undefined,
       "linked": Array [
         ".agents/skills",
         ".claude/skills",
@@ -279,6 +282,7 @@ Object {
     },
     Object {
       "dependency-name": "foo",
+      "description": undefined,
       "linked": Array [
         ".claude/skills",
       ],
@@ -288,6 +292,7 @@ Object {
     },
     Object {
       "dependency-name": "@s/bar",
+      "description": undefined,
       "linked": Array [],
       "name": "bar",
       "package-id": "~npm~@s+bar@1.0.0",
@@ -304,6 +309,7 @@ Object {
   "skills": Array [
     Object {
       "dependency-name": "foo",
+      "description": undefined,
       "linked": Array [
         ".agents/skills",
       ],
