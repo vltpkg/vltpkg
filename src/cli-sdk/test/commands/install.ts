@@ -12,6 +12,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/install.ts')
 >('../../src/commands/install.ts', {
   '@vltpkg/graph': {
+    assertQuery: async () => {},
     async install() {
       log += 'install\n'
       return {
@@ -361,6 +362,7 @@ t.test('frozen-lockfile flag', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      assertQuery: async () => {},
       async install(opts: any, add: any) {
         log += `install frozenLockfile=${opts.frozenLockfile}\n`
         if (add && add.size > 0) {
@@ -412,6 +414,7 @@ t.test('lockfile-only flag', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      assertQuery: async () => {},
       async install(opts: any, add: any) {
         log += `install lockfileOnly=${opts.lockfileOnly}\n`
         if (add && add.size > 0) {
@@ -457,6 +460,7 @@ t.test('persists spec config after install', async t => {
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        assertQuery: async () => {},
         async install() {
           log += 'install\n'
           if (opts.fail instanceof Error) throw opts.fail
@@ -548,6 +552,7 @@ t.test('migrates workspaces after install', async t => {
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        assertQuery: async () => {},
         async install() {
           calls.push('install')
           if (fail) throw new Error('install failed')
@@ -621,6 +626,7 @@ t.test('allow-skills', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      assertQuery: async () => {},
       async install(opts: {
         allowSkills?: string
         skillsDirs?: string[]
@@ -697,6 +703,7 @@ t.test('saves --allow-skills after install', async t => {
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        assertQuery: async () => {},
         async install() {
           log.push('install')
           if (o.fail) throw new Error('install failed')
@@ -781,5 +788,121 @@ t.test('saves --allow-skills after install', async t => {
     })
     t.notOk('allowSkills' in (await run()))
     t.strictSame(log, ['install'])
+  })
+})
+
+t.test('saves --allow-scripts after install', async t => {
+  const setup = async (o: {
+    explicit?: string
+    stored?: string
+    fail?: boolean
+    lockfileOnly?: boolean
+    invalid?: boolean
+  }) => {
+    const log: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/install.ts')
+    >('../../src/commands/install.ts', {
+      '@vltpkg/graph': {
+        assertQuery: async (q: string, flag: string) => {
+          log.push(`check ${flag} ${q}`)
+          if (o.invalid) throw new Error('bad query')
+        },
+        async install({ allowScripts }: { allowScripts: string }) {
+          log.push(`install ${allowScripts}`)
+          if (o.fail) throw new Error('install failed')
+          return { graph: {} }
+        },
+      },
+      '../../src/parse-add-remove-args.ts': {
+        parseAddArgs: () => ({ add: new Map() }),
+      },
+      '../../src/save-types.ts': { addTypesDeps: async () => {} },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: { 'lockfile-only': o.lockfileOnly },
+      explicit: o.explicit ? { 'allow-scripts': o.explicit } : {},
+      layers:
+        o.stored ? { project: { 'allow-scripts': o.stored } } : {},
+      get: (k: string) =>
+        k === 'allow-scripts' ? (o.explicit ?? o.stored) : undefined,
+      addConfigToFile: async (which: string, values: unknown) => {
+        log.push(`write ${which} ${JSON.stringify(values)}`)
+      },
+    } as unknown as LoadedConfig
+    return { Command, run: () => Command.command(conf), log }
+  }
+
+  t.test('nothing stored: saved', async t => {
+    const { Command, run, log } = await setup({ explicit: '#foo' })
+    const res = await run()
+    t.strictSame(log, [
+      'check allow-scripts #foo',
+      'install #foo',
+      'write project {"allow-scripts":"#foo"}',
+    ])
+    t.strictSame(res.allowScripts, { query: '#foo' })
+    t.match(Command.views.json(res), {
+      allowScripts: { query: '#foo' },
+    })
+  })
+
+  t.test('same stored: no write', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      stored: '#foo',
+    })
+    t.notOk('allowScripts' in (await run()))
+    t.strictSame(log, ['check allow-scripts #foo', 'install #foo'])
+  })
+
+  t.test('another stored: kept', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      stored: '#bar',
+    })
+    t.strictSame((await run()).allowScripts, {
+      query: '#foo',
+      stored: { query: '#bar', which: 'project' },
+    })
+    t.strictSame(log, ['check allow-scripts #foo', 'install #foo'])
+  })
+
+  t.test('stored only, or :not(*): nothing', async t => {
+    const stored = await setup({ stored: '#bar' })
+    t.notOk('allowScripts' in (await stored.run()))
+    t.strictSame(stored.log, ['install #bar'], 'stored: not checked')
+    const none = await setup({ explicit: ':not(*)' })
+    t.notOk('allowScripts' in (await none.run()))
+    t.strictSame(none.log, [
+      'check allow-scripts :not(*)',
+      'install :not(*)',
+    ])
+  })
+
+  t.test('failed install: no write', async t => {
+    const { run, log } = await setup({ explicit: '#foo', fail: true })
+    await t.rejects(run(), { message: 'install failed' })
+    t.strictSame(log, ['check allow-scripts #foo', 'install #foo'])
+  })
+
+  t.test('lockfile-only: no write', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      lockfileOnly: true,
+    })
+    t.notOk('allowScripts' in (await run()))
+    t.strictSame(log, ['check allow-scripts #foo', 'install #foo'])
+  })
+
+  t.test('invalid: fails before installing', async t => {
+    const { run, log } = await setup({
+      explicit: '#bad',
+      invalid: true,
+    })
+    await t.rejects(run(), { message: 'bad query' })
+    t.strictSame(log, ['check allow-scripts #bad'])
   })
 })

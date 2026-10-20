@@ -1,4 +1,4 @@
-import { update } from '@vltpkg/graph'
+import { assertQuery, update } from '@vltpkg/graph'
 import type { LinkSkillsResult } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
@@ -38,7 +38,7 @@ export const usage: CommandUsage = () =>
       'allow-scripts': {
         value: '<query>',
         description:
-          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax. Saved to vlt.json.',
       },
       'allow-skills': {
         value: '<query>',
@@ -72,6 +72,7 @@ export const views = {
     : null),
     ...(i.skills ? { skills: skillsJson(i.skills) } : null),
     ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
+    ...(i.allowScripts ? { allowScripts: i.allowScripts } : null),
   }),
   human: lazyView(
     async () =>
@@ -88,6 +89,9 @@ export const command: CommandFn<InstallResult> = async conf => {
   }
 
   const persist = planSpecConfigPersist(conf)
+  // checked up front: saved after update
+  const scripts = conf.explicit['allow-scripts']
+  if (scripts) await assertQuery(scripts, 'allow-scripts')
   /* c8 ignore start */
   const allowScripts =
     conf.get('allow-scripts') ?
@@ -105,11 +109,13 @@ export const command: CommandFn<InstallResult> = async conf => {
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
   const allowSkillsSave = await saveAllow(conf, 'allow-skills')
+  const allowScriptsSave = await saveAllow(conf, 'allow-scripts')
   return {
     buildQueue,
     graph,
     ...(persist ? { persistedConfig: persist } : null),
     ...(skills ? { skills } : null),
     ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
+    ...(allowScriptsSave ? { allowScripts: allowScriptsSave } : null),
   }
 }

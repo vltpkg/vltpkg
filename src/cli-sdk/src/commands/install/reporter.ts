@@ -193,10 +193,13 @@ export class InstallReporter extends ViewClass {
     if (migrated) {
       out += `\nSaved workspaces from ${migrated.source} to vlt.json`
     }
-    const a = _result.allowSkills
-    if (a?.stored) out += `\n${keptLine('allow-skills', a.stored)}`
-    else if (a)
-      out += `\n${savedLine('allow-skills', a.query, 'project')}`
+    for (const [key, a] of [
+      ['allow-skills', _result.allowSkills],
+      ['allow-scripts', _result.allowScripts],
+    ] as const) {
+      if (a?.stored) out += `\n${keptLine(key, a.stored)}`
+      else if (a) out += `\n${savedLine(key, a.query, 'project')}`
+    }
     this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }

@@ -513,9 +513,11 @@ or `update`. Values a config file already has are left alone. See
 ### `--allow-scripts=<query>`
 
 Run the lifecycle scripts of installed packages matching this DSS
-query. Default `:not(*)`: no scripts run. `vlt build [<query>]` sets,
-saves and applies it. See
-[`vlt build`](/client/commands/build#allow-scripts).
+query. Default `:not(*)`: no scripts run.
+
+`vlt install` and `vlt update` save `--allow-scripts=<query>` to the
+project `vlt.json`; `vlt build [<query>]` sets, saves and applies it.
+See [`vlt build`](/client/commands/build#allow-scripts).
 
 ### `--allow-skills=<query>`
 

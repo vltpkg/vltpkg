@@ -12,6 +12,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/update.ts')
 >('../../src/commands/update.ts', {
   '@vltpkg/graph': {
+    assertQuery: async () => {},
     async update() {
       log += 'update\n'
       return {
@@ -43,6 +44,7 @@ t.test('unknown spec prefix from package.json', async t => {
     typeof import('../../src/commands/update.ts')
   >('../../src/commands/update.ts', {
     '@vltpkg/graph': {
+      assertQuery: async () => {},
       async update() {
         throw error('Protocol nope: is not defined', {
           spec: 'bar@nope:bar@^2.x',
@@ -153,6 +155,7 @@ t.test('persists spec config after update', async t => {
       typeof import('../../src/commands/update.ts')
     >('../../src/commands/update.ts', {
       '@vltpkg/graph': {
+        assertQuery: async () => {},
         async update() {
           log += 'update\n'
           if (opts.fail) throw new Error('update failed')
@@ -226,6 +229,7 @@ t.test('allow-skills', async t => {
     typeof import('../../src/commands/update.ts')
   >('../../src/commands/update.ts', {
     '@vltpkg/graph': {
+      assertQuery: async () => {},
       async update(opts: {
         allowSkills?: string
         skillsDirs?: string[]
@@ -277,6 +281,7 @@ t.test('saves --allow-skills after update', async t => {
       typeof import('../../src/commands/update.ts')
     >('../../src/commands/update.ts', {
       '@vltpkg/graph': {
+        assertQuery: async () => {},
         async update() {
           log.push('update')
           if (o.fail) throw new Error('update failed')
@@ -321,5 +326,92 @@ t.test('saves --allow-skills after update', async t => {
     const { run, log } = await setup({ fail: true })
     await t.rejects(run(), { message: 'update failed' })
     t.strictSame(log, ['update'])
+  })
+})
+
+t.test('saves --allow-scripts after update', async t => {
+  const setup = async (o: {
+    explicit?: string
+    stored?: string
+    fail?: boolean
+    invalid?: boolean
+  }) => {
+    const log: string[] = []
+    const Command = await t.mockImport<
+      typeof import('../../src/commands/update.ts')
+    >('../../src/commands/update.ts', {
+      '@vltpkg/graph': {
+        assertQuery: async (q: string, flag: string) => {
+          log.push(`check ${flag} ${q}`)
+          if (o.invalid) throw new Error('bad query')
+        },
+        async update({ allowScripts }: { allowScripts: string }) {
+          log.push(`update ${allowScripts}`)
+          if (o.fail) throw new Error('update failed')
+          return { graph: { toJSON: () => ({}) } }
+        },
+      },
+    })
+    const conf = {
+      positionals: [],
+      values: {},
+      options: {},
+      explicit: o.explicit ? { 'allow-scripts': o.explicit } : {},
+      layers:
+        o.stored ? { project: { 'allow-scripts': o.stored } } : {},
+      get: (k: string) =>
+        k === 'allow-scripts' ? (o.explicit ?? o.stored) : undefined,
+      addConfigToFile: async (which: string, values: unknown) => {
+        log.push(`write ${which} ${JSON.stringify(values)}`)
+      },
+    } as unknown as LoadedConfig
+    return { Command, run: () => Command.command(conf), log }
+  }
+
+  t.test('saved', async t => {
+    const { Command, run, log } = await setup({ explicit: '#foo' })
+    const res = await run()
+    t.strictSame(res.allowScripts, { query: '#foo' })
+    t.strictSame(log, [
+      'check allow-scripts #foo',
+      'update #foo',
+      'write project {"allow-scripts":"#foo"}',
+    ])
+    t.match(Command.views.json(res), {
+      allowScripts: { query: '#foo' },
+    })
+  })
+
+  t.test('another stored: kept', async t => {
+    const { run, log } = await setup({
+      explicit: '#foo',
+      stored: '#bar',
+    })
+    t.strictSame((await run()).allowScripts, {
+      query: '#foo',
+      stored: { query: '#bar', which: 'project' },
+    })
+    t.strictSame(log, ['check allow-scripts #foo', 'update #foo'])
+  })
+
+  t.test('stored only: not checked, nothing saved', async t => {
+    const { run, log } = await setup({ stored: '#bar' })
+    t.notOk('allowScripts' in (await run()))
+    t.strictSame(log, ['update #bar'])
+  })
+
+  t.test('failed update: no write', async t => {
+    const { run, log } = await setup({ explicit: '#foo', fail: true })
+    await t.rejects(run(), { message: 'update failed' })
+    t.strictSame(log, ['check allow-scripts #foo', 'update #foo'])
+  })
+
+  t.test('invalid: fails before updating', async t => {
+    const { run, log } = await setup({
+      explicit: '#bad',
+      invalid: true,
+    })
+    await t.rejects(run(), { message: 'bad query' })
+    t.strictSame(log, ['check allow-scripts #bad'])
   })
 })

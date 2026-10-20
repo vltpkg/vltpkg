@@ -181,9 +181,9 @@ $ vlt install zod --save-types`} title="Terminal" lang="bash" />
 
 ### Script execution
 
-| Flag                         | Description                                                     |
-| ---------------------------- | --------------------------------------------------------------- |
-| `--allow-scripts=<selector>` | Allow specific packages to run lifecycle scripts during install |
+| Flag                         | Description                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+| `--allow-scripts=<selector>` | Allow specific packages to run lifecycle scripts during install; saved to `vlt.json` |
 
 <Code
   code={`# Allow specific packages to run scripts during install
@@ -193,6 +193,13 @@ $ vlt install --allow-scripts="#esbuild, #node-gyp"
 
 $ vlt install --allow-scripts=":root > \*"`} title="Terminal"
 lang="bash" />
+
+`vlt install` and `vlt update` save `--allow-scripts` (or
+`VLT_ALLOW_SCRIPTS`) to the project `vlt.json` after a successful
+install. When another query is stored, it is kept and a hint says so:
+change it with [`vlt build`](/client/commands/build#allow-scripts).
+`--lockfile-only` saves nothing. An invalid query fails before
+anything is installed.
 
 ### Agent skills
 
@@ -270,7 +277,9 @@ This separation enables you to:
 - Protect against supply chain attacks
 
 By default, `vlt build` uses `:scripts:not(:built):not(:malware)`
-which excludes packages with known malware alerts.
+which excludes packages with known malware alerts. `vlt build <query>`
+saves the query as `allow-scripts`, so later installs run those
+scripts.
 
 For more details, see the [`vlt build`](/client/commands/build)
 documentation.

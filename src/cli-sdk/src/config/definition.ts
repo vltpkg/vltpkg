@@ -877,7 +877,10 @@ export const definition = j
                     install, preinstall, postinstall, prepare, preprepare, and postprepare scripts.
                     Defaults to ':not(*)' which means no scripts will be run.
 
-                    \`vlt build [<query>]\` sets, saves and applies it.
+                    \`vlt install\` and \`vlt update\` save
+                    \`--allow-scripts=<query>\` to the project
+                    \`vlt.json\`; \`vlt build [<query>]\` sets, saves
+                    and applies it.
 
                     Example: --allow-scripts=":root > *, #my-package"
                     Runs scripts only for direct dependencies of the current project and any occurrences

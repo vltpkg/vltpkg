@@ -1,5 +1,5 @@
 import { commandUsage } from '../config/usage.ts'
-import { install } from '@vltpkg/graph'
+import { assertQuery, install } from '@vltpkg/graph'
 import { saveAllow } from '../allow-query.ts'
 import type { AllowSave } from '../allow-query.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
@@ -49,6 +49,11 @@ export type InstallResult = {
    * is stored.
    */
   allowSkills?: AllowSave
+  /**
+   * `--allow-scripts` saved to vlt.json, or kept because another query
+   * is stored.
+   */
+  allowScripts?: AllowSave
 }
 
 export const needsRegistry = true
@@ -122,7 +127,7 @@ export const usage: CommandUsage = () =>
       'allow-scripts': {
         value: '<query>',
         description:
-          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax. Saved to vlt.json.',
       },
       'allow-skills': {
         value: '<query>',
@@ -215,6 +220,7 @@ export const views = {
       : null),
       ...(i.skills ? { skills: skillsJson(i.skills) } : null),
       ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
+      ...(i.allowScripts ? { allowScripts: i.allowScripts } : null),
     }
   },
   human: lazyView(
@@ -229,6 +235,9 @@ export const command: CommandFn<InstallResult> = async conf => {
   const monorepo = conf.options.monorepo
   const scurry = conf.options.scurry
   const { add } = parseAddArgs(conf, scurry, monorepo)
+  // checked up front: saved after install
+  const scripts = conf.explicit['allow-scripts']
+  if (scripts) await assertQuery(scripts, 'allow-scripts')
   const persist = planSpecConfigPersist(conf)
   if (conf.values['save-types']) await addTypesDeps(conf, add)
   const frozenLockfile = conf.options['frozen-lockfile']
@@ -266,9 +275,11 @@ export const command: CommandFn<InstallResult> = async conf => {
     )
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
-  // nothing linked on --lockfile-only
+  // nothing linked or built on --lockfile-only
   const allowSkillsSave =
     lockfileOnly ? undefined : await saveAllow(conf, 'allow-skills')
+  const allowScriptsSave =
+    lockfileOnly ? undefined : await saveAllow(conf, 'allow-scripts')
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(
@@ -287,5 +298,6 @@ export const command: CommandFn<InstallResult> = async conf => {
     ...(migrated ? { migratedWorkspaces: migrated } : null),
     ...(skills ? { skills } : null),
     ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
+    ...(allowScriptsSave ? { allowScripts: allowScriptsSave } : null),
   }
 }
