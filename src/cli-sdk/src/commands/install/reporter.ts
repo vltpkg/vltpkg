@@ -13,12 +13,8 @@ import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
-import {
-  keptLine,
-  savedLine,
-  unmatchedLines,
-  unscannedLines,
-} from '../../allow-skills.ts'
+import { keptLine, savedLine } from '../../allow-query.ts'
+import { unmatchedLines, unscannedLines } from '../../allow-skills.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -198,8 +194,9 @@ export class InstallReporter extends ViewClass {
       out += `\nSaved workspaces from ${migrated.source} to vlt.json`
     }
     const a = _result.allowSkills
-    if (a?.stored) out += `\n${keptLine(a.stored)}`
-    else if (a) out += `\n${savedLine(a.query, 'project')}`
+    if (a?.stored) out += `\n${keptLine('allow-skills', a.stored)}`
+    else if (a)
+      out += `\n${savedLine('allow-skills', a.query, 'project')}`
     this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }

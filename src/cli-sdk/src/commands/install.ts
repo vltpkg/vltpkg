@@ -1,7 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
-import { saveAllowSkills } from '../allow-skills.ts'
-import type { AllowSkillsSave } from '../allow-skills.ts'
+import { saveAllow } from '../allow-query.ts'
+import type { AllowSave } from '../allow-query.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
@@ -48,7 +48,7 @@ export type InstallResult = {
    * `--allow-skills` saved to vlt.json, or kept because another query
    * is stored.
    */
-  allowSkills?: AllowSkillsSave
+  allowSkills?: AllowSave
 }
 
 export const needsRegistry = true
@@ -268,7 +268,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     await conf.addConfigToFile(persist.which, persist.values)
   // nothing linked on --lockfile-only
   const allowSkillsSave =
-    lockfileOnly ? undefined : await saveAllowSkills(conf)
+    lockfileOnly ? undefined : await saveAllow(conf, 'allow-skills')
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(

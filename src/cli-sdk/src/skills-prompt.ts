@@ -1,5 +1,6 @@
 import { createInterface } from 'node:readline/promises'
 import { asError } from '@vltpkg/types'
+import type { AllowKey } from './allow-query.ts'
 import { styleTextStdout } from './output.ts'
 
 /** Streams to prompt on; default stdin and stdout. */
@@ -55,6 +56,7 @@ export const confirm = async (
 }
 
 export type EditQueryOptions = PromptStreams & {
+  key: AllowKey
   /** stored query, shown above the prompt; unset: nothing stored */
   current?: string
   /** editable answer */
@@ -66,11 +68,28 @@ export type EditQueryOptions = PromptStreams & {
   check: (q: string) => Promise<unknown>
 }
 
+// what a narrower query drops
+const dropped: Record<AllowKey, string> = {
+  'allow-skills':
+    'selects every skill you want: skills it no longer selects are unlinked.\n',
+  'allow-scripts':
+    "selects every package you trust: packages it no longer selects won't\n" +
+    'run their scripts on install.\n',
+}
+
+// nothing stored: what saving the answer does
+const fresh: Partial<Record<AllowKey, string>> = {
+  'allow-scripts':
+    '\n⚠️ The answer is saved as allow-scripts: installs run the scripts\n' +
+    'of every package it selects. Select only packages you trust.\n\n',
+}
+
 /**
- * Ask for a new `allow-skills`, prefilled. Empty answer or closed
- * input: undefined (cancel).
+ * Ask for a new allow query, prefilled. Empty answer or closed input:
+ * undefined (cancel).
  */
 export const editQuery = async ({
+  key,
   current,
   prefill,
   check,
@@ -79,16 +98,14 @@ export const editQuery = async ({
   const output = s.output ?? process.stdout
   if (current !== undefined) {
     output.write(
-      '\n⚠️ The new allow-skills replaces the current one. Make sure it still\n' +
-        'selects every skill you want: skills it no longer selects are unlinked.\n\n' +
-        styleTextStdout(
-          'yellow',
-          `Current allow-skills: ${current}`,
-        ) +
+      `\n⚠️ The new ${key} replaces the current one. Make sure it still\n` +
+        dropped[key] +
+        '\n' +
+        styleTextStdout('yellow', `Current ${key}: ${current}`) +
         '\n',
     )
-  }
-  const prompt = styleTextStdout('cyan', 'New allow-skills: ')
+  } else if (fresh[key]) output.write(fresh[key])
+  const prompt = styleTextStdout('cyan', `New ${key}: `)
   const { rl, ask } = open(s)
   try {
     let fill = prefill

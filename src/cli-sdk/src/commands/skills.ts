@@ -15,18 +15,11 @@ import type {
   UnscannedSkills,
 } from '@vltpkg/graph'
 import type { WhichConfig } from '@vltpkg/vlt-json'
-import {
-  configLabel,
-  savedLine,
-  storedAllowSkills,
-  unmatchedLines,
-  unscannedLines,
-} from '../allow-skills.ts'
-import { configWriteTarget } from '../config/index.ts'
-import type { LoadedConfig } from '../config/index.ts'
+import { pickQuery } from '../allow-prompt.ts'
+import { savedLine, writeAllow } from '../allow-query.ts'
+import { unmatchedLines, unscannedLines } from '../allow-skills.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { confirm, editQuery, interactive } from '../skills-prompt.ts'
 import type { ViewOptions, Views } from '../view.ts'
 
 export type SkillsResult =
@@ -264,7 +257,9 @@ const human = (r: SkillsResult, o?: ViewOptions): string =>
   : [
       humanLink(r),
       ...unmatchedLines(r.unmatched),
-      ...(r.saved ? [savedLine(r.query, r.saved)] : []),
+      ...(r.saved ?
+        [savedLine('allow-skills', r.query, r.saved)]
+      : []),
     ].join('\n')
 
 export const views = {
@@ -278,60 +273,6 @@ export const views = {
   mermaid: (r: SkillsResult) =>
     r.action === 'list' ? mermaidList(r) : human(r),
 } as const satisfies Views<SkillsResult>
-
-const defaultQuery = ':not(:malware)'
-
-const where = (which: WhichConfig) =>
-  which === 'user' ?
-    'in the user vlt.json'
-  : 'for this project (vlt.json)'
-
-// the query to link; undefined: no changes
-const pickQuery = async (
-  conf: LoadedConfig,
-  given?: string,
-): Promise<string | undefined> => {
-  const check = (q: string) =>
-    assertQuery(q, 'allow-skills', ['skill'])
-  const stored = storedAllowSkills(conf)
-  const yes = !!conf.get('yes')
-  const tty = interactive()
-  if (given) {
-    await check(given)
-    if (!stored || stored.query === given || yes) return given
-    if (!tty) {
-      throw error(
-        `allow-skills is already set (${configLabel(stored.which)}): "${stored.query}"; pass -y to replace it`,
-        { code: 'EUSAGE', found: given, wanted: stored.query },
-      )
-    }
-    if (
-      !(await confirm(
-        `allow-skills is already set ${where(stored.which)}: "${stored.query}". Replace it? [y/N] `,
-      ))
-    ) {
-      return undefined
-    }
-    return editQuery({ current: stored.query, prefill: given, check })
-  }
-  if (stored) {
-    if (yes || !tty) return stored.query
-    const edit = await confirm(
-      `allow-skills is set ${where(stored.which)}: "${stored.query}". Edit it? [y/N] `,
-    )
-    // ctrl+C/D: cancel
-    if (edit === undefined) return undefined
-    return edit ?
-        editQuery({
-          current: stored.query,
-          prefill: stored.query,
-          check,
-        })
-      : stored.query
-  }
-  if (yes || !tty) return defaultQuery
-  return editQuery({ prefill: defaultQuery, check })
-}
 
 export const command: CommandFn<SkillsResult> = async conf => {
   const [sub = 'list', query] = conf.positionals
@@ -349,19 +290,24 @@ export const command: CommandFn<SkillsResult> = async conf => {
         ...(await listSkills({ ...opts, target })),
       }
     case 'link': {
-      const query = await pickQuery(conf, target)
-      if (query === undefined) return { action: 'unchanged' }
+      const pick = await pickQuery(conf, target, {
+        key: 'allow-skills',
+        defaultQuery: ':not(:malware)',
+        saveDefault: true,
+        check: q => assertQuery(q, 'allow-skills', ['skill']),
+      })
+      if (!pick) return { action: 'unchanged' }
+      const { query } = pick
       const res = await linkSkills({
         ...opts,
         target: query,
         apply: true,
       })
       // after linking: a link error saves nothing
-      let saved: WhichConfig | undefined
-      if (storedAllowSkills(conf)?.query !== query) {
-        saved = configWriteTarget(conf, 'project')
-        await conf.addConfigToFile(saved, { 'allow-skills': query })
-      }
+      const saved =
+        pick.save ?
+          await writeAllow(conf, 'allow-skills', query)
+        : undefined
       return {
         action: 'link',
         query,
