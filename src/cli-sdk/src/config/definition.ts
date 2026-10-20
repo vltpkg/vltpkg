@@ -579,7 +579,8 @@ export const definition = j
       hint: 'all | user | project',
       description: `Specify which configuration to show or operate on when running
                     \`vlt config\` commands, and which file
-                    \`vlt skills link\` saves \`allow-skills\` to. For read
+                    \`vlt skills link\` saves \`allow-skills\` to and
+                    \`vlt build\` saves \`allow-scripts\` to. For read
                     operations (get, pick, list):
                     \`all\` shows merged configuration from both user and project
                     files (default). For write operations (set, delete, edit):
@@ -875,7 +876,9 @@ export const definition = j
                     When provided, only packages matching the query will execute their
                     install, preinstall, postinstall, prepare, preprepare, and postprepare scripts.
                     Defaults to ':not(*)' which means no scripts will be run.
-                    
+
+                    \`vlt build [<query>]\` sets, saves and applies it.
+
                     Example: --allow-scripts=":root > *, #my-package"
                     Runs scripts only for direct dependencies of the current project and any occurrences
                     of a specific dependency with the name "my-package" anywhere in the dependency graph.`,

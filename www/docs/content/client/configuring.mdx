@@ -385,7 +385,7 @@ running the script for all workspaces.
 
 Specify which configuration to show or operate on when running
 `vlt config` commands, and which file `vlt skills link` saves
-`allow-skills` to.
+`allow-skills` to and `vlt build` saves `allow-scripts` to.
 
 For read operations (`get`, `pick`, `list`): `all` shows merged
 configuration from both user and project files (default).
@@ -509,6 +509,13 @@ via `VLT_*` env (`--registry`, `--registries`,
 the user one with `--config=user`) after a successful `install`, `add`
 or `update`. Values a config file already has are left alone. See
 [Registries](/client/registries#saving-registries-given-to-install).
+
+### `--allow-scripts=<query>`
+
+Run the lifecycle scripts of installed packages matching this DSS
+query. Default `:not(*)`: no scripts run. `vlt build [<query>]` sets,
+saves and applies it. See
+[`vlt build`](/client/commands/build#allow-scripts).
 
 ### `--allow-skills=<query>`
 

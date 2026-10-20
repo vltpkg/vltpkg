@@ -13,24 +13,26 @@ exports[`test/commands/build.ts > TAP > command execution > successful build > s
 Object {
   "failure": Array [],
   "message": "No packages needed building.",
+  "query": ":scripts:not(:built):not(:malware)",
   "success": Array [],
 }
 `
 
 exports[`test/commands/build.ts > TAP > usage > should return usage information 1`] = `
 Usage:
-  vlt build [query]
-  vlt build [--target=<query>]
+  vlt build [<query>]
+  vlt build --target=<query>
 
-Build the project based on the current dependency graph.
+Build the installed packages that need it: run their lifecycle scripts and link
+their bins. Only does work that is actually needed.
 
-This command processes the installed packages in node_modules and runs any
-necessary build steps, such as lifecycle scripts and binary linking.
-The build process is idempotent and will only perform work that is actually
-needed based on the current state of the dependency graph.
-Use --target option or provide a query as a positional argument to filter
-packages using DSS query language syntax, otherwise it will target all packages
-with scripts (:scripts) by default.
+Sets, saves and applies \`allow-scripts\`: builds what the query selects. With no
+query: the stored one, or \`:scripts:not(:built):not(:malware)\`. Asks before
+replacing or editing a stored query (-y skips). Saves to the project vlt.json,
+or the user one with --config=user. With nothing stored, no TTY and no -y:
+builds the default without saving it.
+
+Installs run the scripts it selects. Built packages stay built.
 
   Aliases
 
@@ -39,9 +41,24 @@ with scripts (:scripts) by default.
   Options
 
     target
-      Query selector to filter packages using DSS syntax.
+      Query to build instead of allow-scripts. Wins over the query; never saved.
 
       ​--target=<query>
+
+    allow-scripts
+      Same as the query argument.
+
+      ​--allow-scripts=<query>
+
+    yes
+      Skip the prompts: replace or keep the stored allow-scripts without asking.
+
+      ​--yes
+
+    config
+      vlt.json to save allow-scripts to (default: project).
+
+      ​--config=user|project
 
 `
 

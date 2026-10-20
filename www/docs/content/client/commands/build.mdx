@@ -6,7 +6,11 @@ sidebar:
 
 Usage:
 
-<Code code="$ vlt build [options]" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt build [<query>] [options]"
+  title="Terminal"
+  lang="bash"
+/>
 
 The `vlt build` command represents a fundamental shift in how
 JavaScript package managers handle post-installation tasks. By
@@ -46,7 +50,7 @@ explicit steps:
   code={`# Step 1: Install packages (no scripts run)
 $ vlt install
 
-# Step 2: Build all packages that need building
+# Step 2: Build the packages allow-scripts selects
 
 $ vlt build`} title="Terminal" lang="bash" />
 
@@ -55,51 +59,89 @@ actually needed based on the current state of your dependency graph.
 If a package has already been built, `vlt build` skips it
 automatically.
 
-## Selective Building with DSS Queries
+With nothing stored, a bare `vlt build` in a terminal opens an editor
+prefilled with the [default query](#default-query); with no TTY (e.g.
+in CI) it builds the default without saving it. See
+[Allow scripts](#allow-scripts).
 
-The real power of `vlt build` comes from its integration with our
-query language. You can use any DSS selector to target specific
-packages as a positional argument to the `vlt build` command:
+## Allow scripts
+
+`vlt build [<query>]` sets, saves and applies `allow-scripts`, the
+[DSS query](/client/selectors) that picks which packages run lifecycle
+scripts. It builds what the query selects, then saves the query when
+it changed: to the project `vlt.json`, or to the user one with
+`--config=user`. A failed build saves nothing. A query in the other
+file is never deleted: a project value shadows the user one.
+
+A query is given as the positional argument, with
+`--allow-scripts=<query>` or with `VLT_ALLOW_SCRIPTS`. The positional
+wins.
+
+| Query given | Stored | `-y` | TTY | Result                                                                            |
+| ----------- | ------ | ---- | --- | --------------------------------------------------------------------------------- |
+| yes         | no     | any  | any | build it, save it                                                                 |
+| yes         | yes    | no   | yes | `Replace it? [y/N]`: **y** opens the editor with the query, **N** changes nothing |
+| yes         | yes    | yes  | any | build it, save it                                                                 |
+| yes         | yes    | no   | no  | error: pass `-y` to replace it                                                    |
+| no          | yes    | no   | yes | `Edit it? [y/N]`: **y** opens the editor with the stored query, **N** builds it   |
+| no          | yes    | yes  | any | build the stored query                                                            |
+| no          | yes    | no   | no  | build the stored query                                                            |
+| no          | no     | no   | yes | the editor, prefilled with the default query                                      |
+| no          | no     | yes  | any | build the default, save it                                                        |
+| no          | no     | no   | no  | build the default, not saved                                                      |
+
+A query equal to the stored one builds without asking or writing.
 
 <Code
-  code={`# Build only packages matching a specific target query
-$ vlt build ":root > *"
-
-# Build all packages except those marked as dev dependencies
-
-$ vlt build ":not(:dev)"`} title="Terminal" lang="bash" />
-
-### Using the target option
-
-Use the `--target` option to control precisely which packages to
-build. This gives you fine-grained control over script execution:
-
-<Code
-  code={`# Build only a specific package
-$ vlt build --target="#my-package"
-
-# Build everything except packages with no author
-
-$ vlt build --target=":not([author])"`} title="Terminal" lang="bash"
+  code={`$ vlt build "#esbuild"
+🔨 Built 1 package successfully.
+Saved allow-scripts="#esbuild" to vlt.json
+\n$ vlt install sharp
+$ vlt build
+allow-scripts is set for this project (vlt.json): "#esbuild". Edit it? [y/N] y
+\n⚠️ The new allow-scripts replaces the current one. Make sure it still
+selects every package you trust: packages it no longer selects won't
+run their scripts on install.
+\nCurrent allow-scripts: #esbuild
+New allow-scripts: #esbuild, #sharp
+🔨 Built 1 package successfully.
+Saved allow-scripts="#esbuild, #sharp" to vlt.json`}
+  title="Terminal"
+  lang="bash"
 />
 
-If you want to persist target configuration you can store it to your
-`vlt.json` config file using the `vlt config` command:
+In the editor, the query is prefilled: edit it and press Enter. An
+empty answer cancels with `No changes made.`, and an invalid query
+prints the error and asks again. With nothing stored, it first warns
+that the answer is saved and installs run the scripts it selects. `-y`
+skips the prompts.
+
+There is no unbuild: narrowing `allow-scripts` only changes what runs
+from then on. Packages already built stay built.
+
+`vlt install`, `vlt ci` and `vlt update` run the scripts of the
+packages `allow-scripts` selects, so a fresh clone needs no separate
+`vlt build`. Trust packages one at a time:
 
 <Code
-  code={`# Persists a target query to the project vlt.json file
-$ vlt config set "command.build.target=<query>"
+  code={`$ vlt install esbuild
+$ vlt build "#esbuild"   # saved to vlt.json
+$ vlt install sharp
+$ vlt build
+# Edit it? y
+# New allow-scripts: #esbuild, #sharp
+# on another machine, install runs both scripts
+$ vlt ci`}
+  title="Terminal"
+  lang="bash"
+/>
 
-# Build (with no args) uses the target info from vlt.json
+## Default query
 
-$ vlt build`} title="Terminal" lang="bash" />
-
-## Default build target
-
-By default `vlt build` uses a target value of
-`:scripts:not(:built):not(:malware)` targetting only not build
-packages that have lifecycle scripts (or a root `binding.gyp`) and do
-not have any malware alerts associated with it.
+With no query given and nothing stored, `vlt build` uses
+`:scripts:not(:built):not(:malware)`: packages not built yet that have
+lifecycle scripts (or a root `binding.gyp`) and no malware alerts. It
+prefills the editor; `-y` builds and saves it.
 
 npm registry packages with no security data, because the request timed
 out or Socket has not scanned them yet, are skipped and reported as
@@ -126,10 +168,10 @@ $ vlt query ":malware"
 
 $ vlt query ":scripts:not([name^=@myscope])"
 
-# Build only packages from my known scope that are NOT flagged as malware
+# Build (and save) only packages from my known scope that are NOT flagged as malware
 
-$ vlt build --target="\*[name^=@myscope]:not(:malware)"`}
-title="Terminal" lang="bash" />
+$ vlt build "\*[name^=@myscope]:not(:malware)"`} title="Terminal"
+lang="bash" />
 
 ### Exact dependency names
 
@@ -139,17 +181,17 @@ Maybe you only trust certain critical build tools to run scripts:
   code={`# Install packages
 $ vlt install
 
-# Only build the specific tools you trust
+# Only build the specific tools you trust (saved as allow-scripts)
 
-$ vlt build --target="#esbuild, #typescript"`} title="Terminal"
-lang="bash" />
+$ vlt build "#esbuild, #typescript"`} title="Terminal" lang="bash" />
 
 ## Options
 
 ### `--target`
 
-The `--target` option accepts any valid DSS query to filter which
-packages to build:
+Builds a DSS query once: no prompt, never saved. It wins over the
+query argument, `--allow-scripts` and the stored `allow-scripts`.
+`command.build.target` in `vlt.json` acts the same.
 
 <Code
   code={`# Build only direct dependencies
@@ -159,8 +201,18 @@ $ vlt build --target=":root > *"
 
 $ vlt build --target=":has-binary"`} title="Terminal" lang="bash" />
 
-It's usage is interchangeable with a positional argument, you should
-use either one or the other.
+### `--allow-scripts=<query>`
+
+Same as the query argument.
+
+### `-y`, `--yes`
+
+Skip the prompts: replace or keep the stored `allow-scripts` without
+asking.
+
+### `--config=<user | project>`
+
+The `vlt.json` to save `allow-scripts` to. Default: `project`.
 
 ### Build State Persistence
 
@@ -184,9 +236,9 @@ $ vlt query ":scripts:not(:built)"`} title="Terminal" lang="bash" />
    what to build
 2. **Use queries for precision** – Target specific packages or
    patterns rather than building everything
-3. **Persist your choices** – Save your target query to `vlt.json` for
-   consistent builds
-4. **Review regularly** – Periodically audit your target query to
+3. **Persist your choices** – `vlt build <query>` saves it as
+   `allow-scripts`, so installs run the same scripts everywhere
+4. **Review regularly** – Periodically audit your `allow-scripts` to
    ensure it matches your security requirements, continuing to
    maintain and evolve it as you add and update packages
 
@@ -205,7 +257,8 @@ $ vlt build`}
 
 The difference being that, as mentioned previously, `vlt build` by
 default protects you from running scripts of dependencies with known
-malware.
+malware. In a terminal, it first asks for the query to save (see
+[Allow scripts](#allow-scripts)).
 
 If you are really trying to emulate the legacy npm behavior of running
 all lifecycle scripts, you can use the `--allow-scripts="*"` options
