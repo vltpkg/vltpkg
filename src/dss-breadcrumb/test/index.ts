@@ -50,6 +50,12 @@ t.test('Breadcrumb', async t => {
       'should throw on unsupported pseudo selector',
     )
 
+    t.throws(
+      () => parseBreadcrumb('#a:skill(x)'),
+      /Invalid pseudo selector/,
+      'part selectors are not modifiers',
+    )
+
     // Test chained pseudo selectors during consolidation
     t.throws(
       () => parseBreadcrumb(':root:workspace'),

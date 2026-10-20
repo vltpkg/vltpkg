@@ -35,6 +35,12 @@ Like install, runs no dependency lifecycle scripts unless allowed with
 
       ​--allow-scripts=<query>
 
+    allow-skills
+      Link agent skills of packages matching this DSS query into the project's
+      agent skill dirs.
+
+      ​--allow-skills=<query>
+
     lockfile-only
       Only update lockfile and package.json files; skip node_modules operations.
 

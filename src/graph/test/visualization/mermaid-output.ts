@@ -413,3 +413,63 @@ t.test('large scale identifier generation', async t => {
     'should only contain letters for large index',
   )
 })
+
+t.test('children', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+  const place = (from: typeof graph.mainImporter, name: string) => {
+    const node = graph.placePackage(
+      from,
+      'prod',
+      Spec.parse(name, '^1.0.0'),
+      { name, version: '1.0.0' },
+    )
+    if (!node) throw new Error('failed to place ' + name)
+    return node
+  }
+  const foo = place(graph.mainImporter, 'foo')
+  place(graph.mainImporter, 'other')
+  const bar = place(graph.mainImporter, 'bar')
+  const baz = place(bar, 'baz')
+  graph.addEdge('prod', Spec.parse('foo', '^1.0.0'), baz, foo)
+  const children = new Map([
+    [
+      foo.id,
+      [
+        { label: 'a (linked)', edge: 'foo@1.0.0' },
+        { label: 'say "hi"' },
+      ],
+    ],
+    [baz.id, [{ label: 'c', edge: 'x (baz@1.0.0)' }]],
+    [bar.id, []],
+    [
+      joinDepIDTuple(['registry', '', 'gone@1.0.0']),
+      [{ label: 'g' }],
+    ],
+  ])
+  const out = mermaidOutput({
+    edges: [],
+    importers: graph.importers,
+    nodes: [foo, baz],
+    children,
+  })
+  t.matchSnapshot(out, 'paths to the nodes, leaves under them')
+  t.notMatch(out, 'other', 'not on a path')
+  t.equal(
+    out.match(/"a \(linked\)"/g)?.length,
+    1,
+    'leaves drawn once',
+  )
+  t.notMatch(
+    mermaidOutput({
+      edges: [],
+      importers: graph.importers,
+      nodes: [foo],
+    }),
+    'classDef b',
+    'no children, no class',
+  )
+})

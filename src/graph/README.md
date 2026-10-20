@@ -78,15 +78,71 @@ minimal filesystem changes (creating/deleting links, writing
 lockfiles, hoisting, lifecycle scripts) to make the on-disk install
 match the Ideal graph. Returns `{ diff, buildQueue }`.
 
-### `install(options, add?): Promise<{ graph, diff, buildQueue }>`
+### `install(options, add?): Promise<{ graph, diff, buildQueue, skills? }>`
 
 High-level install orchestration that handles graph building, reify,
 and lockfile management. Supports `--frozen-lockfile`,
-`--clean-install`, and `--lockfile-only` modes.
+`--clean-install`, and `--lockfile-only` modes. With `allowSkills` (a
+DSS query whose selectors may end with `:skill()`, validated up
+front), links the agent skills of matching packages afterwards (see
+`linkSkills`) into `skillsDirs` (unset: detected) and returns the
+result as `skills`. Unset or `:not(*)`: no skills work, the skills
+code is not loaded. `update` and `uninstall` take `allowSkills` too.
+
+### `listSkills(options): Promise<{ project, graph, skills, dirs, skipped? }>`
+
+Lists the agent skills (dirs with a `SKILL.md`, see
+https://agentskills.io/specification) shipped by installed packages in
+the vlt store (a root `SKILL.md`, then `<dir>/SKILL.md` in `skills/`,
+`dist/skills/` and `.agents/skills/`; the first skill of a name wins),
+from one version per package (a direct dep, else the highest), with
+the agent skill dirs each is linked in, `project`: the main importer
+name, and the `graph`. `options.target` is a DSS query selecting
+packages (default `*`); a selector ending with `:skill(<name>, …)`
+keeps only those skills of its packages. Creates nothing.
+
+### `linkSkills(options): Promise<LinkSkillsResult>`
+
+Links the skills picked by `options.target` (as in `listSkills`; comma
+lists are a union) into each agent skill dir (junctions on Windows):
+`options.skillsDirs`, else `.agents/skills`, plus `<folder>/skills`
+for each agent folder at the project root, `.claude/skills` inside
+Claude Code (`options.env`), and existing `.<name>/skills` dirs. Dirs
+must resolve inside the project, not in `node_modules` (else
+`skipped`, as are fs errors) and are created only when a skill is
+picked. One package per name, among picked skills, in every dir: the
+one the first existing link points to while its skill is installed,
+else a direct dep, then DepID; the others are reported in `conflicts`
+as `<mount> (<package>)`. Installs keep a dir's link to another
+installed skill. A link follows its package to the picked version.
+Then removes links whose skill is no longer installed: dangling,
+package not in the graph, or no longer shipped. With `options.apply`,
+also removes every other vlt link in the scanned dirs. Only links
+pointing into a `node_modules/.vlt` store are ever replaced or
+removed; anything else in the way is reported in `conflicts`. Keeps a
+marked block of link names in each dir's `.gitignore` (`gitignore`
+lists the ones it could not edit). Linked packages get private copies
+of files hardlinked from the global store. `:skill()` patterns that
+match no skill of their packages are returned in `unmatched`. Security
+queries fail closed: skills of npm registry packages with no security
+data are left out (in `listSkills` too) and returned in `unscanned`
+with `unscannedReason` (by `linkSkills`: unless still linked).
+
+### `assertQuery(selector, flag, partSelectors?): Promise<void>`
+
+Throws `EUSAGE` unless `selector` is a valid DSS query.
+`partSelectors` (e.g. `['skill']`) allows `:skill()`.
+
+### `hasSkills(node): Promise<boolean>`
+
+`:skills` provider for `Query`: true when an installed package ships
+agent skills, as `listSkills` finds them.
 
 ### `mermaidOutput(graph): string`
 
-Generates Mermaid flowchart syntax from graph data.
+Generates Mermaid flowchart syntax from graph data. `graph.children`
+(`Map<DepID, { label, edge? }[]>`) draws leaves under nodes, e.g.
+`vlt skills list` skills.
 
 ### `humanReadableOutput(graph, options): string`
 

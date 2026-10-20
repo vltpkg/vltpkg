@@ -26,6 +26,10 @@ import { lockfile } from './index.ts'
 import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { Monorepo } from '@vltpkg/workspaces'
+import type { Diff } from './diff.ts'
+import { assertSkillsDirs } from './skills/dirs.ts'
+import { assertQuery } from './filter-nodes-by-query.ts'
+import type { LinkSkillsResult } from './skills/index.ts'
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -33,17 +37,51 @@ export type InstallOptions = LoadOptions & {
   allowScripts: string
   saveExact?: boolean
   savePrefix?: string
+  /**
+   * DSS query: packages whose agent skills get linked into the
+   * project's agent skill dirs after install. Selectors may end with
+   * `:skill()`. Unset or `:not(*)`: none.
+   */
+  allowSkills?: string
+  /**
+   * agent skill dirs, relative to projectRoot. Unset: detect; `[]`:
+   * none
+   */
+  skillsDirs?: string[]
+}
+
+/**
+ * Result of {@link install}.
+ */
+export type InstallResult = {
+  buildQueue?: DepID[]
+  graph: Graph
+  diff?: Diff
+  /** skill links added or removed, if any */
+  skills?: LinkSkillsResult
 }
 
 export const install = async (
   options: InstallOptions,
   add?: AddImportersDependenciesMap,
-) => {
+): Promise<InstallResult> => {
   // Validate incompatible options
   if (options.lockfileOnly && options.cleanInstall) {
     throw error(
       'Cannot use --lockfile-only with --clean-install (ci command). Clean install requires filesystem operations.',
     )
+  }
+
+  // unset or `:not(*)`: no skills work at all, the skills code never
+  // loads
+  const allowSkills =
+    options.allowSkills === ':not(*)' ?
+      undefined
+    : options.allowSkills
+  // fail before installing, not after
+  if (allowSkills) {
+    await assertQuery(allowSkills, 'allow-skills', ['skill'])
+    assertSkillsDirs(options.projectRoot, options.skillsDirs)
   }
 
   if (options.expectLockfile || options.frozenLockfile) {
@@ -256,6 +294,7 @@ export const install = async (
     }
   }
 
+  let result: InstallResult
   try {
     const remove = Object.assign(new Map<DepID, Set<string>>(), {
       modifiedDependencies: false,
@@ -328,7 +367,7 @@ export const install = async (
       remover,
     })
 
-    return { buildQueue, graph, diff }
+    result = { buildQueue, graph, diff }
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
@@ -344,4 +383,14 @@ export const install = async (
     } catch {}
     throw err
   }
+
+  // after the try: a link failure must not roll back the install
+  if (!allowSkills) return result
+  const { linkSkills } = await import('./skills/index.ts')
+  result.skills = await linkSkills({
+    ...options,
+    graph: result.graph,
+    target: allowSkills,
+  })
+  return result
 }

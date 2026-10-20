@@ -13,6 +13,12 @@ import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/types'
 import type { InstallResult } from '../install.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
+import {
+  keptLine,
+  savedLine,
+  unmatchedLines,
+  unscannedLines,
+} from '../../allow-skills.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -146,6 +152,41 @@ export class InstallReporter extends ViewClass {
       out +=
         '🔨 Run `vlt build` to run all required scripts to build installed packages.\n'
     }
+    const {
+      linked = [],
+      removed = [],
+      conflicts = [],
+      skipped = [],
+      gitignore = [],
+      unmatched = [],
+    } = _result.skills ?? {}
+    const s = (n: number) => (n === 1 ? '' : 's')
+    const skills: string[] = []
+    if (linked.length) {
+      // one per skill, linked in any number of dirs
+      const n = new Set(linked.map(r => `${r.id}\0${r.skill}`)).size
+      const dirs = [...new Set(linked.map(r => r.dir))].join(', ')
+      skills.push(`🔗 Linked ${n} agent skill${s(n)} into ${dirs}`)
+    }
+    if (removed.length) {
+      skills.push(
+        `🧹 Removed ${removed.length} stale skill link${s(removed.length)}: ${removed.join(', ')}`,
+      )
+    }
+    if (conflicts.length) {
+      skills.push(
+        `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use or taken by another package: ${conflicts.join(', ')}`,
+      )
+    }
+    skills.push(...unmatchedLines(unmatched))
+    if (skipped.length) {
+      skills.push(`⚠️ Skipped ${skipped.join(', ')}`)
+    }
+    if (gitignore.length) {
+      skills.push(`⚠️ Could not update ${gitignore.join(', ')}`)
+    }
+    skills.push(...unscannedLines(_result.skills ?? {}))
+    if (skills.length) out += `\n${skills.join('\n')}\n`
     const saved = _result.persistedConfig
     if (saved) {
       for (const e of persistedEntries(saved.values)) {
@@ -156,6 +197,9 @@ export class InstallReporter extends ViewClass {
     if (migrated) {
       out += `\nSaved workspaces from ${migrated.source} to vlt.json`
     }
+    const a = _result.allowSkills
+    if (a?.stored) out += `\n${keptLine(a.stored)}`
+    else if (a) out += `\n${savedLine(a.query, 'project')}`
     this.#instance?.rerender($(App, { trailer: out }))
     return undefined
   }

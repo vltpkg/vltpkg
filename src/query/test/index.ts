@@ -289,6 +289,99 @@ t.test('insights', async t => {
   }
 })
 
+t.test('parts', async t => {
+  const graph = getSimpleGraph()
+  const opts = {
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
+    securityArchive: undefined,
+  }
+  const query = new Query({ ...opts, partSelectors: ['skill'] })
+  const search = (q: string) => query.search(q, mockSearchOptions)
+  const parts = async (q: string) =>
+    (await search(q)).parts?.map(({ nodes, ...p }) => ({
+      ...p,
+      nodes: nodes.map(n => n.name).sort(),
+    }))
+
+  t.strictSame(await parts(':root > *, #b:skill(x)'), [
+    { nodes: ['@x/y', 'a', 'b', 'e'] },
+    { name: 'skill', patterns: ['x'], nodes: ['b'] },
+  ])
+  const res = await search(':root > *, #b:skill(x)')
+  const [plain, b] = res.parts ?? []
+  t.notOk(plain && 'name' in plain, 'plain part has no name')
+  t.notOk(plain && 'patterns' in plain, 'plain part has no patterns')
+  t.equal(
+    b?.nodes[0],
+    res.nodes.find(n => n.name === 'b'),
+    'part nodes are response nodes',
+  )
+  t.ok(b?.nodes[0]?.insights, 'part nodes are hydrated')
+  t.equal(
+    await search(':root > *, #b:skill(x)'),
+    res,
+    'cache hit keeps parts',
+  )
+
+  t.strictSame(await parts(':root > *:not(#b), #b:skill(x)'), [
+    { nodes: ['@x/y', 'a', 'e'] },
+    { name: 'skill', patterns: ['x'], nodes: ['b'] },
+  ])
+  t.strictSame(await parts('#a, #b:skill(x), #c:skill(y)'), [
+    { nodes: ['a'] },
+    { name: 'skill', patterns: ['x'], nodes: ['b'] },
+    { name: 'skill', patterns: ['y'], nodes: ['c'] },
+  ])
+  t.strictSame(await parts('#b:skill(x), #a'), [
+    { name: 'skill', patterns: ['x'], nodes: ['b'] },
+    { nodes: ['a'] },
+  ])
+  t.strictSame(await parts('#nope:skill(x)'), [
+    { name: 'skill', patterns: ['x'], nodes: [] },
+  ])
+  t.strictSame(await parts('#a, #b:skills(x)'), [
+    { nodes: ['a'] },
+    { nodes: [] },
+  ])
+  t.notOk('parts' in (await search('')), 'empty query')
+
+  const plainQuery = new Query(opts)
+  t.notOk(
+    'parts' in
+      (await plainQuery.search(':root > *', mockSearchOptions)),
+    'no parts without partSelectors',
+  )
+})
+
+t.test(':skills', async t => {
+  const graph = getSimpleGraph()
+  const query = new Query({
+    nodes: new Set(graph.nodes.values()),
+    edges: graph.edges,
+    importers: graph.importers,
+    securityArchive: undefined,
+    hasSkills: async node => node.name === 'c' || node.name === 'e',
+  })
+  const names = async (q: string) =>
+    (await query.search(q, mockSearchOptions)).nodes
+      .map(n => n.name)
+      .sort()
+  t.strictSame(await names(':skills'), ['c', 'e'])
+  t.strictSame(await names(':root > :skills'), ['e'])
+  t.strictSame(await names(':not(:skills)'), [
+    '@x/y',
+    'a',
+    'b',
+    'd',
+    'f',
+    'my-project',
+  ])
+  t.strictSame(await names(':is(:skills)'), ['c', 'e'])
+  t.strictSame(await names(':has(:skills)'), ['b', 'd', 'my-project'])
+})
+
 t.test('bad selector type', async t => {
   await t.rejects(
     walk(testBrokenState()),
@@ -331,6 +424,12 @@ t.test('trying to use tag selectors', async t => {
     search('.dev'),
     { cause: { code: 'EQUERY', found: '.dev', wanted: ':dev' } },
     'should suggest the pseudo-class of the same name',
+  )
+
+  await t.rejects(
+    search('skill'),
+    { cause: { code: 'EQUERY', found: 'skill', wanted: '#skill' } },
+    'should not suggest a part selector',
   )
 
   await t.rejects(

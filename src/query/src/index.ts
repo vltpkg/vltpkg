@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 import {
   parse,
+  partPseudoNames,
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
@@ -18,14 +19,17 @@ import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import type {
   PostcssNode,
   PostcssNodeWithChildren,
+  PartPseudoName,
 } from '@vltpkg/dss-parser'
 import type {
   DiffFilesProvider,
   GetAuthHeader,
+  HasSkills,
   HostContextsMap,
   ParsedSelectorToken,
   ParserState,
   ParserFn,
+  QueryPart,
   QueryResponse,
   QueryResponseNode,
   QueryResponseEdge,
@@ -40,6 +44,7 @@ export type SearchOptions = {
 }
 
 const noopFn = async (state: ParserState) => state
+const partPseudos = new Set<string>(partPseudoNames)
 
 /**
  * `.dev` and a bare `dev` are the two ways a css habit shows up in a
@@ -51,7 +56,8 @@ const unsupportedName = (state: ParserState) => {
   const name = text.replace(/^[.#]/, '')
   return queryError('Unsupported selector', state.current, {
     wanted:
-      pseudoSelectorNames.has(name) ? `:${name}`
+      pseudoSelectorNames.has(name) && !partPseudos.has(name) ?
+        `:${name}`
       : name ? `#${name}`
       : undefined,
   })
@@ -151,6 +157,13 @@ export const walk = async (
       for (const node of state.partial.nodes) {
         state.collect.nodes.add(node)
       }
+      if (state.parts && node.parent?.type === 'root') {
+        state.parts.push({
+          ...state.part,
+          nodes: [...state.partial.nodes],
+        })
+        delete state.part
+      }
     }
   }
   return state
@@ -165,6 +178,10 @@ export type QueryOptions = {
   hostContexts?: HostContextsMap
   diffFiles?: DiffFilesProvider
   getAuthHeader?: GetAuthHeader
+  /** for `:skills`; unset: `:skills` throws */
+  hasSkills?: HasSkills
+  /** part selectors to allow, e.g. `['skill']`; others throw */
+  partSelectors?: readonly PartPseudoName[]
 }
 
 // A list of known security selectors that rely on
@@ -223,12 +240,14 @@ export class Query {
   #cache: Map<string, QueryResponse>
   #diffFiles: DiffFilesProvider | undefined
   #getAuthHeader: GetAuthHeader | undefined
+  #hasSkills: HasSkills | undefined
   #edges: Set<EdgeLike>
   #nodes: Set<NodeLike>
   #importers: Set<NodeLike>
   #retries: number
   #securityArchive: SecurityArchiveLike | undefined
   #hostContexts: HostContextsMap | undefined
+  #partSelectors: ReadonlySet<PartPseudoName>
 
   /**
    * Helper method to determine if a given query string is using any of
@@ -282,10 +301,14 @@ export class Query {
     hostContexts,
     diffFiles,
     getAuthHeader,
+    hasSkills,
+    partSelectors,
   }: QueryOptions) {
+    this.#partSelectors = new Set(partSelectors)
     this.#cache = new Map()
     this.#diffFiles = diffFiles
     this.#getAuthHeader = getAuthHeader
+    this.#hasSkills = hasSkills
     this.#edges = edges
     this.#nodes = nodes
     this.#importers = importers
@@ -524,6 +547,7 @@ export class Query {
       collect,
       comment,
       importers: stateResultImporters,
+      parts,
       specificity,
     } = await walk({
       cancellable: async () => {
@@ -544,9 +568,13 @@ export class Query {
       comment: '',
       diffFiles: this.#diffFiles,
       getAuthHeader: this.#getAuthHeader,
+      hasSkills: this.#hasSkills,
       loose,
       importers,
       partial: { nodes, edges },
+      ...(this.#partSelectors.size ?
+        { parts: [], partSelectors: this.#partSelectors }
+      : undefined),
       retries: this.#retries,
       signal,
       securityArchive: this.#securityArchive,
@@ -562,6 +590,8 @@ export class Query {
       importers: this.#getQueryResponseNodes(stateResultImporters),
       comment,
       specificity,
+      // part nodes are a subset of `nodes`, already hydrated above
+      ...(parts ? { parts: parts as QueryPart[] } : undefined),
     }
     this.#cache.set(query, res)
     return res

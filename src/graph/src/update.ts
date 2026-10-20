@@ -15,10 +15,37 @@ import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
+import type { DepID } from '@vltpkg/dep-id'
+import type { Diff } from './diff.ts'
+import { assertQuery } from './filter-nodes-by-query.ts'
+import { assertSkillsDirs } from './skills/dirs.ts'
+import type { LinkSkillsResult } from './skills/index.ts'
 
 export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   allowScripts: string
+  /**
+   * DSS query: packages whose agent skills get linked into the
+   * project's agent skill dirs after update. Selectors may end with
+   * `:skill()`. Unset or `:not(*)`: none.
+   */
+  allowSkills?: string
+  /**
+   * agent skill dirs, relative to projectRoot. Unset: detect; `[]`:
+   * none
+   */
+  skillsDirs?: string[]
+}
+
+/**
+ * Result of {@link update}.
+ */
+export type UpdateResult = {
+  buildQueue?: DepID[]
+  graph: Graph
+  diff?: Diff
+  /** skill links added or removed, if any */
+  skills?: LinkSkillsResult
 }
 
 /**
@@ -54,7 +81,20 @@ const startingGraph = (
   return graph
 }
 
-export const update = async (options: UpdateOptions) => {
+export const update = async (
+  options: UpdateOptions,
+): Promise<UpdateResult> => {
+  // unset or `:not(*)`: no skills work at all, the skills code never
+  // loads
+  const allowSkills =
+    options.allowSkills === ':not(*)' ?
+      undefined
+    : options.allowSkills
+  // fail before updating, not after
+  if (allowSkills) {
+    await assertQuery(allowSkills, 'allow-skills', ['skill'])
+    assertSkillsDirs(options.projectRoot, options.skillsDirs)
+  }
   let mainManifest: NormalizedManifest | undefined = undefined
   try {
     mainManifest = options.packageJson.read(options.projectRoot)
@@ -76,6 +116,7 @@ export const update = async (options: UpdateOptions) => {
     scurry: options.scurry,
   })
 
+  let result: UpdateResult
   try {
     const done = graphStep('build')
     const graph = await buildIdealFromStartingGraph({
@@ -110,7 +151,7 @@ export const update = async (options: UpdateOptions) => {
       update: true,
     })
 
-    return { buildQueue, graph, diff }
+    result = { buildQueue, graph, diff }
     /* c8 ignore start */
   } catch (err) {
     await remover.rollback().catch(() => {})
@@ -127,4 +168,14 @@ export const update = async (options: UpdateOptions) => {
     throw err
   }
   /* c8 ignore stop */
+
+  // after the try: a link failure must not roll back the update
+  if (!allowSkills) return result
+  const { linkSkills } = await import('./skills/index.ts')
+  result.skills = await linkSkills({
+    ...options,
+    graph: result.graph,
+    target: allowSkills,
+  })
+  return result
 }

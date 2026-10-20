@@ -1,5 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
 import { install } from '@vltpkg/graph'
+import { saveAllowSkills } from '../allow-skills.ts'
+import type { AllowSkillsSave } from '../allow-skills.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
@@ -9,7 +11,7 @@ import type { MigratedWorkspaces } from '../migrate-workspaces.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
-import type { Diff, Graph } from '@vltpkg/graph'
+import type { Diff, Graph, LinkSkillsResult } from '@vltpkg/graph'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -38,6 +40,15 @@ export type InstallResult = {
    * Workspaces saved to vlt.json from package.json or pnpm-workspace.yaml.
    */
   migratedWorkspaces?: MigratedWorkspaces
+  /**
+   * Agent skill links added or removed.
+   */
+  skills?: LinkSkillsResult
+  /**
+   * `--allow-skills` saved to vlt.json, or kept because another query
+   * is stored.
+   */
+  allowSkills?: AllowSkillsSave
 }
 
 export const needsRegistry = true
@@ -113,8 +124,23 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      'allow-skills': {
+        value: '<query>',
+        description:
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs. Saved to vlt.json.",
+      },
     },
   })
+
+// link mounts; `unchanged` left out
+const skillsJson = ({
+  linked,
+  unchanged: _,
+  ...rest
+}: LinkSkillsResult) => ({
+  linked: linked.map(s => s.mount),
+  ...rest,
+})
 
 export const views = {
   json: i => {
@@ -187,6 +213,8 @@ export const views = {
       ...(i.migratedWorkspaces ?
         { migratedWorkspaces: i.migratedWorkspaces }
       : null),
+      ...(i.skills ? { skills: skillsJson(i.skills) } : null),
+      ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
     }
   },
   human: lazyView(
@@ -214,13 +242,16 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
+  const allowSkills = conf.get('allow-skills')
   const installStart = Date.now()
-  const { buildQueue, graph, diff } = await install(
+  const { buildQueue, graph, diff, skills } = await install(
     {
       ...conf.options,
       frozenLockfile,
       expectLockfile,
       allowScripts,
+      allowSkills,
+      skillsDirs: conf.get('skills-dir'),
       lockfileOnly,
       saveExact,
       savePrefix,
@@ -235,6 +266,9 @@ export const command: CommandFn<InstallResult> = async conf => {
     )
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
+  // nothing linked on --lockfile-only
+  const allowSkillsSave =
+    lockfileOnly ? undefined : await saveAllowSkills(conf)
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(
@@ -251,5 +285,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     diff,
     ...(persist ? { persistedConfig: persist } : null),
     ...(migrated ? { migratedWorkspaces: migrated } : null),
+    ...(skills ? { skills } : null),
+    ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
   }
 }

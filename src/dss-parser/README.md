@@ -27,9 +27,11 @@ const ast = parse(':root > *')
 - dangling combinators, e.g. `:root >`, `> >`
 - bare words, strings, empty ids / attributes, e.g. `foo`, `.dev`,
   `"foo"`, `#`, `[]`
+- a part selector (`:skill()`) with an empty argument, not ending a
+  top-level selector, or inside `:not()`/`:is()`/`:has()`
 
-`:is()` arguments are a forgiving list: only the last group above is
-rejected there.
+`:is()` arguments are a forgiving list: only the bare words group and
+the part selector rule apply there.
 
 Pass `{ loose: true }` to skip the DSS checks (malformed syntax still
 throws):
@@ -38,5 +40,5 @@ throws):
 parse('#a, :unknown', { loose: true }) // no throw
 ```
 
-Supported names are exported as `pseudoClassNames`, `combinatorNames`
-and `attributeOperatorNames`.
+Supported names are exported as `pseudoClassNames`, `combinatorNames`,
+`attributeOperatorNames` and `partPseudoNames`.

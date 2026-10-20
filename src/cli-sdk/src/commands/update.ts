@@ -1,6 +1,8 @@
 import { update } from '@vltpkg/graph'
+import type { LinkSkillsResult } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
+import { saveAllowSkills } from '../allow-skills.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -38,8 +40,23 @@ export const usage: CommandUsage = () =>
         description:
           'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
       },
+      'allow-skills': {
+        value: '<query>',
+        description:
+          "Link agent skills of packages matching this DSS query into the project's agent skill dirs. Saved to vlt.json.",
+      },
     },
   })
+
+// link mounts; `unchanged` left out
+const skillsJson = ({
+  linked,
+  unchanged: _,
+  ...rest
+}: LinkSkillsResult) => ({
+  linked: linked.map(s => s.mount),
+  ...rest,
+})
 
 export const views = {
   json: i => ({
@@ -53,6 +70,8 @@ export const views = {
     ...(i.persistedConfig ?
       { persistedConfig: i.persistedConfig }
     : null),
+    ...(i.skills ? { skills: skillsJson(i.skills) } : null),
+    ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
   }),
   human: lazyView(
     async () =>
@@ -75,17 +94,22 @@ export const command: CommandFn<InstallResult> = async conf => {
       String(conf.get('allow-scripts'))
     : ':not(*)'
   /* c8 ignore stop */
-  const { buildQueue, graph } = await update({
+  const { buildQueue, graph, skills } = await update({
     ...conf.options,
     allowScripts,
+    allowSkills: conf.get('allow-skills'),
+    skillsDirs: conf.get('skills-dir'),
   }).catch((er: unknown) => {
     throw asUnknownSpecPrefix(er)
   })
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
+  const allowSkillsSave = await saveAllowSkills(conf)
   return {
     buildQueue,
     graph,
     ...(persist ? { persistedConfig: persist } : null),
+    ...(skills ? { skills } : null),
+    ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
   }
 }

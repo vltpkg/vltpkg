@@ -49,4 +49,10 @@ dependencies).
 
       ​--allow-scripts=<query>
 
+    allow-skills
+      Link agent skills of packages matching this DSS query into the project's
+      agent skill dirs. Saved to vlt.json.
+
+      ​--allow-skills=<query>
+
 `

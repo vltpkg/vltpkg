@@ -50,6 +50,7 @@ const canonicalCommands = {
   'run-exec': 'run-exec',
   run: 'run',
   setup: 'setup',
+  skills: 'skills',
   token: 'token',
   uninstall: 'uninstall',
   unpublish: 'unpublish',
@@ -577,7 +578,9 @@ export const definition = j
     config: {
       hint: 'all | user | project',
       description: `Specify which configuration to show or operate on when running
-                    \`vlt config\` commands. For read operations (get, pick, list):
+                    \`vlt config\` commands, and which file
+                    \`vlt skills link\` saves \`allow-skills\` to. For read
+                    operations (get, pick, list):
                     \`all\` shows merged configuration from both user and project
                     files (default). For write operations (set, delete, edit):
                     defaults to \`project\`. \`user\` shows/modifies only user-level
@@ -876,6 +879,40 @@ export const definition = j
                     Example: --allow-scripts=":root > *, #my-package"
                     Runs scripts only for direct dependencies of the current project and any occurrences
                     of a specific dependency with the name "my-package" anywhere in the dependency graph.`,
+    },
+  })
+  .opt({
+    'allow-skills': {
+      hint: 'query',
+      description: `Link the agent skills (folders with a \`SKILL.md\`) shipped by
+                    installed packages matching this DSS query into
+                    the project's agent skill dirs (see \`skills-dir\`)
+                    after \`install\`, \`ci\`, \`update\` or
+                    \`uninstall\`. End a selector with
+                    \`:skill(<name>, …)\` to pick single skills (\`*\`
+                    globs, double-quoted names). Unset (the default) or
+                    \`:not(*)\` links nothing and skips all skills work.
+
+                    \`vlt install --allow-skills=<query>\` saves the query
+                    to the project \`vlt.json\`; \`vlt skills link
+                    [<query>]\` sets, saves and applies it.
+
+                    Example: --allow-skills="#agent-browser:skill(agent-browser)"
+                    Links the agent-browser skill from a package with the same name.`,
+    },
+  })
+  .optList({
+    'skills-dir': {
+      hint: 'path',
+      description: `Dirs to link agent skills into (see \`allow-skills\`),
+                    relative to the project root. Replaces detection:
+                    \`.agents/skills\`, plus \`<folder>/skills\` for each
+                    agent folder at the project root (e.g. \`.claude/\`),
+                    \`.claude/skills\` inside Claude Code, and existing
+                    \`.<name>/skills\` dirs. An empty list (\`[]\` in
+                    vlt.json, or \`--skills-dir=\`) links nothing. Each
+                    dir must be inside the project, not in
+                    node_modules.`,
     },
   })
   .opt({
