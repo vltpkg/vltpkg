@@ -197,8 +197,10 @@ the `#core` ID selector with the `:workspace` selector.
 ```
 
 For monorepos whose `package.json` files reference local packages by
-plain ranges (e.g. npm or yarn v1 projects) instead of the
-`workspace:` protocol:
+plain ranges (npm, yarn v1, pnpm with `link-workspace-packages`)
+instead of the `workspace:` protocol. It goes in the same `vlt.json`
+that `vlt install` saves the workspaces to (see
+[Saving workspaces to vlt.json](/client/workspaces#saving-workspaces-to-vltjson)):
 
 - Without it, a plain range links a workspace only while the workspace
   version satisfies that range, otherwise vlt fetches that name from

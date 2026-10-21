@@ -314,6 +314,12 @@ ignored by vlt:
   lang="json"
 />
 
+Local packages referenced with the `workspace:` protocol keep working
+as-is. If you relied on `link-workspace-packages` and plain ranges
+instead, add `":project > :workspace": "workspace:*"` to `modifiers`
+in the same `vlt.json` to always link them, see
+[Implicit workspace references](/client/graph-modifiers#implicit-workspace-references).
+
 vlt also supports **named workspace groups**:
 
 <Code
@@ -499,11 +505,15 @@ Some pnpm-specific features don't have direct equivalents:
    and `catalogs` fields)
 5. Move `pnpm.overrides` from `package.json` to `modifiers` in
    `vlt.json`
-6. Run `vlt install` then `vlt build`
-7. Commit `vlt.json` and `vlt-lock.json`
-8. Update CI scripts: replace `pnpm install --frozen-lockfile` with
+6. If local packages are referenced by plain ranges
+   (`link-workspace-packages`), add
+   `":project > :workspace": "workspace:*"` to `modifiers` in
+   `vlt.json` so they are always linked
+7. Run `vlt install` then `vlt build`
+8. Commit `vlt.json` and `vlt-lock.json`
+9. Update CI scripts: replace `pnpm install --frozen-lockfile` with
    `vlt install --frozen-lockfile && vlt build`
-9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
-10. Update any `pnpm dlx` usage to `vlx`
-11. Remove `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings
+10. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
+11. Update any `pnpm dlx` usage to `vlx`
+12. Remove `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings
     once no other tool reads them
