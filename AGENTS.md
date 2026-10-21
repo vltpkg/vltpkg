@@ -55,14 +55,11 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 - `/www/**/*.mjs` is gitignored (treated as build output) — name
   source scripts `.mts`.
 - Agent skills published from this repo live in root `skills/<name>/`,
-  or in a workspace whose package ships them
-  (`src/query/skills/dss-query`, mounted by #1540). List each in
-  `.claude-plugin/plugin.json` `skills` (how
-  `vlx skills add vltpkg/vltpkg` finds workspace ones) and in
-  `skills.sh.json`. Root ones also need a `!/skills/<name>/` line in
-  `.gitignore` (`/skills/*` is gitignored for #1540 mounts) and an
-  entry in `www/docs/src/lib/skills.ts`; `www/docs` copies them into
-  `public/skills` at prebuild/predev.
+  where `vlx skills add vltpkg/vltpkg` finds them. List each in
+  `.claude-plugin/plugin.json` `skills` and in `skills.sh.json`. Each
+  needs a `!/skills/<name>/` line in `.gitignore` and an entry in
+  `www/docs/src/lib/skills.ts`. `www/docs` copies them into
+  `public/skills` at prebuild/predev, excluding `evals/`.
 
 ## Development
 
@@ -96,9 +93,8 @@ Update only when changes are intentional:
 
 ## Skill Evals
 
-Agent skills (e.g. `src/query/skills/dss-query`) are evaluated in
-three layers — see `src/query/skills/dss-query/evals/README.md` for
-the full approach:
+Agent skills (e.g. `skills/dss-query`) are evaluated in three layers —
+see `skills/dss-query/evals/README.md` for the full approach:
 
 1. **Content correctness** (deterministic, CI-safe): selectors/claims
    in the skill docs must parse (`@vltpkg/dss-parser`) and execute

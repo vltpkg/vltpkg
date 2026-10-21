@@ -1,6 +1,6 @@
 /**
  * Deterministic grader for dss-query skill evals.
- * Run from src/query (so @vltpkg/* workspace deps resolve):
+ * Run from the repo root:
  *   node skills/dss-query/evals/grade.mjs skills/dss-query-workspace/iteration-1
  *
  * Writes grading.json ({expectations: [{text, passed, evidence}]}) into each
@@ -13,9 +13,9 @@ import {
   existsSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { parse } from '@vltpkg/dss-parser'
-import { Query } from '../../../src/index.ts'
-import { getSimpleGraph } from '../../../test/fixtures/graph.ts'
+import { parse } from '../../../src/dss-parser/src/index.ts'
+import { Query } from '@vltpkg/query'
+import { getSimpleGraph } from '../../../src/query/test/fixtures/graph.ts'
 
 const iterDir = process.argv[2]
 if (!iterDir) throw new Error('usage: node grade.mjs <iteration-dir>')

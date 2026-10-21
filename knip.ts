@@ -12,7 +12,7 @@ const entry = [
 
 const workspaces = {
   '.': {
-    entry,
+    entry: [...entry, 'skills/dss-query/evals/grade.mjs'],
     // Used to download fixtures in a bash script
     ignoreDependencies: ['@vltpkg/benchmark'],
     ignore: ['coverage-map.js'],

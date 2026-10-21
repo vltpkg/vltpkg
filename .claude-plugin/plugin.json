@@ -8,6 +8,6 @@
   },
   "skills": [
     "./skills/vlt-registry-migration",
-    "./src/query/skills/dss-query"
+    "./skills/dss-query"
   ]
 }
