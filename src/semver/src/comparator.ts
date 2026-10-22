@@ -542,12 +542,37 @@ export class Comparator {
   }
 
   #parseCaret(comp: string) {
-    const min = this.#xInclusiveMin(comp)
-    if (isAny(min)) {
-      this.tuples.push(min)
+    const parsed = this.#parseX(comp)
+    if (isXMajor(parsed)) {
+      this.tuples.push(this.#getComparatorAny())
       return
     }
-    const minv = min[1]
+    const z = this.includePrerelease ? '0' : undefined
+    // An X-range caret is bound by its leftmost given part, whatever
+    // its value: ^0 and ^0.x are >=0.0.0 <1.0.0-0, ^0.0 and ^0.0.x are
+    // >=0.0.0 <0.1.0-0. Filling the missing parts with 0 first would
+    // make them look like ^0.0.0, the exact version 0.0.0.
+    if (isXMinor(parsed)) {
+      const [M] = parsed
+      this.tuples.push(
+        ['>=', new Version(comp, M, 0, 0, z, undefined)],
+        ['<', new Version(comp, M + 1, 0, 0, '0', undefined)],
+      )
+      return
+    }
+    if (isXPatch(parsed)) {
+      const [M, m] = parsed
+      this.tuples.push(
+        ['>=', new Version(comp, M, m, 0, z, undefined)],
+        M !== 0 ?
+          ['<', new Version(comp, M + 1, 0, 0, '0', undefined)]
+        : ['<', new Version(comp, 0, m + 1, 0, '0', undefined)],
+      )
+      return
+    }
+    const [M, m, p, pr = z, build] = parsed
+    const minv = new Version(comp, M, m, p, pr, build)
+    const min: OVTuple = ['>=', minv]
     if (minv.major !== 0) {
       this.tuples.push(min, [
         '<',
