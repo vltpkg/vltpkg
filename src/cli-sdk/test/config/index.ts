@@ -2240,6 +2240,127 @@ t.test('--global', async t => {
     t.equal(conf.globalRoot, undefined)
   })
 
+  t.test('globalProject', async t => {
+    t.test('setup: not switched to', async t => {
+      const { Config, cwd, g, dflt } = await setup(t)
+      const conf = await Config.load(
+        cwd,
+        ['setup', `--global-dir=${g}`],
+        true,
+      )
+      t.equal(conf.globalRoot, undefined)
+      t.strictSame(conf.globalProject(), {
+        root: g,
+        binDir: undefined,
+      })
+      t.notOk(existsSync(resolve(g, 'package.json')), 'no skeleton')
+      t.equal(
+        conf.get('registry'),
+        'https://cwd.example/',
+        'cwd config',
+      )
+      clearEnv()
+      const def = await Config.load(cwd, ['setup'], true)
+      t.strictSame(def.globalProject(), {
+        root: dflt,
+        binDir: undefined,
+      })
+      clearEnv()
+      process.env.VLT_GLOBAL_DIR = g
+      const env = await Config.load(cwd, ['setup', 'acme'], true)
+      t.strictSame(env.globalProject(), {
+        root: g,
+        binDir: undefined,
+      })
+    })
+
+    t.test('setup: user config', async t => {
+      const { Config, cwd, home } = await setup(t, {
+        'global-dir': '~/g',
+        'global-bin-dir': '~/b',
+      })
+      const conf = await Config.load(cwd, ['setup'], true)
+      t.strictSame(conf.globalProject(), {
+        root: resolve(home, 'g'),
+        binDir: resolve(home, 'b'),
+      })
+    })
+
+    t.test('setup: never from the project vlt.json', async t => {
+      const { Config, cwd, dflt } = await setup(t)
+      writeFileSync(
+        resolve(cwd, 'vlt.json'),
+        JSON.stringify({
+          config: {
+            'global-dir': '/nope',
+            'global-bin-dir': '/nope',
+          },
+        }),
+      )
+      const conf = await Config.load(cwd, ['setup'], true)
+      t.strictSame(conf.globalProject(), {
+        root: dflt,
+        binDir: undefined,
+      })
+    })
+
+    t.test('switched: the global project', async t => {
+      const { Config, cwd, g } = await setup(t)
+      for (const argv of [
+        ['setup', '--path'],
+        ['install', '-g'],
+      ]) {
+        const conf = await Config.load(
+          cwd,
+          [...argv, `--global-dir=${g}`, '--global-bin-dir=/b'],
+          true,
+        )
+        t.strictSame(
+          conf.globalProject(),
+          { root: g, binDir: resolve('/b') },
+          argv.join(' '),
+        )
+        t.equal(conf.globalRoot, g)
+        clearEnv()
+      }
+    })
+
+    t.test('none', async t => {
+      const { Config, cwd, g } = await setup(t)
+      for (const argv of [['install'], ['setup', '--help'], []]) {
+        const conf = await Config.load(
+          cwd,
+          [...argv, `--global-dir=${g}`],
+          true,
+        )
+        t.equal(conf.globalProject(), undefined, argv.join(' '))
+        clearEnv()
+      }
+    })
+
+    t.test('setup: relative global-dir in user config', async t => {
+      const { Config, cwd } = await setup(t, { 'global-dir': '../g' })
+      await t.rejects(Config.load(cwd, ['setup'], true), {
+        message: 'global-dir in the user config must be absolute',
+        cause: { code: 'ECONFIG', found: '../g' },
+      })
+    })
+
+    t.test(
+      'setup: relative global-bin-dir in user config',
+      async t => {
+        const { Config, cwd } = await setup(t, {
+          'global-bin-dir': 'b',
+        })
+        await t.rejects(Config.load(cwd, ['setup'], true), {
+          message:
+            'global-bin-dir in the user config must be absolute',
+          cause: { code: 'ECONFIG', found: 'b' },
+        })
+      },
+    )
+  })
+
   t.test('global-bin-dir', async t => {
     const gArgs = (g: string, ...a: string[]) => [
       'install',

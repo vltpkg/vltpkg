@@ -46,6 +46,11 @@ wizard.
    it to the other. Existing tokens are never overwritten, and
    `VLT_TOKEN*` environment tokens are never saved. This also runs
    with `--yes` or when you skip authentication.
+7. In a terminal, if the global bin folder isn't on your `PATH` or set
+   up yet, asks `Setup PATH for global installs? (Y/n)`. Yes adds it
+   (see [below](#add-global-bins-to-your-path)); no skips it, and
+   `vlt setup --path` does just that step later. Not asked with
+   `--yes`, without a terminal, or with `--no-modify-path`.
 
 If the project you run this in configures its own registries, the
 output says so:
@@ -56,13 +61,13 @@ project.
 
 ## Options
 
-| Flag                       | Description                                                                                                             |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                       |
-| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                      |
-| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs. With `--path`: edit without asking. |
-| `--path`                   | Add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                   |
-| `--global-bin-dir=<path>`  | With `--path`: the folder to add.                                                                                       |
+| Flag                       | Description                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                                          |
+| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                                         |
+| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs, step 7 is skipped. With `--path`: edit without asking. |
+| `--path`                   | Only add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                                 |
+| `--global-bin-dir=<path>`  | The folder to add.                                                                                                                         |
 
 ## Examples
 
@@ -92,11 +97,13 @@ Add global bins to your `PATH`:
 
 ## Add global bins to your PATH
 
-`vlt setup --path` adds the global bin folder (see
+Adds the global bin folder (see
 [Global installs](/client/commands/install#global-installs)) to your
-`PATH` in new terminals. Only needed when `vlt install -g` says that
-folder isn't on your `PATH`; in a terminal it offers to run this for
-you once (`--yes` accepts without asking).
+`PATH` in new terminals. `vlt setup` offers it at its end;
+`vlt setup --path` runs just that step (after skipping it, or on an
+older setup). `vlt install -g` also offers it once, in a terminal,
+when that folder isn't on your `PATH` (`--yes` accepts without
+asking).
 
 On macOS and Linux, it writes `<global-dir>/env` (and `env.fish`),
 which adds the folder to `PATH`, and a section that loads it into your
@@ -132,8 +139,8 @@ If the folder changes, the new one is added and the old entry stays.
   edited and the link is kept.
 - `--global-bin-dir=<path>` picks the folder.
 - `VLT_NO_MODIFY_PATH=1` (any value but `0`), or `--no-modify-path`,
-  turns this and the install offer off; the line to add is printed
-  instead.
+  turns this and the install offer off (the line to add is printed
+  instead), and skips the `vlt setup` prompt.
 - Other shells (like nu) aren't supported on macOS and Linux yet: it
   prints the line to add.
 

@@ -1,5 +1,6 @@
 import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
+import type { MultipleCommandOptions } from './fixtures/run.ts'
 import { execFileSync } from 'node:child_process'
 import {
   existsSync,
@@ -174,3 +175,90 @@ t.test(
     t.equal(res.status, 0)
   },
 )
+
+// no registry yet
+const fresh = { VLT_REGISTRY: '', VLT_REGISTRIES: '' }
+
+// answers each wizard prompt once, as it appears
+const answer = (path: string): MultipleCommandOptions['onOutput'] => {
+  // variants run in parallel
+  const seen = new WeakMap<(d: string) => void, Set<string>>()
+  return ({ output, write }) => {
+    const done = seen.get(write) ?? new Set<string>()
+    seen.set(write, done)
+    for (const [q, a] of [
+      ['Authenticate with your vlt.io account now?', 'n\r'],
+      ['Add another registry alias?', '\r'],
+      ['Setup PATH for global installs?', path],
+    ] as const) {
+      if (!done.has(q) && output.includes(q)) {
+        done.add(q)
+        write(a)
+      }
+    }
+  }
+}
+
+t.test(
+  'setup offers PATH setup',
+  { skip: process.platform === 'win32' },
+  async t => {
+    const res = await runMultiple(t, ['setup', 'acme'], {
+      tty: true,
+      match: ['status'],
+      env: { SHELL: '/bin/bash', ...fresh },
+      onOutput: answer('\r'),
+      test: async ({ t, dirs }) => {
+        t.match(
+          readFileSync(join(dirs.root, '.profile'), 'utf8'),
+          '# vlt\n',
+        )
+        t.ok(existsSync(join(dirs.data, 'vlt', 'global', 'env')))
+        t.match(
+          readFileSync(join(dirs.config, 'vlt', 'vlt.json'), 'utf8'),
+          /registry\.vlt\.io\/acme\/npm\/[\s\S]*registry\.vlt\.io\/acme\/main\//,
+        )
+      },
+    })
+    t.match(res.output, 'Setup PATH for global installs? (Y/n)')
+    t.match(res.output, 'Added')
+    t.equal(res.status, 0)
+  },
+)
+
+t.test(
+  'setup, PATH declined',
+  { skip: process.platform === 'win32' },
+  async t => {
+    const res = await runMultiple(t, ['setup', 'acme'], {
+      tty: true,
+      match: ['status'],
+      env: { SHELL: '/bin/bash', ...fresh },
+      onOutput: answer('n\r'),
+      test: async ({ t, dirs }) => {
+        t.notOk(existsSync(join(dirs.root, '.profile')))
+        t.notOk(existsSync(join(dirs.data, 'vlt', 'global', 'env')))
+      },
+    })
+    t.match(res.output, 'Run `vlt setup --path` later')
+    t.equal(res.status, 0)
+  },
+)
+
+t.test('setup --yes never asks', async t => {
+  const res = await runMultiple(
+    t,
+    ['setup', 'acme', '--yes', '--view=json'],
+    {
+      match: ['status'],
+      env: fresh,
+      test: async ({ t, dirs, raw }) => {
+        t.match(raw.stdout, '"account": "acme"')
+        t.notMatch(raw.stdout, '"path"')
+        t.notOk(existsSync(join(dirs.root, '.profile')))
+        t.notOk(existsSync(join(dirs.data, 'vlt', 'global', 'env')))
+      },
+    },
+  )
+  t.equal(res.status, 0)
+})

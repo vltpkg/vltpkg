@@ -458,7 +458,7 @@ Object {
     "type": "boolean",
   },
   "no-modify-path": Object {
-    "description": "Never edit shell config files (or the user \`Path\` on Windows) to add a folder to your \`PATH\`: turns off \`vlt setup --path\` edits and the \`vlt install -g\` offer, and prints the line to add instead. Set \`VLT_NO_MODIFY_PATH=1\` (any value but \`0\`) in images or on machines whose dotfiles are managed elsewhere.",
+    "description": "Never edit shell config files (or the user \`Path\` on Windows) to add a folder to your \`PATH\`: turns off \`vlt setup --path\` edits and the \`vlt install -g\` offer (printing the line to add instead), and the \`vlt setup\` PATH prompt. Set \`VLT_NO_MODIFY_PATH=1\` (any value but \`0\`) in images or on machines whose dotfiles are managed elsewhere.",
     "type": "boolean",
   },
   "node-version": Object {

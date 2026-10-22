@@ -78,6 +78,8 @@ export type SharedCommandOptions = {
   onOutput?: (
     options: Omit<SpawnCommandResult, 'status' | 'signal'> & {
       kill: (signal?: NodeJS.Signals) => void
+      /** to stdin, eg to answer a prompt; one per spawn */
+      write: (data: string) => void
     },
   ) => void
 }
@@ -213,6 +215,7 @@ const spawnCommand = async (
               debugLog?.('KILL', s)
               proc.kill(s)
             }
+            const write = (d: string) => proc.write(d)
             proc.onData(data => {
               // node-pty does not allow for separating stdout and stderr so we have
               // to treat all data as both stdout and stderr. This means we can't
@@ -226,7 +229,7 @@ const spawnCommand = async (
                 'TTY',
                 stripVTControlCharacters(ansiToAnsi(data)),
               )
-              onOutput?.({ ...outputs, kill })
+              onOutput?.({ ...outputs, kill, write })
             })
             proc.onExit(({ exitCode, signal }) =>
               res({
@@ -250,19 +253,22 @@ const spawnCommand = async (
         const result = proc.kill(s)
         debugLog?.('KILL', `${s}=${result}`)
       }
+      const write = (d: string) => {
+        proc.stdin.write(d)
+      }
       proc.stdout.on('data', d => {
         const chunk = `${d.toString()}`
         outputs.stdout += chunk
         outputs.output += chunk
         debugLog?.('STDOUT', chunk)
-        onOutput?.({ ...outputs, kill })
+        onOutput?.({ ...outputs, kill, write })
       })
       proc.stderr.on('data', d => {
         const chunk = `${d.toString()}`
         outputs.stderr += chunk
         outputs.output += chunk
         debugLog?.('STDERR', chunk)
-        onOutput?.({ ...outputs, kill })
+        onOutput?.({ ...outputs, kill, write })
       })
       proc.on('close', (code, signal) =>
         res({

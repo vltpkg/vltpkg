@@ -239,7 +239,12 @@ registry aliases into your user `vlt.json`:
 
 The wizard then loops to let you add any additional custom aliases
 (for partner or team registries), optionally authenticating against
-each. To run it unattended (for example in CI or a setup script):
+each. In a terminal it ends by offering, if needed, to add the global
+bin folder to your `PATH` (`Setup PATH for global installs? (Y/n)`,
+see
+[`vlt setup --path`](/client/commands/setup#add-global-bins-to-your-path)).
+To run it unattended (no browser auth, no PATH prompt; for example in
+CI or a setup script):
 
 ```bash
 vlt setup my-account --yes --registries team=https://registry.example.com/
