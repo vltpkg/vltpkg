@@ -121,8 +121,10 @@ later, and `--allow-ffi` under `--permission`). By default
 `node:ffi`, unpack tarballs as before, unless `store-linker` is set to
 `hardlink`, `clone` or `copy`. Where a clone fails (a volume without
 clones, a project on another volume), the package is unpacked. A
-hardlinked package is copied right before its install scripts run, so
-they don't change its files in the store; a cloned one needs no copy.
+package with install scripts is copied, not hardlinked, when
+`allow-scripts` is `*` or contains `:scripts`, and a hardlinked one is
+copied right before its install scripts run, so they don't change its
+files in the store; a cloned one needs no copy.
 
 When installed with `auto` on Linux or with `hardlink`, files in
 `node_modules` are hardlinks into the global store, so editing one in

@@ -2,6 +2,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
   PackageInfoClient,
+  PackageInfoClientExtractOptions,
   PackageInfoClientRequestOptions,
   Resolution,
 } from '@vltpkg/package-info'
@@ -52,6 +53,19 @@ const createMockPackageInfo = (
   }) as unknown as PackageInfoClient
 
 const mockPackageInfo = createMockPackageInfo()
+
+// what reify asked extract() to do about install scripts
+const recordCopyScripts = (seen: (boolean | undefined)[]) =>
+  createMockPackageInfo({
+    extract: async (
+      spec: Spec | string,
+      target: string,
+      o?: PackageInfoClientExtractOptions,
+    ) => {
+      seen.push(o?.copyScripts)
+      return mockPackageInfoBase.extract(spec, target, o)
+    },
+  })
 
 // the `npm` alias is no longer a built-in default; configure it so bare
 // specs resolve and default-registry DepIDs canonicalize to `~npm~...`.
@@ -1308,9 +1322,10 @@ t.test(
     })
 
     // Call reify with allowScripts set to :not(*) (no scripts allowed)
+    const seen: (boolean | undefined)[] = []
     const result = await reify({
       projectRoot,
-      packageInfo: mockPackageInfo,
+      packageInfo: recordCopyScripts(seen),
       registries,
       monorepo: Monorepo.maybeLoad(projectRoot),
       scurry: new PathScurry(projectRoot),
@@ -1327,6 +1342,11 @@ t.test(
       'result should have buildQueue property when allowScripts is :not(*)',
     )
     t.type(result.buildQueue, Array, 'buildQueue should be an array')
+    t.ok(seen.length, 'extracted')
+    t.ok(
+      seen.every(c => c === false),
+      'no scripts: store packages linked',
+    )
   },
 )
 
@@ -1360,9 +1380,10 @@ t.test('allowScripts with query selector :scripts', async t => {
   })
 
   // Call reify with allowScripts set to :scripts to trigger the Query library logic
+  const seen: (boolean | undefined)[] = []
   const result = await reify({
     projectRoot,
-    packageInfo: mockPackageInfo,
+    packageInfo: recordCopyScripts(seen),
     registries,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
@@ -1391,6 +1412,11 @@ t.test('allowScripts with query selector :scripts', async t => {
     result.buildQueue?.length,
     0,
     'lodash has no scripts so nothing was run',
+  )
+  t.ok(seen.length, 'extracted')
+  t.ok(
+    seen.every(c => c === true),
+    'scripts may run: copied at placement',
   )
 })
 
