@@ -267,9 +267,9 @@ Global packages live in a regular vlt project at `--global-dir`
 (`vlt/global` in the XDG data directory by default, e.g.
 `~/.local/share/vlt/global` on Linux):
 
-- each package gets its own workspace, `packages/<name>-global-ws`
-  (`packages/@scope+name-global-ws` for scoped packages), with the
-  package as its only dependency
+- each package gets its own workspace, `packages/<name>-ws`
+  (`packages/@scope+name-ws` for scoped packages), with the package as
+  its only dependency
 - the project has its own `vlt-lock.json` and `node_modules`
 - bins of global packages are linked into `<global-dir>/bin`, add that
   folder to your `PATH` to run them

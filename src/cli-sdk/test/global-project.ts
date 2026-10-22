@@ -21,10 +21,10 @@ t.test('constants', async t => {
 })
 
 t.test('names and paths', async t => {
-  t.equal(globalWorkspaceName('eslint'), 'eslint-global-ws')
-  t.equal(globalWorkspaceName('@s/p'), '@s/p-global-ws')
-  t.equal(globalWorkspacePath('eslint'), 'packages/eslint-global-ws')
-  t.equal(globalWorkspacePath('@s/p'), 'packages/@s+p-global-ws')
+  t.equal(globalWorkspaceName('eslint'), 'eslint-ws')
+  t.equal(globalWorkspaceName('@s/p'), '@s/p-ws')
+  t.equal(globalWorkspacePath('eslint'), 'packages/eslint-ws')
+  t.equal(globalWorkspacePath('@s/p'), 'packages/@s+p-ws')
 })
 
 t.test('assertGlobalName', async t => {

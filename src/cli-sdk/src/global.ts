@@ -119,9 +119,9 @@ const globalSpec = async (
   return Spec.parse(name, spec.bareSpec, options)
 }
 
-// `@s+p-global-ws` -> `@s/p`
+// `@s+p-ws` -> `@s/p`
 const wsPackageName = (dir: string) =>
-  dir.replace(/-global-ws$/, '').replace('+', '/')
+  dir.replace(/-ws$/, '').replace('+', '/')
 
 /**
  * The workspace of `name`. Matched by exact case, since the fs may

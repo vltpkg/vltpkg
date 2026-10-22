@@ -93,7 +93,7 @@ t.strictSame(
 t.test('--global', async t => {
   let glog = ''
   const remove = new Map()
-  const dirs = ['/g/packages/foo-global-ws']
+  const dirs = ['/g/packages/foo-ws']
   const Command = await t.mockImport<
     typeof import('../../src/commands/uninstall.ts')
   >('../../src/commands/uninstall.ts', {

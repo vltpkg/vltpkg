@@ -790,8 +790,8 @@ t.test('--global', async t => {
   let fail = false
   let failPersist = false
   const add = new Map()
-  const created = ['/g/packages/foo-global-ws']
-  const importers = new Set(['workspace~packages+foo-global-ws'])
+  const created = ['/g/packages/foo-ws']
+  const importers = new Set(['workspace~packages+foo-ws'])
   const global = {
     binDir: '/g/bin',
     bins: ['foo'],
@@ -901,7 +901,7 @@ t.test('--global', async t => {
   await t.rejects(Command.command(badOptions), { message: 'options' })
   t.equal(
     glog,
-    'assert\npersist\nparse global\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nparse global\nremove /g/packages/foo-ws\n',
     'removed on any error before install',
   )
 
@@ -910,7 +910,7 @@ t.test('--global', async t => {
   await t.rejects(Command.command(conf('/g')), { message: 'nope' })
   t.equal(
     glog,
-    'assert\npersist\nparse global\ninstall true\nremove /g/packages/foo-global-ws\n',
+    'assert\npersist\nparse global\ninstall true\nremove /g/packages/foo-ws\n',
     'created workspaces removed',
   )
 

@@ -130,8 +130,8 @@ t.test('no workspace inferred for the global project', async t => {
   const dir = t.testdir({
     g: {
       packages: {
-        'x-global-ws': {
-          'package.json': JSON.stringify({ name: 'x-global-ws' }),
+        'x-ws': {
+          'package.json': JSON.stringify({ name: 'x-ws' }),
         },
       },
     },
@@ -139,11 +139,11 @@ t.test('no workspace inferred for the global project', async t => {
   const g = join(dir, 'g')
   const { config } = await run(t, {
     argv: ['install', '-g', `--global-dir=${g}`],
-    cwd: join(g, 'packages/x-global-ws'),
+    cwd: join(g, 'packages/x-ws'),
   })
   t.equal(config.globalRoot, g)
   t.equal(config.get('workspace'), undefined)
-  t.ok(config.options.monorepo?.get('x-global-ws'))
+  t.ok(config.options.monorepo?.get('x-ws'))
 })
 
 t.test('print version', async t => {

@@ -137,17 +137,17 @@ t.test('global install', async t => {
       match: ['status'],
       test: async ({ t, dirs, run }) => {
         const g = join(dirs.data, 'vlt', 'global')
-        const ws = join(g, 'packages', 'semver-global-ws')
+        const ws = join(g, 'packages', 'semver-ws')
         const lockfile = join(g, 'vlt-lock.json')
         const lock = JSON.parse(readFileSync(lockfile, 'utf-8'))
         t.ok(
-          lock.edges['workspace~packages+semver-global-ws semver'],
+          lock.edges['workspace~packages+semver-ws semver'],
           'semver should be in the global lockfile',
         )
         t.match(
           JSON.parse(readFileSync(join(ws, 'package.json'), 'utf-8')),
           {
-            name: 'semver-global-ws',
+            name: 'semver-ws',
             dependencies: { semver: String },
           },
         )

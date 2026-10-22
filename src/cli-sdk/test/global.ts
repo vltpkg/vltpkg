@@ -137,34 +137,31 @@ t.test('parseGlobalAddArgs', async t => {
     const root = t.testdir({ packages: {} })
     const { conf, resets } = mockConf(root, ['foo@1', '@s/bar'])
     const { add, created, importers } = await parseGlobalAddArgs(conf)
-    const foo = resolve(root, 'packages/foo-global-ws')
-    const bar = resolve(root, 'packages/@s+bar-global-ws')
+    const foo = resolve(root, 'packages/foo-ws')
+    const bar = resolve(root, 'packages/@s+bar-ws')
     t.strictSame(created, [foo, bar])
     t.strictSame(readJSON(resolve(foo, 'package.json')), {
-      name: 'foo-global-ws',
+      name: 'foo-ws',
       private: true,
     })
     t.strictSame(readJSON(resolve(bar, 'package.json')), {
-      name: '@s/bar-global-ws',
+      name: '@s/bar-ws',
       private: true,
     })
     t.equal(add.modifiedDependencies, true)
-    t.equal(wsId('foo-global-ws'), 'workspace~packages+foo-global-ws')
-    t.strictSame(
-      [...add.keys()],
-      [wsId('foo-global-ws'), wsId('@s+bar-global-ws')],
-    )
-    const dep = add.get(wsId('foo-global-ws'))?.get('foo')
+    t.equal(wsId('foo-ws'), 'workspace~packages+foo-ws')
+    t.strictSame([...add.keys()], [wsId('foo-ws'), wsId('@s+bar-ws')])
+    const dep = add.get(wsId('foo-ws'))?.get('foo')
     t.equal(dep?.type, 'implicit')
     t.equal(String(dep?.spec), 'foo@1')
     t.equal(
-      String(add.get(wsId('@s+bar-global-ws'))?.get('@s/bar')?.spec),
+      String(add.get(wsId('@s+bar-ws'))?.get('@s/bar')?.spec),
       '@s/bar@latest',
       'bare name gets the default tag',
     )
     t.strictSame(
       importers,
-      new Set([wsId('foo-global-ws'), wsId('@s+bar-global-ws')]),
+      new Set([wsId('foo-ws'), wsId('@s+bar-ws')]),
     )
     t.strictSame(resets, [root], 'options reset once')
 
@@ -174,7 +171,7 @@ t.test('parseGlobalAddArgs', async t => {
     t.strictSame(res.created, [])
     t.strictSame(again.resets, [], 'no reset')
     t.equal(
-      String(res.add.get(wsId('foo-global-ws'))?.get('foo')?.spec),
+      String(res.add.get(wsId('foo-ws'))?.get('foo')?.spec),
       'foo@2',
     )
   })
@@ -207,7 +204,7 @@ t.test('parseGlobalAddArgs', async t => {
     t.equal(calls.length, 1)
     t.equal(calls[0]?.[1].from, process.cwd())
     t.equal(calls[0]?.[0].type, 'file')
-    const spec = add.get(wsId('tool-global-ws'))?.get('tool')?.spec
+    const spec = add.get(wsId('tool-ws'))?.get('tool')?.spec
     t.equal(spec?.name, 'tool')
     t.equal(spec?.type, 'file')
     t.equal(resolve(String(spec?.file)), resolve(cwd, 'tool'))
@@ -224,12 +221,9 @@ t.test('parseGlobalAddArgs', async t => {
       async () => ({ name: 'b' }),
     )
     const { add } = await parseGlobalAddArgs(conf)
+    t.equal(add.get(wsId('abs-ws'))?.get('abs')?.spec.type, 'file')
     t.equal(
-      add.get(wsId('abs-global-ws'))?.get('abs')?.spec.type,
-      'file',
-    )
-    t.equal(
-      String(add.get(wsId('b-global-ws'))?.get('b')?.spec),
+      String(add.get(wsId('b-ws'))?.get('b')?.spec),
       'b@github:a/b',
     )
   })
@@ -251,16 +245,16 @@ t.test('parseGlobalAddArgs', async t => {
     await t.rejects(parseGlobalAddArgs(conf), {
       message: /Invalid package name/,
     })
-    t.notOk(existsSync(resolve(root, '../evil-global-ws')))
+    t.notOk(existsSync(resolve(root, '../evil-ws')))
   })
 
   t.test('name differs only in case', async t => {
     const root = t.testdir({
       packages: {
-        'Foo-global-ws': { 'package.json': '{}' },
-        '@S+bar-global-ws': { 'package.json': '{}' },
-        'baz-global-ws': { 'package.json': '{}' },
-        'Baz-global-ws': { 'package.json': '{}' },
+        'Foo-ws': { 'package.json': '{}' },
+        '@S+bar-ws': { 'package.json': '{}' },
+        'baz-ws': { 'package.json': '{}' },
+        'Baz-ws': { 'package.json': '{}' },
       },
     })
     await t.rejects(
@@ -284,15 +278,15 @@ t.test('parseGlobalAddArgs', async t => {
     const root = t.testdir({ packages: {} })
     const { conf } = mockConf(root, ['foo', 'nope:bar@1'])
     await t.rejects(parseGlobalAddArgs(conf))
-    t.notOk(existsSync(resolve(root, 'packages/foo-global-ws')))
+    t.notOk(existsSync(resolve(root, 'packages/foo-ws')))
   })
 })
 
 t.test('parseGlobalRemoveArgs', async t => {
   const root = t.testdir({
     packages: {
-      'foo-global-ws': { 'package.json': '{}' },
-      '@s+bar-global-ws': { 'package.json': '{}' },
+      'foo-ws': { 'package.json': '{}' },
+      '@s+bar-ws': { 'package.json': '{}' },
     },
   })
   const { remove, dirs } = parseGlobalRemoveArgs(
@@ -302,13 +296,13 @@ t.test('parseGlobalRemoveArgs', async t => {
   t.strictSame(
     remove,
     new Map([
-      [wsId('foo-global-ws'), new Set(['foo'])],
-      [wsId('@s+bar-global-ws'), new Set(['@s/bar'])],
+      [wsId('foo-ws'), new Set(['foo'])],
+      [wsId('@s+bar-ws'), new Set(['@s/bar'])],
     ]),
   )
   t.strictSame(dirs, [
-    resolve(root, 'packages/foo-global-ws'),
-    resolve(root, 'packages/@s+bar-global-ws'),
+    resolve(root, 'packages/foo-ws'),
+    resolve(root, 'packages/@s+bar-ws'),
   ])
   t.throws(() => parseGlobalRemoveArgs(mockConf(root, []).conf), {
     message: 'Missing package name(s) to uninstall',
@@ -392,17 +386,17 @@ t.test('linkGlobalBins', async t => {
         // stale bin of a targeted ws
         old: t.fixture(
           'symlink',
-          '../packages/a-global-ws/node_modules/a/old.js',
+          '../packages/a-ws/node_modules/a/old.js',
         ),
         // bin owned by another ws
         other: t.fixture(
           'symlink',
-          '../packages/c-global-ws/node_modules/c/c.js',
+          '../packages/c-ws/node_modules/c/c.js',
         ),
         // name taken by another ws
         dup: t.fixture(
           'symlink',
-          '../packages/c-global-ws/node_modules/c/dup.js',
+          '../packages/c-ws/node_modules/c/dup.js',
         ),
         // foreign file
         foreign: 'not a link',
@@ -410,12 +404,12 @@ t.test('linkGlobalBins', async t => {
       packages: {},
     })
     const graph = mockGraph(root, {
-      'b-global-ws': {
+      'b-ws': {
         b: { bins: { b: 'b.js', foreign: 'f.js' } },
         none: {},
         missing: undefined,
       },
-      'a-global-ws': {
+      'a-ws': {
         a: {
           bins: {
             a: './bin/a.js',
@@ -428,12 +422,12 @@ t.test('linkGlobalBins', async t => {
           },
         },
       },
-      'c-global-ws': { c: { bins: { other: 'c.js' } } },
+      'c-ws': { c: { bins: { other: 'c.js' } } },
     })
     const res = await linkGlobalBins(
       graph,
       opts(root),
-      new Set([wsId('a-global-ws'), wsId('b-global-ws')]),
+      new Set([wsId('a-ws'), wsId('b-ws')]),
     )
     t.strictSame(res, {
       binDir: resolve(root, 'bin'),
@@ -443,20 +437,17 @@ t.test('linkGlobalBins', async t => {
     })
     t.equal(
       linkTarget(root, 'a'),
-      target(root, 'a-global-ws', 'a', 'bin/a.js'),
+      target(root, 'a-ws', 'a', 'bin/a.js'),
     )
-    t.equal(
-      linkTarget(root, 'b'),
-      target(root, 'b-global-ws', 'b', 'b.js'),
-    )
+    t.equal(linkTarget(root, 'b'), target(root, 'b-ws', 'b', 'b.js'))
     t.equal(
       linkTarget(root, 'other'),
-      target(root, 'c-global-ws', 'c', 'c.js'),
+      target(root, 'c-ws', 'c', 'c.js'),
       'not targeted, untouched',
     )
     t.equal(
       linkTarget(root, 'dup'),
-      target(root, 'c-global-ws', 'c', 'dup.js'),
+      target(root, 'c-ws', 'c', 'dup.js'),
       'conflict untouched',
     )
     t.equal(
@@ -469,14 +460,10 @@ t.test('linkGlobalBins', async t => {
     t.equal(removers[0]?.rolledBack, false)
 
     // replacing an owned link
-    await linkGlobalBins(
-      graph,
-      opts(root),
-      new Set([wsId('a-global-ws')]),
-    )
+    await linkGlobalBins(graph, opts(root), new Set([wsId('a-ws')]))
     t.equal(
       linkTarget(root, 'a'),
-      target(root, 'a-global-ws', 'a', 'bin/a.js'),
+      target(root, 'a-ws', 'a', 'bin/a.js'),
     )
   })
 
@@ -486,28 +473,28 @@ t.test('linkGlobalBins', async t => {
       bin: {
         dup: t.fixture(
           'symlink',
-          '../packages/c-global-ws/node_modules/c/dup.js',
+          '../packages/c-ws/node_modules/c/dup.js',
         ),
         foreign: 'not a link',
       },
     })
     const graph = mockGraph(root, {
-      'a-global-ws': {
+      'a-ws': {
         a: { bins: { dup: 'dup.js', foreign: 'f.js' } },
       },
-      'b-global-ws': { b: { bins: { dup: 'dup.js' } } },
+      'b-ws': { b: { bins: { dup: 'dup.js' } } },
     })
     const res = await linkGlobalBins(graph, opts(root, true))
     t.strictSame(res.bins, ['dup', 'foreign'])
     t.strictSame(res.conflicts, [])
     t.equal(
       linkTarget(root, 'dup'),
-      target(root, 'b-global-ws', 'b', 'dup.js'),
+      target(root, 'b-ws', 'b', 'dup.js'),
       'last one wins',
     )
     t.equal(
       linkTarget(root, 'foreign'),
-      target(root, 'a-global-ws', 'a', 'f.js'),
+      target(root, 'a-ws', 'a', 'f.js'),
     )
   })
 
@@ -518,24 +505,24 @@ t.test('linkGlobalBins', async t => {
         // owned by c, which is relinked first now
         dup: t.fixture(
           'symlink',
-          '../packages/c-global-ws/node_modules/c/dup.js',
+          '../packages/c-ws/node_modules/c/dup.js',
         ),
         gone: t.fixture(
           'symlink',
-          '../packages/gone-global-ws/node_modules/gone/x.js',
+          '../packages/gone-ws/node_modules/gone/x.js',
         ),
       },
     })
     const graph = mockGraph(root, {
-      'c-global-ws': { c: { bins: { dup: 'dup.js', c: 'c.js' } } },
-      'a-global-ws': { a: { bins: { dup: 'dup.js' } } },
+      'c-ws': { c: { bins: { dup: 'dup.js', c: 'c.js' } } },
+      'a-ws': { a: { bins: { dup: 'dup.js' } } },
     })
     const res = await linkGlobalBins(graph, opts(root))
     t.strictSame(res.bins, ['c', 'dup'])
     t.strictSame(res.conflicts, ['dup'])
     t.equal(
       linkTarget(root, 'dup'),
-      target(root, 'a-global-ws', 'a', 'dup.js'),
+      target(root, 'a-ws', 'a', 'dup.js'),
       'sorted by ws path, first wins',
     )
     t.notOk(existsSync(resolve(root, 'bin/gone')))
@@ -559,13 +546,13 @@ t.test('linkGlobalBins', async t => {
     const root = t.testdir({
       bin: { 'taken.ps1': 'foreign' },
       packages: {
-        'a-global-ws': {
+        'a-ws': {
           node_modules: { a: { 'a.js': '', 't.js': '' } },
         },
       },
     })
     const graph = mockGraph(root, {
-      'a-global-ws': {
+      'a-ws': {
         a: { bins: { a: 'a.js', taken: 't.js', missing: 'm.js' } },
       },
     })
@@ -573,10 +560,7 @@ t.test('linkGlobalBins', async t => {
     t.strictSame(res.bins, ['a'], 'missing target not linked')
     t.strictSame(res.conflicts, ['taken'])
     t.strictSame(shims, [
-      [
-        target(root, 'a-global-ws', 'a', 'a.js'),
-        resolve(root, 'bin/a'),
-      ],
+      [target(root, 'a-ws', 'a', 'a.js'), resolve(root, 'bin/a')],
     ])
   })
 
@@ -603,17 +587,17 @@ t.test('unlinkGlobalBins', async t => {
     t.intercept(process, 'platform', { value: 'win32' })
     const root = t.testdir({
       bin: {
-        b: t.fixture('symlink', '../packages/a-global-ws/b.js'),
+        b: t.fixture('symlink', '../packages/a-ws/b.js'),
         'b.cmd': 'shim',
         'b.ps1': 'shim',
         'b.pwsh': 'shim',
-        a: t.fixture('symlink', '../packages/a-global-ws/a.js'),
+        a: t.fixture('symlink', '../packages/a-ws/a.js'),
         other: t.fixture('symlink', '../elsewhere/x.js'),
         'packages.cmd': 'not a shim',
       },
     })
     const removed = await unlinkGlobalBins(resolve(root, 'bin'), [
-      resolve(root, 'packages/a-global-ws'),
+      resolve(root, 'packages/a-ws'),
     ])
     t.strictSame(removed, ['a', 'b'])
     for (const f of ['a', 'b', 'b.cmd', 'b.ps1', 'b.pwsh']) {
@@ -628,23 +612,23 @@ t.test('removeGlobalWorkspaces / removeGlobalPackages', async t => {
   posix(t)
   const root = t.testdir({
     bin: {
-      a: t.fixture('symlink', '../packages/a-global-ws/a.js'),
-      b: t.fixture('symlink', '../packages/b-global-ws/b.js'),
+      a: t.fixture('symlink', '../packages/a-ws/a.js'),
+      b: t.fixture('symlink', '../packages/b-ws/b.js'),
     },
     packages: {
-      'a-global-ws': { 'package.json': '{}' },
-      'b-global-ws': { 'package.json': '{}' },
-      'c-global-ws': { 'package.json': '{}' },
+      'a-ws': { 'package.json': '{}' },
+      'b-ws': { 'package.json': '{}' },
+      'c-ws': { 'package.json': '{}' },
     },
   })
   const ws = (d: string) => resolve(root, 'packages', d)
-  await removeGlobalPackages(root, [ws('a-global-ws')])
-  t.notOk(existsSync(ws('a-global-ws')))
+  await removeGlobalPackages(root, [ws('a-ws')])
+  t.notOk(existsSync(ws('a-ws')))
   t.throws(() => lstatSync(resolve(root, 'bin/a')))
   t.ok(lstatSync(resolve(root, 'bin/b')).isSymbolicLink())
-  await removeGlobalWorkspaces([ws('b-global-ws'), ws('c-global-ws')])
-  t.notOk(existsSync(ws('b-global-ws')))
-  t.notOk(existsSync(ws('c-global-ws')))
+  await removeGlobalWorkspaces([ws('b-ws'), ws('c-ws')])
+  t.notOk(existsSync(ws('b-ws')))
+  t.notOk(existsSync(ws('c-ws')))
 })
 
 t.test('isInPath', async t => {

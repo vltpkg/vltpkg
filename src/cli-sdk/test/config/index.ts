@@ -1984,8 +1984,8 @@ t.test('--global', async t => {
       },
       g: {
         packages: {
-          'x-global-ws': {
-            'package.json': JSON.stringify({ name: 'x-global-ws' }),
+          'x-ws': {
+            'package.json': JSON.stringify({ name: 'x-ws' }),
           },
         },
       },
@@ -2036,7 +2036,7 @@ t.test('--global', async t => {
       { workspaces: 'packages/*' },
     )
     t.ok(existsSync(resolve(g, 'package.json')))
-    t.ok(conf.options.monorepo?.get('x-global-ws'), 'global monorepo')
+    t.ok(conf.options.monorepo?.get('x-ws'), 'global monorepo')
     t.equal(process.env.VLT_GLOBAL, undefined, 'not passed on')
     t.equal(process.env.VLT_GLOBAL_DIR, g)
   })

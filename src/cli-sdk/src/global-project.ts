@@ -30,13 +30,13 @@ export const assertGlobalName = (name: string): void => {
   }
 }
 
-/** `eslint` -> `eslint-global-ws` */
+/** `eslint` -> `eslint-ws` */
 export const globalWorkspaceName = (name: string): string => {
   assertGlobalName(name)
-  return `${name}-global-ws`
+  return `${name}-ws`
 }
 
-/** `eslint` -> `packages/eslint-global-ws`, `@s/p` -> `packages/@s+p-global-ws` */
+/** `eslint` -> `packages/eslint-ws`, `@s/p` -> `packages/@s+p-ws` */
 export const globalWorkspacePath = (name: string): string =>
   `${globalWorkspacesDir}/${globalWorkspaceName(name).replace('/', '+')}`
 
