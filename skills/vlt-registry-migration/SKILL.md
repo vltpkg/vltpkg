@@ -12,7 +12,7 @@ description:
 
 # Migrate a repository to the vlt registry
 
-Docs index: [llms.txt](https://docs.vlt.sh/llms.txt). Every docs page
+Docs index: [llms.txt](https://docs.vlt.io/llms.txt). Every docs page
 is Markdown at its URL + `.md`; read the linked page before editing
 config. Examples use the account slug `acme`; replace it with the
 user's.
@@ -42,8 +42,8 @@ Each account has two registries:
 - `https://registry.vlt.io/acme/main/`: the account's own packages.
   Map the scope to it.
 
-Accounts ([sign up](https://docs.vlt.sh/registry.md#sign-up),
-[tokens](https://docs.vlt.sh/registry/tokens.md#personal-and-service-tokens)):
+Accounts ([sign up](https://docs.vlt.io/registry.md#sign-up),
+[tokens](https://docs.vlt.io/registry/tokens.md#personal-and-service-tokens)):
 invite each developer, who logs in (or creates a personal token). CI,
 Vercel and each agent sandbox get their own `package:read` service
 token, created by an owner or admin (add `package:write` only to
@@ -61,12 +61,12 @@ Commit the routing (auth is step 4):
 | vlt             | `vlt.json`    | `registry` + `registries.npm` | `scoped-registries` `"@acme"`      |
 
 Full config:
-[vlt](https://docs.vlt.sh/registry/publishing/vlt.md#manual-configuration),
-[npm](https://docs.vlt.sh/registry/publishing/npm.md#the-config-file),
-[pnpm](https://docs.vlt.sh/registry/publishing/pnpm.md#the-config-file),
-[yarn](https://docs.vlt.sh/registry/publishing/yarn.md#the-config-file),
-[bun](https://docs.vlt.sh/registry/publishing/bun.md#quick-start),
-[deno](https://docs.vlt.sh/registry/publishing/deno.md#quick-start).
+[vlt](https://docs.vlt.io/registry/publishing/vlt.md#manual-configuration),
+[npm](https://docs.vlt.io/registry/publishing/npm.md#the-config-file),
+[pnpm](https://docs.vlt.io/registry/publishing/pnpm.md#the-config-file),
+[yarn](https://docs.vlt.io/registry/publishing/yarn.md#the-config-file),
+[bun](https://docs.vlt.io/registry/publishing/bun.md#quick-start),
+[deno](https://docs.vlt.io/registry/publishing/deno.md#quick-start).
 
 - yarn: `npmScopes` keys drop the `@`; Classic 1.x uses `.npmrc`.
 - vlt: write `vlt.json` with `vlt config set` (vlt guide).
@@ -114,7 +114,7 @@ alone sends no credentials.
   `npmAlwaysAuth: true`). npm, bun and deno send an unset var
   literally, which fails like a bad token.
 - pnpm: commit routing only. In CI use one of
-  ([pnpm in CI](https://docs.vlt.sh/registry/publishing/ci.md#pnpm-needs-a-different-approach)):
+  ([pnpm in CI](https://docs.vlt.io/registry/publishing/ci.md#pnpm-needs-a-different-approach)):
   - `env "pnpm_config_//registry.vlt.io/acme/npm/:_authToken=$VLT_TOKEN" pnpm install --frozen-lockfile`
     (pnpm 11.6.0+; one var per registry URL);
   - a step appending
@@ -126,26 +126,26 @@ alone sends no credentials.
   `VLT_TOKEN_<registry URL, trailing / dropped, each run of non-alphanumerics → _>`,
   e.g. `VLT_TOKEN_https_registry_vlt_io_acme_npm` and
   `VLT_TOKEN_https_registry_vlt_io_acme_main`. See
-  [Authentication](https://docs.vlt.sh/client/auth.md#ci-and-other-headless-environments).
+  [Authentication](https://docs.vlt.io/client/auth.md#ci-and-other-headless-environments).
 
 ## 5. CI and hosted environments
 
 Details:
-[CI & automation](https://docs.vlt.sh/registry/publishing/ci.md#who-reads-what).
+[CI & automation](https://docs.vlt.io/registry/publishing/ci.md#who-reads-what).
 
-- [GitHub Actions](https://docs.vlt.sh/registry/publishing/ci.md#github-actions):
+- [GitHub Actions](https://docs.vlt.io/registry/publishing/ci.md#github-actions):
   secret `VLT_TOKEN` in the job `env` (plus pnpm / vlt auth from step
   4); install with the frozen-lockfile flag.
-- [Vercel](https://docs.vlt.sh/registry/publishing/ci.md#vercel):
+- [Vercel](https://docs.vlt.io/registry/publishing/ci.md#vercel):
   ignores `VLT_TOKEN`. Set `NPM_RC` (not `NPM_TOKEN`) to the routing
   and auth lines with a `package:read` service token, and keep a
   `registry.npmjs.org` line: Vercel installs its runtimes from it. Set
   multi-line values with the Vercel CLI.
-- [Coding-agent sandboxes](https://docs.vlt.sh/registry/publishing/ci.md#coding-agent-sandboxes)
+- [Coding-agent sandboxes](https://docs.vlt.io/registry/publishing/ci.md#coding-agent-sandboxes)
   (Cursor, Claude Code, Devin, Codespaces, …): treat each like a CI
   runner. Own service token in that environment's secrets, committed
   routing, auth for both registry URLs as in step 4.
-- [Publishing from CI](https://docs.vlt.sh/registry/publishing/ci.md#publishing-from-ci):
+- [Publishing from CI](https://docs.vlt.io/registry/publishing/ci.md#publishing-from-ci):
   service token with `package:write`; a personal token fails with
   `EOTP`.
 
@@ -177,4 +177,4 @@ Details:
 | `401` / `No authorization header was set`                   | token not reaching the tool (step 4): pnpm `${VLT_TOKEN}` in a project `.npmrc`, or secret unset in that job             |
 | `EOTP` when publishing from CI                              | personal token; use a service token                                                                                      |
 | vlt still fetches from `registry.npmjs.org`                 | kept `vlt-lock.json` (step 3)                                                                                            |
-| pnpm 12 `no version found for the latest tag` on the mirror | mirror bug on pnpm 12: [pnpm guide](https://docs.vlt.sh/registry/publishing/pnpm.md) pins `pnpm@11.26.0` (confirm first) |
+| pnpm 12 `no version found for the latest tag` on the mirror | mirror bug on pnpm 12: [pnpm guide](https://docs.vlt.io/registry/publishing/pnpm.md) pins `pnpm@11.26.0` (confirm first) |
