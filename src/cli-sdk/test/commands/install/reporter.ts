@@ -227,6 +227,41 @@ t.test('allow-skills saved or kept', async t => {
   }
 })
 
+t.test('allow-scripts saved or kept', async t => {
+  const done = async (r: Partial<InstallResult>) => {
+    const rep = reporter()
+    rep.start()
+    await rep.done(r as InstallResult, { time: 1 })
+    await setTimeout(50)
+    const res = out
+    rep.error(new Error('x'))
+    return res
+  }
+  t.match(
+    await done({
+      allowSkills: { query: '#s' },
+      allowScripts: { query: '#foo' },
+    }),
+    'Saved allow-skills="#s" to vlt.json\nSaved allow-scripts="#foo" to vlt.json',
+  )
+  for (const [which, label] of [
+    ['project', 'vlt.json'],
+    ['user', 'user vlt.json'],
+  ] as const) {
+    const kept = await done({
+      allowScripts: {
+        query: '#foo',
+        stored: { query: '#bar', which },
+      },
+    })
+    t.match(
+      kept,
+      `allow-scripts is already set (${label}): "#bar"; not replaced. Run vlt build to change it, or edit ${label}`,
+    )
+    t.notMatch(kept, 'Saved')
+  }
+})
+
 t.test('no start, no persisted config', async t => {
   const r = reporter()
   t.equal(await r.done({} as InstallResult, { time: 1 }), undefined)

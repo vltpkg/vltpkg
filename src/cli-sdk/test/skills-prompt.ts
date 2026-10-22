@@ -62,6 +62,7 @@ t.test('editQuery', async t => {
   const edit = async (keys: string, current?: string) => {
     const { input, output, out, type } = io()
     const p = editQuery({
+      key: 'allow-skills',
       input,
       output,
       prefill: ':not(:malware)',
@@ -98,6 +99,50 @@ t.test('editQuery', async t => {
     'padded intro and current query',
   )
 
+  t.test('allow-scripts', async t => {
+    const { input, output, out, type } = io()
+    const p = editQuery({
+      key: 'allow-scripts',
+      input,
+      output,
+      current: '#a',
+      prefill: '#a, #b',
+      check: ok,
+    })
+    await type('New allow-scripts: ', '\n')
+    t.equal(await p, '#a, #b')
+    t.ok(
+      out().startsWith(
+        '\n⚠️ The new allow-scripts replaces the current one. Make sure it still\n' +
+          "selects every package you trust: packages it no longer selects won't\n" +
+          'run their scripts on install.\n\n' +
+          'Current allow-scripts: #a\n',
+      ),
+      'no unbuild warning',
+    )
+  })
+
+  t.test('allow-scripts, nothing stored', async t => {
+    const { input, output, out, type } = io()
+    const p = editQuery({
+      key: 'allow-scripts',
+      input,
+      output,
+      prefill: '#a',
+      check: ok,
+    })
+    await type('New allow-scripts: ', '\n')
+    t.equal(await p, '#a')
+    t.ok(
+      out().startsWith(
+        '\n⚠️ The answer is saved as allow-scripts: installs run the scripts\n' +
+          'of every package it selects. Select only packages you trust.\n\n',
+      ),
+      'save warning',
+    )
+    t.notMatch(out(), 'replaces the current one')
+  })
+
   t.test('colors', async t => {
     const { editQuery } = await t.mockImport<
       typeof import('../src/skills-prompt.ts')
@@ -109,6 +154,7 @@ t.test('editQuery', async t => {
     })
     const { input, output, out, type } = io()
     const p = editQuery({
+      key: 'allow-skills',
       input,
       output,
       current: 'S',
@@ -123,7 +169,13 @@ t.test('editQuery', async t => {
 
   t.test('closed input', async t => {
     const { input, output } = io()
-    const p = editQuery({ input, output, prefill: 'x', check: ok })
+    const p = editQuery({
+      key: 'allow-skills',
+      input,
+      output,
+      prefill: 'x',
+      check: ok,
+    })
     input.end()
     t.equal(await p, undefined)
   })
@@ -132,6 +184,7 @@ t.test('editQuery', async t => {
     const { input, output, type } = io()
     const checked: string[] = []
     const p = editQuery({
+      key: 'allow-skills',
       input,
       output,
       prefill: 'p',
@@ -149,6 +202,7 @@ t.test('editQuery', async t => {
   t.test('input closed while checking', async t => {
     const { input, output, type } = io()
     const p = editQuery({
+      key: 'allow-skills',
       input,
       output,
       prefill: 'p',
@@ -187,6 +241,7 @@ t.test('default streams', async t => {
   // tap writes to stdout too: restore before asserting
   const written = t.capture(process.stdout, 'write', () => true)
   const edited = await editQuery({
+    key: 'allow-skills',
     current: 'S',
     prefill: 'p',
     check: async () => {},

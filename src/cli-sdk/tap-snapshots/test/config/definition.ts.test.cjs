@@ -85,7 +85,10 @@ Object {
   },
   "allow-scripts": Object {
     "description": String(
-      Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.  
+      Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.
+      
+      \`vlt install\` and \`vlt update\` save \`--allow-scripts=<query>\` to the project \`vlt.json\`; \`vlt build [<query>]\` sets, saves and applies it.
+      
       Example: --allow-scripts=":root > *, #my-package" Runs scripts only for direct dependencies of the current project and any occurrences of a specific dependency with the name "my-package" anywhere in the dependency graph.
     ),
     "hint": "query",
@@ -156,7 +159,7 @@ Object {
     "type": "boolean",
   },
   "config": Object {
-    "description": "Specify which configuration to show or operate on when running \`vlt config\` commands, and which file \`vlt skills link\` saves \`allow-skills\` to. For read operations (get, pick, list): \`all\` shows merged configuration from both user and project files (default). For write operations (set, delete, edit): defaults to \`project\`. \`user\` shows/modifies only user-level configuration, \`project\` shows/modifies only project-level configuration.",
+    "description": "Specify which configuration to show or operate on when running \`vlt config\` commands, and which file \`vlt skills link\` saves \`allow-skills\` to and \`vlt build\` saves \`allow-scripts\` to. For read operations (get, pick, list): \`all\` shows merged configuration from both user and project files (default). For write operations (set, delete, edit): defaults to \`project\`. \`user\` shows/modifies only user-level configuration, \`project\` shows/modifies only project-level configuration.",
     "hint": "all | user | project",
     "type": "string",
     "validOptions": Array [

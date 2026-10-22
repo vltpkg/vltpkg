@@ -22,7 +22,7 @@ type State = {
   confirms: (boolean | undefined)[]
   answers: (string | undefined)[]
   questions: string[]
-  editors: Pick<EditQueryOptions, 'current' | 'prefill'>[]
+  editors: Pick<EditQueryOptions, 'key' | 'current' | 'prefill'>[]
   writes: [string, unknown][]
   asserts: unknown[][]
   invalid: string[]
@@ -278,7 +278,9 @@ t.test('link: set, save and apply allow-skills', async t => {
     st.confirms = [true]
     st.answers = ['#b']
     const y = await link(['#a'], { project })
-    t.strictSame(y.editors, [{ current: S, prefill: '#a' }])
+    t.strictSame(y.editors, [
+      { key: 'allow-skills', current: S, prefill: '#a' },
+    ])
     t.strictSame(y.linked, ['#b'])
     t.strictSame(y.writes, saved('#b'))
     t.equal(st.asserts.at(-1)?.[0], '#b', 'editor checks the answer')
@@ -314,7 +316,9 @@ t.test('link: set, save and apply allow-skills', async t => {
     st.answers = ['#b']
     const y = await link([], { project })
     t.strictSame(y.questions, [editQ])
-    t.strictSame(y.editors, [{ current: S, prefill: S }])
+    t.strictSame(y.editors, [
+      { key: 'allow-skills', current: S, prefill: S },
+    ])
     t.strictSame(y.linked, ['#b'])
     t.strictSame(y.writes, saved('#b'))
 
@@ -348,7 +352,9 @@ t.test('link: set, save and apply allow-skills', async t => {
     st.tty = true
     st.answers = [':not(:malware)', undefined]
     const r = await link([])
-    t.strictSame(r.editors, [{ prefill: ':not(:malware)' }])
+    t.strictSame(r.editors, [
+      { key: 'allow-skills', prefill: ':not(:malware)' },
+    ])
     t.notOk('current' in r.editors[0]!, 'nothing stored: no current')
     t.strictSame(r.linked, [':not(:malware)'])
     t.strictSame(r.writes, saved(':not(:malware)'))
