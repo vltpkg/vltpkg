@@ -312,6 +312,15 @@ t.test('cycle', async t => {
     }),
     'should print cycle mermaid output',
   )
+  t.equal(
+    mermaidOutput({
+      edges: [...b.edgesIn],
+      importers: graph.importers,
+      nodes: [b],
+    }),
+    'flowchart TD\na("root:my-project")\na -->|"a#64;^1.0.0"| b("npm:a#64;1.0.0")\nb -->|"b#64;^1.0.0"| c("npm:b#64;1.0.0")\nc -->|"a#64;^1.0.0"| b',
+    'select a node in a cycle',
+  )
 })
 
 t.test(
@@ -471,5 +480,59 @@ t.test('children', async t => {
     }),
     'classDef b',
     'no children, no class',
+  )
+})
+
+t.test('every path to selected nodes', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {
+      name: 'repro',
+      version: '1.0.0',
+      dependencies: { 'agent-base': '7.1.2', debug: '4.4.3' },
+    },
+  })
+  const agentBase = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('agent-base', '7.1.2'),
+    { name: 'agent-base', version: '7.1.2' },
+  )
+  const debug = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('debug', '4.4.3'),
+    { name: 'debug', version: '4.4.3' },
+  )
+  if (!agentBase || !debug) throw new Error('failed to place')
+  graph.addEdge(
+    'prod',
+    Spec.parse('debug', '^4.3.4'),
+    agentBase,
+    debug,
+  )
+  const ms = graph.placePackage(
+    debug,
+    'prod',
+    Spec.parse('ms', '^2.1.3'),
+    { name: 'ms', version: '2.1.3' },
+  )
+  if (!ms) throw new Error('failed to place ms')
+  t.equal(
+    mermaidOutput({
+      edges: [...ms.edgesIn],
+      importers: graph.importers,
+      nodes: [ms],
+      highlightSelection: true,
+    }),
+    `flowchart TD
+a("root:repro")
+a -->|"agent-base#64;7.1.2"| b("npm:agent-base#64;7.1.2")
+b -->|"debug#64;^4.3.4"| c("npm:debug#64;4.4.3")
+c -->|"ms#64;^2.1.3"| d("npm:ms#64;2.1.3"):::a
+a -->|"debug#64;4.4.3"| c
+classDef a fill:gold,color:#242424`,
+    'draws both paths to ms',
   )
 })

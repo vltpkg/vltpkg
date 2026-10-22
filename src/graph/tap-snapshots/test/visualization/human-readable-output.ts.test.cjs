@@ -17,7 +17,8 @@ exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colo
 ├── extraneous@1.0.0
 ├── foo@1.0.0
 ├── link (linked@1.0.0)
-└── missing@^1.0.0 [31m(missing)[39m
+├── missing@^1.0.0 [31m(missing)[39m
+└── workspace-a@1.0.0
 workspace-b
 workspace-a
 ├── foo@1.0.0
@@ -45,7 +46,8 @@ my-project
 ├── extraneous@1.0.0
 ├── foo@1.0.0
 ├── link (linked@1.0.0)
-└── missing@^1.0.0 (missing)
+├── missing@^1.0.0 (missing)
+└── workspace-a@1.0.0
 workspace-b
 workspace-a
 ├── foo@1.0.0

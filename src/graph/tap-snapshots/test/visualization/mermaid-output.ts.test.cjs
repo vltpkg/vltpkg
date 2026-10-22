@@ -81,7 +81,8 @@ a -->|"a#64;workspace:*"| c("workspace:a")
 
 exports[`test/visualization/mermaid-output.ts > TAP > workspaces with dependencies > select only which package > should exclude workspace b when only which is selected 1`] = `
 flowchart TD
-c("workspace:a")
+a("root:test-workspaces")
+a -->|"a#64;workspace:*"| c("workspace:a")
 c -->|"which#64;^6.0.0"| d("npm:which#64;6.0.0")
 `
 
