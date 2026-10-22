@@ -400,6 +400,47 @@ t.test('reify with a bin', async t => {
   )
 })
 
+t.test('reify runs relinkBins actions', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { abbrev: '2.0.0' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const common = () => ({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    remover: new RollbackRemove(),
+  })
+  let relinked = false
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    '../../src/reify/relink-bins.ts': {
+      relinkBins: () => [
+        async () => {
+          relinked = true
+        },
+      ],
+    },
+  })
+  const graph = await ideal.build(common())
+  await reify({ ...common(), graph, allowScripts: ':not(*)' })
+  t.equal(relinked, true)
+})
+
 t.test('failure rolls back', async t => {
   const dir = t.testdir({
     cache: {},

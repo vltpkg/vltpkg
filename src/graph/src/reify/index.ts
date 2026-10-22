@@ -22,6 +22,7 @@ import { addEdges } from './add-edges.ts'
 import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
+import { relinkBins } from './relink-bins.ts'
 import {
   carryBuildState,
   checkNeededBuild,
@@ -211,6 +212,10 @@ const reify_ = async (
   // create all node_modules symlinks, and link bins to nm/.bin
   const edgeActions = addEdges(diff, scurry, remover)
   if (edgeActions.length) await callLimit(edgeActions, { limit })
+
+  // link bins that deleted edges removed but other deps still declare
+  const binActions = relinkBins(diff, scurry, remover)
+  if (binActions.length) await callLimit(binActions, { limit })
 
   await internalHoist(diff.to, options, remover)
 

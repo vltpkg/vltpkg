@@ -38,7 +38,8 @@ const { diff, buildQueue } = await reify({
    ones that are deprecated or can't install on this platform (and
    deps only they need; `vlt-lock.json` keeps them)
 3. Deletes outdated edges and their bin links
-4. Creates symlinks for new edges + bin links
+4. Creates symlinks for new edges + bin links, then relinks bins that
+   deleted edges removed but a remaining dependency declares
 5. Hoists internal links to `node_modules/.vlt/node_modules/`
 6. Runs lifecycle scripts (`install`, `prepare`) on allowed nodes
    (store links copied first)
@@ -63,6 +64,7 @@ type ReifyResult = {
 | `add-nodes.ts`                     | Extract packages to store    |
 | `add-edge.ts`                      | Create symlinks + bin links  |
 | `delete-edge.ts`                   | Remove symlinks + bin links  |
+| `relink-bins.ts`                   | Relink bins shared by deps   |
 | `internal-hoist.ts`                | Hoist preferred versions     |
 | `symlink-sync.ts`                  | Sync symlink + mkdir parent  |
 | `build.ts`                         | Run lifecycle scripts        |

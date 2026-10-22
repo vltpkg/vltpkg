@@ -2,7 +2,12 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { LoadQuery } from '@vltpkg/workspaces'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import {
+  existsSync,
+  lstatSync,
+  readdirSync,
+  readFileSync,
+} from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import t from 'tap'
@@ -13,7 +18,8 @@ import type { UninstallOptions } from '../src/uninstall.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
 import { mockPackageInfo as mockPackageInfoBase } from './fixtures/reify.ts'
-import type { PackageInfoClient } from '@vltpkg/package-info'
+import { PackageInfoClient } from '@vltpkg/package-info'
+import { readCmdShimIfExists } from '@vltpkg/cmd-shim'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -100,6 +106,116 @@ t.test('uninstall', async t => {
   t.ok(
     idealBuildReceivedActual,
     'should pass actual graph to idealBuild for manifest hydration',
+  )
+})
+
+t.test('uninstall with a bin shared by two dependencies', async t => {
+  const pkg = (name: string) => ({
+    'package.json': JSON.stringify({
+      name,
+      version: '1.0.0',
+      bin: { 'shared-tool': 'cli.js' },
+    }),
+    'cli.js': `#!/usr/bin/env node\nconsole.log('${name}')\n`,
+  })
+  const { install } = await import('../src/install.ts')
+  const { uninstall } = await t.mockImport<
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class {
+        async rm(path: string) {
+          await rm(path, { recursive: true, force: true })
+        }
+        confirm() {}
+        async rollback() {}
+      },
+    },
+  })
+  const remove = (name: string) =>
+    Object.assign(
+      new Map([[joinDepIDTuple(['file', '.']), new Set([name])]]),
+      { modifiedDependencies: true },
+    )
+  const setup = async (t: Test) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        dependencies: {
+          'bin-a': 'file:./packages/bin-a',
+          'bin-b': 'file:./packages/bin-b',
+        },
+      }),
+      'vlt.json': '{}',
+      packages: { 'bin-a': pkg('bin-a'), 'bin-b': pkg('bin-b') },
+    })
+    t.chdir(dir)
+    unload('project')
+    t.teardown(() => unload('project'))
+    const opts = (): UninstallOptions => ({
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: new PackageInfoClient(),
+      allowScripts: ':not(*)',
+    })
+    await install(opts())
+    const bin = resolve(dir, 'node_modules/.bin/shared-tool')
+    const target = await readCmdShimIfExists(bin)
+    const owner =
+      target === resolve(dir, 'node_modules/bin-a/cli.js') ? 'bin-a'
+      : 'bin-b'
+    const other = owner === 'bin-a' ? 'bin-b' : 'bin-a'
+    t.equal(target, resolve(dir, 'node_modules', owner, 'cli.js'))
+    return { dir, opts, bin, target, owner, other }
+  }
+
+  t.test('removing the other dependency keeps the bin', async t => {
+    const { dir, opts, bin, target, owner, other } = await setup(t)
+    const contents = readFileSync(bin, 'utf8')
+    await uninstall(opts(), remove(other))
+    t.notOk(existsSync(resolve(dir, 'node_modules', other)))
+    t.equal(
+      await readCmdShimIfExists(bin),
+      target,
+      "keeps the surviving dependency's bin link",
+    )
+    t.equal(
+      readFileSync(bin, 'utf8'),
+      contents,
+      'the surviving command is still available',
+    )
+    await install(opts())
+    t.equal(
+      await readCmdShimIfExists(bin),
+      target,
+      'a no-op install keeps the bin link',
+    )
+    await uninstall(opts(), remove(owner))
+    t.throws(
+      () => lstatSync(bin),
+      'removing the owner removes its bin',
+    )
+  })
+
+  t.test(
+    'removing the owner links the remaining dependency',
+    async t => {
+      const { dir, opts, bin, owner, other } = await setup(t)
+      await uninstall(opts(), remove(owner))
+      t.notOk(existsSync(resolve(dir, 'node_modules', owner)))
+      t.equal(
+        await readCmdShimIfExists(bin),
+        resolve(dir, 'node_modules', other, 'cli.js'),
+        'the bin now points to the remaining dependency',
+      )
+      await install(opts())
+      t.equal(
+        await readCmdShimIfExists(bin),
+        resolve(dir, 'node_modules', other, 'cli.js'),
+        'a no-op install keeps the bin link',
+      )
+    },
   )
 })
 
