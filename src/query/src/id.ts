@@ -1,5 +1,6 @@
 import { asIdentifierNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
+import type { NodeLike } from '@vltpkg/types'
 import type { ParserState } from './types.ts'
 
 /**
@@ -16,15 +17,20 @@ export const id = async (
   }
   /* c8 ignore stop */
 
-  // Filter out any edges and their linked
-  // nodes if they don't match the id value
+  // Filter out edges that don't match the id value and their
+  // nodes, unless a matching edge still links to them (aliases)
+  const unlinked = new Set<NodeLike>()
   for (const edge of state.partial.edges) {
     if (edge.name !== value) {
       state.partial.edges.delete(edge)
-      if (edge.to) {
-        state.partial.nodes.delete(edge.to)
-      }
+      if (edge.to) unlinked.add(edge.to)
     }
+  }
+  for (const edge of state.partial.edges) {
+    if (edge.to) unlinked.delete(edge.to)
+  }
+  for (const node of unlinked) {
+    state.partial.nodes.delete(node)
   }
 
   // Filter out importer nodes, this extra step is needed
