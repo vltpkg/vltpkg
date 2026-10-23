@@ -10,6 +10,7 @@ import {
   removeGlobalWorkspaces,
 } from '../global.ts'
 import type { GlobalBins } from '../global.ts'
+import { resolveGlobalBinDir } from '../global-bin-dir.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import { addTypesDeps } from '../save-types.ts'
@@ -251,6 +252,8 @@ export const command: CommandFn<InstallResult> = async conf => {
   if (conf.globalRoot) assertGlobalOptions(conf)
   // throws before any global ws dir is created
   const persist = planSpecConfigPersist(conf)
+  const binDir =
+    conf.globalRoot ? await resolveGlobalBinDir(conf) : undefined
   // before reading options, it may reset them
   const globalAdd =
     conf.globalRoot ? await parseGlobalAddArgs(conf) : undefined
@@ -271,7 +274,19 @@ export const command: CommandFn<InstallResult> = async conf => {
     : migrateWorkspaces(conf)
   const global =
     globalAdd &&
-    (await linkGlobalBins(graph, conf.options, globalAdd.importers))
+    binDir &&
+    (await linkGlobalBins(
+      graph,
+      {
+        projectRoot: conf.options.projectRoot,
+        scurry: conf.options.scurry,
+        force: conf.options.force,
+        binDir,
+        fallback: () =>
+          resolveGlobalBinDir(conf, { selfUnwritable: true }),
+      },
+      globalAdd.importers,
+    ))
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
   // nothing linked on --lockfile-only

@@ -2,7 +2,8 @@ import t from 'tap'
 
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { renameSync, rmSync, symlinkSync } from 'node:fs'
-import { join } from 'node:path'
+import * as path from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cmdShim } from '../src/index.ts'
 const {
@@ -110,6 +111,30 @@ t.test('read shims', async t => {
     testShbangSymlinkOnly,
     testShbangTarget,
   ])
+})
+
+t.test('win32 cross-drive shims, absolute target', async t => {
+  const abs = 'D:\\other\\x.js'
+  const { cmdShim: crossDrive } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    'node:path': t.createMock(path, {
+      relative: () => abs,
+      isAbsolute: (p: string) => p === abs || path.isAbsolute(p),
+    }),
+  })
+  const dir = t.testdir({
+    'sh.js': '#!/usr/bin/env node\ntrue',
+    'plain.js': '',
+  })
+  const want = resolve(dir, 'D:/other/x.js')
+  for (const from of ['sh.js', 'plain.js']) {
+    const to = join(dir, `${from}-shim`)
+    await crossDrive(join(dir, from), to, remover)
+    for (const f of [to + '.cmd', to + '.ps1', to]) {
+      t.equal(await readCmdShim(f), want, f)
+    }
+  }
 })
 
 t.test('errors', async t => {

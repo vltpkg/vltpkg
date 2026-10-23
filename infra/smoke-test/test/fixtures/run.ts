@@ -192,8 +192,8 @@ const spawnCommand = async (
         XDG_DATA_HOME: dirs.data,
         XDG_STATE_HOME: dirs.state,
         XDG_RUNTIME_DIR: dirs.runtime,
-        // PATH is only set to what the variant needs
-        PATH: variant.PATH ?? '',
+        // PATH is only set to what the variant (or test) needs
+        PATH: env?.PATH ?? variant.PATH ?? '',
       }
 
       if (tty) {

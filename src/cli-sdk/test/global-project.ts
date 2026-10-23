@@ -9,6 +9,7 @@ import {
   globalWorkspaceName,
   globalWorkspacePath,
   globalWorkspacesDir,
+  samePath,
 } from '../src/global-project.ts'
 
 t.test('constants', async t => {
@@ -18,6 +19,19 @@ t.test('constants', async t => {
   )
   t.equal(globalWorkspacesDir, 'packages')
   t.equal(globalBinDir('/g'), resolve('/g', 'bin'))
+})
+
+t.test('samePath', async t => {
+  t.test('linux', async t => {
+    t.intercept(process, 'platform', { value: 'linux' })
+    t.equal(samePath('/a/b', '/a/b/'), true)
+    t.equal(samePath('/a/b', '/a/B'), false)
+  })
+  t.test('win32', async t => {
+    t.intercept(process, 'platform', { value: 'win32' })
+    t.equal(samePath('/a/b', '/A/B/'), true)
+    t.equal(samePath('/a/b', '/a/c'), false)
+  })
 })
 
 t.test('names and paths', async t => {

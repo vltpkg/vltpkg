@@ -247,10 +247,11 @@ lang="bash" />
 
 ### Global options
 
-| Flag                  | Short | Description                                                                |
-| --------------------- | ----- | -------------------------------------------------------------------------- |
-| `--global`            | `-g`  | Install into the global project, see [Global installs](#global-installs)   |
-| `--global-dir=<path>` |       | Location of the global project (default: `vlt/global` in the XDG data dir) |
+| Flag                      | Short | Description                                                                |
+| ------------------------- | ----- | -------------------------------------------------------------------------- |
+| `--global`                | `-g`  | Install into the global project, see [Global installs](#global-installs)   |
+| `--global-dir=<path>`     |       | Location of the global project (default: `vlt/global` in the XDG data dir) |
+| `--global-bin-dir=<path>` |       | Where bins of global packages are linked (default: next to `vlt`)          |
 
 ## Global installs
 
@@ -271,13 +272,24 @@ Global packages live in a regular vlt project at `--global-dir`
   (`packages/@scope+name-ws` for scoped packages), with the package as
   its only dependency
 - the project has its own `vlt-lock.json` and `node_modules`
-- bins of global packages are linked into `<global-dir>/bin`, add that
-  folder to your `PATH` to run them
+- bins of global packages are linked next to `vlt` itself (the folder
+  your shell found `vlt` in), so they run right away. If that folder
+  isn't writable, vlt uses `~/.local/bin` when it's in your `PATH`
+  (not on Windows), else (or when `vlt` wasn't run from your `PATH`)
+  `<global-dir>/bin`, and prints the line that adds it to your `PATH`.
+  Set `--global-bin-dir` to pick the folder.
 
 The current project is never read or changed by a global install,
-including its `vlt.json`. `global` and `global-dir` can be set on the
-command line, via env (`VLT_GLOBAL`, `VLT_GLOBAL_DIR`) or in the user
-config.
+including its `vlt.json`. `global`, `global-dir` and `global-bin-dir`
+can be set on the command line, via env (`VLT_GLOBAL`,
+`VLT_GLOBAL_DIR`, `VLT_GLOBAL_BIN_DIR`) or in the user config.
+
+With Node.js from the nodejs.org macOS installer, `vlt` is in a
+root-owned `/usr/local/bin`, so bins usually go to
+`~/Library/Application Support/vlt/global/bin`. Use Node.js from
+Homebrew, nvm or fnm, or set `--global-bin-dir` to a folder in your
+`PATH`. A `--global-bin-dir` with spaces needs no escaping in the user
+config (quote it on the command line as usual).
 
 A package name with no version installs the `latest` dist-tag (or
 `--tag`), like `npm install -g`, so re-running it upgrades. Use a
@@ -304,11 +316,14 @@ $ vlt build -g
 $ vlt uninstall -g eslint`} title="Terminal" lang="bash" />
 
 Running `vlt install -g` with no packages re-installs the global
-project and re-links all bins.
+project and re-links all bins into the current bin folder, removing
+the ones vlt linked into folders it used before (e.g. under another
+Node.js version).
 
-A bin name already linked by another global package (or a file not
-created by vlt) is skipped with a warning. Use `--force` to overwrite
-it.
+A bin name already in the bin folder (linked by another global
+package, or a file not created by vlt) is skipped with a warning. Use
+`--force` to overwrite it. Outside `<global-dir>/bin`, `--force` only
+replaces links, never plain files or the running `vlt`.
 
 Like any install, scripts of global packages are not run, use
 `vlt build -g` to run them.

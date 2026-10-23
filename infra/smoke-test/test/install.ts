@@ -1,9 +1,16 @@
 import t from 'tap'
-import { runMultiple } from './fixtures/run.ts'
-import { existsSync, readFileSync } from 'node:fs'
+import { Artifacts, runMultiple } from './fixtures/run.ts'
+import {
+  chmodSync,
+  existsSync,
+  readFileSync,
+  realpathSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import { stripVTControlCharacters } from 'node:util'
 import { ansiToAnsi } from 'ansi-to-pre'
 
@@ -135,7 +142,15 @@ t.test('global install', async t => {
     ['install', '-g', 'semver'],
     {
       match: ['status'],
-      test: async ({ t, dirs, run }) => {
+      test: async ({ t, dirs, run, raw }) => {
+        // no vlt in PATH: fallback dir
+        t.match(JSON.parse(raw.stdout), {
+          global: {
+            source: 'global-dir',
+            inPath: false,
+            bins: ['semver'],
+          },
+        })
         const g = join(dirs.data, 'vlt', 'global')
         const ws = join(g, 'packages', 'semver-ws')
         const lockfile = join(g, 'vlt-lock.json')
@@ -157,6 +172,12 @@ t.test('global install', async t => {
           process.platform === 'win32' ? 'semver.cmd' : 'semver',
         )
         t.ok(existsSync(bin), 'bin linked')
+        t.strictSame(
+          JSON.parse(
+            readFileSync(join(g, 'global-state.json'), 'utf-8'),
+          ),
+          { binDirs: [realpathSync.native(join(g, 'bin'))] },
+        )
         t.notOk(existsSync(join(dirs.project, 'node_modules')))
         t.notOk(existsSync(join(dirs.project, 'vlt-lock.json')))
 
@@ -172,5 +193,54 @@ t.test('global install', async t => {
       },
     },
   )
+  t.equal(status, 0)
+})
+
+t.test('global install into the vlt folder', async t => {
+  const { status } = await runMultiple(t, ['--version'], {
+    // the Source bin is not executable
+    variants: ['Bundle'],
+    match: ['status'],
+    root: { selfbin: {} },
+    test: async ({ t, dirs, run }) => {
+      const selfbin = join(dirs.root, 'selfbin')
+      const vlt = Artifacts.Bundle.bin('vlt')
+      const win32 = process.platform === 'win32'
+      if (win32) {
+        writeFileSync(
+          join(selfbin, 'vlt.cmd'),
+          `@node "%~dp0\\${relative(selfbin, vlt)}" %*\r\n`,
+        )
+      } else {
+        chmodSync(vlt, 0o755)
+        symlinkSync(vlt, join(selfbin, 'vlt'))
+      }
+      const res = await run(
+        ['install', '-g', 'semver', '--view=json'],
+        {
+          env: { PATH: selfbin },
+        },
+      )
+      t.equal(res.status, 0)
+      const bin = join(selfbin, win32 ? 'semver.cmd' : 'semver')
+      t.ok(existsSync(bin), 'bin linked next to vlt')
+      const g = join(dirs.data, 'vlt', 'global')
+      t.strictSame(
+        JSON.parse(
+          readFileSync(join(g, 'global-state.json'), 'utf-8'),
+        ),
+        { binDirs: [realpathSync.native(selfbin)] },
+      )
+      t.match(JSON.parse(res.stdout), {
+        global: { source: 'self', inPath: true, bins: ['semver'] },
+      })
+
+      const rm = await run(['uninstall', '-g', 'semver'], {
+        env: { PATH: '' },
+      })
+      t.equal(rm.status, 0)
+      t.notOk(existsSync(bin), 'bin removed from the recorded dir')
+    },
+  })
   t.equal(status, 0)
 })

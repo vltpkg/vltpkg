@@ -1,7 +1,10 @@
-import { build } from '@vltpkg/graph'
+import { actual, build } from '@vltpkg/graph'
 import type { BuildResult, Node } from '@vltpkg/graph'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
+import { globalBinsLines, linkGlobalBins } from '../global.ts'
+import type { GlobalBins } from '../global.ts'
+import { resolveGlobalBinDir } from '../global-bin-dir.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import { isErrorWithCause } from '@vltpkg/types'
@@ -16,8 +19,10 @@ const skippedMessage = (
     : 'security data timed out'
   }. Run "vlt build" again later.`
 
+export type BuildCommandResult = BuildResult & { global?: GlobalBins }
+
 export const views = {
-  human: (result: BuildResult): string => {
+  human: (result: BuildCommandResult): string => {
     const successCount = result.success.length
     const failureCount = result.failure.length
     const skippedCount = result.skipped?.length ?? 0
@@ -43,9 +48,12 @@ export const views = {
       )
     }
 
+    if (result.global)
+      messages.push(...globalBinsLines(result.global))
+
     return messages.join('\n')
   },
-  json: (result: BuildResult) => {
+  json: (result: BuildCommandResult) => {
     const toJSON = (node: Node) => ({
       id: node.id,
       name: node.name,
@@ -67,9 +75,10 @@ export const views = {
         : skippedList.length ?
           skippedMessage(skippedList.length, result.skippedReason)
         : 'No packages needed building.',
+      ...(result.global ? { global: result.global } : null),
     }
   },
-} as const satisfies Views<BuildResult>
+} as const satisfies Views<BuildCommandResult>
 
 export const needsRegistry = true
 
@@ -114,9 +123,12 @@ const isGraphRunError = (
  * Build command implementation. Runs any required "postinstall"
  * lifecycle scripts and binary linking.
  */
-export const command: CommandFn<BuildResult> = async conf => {
+export const command: CommandFn<BuildCommandResult> = async conf => {
   const { options, projectRoot } = conf
+  const binDir =
+    conf.globalRoot ? await resolveGlobalBinDir(conf) : undefined
 
+  let result: BuildResult
   try {
     // Get target from option or first positional, default to all scripts
     const targetOption = conf.get('target')
@@ -127,7 +139,7 @@ export const command: CommandFn<BuildResult> = async conf => {
       ':scripts:not(:built):not(:malware)'
 
     // Run the build process using the graph build function
-    const result = await build({
+    result = await build({
       ...options,
       projectRoot,
       packageJson: options.packageJson,
@@ -135,8 +147,6 @@ export const command: CommandFn<BuildResult> = async conf => {
       scurry: options.scurry,
       target,
     })
-
-    return result
   } catch (cause) {
     const graphRunError =
       isErrorWithCause(cause) && isGraphRunError(cause.cause) ?
@@ -151,4 +161,24 @@ export const command: CommandFn<BuildResult> = async conf => {
     }
     throw error('Build failed', { cause })
   }
+  if (!binDir) return result
+
+  // relink global bins, targets may be new
+  const graph = actual.load({
+    ...options,
+    projectRoot,
+    mainManifest: options.packageJson.read(projectRoot),
+    monorepo: options.monorepo,
+    scurry: options.scurry,
+    loadManifests: true,
+  })
+  const global = await linkGlobalBins(graph, {
+    projectRoot,
+    scurry: options.scurry,
+    force: options.force,
+    binDir,
+    fallback: () =>
+      resolveGlobalBinDir(conf, { selfUnwritable: true }),
+  })
+  return { ...result, global }
 }

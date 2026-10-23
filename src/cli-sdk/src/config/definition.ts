@@ -529,8 +529,7 @@ export const definition = j
 
                     Each global package is installed in its own workspace of
                     the project in \`--global-dir\`, and its bins are linked
-                    into \`<global-dir>/bin\`. Add that folder to your
-                    \`PATH\` to run them.`,
+                    into \`--global-bin-dir\`.`,
     },
   })
 
@@ -545,6 +544,24 @@ export const definition = j
                     config, never from a project \`vlt.json\`. A leading
                     \`~\` is the home directory. Must be absolute in the
                     user config.`,
+    },
+  })
+
+  .opt({
+    'global-bin-dir': {
+      hint: 'path',
+      description: `Folder where bins of global packages are linked.
+
+                    Defaults to the folder of the \`vlt\` found in your
+                    \`PATH\` when it is writable, so bins run right away.
+                    If it is not writable, \`~/.local/bin\` is used when
+                    it is in your \`PATH\` (not on Windows). Otherwise
+                    \`<global-dir>/bin\`.
+
+                    Only read from the command line, environment or the
+                    user config, never from a project \`vlt.json\`. A
+                    leading \`~\` is the home directory. Must be absolute
+                    in the user config.`,
     },
   })
 

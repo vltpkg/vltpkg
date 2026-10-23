@@ -1444,6 +1444,7 @@
     "workspace~src+cli-sdk @vltpkg/url-open": "prod workspace:* workspace~src+url-open",
     "workspace~src+cli-sdk @vltpkg/vlt-json": "prod workspace:* workspace~src+vlt-json",
     "workspace~src+cli-sdk @vltpkg/vlx": "prod workspace:* workspace~src+vlx",
+    "workspace~src+cli-sdk @vltpkg/which": "prod workspace:* workspace~src+which",
     "workspace~src+cli-sdk @vltpkg/workspaces": "prod workspace:* workspace~src+workspaces",
     "workspace~src+cli-sdk @vltpkg/xdg": "prod workspace:* workspace~src+xdg",
     "workspace~src+cmd-shim @eslint/js": "dev catalog: ~npm~@eslint+js@9.39.5",
