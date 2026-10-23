@@ -1,5 +1,6 @@
 import t from 'tap'
 import type { Test } from 'tap'
+import { error } from '@vltpkg/error-cause'
 import { normalizeRegistryKey } from '@vltpkg/registry-client'
 import type { Token } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
@@ -13,13 +14,25 @@ import { shellPathCommand } from '../../src/shell.ts'
 
 type Added = [string, Record<string, unknown>]
 
+// a `-Rtap` run from a terminal inherits a TTY stdin
+t.intercept(process.stdin, 'isTTY', { value: false })
+
+type PathMock = {
+  inPath?: boolean
+  resolveError?: Error
+  changed?: false
+  planError?: Error
+  applyError?: Error
+}
+
 // Build a mocked setup module with injectable readline answers and a
 // RegistryClient stub that records the registries it logs in against.
 const loadSetup = async (
-  answers: string[],
+  answers: (string | Error)[],
   loginError?: Error,
   initialTokens?: Record<string, Token>,
   saveError?: Error,
+  path?: PathMock,
 ) => {
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
@@ -29,6 +42,63 @@ const loadSetup = async (
     Object.entries(initialTokens ?? {}),
   )
   const queue = [...answers]
+  const real = await import('../../src/shell-setup/index.ts')
+  const calls = {
+    resolved: [] as unknown[],
+    plan: 0,
+    apply: 0,
+    asked: [] as string[],
+  }
+  const pathMocks = path && {
+    '../../src/global-bin-dir.ts': {
+      resolveGlobalBinDir: async (c: unknown) => {
+        calls.resolved.push(c)
+        if (path.resolveError) throw path.resolveError
+        return {
+          dir: '/b',
+          source: 'global-dir',
+          inPath: !!path.inPath,
+        }
+      },
+    },
+    '../../src/shell-setup/index.ts': {
+      ...real,
+      planPathSetup: async (
+        o: PathSetupOptions,
+      ): Promise<PathSetupPlan> => {
+        calls.plan++
+        if (path.planError) throw path.planError
+        return {
+          globalDir: o.globalDir,
+          dir: o.dir,
+          shell: o.shell,
+          changes: [
+            {
+              file: '/h/.zshrc',
+              kind: 'rc',
+              action: path.changed === false ? 'unchanged' : 'append',
+              content: Buffer.from('x'),
+            },
+          ],
+        }
+      },
+      applyPathSetup: async (p: PathSetupPlan) => {
+        calls.apply++
+        if (path.applyError) throw path.applyError
+        return {
+          dir: p.dir,
+          shell: p.shell,
+          files: real.pathSetupFiles(p),
+          backups: ['/g/backups/.zshrc.1.bak'],
+        }
+      },
+      // the wizard asks on its own readline
+      ask: async (q: string) => {
+        calls.asked.push(q)
+        return ''
+      },
+    },
+  }
   const mod = await t.mockImport<
     typeof import('../../src/commands/setup.ts')
   >('../../src/commands/setup.ts', {
@@ -61,7 +131,9 @@ const loadSetup = async (
       createInterface: () => ({
         question: async (q: string) => {
           questions.push(q)
-          return queue.shift() ?? ''
+          const a = queue.shift() ?? ''
+          if (a instanceof Error) throw a
+          return a
         },
         close: () => {},
       }),
@@ -69,6 +141,7 @@ const loadSetup = async (
     '../../src/output.ts': {
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
     },
+    ...pathMocks,
   })
   return {
     mod: {
@@ -82,6 +155,7 @@ const loadSetup = async (
     logged,
     kcWrites,
     stored,
+    calls,
   }
 }
 
@@ -96,6 +170,9 @@ const makeConf = (
       user?: Record<string, unknown>
       project?: Record<string, unknown>
     }
+    noModifyPath?: boolean
+    globalProject?: () =>
+      { root: string; binDir?: string } | undefined
   },
   added: Added[],
 ): LoadedConfig =>
@@ -104,7 +181,11 @@ const makeConf = (
     get: (k: string) =>
       k === 'yes' ? opts.yes
       : k === 'config' ? opts.config
+      : k === 'no-modify-path' ? opts.noModifyPath
       : undefined,
+    globalProject:
+      opts.globalProject ??
+      (() => ({ root: '/g', binDir: undefined })),
     options: {
       registries: opts.registries ?? {},
       identity: opts.identity ?? '',
@@ -493,6 +574,302 @@ t.test(
   },
 )
 
+t.test('wizard PATH step', async t => {
+  const Q = 'Setup PATH for global installs? (Y/n) '
+  const asked = [
+    'Authenticate with your vlt.io account now? (Y/n) ',
+    'Add another registry alias? (y/N) ',
+  ]
+  const registries = {
+    npm: 'https://registry.vlt.io/acme/npm/',
+    main: 'https://registry.vlt.io/acme/main/',
+  }
+  const zshrc = [{ file: '/h/.zshrc', kind: 'rc', action: 'append' }]
+  const tty = (t: Test) => {
+    t.intercept(process.stdin, 'isTTY', { value: true })
+    t.intercept(process, 'env', { value: { SHELL: '/bin/zsh' } })
+  }
+  // skip auth, no more aliases, then the PATH answers
+  const run = async (
+    t: Test,
+    {
+      answers = [],
+      path = {},
+      conf = {},
+    }: {
+      answers?: (string | Error)[]
+      path?: PathMock
+      conf?: Parameters<typeof makeConf>[0]
+    } = {},
+  ) => {
+    const added: Added[] = []
+    const r = await loadSetup(
+      ['n', 'n', ...answers],
+      undefined,
+      // proves the keychain step ran first
+      { 'https://registry.vlt.io/acme/main': 'Bearer main' },
+      undefined,
+      path,
+    )
+    // tap writes to stdout too: restore before asserting
+    const written = t.capture(process.stdout, 'write', () => true)
+    const result = await r.mod
+      .command(makeConf({ positionals: ['acme'], ...conf }, added))
+      .finally(() => written.restore())
+    t.strictSame(added, [['user', { registries }]], 'config written')
+    t.strictSame(r.kcWrites, [
+      ['https://registry.vlt.io/acme/npm', 'Bearer main', ''],
+    ])
+    t.strictSame(result.registries, registries)
+    t.strictSame(r.calls.asked, [], 'no 2nd readline')
+    return {
+      ...r,
+      result,
+      written: written.args().map(a => String(a[0])),
+    }
+  }
+
+  t.test('not a terminal', async t => {
+    const { result, questions, calls, written } = await run(t)
+    t.strictSame(written, [])
+    t.notOk('path' in result)
+    t.strictSame(questions, asked)
+    t.strictSame(calls.resolved, [])
+  })
+
+  t.test('--yes', async t => {
+    tty(t)
+    const added: Added[] = []
+    const { mod, questions, calls } = await loadSetup(
+      [],
+      undefined,
+      undefined,
+      undefined,
+      {},
+    )
+    const result = await mod.command(
+      makeConf({ yes: true, positionals: ['acme'] }, added),
+    )
+    t.notOk('path' in result)
+    t.strictSame(questions, [])
+    t.strictSame(calls.resolved, [])
+  })
+
+  t.test('no-modify-path', async t => {
+    tty(t)
+    const { result, questions, calls } = await run(t, {
+      conf: { noModifyPath: true },
+    })
+    t.notOk('path' in result)
+    t.strictSame(questions, asked)
+    t.strictSame(calls.resolved, [])
+  })
+
+  t.test('no global project', async t => {
+    tty(t)
+    const { result, calls } = await run(t, {
+      conf: { globalProject: () => undefined },
+    })
+    t.notOk('path' in result)
+    t.strictSame(calls.resolved, [])
+  })
+
+  t.test('in path', async t => {
+    tty(t)
+    const { result, questions, calls } = await run(t, {
+      path: { inPath: true },
+    })
+    const { sourceCommand } =
+      await import('../../src/shell-setup/index.ts')
+    t.strictSame(result.path, {
+      status: 'in-path',
+      dir: '/b',
+      shell: 'zsh',
+      files: [],
+      backups: [],
+      command: shellPathCommand('zsh', '/b'),
+      source: sourceCommand('zsh', '/g', '/b'),
+    })
+    t.strictSame(questions, asked)
+    t.equal(calls.plan, 0)
+  })
+
+  t.test('unchanged', async t => {
+    tty(t)
+    const { result, questions, calls } = await run(t, {
+      path: { changed: false },
+    })
+    t.match(result.path, { status: 'unchanged' })
+    t.strictSame(questions, asked)
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('answer default', async t => {
+    tty(t)
+    const { result, questions, calls } = await run(t, {
+      answers: [''],
+      conf: { globalProject: () => ({ root: '/g', binDir: '/b' }) },
+    })
+    t.strictSame(questions, [...asked, Q])
+    t.strictSame(calls.resolved, [
+      { projectRoot: '/g', globalBinDir: '/b' },
+    ])
+    t.equal(calls.plan, 2, 'planned again after asking')
+    t.equal(calls.apply, 1)
+    t.match(result.path, {
+      status: 'added',
+      dir: '/b',
+      shell: 'zsh',
+      files: zshrc,
+      backups: ['/g/backups/.zshrc.1.bak'],
+    })
+  })
+
+  t.test('answer no', async t => {
+    tty(t)
+    const { result, questions, calls } = await run(t, {
+      answers: ['n'],
+    })
+    t.strictSame(questions, [...asked, Q])
+    t.match(result.path, { status: 'cancelled', files: zshrc })
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('Ctrl-C skips', async t => {
+    tty(t)
+    const abort = Object.assign(new Error('Aborted with Ctrl+C'), {
+      name: 'AbortError',
+    })
+    const { result, calls, written } = await run(t, {
+      answers: [abort],
+    })
+    t.strictSame(written, ['\n'])
+    t.match(result.path, { status: 'cancelled' })
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('prompt error', async t => {
+    tty(t)
+    const { result } = await run(t, { answers: [new Error('boom')] })
+    t.strictSame(result.path, { status: 'failed', message: 'boom' })
+  })
+
+  t.test('plan error', async t => {
+    tty(t)
+    const { result, calls } = await run(t, {
+      path: {
+        planError: error("doesn't support nu yet", { found: 'nu' }),
+      },
+    })
+    t.strictSame(result.path, {
+      status: 'failed',
+      message: "doesn't support nu yet",
+    })
+    t.equal(calls.apply, 0)
+  })
+
+  t.test('bin dir error names it', async t => {
+    tty(t)
+    const { result, calls } = await run(t, {
+      path: {
+        resolveError: error('Could not create global-bin-dir', {
+          found: '/p',
+        }),
+      },
+    })
+    t.strictSame(result.path, {
+      status: 'failed',
+      message: 'Could not create global-bin-dir: /p',
+    })
+    t.equal(calls.plan, 0)
+  })
+
+  t.test('apply error', async t => {
+    tty(t)
+    const { result, calls } = await run(t, {
+      answers: ['y'],
+      path: { applyError: new Error('EACCES') },
+    })
+    t.strictSame(result.path, { status: 'failed', message: 'EACCES' })
+    t.equal(calls.apply, 1)
+  })
+})
+
+t.test('wizard views', async t => {
+  const { mod } = await loadSetup([])
+  const result = {
+    account: 'acme',
+    which: 'user',
+    registries: { npm: 'u', main: 'm' },
+  } as const
+  const head =
+    'Configured 2 registry aliases for "acme" in user config:\n  npm -> u\n  main -> m'
+  const tail =
+    '\n\nYou can now install packages, e.g.:\n  vlt install <pkg>'
+  const r = {
+    dir: '/b',
+    shell: 'zsh' as const,
+    files: [
+      {
+        file: '/h/.zshrc',
+        kind: 'rc' as const,
+        action: 'append' as const,
+      },
+    ],
+    backups: [],
+    command: 'export PATH="/b:$PATH"',
+    source: 'source "/g/env"',
+  }
+  const view = (path?: SetupResult['path']) =>
+    mod.views.human({ ...result, ...(path ? { path } : {}) })
+  t.equal(view(), head + tail)
+  t.equal(
+    view({ ...r, status: 'added' }),
+    head +
+      '\n\n✅ Added /b to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"' +
+      tail,
+  )
+  t.equal(
+    view({ ...r, status: 'unchanged' }),
+    head +
+      '\n\n✅ /b is already added to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"' +
+      tail,
+  )
+  t.equal(view({ ...r, status: 'in-path' }), head + tail)
+  t.equal(
+    mod.views.human({
+      ...result,
+      shadowedByProject: true,
+      path: { ...r, status: 'added' },
+    }),
+    head +
+      "\n\nNote: this project's vlt.json configures its own registries, and\nproject config takes precedence. Re-run with `--config=project`\nto configure this project instead." +
+      '\n\n✅ Added /b to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"' +
+      tail,
+    'note, then PATH lines',
+  )
+  t.equal(
+    view({ ...r, status: 'cancelled' }),
+    head +
+      '\n\nℹ️  Skipped. Run `vlt setup --path` later to add /b to your PATH.' +
+      tail,
+  )
+  t.intercept(process, 'platform', { value: 'win32' })
+  t.equal(
+    view({ ...r, status: 'cancelled' }),
+    head +
+      '\n\nℹ️  Skipped. Run `vlt setup --path` later to add /b to your PATH.' +
+      tail,
+    'no session hint',
+  )
+  t.equal(
+    view({ status: 'failed', message: 'nope' }),
+    head +
+      '\n\n⚠️  Could not add the global bin folder to your PATH: nope' +
+      tail,
+  )
+})
+
 const loadPath = async (
   t: Test,
   o: {
@@ -509,6 +886,7 @@ const loadPath = async (
   })
   const real = await import('../../src/shell-setup/index.ts')
   const calls = {
+    resolved: [] as unknown[],
     plan: [] as PathSetupOptions[],
     apply: 0,
     asked: [] as string[],
@@ -531,11 +909,14 @@ const loadPath = async (
     typeof import('../../src/commands/setup.ts')
   >('../../src/commands/setup.ts', {
     '../../src/global-bin-dir.ts': {
-      resolveGlobalBinDir: async () => ({
-        dir: '/b',
-        source: 'global-dir',
-        inPath: !!o.inPath,
-      }),
+      resolveGlobalBinDir: async (c: unknown) => {
+        calls.resolved.push(c)
+        return {
+          dir: '/b',
+          source: 'global-dir',
+          inPath: !!o.inPath,
+        }
+      },
     },
     '../../src/shell-setup/index.ts': {
       ...real,
@@ -577,11 +958,13 @@ const pathConf = (
     positionals?: string[]
     yes?: boolean
     noModifyPath?: boolean
+    globalBinDir?: string
   } = {},
 ) =>
   ({
     globalRoot: '/g',
     projectRoot: '/g',
+    globalBinDir: o.globalBinDir,
     positionals: o.positionals ?? [],
     get: (k: string) =>
       k === 'yes' ? o.yes
@@ -604,7 +987,8 @@ t.test('--path', async t => {
     const { mod, calls, source, command } = await loadPath(t, {
       inPath: true,
     })
-    t.strictSame(await mod.command(pathConf()), {
+    const conf = pathConf({ globalBinDir: '/b' })
+    t.strictSame(await mod.command(conf), {
       path: {
         dir: '/b',
         shell: 'zsh',
@@ -615,6 +999,9 @@ t.test('--path', async t => {
         status: 'in-path',
       },
     })
+    t.strictSame(calls.resolved, [
+      { projectRoot: '/g', globalBinDir: '/b' },
+    ])
     t.strictSame(calls.plan, [])
   })
 

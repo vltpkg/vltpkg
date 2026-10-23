@@ -454,6 +454,21 @@ export class Config {
    */
   globalBinDir?: string
 
+  // the global project of the `setup` wizard, not switched to
+  #setupGlobal?: { root: string; binDir?: string }
+
+  /**
+   * The global project (`--global-dir`, `--global-bin-dir`: cli > env >
+   * user config, never a project `vlt.json`): the one switched to by
+   * `--global`, or the one `vlt setup` offers PATH setup for.
+   */
+  globalProject(): { root: string; binDir?: string } | undefined {
+    if (this.globalRoot) {
+      return { root: this.globalRoot, binDir: this.globalBinDir }
+    }
+    return this.#setupGlobal
+  }
+
   /**
    * `Record<alias, canonical name>` to dereference command aliases.
    */
@@ -960,8 +975,9 @@ export class Config {
    */
   async loadConfigFile(args?: string[]): Promise<this> {
     await this.#maybeLoadConfigFile('user')
-    const root = args && this.#globalRoot(args)
-    if (root) {
+    const g = args && this.#globalProject(args)
+    if (g?.switch) {
+      const { root } = g
       try {
         ensureGlobalProject(root)
       } catch (cause) {
@@ -971,39 +987,53 @@ export class Config {
           cause,
         })
       }
-      this.globalBinDir = this.#globalBinDir(args)
+      this.globalBinDir = g.binDir
       unload('project')
       this.globalRoot = this.projectRoot = root
+    } else if (g) {
+      this.#setupGlobal = { root: g.root, binDir: g.binDir }
     }
     this.projectRoot = dirname(find('project', this.projectRoot))
     await this.#maybeLoadConfigFile('project')
     return this
   }
 
-  // global project root if `args` run a global command with --global,
-  // or `setup --path`. cli > env > user config, project config is not
-  // loaded yet.
-  #globalRoot(args: string[]): string | undefined {
+  // global project if `args` run a global command with --global, or
+  // `setup`. cli > env > user config, project config is not loaded yet.
+  // `switch`: use it as the project (not for the setup wizard)
+  #globalProject(
+    args: string[],
+  ): { root: string; binDir?: string; switch: boolean } | undefined {
     const { values, positionals } = this.jack.parseRaw(args)
     const cmd = getCommand(positionals[0])
     if (values.help || !cmd) return
-    // `setup --path` edits shell config for the global bin dir
-    const setupPath = cmd === 'setup' && values.path === true
-    if (!setupPath && !globalCommands.has(cmd)) return
-    const dflt = this.#defaults()
-    if (!setupPath) {
+    // `setup --path` acts on the global project, the wizard offers to
+    const setup = cmd === 'setup'
+    if (!setup && !globalCommands.has(cmd)) return
+    if (!setup) {
       const env = process.env[envKey('global')]
       const global =
         values.global ??
-        (env !== undefined ? env === '1' : dflt.global === true)
+        (env !== undefined ?
+          env === '1'
+        : this.#defaults().global === true)
       if (!global) return
     }
+    return {
+      root: this.#globalDir(values['global-dir']),
+      binDir: this.#globalBinDir(args),
+      switch: !setup || values.path === true,
+    }
+  }
+
+  #globalDir(cli: string | undefined): string {
     // empty means unset, never the cwd
-    const dir =
-      values['global-dir'] || process.env[envKey('global-dir')]
+    const dir = cli || process.env[envKey('global-dir')]
     if (dir) return resolve(expandHome(dir))
     const user = expandHome(
-      String(dflt['global-dir'] || defaultValues['global-dir']),
+      String(
+        this.#defaults()['global-dir'] || defaultValues['global-dir'],
+      ),
     )
     // would differ per cwd
     if (!isAbsolute(user)) {
@@ -1016,7 +1046,7 @@ export class Config {
     return resolve(user)
   }
 
-  // cli > env > user config, like `#globalRoot`
+  // cli > env > user config, like `#globalProject`
   #globalBinDir(args: string[]): string | undefined {
     const { values } = this.jack.parseRaw(args)
     // empty means unset

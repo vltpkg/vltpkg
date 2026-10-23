@@ -115,6 +115,17 @@ export type SetupResult = {
    * the project's `vlt.json`, so the result won't take effect here.
    */
   shadowedByProject?: boolean
+  /**
+   * PATH step outcome; absent when skipped (--yes, no terminal,
+   * no-modify-path)
+   */
+  path?: SetupPathResult['path'] | SetupPathFailed
+}
+
+export type SetupPathFailed = {
+  status: 'failed'
+  /** why; may hold the manual line */
+  message: string
 }
 
 export type SetupPathResult = {
@@ -133,7 +144,13 @@ export type SetupPathResult = {
   }
 }
 
-const pathView = (r: SetupPathResult['path']): string => {
+const pathView = (
+  r: SetupPathResult['path'] | SetupPathFailed,
+  wizard = false,
+): string => {
+  if (r.status === 'failed') {
+    return `⚠️  Could not add the global bin folder to your PATH: ${r.message}`
+  }
   const dir = prettyPath(r.dir)
   const rcs = rcList(r.files)
   // the command lasts one session
@@ -150,7 +167,7 @@ const pathView = (r: SetupPathResult['path']): string => {
         `   Open a new terminal, or run: ${r.source}`,
       ].join('\n')
     case 'in-path':
-      return `✅ ${dir} is already on your PATH`
+      return wizard ? '' : `✅ ${dir} is already on your PATH`
     case 'disabled':
       return [
         `ℹ️  no-modify-path is set, so nothing was changed. To add ${dir} to your PATH, run:`,
@@ -158,6 +175,9 @@ const pathView = (r: SetupPathResult['path']): string => {
         ...keep,
       ].join('\n')
     case 'cancelled':
+      if (wizard) {
+        return `ℹ️  Skipped. Run \`vlt setup --path\` later to add ${dir} to your PATH.`
+      }
       return [
         `Nothing changed. To add ${dir} to your PATH, run:`,
         `  ${r.command}`,
@@ -168,7 +188,7 @@ const pathView = (r: SetupPathResult['path']): string => {
 
 export const views = {
   human: (result: SetupResult | SetupPathResult): string => {
-    if ('path' in result) return pathView(result.path)
+    if (!('account' in result)) return pathView(result.path)
     const lines = [
       `Configured ${Object.keys(result.registries).length} registry ${
         Object.keys(result.registries).length === 1 ?
@@ -187,6 +207,8 @@ export const views = {
         'to configure this project instead.',
       )
     }
+    const path = result.path && pathView(result.path, true)
+    if (path) lines.push('', path)
     lines.push(
       '',
       'You can now install packages, e.g.:',
@@ -212,6 +234,12 @@ export const usage: CommandUsage = () =>
                   those aliases (and any additional aliases you add) to
                   your user \`vlt.json\`.
 
+                  In a terminal, if the global bin folder isn't on
+                  your \`PATH\` or set up yet, it ends by asking
+                  \`Setup PATH for global installs? (Y/n)\`: yes adds
+                  it (same as \`--path\`), no skips it. Run
+                  \`vlt setup --path\` later to do just that step.
+
                   With \`--path\`, add the global bin folder
                   (\`--global-bin-dir\`) to your \`PATH\` instead: writes
                   \`<global-dir>/env\` and a marked section that loads
@@ -234,19 +262,91 @@ export const usage: CommandUsage = () =>
         description:
           'Skip interactive prompts (requires <account> and does not ' +
           'open a browser for authentication). With --path: edit ' +
-          'without asking.',
+          'without asking. Without --path: skips the PATH prompt.',
       },
       path: {
         description:
-          'Add the global bin folder to your PATH via your shell ' +
-          'config (user Path on Windows).',
+          'Only add the global bin folder to your PATH via your ' +
+          'shell config (user Path on Windows).',
       },
       'global-bin-dir': {
         value: '<path>',
-        description: 'With --path: the folder to add.',
+        description: 'The folder to add to your PATH.',
       },
     },
   })
+
+type PathStep = {
+  globalDir: string
+  globalBinDir?: string
+  yes?: boolean
+  noModifyPath?: boolean
+  question: (o: { dir: string; rcs: string }) => string
+  /** default: readline on stdin/stdout */
+  ask?: (q: string) => Promise<string>
+}
+
+const runPathSetup = async (
+  o: PathStep,
+): Promise<SetupPathResult['path']> => {
+  const root = o.globalDir
+  const bin = await resolveGlobalBinDir({
+    projectRoot: root,
+    globalBinDir: o.globalBinDir,
+  })
+  const shell = detectShell()
+  const base = {
+    dir: bin.dir,
+    shell,
+    files: [] as PathSetupFile[],
+    backups: [] as string[],
+    command: shellPathCommand(shell, bin.dir),
+    source: sourceCommand(shell, root, bin.dir),
+  }
+  if (bin.inPath) {
+    return { ...base, status: 'in-path' }
+  }
+  // scripted installers must not fail
+  if (o.noModifyPath) {
+    return { ...base, status: 'disabled' }
+  }
+  const opts = { globalDir: root, dir: bin.dir, shell }
+  let plan = await planPathSetup(opts)
+  const files = pathSetupFiles(plan)
+  if (!pathSetupChanged(plan)) {
+    return { ...base, status: 'unchanged', files }
+  }
+  if (!o.yes) {
+    if (!process.stdin.isTTY) {
+      throw error(
+        'Not a terminal: pass --yes to add it to your PATH',
+        {
+          code: 'EUSAGE',
+        },
+      )
+    }
+    const answer = await (o.ask ?? askLine)(
+      o.question({ dir: prettyPath(bin.dir), rcs: rcList(files) }),
+    ).catch((er: unknown) => {
+      // Ctrl-C
+      if (asError(er).name !== 'AbortError') throw er
+      process.stdout.write('\n')
+      return 'n'
+    })
+    if (/^n/i.test(answer)) {
+      return { ...base, status: 'cancelled', files }
+    }
+    // rc files may have changed while asking
+    plan = await planPathSetup(opts)
+  }
+  const r = await applyPathSetup(plan)
+  return {
+    ...base,
+    status: 'added',
+    files: r.files,
+    backups: r.backups,
+  }
+}
 
 const setupPath = async (
   conf: LoadedConfig,
@@ -258,67 +358,62 @@ const setupPath = async (
       found: conf.positionals[0],
     })
   }
-  const bin = await resolveGlobalBinDir(conf)
-  const shell = detectShell()
-  const base = {
-    dir: bin.dir,
-    shell,
-    files: [] as PathSetupFile[],
-    backups: [] as string[],
-    command: shellPathCommand(shell, bin.dir),
-    source: sourceCommand(shell, root, bin.dir),
-  }
-  if (bin.inPath) {
-    return { path: { ...base, status: 'in-path' } }
-  }
-  // scripted installers must not fail
-  if (conf.get('no-modify-path')) {
-    return { path: { ...base, status: 'disabled' } }
-  }
-  const opts = { globalDir: root, dir: bin.dir, shell }
-  let plan = await planPathSetup(opts)
-  const files = pathSetupFiles(plan)
-  if (!pathSetupChanged(plan)) {
-    return { path: { ...base, status: 'unchanged', files } }
-  }
-  if (!conf.get('yes')) {
-    if (!process.stdin.isTTY) {
-      throw error(
-        'Not a terminal: pass --yes to add it to your PATH',
-        {
-          code: 'EUSAGE',
-        },
-      )
-    }
-    const answer = await askLine(
-      `Add ${prettyPath(bin.dir)} to your PATH in ${rcList(files)}? (Y/n) `,
-    ).catch((er: unknown) => {
-      // Ctrl-C
-      if (asError(er).name !== 'AbortError') throw er
-      process.stdout.write('\n')
-      return 'n'
-    })
-    if (/^n/i.test(answer)) {
-      return { path: { ...base, status: 'cancelled', files } }
-    }
-    // rc files may have changed while asking
-    plan = await planPathSetup(opts)
-  }
-  const r = await applyPathSetup(plan)
   return {
-    path: {
-      ...base,
-      status: 'added',
-      files: r.files,
-      backups: r.backups,
-    },
+    path: await runPathSetup({
+      globalDir: root,
+      globalBinDir: conf.globalBinDir,
+      yes: !!conf.get('yes'),
+      noModifyPath: !!conf.get('no-modify-path'),
+      question: ({ dir, rcs }) =>
+        `Add ${dir} to your PATH in ${rcs}? (Y/n) `,
+    }),
+  }
+}
+
+// end of the wizard, in a terminal only
+const offerPath = async (
+  conf: LoadedConfig,
+  yes: boolean,
+  ask: (q: string) => Promise<string>,
+): Promise<SetupResult['path']> => {
+  if (yes || !process.stdin.isTTY || conf.get('no-modify-path')) {
+    return
+  }
+  const g = conf.globalProject()
+  if (!g) return
+  try {
+    return await runPathSetup({
+      globalDir: g.root,
+      globalBinDir: g.binDir,
+      question: () => 'Setup PATH for global installs? (Y/n) ',
+      ask,
+    })
+  } catch (er) {
+    // registries are already saved
+    const e = asError(er)
+    // e.g. the global-bin-dir that could not be created
+    const found =
+      (
+        isErrorWithCause(e) &&
+        isObject(e.cause) &&
+        typeof e.cause.found === 'string'
+      ) ?
+        prettyPath(e.cause.found)
+      : undefined
+    return {
+      status: 'failed',
+      message:
+        found && !e.message.includes(found) ?
+          `${e.message}: ${found}`
+        : e.message,
+    }
   }
 }
 
 export const command: CommandFn<
   SetupResult | SetupPathResult
 > = async conf => {
-  // set only by --path, see Config#globalRoot
+  // set only by --path, see Config#globalProject
   const root = conf.globalRoot
   if (root) return setupPath(conf, root)
   const yes = !!conf.get('yes')
@@ -448,11 +543,15 @@ export const command: CommandFn<
         f => f in (conf.layers.project ?? {}),
       )
 
+    // 8. offer PATH setup for global installs
+    const path = await offerPath(conf, yes, ask)
+
     return {
       account,
       which,
       registries,
       ...(shadowedByProject ? { shadowedByProject } : undefined),
+      ...(path ? { path } : undefined),
     }
   } finally {
     if (rl) {
