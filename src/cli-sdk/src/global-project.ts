@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { isAbsolute, relative, resolve, sep } from 'node:path'
 
 /** commands that support `--global` */
 export const globalCommands: ReadonlySet<string> = new Set([
@@ -25,6 +25,12 @@ export const samePath = (a: string, b: string): boolean => {
     return process.platform === 'win32' ? r.toLowerCase() : r
   }
   return norm(a) === norm(b)
+}
+
+/** path is strictly inside dir */
+export const isInside = (dir: string, path: string): boolean => {
+  const rel = relative(dir, path)
+  return !!rel && !isAbsolute(rel) && rel.split(sep)[0] !== '..'
 }
 
 const validName = /^(?:@[a-z0-9][\w.~-]*\/)?[a-z0-9~][\w.~-]*$/i

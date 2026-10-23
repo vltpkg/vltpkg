@@ -53,6 +53,8 @@ export type ReifyOptions = LoadOptions & {
   update?: boolean
   saveExact?: boolean
   savePrefix?: string
+  /** store dirs of these nodes are never removed, eg the running vlt */
+  keepNodes?: ReadonlySet<DepID>
 }
 
 export type ReifyResult = {
@@ -259,6 +261,7 @@ const reify_ = async (
     diff,
     remover,
     scurry,
+    options.keepNodes,
   )
   if (rmActions.length) await Promise.all(rmActions)
 

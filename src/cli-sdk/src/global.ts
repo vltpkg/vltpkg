@@ -44,6 +44,7 @@ import {
   globalWorkspaceName,
   globalWorkspacePath,
   globalWorkspacesDir,
+  isInside,
   samePath,
 } from './global-project.ts'
 import { readGlobalState, updateGlobalState } from './global-state.ts'
@@ -120,8 +121,24 @@ export const assertGlobalOptions = (conf: LoadedConfig): void => {
 const workspaceId = (path: string): DepID =>
   joinDepIDTuple(['workspace', path])
 
-// a positional as a named spec, file: paths made absolute
-const globalSpec = async (
+const specs = new WeakMap<LoadedConfig, Map<string, Promise<Spec>>>()
+
+/**
+ * A positional as a named spec, file: paths made absolute. Once per
+ * conf: a nameless spec fetches its manifest.
+ */
+export const globalSpec = (
+  item: string,
+  conf: LoadedConfig,
+): Promise<Spec> => {
+  const known = specs.get(conf) ?? new Map<string, Promise<Spec>>()
+  specs.set(conf, known)
+  const spec = known.get(item) ?? namedSpec(item, conf)
+  known.set(item, spec)
+  return spec
+}
+
+const namedSpec = async (
   item: string,
   conf: LoadedConfig,
 ): Promise<Spec> => {
@@ -286,11 +303,6 @@ const linkFiles = (link: string) =>
   : [link]
 
 const realOr = (p: string) => realpath(p).catch(() => p)
-
-const isInside = (dir: string, path: string) => {
-  const rel = relative(dir, path)
-  return !!rel && !isAbsolute(rel) && rel.split(sep)[0] !== '..'
-}
 
 /**
  * Remove bins in `binDir` that link into any of `dirs`.

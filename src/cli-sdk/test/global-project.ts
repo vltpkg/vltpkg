@@ -9,6 +9,7 @@ import {
   globalWorkspaceName,
   globalWorkspacePath,
   globalWorkspacesDir,
+  isInside,
   samePath,
 } from '../src/global-project.ts'
 
@@ -32,6 +33,14 @@ t.test('samePath', async t => {
     t.equal(samePath('/a/b', '/A/B/'), true)
     t.equal(samePath('/a/b', '/a/c'), false)
   })
+})
+
+t.test('isInside', async t => {
+  const d = resolve('/a/b')
+  t.equal(isInside(d, resolve(d, 'c/d')), true, 'child')
+  t.equal(isInside(d, d), false, 'self')
+  t.equal(isInside(d, resolve('/a/bc')), false, 'sibling')
+  t.equal(isInside(d, resolve('/a')), false, 'parent')
 })
 
 t.test('names and paths', async t => {

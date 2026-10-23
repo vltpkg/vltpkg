@@ -11,6 +11,12 @@ import {
 } from '../global.ts'
 import type { GlobalBins } from '../global.ts'
 import { resolveGlobalBinDir } from '../global-bin-dir.ts'
+import {
+  deferSelfRemove,
+  runningStoreDep,
+  selfUpdate,
+} from '../self-update.ts'
+import type { SelfUpdate } from '../self-update.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import { addTypesDeps } from '../save-types.ts'
@@ -67,7 +73,15 @@ export type InstallResult = {
    * Bins linked by a `--global` install.
    */
   global?: GlobalBins
+  /**
+   * `vlt install -g vlt`
+   */
+  self?: SelfUpdate
 }
+
+/** self-update handed off or nothing to do */
+export type InstallCommandResult =
+  InstallResult | { self: SelfUpdate }
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -149,7 +163,7 @@ export const usage: CommandUsage = () =>
       },
       global: {
         description:
-          'Install packages globally, each in its own workspace of the global project, linking their bins.',
+          'Install packages globally, each in its own workspace of the global project, linking their bins. `vlt install -g vlt` updates vlt itself.',
       },
     },
   })
@@ -166,6 +180,7 @@ const skillsJson = ({
 
 export const views = {
   json: i => {
+    if (!('graph' in i)) return { self: i.self }
     const added = i.diff?.nodes.add ?? new Set()
     const deleted = i.diff?.nodes.delete ?? new Set()
     // The actual (from) graph represents what was on disk before the install.
@@ -238,29 +253,45 @@ export const views = {
       ...(i.skills ? { skills: skillsJson(i.skills) } : null),
       ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
       ...(i.global ? { global: i.global } : null),
+      ...(i.self ? { self: i.self } : null),
     }
   },
   human: lazyView(
     async () =>
       (await import('./install/reporter.ts')).InstallReporter,
   ),
-} as const satisfies Views<InstallResult>
+} as const satisfies Views<InstallCommandResult>
 
-export const command: CommandFn<InstallResult> = async conf => {
+export const command: CommandFn<
+  InstallCommandResult
+> = async conf => {
   // TODO: we should probably throw an error if the user
   // tries to install using view=mermaid
   if (conf.globalRoot) assertGlobalOptions(conf)
   // throws before any global ws dir is created
   const persist = planSpecConfigPersist(conf)
+  // vlt i -g vlt: before any global ws or bin dir is created
+  const selfPlan = await selfUpdate(conf)
+  if (selfPlan && 'done' in selfPlan) return { self: selfPlan.done }
   const binDir =
-    conf.globalRoot ? await resolveGlobalBinDir(conf) : undefined
+    conf.globalRoot ?
+      await resolveGlobalBinDir(conf, {
+        selfUnwritable: !!selfPlan?.selfUnwritable,
+      })
+    : undefined
   // before reading options, it may reset them
   const globalAdd =
     conf.globalRoot ? await parseGlobalAddArgs(conf) : undefined
+  // never removed from under itself
+  const keep =
+    conf.globalRoot ?
+      await runningStoreDep(conf.globalRoot)
+    : undefined
   const installStart = Date.now()
   const { buildQueue, graph, diff, skills } = await runInstall(
     conf,
     globalAdd?.add,
+    keep,
   ).catch(async (er: unknown) => {
     if (globalAdd) await removeGlobalWorkspaces(globalAdd.created)
     throw asUnknownSpecPrefix(er)
@@ -272,6 +303,8 @@ export const command: CommandFn<InstallResult> = async conf => {
     ) ?
       undefined
     : migrateWorkspaces(conf)
+  if (conf.globalRoot)
+    await deferSelfRemove(conf.globalRoot, graph, keep)
   const global =
     globalAdd &&
     binDir &&
@@ -313,6 +346,7 @@ export const command: CommandFn<InstallResult> = async conf => {
     ...(skills ? { skills } : null),
     ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
     ...(global ? { global } : null),
+    ...(selfPlan ? { self: await selfPlan.finish(global) } : null),
   }
 }
 
@@ -320,6 +354,7 @@ export const command: CommandFn<InstallResult> = async conf => {
 const runInstall = async (
   conf: LoadedConfig,
   globalAdd?: AddImportersDependenciesMap,
+  keep?: DepID,
 ) => {
   const monorepo = conf.options.monorepo
   const scurry = conf.options.scurry
@@ -350,6 +385,7 @@ const runInstall = async (
       lockfileOnly,
       saveExact,
       savePrefix,
+      ...(keep ? { keepNodes: new Set([keep]) } : null),
     },
     add,
   )

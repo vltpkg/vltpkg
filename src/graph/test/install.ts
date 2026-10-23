@@ -165,6 +165,36 @@ t.test('install with no package.json file in cwd', async t => {
   )
 })
 
+t.test('keepNodes passed to reify', async t => {
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({}, null, 2),
+  })
+  const keepNodes = new Set([
+    joinDepIDTuple(['registry', '', 'x@1.0.0']),
+  ])
+  const options = {
+    projectRoot: dir,
+    scurry: new PathScurry(dir),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    allowScripts: ':not(*)',
+    keepNodes,
+  } as unknown as InstallOptions
+  let got: unknown
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/reify/index.ts': {
+      reify: async (o: { keepNodes?: unknown }) => {
+        got = o.keepNodes
+        return { buildQueue: [], diff: {} }
+      },
+    },
+  })
+  await install(options, new Map() as AddImportersDependenciesMap)
+  t.equal(got, keepNodes)
+})
+
 t.test('unknown error reading package.json', async t => {
   const dir = t.testdir({
     'vlt.json': JSON.stringify({}, null, 2),
