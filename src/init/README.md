@@ -19,3 +19,16 @@ const results = await init({ cwd: '/some/path' })
 
 // now results contains { manifest: { path, data }}
 ```
+
+```js
+import { initSkill } from '@vltpkg/init'
+
+// create skills/my-skill/SKILL.md, or a root SKILL.md with no name
+const { skill, manifest } = initSkill({
+  cwd: '/some/path',
+  name: 'my-skill',
+})
+
+// skill = { name, path }, manifest = { path, added } when the
+// package.json `files` got the skill added
+```

@@ -261,7 +261,11 @@ export const outputCommand = async <T>(
     // error is rendered, tracked and exited like any other command
     // error, and so that the `--help` return above still works when
     // nothing is configured.
-    if (needsRegistry && !hasConfiguredRegistry(conf)) {
+    const registry =
+      typeof needsRegistry === 'function' ?
+        needsRegistry(conf)
+      : needsRegistry
+    if (registry && !hasConfiguredRegistry(conf)) {
       throw missingRegistryError()
     }
     if (needsNpmRegistry && !hasNpmRegistry(conf)) {

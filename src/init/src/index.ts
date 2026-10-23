@@ -12,6 +12,7 @@ import { basename, resolve } from 'node:path'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 import { asError, normalizeManifest } from '@vltpkg/types'
 export { getAuthorFromGitUser }
+export * from './skill.ts'
 
 // eslint-disable-next-line no-console
 const stderr: (...a: unknown[]) => void = console.error

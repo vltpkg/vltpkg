@@ -19,8 +19,9 @@ Usage:
   vlt skills
   vlt skills list [<query>]
   vlt skills link [<query>]
+  vlt skills init [<name>]
 
-Manage the agent skills shipped by installed packages.
+Link the agent skills shipped by installed packages, or create your own.
 
 A skill is a folder with a \`SKILL.md\` file
 (https://agentskills.io/specification). Packages ship them as a root \`SKILL.md\`,
@@ -56,6 +57,13 @@ skills on install.
 
       ​vlt skills link [<query>]
 
+    init
+      Create a starter \`skills/<name>/SKILL.md\` for the project to ship, or a
+      root \`SKILL.md\` named after the package. Adds it to package.json \`files\`
+      if needed. Never overwrites. -w: in a workspace.
+
+      ​vlt skills init [<name>]
+
   Options
 
     target
@@ -72,6 +80,11 @@ skills on install.
       vlt.json to save allow-skills to (default: project).
 
       ​--config=user|project
+
+    workspace
+      init: create the skill in this workspace.
+
+      ​--workspace=<path|glob>
 
     view
       Output format. mermaid: list only.

@@ -1,3 +1,4 @@
+import { relative } from 'node:path'
 import { styleText } from 'node:util'
 import { error } from '@vltpkg/error-cause'
 import type { DepID } from '@vltpkg/dep-id'
@@ -14,6 +15,8 @@ import type {
   Skill,
   UnscannedSkills,
 } from '@vltpkg/graph'
+import { initSkill } from '@vltpkg/init'
+import type { InitSkillResult } from '@vltpkg/init'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 import {
   configLabel,
@@ -39,14 +42,22 @@ export type SkillsResult =
       saved?: WhichConfig
     } & LinkSkillsResult)
   | { action: 'unchanged' }
+  | ({
+      action: 'init'
+      /** the `allow-skills` that links it */
+      query?: string
+    } & InitSkillResult)
 
-export const needsRegistry = true
+// init only writes files
+export const needsRegistry = ({ positionals }: LoadedConfig) =>
+  positionals[0] !== 'init'
 
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'skills',
-    usage: ['', 'list [<query>]', 'link [<query>]'],
-    description: `Manage the agent skills shipped by installed packages.
+    usage: ['', 'list [<query>]', 'link [<query>]', 'init [<name>]'],
+    description: `Link the agent skills shipped by installed packages,
+      or create your own.
 
       A skill is a folder with a \`SKILL.md\` file
       (https://agentskills.io/specification). Packages ship them as a
@@ -84,6 +95,13 @@ export const usage: CommandUsage = () =>
                       a stored query (-y skips). Saves to the project
                       vlt.json, or the user one with --config=user.`,
       },
+      init: {
+        usage: '[<name>]',
+        description: `Create a starter \`skills/<name>/SKILL.md\` for the
+                      project to ship, or a root \`SKILL.md\` named after
+                      the package. Adds it to package.json \`files\` if
+                      needed. Never overwrites. -w: in a workspace.`,
+      },
     },
     options: {
       target: {
@@ -99,6 +117,10 @@ export const usage: CommandUsage = () =>
         value: 'user|project',
         description:
           'vlt.json to save allow-skills to (default: project).',
+      },
+      workspace: {
+        value: '<path|glob>',
+        description: 'init: create the skill in this workspace.',
       },
       view: {
         value: '[human | json | mermaid]',
@@ -258,9 +280,54 @@ const humanLink = (r: LinkSkillsResult) => {
   return out.join('\n') || 'No agent skills found to link.'
 }
 
+const humanInit = (r: Extract<SkillsResult, { action: 'init' }>) => {
+  const rel = (p: string) => relative(process.cwd(), p)
+  if (r.exists) {
+    return `SKILL.md already exists at ${rel(r.skill.path)}`
+  }
+  return [
+    `Wrote SKILL.md to ${r.skill.path}`,
+    ...(r.manifest ?
+      [`Added "${r.manifest.added}" to ${rel(r.manifest.path)} files`]
+    : []),
+    '',
+    `Edit ${rel(r.skill.path)}: its description and instructions.`,
+    'Check the skill ships with `vlt pack --dry-run`.',
+    ...(r.query ?
+      [
+        'Projects that install this package link it with:',
+        '',
+        `  vlt install ${r.package} --allow-skills="${r.query}"`,
+      ]
+    : []),
+  ].join('\n')
+}
+
+// the project root, or the one workspace -w selects
+const initDir = (conf: LoadedConfig) => {
+  if (
+    !conf.get('workspace')?.length &&
+    !conf.get('workspace-group')?.length
+  ) {
+    return conf.projectRoot
+  }
+  const found = [
+    ...(conf.options.monorepo?.filter(conf.values) ?? []),
+  ]
+  const [one] = found
+  if (!one || found.length > 1) {
+    throw error('Select a single workspace', {
+      code: 'EUSAGE',
+      found: found.map(w => w.path),
+    })
+  }
+  return one.fullpath
+}
+
 const human = (r: SkillsResult, o?: ViewOptions): string =>
   r.action === 'list' ? humanList(r, o)
   : r.action === 'unchanged' ? 'No changes made.'
+  : r.action === 'init' ? humanInit(r)
   : [
       humanLink(r),
       ...unmatchedLines(r.unmatched),
@@ -369,11 +436,24 @@ export const command: CommandFn<SkillsResult> = async conf => {
         ...res,
       }
     }
+    case 'init': {
+      const res = initSkill({ cwd: initDir(conf), name: query })
+      const allow =
+        res.package &&
+        (query ?
+          `#${res.package}:skill(${query})`
+        : `#${res.package}`)
+      return {
+        action: 'init',
+        ...res,
+        ...(allow && { query: allow }),
+      }
+    }
     default:
       throw error('Unknown skills subcommand', {
         code: 'EUSAGE',
         found: sub,
-        validOptions: ['list', 'ls', 'link'],
+        validOptions: ['list', 'ls', 'link', 'init'],
       })
   }
 }

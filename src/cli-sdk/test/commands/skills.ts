@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Graph, mermaidOutput } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
@@ -212,7 +214,7 @@ t.test('command', async t => {
       cause: {
         code: 'EUSAGE',
         found: sub,
-        validOptions: ['list', 'ls', 'link'],
+        validOptions: ['list', 'ls', 'link', 'init'],
       },
     })
   }
@@ -815,4 +817,207 @@ t.test('mermaid workspaces', async t => {
   })
   t.matchSnapshot(out, 'workspace under the project')
   t.match(out, /^a -->.*workspace:a/m, 'project to workspace edge')
+})
+
+t.test('init', async t => {
+  type InitOptions = {
+    workspace?: string[]
+    'workspace-group'?: string[]
+    monorepo?: Monorepo
+  }
+  const init = async (
+    projectRoot: string,
+    positionals: string[],
+    o: InitOptions = {},
+  ) => {
+    const { monorepo, ...values } = o
+    return Command.command({
+      projectRoot,
+      positionals: ['init', ...positionals],
+      values,
+      options: { monorepo },
+      get: (k: keyof typeof values) => values[k],
+    } as unknown as LoadedConfig)
+  }
+  const pj = (o: Record<string, unknown>) => JSON.stringify(o)
+  const skillMd = join('skills', 'my-skill', 'SKILL.md')
+
+  t.test('needsRegistry: not for init', async t => {
+    const needs = (positionals: string[]) =>
+      typeof Command.needsRegistry === 'function' &&
+      Command.needsRegistry({
+        positionals,
+      } as unknown as LoadedConfig)
+    t.equal(needs(['init', 'x']), false)
+    t.equal(needs(['init']), false)
+    for (const p of [[], ['list'], ['ls'], ['link']]) {
+      t.equal(needs(p), true, p.join(' '))
+    }
+  })
+
+  t.test('named', async t => {
+    const dir = t.testdir({
+      'package.json': pj({ name: 'my-tool', version: '1.0.0' }),
+    })
+    t.chdir(dir)
+    const path = resolve(dir, skillMd)
+    const r = await init(dir, ['my-skill'])
+    t.strictSame(r, {
+      action: 'init',
+      skill: { name: 'my-skill', path },
+      package: 'my-tool',
+      query: '#my-tool:skill(my-skill)',
+    })
+    t.equal(Command.views.json(r), r, 'json: as is')
+    t.equal(Command.views.mermaid(r), Command.views.human(r))
+    t.equal(
+      Command.views.human(r),
+      [
+        `Wrote SKILL.md to ${path}`,
+        '',
+        `Edit ${skillMd}: its description and instructions.`,
+        'Check the skill ships with `vlt pack --dry-run`.',
+        'Projects that install this package link it with:',
+        '',
+        '  vlt install my-tool --allow-skills="#my-tool:skill(my-skill)"',
+      ].join('\n'),
+    )
+    t.match(readFileSync(path, 'utf8'), /^---\nname: my-skill\n/)
+
+    const again = await init(dir, ['my-skill'])
+    t.match(again, { action: 'init', exists: true })
+    t.equal(
+      Command.views.human(again),
+      `SKILL.md already exists at ${skillMd}`,
+    )
+    t.strictSame(calls, [], 'no graph')
+  })
+
+  t.test('root', async t => {
+    for (const name of ['my-tool', '@s/my-tool']) {
+      t.test(name, async t => {
+        const dir = t.testdir({ 'package.json': pj({ name }) })
+        t.chdir(dir)
+        const r = await init(dir, [])
+        t.strictSame(r, {
+          action: 'init',
+          skill: { name: 'my-tool', path: resolve(dir, 'SKILL.md') },
+          package: name,
+          query: `#${name}`,
+        })
+        t.match(
+          Command.views.human(r),
+          `  vlt install ${name} --allow-skills="#${name}"`,
+        )
+      })
+    }
+  })
+
+  t.test('files edit', async t => {
+    const dir = t.testdir({
+      'package.json': pj({ name: 'my-tool', files: ['dist'] }),
+    })
+    t.chdir(dir)
+    const r = await init(dir, ['my-skill'])
+    t.match(r, {
+      manifest: {
+        path: resolve(dir, 'package.json'),
+        added: 'skills',
+      },
+    })
+    t.match(
+      Command.views.human(r),
+      `\nAdded "skills" to package.json files\n`,
+    )
+  })
+
+  t.test('no package.json: no install hint', async t => {
+    const dir = t.testdir({})
+    t.chdir(dir)
+    const r = await init(dir, ['my-skill'])
+    t.strictSame(r, {
+      action: 'init',
+      skill: { name: 'my-skill', path: resolve(dir, skillMd) },
+    })
+    t.notMatch(Command.views.human(r), 'vlt install')
+  })
+
+  t.test('invalid name', async t => {
+    const dir = t.testdir({ 'package.json': pj({ name: 'my-tool' }) })
+    await t.rejects(init(dir, ['My-Skill']), {
+      cause: { code: 'EUSAGE', found: 'My-Skill' },
+    })
+    t.equal(existsSync(resolve(dir, 'skills')), false)
+  })
+
+  t.test('--workspace', async t => {
+    const dir = t.testdir({
+      'package.json': pj({ name: 'my-project' }),
+      'vlt.json': pj({
+        workspaces: { packages: ['packages/*'], apps: ['apps/*'] },
+      }),
+      packages: {
+        a: { 'package.json': pj({ name: 'a', files: ['dist'] }) },
+        b: { 'package.json': pj({ name: 'b' }) },
+      },
+      apps: { c: { 'package.json': pj({ name: 'c' }) } },
+    })
+    t.chdir(dir)
+    unload('project')
+    t.teardown(() => unload('project'))
+    const monorepo = Monorepo.load(dir)
+
+    const r = await init(dir, ['x'], {
+      workspace: ['packages/a'],
+      monorepo,
+    })
+    const path = resolve(dir, 'packages/a/skills/x/SKILL.md')
+    t.strictSame(r, {
+      action: 'init',
+      skill: { name: 'x', path },
+      package: 'a',
+      manifest: {
+        path: resolve(dir, 'packages/a/package.json'),
+        added: 'skills',
+      },
+      query: '#a:skill(x)',
+    })
+    t.match(
+      Command.views.human(r),
+      `Added "skills" to ${join('packages', 'a', 'package.json')} files`,
+    )
+    t.equal(existsSync(resolve(dir, 'skills')), false, 'not at root')
+
+    t.match(
+      await init(dir, ['x'], {
+        'workspace-group': ['apps'],
+        monorepo,
+      }),
+      {
+        skill: { path: resolve(dir, 'apps/c/skills/x/SKILL.md') },
+        query: '#c:skill(x)',
+      },
+      'workspace group',
+    )
+
+    await t.rejects(init(dir, ['x'], { workspace: ['x'] }), {
+      message: 'Select a single workspace',
+      cause: { code: 'EUSAGE', found: [] },
+    })
+    const err = (await init(dir, ['y'], {
+      workspace: ['packages/*'],
+      monorepo,
+    }).catch((e: unknown) => e)) as Error & {
+      cause: { found: string[] }
+    }
+    t.match(err, {
+      message: 'Select a single workspace',
+      cause: { code: 'EUSAGE' },
+    })
+    t.strictSame([...err.cause.found].sort(), [
+      'packages/a',
+      'packages/b',
+    ])
+    t.equal(existsSync(resolve(dir, 'packages/b/skills')), false)
+  })
 })
