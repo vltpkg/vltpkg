@@ -126,6 +126,26 @@ t.test('ci ignores package.json workspaces', async t => {
   )
 })
 
+t.test('no workspace inferred for the global project', async t => {
+  const dir = t.testdir({
+    g: {
+      packages: {
+        'x-ws': {
+          'package.json': JSON.stringify({ name: 'x-ws' }),
+        },
+      },
+    },
+  })
+  const g = join(dir, 'g')
+  const { config } = await run(t, {
+    argv: ['install', '-g', `--global-dir=${g}`],
+    cwd: join(g, 'packages/x-ws'),
+  })
+  t.equal(config.globalRoot, g)
+  t.equal(config.get('workspace'), undefined)
+  t.ok(config.options.monorepo?.get('x-ws'))
+})
+
 t.test('print version', async t => {
   const { logs } = await run(t, { argv: ['-v'] })
   t.matchOnly(logs[0], /^\d\.\d\.\d/)
@@ -231,6 +251,30 @@ t.test('config error', async t => {
       t.matchSnapshot(logs.join('\n'))
     })
   }
+
+  await t.test('global project cannot be created', async t => {
+    let exitCode = 0
+    const cwd = t.testdir({ file: '' })
+    const g = join(cwd, 'file', 'g')
+    t.intercept(process, 'exit', {
+      value: (code: number) => {
+        exitCode = code
+        throw new Error()
+      },
+    })
+    const { logs } = await run(t, {
+      argv: ['ls', '-g', `--global-dir=${g}`],
+      cwd,
+    })
+    t.equal(exitCode, 1)
+    t.strictSame(logs.slice(0, 3), [
+      'Config Error',
+      'Could not create the global project',
+      `  Found: ${g}`,
+    ])
+    t.match(logs[3], /^ {2}Cause: /)
+    t.equal(logs.length, 4)
+  })
 })
 
 t.test('valid workspace', async t => {

@@ -1,5 +1,6 @@
 import { format } from 'node:util'
 import { asRootError, findRootError } from '@vltpkg/output/error'
+import { isError } from '@vltpkg/types'
 import { setVltJsonOnly } from '@vltpkg/workspaces'
 import { loadPackageJson } from 'package-json-from-dist'
 import {
@@ -36,7 +37,7 @@ const loadVlt = async (cwd: string, argv: string[]) => {
     const code =
       findRootError(e, { code: 'ECONFIG' }) ? 'ECONFIG' : 'JACKSPEAK'
     const err = asRootError(e, { code })
-    const { found, path, wanted, name } = err.cause
+    const { found, path, wanted, name, cause } = err.cause
     const isConfigFile = typeof path === 'string'
     const msg =
       isConfigFile ? `Problem in Config File ${path}`
@@ -57,6 +58,8 @@ const loadVlt = async (cwd: string, argv: string[]) => {
       )
     }
     if (wanted) stderr(indent(`Wanted: ${format(wanted)}`))
+    // eg the global project can't be created
+    if (isError(cause)) stderr(indent(`Cause: ${cause.message}`))
     if (validOptions) {
       stderr(indent('Valid Options:'))
       stderr(indent(validOptions.join('\n'), 4))
@@ -87,7 +90,8 @@ const run = async () => {
   const { monorepo } = vlt.options
 
   // Infer the workspace by being in that directory.
-  if (vlt.get('workspace') === undefined) {
+  // Not for the global project, cwd is unrelated to it.
+  if (vlt.get('workspace') === undefined && !vlt.globalRoot) {
     const ws = monorepo?.get(cwd)
     if (ws) {
       vlt.values.workspace = [ws.path]

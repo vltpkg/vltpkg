@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import type { WriteStream } from 'node:tty'
 import {
   formatWithOptions,
@@ -5,6 +6,7 @@ import {
 } from 'node:util'
 import { createSupportsColor } from 'supports-color'
 import { defaultView } from './config/definition.ts'
+import { globalCommands } from './global-project.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr, formatOptions } from './print-err.ts'
@@ -243,6 +245,17 @@ export const outputCommand = async <T>(
   const commandName = conf.command
 
   try {
+    // explicit only: `global` in the user config is ignored here
+    if (conf.explicit.global && !conf.globalRoot) {
+      throw error(
+        `\`vlt ${conf.command}\` does not support --global`,
+        {
+          code: 'EUSAGE',
+          found: conf.command,
+          validOptions: [...globalCommands],
+        },
+      )
+    }
     // checked here rather than in run() so that the missing-registry
     // error is rendered, tracked and exited like any other command
     // error, and so that the `--help` return above still works when

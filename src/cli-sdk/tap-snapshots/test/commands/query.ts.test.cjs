@@ -237,6 +237,11 @@ Defaults to listing all dependencies of the project root and workspaces.
 
       ​--view=[human | json | mermaid | svg | png | count]
 
+    global
+      Query the global project.
+
+      ​--global
+
 `
 
 exports[`test/commands/query.ts > TAP > query > should list mermaid in json format 1`] = `
