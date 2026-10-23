@@ -1,0 +1,178 @@
+---
+title: Global Installs
+sidebar:
+  label: Global Installs
+---
+
+`vlt install -g` installs command line tools once, for use anywhere.
+Global packages live in a regular vlt project with its own
+`vlt-lock.json`, so your tools are locked, pinned and listed like any
+dependency, and the whole set can be versioned and restored on another
+machine.
+
+## How it works
+
+The global project lives in `global-dir`, by default `vlt/global` in
+the XDG data directory: `~/.local/share/vlt/global` on Linux,
+`~/Library/Application Support/vlt/global` on macOS,
+`%APPDATA%\xdg.data\vlt\global` on Windows.
+
+- each package gets its own workspace, `packages/<name>-ws`
+  (`packages/@scope+name-ws` for scoped packages), with the package as
+  its only dependency
+- the project has one `vlt-lock.json` and `node_modules`
+- bins are linked next to `vlt` itself, so they run right away. Set
+  `global-bin-dir` to pick the folder (fallbacks in
+  [`vlt install`](/client/commands/install#global-installs)) and run
+  [`vlt setup --path`](/client/commands/setup#add-global-bins-to-your-path)
+  to add it to your `PATH`
+- the current project is never read or changed
+
+## Getting started
+
+<Code
+  code={`# install latest, re-run to upgrade
+$ vlt install -g eslint
+# pin a version range
+$ vlt install -g eslint@9
+# list global packages
+$ vlt ls -g
+# run their install scripts
+$ vlt build -g
+# remove a package and its bins
+$ vlt uninstall -g eslint`}
+  title="Terminal"
+  lang="bash"
+/>
+
+`vlt install -g` with no packages installs what the lockfile says and
+re-links every bin. It never upgrades anything; name a package to
+upgrade it. `-g` works with `install`, `uninstall`, `list`, `query`
+and `build`.
+
+## Updating vlt
+
+`vlt install -g vlt` updates vlt itself, see
+[Updating vlt](/client/commands/install#updating-vlt).
+
+## Best practices
+
+### Keep your global project in a versioned folder
+
+Point `global-dir` at a folder you version: a git repository of its
+own, or a folder inside your dotfiles repository. Every tool you
+install globally is then recorded in a lockfile you can diff, commit
+and restore.
+
+<Code
+  code={`$ mkdir -p ~/tools/vlt-global && git -C ~/tools/vlt-global init
+$ vlt config set --config=user global-dir=~/tools/vlt-global`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Moving existing global packages? See
+[Move from the default folder](#move-from-the-default-folder) first.
+
+- `--config=user` is required: `global-dir` is only read from the
+  command line, `VLT_GLOBAL_DIR` or the user config, never from a
+  project `vlt.json`. A plain `vlt config set` writes the project
+  file, which `-g` ignores. Check with
+  `vlt config get global-dir --config=user`.
+- The path must be absolute or start with `~/`, which is saved as
+  written, so the same user config works with different home folders.
+- The first `vlt install -g <tool>` adds a `vlt.json`, a
+  `package.json`, one `packages/<tool>-ws/package.json` per tool and
+  `vlt-lock.json`. Commit those. The rest is specific to the machine:
+  ignore it with a `.gitignore` in that folder.
+
+<Code
+  code={`node_modules/
+bin/
+backups/
+env
+env.fish
+global-state.json`}
+  title=".gitignore"
+  lang="text"
+/>
+
+Each `vlt install -g` or `vlt uninstall -g` is then a small diff: the
+lockfile plus one workspace manifest.
+
+The lockfile records the registries it was resolved with (user config
+plus the folder's `vlt.json`). Use the same registries on every
+machine (e.g. [`vlt setup`](/client/commands/setup) with the same
+account), else `vlt install -g` rewrites the lockfile and
+`--frozen-lockfile` fails. Registries set in the folder's `vlt.json`
+are committed with it and override same-named user ones:
+
+<Code
+  code={JSON.stringify(
+    {
+      workspaces: 'packages/*',
+      config: {
+        registries: {
+          npm: 'https://registry.vlt.io/<account>/npm/',
+        },
+      },
+    },
+    null,
+    2,
+  )}
+  title="vlt.json"
+  lang="json"
+/>
+
+### Restore on another machine
+
+vlt has no
+[default registry](/client/registries#setting-the-registry): set up
+the same registries first (see above). Then:
+
+<Code
+  code={`$ git clone <your-repo> ~/tools/vlt-global
+$ vlt config set --config=user global-dir=~/tools/vlt-global
+$ vlt install -g`}
+  title="Terminal"
+  lang="bash"
+/>
+
+It installs exactly what the lockfile says and links every bin.
+`vlt install -g --frozen-lockfile` fails instead of changing the
+lockfile. Tools installed from a local folder
+(`vlt install -g ./my-tool`) are saved by absolute path: restore fails
+unless that folder exists on the new machine too.
+
+The user config can live in the same dotfiles repository (a symlink
+works); `vlt config location --config=user` prints its path.
+
+### Move from the default folder
+
+Already have global packages? Copy the project files into the new
+folder before your first `vlt install -g` there (Windows path in
+[How it works](#how-it-works)):
+
+<Code
+  code={`# Linux
+$ cp -R ~/.local/share/vlt/global/{vlt.json,package.json,packages,vlt-lock.json} ~/tools/vlt-global/
+# macOS
+$ cp -R ~/Library/"Application Support"/vlt/global/{vlt.json,package.json,packages,vlt-lock.json} ~/tools/vlt-global/
+$ vlt config set --config=user global-dir=~/tools/vlt-global
+$ vlt install -g --force`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Without `--force`, bins the old folder linked are skipped
+(`⚠️ Skipped <bin>: already in … (use --force to overwrite)`). Bins in
+`<global-dir>/bin` move with the folder: run `vlt setup --path` again.
+
+## See also
+
+- [`vlt install`](/client/commands/install#global-installs) — global
+  install reference
+- [Configuring](/client/configuring#--global-dirpath) — `global-dir`
+  and `global-bin-dir`
+- [`vlt setup`](/client/commands/setup#add-global-bins-to-your-path) —
+  add global bins to your `PATH`
