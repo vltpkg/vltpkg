@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import {
   appendFileSync,
   existsSync,
@@ -11,8 +12,10 @@ import {
   readdirSync,
   readlinkSync,
   realpathSync,
+  renameSync,
   rmSync,
   statSync,
+  symlinkSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs'
@@ -953,6 +956,22 @@ t.test('linkSkills: agent dirs', async t => {
     t.equal(gitignore(dir, '.agents/skills'), block('b'))
   })
 
+  t.test("the user's link takes the name: never vlt's", async t => {
+    const dir = project(t)
+    await linkSkills({ ...aopts(dir), target: '#foo' })
+    const a = resolve(dir, '.agents/skills/a')
+    unlinkSync(a)
+    symlinkSync(resolve(dir, 'skills/mine'), a, 'junction')
+    const res = await linkSkills({ ...aopts(dir), target: '#foo' })
+    t.strictSame(res.conflicts, ['.agents/skills/a'])
+    t.equal(gitignore(dir, '.agents/skills'), block('b'))
+    rmSync(resolve(dir, 'skills/mine'), { recursive: true })
+    const again = await linkSkills({ ...aopts(dir), target: '#foo' })
+    t.strictSame(again.linked, [], 'dangling: not replaced')
+    t.strictSame(again.conflicts, ['.agents/skills/a'])
+    t.ok(lstatSync(a).isSymbolicLink())
+  })
+
   t.test('nothing selected: no dir made, cleanup runs', async t => {
     const dir = project(
       t,
@@ -1397,5 +1416,285 @@ t.test('fails closed w/o security data', async t => {
     )
     t.equal(target(dir, 'skills/a'), resolve(dir, barDir, 'skills/a'))
     t.strictSame(res.unscanned, ['b (foo@1.0.0)'])
+  })
+})
+
+t.test('workspaces', async t => {
+  const ws = (name: string, files: Record<string, Dir>): Dir => ({
+    'package.json': JSON.stringify({ name, version: '1.0.0' }),
+    ...files,
+  })
+  const fixture = (t: Test, more: Record<string, Dir> = {}) =>
+    t.testdir({
+      'package.json': JSON.stringify({
+        name: 'proj',
+        version: '1.0.0',
+        devDependencies: { '@x/foo': 'workspace:*' },
+      }),
+      'vlt.json': '{}',
+      // the project root is never scanned
+      'SKILL.md': skillMd('root'),
+      packages: {
+        foo: ws('@x/foo', { 'SKILL.md': skillMd('ws foo') }),
+        // not depended on
+        bar: ws('@x/bar', {
+          skills: { b: { 'SKILL.md': skillMd('ws b') } },
+        }),
+      },
+      node_modules: {
+        '@x': { foo: t.fixture('symlink', '../../packages/foo') },
+      },
+      ...more,
+    })
+  const wsOpts = (
+    dir: string,
+    skillsDirs = ['.agents/skills'],
+    packages = ['packages/*'],
+  ) => ({
+    ...opts(dir),
+    monorepo: Monorepo.load(dir, { config: { packages } }),
+    skillsDirs,
+  })
+  const link = (dir: string, target: string, apply = true) =>
+    linkSkills({ ...wsOpts(dir), target, apply })
+  const mounts = (rows: { mount: string }[]) => rows.map(r => r.mount)
+  const real = (dir: string, path: string) =>
+    realpathSync(resolve(dir, path))
+  const gitignore = (t: Test, dir: string, ...names: string[]) =>
+    t.equal(
+      readFileSync(resolve(dir, '.agents/skills/.gitignore'), 'utf8'),
+      [
+        GITIGNORE_BEGIN,
+        ...names.map(n => `/${n}`),
+        GITIGNORE_END,
+        '',
+      ].join('\n'),
+    )
+  const fooWs = joinDepIDTuple(['workspace', 'packages/foo'])
+  const barWs = joinDepIDTuple(['workspace', 'packages/bar'])
+
+  t.test('listSkills', async t => {
+    const dir = fixture(t)
+    const list = async (target?: string) =>
+      (await listSkills({ ...wsOpts(dir), target })).skills.map(s => [
+        s.skill,
+        s.name,
+        s.id,
+        s.description,
+      ])
+    const all = [
+      ['b', '@x/bar', barWs, 'ws b'],
+      ['foo', '@x/foo', fooWs, 'ws foo'],
+    ]
+    t.strictSame(await list(), all, 'default *')
+    t.strictSame(await list(':workspace'), all)
+    t.strictSame(await list('#@x/foo'), [all[1]])
+    t.strictSame(await list(':root > *'), [all[1]], 'depended on')
+    t.strictSame(await list(':not(:workspace)'), [], 'left out')
+  })
+
+  t.test('linkSkills', async t => {
+    const dir = fixture(t)
+    const first = await link(dir, '*')
+    t.strictSame(mounts(first.linked), [
+      '.agents/skills/b',
+      '.agents/skills/foo',
+    ])
+    t.strictSame(first.conflicts, [])
+    t.equal(
+      real(dir, '.agents/skills/b'),
+      real(dir, 'packages/bar/skills/b'),
+    )
+    t.equal(
+      real(dir, '.agents/skills/foo'),
+      real(dir, 'packages/foo'),
+    )
+    if (process.platform !== 'win32') {
+      t.equal(
+        readlinkSync(resolve(dir, '.agents/skills/foo')),
+        '../../packages/foo',
+        'relative',
+      )
+    }
+    gitignore(t, dir, 'b', 'foo')
+
+    const second = await link(dir, '*')
+    t.strictSame(second.linked, [])
+    t.strictSame(mounts(second.unchanged), [
+      '.agents/skills/b',
+      '.agents/skills/foo',
+    ])
+    t.strictSame(second.removed, [])
+    t.strictSame(second.conflicts, [])
+    t.strictSame(
+      (await listSkills(wsOpts(dir))).skills.map(s => s.linked),
+      [['.agents/skills'], ['.agents/skills']],
+    )
+
+    const install = await link(dir, '#@x/foo', false)
+    t.strictSame(install.removed, [], 'installs keep links')
+    t.ok(isLink(dir, '.agents/skills/b'))
+    const apply = await link(dir, '#@x/foo')
+    t.strictSame(apply.removed, ['.agents/skills/b'])
+    t.notOk(isLink(dir, '.agents/skills/b'))
+    t.ok(
+      existsSync(resolve(dir, 'packages/bar/skills/b/SKILL.md')),
+      'source kept',
+    )
+    gitignore(t, dir, 'foo')
+  })
+
+  t.test('skill gone: removed', async t => {
+    const cases: [string, (dir: string) => void][] = [
+      [
+        'SKILL.md deleted',
+        dir => rmSync(resolve(dir, 'packages/bar/skills/b/SKILL.md')),
+      ],
+      [
+        'skill dir deleted',
+        dir =>
+          rmSync(resolve(dir, 'packages/bar/skills/b'), {
+            recursive: true,
+          }),
+      ],
+      [
+        'workspace deleted',
+        dir =>
+          rmSync(resolve(dir, 'packages/bar'), { recursive: true }),
+      ],
+    ]
+    for (const [name, gone] of cases) {
+      t.test(name, async t => {
+        const dir = fixture(t)
+        await link(dir, '*')
+        gone(dir)
+        const res = await link(dir, '*', false)
+        t.strictSame(res.removed, ['.agents/skills/b'])
+        t.notOk(isLink(dir, '.agents/skills/b'))
+        gitignore(t, dir, 'foo')
+      })
+    }
+  })
+
+  t.test('workspace not loaded: link keeps its line', async t => {
+    const dir = fixture(t)
+    // also ships `b`: loses to @x/bar by DepID
+    mkdirSync(resolve(dir, 'packages/foo/skills/b'), {
+      recursive: true,
+    })
+    writeFileSync(
+      resolve(dir, 'packages/foo/skills/b/SKILL.md'),
+      skillMd('foo b'),
+    )
+    await link(dir, '*')
+    t.equal(
+      real(dir, '.agents/skills/b'),
+      real(dir, 'packages/bar/skills/b'),
+    )
+    const res = await linkSkills({
+      ...wsOpts(dir),
+      // `-w packages/foo`
+      monorepo: Monorepo.load(dir, {
+        config: { packages: ['packages/*'] },
+        load: { paths: ['packages/foo'] },
+      }),
+      target: '*',
+      apply: true,
+    })
+    t.strictSame(res.conflicts, ['.agents/skills/b'])
+    t.strictSame(res.removed, [])
+    gitignore(t, dir, 'b', 'foo')
+    const none = await link(dir, ':not(*)')
+    t.strictSame(none.removed, [
+      '.agents/skills/b',
+      '.agents/skills/foo',
+    ])
+  })
+
+  t.test('listed link to a non-workspace dir: left', async t => {
+    const dir = fixture(t, {
+      old: { skills: { old: { 'SKILL.md': skillMd('old') } } },
+      '.agents': {
+        skills: {
+          '.gitignore': `${GITIGNORE_BEGIN}\n/old\n${GITIGNORE_END}\n`,
+          old: t.fixture('symlink', '../../old/skills/old'),
+        },
+      },
+    })
+    for (const target of ['*', ':not(*)']) {
+      const res = await link(dir, target)
+      t.notOk(res.removed.includes('.agents/skills/old'), target)
+      t.ok(isLink(dir, '.agents/skills/old'), target)
+    }
+  })
+
+  t.test('workspace moved: re-pointed', async t => {
+    const dir = fixture(t)
+    await link(dir, '*')
+    renameSync(
+      resolve(dir, 'packages/bar'),
+      resolve(dir, 'packages/baz'),
+    )
+    const res = await link(dir, '*', false)
+    t.strictSame(mounts(res.linked), ['.agents/skills/b'])
+    t.strictSame(res.removed, [])
+    t.strictSame(res.conflicts, [])
+    t.equal(
+      real(dir, '.agents/skills/b'),
+      real(dir, 'packages/baz/skills/b'),
+    )
+    gitignore(t, dir, 'b', 'foo')
+  })
+
+  t.test("the user's own links are never vlt's", async t => {
+    const dir = fixture(t, {
+      '.agents': {
+        skills: { foo: t.fixture('symlink', '../../packages/foo') },
+      },
+    })
+    const res = await link(dir, '*')
+    t.strictSame(mounts(res.unchanged), ['.agents/skills/foo'])
+    t.strictSame(mounts(res.linked), ['.agents/skills/b'])
+    gitignore(t, dir, 'b')
+    t.strictSame(
+      (await listSkills(wsOpts(dir))).skills.map(s => s.linked),
+      [['.agents/skills'], []],
+      'not marked linked',
+    )
+    const none = await link(dir, ':not(*)')
+    t.strictSame(none.removed, ['.agents/skills/b'])
+    t.ok(isLink(dir, '.agents/skills/foo'), 'kept')
+  })
+
+  t.test('workspace inside a skills dir', async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'proj',
+        version: '1.0.0',
+      }),
+      'vlt.json': '{}',
+      '.agents': {
+        skills: { s: ws('s', { 'SKILL.md': skillMd('s') }) },
+      },
+    })
+    const res = await linkSkills({
+      ...wsOpts(
+        dir,
+        ['.agents/skills', '.claude/skills'],
+        ['.agents/skills/*'],
+      ),
+      target: '*',
+      apply: true,
+    })
+    t.strictSame(mounts(res.unchanged), ['.agents/skills/s'])
+    t.strictSame(mounts(res.linked), ['.claude/skills/s'])
+    t.strictSame(res.conflicts, [])
+    t.equal(
+      real(dir, '.claude/skills/s'),
+      real(dir, '.agents/skills/s'),
+    )
+    t.ok(lstatSync(resolve(dir, '.agents/skills/s')).isDirectory())
+    t.notOk(existsSync(resolve(dir, '.agents/skills/.gitignore')))
+    t.ok(existsSync(resolve(dir, '.claude/skills/.gitignore')))
   })
 })

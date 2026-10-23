@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import type { DepID } from '@vltpkg/dep-id'
+import { Monorepo } from '@vltpkg/workspaces'
 import type { PathScurry } from 'path-scurry'
 import { load as loadActual } from '../actual/load.ts'
 import type { LoadOptions } from '../actual/load.ts'
@@ -21,10 +22,11 @@ import {
   mountSkill,
   packageKey,
   readMounts,
+  realOr,
   samePath,
   unmountSkill,
 } from './mounts.ts'
-import type { SkillMount } from './mounts.ts'
+import type { SkillMount, WorkspaceDir } from './mounts.ts'
 
 export * from './discover.ts'
 export type { SkillMount, MountResult } from './mounts.ts'
@@ -149,6 +151,30 @@ const dirsOf = (o: SkillsOptions, create = false) =>
     create,
   })
 
+// every workspace, selected or not: owners of vlt links
+const workspaceDirs = (
+  graph: Graph,
+  scurry: PathScurry,
+): WorkspaceDir[] =>
+  [...graph.importers]
+    .filter(n => !n.mainImporter)
+    .map(n => ({
+      id: n.id,
+      path: realOr(n.resolvedLocation(scurry)),
+    }))
+
+// every workspace, loaded or not (`-w`)
+const allWorkspaces = (m?: Monorepo): WorkspaceDir[] =>
+  m ?
+    [
+      ...Monorepo.load(m.projectRoot, {
+        config: m.config,
+        scurry: m.scurry,
+        packageJson: m.packageJson,
+      }).values(),
+    ].map(ws => ({ id: ws.id, path: realOr(ws.fullpath) }))
+  : []
+
 // packages behind live vlt links
 const liveOwners = (mounts: SkillMount[]): DepID[] =>
   mounts.flatMap(m =>
@@ -213,7 +239,11 @@ export const listSkills = async (
 ): Promise<ListSkillsResult> => {
   const { graph, nodes, parts, unscanned } = await selectNodes(o)
   const { targets, scan, skipped } = dirsOf(o)
-  const { skills } = discoverSkills(nodes, o.scurry, readMounts(scan))
+  const { skills } = discoverSkills(
+    nodes,
+    o.scurry,
+    readMounts(scan, { workspaces: workspaceDirs(graph, o.scurry) }),
+  )
   const { picked, dropped } = pick(skills, parts, unscanned)
   return {
     project: graph.mainImporter.name,
@@ -230,16 +260,17 @@ export const listSkills = async (
  * project's agent skill dirs (see `skillsDirs`), created only when a
  * skill is picked. `target` selectors may end with `:skill()`. One
  * package per name, among picked skills, in every dir: the package of
- * the first existing link (in dir order), else rank (main importer
- * dep, importer dep, transitive), then DepID; the others are
+ * the first existing link (in dir order), else rank (workspace or main
+ * importer dep, importer dep, transitive), then DepID; the others are
  * reported. Installs keep a dir's link to another installed skill.
  * A link follows its package to the picked version, in every scanned
  * dir. Then remove vlt links whose skill is no longer installed (with
  * `apply`: every vlt link not made here), and keep each dir's
- * `.gitignore` block in sync. Linked packages get private copies of
- * files hardlinked from the global store. Security queries fail
- * closed: skills of packages with no security data are not linked,
- * and reported in `unscanned` unless still linked.
+ * `.gitignore` block in sync (also vlt's record of workspace links).
+ * Linked packages get private copies of files hardlinked from the
+ * global store. Security queries fail closed: skills of packages with
+ * no security data are not linked, and reported in `unscanned` unless
+ * still linked.
  */
 export const linkSkills = async (
   o: LinkSkillsOptions,
@@ -260,7 +291,8 @@ export const linkSkills = async (
     conflicts: [],
     dirs: targets.map(d => d.dir),
   }
-  const mounts = readMounts(scan)
+  const workspaces = workspaceDirs(graph, o.scurry)
+  const mounts = readMounts(scan, { workspaces })
   const byName = new Map(
     mounts.map(m => [`${m.dir.dir}\0${lc(m.name)}`, m]),
   )
@@ -338,7 +370,10 @@ export const linkSkills = async (
   // names taken over by entries not vlt's
   const foreign: { dir: SkillsDir; name: string }[] = []
   const kept = new Set<string>()
+  // links made here, recorded even if not yet in `.gitignore`
+  const made = new Set<string>()
   const where = new Map<string, string[]>()
+  let every: WorkspaceDir[] | undefined
   for (const { dir, winner, losers, m } of picks) {
     if (winner) {
       // replaced link named in another case (case-sensitive fs)
@@ -347,10 +382,19 @@ export const linkSkills = async (
         gone.push(m)
       }
       const mount = `${dir.dir}/${winner.skill}`
-      const r = mountSkill(winner, dir)
+      const r = mountSkill(winner, dir, m?.name === winner.skill)
+      if (r === 'linked') made.add(mount)
       if (r === 'conflict') {
         res.conflicts.push(mount)
-        foreign.push({ dir, name: winner.skill })
+        // vlt's link into a workspace not loaded (`-w`) keeps its line
+        every ??= allWorkspaces(o.monorepo)
+        if (
+          !readMounts([dir], { workspaces: every }).some(
+            l => l.name === winner.skill,
+          )
+        ) {
+          foreign.push({ dir, name: winner.skill })
+        }
       } else {
         const k = `${winner.id}\0${winner.skill}`
         const linked = where.get(k) ?? []
@@ -363,7 +407,7 @@ export const linkSkills = async (
     for (const s of losers)
       res.conflicts.push(`${dir.dir}/${s.skill} (${label(s)})`)
   }
-  const after = readMounts(scan)
+  const after = readMounts(scan, { workspaces, made })
   const present: SkillMount[] = []
   for (const m of after) {
     if (o.apply ? kept.has(m.mount) : !stale(m)) {

@@ -384,7 +384,7 @@ t.test('discoverSkills', async t => {
     t.notOk(scanned.has(tgzId), 'tarball')
     t.notOk(scanned.has(local.id), 'local')
     t.notOk(scanned.has(root.id), 'importer')
-    t.notOk(scanned.has(ws.id), 'workspace')
+    t.strictSame(scanned.get(ws.id), [], 'workspace')
   })
 
   t.test(
@@ -731,6 +731,73 @@ t.test('discoverSkills', async t => {
   })
 })
 
+t.test('workspaces', async t => {
+  const id = (n: string) => joinDepIDTuple(['registry', '', n])
+  const projectRoot = t.testdir({
+    'vlt.json': '{}',
+    'SKILL.md': fm('root', 'never'),
+    packages: {
+      w: {
+        'SKILL.md': fm('w', 'ws root'),
+        skills: { x: { 'SKILL.md': fm('x', 'ws x') } },
+      },
+    },
+    node_modules: {
+      '.vlt': {
+        [id('t@1.0.0')]: {
+          node_modules: {
+            t: { skills: { x: { 'SKILL.md': fm('x', 'store x') } } },
+          },
+        },
+      },
+    },
+  })
+  const graph = new Graph({
+    ...configData,
+    mainManifest: { name: 'root', version: '1.0.0' },
+    projectRoot,
+  })
+  const wsId = joinDepIDTuple(['workspace', 'packages/w'])
+  // not depended on
+  const ws = graph.addNode(wsId, { name: '@x/w', version: '1.0.0' })
+  ws.setImporterLocation('./packages/w')
+  const place = (from: Node, n: string) => {
+    const node = graph.placePackage(
+      from,
+      'prod',
+      Spec.parse(`${n}@1`, configData),
+      { name: n, version: '1.0.0' },
+    )
+    if (!node) throw new Error('failed to place ' + n)
+    return node
+  }
+  place(place(graph.mainImporter, 'dep'), 't')
+  const { skills } = discoverSkills(
+    graph.nodes.values(),
+    new PathScurry(projectRoot),
+  )
+  const w = resolve(realpathSync(projectRoot), 'packages/w')
+  t.strictSame(
+    skills.map(s => [
+      s.name,
+      s.version,
+      s.id,
+      s.skill,
+      s.description,
+    ]),
+    [
+      ['@x/w', '1.0.0', wsId, 'w', 'ws root'],
+      ['@x/w', '1.0.0', wsId, 'x', 'ws x'],
+      ['t', '1.0.0', id('t@1.0.0'), 'x', 'store x'],
+    ],
+    'no root SKILL.md; workspace ranks as a direct dep',
+  )
+  t.strictSame(
+    skills.slice(0, 2).map(s => s.path),
+    [w, resolve(w, 'skills/x')],
+  )
+})
+
 t.test('shipsSkills', async t => {
   const id = (n: string) => joinDepIDTuple(['registry', '', n])
   const tgzId = joinDepIDTuple(['file', 'pkgs/tgz.tgz'])
@@ -785,6 +852,16 @@ t.test('shipsSkills', async t => {
   t.equal(shipsSkills(node('bad')), false, 'bad dir names only')
   t.equal(shipsSkills(node('smd')), false, 'skills/SKILL.md only')
   t.equal(shipsSkills(graph.mainImporter), false, 'importer')
+  const ws = (path: string) => {
+    const n = graph.addNode(joinDepIDTuple(['workspace', path]), {
+      name: path,
+      version: '1.0.0',
+    })
+    n.setImporterLocation(`./${path}`)
+    return n
+  }
+  t.equal(shipsSkills(ws('local')), true, 'workspace')
+  t.equal(shipsSkills(ws('none')), false, 'workspace w/o skills')
   const loc = node('loc')
   loc.location = './local'
   t.equal(shipsSkills(loc), false, 'not in the store')

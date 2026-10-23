@@ -198,8 +198,10 @@ const scan = (dir: string, pkgName: string): Found[] => {
   return found
 }
 
-// 0: dep of the main importer, 1: of any importer, 2: transitive
+// 0: a workspace or dep of the main importer, 1: dep of any
+// importer, 2: transitive
 const rank = (node: Node) => {
+  if (node.importer) return 0
   let r = 2
   for (const { from } of node.edgesIn) {
     if (from.mainImporter) return 0
@@ -233,11 +235,12 @@ const aliasOf = (node: Node) => {
   return n === node.name ? undefined : n
 }
 
-// store pkgs only: lockfile keeps a tarball's path as its location
+// store pkgs and workspaces, not the project root; lockfile keeps a
+// tarball's path as its location
 const scannable = (node: Node) =>
-  !node.importer &&
-  node.inVltStore() &&
-  splitDepID(node.id)[0] !== 'file'
+  node.importer ?
+    !node.mainImporter
+  : node.inVltStore() && splitDepID(node.id)[0] !== 'file'
 
 /** Ships agent skills, as `discoverSkills` finds them. */
 export const shipsSkills = (node: Node): boolean =>
@@ -248,14 +251,14 @@ export const shipsSkills = (node: Node): boolean =>
 /**
  * Find the agent skills shipped by the given installed packages.
  *
- * Only packages in the vlt store are scanned, for a root `SKILL.md`,
- * then `<dir>/SKILL.md` in `skills/`, `dist/skills/` and
- * `.agents/skills/`: the first skill of a name wins. One version per
- * package is picked, even if it ships none: a dep of the main
- * importer, else of any importer, else the highest version, then
- * DepID. Same-name skills of different packages are all returned,
- * sorted by rank then DepID (`linkSkills` resolves them). `mounts`
- * set each skill's `linked` dirs.
+ * Only packages in the vlt store and the project's workspaces (not its
+ * root) are scanned, for a root `SKILL.md`, then `<dir>/SKILL.md` in
+ * `skills/`, `dist/skills/` and `.agents/skills/`: the first skill of a
+ * name wins. One version per package is picked, even if it ships none:
+ * a workspace or dep of the main importer, else a dep of any importer,
+ * else the highest version, then DepID. Same-name skills of different
+ * packages are all returned, sorted by rank then DepID (`linkSkills`
+ * resolves them). `mounts` set each skill's `linked` dirs.
  */
 export const discoverSkills = (
   nodes: Iterable<Node>,

@@ -14,6 +14,10 @@ import type { Test } from 'tap'
 import { skillsDirs } from '../../src/skills/dirs.ts'
 import type { SkillsDir } from '../../src/skills/dirs.ts'
 import {
+  GITIGNORE_BEGIN,
+  GITIGNORE_END,
+} from '../../src/skills/gitignore.ts'
+import {
   mountSkill,
   mountTarget,
   ownerOf,
@@ -316,6 +320,74 @@ t.test('readMounts', async t => {
   })
 })
 
+t.test('readMounts: workspaces', async t => {
+  const wsId = joinDepIDTuple(['workspace', 'packages/w'])
+  const innerId = joinDepIDTuple(['workspace', 'packages/w/inner'])
+  const recorded = ['rec', 'other', 'gone', 'nested', 'real', 'whole']
+  const dir = project(
+    t,
+    {
+      '.gitignore': [
+        GITIGNORE_BEGIN,
+        ...recorded.map(n => `/${n}`),
+        GITIGNORE_END,
+        '',
+      ].join('\n'),
+      rec: t.fixture('symlink', '../packages/w/skills/a'),
+      unrec: t.fixture('symlink', '../packages/w/skills/b'),
+      made: t.fixture('symlink', '../packages/w/skills/b'),
+      other: t.fixture('symlink', '../outside/a'),
+      gone: t.fixture('symlink', '../packages/w/skills/gone'),
+      nested: t.fixture('symlink', '../packages/w/inner/skills/c'),
+      whole: t.fixture('symlink', '../packages/w'),
+      real: {},
+      a: t.fixture('symlink', `../${store}/skills/a`),
+    },
+    {
+      packages: {
+        w: {
+          'SKILL.md': '',
+          skills: { a: { 'SKILL.md': '' }, b: { 'SKILL.md': '' } },
+          inner: { skills: { c: { 'SKILL.md': '' } } },
+        },
+      },
+    },
+  )
+  const d = sd(dir)
+  const real = realpathSync(dir)
+  const workspaces = [
+    { id: wsId, path: resolve(real, 'packages/w') },
+    { id: innerId, path: resolve(real, 'packages/w/inner') },
+  ]
+  const read = (made?: Set<string>) =>
+    readMounts([d], { workspaces, made }).map(m => [
+      m.name,
+      m.owner,
+      m.target,
+    ])
+  const p = (s: string) => resolve(d.real, '..', s)
+  t.strictSame(read(), [
+    ['a', fooId, p(`${store}/skills/a`)],
+    ['gone', undefined, p('packages/w/skills/gone')],
+    ['nested', innerId, p('packages/w/inner/skills/c')],
+    ['rec', wsId, p('packages/w/skills/a')],
+    ['whole', wsId, p('packages/w')],
+  ])
+  t.strictSame(
+    read(new Set(['skills/made'])).map(([n]) => n),
+    ['a', 'gone', 'made', 'nested', 'rec', 'whole'],
+    'made this run',
+  )
+  t.strictSame(
+    readMounts([d]).map(m => [m.name, m.owner]),
+    [
+      ['a', fooId],
+      ['gone', undefined],
+    ],
+    'no workspaces',
+  )
+})
+
 t.test('mountSkill', async t => {
   t.test('links, then unchanged, then re-points', async t => {
     const dir = project(t)
@@ -428,6 +500,39 @@ t.test('mountSkill', async t => {
     t.equal(mountSkill(a, d), 'linked')
     t.equal(mountSkill(a, d), 'unchanged')
     t.equal(readMounts([d])[0]?.link, resolve(d.real, 'a'))
+  })
+
+  t.test('already the skill: unchanged', async t => {
+    const dir = project(t, {
+      // a workspace inside the skills dir
+      w: { 'SKILL.md': '' },
+      // the user's own link
+      u: t.fixture('symlink', '../outside/a'),
+    })
+    const d = sd(dir)
+    t.equal(
+      mountSkill({ skill: 'w', path: resolve(dir, 'skills/w') }, d),
+      'unchanged',
+    )
+    t.equal(
+      mountSkill({ skill: 'u', path: resolve(dir, 'outside/a') }, d),
+      'unchanged',
+    )
+    t.ok(lstatSync(resolve(dir, 'skills/w')).isDirectory())
+    t.equal(
+      target(resolve(dir, 'skills/u')),
+      resolve(dir, 'outside/a'),
+    )
+  })
+
+  t.test('owned: re-points a link outside the store', async t => {
+    const dir = project(t, {
+      a: t.fixture('symlink', '../outside/a'),
+    })
+    const a = skill(dir, 'a')
+    t.equal(mountSkill(a, sd(dir)), 'conflict', 'not owned')
+    t.equal(mountSkill(a, sd(dir), true), 'linked')
+    t.equal(target(resolve(dir, 'skills/a')), a.path)
   })
 
   t.test('conflicts', async t => {
