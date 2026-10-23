@@ -132,6 +132,7 @@ jobs:
         run: |
           vlr --workspace ./www/docs typedoc:check
           vlr --workspace ./www/docs lint:mdx
+          vlr --workspace ./www/docs lint:skills
 
       - name: Consistent Workspaces
         id: workspaces
