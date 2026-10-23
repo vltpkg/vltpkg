@@ -7,11 +7,18 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { runMultiple } from './fixtures/run.ts'
 
+// entries and their integrity links are 128 hex chars, keys add
+// `.key`. anything else is a write in flight: Cache writes
+// `<name>.<random>.<n>` then renames it, so it can vanish before
+// we read it.
+const entryName = /^[0-9a-f]{128}$/
+const keyName = /^[0-9a-f]{128}\.key$/
+
 const readCache = (cache: string) => {
   const dir = join(cache, 'vlt/registry-client')
   const names = readdirSync(dir)
   const entries = names
-    .filter(n => !n.endsWith('.key') && !n.startsWith('.'))
+    .filter(n => entryName.test(n))
     .map(n => {
       const buf = readFileSync(join(dir, n))
       return {
@@ -26,8 +33,8 @@ const readCache = (cache: string) => {
     )
   } catch {}
   return {
-    tmp: names.filter(n => n.startsWith('.')),
-    keys: names.filter(n => n.endsWith('.key')),
+    tmp: names.filter(n => !entryName.test(n) && !keyName.test(n)),
+    keys: names.filter(n => keyName.test(n)),
     json: entries.filter(e => e.json),
     tarballs: entries.filter(e => !e.json),
     store,
