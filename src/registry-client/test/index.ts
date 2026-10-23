@@ -2267,8 +2267,12 @@ t.test('cachedBody', async t => {
   }
 
   t.test('cachedIntegrity reads only the head', async t => {
-    t.teardown(() => rc.drain())
-    const rc = new RC({ cache: t.testdir() })
+    // t.testdir() wipes and returns the same dir on every call, so
+    // each client gets its own subdir of one testdir.
+    t.teardown(() => Promise.all([rc.drain(), bad.drain()]))
+    const dir = t.testdir({ rc: {}, bad: {} })
+    const rc = new RC({ cache: resolve(dir, 'rc') })
+    const bad = new RC({ cache: resolve(dir, 'bad') })
     const withHash = {
       ...tarHeaders,
       integrity,
@@ -2308,11 +2312,11 @@ t.test('cachedBody', async t => {
     // The in-memory copy can be newer than disk, same as cachedBody.
     rc.cache.set(url, entry(withHash))
     t.equal(rc.cachedIntegrity(url), undefined, 'deferred to request')
+    // settle the disk write that set() queued
+    await rc.cache.promise()
     rc.cache.delete(url)
 
     // A corrupt head length must not cause a huge allocation.
-    t.teardown(() => bad.drain())
-    const bad = new RC({ cache: t.testdir() })
     await write(bad, entry(withHash))
     const path = bad.cache.path(cacheKey('GET', new URL(url)))
     const buf = readFileSync(path)
