@@ -1603,6 +1603,8 @@
     "workspace~src+init typedoc": "dev catalog: ~npm~typedoc@0.27.9~peer.29a3be839bacbba5",
     "workspace~src+init typescript-eslint": "dev catalog: ~npm~typescript-eslint@8.67.0~peer.81d02d3cd21e2b77",
     "workspace~src+init typescript": "dev catalog: ~npm~typescript@5.7.3",
+    "workspace~src+init minimatch": "prod catalog: ~npm~minimatch@10.2.6",
+    "workspace~src+init @vltpkg/error-cause": "prod workspace:* workspace~src+error-cause",
     "workspace~src+init @vltpkg/git": "prod workspace:* workspace~src+git",
     "workspace~src+init @vltpkg/package-json": "prod workspace:* workspace~src+package-json",
     "workspace~src+init @vltpkg/registry-client": "prod workspace:* workspace~src+registry-client",
