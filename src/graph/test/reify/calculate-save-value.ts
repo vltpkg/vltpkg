@@ -369,3 +369,38 @@ t.test('save-prefix defaults to ^ when undefined', t => {
   )
   t.end()
 })
+
+t.test('bare add linking a workspace', t => {
+  const bare = Spec.parse('b', '')
+  const v = '1.2.3'
+  const ws = (
+    spec: Spec,
+    existing?: string,
+    nodeVersion?: string,
+    saveExact?: boolean,
+    savePrefix?: string,
+  ) =>
+    calculateSaveValue(
+      'workspace',
+      spec,
+      existing,
+      nodeVersion,
+      saveExact,
+      savePrefix,
+    )
+  t.equal(ws(bare, undefined, v), 'workspace:*', 'new dep')
+  t.equal(ws(bare, '', v), 'workspace:*', 'heals a saved ""')
+  t.equal(ws(bare, 'workspace:^', v), 'workspace:*', 're-add resets')
+  t.equal(ws(bare, undefined, v, true), 'workspace:*', 'save-exact')
+  t.equal(ws(bare, undefined, v, false, '~'), 'workspace:*', 'prefix')
+  t.equal(ws(bare), 'workspace:*', 'no version')
+  t.equal(
+    ws(Spec.parse('@x/s', ''), undefined, v),
+    'workspace:*',
+    'scoped',
+  )
+  for (const r of ['^1', '*', 'workspace:^']) {
+    t.equal(ws(Spec.parse('b', r), undefined, v), r, `${r} kept`)
+  }
+  t.end()
+})
