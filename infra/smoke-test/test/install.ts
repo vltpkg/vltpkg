@@ -50,6 +50,32 @@ t.test('tty', { skip: process.platform === 'win32' }, async t => {
   t.equal(status, 0)
 })
 
+t.test(
+  'global install offers PATH setup',
+  { skip: process.platform === 'win32' },
+  async t => {
+    const { status, output } = await runMultiple(
+      t,
+      ['install', '-g', 'semver', '--yes'],
+      {
+        tty: true,
+        env: { SHELL: '/bin/bash' },
+        match: ['status'],
+        test: async ({ t, dirs }) => {
+          t.match(
+            readFileSync(join(dirs.root, '.profile'), 'utf-8'),
+            '# vlt\n',
+          )
+          t.ok(existsSync(join(dirs.data, 'vlt', 'global', 'env')))
+        },
+      },
+    )
+    t.match(output, 'Run `vlt setup --path` to add it')
+    t.match(output, 'Added')
+    t.equal(status, 0)
+  },
+)
+
 t.test('no registry configured', async t => {
   const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
     match: ['status'],

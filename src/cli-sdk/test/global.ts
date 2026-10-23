@@ -1251,8 +1251,9 @@ t.test('globalBinsLines', async t => {
       `ℹ️  Using ${pretty} because /usr/bin is not writable.`,
       `🔗 Linked a, b in ${pretty}`,
       `⚠️  Skipped c: already in ${pretty} (use --force to overwrite)`,
+      '',
       `⚠️  ${pretty} is not on your PATH, so a, b can't be run yet.`,
-      '   Set --global-bin-dir to a folder on your PATH, or add this line to ~/.zshrc:',
+      '   Run `vlt setup --path` to add it, or add this line to ~/.zshrc:',
       '     export PATH="$HOME/.local/share/vlt/global/bin:$PATH"',
     ],
   )
@@ -1264,8 +1265,9 @@ t.test('globalBinsLines', async t => {
     [
       `ℹ️  Using ${pretty} because ~/bin is not writable.`,
       `⚠️  Skipped c: already in ${pretty} (use --force to overwrite)`,
+      '',
       `⚠️  ${pretty} is not on your PATH, so global bins can't be run yet.`,
-      '   Set --global-bin-dir to a folder on your PATH, or run:',
+      '   Run `vlt setup --path` to add it, or run:',
       '     fish_add_path "$HOME/.local/share/vlt/global/bin"',
     ],
   )
@@ -1316,9 +1318,35 @@ t.test('globalBinsLines', async t => {
   t.test('detects the shell', async t => {
     t.intercept(process, 'platform', { value: 'linux' })
     t.intercept(process, 'env', { value: { SHELL: '/bin/bash' } })
-    t.strictSame(globalBinsLines(g({ conflicts: [] })).slice(-2), [
-      '   Set --global-bin-dir to a folder on your PATH, or add this line to ~/.bashrc:',
-      `     export PATH="${dir}:$PATH"`,
-    ])
+    const home = t.testdir({ '.bashrc': '' })
+    t.strictSame(
+      globalBinsLines(g({ conflicts: [] }), { home }).slice(-2),
+      [
+        '   Run `vlt setup --path` to add it, or add this line to ~/.bashrc:',
+        `     export PATH="${dir}:$PATH"`,
+      ],
+    )
+    t.strictSame(
+      globalBinsLines(g({ conflicts: [], inPath: true })),
+      [`🔗 Linked a, b in ${dir}`],
+      'default home',
+    )
+  })
+
+  t.test('no vlt setup --path', async t => {
+    for (const [shell, platform] of [
+      ['nu', 'linux'],
+      ['bash', 'win32'],
+    ] as const) {
+      t.match(
+        globalBinsLines(g({ conflicts: [] }), {
+          ...o,
+          shell,
+          platform,
+        })[3],
+        /^ {3}Set --global-bin-dir to a folder on your PATH, or /,
+        `${shell} ${platform}`,
+      )
+    }
   })
 })

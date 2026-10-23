@@ -8,10 +8,29 @@ import { defaultRegistries } from '@vltpkg/spec'
 import { asError, isErrorWithCause, isObject } from '@vltpkg/types'
 import { createInterface } from 'node:readline/promises'
 import { configWriteTarget } from '../config/index.ts'
+import type { LoadedConfig } from '../config/index.ts'
 import { registrySelectionFields } from '../config/merge-layers.ts'
 import { commandUsage } from '../config/usage.ts'
 import { normalizeRegistryURL } from '../require-registry.ts'
 import { stdout } from '../output.ts'
+import { resolveGlobalBinDir } from '../global-bin-dir.ts'
+import {
+  detectShell,
+  prettyPath,
+  shellPathCommand,
+} from '../shell.ts'
+import type { Shell } from '../shell.ts'
+import {
+  applyPathSetup,
+  ask as askLine,
+  pathSetupChanged,
+  pathSetupFiles,
+  pathSetupLines,
+  planPathSetup,
+  rcList,
+  sourceCommand,
+} from '../shell-setup/index.ts'
+import type { PathSetupFile } from '../shell-setup/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -97,8 +116,51 @@ export type SetupResult = {
   shadowedByProject?: boolean
 }
 
+export type SetupPathResult = {
+  path: {
+    status:
+      'added' | 'unchanged' | 'in-path' | 'disabled' | 'cancelled'
+    /** canonical dir added to the PATH */
+    dir: string
+    shell: Shell
+    files: PathSetupFile[]
+    backups: string[]
+    /** manual line for the shell */
+    command: string
+    /** loads it in the current shell */
+    source: string
+  }
+}
+
+const pathView = (r: SetupPathResult['path']): string => {
+  const dir = prettyPath(r.dir)
+  const rcs = rcList(r.files)
+  switch (r.status) {
+    case 'added':
+      return pathSetupLines(r, r.source).join('\n')
+    case 'unchanged':
+      return [
+        `✅ ${dir} is already added to your PATH in ${rcs}`,
+        `   Open a new terminal, or run: ${r.source}`,
+      ].join('\n')
+    case 'in-path':
+      return `✅ ${dir} is already on your PATH`
+    case 'disabled':
+      return [
+        `ℹ️  no-modify-path is set, so shell config was not changed. To add ${dir} to your PATH, run:`,
+        `  ${r.command}`,
+      ].join('\n')
+    case 'cancelled':
+      return [
+        `Shell config not changed. To add ${dir} to your PATH, run:`,
+        `  ${r.command}`,
+      ].join('\n')
+  }
+}
+
 export const views = {
-  human: (result: SetupResult): string => {
+  human: (result: SetupResult | SetupPathResult): string => {
+    if ('path' in result) return pathView(result.path)
     const lines = [
       `Configured ${Object.keys(result.registries).length} registry ${
         Object.keys(result.registries).length === 1 ?
@@ -124,12 +186,15 @@ export const views = {
     )
     return lines.join('\n')
   },
-} as const satisfies Views<SetupResult>
+} as const satisfies Views<SetupResult | SetupPathResult>
 
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'setup',
-    usage: '[<account>]',
+    usage: [
+      '[<account>]',
+      '--path [--yes] [--global-bin-dir=<path>]',
+    ],
     description: `Configure the registry aliases for your vlt.io account so
                   that \`vlt install\` and \`vlx\` work out of the box.
 
@@ -137,7 +202,12 @@ export const usage: CommandUsage = () =>
                   authenticates against your account, stores the token
                   for both the \`npm\` and \`main\` registries, and writes
                   those aliases (and any additional aliases you add) to
-                  your user \`vlt.json\`.`,
+                  your user \`vlt.json\`.
+
+                  With \`--path\`, add the global bin folder
+                  (\`--global-bin-dir\`) to your \`PATH\` instead: writes
+                  \`<global-dir>/env\` and a marked section that loads
+                  it into your shell config.`,
     options: {
       config: {
         value: '<user | project>',
@@ -154,12 +224,90 @@ export const usage: CommandUsage = () =>
       yes: {
         description:
           'Skip interactive prompts (requires <account> and does not ' +
-          'open a browser for authentication).',
+          'open a browser for authentication). With --path: edit ' +
+          'without asking.',
+      },
+      path: {
+        description:
+          'Add the global bin folder to your PATH via your shell config.',
+      },
+      'global-bin-dir': {
+        value: '<path>',
+        description: 'With --path: the folder to add.',
       },
     },
   })
 
-export const command: CommandFn<SetupResult> = async conf => {
+const setupPath = async (
+  conf: LoadedConfig,
+  root: string,
+): Promise<SetupPathResult> => {
+  if (conf.positionals.length) {
+    throw error('`vlt setup --path` takes no arguments', {
+      code: 'EUSAGE',
+      found: conf.positionals[0],
+    })
+  }
+  const bin = await resolveGlobalBinDir(conf)
+  const shell = detectShell()
+  const base = {
+    dir: bin.dir,
+    shell,
+    files: [] as PathSetupFile[],
+    backups: [] as string[],
+    command: shellPathCommand(shell, bin.dir),
+    source: sourceCommand(shell, root),
+  }
+  if (bin.inPath) {
+    return { path: { ...base, status: 'in-path' } }
+  }
+  // scripted installers must not fail
+  if (conf.get('no-modify-path')) {
+    return { path: { ...base, status: 'disabled' } }
+  }
+  const opts = { globalDir: root, dir: bin.dir, shell }
+  let plan = await planPathSetup(opts)
+  const files = pathSetupFiles(plan)
+  if (!pathSetupChanged(plan)) {
+    return { path: { ...base, status: 'unchanged', files } }
+  }
+  if (!conf.get('yes')) {
+    if (!process.stdin.isTTY) {
+      throw error('Not a terminal: pass --yes to edit shell config', {
+        code: 'EUSAGE',
+      })
+    }
+    const answer = await askLine(
+      `Add ${prettyPath(bin.dir)} to your PATH in ${rcList(files)}? (Y/n) `,
+    ).catch((er: unknown) => {
+      // Ctrl-C
+      if (asError(er).name !== 'AbortError') throw er
+      process.stdout.write('\n')
+      return 'n'
+    })
+    if (/^n/i.test(answer)) {
+      return { path: { ...base, status: 'cancelled', files } }
+    }
+    // rc files may have changed while asking
+    plan = await planPathSetup(opts)
+  }
+  const r = await applyPathSetup(plan)
+  return {
+    path: {
+      ...base,
+      status: 'added',
+      files: r.files,
+      backups: r.backups,
+    },
+  }
+}
+
+export const command: CommandFn<
+  SetupResult | SetupPathResult
+> = async conf => {
+  // set only by --path, see Config#globalRoot
+  const root = conf.globalRoot
+  if (root) return setupPath(conf, root)
   const yes = !!conf.get('yes')
   const which = configWriteTarget(conf, 'user')
 

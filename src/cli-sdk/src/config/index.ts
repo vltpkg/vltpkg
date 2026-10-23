@@ -277,7 +277,8 @@ export type ConfigOptionsNoExtras = {
   : OptionsResults<ConfigDefinitions>[k]
 }
 
-export type ConfigOptions = ConfigOptionsNoExtras &
+// `path` is the `vlt setup --path` flag, not a request path
+export type ConfigOptions = Omit<ConfigOptionsNoExtras, 'path'> &
   Pick<SpecOptions, 'catalog' | 'catalogs'> & {
     packageJson: PackageJson
     scurry: PathScurry
@@ -334,7 +335,9 @@ export class Config {
     if (this.#options) return this.#options
     const scurry = new PathScurry(this.projectRoot)
     const packageJson = new PackageJson()
-    const asRecords = pairsToRecords(this.parse().values)
+    const { path: _, ...asRecords } = pairsToRecords(
+      this.parse().values,
+    )
     const extras = {
       projectRoot: this.projectRoot,
       signal: this.#abort.signal,
@@ -486,6 +489,13 @@ export class Config {
       badLinker !== undefined &&
       !(storeLinkers as readonly string[]).includes(badLinker)
     if (fixLinker) process.env.VLT_STORE_LINKER = 'unpack'
+
+    // an opt-out of dotfile edits: any value but 0 (or empty) is set
+    const noModifyPath = process.env.VLT_NO_MODIFY_PATH
+    if (noModifyPath !== undefined) {
+      process.env.VLT_NO_MODIFY_PATH =
+        noModifyPath === '' || noModifyPath === '0' ? '0' : '1'
+    }
 
     const envKeys = Object.keys(defaultValues).filter(
       k => process.env[envKey(k)] !== undefined,
@@ -970,18 +980,24 @@ export class Config {
     return this
   }
 
-  // global project root if `args` run a global command with --global.
-  // cli > env > user config, project config is not loaded yet.
+  // global project root if `args` run a global command with --global,
+  // or `setup --path`. cli > env > user config, project config is not
+  // loaded yet.
   #globalRoot(args: string[]): string | undefined {
     const { values, positionals } = this.jack.parseRaw(args)
     const cmd = getCommand(positionals[0])
-    if (values.help || !cmd || !globalCommands.has(cmd)) return
+    if (values.help || !cmd) return
+    // `setup --path` edits shell config for the global bin dir
+    const setupPath = cmd === 'setup' && values.path === true
+    if (!setupPath && !globalCommands.has(cmd)) return
     const dflt = this.#defaults()
-    const env = process.env[envKey('global')]
-    const global =
-      values.global ??
-      (env !== undefined ? env === '1' : dflt.global === true)
-    if (!global) return
+    if (!setupPath) {
+      const env = process.env[envKey('global')]
+      const global =
+        values.global ??
+        (env !== undefined ? env === '1' : dflt.global === true)
+      if (!global) return
+    }
     // empty means unset, never the cwd
     const dir =
       values['global-dir'] || process.env[envKey('global-dir')]

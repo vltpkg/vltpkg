@@ -91,10 +91,12 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --migrate-workspaces
     --no-bail
     --no-color
+    --no-modify-path
     --node-version=<version>
     --os=<os>
     --otp=<otp>
     --package=<p>
+    --path
     --publish-directory=<path>
     --recursive
     --registries=<name=url>
@@ -173,10 +175,12 @@ Unknown config option: asdf
     migrate-workspaces
     no-bail
     no-color
+    no-modify-path
     node-version
     os
     otp
     package
+    path
     publish-directory
     recursive
     registries

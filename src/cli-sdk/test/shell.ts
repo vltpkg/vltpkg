@@ -2,6 +2,7 @@ import { homedir } from 'node:os'
 import t from 'tap'
 import {
   detectShell,
+  fishPath,
   posixPath,
   prettyPath,
   shellPathCommand,
@@ -95,6 +96,18 @@ t.test('posixPath', async t => {
   })
 })
 
+t.test('fishPath', async t => {
+  t.equal(fishPath('/home/me/a b', linux), '"$HOME/a b"')
+  t.equal(fishPath('/opt/x', linux), '"/opt/x"')
+  t.equal(
+    fishPath('/opt/a"$`\\b', linux),
+    '"/opt/a\\"\\$`\\\\b"',
+    'backtick literal',
+  )
+  t.intercept(process, 'platform', { value: 'linux' })
+  t.equal(fishPath(`${homedir()}/x`), '"$HOME/x"')
+})
+
 t.test('shellPathCommand', async t => {
   const mac = '/home/me/Library/Application Support/vlt/global/bin'
   for (const shell of ['bash', 'zsh', 'sh', 'unknown'] as const) {
@@ -183,7 +196,16 @@ t.test('shellRcFile', async t => {
     shellRcFile('zsh', { ...linux, env: { ZDOTDIR: '/etc/zsh' } }),
     '/etc/zsh/.zshrc',
   )
-  t.equal(shellRcFile('bash', linux), '~/.bashrc')
+  t.test('linux bash', async t => {
+    const l = (files: string[]) =>
+      shellRcFile('bash', {
+        ...linux,
+        home: t.testdir(Object.fromEntries(files.map(f => [f, '']))),
+      })
+    t.equal(l(['.bashrc', '.bash_profile']), '~/.bashrc')
+    t.equal(l(['.bash_profile']), '~/.bash_profile')
+    t.equal(l([]), '~/.profile', 'no new .bashrc')
+  })
   t.equal(shellRcFile('sh', linux), '~/.profile')
   t.equal(
     shellRcFile('sh', { ...linux, env: { ENV: '/home/me/.shrc' } }),

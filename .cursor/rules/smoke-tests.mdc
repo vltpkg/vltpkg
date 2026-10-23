@@ -77,4 +77,4 @@ Each test gets isolated `testdir` with separate `root/project/config/cache/data/
 
 ## Existing Tests
 
-`test/install.ts`, `test/pkg.ts`, `test/version.ts`, `test/cache-unzip.ts`, `test/postinstall.ts`, `test/rollback-remove.ts`
+`test/install.ts`, `test/pkg.ts`, `test/version.ts`, `test/cache-unzip.ts`, `test/postinstall.ts`, `test/rollback-remove.ts`, `test/setup.ts`
