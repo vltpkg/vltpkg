@@ -1,11 +1,7 @@
 import { llms } from 'fumadocs-core/source'
 import { source } from '@/lib/source'
 import { siteUrl } from '@/lib/site-url'
-import {
-  dssQuerySkill,
-  registryMigrationSkill,
-  skills,
-} from '@/lib/skills'
+import { registryMigrationSkill, skills } from '@/lib/skills'
 
 const md = (path: string) => new URL(`${path}.md`, siteUrl).href
 const abs = (path: string) => new URL(path, siteUrl).href
@@ -15,7 +11,7 @@ const intro = `# vlt docs
 
 > Documentation for vlt, the package registry built for JavaScript: the vlt.io registry (private packages, npm mirrors, access control, tokens) and the \`vlt\` client, an npm-compatible package manager.
 
-Every page is available as Markdown: append \`.md\` to its URL, or request the page with an \`Accept: text/markdown\` header. The links below point at the Markdown versions. [llms-full.txt](${abs('/llms-full.txt')}) holds every page except the generated API reference, plus the ${registryMigrationSkill.name} skill, in one file.
+Every page is available as Markdown: append \`.md\` to its URL, or request the page with an \`Accept: text/markdown\` header. The links below point at the Markdown versions. [llms-full.txt](${abs('/llms-full.txt')}) holds every page except the generated API reference, plus the agent skills, in one file.
 
 ## Using these docs
 
@@ -29,7 +25,6 @@ Every page is available as Markdown: append \`.md\` to its URL, or request the p
 Follow a skill by reading its link. Skills with an \`Install:\` command can also be added to a project with the [skills CLI](https://skills.sh/docs/cli).
 
 ${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description} Install: \`${s.install}\``).join('\n')}
-- [${dssQuerySkill.name}](${dssQuerySkill.github}): ${dssQuerySkill.description} Install: \`${dssQuerySkill.install}\`
 
 ## Pages
 `

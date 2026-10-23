@@ -39,7 +39,7 @@ t.test('readFrontmatter', async t => {
     'no-fence.md': 'name: x\ndescription: y\n',
     'crlf.md': '---\r\nname: crlf\r\ndescription: yes\r\n---\r\n',
     'quoted.md': `---\nname: "dq"\ndescription: 'single quoted'\n---\n`,
-    // same shape as @vltpkg/query's dss-query skill
+    // same shape as the dss-query skill
     'multi.md': `---
 name: dss-query
 description:

@@ -31,9 +31,9 @@ Lives in [`../../dss-query-workspace/`](../../dss-query-workspace/)
    read and follow the live SKILL.md (**force-loaded** — this removes
    the trigger confound, see below), one baseline (no skill, or a
    snapshot of the pre-edit skill when iterating).
-2. Grade every answer with [grade.mjs](grade.mjs) (run from
-   `src/query`:
-   `node skills/dss-query/evals/grade.mjs <iteration-dir>`) — no LLM:
+2. Grade every answer with [grade.mjs](grade.mjs) (run from the repo
+   root: `node skills/dss-query/evals/grade.mjs <iteration-dir>`) — no
+   LLM:
    - extract selectors from the answer (`vlt query '…'` and bare
      code-block selectors);
    - every selector must **parse** via `@vltpkg/dss-parser`, which
@@ -76,6 +76,6 @@ factual claim an assertion encodes against the engine source first —
 e.g. `:license()` takes only category kinds, so an eval expecting
 `:license(mit)` would grade correct answers as failures.
 
-This directory is excluded from the published `@vltpkg/query` package
-(see the `files` field in `package.json`) — it's repo tooling, not
-part of the skill consumers receive.
+This directory is repo tooling. The docs copy skips `evals/`.
+Repository-based installs with the skills CLI still include it.
+`@vltpkg/query` no longer ships the skill.

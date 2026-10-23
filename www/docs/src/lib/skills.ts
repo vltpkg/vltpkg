@@ -38,13 +38,6 @@ const skill = (name: string) => {
 
 export const registryMigrationSkill = skill('vlt-registry-migration')
 
-export const skills = [registryMigrationSkill]
+export const dssQuerySkill = skill('dss-query')
 
-// ships in @vltpkg/query; .claude-plugin/plugin.json lists it for `vlx skills add`
-export const dssQuerySkill = {
-  name: 'dss-query',
-  github: `${tree}/src/query/skills/dss-query`,
-  install: install('dss-query'),
-  description:
-    'Composes and explains vlt query selectors, including Socket-powered security audits.',
-}
+export const skills = [registryMigrationSkill, dssQuerySkill]

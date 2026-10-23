@@ -15,6 +15,7 @@ tmp
 # repo publishes (skills.sh, docs.vlt.sh/skills) needs a `!` line here
 /skills/*
 !/skills/vlt-registry-migration/
+!/skills/dss-query/
 /scripts/fixtures/
 /results/
 
@@ -85,9 +86,6 @@ knip.js
 knip.js.map
 knip.d.ts
 knip.d.ts.map
-/src/query/skills/dss-query-workspace
-# eval grader is intentional source, not a build artifact (see /src/**/*.mjs)
-!/src/query/skills/dss-query/evals/grade.mjs
 
 **/.opencode/**
 opencode.jsonc

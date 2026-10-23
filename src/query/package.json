@@ -61,9 +61,7 @@
     }
   },
   "files": [
-    "dist",
-    "skills",
-    "!skills/dss-query/evals"
+    "dist"
   ],
   "bugs": {
     "url": "https://github.com/vltpkg/vltpkg/issues"

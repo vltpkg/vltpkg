@@ -3,7 +3,7 @@
 // Copy them into public/skills so the docs serve each one at
 // /skills/<name>/SKILL.md, where src/lib/skills.ts reads it at build.
 import { cpSync, lstatSync, readdirSync, rmSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { basename, resolve } from 'node:path'
 
 const from = resolve(import.meta.dirname, '../../../skills')
 const to = resolve(import.meta.dirname, '../public/skills')
@@ -18,6 +18,9 @@ for (const d of readdirSync(from, { withFileTypes: true })) {
     throwIfNoEntry: false,
   })
   if (skillMd?.isFile()) {
-    cpSync(dir, resolve(to, d.name), { recursive: true })
+    cpSync(dir, resolve(to, d.name), {
+      recursive: true,
+      filter: source => basename(source) !== 'evals',
+    })
   }
 }

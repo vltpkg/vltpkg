@@ -89,7 +89,7 @@ const prompt = `Help me use vlt in this project. Start by reading ${docs}/llms.t
 
 1. Install the vlt CLI with \`curl -fsSL https://install.vlt.sh | bash\` (it requires Node.js 22.22 or later), then run \`vlt install\`.
 2. To use vlt.io registries, run \`vlt setup\`. It authenticates and configures the account's registry aliases in one step. To move an existing repository (and its CI) onto a vlt.io registry, follow ${docs}${registryMigrationSkill.url}.
-3. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${dssQuerySkill.github} covers it.
+3. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${docs}${dssQuerySkill.url} covers it.
 
 Only use commands and flags that appear in the docs.`
 
