@@ -10,6 +10,7 @@
     "catalogs",
     "peer-dependencies",
     "graph-modifiers",
+    "global-installs",
     "commands",
     "migration",
     "selectors",

@@ -9,6 +9,7 @@ import {
   BookOpenIcon,
   BoxesIcon,
   FileTextIcon,
+  GlobeIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
   NetworkIcon,
@@ -279,6 +280,13 @@ const sections: { title: string; cards: Card[] }[] = [
         description:
           'Alter and refine how the dependency graph is traversed and evaluated, with granular control.',
         href: '/client/graph-modifiers',
+      },
+      {
+        icon: GlobeIcon,
+        title: 'Global Installs',
+        description:
+          'Install command line tools once, keep them in a lockfile and restore them on any machine.',
+        href: '/client/global-installs',
       },
       {
         icon: ArrowRightLeftIcon,
