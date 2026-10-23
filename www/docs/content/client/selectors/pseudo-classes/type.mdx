@@ -5,8 +5,12 @@ sidebar:
   order: 11
 ---
 
-The `:type()` pseudo-class matches packages based on their resolved
-type — how the package is sourced.
+The `:type()` pseudo-class matches packages by source, such as
+`registry`, `git`, or `file`.
+
+Without an argument, `:type` matches types packages. `:type(orphan)`
+matches types packages whose target is missing from the graph. See
+[type definition associations](/client/selectors/pseudo-states#type-definition-associations).
 
 ## Syntax
 

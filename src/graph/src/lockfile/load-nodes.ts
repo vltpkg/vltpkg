@@ -9,7 +9,7 @@ import {
   getBuildStateFromNum,
 } from './types.ts'
 import type { LockfileData, LockfileNode } from './types.ts'
-import { tarballFormat } from '@vltpkg/types'
+import { getTypeTarget, tarballFormat } from '@vltpkg/types'
 import type { DepID } from '@vltpkg/dep-id'
 import type { GraphLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
@@ -44,6 +44,7 @@ export const loadNodes = (
       platform,
       bins,
       buildState,
+      typeTarget,
     ] = lockfileNode
     // workspace nodes and the project root node are already part of the
     // graph and it should not create new nodes if an existing one is there
@@ -151,6 +152,9 @@ export const loadNodes = (
     if (mani && rawManifest) {
       node.setConfusedManifest(mani, rawManifest)
     }
+
+    // restore after name correction; infer the target for older lockfiles.
+    node.typeTarget = typeTarget ?? getTypeTarget(node.name)
 
     // Set platform data if provided
     if (platform) {

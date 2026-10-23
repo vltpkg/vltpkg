@@ -61,6 +61,7 @@ import { suspicious } from './pseudo/suspicious.ts'
 import { tracker } from './pseudo/tracker.ts'
 import { trivial } from './pseudo/trivial.ts'
 import { type } from './pseudo/type.ts'
+import { types } from './pseudo/types.ts'
 import { undesirable } from './pseudo/undesirable.ts'
 import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
@@ -370,6 +371,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     tracker,
     trivial,
     type,
+    types,
     undesirable,
     unknown,
     unmaintained,

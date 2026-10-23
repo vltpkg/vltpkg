@@ -85,6 +85,32 @@ t.test('load nodes', async t => {
     namelessNode.toJSON(),
     'should load node missing name and version',
   )
+
+  const typesId = joinDepIDTuple([
+    'registry',
+    '',
+    '@types/scope__name@1.0.0',
+  ])
+  const customId = joinDepIDTuple([
+    'registry',
+    '',
+    'custom-definitions@1.0.0',
+  ])
+  const typeNodes: LockfileData['nodes'] = {}
+  typeNodes[typesId] = [0, '@types/scope__name']
+  typeNodes[customId] = [0, 'custom-definitions']
+  typeNodes[customId][10] = 'custom-package'
+  loadNodes(graph, typeNodes, {})
+  t.equal(
+    graph.nodes.get(typesId)?.typeTarget,
+    '@scope/name',
+    'infers targets from older lockfiles',
+  )
+  t.equal(
+    graph.nodes.get(customId)?.typeTarget,
+    'custom-package',
+    'loads stored targets for non-DT packages',
+  )
 })
 
 t.test('load nodes with manifest', async t => {
