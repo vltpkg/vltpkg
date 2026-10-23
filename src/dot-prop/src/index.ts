@@ -280,7 +280,9 @@ export const del = (object: Arg, path: string): boolean => {
 
     if (isLast(pathArray, index)) {
       if (Array.isArray(object)) {
-        object.splice(key as number, 1)
+        // splice() coerces a non-numeric key like "missing" to 0
+        if (typeof key !== 'number') return false
+        object.splice(key, 1)
       } else {
         delete object[key as number]
       }
