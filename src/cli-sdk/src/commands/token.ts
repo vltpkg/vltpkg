@@ -159,6 +159,7 @@ const listTokens = async (
   const localTok = await getToken(
     normalizeRegistryKey(registry),
     identity,
+    rc.defaultRegistryKey,
   )
   if (!localTok) {
     return { registry, alias, tokens: [] }

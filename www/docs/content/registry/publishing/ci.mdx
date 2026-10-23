@@ -24,8 +24,8 @@ publish and will fail with `EOTP`. See
 
 ## Who reads what
 
-Only the vlt CLI reads `VLT_TOKEN` itself (with `VLT_REGISTRY`, or
-per-registry `VLT_TOKEN_*`; see
+Only the vlt CLI reads `VLT_TOKEN` itself (for the default registry,
+or per-registry `VLT_TOKEN_*`; see
 [Authentication](/client/auth#ci-and-other-headless-environments)).
 Other tools see the secret only through an auth line that references
 it (pnpm: `~/.npmrc` or a `pnpm_config_…` env var), so setting the

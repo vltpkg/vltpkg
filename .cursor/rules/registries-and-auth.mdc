@@ -98,7 +98,7 @@ vlt token rm                                 # remove from local keychain only
 ### CI / Headless
 
 Env vars only (never in config files for security):
-- `VLT_TOKEN` — token for default registry
+- `VLT_TOKEN` — token for default registry: `VLT_REGISTRY` (= `registry` scalar, exported by config), else `registries[<default-registry-alias>]`
 - `VLT_TOKEN_https_my_registry_com` — registry URL, trailing `/` dropped, each run of non-alphanumerics → `_`; applies under configured registries (`registry`/`registries`/`scoped-registries`/`jsr-registries`) and keychain keys, never probed by request URL
 - `VLT_OTP` — one-time password for MFA
 
