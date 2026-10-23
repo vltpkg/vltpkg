@@ -31,6 +31,7 @@ import {
   sourceCommand,
 } from '../shell-setup/index.ts'
 import type { PathSetupFile } from '../shell-setup/index.ts'
+import { editPathHint } from '../shell-setup/windows.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -135,6 +136,11 @@ export type SetupPathResult = {
 const pathView = (r: SetupPathResult['path']): string => {
   const dir = prettyPath(r.dir)
   const rcs = rcList(r.files)
+  // the command lasts one session
+  const keep =
+    process.platform === 'win32' ?
+      [`  To keep it: ${editPathHint}`]
+    : []
   switch (r.status) {
     case 'added':
       return pathSetupLines(r, r.source).join('\n')
@@ -147,13 +153,15 @@ const pathView = (r: SetupPathResult['path']): string => {
       return `✅ ${dir} is already on your PATH`
     case 'disabled':
       return [
-        `ℹ️  no-modify-path is set, so shell config was not changed. To add ${dir} to your PATH, run:`,
+        `ℹ️  no-modify-path is set, so nothing was changed. To add ${dir} to your PATH, run:`,
         `  ${r.command}`,
+        ...keep,
       ].join('\n')
     case 'cancelled':
       return [
-        `Shell config not changed. To add ${dir} to your PATH, run:`,
+        `Nothing changed. To add ${dir} to your PATH, run:`,
         `  ${r.command}`,
+        ...keep,
       ].join('\n')
   }
 }
@@ -207,7 +215,8 @@ export const usage: CommandUsage = () =>
                   With \`--path\`, add the global bin folder
                   (\`--global-bin-dir\`) to your \`PATH\` instead: writes
                   \`<global-dir>/env\` and a marked section that loads
-                  it into your shell config.`,
+                  it into your shell config. On Windows it adds it to
+                  your user \`Path\` (\`HKCU\\Environment\`).`,
     options: {
       config: {
         value: '<user | project>',
@@ -229,7 +238,8 @@ export const usage: CommandUsage = () =>
       },
       path: {
         description:
-          'Add the global bin folder to your PATH via your shell config.',
+          'Add the global bin folder to your PATH via your shell ' +
+          'config (user Path on Windows).',
       },
       'global-bin-dir': {
         value: '<path>',
@@ -256,7 +266,7 @@ const setupPath = async (
     files: [] as PathSetupFile[],
     backups: [] as string[],
     command: shellPathCommand(shell, bin.dir),
-    source: sourceCommand(shell, root),
+    source: sourceCommand(shell, root, bin.dir),
   }
   if (bin.inPath) {
     return { path: { ...base, status: 'in-path' } }
@@ -273,9 +283,12 @@ const setupPath = async (
   }
   if (!conf.get('yes')) {
     if (!process.stdin.isTTY) {
-      throw error('Not a terminal: pass --yes to edit shell config', {
-        code: 'EUSAGE',
-      })
+      throw error(
+        'Not a terminal: pass --yes to add it to your PATH',
+        {
+          code: 'EUSAGE',
+        },
+      )
     }
     const answer = await askLine(
       `Add ${prettyPath(bin.dir)} to your PATH in ${rcList(files)}? (Y/n) `,

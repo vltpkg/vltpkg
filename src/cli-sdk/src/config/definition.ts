@@ -569,12 +569,13 @@ export const definition = j
     path: {
       description: `With \`vlt setup\`, add the global bin folder
                     (\`--global-bin-dir\`) to your \`PATH\` by editing
-                    your shell config. Asks first, unless \`--yes\`.
-                    Command line only.`,
+                    your shell config (your user \`Path\` on Windows).
+                    Asks first, unless \`--yes\`. Command line only.`,
     },
     'no-modify-path': {
-      description: `Never edit shell config files to add a folder to
-                    your \`PATH\`: turns off \`vlt setup --path\` edits
+      description: `Never edit shell config files (or the user
+                    \`Path\` on Windows) to add a folder to your
+                    \`PATH\`: turns off \`vlt setup --path\` edits
                     and the \`vlt install -g\` offer, and prints the line
                     to add instead. Set \`VLT_NO_MODIFY_PATH=1\` (any
                     value but \`0\`) in images or on machines whose
