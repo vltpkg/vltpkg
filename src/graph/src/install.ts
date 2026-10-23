@@ -346,6 +346,7 @@ export const install = async (
             ...options,
             add,
             graph,
+            modifiers,
             remove,
           })
         : undefined

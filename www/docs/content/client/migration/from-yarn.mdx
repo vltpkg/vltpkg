@@ -326,6 +326,13 @@ too. `package.json` is left as-is for yarn. Commit `vlt.json`:
 `.yarnrc.yml` is not read, so any yarn v2+ filtering defined there
 needs to move.
 
+yarn v1 has no `workspace:` protocol, so local packages are referenced
+by plain ranges. Add `":project > :workspace": "workspace:*"` to
+`modifiers` in the same `vlt.json` to always link them, see
+[Implicit workspace references](/client/graph-modifiers#implicit-workspace-references).
+yarn v2+ projects that already use `workspace:` specs need nothing
+more.
+
 Edit `vlt.json` to use vlt's **named workspace groups** for targeted
 operations. If `vlt.json` has a `workspaces` field it wins outright,
 and the `package.json` field is ignored rather than merged, so later
@@ -441,11 +448,14 @@ Some yarn-specific features don't have direct equivalents:
 4. Leave your `workspaces` field in `package.json` — `vlt install`
    copies it to `vlt.json`
 5. Move `resolutions` from `package.json` to `modifiers` in `vlt.json`
-6. If using PnP, remove `.pnp.cjs`, `.pnp.loader.mjs`, and related
+6. yarn v1: add `":project > :workspace": "workspace:*"` to
+   `modifiers` in `vlt.json` so local packages referenced by plain
+   ranges are always linked
+7. If using PnP, remove `.pnp.cjs`, `.pnp.loader.mjs`, and related
    `.yarnrc.yml` settings
-7. Run `vlt install` then `vlt build`
-8. Commit `vlt.json` and `vlt-lock.json`
-9. Update CI scripts: replace `yarn install --immutable` with
-   `vlt install --expect-lockfile && vlt build`
-10. Update CI auth: replace `YARN_NPM_AUTH_TOKEN` with `VLT_TOKEN`
-11. Update any `yarn dlx` usage to `vlx`
+8. Run `vlt install` then `vlt build`
+9. Commit `vlt.json` and `vlt-lock.json`
+10. Update CI scripts: replace `yarn install --immutable` with
+    `vlt install --expect-lockfile && vlt build`
+11. Update CI auth: replace `YARN_NPM_AUTH_TOKEN` with `VLT_TOKEN`
+12. Update any `yarn dlx` usage to `vlx`

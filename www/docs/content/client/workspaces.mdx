@@ -177,6 +177,30 @@ source, opt out before the first `vlt install` (or remove the saved
 or `pnpm-workspace.yaml`, it warns and ignores them; run `vlt install`
 and commit `vlt.json` first.
 
+### Linking workspaces referenced by plain ranges
+
+npm and yarn v1 have no `workspace:` protocol, and pnpm with
+`link-workspace-packages` does not need one, so their `package.json`
+files reference local packages by plain ranges such as `^1.0.0`. vlt
+links such a dependency to the workspace only while the workspace
+version satisfies the range and fetches it from the registry
+otherwise. To always link them, add one graph modifier to the same
+`vlt.json`:
+
+```json
+{
+  "modifiers": {
+    ":project > :workspace": "workspace:*"
+  }
+}
+```
+
+It applies to every direct dependency of the root or of a workspace
+that is named after a workspace, and can be removed once the
+`package.json` files use `workspace:` specs. See
+[Implicit workspace references](/client/graph-modifiers#implicit-workspace-references)
+for the details.
+
 ### Excluding paths
 
 A pattern beginning with `!` excludes the paths it matches, in

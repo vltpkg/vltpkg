@@ -45,4 +45,8 @@ changes are:
   only)
 - `node_modules` structure is compatible — your code runs the same way
 - Registry authentication uses tokens, just stored differently
-- Workspace packages still use `workspace:` protocol references
+- Workspace packages referenced with the `workspace:` protocol keep
+  working; those referenced by plain ranges (npm, yarn v1) are always
+  linked by adding one
+  [`:project > :workspace` graph modifier](/client/graph-modifiers#implicit-workspace-references)
+  to the same `vlt.json`
