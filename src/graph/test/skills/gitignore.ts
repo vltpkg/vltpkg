@@ -6,6 +6,7 @@ import {
   editGitignore,
   GITIGNORE_BEGIN as B,
   GITIGNORE_END as E,
+  gitignoreNames,
 } from '../../src/skills/gitignore.ts'
 
 const read = (dir: string) =>
@@ -113,4 +114,45 @@ t.test('fs errors: refused', async t => {
     )
   }
   t.equal(read(dir), 'x', 'untouched')
+})
+
+t.test('gitignoreNames', async t => {
+  const cases: [
+    string,
+    Parameters<typeof t.testdir>[0] | undefined,
+    string[],
+  ][] = [
+    ['missing', undefined, []],
+    ['no block', '/a\n', []],
+    ['unterminated', `${B}\n/a\n`, []],
+    ['not a file', {}, []],
+    [
+      'CRLF, trimmed, block only, non-/ lines skipped',
+      `/x\r\n  ${B}  \r\n/b\r\n# note\r\n /a \r\n${E}\r\n/y\r\n`,
+      ['a', 'b'],
+    ],
+  ]
+  for (const [name, gitignore, expect] of cases) {
+    t.test(name, async t => {
+      const dir = t.testdir(
+        gitignore === undefined ? {} : { '.gitignore': gitignore },
+      )
+      t.strictSame([...gitignoreNames(dir)].sort(), expect)
+    })
+  }
+
+  t.test('fs error: empty', async t => {
+    const dir = t.testdir({ '.gitignore': `${B}\n/a\n${E}\n` })
+    const { gitignoreNames } = await t.mockImport<
+      typeof import('../../src/skills/gitignore.ts')
+    >('../../src/skills/gitignore.ts', {
+      'node:fs': {
+        ...fs,
+        readFileSync: () => {
+          throw Object.assign(new Error('nope'), { code: 'EACCES' })
+        },
+      },
+    })
+    t.strictSame([...gitignoreNames(dir)], [])
+  })
 })

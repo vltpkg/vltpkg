@@ -93,13 +93,14 @@ code is not loaded. `update` and `uninstall` take `allowSkills` too.
 
 Lists the agent skills (dirs with a `SKILL.md`, see
 https://agentskills.io/specification) shipped by installed packages in
-the vlt store (a root `SKILL.md`, then `<dir>/SKILL.md` in `skills/`,
-`dist/skills/` and `.agents/skills/`; the first skill of a name wins),
-from one version per package (a direct dep, else the highest), with
-the agent skill dirs each is linked in, `project`: the main importer
-name, and the `graph`. `options.target` is a DSS query selecting
-packages (default `*`); a selector ending with `:skill(<name>, …)`
-keeps only those skills of its packages. Creates nothing.
+the vlt store and the project's workspaces (a root `SKILL.md`, then
+`<dir>/SKILL.md` in `skills/`, `dist/skills/` and `.agents/skills/`;
+the first skill of a name wins), from one version per package (a
+direct dep or workspace, else the highest), with the agent skill dirs
+each is linked in, `project`: the main importer name, and the `graph`.
+`options.target` is a DSS query selecting packages (default `*`); a
+selector ending with `:skill(<name>, …)` keeps only those skills of
+its packages. Creates nothing.
 
 ### `linkSkills(options): Promise<LinkSkillsResult>`
 
@@ -112,21 +113,23 @@ must resolve inside the project, not in `node_modules` (else
 `skipped`, as are fs errors) and are created only when a skill is
 picked. One package per name, among picked skills, in every dir: the
 one the first existing link points to while its skill is installed,
-else a direct dep, then DepID; the others are reported in `conflicts`
-as `<mount> (<package>)`. Installs keep a dir's link to another
-installed skill. A link follows its package to the picked version.
-Then removes links whose skill is no longer installed: dangling,
-package not in the graph, or no longer shipped. With `options.apply`,
-also removes every other vlt link in the scanned dirs. Only links
-pointing into a `node_modules/.vlt` store are ever replaced or
-removed; anything else in the way is reported in `conflicts`. Keeps a
-marked block of link names in each dir's `.gitignore` (`gitignore`
-lists the ones it could not edit). Linked packages get private copies
-of files hardlinked from the global store. `:skill()` patterns that
-match no skill of their packages are returned in `unmatched`. Security
-queries fail closed: skills of npm registry packages with no security
-data are left out (in `listSkills` too) and returned in `unscanned`
-with `unscannedReason` (by `linkSkills`: unless still linked).
+else a direct dep or workspace, then DepID; the others are reported in
+`conflicts` as `<mount> (<package>)`. Installs keep a dir's link to
+another installed skill. A link follows its package to the picked
+version. Then removes links whose skill is no longer installed:
+dangling, package not in the graph, or no longer shipped. With
+`options.apply`, also removes every other vlt link in the scanned
+dirs. Only vlt links (into a `node_modules/.vlt` store, or listed in
+the dir's `.gitignore` block and pointing to a workspace or dangling)
+are ever replaced or removed; anything else in the way is reported in
+`conflicts`. Keeps a marked block of link names in each dir's
+`.gitignore` (`gitignore` lists the ones it could not edit). Linked
+packages get private copies of files hardlinked from the global store.
+`:skill()` patterns that match no skill of their packages are returned
+in `unmatched`. Security queries fail closed: skills of npm registry
+packages with no security data are left out (in `listSkills` too) and
+returned in `unscanned` with `unscannedReason` (by `linkSkills`:
+unless still linked).
 
 ### `assertQuery(selector, flag, partSelectors?): Promise<void>`
 

@@ -30,9 +30,8 @@ first skill of a name wins.
 Skills are linked into the project's agent skill dirs: \`.agents/skills\`, plus
 \`<folder>/skills\` for each agent folder at the project root (e.g. \`.claude/\`),
 or the \`skills-dir\` config. When packages ship skills with the same name, one is
-linked and the others are reported. Only links made by vlt (pointing into
-\`node_modules/.vlt\`) are ever replaced or removed; anything else in the way is
-skipped.
+linked and the others are reported. Only links made by vlt are ever replaced or
+removed; anything else in the way is skipped.
 
 Use --target or a query after the subcommand to select packages using DSS query
 syntax. End a selector with \`:skill(<name>, …)\` to pick single skills, e.g.

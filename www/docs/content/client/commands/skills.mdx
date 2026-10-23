@@ -41,12 +41,45 @@ lists the packages that ship skills.
 
 - Packages installed in the `node_modules/.vlt` store, direct or
   transitive.
-- Not the project or its workspaces, and not `file:` dependencies
-  (folders and tarballs).
+- The project's [workspaces](#workspaces).
+- Not the project root, and not `file:` dependencies (folders and
+  tarballs).
 - One version per package: the one the project depends on directly,
   else a workspace's, else the highest version, even if it ships no
   skills. Different origins (e.g. registry and git) are different
   packages.
+
+### Workspaces
+
+A [workspace](/client/workspaces) can ship skills, e.g. one workspace
+per skill:
+
+<Code
+  code={`my-project/
+├── vlt.json   {"workspaces": ["skills/*"]}
+└── skills/
+    └── my-skill/
+        ├── package.json
+        └── SKILL.md`}
+  title="Layout"
+  lang="text"
+/>
+
+A workspace counts like any package: `*` and `:not(:malware)` select
+it, [`:workspace`](/client/selectors/pseudo-states#workspace) only
+workspaces, `#<name>` one. It ranks like a direct dependency. Links
+point into its folder
+(`.agents/skills/my-skill -> ../../skills/my-skill`). Same layout
+rules as any package: one workspace can also hold many skills in its
+own `skills/<name>/`, not in `<name>/` at its root.
+
+<Code
+  code={`$ vlt skills link ":workspace"
+# leave workspaces out
+$ vlt skills link ":not(:malware):not(:workspace)"`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ### Where in a package
 
@@ -113,8 +146,8 @@ applies first: a skill the query doesn't pick never takes a name.
 ### A skill isn't found
 
 - `vlt skills list "#<package>"` lists what `vlt` finds in it.
-- Check the package is installed from a registry, git or a remote
-  tarball, not a workspace or `file:` dependency.
+- Check the package is a workspace or installed from a registry, git
+  or a remote tarball, not a `file:` dependency or the project root.
 - Check the layout and folder name rules above.
 - `vlt skills link` and installs warn about a `:skill()` pattern that
   matches nothing, listing the skills its packages ship.
@@ -235,7 +268,8 @@ Each skill is linked into every dir, named after the skill:
 On Windows, links are directory junctions. Junctions hold absolute
 paths, so after moving or copying the project, run
 `vlt skills link <query>` (or `vlt install` with `allow-skills` set)
-to re-point them.
+to re-point them. A copied project's workspace links still point into
+the original: delete them, then run `vlt skills link`.
 
 ## Subcommands
 
@@ -396,10 +430,12 @@ Saved allow-skills="#agent-browser:skill(agent-browser)" to vlt.json`}
 
 ## Safety
 
-- `vlt` only ever replaces or removes links that point into a
-  `node_modules/.vlt` store. Anything else at a link path (your own
-  skills, other tools' copies or links) is skipped and reported for
-  that dir, never changed.
+- `vlt` only ever replaces or removes its own links: into a
+  `node_modules/.vlt` store, or listed in the dir's `.gitignore` block
+  and pointing to a workspace or nowhere (dangling). Anything else at
+  a link path (your own skills, other tools' copies or links) is
+  skipped and reported for that dir, never changed. An entry that
+  already is the skill is left as is.
 - Dirs are never removed.
 - Security queries fail closed, like `allow-scripts`: with a security
   selector such as `:not(:malware)`, skills of npm registry packages
@@ -410,6 +446,7 @@ Saved allow-skills="#agent-browser:skill(agent-browser)" to vlt.json`}
 - Linked skills are views of installed package files: don't edit them,
   a reinstall replaces them. Files hardlinked from the global store
   get private copies when linked, so edits stay in this project.
+  Workspace links point to your sources: edits there are real.
 
 ## Ignoring linked skills in git
 
@@ -430,6 +467,8 @@ entry takes the name. The rest of the file is kept, and the file is
 never deleted: committed, it keeps the dir in a fresh clone. A dir
 with no `vlt` links is never touched. A `.gitignore` that is a
 symlink, not a file or can't be written is left alone and reported.
+The block is also `vlt`'s record of links to workspaces: without its
+line, such a link is left alone.
 
 ## Limits
 

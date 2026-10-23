@@ -1,4 +1,5 @@
 import {
+  existsSync,
   lstatSync,
   readdirSync,
   readlinkSync,
@@ -17,6 +18,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { symlinkSyncMkdirp } from '../reify/symlink-sync.ts'
 import type { SkillsDir } from './dirs.ts'
 import type { Skill } from './discover.ts'
+import { gitignoreNames } from './gitignore.ts'
 
 /**
  * A vlt link in an agent skills dir.
@@ -32,8 +34,17 @@ export type SkillMount = {
   link: string
   /** absolute resolved link target */
   target: string
-  /** DepID of the store dir the link points into */
+  /** DepID of the store dir or workspace the link points into */
   owner?: DepID
+}
+
+/**
+ * A workspace of the project.
+ */
+export type WorkspaceDir = {
+  id: DepID
+  /** realpath */
+  path: string
 }
 
 /**
@@ -73,6 +84,14 @@ export const samePath = (a: string, b: string): boolean =>
 
 const storeSeg = `${sep}node_modules${sep}.vlt${sep}`
 
+// resolved target of a symlink (or junction)
+const linkTarget = (link: string) => {
+  if (!lstat(link)?.isSymbolicLink()) return undefined
+  let raw = readlinkSync(link)
+  if (raw.startsWith('\\\\?\\')) raw = raw.slice(4)
+  return resolve(dirname(link), raw)
+}
+
 /**
  * The target of `link` if it is a symlink (or junction) pointing into
  * a `node_modules/.vlt` store, otherwise undefined. Any store, not just
@@ -80,11 +99,21 @@ const storeSeg = `${sep}node_modules${sep}.vlt${sep}`
  * store after the project is moved or copied.
  */
 export const mountTarget = (link: string): string | undefined => {
-  if (!lstat(link)?.isSymbolicLink()) return undefined
-  let raw = readlinkSync(link)
-  if (raw.startsWith('\\\\?\\')) raw = raw.slice(4)
-  const target = resolve(dirname(link), raw)
-  return norm(target).includes(storeSeg) ? target : undefined
+  const target = linkTarget(link)
+  return target && norm(target).includes(storeSeg) ?
+      target
+    : undefined
+}
+
+// the deepest workspace holding `target`
+const workspaceOf = (target: string, workspaces: WorkspaceDir[]) => {
+  const t = norm(realOr(target))
+  return workspaces
+    .filter(({ path }) => {
+      const p = norm(path)
+      return t === p || t.startsWith(p + sep)
+    })
+    .sort((a, b) => b.path.length - a.path.length)[0]
 }
 
 /**
@@ -120,9 +149,17 @@ export const packageKey = (id: DepID): string => {
 }
 
 /**
- * All vlt links in the given dirs. Anything else is ignored.
+ * All vlt links in the given dirs: links into a `node_modules/.vlt`
+ * store, and links listed in the dir's `.gitignore` block (or `made`)
+ * into a workspace or dangling. Anything else is ignored.
  */
-export const readMounts = (scan: SkillsDir[]): SkillMount[] => {
+export const readMounts = (
+  scan: SkillsDir[],
+  {
+    workspaces = [],
+    made,
+  }: { workspaces?: WorkspaceDir[]; made?: Set<string> } = {},
+): SkillMount[] => {
   const mounts: SkillMount[] = []
   for (const dir of scan) {
     let entries: string[]
@@ -131,37 +168,44 @@ export const readMounts = (scan: SkillsDir[]): SkillMount[] => {
     } catch {
       continue
     }
+    const listed = gitignoreNames(dir.real)
     for (const name of entries) {
       const link = join(dir.real, name)
+      const mount = `${dir.dir}/${name}`
+      const m = { dir, name, mount, link }
       const target = mountTarget(link)
       if (target) {
-        mounts.push({
-          dir,
-          name,
-          mount: `${dir.dir}/${name}`,
-          link,
-          target,
-          owner: ownerOf(target),
-        })
+        mounts.push({ ...m, target, owner: ownerOf(target) })
+        continue
       }
+      const wsTarget =
+        (listed.has(name) || made?.has(mount)) && linkTarget(link)
+      if (!wsTarget) continue
+      if (!existsSync(wsTarget)) {
+        mounts.push({ ...m, target: wsTarget })
+        continue
+      }
+      const ws = workspaceOf(wsTarget, workspaces)
+      if (ws) mounts.push({ ...m, target: wsTarget, owner: ws.id })
     }
   }
   return mounts.sort((a, b) => a.mount.localeCompare(b.mount, 'en'))
 }
 
 /**
- * Link a skill at `<dir>/<skill>`. Never touches anything not managed by
- * vlt: returns `'conflict'` instead.
+ * Link a skill at `<dir>/<skill>`. `'unchanged'` if the entry already
+ * is the skill. Never touches anything not managed by vlt (a store
+ * link, or `owned`): returns `'conflict'` instead.
  */
 export const mountSkill = (
   skill: Pick<Skill, 'skill' | 'path'>,
   dir: SkillsDir,
+  owned = false,
 ): MountResult => {
   const link = join(dir.real, skill.skill)
   if (lstat(link)) {
-    const target = mountTarget(link)
-    if (!target) return 'conflict'
-    if (samePath(target, skill.path)) return 'unchanged'
+    if (samePath(link, skill.path)) return 'unchanged'
+    if (!owned && !mountTarget(link)) return 'conflict'
     unlinkSync(link)
   }
   // junctions need no admin rights, but want an absolute target
