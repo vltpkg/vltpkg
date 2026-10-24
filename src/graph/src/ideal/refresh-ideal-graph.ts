@@ -233,8 +233,10 @@ export const refreshIdealGraph = async ({
       ) {
         graph.lockfileStale = true
       }
+      specTexts.delete(`${importer.id}\0${name}`)
     }
   }
+  if (specTexts.size) graph.lockfileStale = true
 
   // set default node locations, if possible
   for (const node of graph.nodes.values()) {

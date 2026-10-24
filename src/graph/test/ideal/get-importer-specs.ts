@@ -1186,7 +1186,7 @@ t.test(
 )
 
 t.test(
-  'workspace dep with missing workspace marks dep for removal',
+  'workspace dep with missing workspace is queued for resolution',
   async t => {
     const mainManifest = {
       name: 'my-project',
@@ -1234,14 +1234,14 @@ t.test(
     })
 
     const rootRemoves = specs.remove.get(rootDepID)
-    t.ok(
+    t.notOk(
       rootRemoves?.has('my-workspace'),
-      'missing workspace dep should be marked for removal',
+      'missing workspace dep should not be marked for removal',
     )
     const rootAdds = specs.add.get(rootDepID)
-    t.notOk(
+    t.ok(
       rootAdds?.has('my-workspace'),
-      'missing workspace dep should NOT be in add set',
+      'missing workspace dep should be in add set',
     )
   },
 )

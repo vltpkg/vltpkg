@@ -571,10 +571,10 @@ const fetchManifestsForDeps = async (
     // If we didn't find a matching workspace node above, it means either
     // the workspace doesn't exist or its version doesn't satisfy the range.
     if (spec.final.type === 'workspace') {
-      const wsVersion = graph.nodesByName
-        .get(spec.name)
-        ?.values()
-        .next().value?.version
+      const wsVersion = graph.monorepo?.get(
+        /* c8 ignore next - workspace specs always have a target */
+        spec.final.workspace ?? spec.final.name,
+      )?.manifest.version
       throw error(
         wsVersion ?
           `workspace dependency ${spec} does not match the ` +

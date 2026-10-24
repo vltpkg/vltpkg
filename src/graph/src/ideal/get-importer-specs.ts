@@ -117,8 +117,7 @@ export const getImporterSpecs = (
       // type. dangling (MISSING) targets still need to be queued so
       // the ideal rebuild runs resetEdges() and places in traversal
       // order. checked before parsing: the text parsed fine when the
-      // edge was loaded, and the workspace check below only fires on
-      // !edge?.to
+      // edge was loaded
       const type = shorten(depType, depName, importer.manifest)
       if (
         edge?.to &&
@@ -140,20 +139,6 @@ export const getImporterSpecs = (
       if (options.modifiers?.removesImporterEdge(importer, spec)) {
         if (edge) removedEdges.add(edge)
         continue
-      }
-
-      // if a workspace dep references a workspace that no longer exists
-      // (folder was removed), mark it for removal instead of trying to
-      // resolve it — the workspace can't be satisfied
-      if (spec.type === 'workspace' && !edge?.to) {
-        const wsExists = [...graph.importers].some(
-          n => n.name === depName,
-        )
-        if (!wsExists) {
-          removeDeps.add(depName)
-          removeResult.modifiedDependencies = true
-          continue
-        }
       }
 
       addDeps.set(depName, asDependency({ spec, type }))
