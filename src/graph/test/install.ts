@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  rmSync,
   statSync,
   utimesSync,
   writeFileSync,
@@ -3531,3 +3532,303 @@ t.test('allowSkills', async t => {
     )
   })
 })
+
+t.test(
+  'unresolved workspace declarations leave package.json intact',
+  async t => {
+    for (const [name, workspaces, depName, depSpec, message] of [
+      [
+        'no workspaces',
+        undefined,
+        '@ws/missing',
+        'workspace:*',
+        /no workspace found matching/,
+      ],
+      [
+        'unmatched glob',
+        ['packages/'],
+        '@ws/lib',
+        'workspace:',
+        /no workspace found matching/,
+      ],
+      [
+        'missing name',
+        ['packages/*'],
+        '@ws/missing',
+        'workspace:*',
+        /no workspace found matching/,
+      ],
+      [
+        'missing alias target',
+        ['packages/*'],
+        '@ws/lib',
+        'workspace:missing@*',
+        /no workspace found matching/,
+      ],
+      [
+        'alias version mismatch',
+        ['packages/*'],
+        'alias',
+        'workspace:@ws/lib@^2.0.0',
+        /does not match the local workspace version \(1.0.0\)/,
+      ],
+    ] as const) {
+      await t.test(name, async t => {
+        const manifest = JSON.stringify({
+          name: 'root',
+          devDependencies: { [depName]: depSpec },
+        })
+        const { projectRoot, opts, install } = await stubSetup(
+          t,
+          {
+            'package.json': manifest,
+            'vlt.json': JSON.stringify({ workspaces }),
+            packages: {
+              lib: {
+                'package.json': JSON.stringify({
+                  name: '@ws/lib',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+          {},
+        )
+        await t.rejects(
+          install(opts({ lockfileOnly: false })),
+          message,
+        )
+        t.equal(
+          readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+          manifest,
+          'declaration is preserved',
+        )
+        t.notOk(
+          existsSync(resolve(projectRoot, 'vlt-lock.json')),
+          'no lockfile is written',
+        )
+      })
+    }
+  },
+)
+
+t.test('workspace aliases link their target', async t => {
+  for (const explicit of [false, true]) {
+    await t.test(
+      explicit ? 'explicit add' : 'declared dependencies',
+      async t => {
+        const deps = {
+          byName: 'workspace:@ws/lib@*',
+          byPath: 'workspace:packages/lib@*',
+          '@ws/other': 'workspace:@ws/lib@^1.0.0',
+        }
+        const { projectRoot, opts, install } = await stubSetup(
+          t,
+          {
+            'package.json': JSON.stringify({
+              name: 'root',
+              devDependencies: explicit ? {} : deps,
+            }),
+            'vlt.json': JSON.stringify({
+              workspaces: ['packages/*'],
+            }),
+            packages: {
+              lib: {
+                'package.json': JSON.stringify({
+                  name: '@ws/lib',
+                  version: '1.0.0',
+                }),
+              },
+              other: {
+                'package.json': JSON.stringify({
+                  name: '@ws/other',
+                  version: '2.0.0',
+                }),
+              },
+            },
+          },
+          {},
+        )
+        const add = Object.assign(
+          new Map([
+            [
+              joinDepIDTuple(['file', '.']),
+              new Map(
+                Object.entries(deps).map(([name, spec]) => [
+                  name,
+                  asDependency({
+                    spec: Spec.parse(name, spec),
+                    type: 'dev',
+                  }),
+                ]),
+              ),
+            ],
+          ]),
+          { modifiedDependencies: true },
+        )
+        let lock = ''
+        for (const phase of ['initial', 'reinstall', 'frozen']) {
+          const { graph } = await install(
+            opts({
+              lockfileOnly: false,
+              frozenLockfile: phase === 'frozen',
+            }),
+            explicit && phase === 'initial' ? add : emptyAdd(),
+          )
+          for (const [name, spec] of Object.entries(deps)) {
+            const edge = graph.mainImporter.edgesOut.get(name)
+            t.equal(
+              edge?.to?.id,
+              joinDepIDTuple(['workspace', 'packages/lib']),
+              `${phase}: ${name} links the target`,
+            )
+            t.equal(
+              edge?.spec.bareSpec,
+              spec,
+              'alias spec is preserved',
+            )
+            t.equal(
+              JSON.parse(
+                readFileSync(
+                  resolve(
+                    projectRoot,
+                    'node_modules',
+                    name,
+                    'package.json',
+                  ),
+                  'utf8',
+                ),
+              ).name,
+              '@ws/lib',
+              'installed link points to the target',
+            )
+          }
+          t.strictSame(
+            JSON.parse(
+              readFileSync(
+                resolve(projectRoot, 'package.json'),
+                'utf8',
+              ),
+            ).devDependencies,
+            deps,
+            'manifest keeps the aliases',
+          )
+          const saved = readFileSync(
+            resolve(projectRoot, 'vlt-lock.json'),
+            'utf8',
+          )
+          if (phase === 'initial') lock = saved
+          else t.equal(saved, lock, 'lockfile is unchanged')
+        }
+      },
+    )
+  }
+})
+
+t.test(
+  'install fails without deleting a removed workspace dependency',
+  async t => {
+    const manifest = JSON.stringify({
+      name: 'root',
+      dependencies: { lib: 'workspace:*' },
+    })
+    const { projectRoot, opts, install } = await stubSetup(
+      t,
+      {
+        'package.json': manifest,
+        'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+        packages: {
+          lib: {
+            'package.json': JSON.stringify({
+              name: 'lib',
+              version: '1.0.0',
+            }),
+          },
+        },
+      },
+      {},
+    )
+    await install(opts({ lockfileOnly: false }))
+    const lock = readFileSync(
+      resolve(projectRoot, 'vlt-lock.json'),
+      'utf8',
+    )
+    rmSync(resolve(projectRoot, 'packages/lib'), { recursive: true })
+    workspaceCache.clear()
+    await t.rejects(
+      install(opts({ lockfileOnly: false })),
+      /no workspace found matching lib@workspace:\*/,
+    )
+    t.equal(
+      readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+      manifest,
+      'manifest is unchanged',
+    )
+    t.equal(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+      lock,
+      'lockfile is unchanged',
+    )
+    const { uninstall } = await import('../src/uninstall.ts')
+    await uninstall(
+      opts({ lockfileOnly: false }),
+      Object.assign(
+        new Map([[joinDepIDTuple(['file', '.']), new Set(['lib'])]]),
+        { modifiedDependencies: true },
+      ),
+    )
+    t.strictSame(
+      JSON.parse(
+        readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+      ).dependencies,
+      {},
+      'explicit uninstall still removes the deleted workspace dependency',
+    )
+    await t.resolves(
+      install(opts({ lockfileOnly: false, frozenLockfile: true })),
+      'frozen install passes after uninstall',
+    )
+  },
+)
+
+t.test(
+  'a missing workspace does not discard unrelated locked versions',
+  async t => {
+    const { projectRoot, opts, install } = await stubSetup(
+      t,
+      {
+        'package.json': JSON.stringify({
+          name: 'root',
+          dependencies: { locked: '^1.0.0' },
+        }),
+        'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+        packages: {
+          lib: {
+            'package.json': JSON.stringify({
+              name: 'lib',
+              version: '1.0.0',
+              dependencies: { locked: '^1.0.0' },
+            }),
+          },
+        },
+      },
+      { '^1.0.0': '1.0.0' },
+    )
+    await install(opts())
+    rmSync(resolve(projectRoot, 'packages/lib'), { recursive: true })
+    workspaceCache.clear()
+    const { graph } = await install(
+      opts({
+        packageInfo: stubRegistry({
+          '^1.0.0': '1.1.0',
+          '1.0.0': '1.0.0',
+        }),
+      }),
+    )
+    t.equal(
+      graph.mainImporter.edgesOut.get('locked')?.to?.version,
+      '1.0.0',
+      'the existing lock is used instead of resolving the range again',
+    )
+  },
+)

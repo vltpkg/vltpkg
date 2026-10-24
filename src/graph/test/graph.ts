@@ -467,6 +467,44 @@ t.test('workspaces', async t => {
     mainManifest,
     monorepo,
   })
+  const b = graph.nodes.get(
+    joinDepIDTuple(['workspace', 'packages/b']),
+  )
+  for (const target of ['b', 'packages/b']) {
+    const spec = Spec.parse('alias', `workspace:${target}@*`)
+    t.equal(
+      graph.findResolution(spec, graph.mainImporter),
+      b,
+      `resolves workspace alias by ${target}`,
+    )
+    t.equal(
+      graph.findResolution(spec, graph.mainImporter),
+      b,
+      'repeated resolution returns the same workspace',
+    )
+    t.notOk(
+      graph.findResolution(
+        Spec.parse('alias', `workspace:${target}@^2.0.0`),
+        graph.mainImporter,
+      ),
+      'workspace alias must satisfy the requested range',
+    )
+  }
+  t.equal(
+    graph.findResolution(
+      Spec.parse('a', 'workspace:b@*'),
+      graph.mainImporter,
+    ),
+    b,
+    'the target wins over a workspace with the alias name',
+  )
+  t.notOk(
+    graph.findResolution(
+      Spec.parse('a', 'workspace:missing@*'),
+      graph.mainImporter,
+    ),
+    'an existing alias name does not satisfy a missing target',
+  )
   for (const importer of graph.importers) {
     t.strictSame(
       importer.graph,
