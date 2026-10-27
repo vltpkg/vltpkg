@@ -607,14 +607,16 @@ export class PackageInfoClient {
         // hash off the cache entry, which recorded it when the bytes
         // were verified. Installs that do have a hash skip all of this,
         // so a store hit still never builds a registry client.
+        const cachedIntegrity =
+          storeOn && !r.integrity ?
+            (await this.getRegistryClient()).cachedIntegrity(
+              r.resolved,
+            )
+          : undefined
         const hex =
           !storeOn ? undefined
           : r.integrity ? integrityHex(r.integrity)
-          : integrityHex(
-              (await this.getRegistryClient()).cachedIntegrity(
-                r.resolved,
-              ),
-            )
+          : integrityHex(cachedIntegrity)
         if (hex) {
           if (debug.enabled && !this.#storeHitRateLogged) {
             this.#storeHitRateLogged = true
@@ -630,20 +632,12 @@ export class PackageInfoClient {
             this.#storeHits[how]++
             // a copy is no link: report it as a cache hit
             logRequest(r.resolved, how === 'copy' ? 'cache' : 'store')
-            // a `.tar.br` with nothing pinned: hash its cached bytes
-            // (kept as served) so the lockfile gets one, if they are
-            // what was just linked
-            if (!r.integrity && format === 'brotli') {
-              const body = (
-                await this.getRegistryClient()
-              ).cachedBody(r.resolved)?.body
-              const integrity =
-                body &&
-                (`sha512-${createHash('sha512').update(body).digest('base64')}` as const)
-              if (integrity && integrityHex(integrity) === hex) {
-                r.integrity = integrity
-              }
-            }
+            // nothing pinned: the store was hit under the hash the
+            // registry client recorded when it fetched these bytes (a
+            // `.tar.br` checked against `Repr-Digest`, or a `.tgz` served
+            // with no `dist.integrity`), so the lockfile can pin it. same
+            // trust the cache-unpack path below puts in that label.
+            r.integrity ??= cachedIntegrity
             return {
               ...r,
               manifest: index.manifest,
