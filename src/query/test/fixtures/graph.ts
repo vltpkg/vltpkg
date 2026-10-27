@@ -684,6 +684,41 @@ export const getAliasedGraph = (): GraphLike => {
   return graph
 }
 
+// Returns a graph with a package installed under 2 names:
+//
+// multi-name-project (#abbrev:prod, #ab:dev, #semver:prod)
+// +-- abbrev (via #abbrev and #ab)
+// +-- semver
+//
+export const getMultiNameGraph = (): GraphLike => {
+  const graph = newGraph('multi-name-project')
+  const addNode = newNode(graph)
+  const abbrev = addNode('abbrev', '2.0.0')
+  const semver = addNode('semver', '7.6.3')
+  ;[abbrev, semver].forEach(i => {
+    graph.nodes.set(i.id, i)
+  })
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('abbrev', '2.0.0', specOptions),
+    'prod',
+    abbrev,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('ab', 'npm:abbrev@2.0.0', specOptions),
+    'dev',
+    abbrev,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('semver', '7.6.3', specOptions),
+    'prod',
+    semver,
+  )
+  return graph
+}
+
 // Returns a graph with path-based dependencies for testing :path() selector
 //
 // flowchart TD
