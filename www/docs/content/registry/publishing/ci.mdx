@@ -72,7 +72,7 @@ CI (pnpm: see [below](#pnpm-needs-a-different-approach)).
 # npm — commit .npmrc with ${VLT_TOKEN}
 npm ci
 
-# pnpm — pin to 11.26.0, and pass the token as a config env var (see below)
+# pnpm — pass the token as a config env var (see below)
 env "pnpm_config_//registry.vlt.io/acme/npm/:_authToken=$VLT_TOKEN" \
   pnpm install --frozen-lockfile
 

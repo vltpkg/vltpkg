@@ -9,19 +9,21 @@ sidebar:
 
 Verified against **pnpm 10, 11 and 12**.
 
-<Aside type="tip" title="pnpm 12 now works with the npm mirror">
+<Aside type="tip" title="pnpm 12 works with the npm mirror since 12.3.0">
 
-Earlier versions of pnpm 12 rejected metadata from the vlt npm mirror
-with `no version found for the latest tag`. This was fixed upstream in
-[pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448) — update
-to the latest pnpm 12 and the mirror works correctly.
+pnpm 12 releases before 12.3.0 rejected the mirror's metadata and
+failed with `no version found for the latest tag`. The fix landed
+upstream in [pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448)
+and shipped in pnpm 12.3.0 (September 2026), so any current 12.x
+works.
 
-If you previously pinned pnpm 11 as a workaround, you can move back
-to 12:
+If you pinned pnpm 11 as a workaround, move back to 12:
 
 ```sh
 corepack use pnpm@latest
 ```
+
+That writes the resolved exact version into `packageManager`.
 
 </Aside>
 
@@ -74,12 +76,12 @@ instead.
 Which option is available depends on the version, and there is one
 unlucky release with neither:
 
-| pnpm version     | `${VLT_TOKEN}` in project `.npmrc` | `pnpm_config_…` env var |
-| ---------------- | ---------------------------------- | ----------------------- |
-| 11.5.2 and older | works                              | **not supported**       |
-| 11.5.3           | blocked                            | **not supported**       |
-| 11.6.0 – 11.26.0 | blocked                            | works                   |
-| 12.x             | blocked                            | works                   |
+| pnpm version          | `${VLT_TOKEN}` in project `.npmrc` | `pnpm_config_…` env var |
+| --------------------- | ---------------------------------- | ----------------------- |
+| 11.5.2 and older      | works                              | **not supported**       |
+| 11.5.3                | blocked                            | **not supported**       |
+| 11.6.0 and newer 11.x | blocked                            | works                   |
+| 12.x                  | blocked                            | works                   |
 
 On any current pnpm (11.6.0+, all of 12.x), use `pnpm login` or the
 environment variable — never a placeholder in the project file.
@@ -195,11 +197,11 @@ to `.npmrc`.
 
 ## Gotchas
 
-- **pnpm 12 + the npm mirror required a pnpm update.** Early pnpm 12
-  releases dropped versions whose metadata contained fields the Rust
-  parser didn't recognise. Fixed in
-  [pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448) — make
-  sure you're on the latest 12.x.
+- **pnpm 12 before 12.3.0 cannot install from the npm mirror.** Those
+  releases dropped every version whose metadata carried a field the
+  new parser did not recognise. Fixed in
+  [pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448) — use
+  12.3.0 or newer.
 - **`${VAR}` in a project `.npmrc` is ignored, silently.** See above.
 - **`pnpm config set` writes to your machine-global config by
   default.** Always pass `--location=project`, or credentials end up
