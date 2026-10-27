@@ -2,7 +2,7 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
-import { defaultGitHosts } from '@vltpkg/spec'
+import { defaultGitHostArchives, defaultGitHosts } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
 import t from 'tap'
 import type { LockfileNode } from '../../src/index.ts'
@@ -2017,6 +2017,37 @@ t.test('diffLockfileOptions', async t => {
     diff({ 'git-hosts': defaultGitHosts }),
     [],
     'default entries are not reported',
+  )
+
+  t.strictSame(
+    diff(
+      {
+        'git-host-archives': {
+          gitlab: defaultGitHostArchives.gitlab,
+        },
+      },
+      {
+        'git-host-archives': {
+          gitlab: defaultGitHostArchives.gitlab,
+        },
+      },
+    ),
+    [],
+    'a stored entry that is now the default is not reported',
+  )
+
+  t.strictSame(
+    diff(
+      {},
+      {
+        'git-host-archives': {
+          gitlab: defaultGitHostArchives.gitlab,
+        },
+        'git-hosts': { github: defaultGitHosts.github },
+      },
+    ),
+    [],
+    'a stored default entry w/o config is not reported',
   )
 
   t.test('modifiers and the optionsChanged parity', async t => {
