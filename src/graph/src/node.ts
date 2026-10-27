@@ -466,6 +466,12 @@ export class Node implements NodeLike {
       case 'registry':
         this.#registryNodeResolved(tuple)
         break
+      case 'git':
+        // a hosted git committish is fetched as the host's tarball
+        this.resolved =
+          hydrateTuple(tuple, this.#name, this.#options).final
+            .remoteURL ?? resolved
+        break
       default:
         this.resolved = resolved
         break

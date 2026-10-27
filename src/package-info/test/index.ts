@@ -2822,6 +2822,61 @@ t.test('falls back when the cache file will not unpack', async t => {
   )
 })
 
+t.test('hosted git locked with its git remote', async t => {
+  const track = drainer(t)
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  const integrity: Integrity =
+    pakuAbbrev.versions['2.0.0'].dist.integrity
+  const hosts = {
+    'git-hosts': { fakey: `git+${pathToFileURL(repo)}#committish` },
+    'git-host-archives': { fakey: tarballURL },
+  }
+  // as locked by vlt <= 1.6.0
+  const lock = {
+    resolved: 'fakey:abbrev-2.0.0.tgz',
+    fromLockfile: true,
+  }
+
+  const pi = track(
+    new PackageInfoClient({
+      ...options,
+      ...hosts,
+      cache: dir + '/c1',
+    }),
+  )
+  t.match(
+    await pi.extract('x@fakey:abbrev-2.0.0.tgz', dir + '/t', {
+      ...lock,
+      integrity,
+    }),
+    { resolved: tarballURL, integrity },
+    'fetched the archive url',
+  )
+  t.match(JSON.parse(readFileSync(dir + '/t/package.json', 'utf8')), {
+    name: 'abbrev',
+    version: '2.0.0',
+  })
+
+  const bad = track(
+    new PackageInfoClient({
+      ...options,
+      ...hosts,
+      cache: dir + '/c2',
+    }),
+  )
+  const nope = createHash('sha512').update('nope').digest('base64')
+  await t.rejects(
+    bad.extract('x@fakey:abbrev-2.0.0.tgz', dir + '/bad', {
+      ...lock,
+      integrity: `sha512-${nope}`,
+    }),
+    { cause: { code: 'EINTEGRITY' } },
+    'locked integrity still checked',
+  )
+})
+
 t.test('global store', async t => {
   const integrity: Integrity =
     pakuAbbrev.versions['2.0.0'].dist.integrity

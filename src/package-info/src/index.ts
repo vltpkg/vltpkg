@@ -535,17 +535,28 @@ export class PackageInfoClient {
       fromLockfile = false,
     } = options
     const f = spec.final
+    // vlt <= 1.6.0 locked hosted git tarballs with the bare git remote
+    // as `resolved`, which can't be fetched
+    const url =
+      (
+        f.type === 'git' &&
+        f.remoteURL &&
+        resolved &&
+        !/^https?:\/\//.test(resolved)
+      ) ?
+        f.remoteURL
+      : resolved
     // If the caller already provides both integrity and resolved
     // (from lockfile or prior resolution), skip re-resolving. A
     // `.tar.br` needs only the URL: its hash is not knowable before the
     // download, so the graph can never hand one over, and `Repr-Digest`
     // is what pins it -- `required`, so a registry that serves the
     // alternate unlabelled is rejected rather than trusted.
-    const brotli = !!resolved && tarballFormat(resolved) === 'brotli'
+    const brotli = !!url && tarballFormat(url) === 'brotli'
     const r: Resolution =
-      resolved && (integrity || brotli) ?
+      url && (integrity || brotli) ?
         {
-          resolved,
+          resolved: url,
           integrity,
           spec,
           ...(brotli && !integrity ? { digestRequired: true } : {}),

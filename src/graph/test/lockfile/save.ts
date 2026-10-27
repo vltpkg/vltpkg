@@ -1172,6 +1172,44 @@ t.test('round-trip a peer-suffixed node', async t => {
   )
 })
 
+t.test('hosted git round trip', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { b: 'github:a/b#main' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  const b = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('b@github:a/b#main'),
+    { name: 'b', version: '1.0.0' },
+  )
+  if (!b) throw new Error('missing b')
+  b.setResolved()
+  b.integrity = 'sha512-deadbeef'
+  save({ ...configData, graph })
+
+  const url = 'https://api.github.com/repos/a/b/tarball/main'
+  const nodes = (
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    ) as { nodes: Record<string, unknown[]> }
+  ).nodes
+  t.equal(nodes[b.id]?.[3], url, 'locks the tarball url')
+  const loaded = load({ ...configData, projectRoot, mainManifest })
+  const out = loaded.nodes.get(b.id)
+  t.equal(out?.resolved, url)
+  t.equal(out?.resolvedFromLockfile, true)
+})
+
 t.test('brotli round trip', async t => {
   const mainManifest = {
     name: 'my-project',
