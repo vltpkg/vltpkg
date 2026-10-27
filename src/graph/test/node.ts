@@ -266,12 +266,12 @@ t.test('Node', async t => {
     [
       'github:a/b',
       'main',
-      'https://api.github.com/repos/a/b/tarball/main',
+      'https://codeload.github.com/a/b/legacy.tar.gz/main',
     ],
     [
       'gitlab:a/b',
       'v1',
-      'https://gitlab.com/a/b/repository/archive.tar.gz?ref=v1',
+      'https://gitlab.com/api/v4/projects/a%2Fb/repository/archive.tar.gz?sha=v1',
     ],
     ['github:a/b', 'main::path:x', 'github:a/b'],
     [

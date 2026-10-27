@@ -213,6 +213,16 @@ type OptionsValue =
   | Record<string, Record<string, string>>
   | undefined
 
+// stored entry equal to a current default (e.g. a workaround that
+// became the default) = no entry
+const sectionDefaults: Record<string, Record<string, string>> = {
+  registries: defaultRegistries,
+  'scoped-registries': defaultScopeRegistries,
+  'jsr-registries': defaultJsrRegistries,
+  'git-hosts': defaultGitHosts,
+  'git-host-archives': defaultGitHostArchives,
+}
+
 const asRecord = (o: LockfileData['options']) =>
   o as Record<string, OptionsValue>
 
@@ -278,9 +288,12 @@ export const diffLockfileOptions = (
         )
       }
     } else {
+      const defaults = sectionDefaults[section]
       diffRecords(
         section,
-        from as Record<string, string>,
+        defaults && isRecordStringString(from) ?
+          removeDefaultItems(defaults, from)
+        : (from as Record<string, string>),
         to as Record<string, string>,
         changes,
       )
