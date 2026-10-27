@@ -261,6 +261,30 @@ t.test('Node', async t => {
   )
   t.matchSnapshot(String(gitMani), 'should stringify git node')
 
+  // hosted git w/ a ref resolves to the host's tarball url
+  for (const [first, second, want] of [
+    [
+      'github:a/b',
+      'main',
+      'https://api.github.com/repos/a/b/tarball/main',
+    ],
+    [
+      'gitlab:a/b',
+      'v1',
+      'https://gitlab.com/a/b/repository/archive.tar.gz?ref=v1',
+    ],
+    ['github:a/b', 'main::path:x', 'github:a/b'],
+    [
+      'git+https://github.com/a/b.git',
+      'main',
+      'git+https://github.com/a/b.git',
+    ],
+  ] as const) {
+    const n = new Node(opts, joinDepIDTuple(['git', first, second]))
+    n.setResolved()
+    t.equal(n.resolved, want, `resolved for ${first}#${second}`)
+  }
+
   const reg = new Node(
     opts,
     joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']),

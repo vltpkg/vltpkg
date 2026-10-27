@@ -560,6 +560,33 @@ t.test('load nodes with no actual graph provided', async t => {
   )
 })
 
+t.test('hosted git resolved', async t => {
+  const graph = new Graph({
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot: t.testdirName,
+  })
+  const legacy = joinDepIDTuple(['git', 'github:a/b', 'main'])
+  const missing = joinDepIDTuple(['git', 'github:c/d', 'main'])
+  loadNodes(
+    graph,
+    {
+      [legacy]: [0, 'b', 'sha512-x', 'github:a/b'],
+      [missing]: [0, 'd', 'sha512-x'],
+    } as LockfileData['nodes'],
+    {},
+  )
+  t.equal(
+    graph.nodes.get(legacy)?.resolved,
+    'github:a/b',
+    'locked value kept as is',
+  )
+  t.equal(
+    graph.nodes.get(missing)?.resolved,
+    'https://api.github.com/repos/c/d/tarball/main',
+    'missing value set to the tarball url',
+  )
+})
+
 t.test(
   'load nodes with optimization path for large graphs',
   async t => {
