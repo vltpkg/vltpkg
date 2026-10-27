@@ -9,38 +9,21 @@ sidebar:
 
 Verified against **pnpm 10, 11 and 12**.
 
-<Aside type="caution" title="pnpm 12 cannot install from the npm mirror right now">
+<Aside type="tip" title="pnpm 12 works with the npm mirror since 12.3.0">
 
-pnpm 12 rejects every version in the mirror's metadata and fails with
-`no version found for the latest tag`. pnpm **11 and older work
-fine**.
+pnpm 12 releases before 12.3.0 rejected the mirror's metadata and
+failed with `no version found for the latest tag`. The fix landed
+upstream in [pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448)
+and shipped in pnpm 12.3.0 (September 2026), so any current 12.x
+works.
 
-This affects the **mirror only**. Publishing to `main` and installing
-your own packages from `main` work correctly on pnpm 12 — so if you
-only consume your own packages, you can stay on 12. If you install
-public npm packages through the mirror, pin the project to the latest
-11.x:
+If you pinned pnpm 11 as a workaround, move back to 12:
 
 ```sh
-corepack use pnpm@11.26.0
+corepack use pnpm@latest
 ```
 
-That writes `"packageManager": "pnpm@11.26.0"` into your
-`package.json`, so everyone on the project gets the same version.
-**Pin an explicit version rather than the range `pnpm@11`.** Corepack
-satisfies a range from its local cache first, so on a machine that has
-an old 11.x cached, `pnpm@11` can quietly resolve to something as old
-as `11.0.0` — and then pin it. Version matters here: see the table
-below.
-
-To change the pnpm on your `PATH` instead, pass the version explicitly
-— a bare `pnpm self-update` refuses to downgrade:
-
-```sh
-pnpm self-update 11.26.0
-```
-
-This is a bug on our side, not yours, and a fix is in progress.
+That writes the resolved exact version into `packageManager`.
 
 </Aside>
 
@@ -93,15 +76,15 @@ instead.
 Which option is available depends on the version, and there is one
 unlucky release with neither:
 
-| pnpm version     | `${VLT_TOKEN}` in project `.npmrc` | `pnpm_config_…` env var |
-| ---------------- | ---------------------------------- | ----------------------- |
-| 11.5.2 and older | works                              | **not supported**       |
-| 11.5.3           | blocked                            | **not supported**       |
-| 11.6.0 – 11.26.0 | blocked                            | works                   |
-| 12.x             | blocked                            | works                   |
+| pnpm version          | `${VLT_TOKEN}` in project `.npmrc` | `pnpm_config_…` env var |
+| --------------------- | ---------------------------------- | ----------------------- |
+| 11.5.2 and older      | works                              | **not supported**       |
+| 11.5.3                | blocked                            | **not supported**       |
+| 11.6.0 and newer 11.x | blocked                            | works                   |
+| 12.x                  | blocked                            | works                   |
 
-So on the pinned 11.26.0 above, use `pnpm login` or the environment
-variable — never a placeholder in the project file.
+On any current pnpm (11.6.0+, all of 12.x), use `pnpm login` or the
+environment variable — never a placeholder in the project file.
 
 ### Option 1 — log in (recommended for laptops)
 
@@ -214,7 +197,11 @@ to `.npmrc`.
 
 ## Gotchas
 
-- **pnpm 12 + the npm mirror is broken.** See the note at the top.
+- **pnpm 12 before 12.3.0 cannot install from the npm mirror.** Those
+  releases dropped every version whose metadata carried a field the
+  new parser did not recognise. Fixed in
+  [pnpm/pnpm#14448](https://github.com/pnpm/pnpm/pull/14448) — use
+  12.3.0 or newer.
 - **`${VAR}` in a project `.npmrc` is ignored, silently.** See above.
 - **`pnpm config set` writes to your machine-global config by
   default.** Always pass `--location=project`, or credentials end up
