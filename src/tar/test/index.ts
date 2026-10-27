@@ -1,5 +1,6 @@
 import t from 'tap'
 import * as unpack from '../src/unpack.ts'
+import * as gitArchiveCommit from '../src/git-archive-commit.ts'
 import * as clonefile from '../src/clonefile.ts'
 import * as linkTree from '../src/link-tree.ts'
 import * as pool from '../src/pool.ts'
@@ -12,6 +13,7 @@ t.strictSame(
   Object.assign(Object.create(null), {
     unpack: unpack.unpack,
     unpackToStoreSync: unpack.unpackToStoreSync,
+    gitArchiveCommit: gitArchiveCommit.gitArchiveCommit,
     cloneAvailable: clonefile.cloneAvailable,
     ...linkTree,
     ...pool,

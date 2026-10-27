@@ -61,6 +61,11 @@
         "default": "./src/clonefile.ts"
       }
     },
+    "./git-archive-commit": {
+      "import": {
+        "default": "./src/git-archive-commit.ts"
+      }
+    },
     "./link-tree": {
       "import": {
         "default": "./src/link-tree.ts"
