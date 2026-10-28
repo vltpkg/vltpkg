@@ -5336,7 +5336,88 @@ t.test('brotli tarballs', async t => {
       { name: 'abbrev', version: '2.0.0' },
       'the index manifest came along, so it really was the store',
     )
+    t.equal(
+      res.integrity,
+      brAbbrevIntegrity,
+      'pinned from the cache entry',
+    )
+
+    // a lockfile node with no hash hands over the url alone
+    const locked = pi({ cache, 'store-linker': 'hardlink' })
+    const lockedRc = await locked.getRegistryClient()
+    lockedRc.request = () => {
+      throw new Error('requested the tarball')
+    }
+    const b = await locked.extract('brotli@1.0.0', `${dir}/b`, {
+      resolved: brURL,
+    })
+    t.equal(statSync(`${dir}/b/package.json`).nlink, 3, 'linked')
+    t.equal(b.integrity, brAbbrevIntegrity, 'and pinned')
+
+    // The pin is the label on the entry head, which is what keyed the
+    // store lookup. The body is not read on a store hit: what was
+    // linked is the store directory, so a body cachedBody() would
+    // reject changes nothing.
+    const nobody = pi({ cache, 'store-linker': 'hardlink' })
+    const nobodyRc = await nobody.getRegistryClient()
+    nobodyRc.cachedBody = () => undefined
+    const c = await nobody.extract('brotli@1.0.0', `${dir}/c`, {
+      resolved: brURL,
+    })
+    t.equal(statSync(`${dir}/c/package.json`).nlink, 4, 'linked')
+    t.equal(c.integrity, brAbbrevIntegrity, 'and pinned')
+
+    const damaged = pi({ cache, 'store-linker': 'hardlink' })
+    const damagedRc = await damaged.getRegistryClient()
+    const cachedBody = damagedRc.cachedBody.bind(damagedRc)
+    damagedRc.cachedBody = (...args) => {
+      const cached = cachedBody(...args)
+      return cached && { ...cached, body: Buffer.from('damaged') }
+    }
+    const d = await damaged.extract('brotli@1.0.0', `${dir}/d`, {
+      resolved: brURL,
+    })
+    t.equal(statSync(`${dir}/d/package.json`).nlink, 5, 'linked')
+    t.equal(d.integrity, brAbbrevIntegrity, 'and pinned')
   })
+
+  t.test(
+    'a .tgz with no dist.integrity pins the same way',
+    async t => {
+      // Nothing brotli about it: the registry client records the hash of
+      // any artifact it fetched unpinned, the store is keyed on it, and a
+      // store hit hands it to the lockfile.
+      const dir = t.testdir({ 'vlt.json': '{}' })
+      t.chdir(dir)
+      unload()
+      const cache = `${dir}/cache`
+      const store = pathResolve(cache, 'store/v1')
+
+      const cold = pi({ cache })
+      await cold.extract('no-integrity@1.0.0', `${dir}/cold`)
+      await cold.drain()
+
+      const integrity: Integrity = `sha512-${tgzAbbrevSha512}`
+      const hex = String(integrityHex(integrity))
+      const tmp = pathResolve(store, '.tmp', hex)
+      const { index } = unpackToStoreSync(tgzAbbrev, tmp)
+      writeFileSync(
+        pathResolve(store, hex + '.json'),
+        JSON.stringify(index),
+      )
+      renameSync(tmp, pathResolve(store, hex))
+
+      const p = pi({ cache, 'store-linker': 'hardlink' })
+      const res = await p.extract('no-integrity@1.0.0', `${dir}/a`)
+      t.equal(statSync(`${dir}/a/package.json`).nlink, 2, 'linked')
+      t.match(
+        JSON.parse(String(res.manifest)),
+        { name: 'abbrev', version: '2.0.0' },
+        'the index manifest came along, so it really was the store',
+      )
+      t.equal(res.integrity, integrity, 'pinned from the cache entry')
+    },
+  )
 })
 
 t.test('prefetchResolve', async t => {
