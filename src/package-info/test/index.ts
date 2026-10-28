@@ -1066,6 +1066,12 @@ t.test('manifest', async t => {
     {
       name: 'abbrev',
       version: '2.0.0',
+      // locked to the commit it was read at
+      dist: {
+        tarball: new RegExp(
+          `^git\\+${pathToFileURL(repo)}#[0-9a-f]{40}$`,
+        ),
+      },
       [Symbol.for('newline')]: '',
       [Symbol.for('indent')]: '',
     },
@@ -3377,6 +3383,71 @@ t.test('manifest must provide actual dist results', async t => {
   await t.rejects(tarball('no-dist@1.2.3', options))
 })
 
+t.test('cloned git deps locked to a commit', async t => {
+  const dir = t.testdir({ repo: { sub: {} }, 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  const repo = `${dir}/repo`
+  const url = `git+${pathToFileURL(repo)}`
+  const git = async (...cmd: string[]) =>
+    (await spawnGit(cmd, { cwd: repo })).stdout
+  const commit = async (version: string) => {
+    const pj = JSON.stringify({ name: 'cloned', version })
+    await writeFile(`${repo}/package.json`, pj)
+    await writeFile(`${repo}/sub/package.json`, pj)
+    await git('add', '.')
+    await git('commit', '-m', version)
+    await git('tag', `v${version}`)
+    return git('rev-parse', 'HEAD')
+  }
+  await git('init', '-b', 'main')
+  await git('config', 'user.name', 'vltdev')
+  await git('config', 'user.email', 'vltdev@vlt.sh')
+  await git('config', 'tag.gpgSign', 'false')
+  await git('config', 'commit.gpgSign', 'false')
+  const sha1 = await commit('1.0.0')
+  const pi = new PackageInfoClient(options)
+  const version = (d: string) =>
+    (
+      JSON.parse(
+        readFileSync(`${d}/package.json`, 'utf8'),
+      ) as Manifest
+    ).version
+
+  for (const [sel, resolved] of [
+    ['main', `${url}#${sha1}`],
+    ['main::path:sub', `${url}#${sha1}::path:sub`],
+    ['semver:1', `${url}#${sha1}`],
+  ] as const) {
+    const spec = `x@${url}#${sel}`
+    t.equal((await pi.manifest(spec)).dist?.tarball, resolved, sel)
+    const r = (await pi.resolve(spec)).resolved
+    t.equal(r, resolved, `${sel}: resolve`)
+    // vlx installs it as a spec
+    t.doesNotThrow(() => Spec.parse('x', r), `${sel}: a spec`)
+  }
+
+  // the ref moves: the lock wins, a row w/o a sha takes its ref
+  const sha2 = await commit('2.0.0')
+  for (const [sel, resolved, v] of [
+    ['main', `${url}#${sha1}`, '1.0.0'],
+    // a lock newer than what the ref resolved to here
+    ['main', `${url}#${sha2}`, '2.0.0'],
+    ['main::path:sub', `${url}#${sha1}::path:sub`, '1.0.0'],
+    ['v2.0.0', url, '2.0.0'],
+  ] as const) {
+    const d = `${dir}/x-${v}-${sel.length}`
+    await pi.extract(`x@${url}#${sel}`, d, { resolved })
+    t.equal(version(d), v, `extract ${sel}, locked: ${v}`)
+  }
+  // sha not in the cached refs: clone fallback keeps the path
+  t.equal(
+    (await pi.resolve(`x@${url}#${sha2}::path:sub`)).resolved,
+    `${url}#${sha2}::path:sub`,
+    'resolve by clone, path kept',
+  )
+})
+
 t.test('git spec must have gitRemote', async t => {
   await t.rejects(
     resolve({
@@ -4184,7 +4255,12 @@ t.test('path git selector', async t => {
 
   await t.test('manifest', async t => {
     const m = await manifest(spec, options)
-    t.strictSame(m, pkg)
+    t.strictSame(m, {
+      ...pkg,
+      dist: {
+        tarball: `git+${pathToFileURL(repo)}#${headSha}::path:packages/xyz`,
+      },
+    })
     await t.rejects(() => manifest(badSpec, options))
   })
 

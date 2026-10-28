@@ -33,7 +33,7 @@ import {
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
-import { gitPin } from './git-pin.ts'
+import { gitClonePin, gitPin, gitPinnedCommit } from './git-pin.ts'
 import type { GitPin } from './git-pin.ts'
 import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
@@ -557,8 +557,8 @@ export class PackageInfoClient {
     // is what pins it -- `required`, so a registry that serves the
     // alternate unlabelled is rejected rather than trusted.
     const brotli = !!url && tarballFormat(url) === 'brotli'
-    // a locked hosted git archive is fetched as is, never re-resolved
-    const lockedGit = f.type === 'git' && !!f.remoteURL
+    // a locked git dep is fetched as is, never re-resolved
+    const lockedGit = f.type === 'git'
     const r: Resolution =
       url && (integrity || brotli || lockedGit) ?
         {
@@ -586,6 +586,13 @@ export class PackageInfoClient {
               'no remote on git: specifier',
             )
           /* c8 ignore stop */
+          // the locked commit; a row locked to a ref: the ref
+          const sha = gitPinnedCommit(r.resolved)
+          const s = spec
+          const cloneTo = (dir: string) =>
+            sha ?
+              clone(gitRemote, sha, dir)
+            : clone(gitRemote, gitCommittish, dir, { spec: s })
           const { path } = gitSelectorParsed ?? {}
           if (path !== undefined) {
             // use obvious name because it's in node_modules
@@ -593,13 +600,13 @@ export class PackageInfoClient {
               dirname(target),
               `.TEMP.${basename(target)}-${randomBytes(6).toString('hex')}`,
             )
-            await clone(gitRemote, gitCommittish, tmp, { spec })
+            await cloneTo(tmp)
             const src = pathResolve(tmp, path)
             await rename(src, target)
             // intentionally not awaited
             void rm(tmp, { recursive: true, force: true })
           } else {
-            await clone(gitRemote, gitCommittish, target, { spec })
+            await cloneTo(target)
             // intentionally not awaited
             void rm(target + '/.git', { recursive: true })
           }
@@ -1581,11 +1588,16 @@ export class PackageInfoClient {
           if (!gitRemote)
             throw this.#resolveError(spec, options, 'no git remote')
           return await this.#tmpdir(async dir => {
-            await clone(gitRemote, gitCommittish, dir, { spec: s })
+            const sha = await clone(gitRemote, gitCommittish, dir, {
+              spec: s,
+            })
             const { path } = gitSelectorParsed ?? {}
             const pkgDir =
               path !== undefined ? pathResolve(dir, path) : dir
-            return this.#readExtracted(pkgDir, s, options)
+            const mani = this.#readExtracted(pkgDir, s, options)
+            // the graph locks a git node to dist.tarball
+            mani.dist = { tarball: gitClonePin(s.final, sha) }
+            return mani
           })
         }
         // fallthrough to remote
@@ -1978,16 +1990,7 @@ export class PackageInfoClient {
           spec,
         })
         if (rev) {
-          const r = {
-            resolved: `${gitRemote}#${rev.sha}`,
-            spec,
-          }
-          if (gitSelectorParsed) {
-            r.resolved += Object.entries(gitSelectorParsed)
-              .filter(([_, v]) => v)
-              .map(([k, v]) => `::${k}:${v}`)
-              .join('')
-          }
+          const r = { resolved: gitClonePin(f, rev.sha), spec }
           this.#resolutions.set(memoKey, r)
           return r
         }
@@ -2003,7 +2006,7 @@ export class PackageInfoClient {
             },
           )
           const r = {
-            resolved: `${gitRemote}#${sha}`,
+            resolved: gitClonePin(s.final, sha),
             spec: s,
           }
           this.#resolutions.set(memoKey, r)

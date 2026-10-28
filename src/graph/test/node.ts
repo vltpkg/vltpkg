@@ -1120,3 +1120,62 @@ t.test('git node locked to a commit', async t => {
   r2.integrity = 'sha512-b'
   t.ok(r1.equals(r2), 'registry nodes: by id only')
 })
+
+t.test('cloned git node locked to a commit', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const remote = 'git+https://host/o/r.git'
+  const sha1 = 'a'.repeat(40)
+  const sha2 = 'b'.repeat(40)
+  const id = joinDepIDTuple(['git', remote, 'main'])
+  const mk = (tarball?: string, i = id) => {
+    const n = new Node(opts, i, {
+      name: 'r',
+      ...(tarball && { dist: { tarball } }),
+    })
+    n.setResolved()
+    return n
+  }
+  t.equal(
+    mk(`${remote}#${sha1}`).resolved,
+    `${remote}#${sha1}`,
+    'pinned',
+  )
+  t.equal(mk().resolved, remote, 'no pin: the remote')
+  t.equal(
+    mk(`git+https://other/x.git#${sha1}`).resolved,
+    remote,
+    'other remote',
+  )
+  const pathB = joinDepIDTuple(['git', remote, 'main::path:b'])
+  t.equal(
+    mk(`${remote}#${sha1}::path:b`, pathB).resolved,
+    `${remote}#${sha1}::path:b`,
+    'pinned, path',
+  )
+  t.equal(
+    mk(`${remote}#${sha1}::path:a`, pathB).resolved,
+    remote,
+    'other path',
+  )
+  t.equal(mk(`${remote}#${sha1}`, pathB).resolved, remote, 'no path')
+  t.equal(mk(`${remote}#${sha1}::path:b`).resolved, remote, 'a path')
+  const hosted = joinDepIDTuple(['git', 'github:o/r', ''])
+  t.equal(
+    mk(`git+ssh://git@github.com:o/r.git#${sha1}`, hosted).resolved,
+    `git+ssh://git@github.com:o/r.git#${sha1}`,
+    'hosted, no ref',
+  )
+  t.ok(
+    mk(`${remote}#${sha1}`).equals(mk(`${remote}#${sha1}`)),
+    'same pin',
+  )
+  t.notOk(
+    mk(`${remote}#${sha1}`).equals(mk(`${remote}#${sha2}`)),
+    'moved',
+  )
+  t.notOk(mk(`${remote}#${sha1}`).equals(mk()), 'remote only')
+})

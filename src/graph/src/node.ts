@@ -23,6 +23,7 @@ import type {
   NodeLike,
 } from '@vltpkg/types'
 import { Edge } from './edge.ts'
+import { gitPinMoved } from './git-pin.ts'
 import type { Graph } from './graph.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
@@ -46,25 +47,6 @@ export type NodeOptions = SpecOptions & {
  */
 const brotliAlternate = (dist?: Dist) =>
   brotliTarballUrl(dist?.tarball, dist?.alternates)
-
-// the last full sha in a git node's `resolved`, if any
-const resolvedCommit = (resolved?: string) =>
-  resolved
-    ?.match(/(?<![0-9a-f])(?:[0-9a-f]{64}|[0-9a-f]{40})(?![0-9a-f])/g)
-    ?.at(-1)
-
-/**
- * Same git DepID, other commit (eg `vlt update` moved the pin): by
- * integrity when both know one, else by a sha in `resolved`. A node
- * knowing neither (read from node_modules) is no change.
- */
-const gitPinMoved = (a: Node, b: Node) => {
-  if (!a.id.startsWith('git~')) return false
-  if (a.integrity && b.integrity) return a.integrity !== b.integrity
-  const sa = resolvedCommit(a.resolved)
-  const sb = resolvedCommit(b.resolved)
-  return !!sa && !!sb && sa !== sb
-}
 
 export class Node implements NodeLike {
   get [Symbol.toStringTag]() {
@@ -457,7 +439,7 @@ export class Node implements NodeLike {
     return (
       this.id === other.id &&
       this.location === other.location &&
-      !gitPinMoved(this, other)
+      !(this.id.startsWith('git~') && gitPinMoved(this, other))
     )
   }
 
@@ -490,16 +472,19 @@ export class Node implements NodeLike {
         this.#registryNodeResolved(tuple)
         break
       case 'git': {
-        // a hosted git committish is fetched as the host's tarball, at
-        // the commit package-info locked it to
-        const { remoteURL } = hydrateTuple(
-          tuple,
-          this.#name,
-          this.#options,
-        ).final
+        // the commit package-info locked it to: a hosted committish as
+        // the host's tarball, else as `<remote>#<sha>`
+        const { remoteURL, gitRemote, gitSelectorParsed } =
+          hydrateTuple(tuple, this.#name, this.#options).final
+        const pinned = this.manifest?.dist?.tarball
+        const [pin, path] = pinned?.split('::path:') ?? []
+        // a clone pin of this remote and path only
+        const own =
+          pin?.startsWith(`${gitRemote}#`) &&
+          path === (gitSelectorParsed?.path || undefined)
         this.resolved =
-          remoteURL ?
-            (this.manifest?.dist?.tarball ?? remoteURL)
+          remoteURL ? (pinned ?? remoteURL)
+          : own ? pinned
           : resolved
         break
       }

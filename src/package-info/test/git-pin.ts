@@ -7,7 +7,9 @@ import { pathToFileURL } from 'node:url'
 import t from 'tap'
 import type { Integrity } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
+import { gitClonePin, gitPinnedCommit } from '../src/git-pin.ts'
 import { PackageInfoClient } from '../src/index.ts'
+import { Spec } from '@vltpkg/spec'
 import { drainer } from './fixtures/drainer.ts'
 
 const track = drainer(t)
@@ -197,4 +199,31 @@ t.test('ref archive not found', async t => {
     message: /failed to fetch URL/,
     cause: { code: 'ERESOLVE' },
   })
+})
+
+t.test('cloned git pins', async t => {
+  const sha = 'a'.repeat(40)
+  const remote = 'git+https://host/o/r.git'
+  const f = (sel: string) => Spec.parse(`x@${remote}#${sel}`).final
+  t.equal(gitClonePin(f('main'), sha), `${remote}#${sha}`)
+  t.equal(
+    gitClonePin(f('main::path:a/b'), sha),
+    `${remote}#${sha}::path:a/b`,
+  )
+  t.equal(
+    gitClonePin(f('semver:1'), sha),
+    `${remote}#${sha}`,
+    'no range',
+  )
+  for (const [resolved, commit] of [
+    [`${remote}#${sha}`, sha],
+    [`${remote}#${sha}::path:a`, sha],
+    [`${remote}#${'b'.repeat(64)}`, 'b'.repeat(64)],
+    [`${remote}#abc1234`, undefined],
+    [`${remote}#main`, undefined],
+    [remote, undefined],
+    [undefined, undefined],
+  ] as const) {
+    t.equal(gitPinnedCommit(resolved), commit, String(resolved))
+  }
 })

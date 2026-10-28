@@ -6,7 +6,7 @@
 
 import type { RevDoc, RevDocEntry } from '@vltpkg/types'
 import { gitScpURL } from '@vltpkg/git-scp-url'
-import { mkdir, stat } from 'node:fs/promises'
+import { mkdir, rm, stat } from 'node:fs/promises'
 import { basename, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { GitOptions } from './index.ts'
@@ -40,13 +40,19 @@ export const clone = async (
 ) => {
   repo = String(gitScpURL(repo) ?? repo).replace(/^git\+/, '')
   if (repo.startsWith('file://')) repo = fileURLToPath(repo)
+  target ||= defaultTarget(repo, opts.cwd)
+  // a commit: fetch exactly it, never the ref that is at it now
+  const sha = opts.spec?.gitCommittish || ref
+  if (/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(sha)) {
+    return await commit(repo, sha, target, opts)
+  }
   const revs = await getRevs(repo, opts)
   return await clone_(
     repo,
     revs,
     ref,
     revs && resolveRef(revs, ref, opts),
-    target || defaultTarget(repo, opts.cwd),
+    target,
     opts,
   )
 }
@@ -84,6 +90,26 @@ const clone_ = (
   return other(repo, revDoc, target, opts)
 }
 
+// a commit by sha. A host that only serves advertised commits (git
+// protocol v0) gets the full clone.
+const commit = async (
+  repo: string,
+  sha: string,
+  target: string,
+  opts: GitOptions,
+) => {
+  try {
+    await fetchRef(repo, sha, target, opts)
+  } catch {
+    await rm(resolve(target, '.git'), {
+      recursive: true,
+      force: true,
+    })
+    return await unresolved(repo, sha, target, opts)
+  }
+  return await checkout(sha, target, opts)
+}
+
 // pull request or some other kind of advertised ref
 const other = async (
   repo: string,
@@ -91,9 +117,19 @@ const other = async (
   target: string,
   opts: GitOptions,
 ) => {
+  await fetchRef(repo, revDoc.rawRef, target, opts)
+  return await checkout(revDoc.sha, target, opts)
+}
+
+const fetchRef = async (
+  repo: string,
+  ref: string,
+  target: string,
+  opts: GitOptions,
+) => {
   const shallow = maybeShallow(repo, opts)
 
-  const fetchOrigin = ['fetch', 'origin', revDoc.rawRef].concat(
+  const fetchOrigin = ['fetch', 'origin', ref].concat(
     shallow ? ['--depth=1'] : [],
   )
 
@@ -112,9 +148,16 @@ const other = async (
   }
   await git(['remote', 'add', 'origin', repo])
   await git(fetchOrigin)
-  await git(['checkout', revDoc.sha])
+}
+
+const checkout = async (
+  sha: string,
+  target: string,
+  opts: GitOptions,
+) => {
+  await spawn(['checkout', sha], { ...opts, cwd: target })
   await updateSubmodules(target, opts)
-  return revDoc.sha
+  return sha
 }
 
 // tag or branches.  use -b
