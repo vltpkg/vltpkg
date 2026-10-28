@@ -10,11 +10,13 @@ import { createServer } from 'node:http'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { pathToFileURL } from 'node:url'
+import { gunzipSync, gzipSync } from 'node:zlib'
 import t from 'tap'
 import type { Integrity } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import {
   cloneInstead,
+  gitArchiveChanged,
   gitArchiveRef,
   gitClonePin,
   gitPinnedCommit,
@@ -64,8 +66,10 @@ const requests: string[] = []
 const served = new Map<string, Buffer>()
 // `slow` urls the client went away from before the rest was sent
 const cut = new Set<string>()
+// `packy` re-packs its archives once set: same files, other bytes
+let repack = false
 const hosts =
-  /^\/(labby|nopax|slow|short|drop|redir|mono)\/o\/r\/(.+)$/
+  /^\/(labby|nopax|slow|short|drop|redir|mono|packy)\/o\/r\/(.+)$/
 const handler = (req: IncomingMessage, res: ServerResponse) => {
   const url = req.url ?? ''
   requests.push(url)
@@ -97,6 +101,8 @@ const handler = (req: IncomingMessage, res: ServerResponse) => {
     res.statusCode = 404
     return res.end()
   }
+  if (repack && m[1] === 'packy')
+    body = gzipSync(gunzipSync(body), { level: 1 })
   served.set(url, body)
   res.setHeader('content-type', 'application/octet-stream')
   if (fullSha.test(ish)) return res.end(body)
@@ -142,6 +148,7 @@ const client = (cache = `${dir}/cache`, remote = repo) => {
         down: gitHost,
         gone: gitHost,
         mono: gitHost,
+        packy: gitHost,
       },
       'git-host-archives': {
         labby: `${base()}/labby/$1/$2/$committish`,
@@ -156,6 +163,7 @@ const client = (cache = `${dir}/cache`, remote = repo) => {
         // every archive 404s, eg a private repo
         gone: `${base()}/gone/$1/$2/$committish`,
         mono: `${base()}/mono/$1/$2/$committish`,
+        packy: `${base()}/packy/$1/$2/$committish`,
       },
       // a connection the host drops is not retried
       'fetch-retries': 0,
@@ -310,6 +318,97 @@ t.test('archive url without a committish', async t => {
   t.equal(r.integrity, sri(served.get(ref)!))
   t.equal(count(ref), before + 1, 'fetched once')
   t.match(warn(), [{ args: [/not a commit/] }], 'a moving url')
+})
+
+t.test('a re-packed archive', async t => {
+  t.teardown(() => (repack = false))
+  const spec = 'x@packy:o/r#main'
+  const warm = `${dir}/c-repack`
+  const pi = client(warm)
+  const lock = await pi.resolve(spec)
+  await pi.drain()
+  const ref = `${base()}/packy/o/r/main`
+  const refLock = {
+    resolved: ref,
+    integrity: sri(served.get('/packy/o/r/main')!),
+  }
+  repack = true
+  const cold = () => client(`${dir}/c-cold${n}`)
+  const er = await cold()
+    .extract(spec, target(), lock)
+    .then(
+      () => undefined,
+      (e: unknown) => e as Error,
+    )
+  t.match(er, {
+    message: /locked commit .* re-packed it/,
+    cause: {
+      code: 'ERESOLVE',
+      url: lock.resolved,
+      cause: { cause: { code: 'EINTEGRITY' } },
+    },
+  })
+  t.ok(
+    er?.message.endsWith(
+      `\`vlt cache delete "${lock.resolved}"\`, then \`vlt update\`.`,
+    ),
+    'how to lock the new archive',
+  )
+  t.not(
+    (await cold().resolve(spec)).integrity,
+    lock.integrity,
+    'resolved without a cache: the new bytes',
+  )
+  const d = target()
+  await client(warm).extract(spec, d, lock)
+  t.equal(version(d), version(repo), 'cached: the locked bytes')
+  // older lockfiles: the ref url, or the remote
+  for (const resolved of [ref, 'packy:o/r']) {
+    await t.rejects(
+      cold().extract(spec, target(), { ...refLock, resolved }),
+      {
+        message: /locked ref .* Run `vlt install`/,
+        cause: { code: 'ERESOLVE', url: ref },
+      },
+      resolved,
+    )
+  }
+})
+
+t.test('gitArchiveChanged', async t => {
+  const er = (code: string) => new Error('x', { cause: { code } })
+  const gh = 'https://codeload.github.com/o/r/legacy.tar.gz'
+  const git = Spec.parse('x@github:o/r#main')
+  // no archive url
+  const bare = Spec.parse('x@bare:o/r#main', {
+    'git-hosts': { bare: 'git+https://x.example/$1/$2.git' },
+  })
+  const sha = 'a'.repeat(40)
+  const api = `https://api.github.com/repos/o/r/tarball/${sha}`
+  const del = (...keys: string[]) =>
+    `run \`vlt cache delete "${keys.join('" "')}"\`, then`
+  for (const [spec, url, want] of [
+    [git, `${gh}/${sha}`, del(`${gh}/${sha}`)],
+    [git, `${gh}/${'a'.repeat(64)}`, /locked commit/],
+    [git, `${gh}/${'a'.repeat(41)}`, /locked ref/],
+    [git, `${gh}/main`, /locked ref/],
+    // an older lockfile's url: the one `vlt update` takes too
+    [git, api, del(api, `${gh}/${sha}`)],
+    [
+      bare,
+      `https://x.example/${sha}`,
+      del(`https://x.example/${sha}`),
+    ],
+  ] as const) {
+    t.match(gitArchiveChanged(spec, url, er('EINTEGRITY')), want, url)
+  }
+  for (const [spec, e, name] of [
+    [git, er('EREQUEST'), 'other error'],
+    [git, undefined, 'no error'],
+    [Spec.parse('x@1'), er('EINTEGRITY'), 'not git'],
+  ] as const) {
+    t.equal(gitArchiveChanged(spec, `${gh}/main`, e), undefined, name)
+  }
 })
 
 t.test('ref archive not found', async t => {
