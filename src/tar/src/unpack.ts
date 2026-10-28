@@ -21,6 +21,7 @@ import {
   dirname,
   isAbsolute,
   join,
+  posix,
   relative,
   resolve,
   sep,
@@ -292,12 +293,21 @@ const write = async (
   })
 }
 
+/**
+ * `path`: only what is under that dir of the tarball's root dir, as
+ * the root (eg a package in a git archive of its monorepo).
+ */
 export const unpack = async (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): Promise<void> => {
-  await unpackUnzipped(await decompress(tarData, format), target)
+  await unpackUnzipped(
+    await decompress(tarData, format),
+    target,
+    path,
+  )
 }
 
 /**
@@ -308,6 +318,7 @@ export const unpackSync = (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): void => {
   const inflated = span('inflate', {
     bytes: tarData.length,
@@ -316,7 +327,7 @@ export const unpackSync = (
   const buffer = decompressSync(tarData, format)
   inflated({ out: buffer.length })
   const written = span('write', { bytes: buffer.length })
-  unpackUnzippedSync(buffer, target)
+  unpackUnzippedSync(buffer, target, path)
   written()
 }
 
@@ -337,12 +348,13 @@ export const unpackParallel = async (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): Promise<void> => {
   const inflated = span('inflate', { bytes: tarData.length })
   const buffer = await decompress(tarData, format)
   inflated({ out: buffer.length })
   const written = span('write', { bytes: buffer.length })
-  unpackUnzippedSync(buffer, target)
+  unpackUnzippedSync(buffer, target, path)
   written()
 }
 
@@ -392,14 +404,15 @@ export const cacheEntryBody = (entry: Buffer): Buffer => {
 
 /**
  * Unpack the tarball in the vlt cache entry `file`. See
- * {@link cacheEntryBody}.
+ * {@link cacheEntryBody}, and {@link unpack} for `path`.
  */
 export const unpackCacheEntrySync = (
   file: string,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): void =>
-  unpackSync(cacheEntryBody(readFileSync(file)), target, format)
+  unpackSync(cacheEntryBody(readFileSync(file)), target, format, path)
 
 /**
  * Same, inflating on libuv's threadpool. See {@link unpackParallel}.
@@ -408,8 +421,14 @@ export const unpackCacheEntryParallel = async (
   file: string,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): Promise<void> =>
-  unpackParallel(cacheEntryBody(await readFile(file)), target, format)
+  unpackParallel(
+    cacheEntryBody(await readFile(file)),
+    target,
+    format,
+    path,
+  )
 
 /** Sibling temp path used to build `target` before renaming it in. */
 export const tmpName = (target: string) =>
@@ -421,11 +440,21 @@ export const tmpName = (target: string) =>
  */
 type TarEntries = { dirs: Set<string>; files: FileEntry[] }
 
+// `path` as a tarDir suffix: `a/b/`, '' for the root
+const subdir = (path?: string) => {
+  const p = path && posix.normalize(`${path.replace(/\\/g, '/')}/`)
+  return !p || p === './' ? '' : p
+}
+
 /**
  * Walk the tar headers and collect what has to be written. No IO, so
  * all writers share it and cannot drift on path sanitization.
  */
-const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
+const parseTarball = (
+  buffer: Buffer,
+  tmp: string,
+  path?: string,
+): TarEntries => {
   /* c8 ignore start */
   if (isGzip(buffer)) {
     throw error('still gzipped after unzipping', {
@@ -460,6 +489,11 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
   }
 
   const entries = new Map<string, Entry>()
+  const sub = subdir(path)
+  const root = (p?: string) => {
+    const d = findTarDir(p)
+    return d && d + sub
+  }
   let tarDir: string | undefined = undefined
   let offset = 0
   let h: Header
@@ -482,7 +516,7 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
     // find the first tarDir in the first entry, and use that.
     switch (h.type) {
       case 'File':
-        if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+        if (!tarDir) tarDir = root(h.path)
         /* c8 ignore next */
         if (!tarDir) continue
         if (!checkFs(h, tarDir, tmp)) continue
@@ -507,7 +541,7 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
 
       case 'Directory':
         /* c8 ignore next 2 */
-        if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+        if (!tarDir) tarDir = root(h.path)
         if (!tarDir) continue
         if (!checkFs(h, tarDir, tmp)) continue
         {
@@ -542,6 +576,10 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
     }
   }
 
+  if (sub && !entries.size) {
+    throw error('path not found in tarball', { path })
+  }
+
   // Per-unpack memo: paths are tmp-scoped and never reused across
   // unpacks. The unique dir set is the memo; making/made globals
   // previously leaked ~18k strings per install.
@@ -560,13 +598,14 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
 const unpackUnzipped = async (
   buffer: Buffer,
   target: string,
+  path?: string,
 ): Promise<void> => {
   const tmp = tmpName(target)
   const og = tmp + '.ORIGINAL'
 
   let succeeded = false
   try {
-    const { dirs, files } = parseTarball(buffer, tmp)
+    const { dirs, files } = parseTarball(buffer, tmp, path)
 
     rethrowFirst(
       await Promise.allSettled(
@@ -603,13 +642,17 @@ const unpackUnzipped = async (
   }
 }
 
-const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
+const unpackUnzippedSync = (
+  buffer: Buffer,
+  target: string,
+  path?: string,
+): void => {
   const tmp = tmpName(target)
   const og = tmp + '.ORIGINAL'
 
   let succeeded = false
   try {
-    const { dirs, files } = parseTarball(buffer, tmp)
+    const { dirs, files } = parseTarball(buffer, tmp, path)
 
     for (const d of dirs) {
       mkdirSync(d, { recursive: true, mode: 0o777 })

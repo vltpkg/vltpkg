@@ -2,16 +2,19 @@ import { error } from '@vltpkg/error-cause'
 import { revs } from '@vltpkg/git'
 import type { RegistryClient } from '@vltpkg/registry-client'
 import type { Spec } from '@vltpkg/spec'
+import { gitArchiveRef } from './git-pin.ts'
 
 /** what an archive host is asked with */
 export type Asker = Pick<RegistryClient, 'requestStream'>
 
 /**
- * The host a git dep is fetched from: its archive's origin, or the
- * remote it is cloned from.
+ * The host a git dep is fetched from: its archive's origin (`::path:`
+ * too), or the remote it is cloned from (`#semver:`: its tags).
  */
-export const gitHost = ({ final: f }: Spec) =>
-  f.remoteURL ? new URL(f.remoteURL).origin : f.gitRemote
+export const gitHost = ({ final: f }: Spec) => {
+  const url = gitArchiveRef(f)
+  return url ? new URL(url).origin : f.gitRemote
+}
 
 /**
  * Throws if the host a git dep is fetched from doesn't answer within
@@ -27,12 +30,13 @@ export const gitHostAnswers = async (
   rc: () => Promise<Asker>,
 ) => {
   const f = spec.final
+  const url = gitArchiveRef(f)
   const start = Date.now()
   try {
-    if (f.remoteURL) {
+    if (url) {
       const { body } = await (
         await rc()
-      ).requestStream(new URL('/', f.remoteURL), {
+      ).requestStream(new URL('/', url), {
         method: 'HEAD',
         connectTimeout: ms,
         headersTimeout: ms,

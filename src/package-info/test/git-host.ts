@@ -14,13 +14,23 @@ const load = async (
 ) =>
   t.mockImport<typeof import('../src/git-host.ts')>(
     '../src/git-host.ts',
-    { '@vltpkg/git': { revs } },
+    { '@vltpkg/git': { ...(await import('@vltpkg/git')), revs } },
   )
 
 t.test('gitHost', async t => {
   const { gitHost } = await import('../src/git-host.ts')
   t.equal(gitHost(hosted), 'https://codeload.github.com')
   t.equal(gitHost(cloned), 'git+https://example.com/o/r.git')
+  t.equal(
+    gitHost(Spec.parse('x', 'github:o/r#main::path:p')),
+    'https://codeload.github.com',
+    '::path: from the archive too',
+  )
+  t.equal(
+    gitHost(Spec.parse('x', 'github:o/r#semver:^1')),
+    'git+ssh://git@github.com:o/r.git',
+    '#semver: tags from the remote',
+  )
 })
 
 t.test(
