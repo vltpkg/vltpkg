@@ -1,5 +1,6 @@
 import {
   baseDepID,
+  getId,
   getTuple,
   hydrate,
   joinDepIDTuple,
@@ -589,6 +590,12 @@ const fetchManifestsForDeps = async (
     const edgeOptional =
       type === 'optional' || type === 'peerOptional'
 
+    // a locked git dep re-resolved up front to pin it (build.ts)
+    const repinned =
+      graph.repin && spec.final.type === 'git' ?
+        graph.repin.get(getId(spec, {}))
+      : undefined
+
     // Start manifest fetch immediately for parallel processing
     const manifestPromise =
       // the "detached" node state means that it has already been load as
@@ -603,6 +610,7 @@ const fetchManifestsForDeps = async (
         (existingNode.detached || peerCompatResult.keepVersion)
       ) ?
         Promise.resolve(existingNode.manifest as Manifest | undefined)
+      : repinned ? Promise.resolve(repinned)
         // this is the entry point to fetch calls to retrieve manifests
         // from the build ideal graph point of view
       : packageInfo
