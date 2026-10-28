@@ -3962,6 +3962,51 @@ t.test('broken optional dep is not silently dropped', async t => {
 })
 
 t.test(
+  'a git dep re-pinned up front takes that manifest',
+  async t => {
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const calls: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        calls.push(spec.name)
+        return { name: spec.name, version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+    graph.repin = new Map([
+      [
+        joinDepIDTuple(['git', 'github:o/r', 'main']),
+        { name: 'r', version: '2.0.0' },
+      ],
+    ])
+    const dep = (name: string, bareSpec: string) =>
+      asDependency({
+        spec: Spec.parse(name, bareSpec, configData),
+        type: 'prod',
+      })
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [dep('r', 'github:o/r#main'), dep('n', 'github:o/n#main')],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set<DepID>(),
+    )
+    t.equal(
+      graph.mainImporter.edgesOut.get('r')?.to?.version,
+      '2.0.0',
+      'placed from it',
+    )
+    t.strictSame(calls, ['n'], 'only the other dep fetched')
+  },
+)
+
+t.test(
   'optionalDependencies overrides dependencies for same name',
   async t => {
     // Reproduces the bug where packages like esbuild@0.18.20 and

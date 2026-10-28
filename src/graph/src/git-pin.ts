@@ -1,3 +1,6 @@
+import { splitDepID } from '@vltpkg/dep-id/browser'
+import type { DepID } from '@vltpkg/dep-id/browser'
+
 type Pinned = {
   integrity?: string | null
   resolved?: string | null
@@ -32,3 +35,15 @@ export const gitPinMoved = (a: Pinned, b: Pinned) => {
   if (sa && sb) return sa !== sb
   return sa ? remoteOnly(b.resolved) : !!sb && remoteOnly(a.resolved)
 }
+
+const fullSha = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/
+
+/**
+ * A git node locked to a commit: `resolved` names one, or its ref is a
+ * full sha. Rows from older lockfiles are locked to a ref only.
+ */
+export const gitPinned = (node: Pinned & { id: DepID }) =>
+  !!resolvedCommit(node.resolved) ||
+  !!splitDepID(node.id)[2]
+    ?.split('::')
+    .some(s => fullSha.test(s))

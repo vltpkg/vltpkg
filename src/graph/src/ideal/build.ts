@@ -5,6 +5,7 @@ import { load as loadVirtual } from '../lockfile/load.ts'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
 import { prefetchResolve } from './prefetch-resolve.ts'
 import { isPathSecurityError } from '../path-security-error.ts'
+import { gitPinned } from '../git-pin.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { LoadOptions as LoadActualOptions } from '../actual/load.ts'
 import type {
@@ -13,8 +14,11 @@ import type {
   Dependency,
 } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
-import { splitDepID } from '@vltpkg/dep-id'
+import { baseDepID, hydrate, splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
+import type { Manifest } from '@vltpkg/types'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 
 const getMap = <T extends Map<any, any>>(m?: T) =>
@@ -63,6 +67,55 @@ const validateFileDepNode = (graph: Graph, id: DepID) => {
       { path },
     )
   }
+}
+
+/**
+ * Git rows locked to a ref, not a commit (older lockfiles): re-resolved
+ * up front. One that resolves is dropped, and the build places it from
+ * that manifest, pinned; one that can't (offline, ref gone) is kept.
+ */
+const repinGitRows = async (
+  graph: Graph,
+  packageInfo: PackageInfoClient,
+  options: SpecOptions,
+) => {
+  const unpinned = [...graph.nodes.values()].filter(
+    n => n.id.startsWith('git~') && !gitPinned(n),
+  )
+  const names = new Map(unpinned.map(n => [baseDepID(n.id), n.name]))
+  const repin = new Map<DepID, Manifest>()
+  await Promise.all(
+    [...names].map(async ([base, name]) => {
+      // hydrate() memoizes ignoring options
+      const spec = Spec.parse(
+        name,
+        hydrate(base, name, options).bareSpec,
+        options,
+      )
+      try {
+        repin.set(
+          base,
+          (await packageInfo.manifest(spec)) as Manifest,
+        )
+      } catch (er) {
+        if (isPathSecurityError(er)) throw er
+        // eslint-disable-next-line no-console
+        console.error(
+          `warning: ${spec}: not locked to a commit, kept as is (${(er as Error).message})`,
+        )
+      }
+    }),
+  )
+  // a kept row with no manifest (no node_modules) would be fetched
+  // again by the rebuild: pin the others on a later install
+  if (unpinned.some(n => !n.manifest && !repin.has(baseDepID(n.id))))
+    return
+  for (const node of unpinned) {
+    if (!repin.has(baseDepID(node.id))) continue
+    graph.removeNode(node, undefined, true)
+    graph.lockfileStale = true
+  }
+  if (repin.size) graph.repin = repin
 }
 
 /**
@@ -115,6 +168,11 @@ export const build = async (
     })
   }
 
+  // frozen: git rows locked to a ref are taken as they are
+  if (!options.frozenLockfile && !options.expectLockfile) {
+    await repinGitRows(graph, packageInfo, options)
+  }
+
   // Start resolving the importers' dependencies server-side, one request
   // to the default registry. manifest() picks the answers up as they land,
   // and nothing reads them once the ideal graph is built.
@@ -130,6 +188,7 @@ export const build = async (
       packageInfo,
       remove: getMap(options.remove),
       actual: options.actual,
+      rebuild: !!graph.repin,
     })
   } finally {
     releaseResolve()
