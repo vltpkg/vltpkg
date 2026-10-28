@@ -1444,6 +1444,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect deep 
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'bar/foo',
+  remoteURL: 'https://codeload.github.com/bar/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -1457,6 +1458,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect defau
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'bar/foo',
+  remoteURL: 'https://codeload.github.com/bar/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -1470,6 +1472,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect with 
   gitRemote: [32m'git+ssh://git@github.com:bar/foo.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'bar/foo'[39m,
+  remoteURL: [32m'https://codeload.github.com/bar/foo/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -1487,6 +1490,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -1500,6 +1504,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -1513,6 +1518,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
   namedGitHost: [32m'bitbucket'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -1530,6 +1536,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -1543,6 +1550,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -1556,6 +1564,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
   namedGitHost: [32m'gitlab'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -1828,6 +1837,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect d
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -1841,6 +1851,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect d
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -1854,6 +1865,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect w
   gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -2074,6 +2086,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -2087,6 +2100,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -2100,6 +2114,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
   namedGitHost: [32m'bitbucket'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -2227,6 +2242,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
   namedGitHost: 'github',
   namedGitHostPath: 'f fo o al/ a d s ;f',
+  remoteURL: 'https://codeload.github.com/f fo o al/ a d s ;f/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -2240,6 +2256,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
   namedGitHost: 'github',
   namedGitHostPath: 'f fo o al/ a d s ;f',
+  remoteURL: 'https://codeload.github.com/f fo o al/ a d s ;f/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -2253,6 +2270,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   gitRemote: [32m'git+ssh://git@github.com:f fo o al/ a d s ;f.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'f fo o al/ a d s ;f'[39m,
+  remoteURL: [32m'https://codeload.github.com/f fo o al/ a d s ;f/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -3195,6 +3213,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
   gitRemote: 'git+ssh://git@github.com:12345/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: '12345/foo',
+  remoteURL: 'https://codeload.github.com/12345/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -3208,6 +3227,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
   gitRemote: 'git+ssh://git@github.com:12345/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: '12345/foo',
+  remoteURL: 'https://codeload.github.com/12345/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -3221,6 +3241,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
   gitRemote: [32m'git+ssh://git@github.com:12345/foo.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'12345/foo'[39m,
+  remoteURL: [32m'https://codeload.github.com/12345/foo/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4380,6 +4401,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4393,6 +4415,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4406,6 +4429,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4478,6 +4502,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -4491,6 +4516,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -4504,6 +4530,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
   namedGitHost: [32m'gitlab'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4668,6 +4695,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://bitbucket.org/user/foo/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -4681,6 +4709,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://bitbucket.org/user/foo/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -4694,6 +4723,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
   gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo.git'[39m,
   namedGitHost: [32m'bitbucket'[39m,
   namedGitHostPath: [32m'user/foo'[39m,
+  remoteURL: [32m'https://bitbucket.org/user/foo/get/HEAD.tar.gz'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4711,6 +4741,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4724,6 +4755,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4737,6 +4769,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
   gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4754,6 +4787,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
   gitRemote: 'git+ssh://git@github.com:user/project.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/project',
+  remoteURL: 'https://codeload.github.com/user/project/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4767,6 +4801,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
   gitRemote: 'git+ssh://git@github.com:user/project.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/project',
+  remoteURL: 'https://codeload.github.com/user/project/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4780,6 +4815,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
   gitRemote: [32m'git+ssh://git@github.com:user/project.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/project'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/project/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4797,6 +4833,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
   gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -4810,6 +4847,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
   gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -4823,6 +4861,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
   gitRemote: [32m'git+ssh://git@gitlab.com:user/foo.git'[39m,
   namedGitHost: [32m'gitlab'[39m,
   namedGitHostPath: [32m'user/foo'[39m,
+  remoteURL: [32m'https://gitlab.com/api/v4/projects/user%2Ffoo/repository/archive.tar.gz?sha=HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -4877,6 +4916,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'not-git@hostname.com:some/repo',
+  remoteURL: 'https://codeload.github.com/not-git@hostname.com:some/repo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4890,6 +4930,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'not-git@hostname.com:some/repo',
+  remoteURL: 'https://codeload.github.com/not-git@hostname.com:some/repo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -4903,6 +4944,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   gitRemote: [32m'git+ssh://git@github.com:not-git@hostname.com:some/repo.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'not-git@hostname.com:some/repo'[39m,
+  remoteURL: [32m'https://codeload.github.com/not-git@hostname.com:some/repo/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -5337,6 +5379,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect dee
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -5350,6 +5393,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect def
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -5363,6 +5407,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect wit
   gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -5544,6 +5589,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitSelectorParsed: {},
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -5559,6 +5605,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitSelectorParsed: {},
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -5574,6 +5621,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitSelectorParsed: {},
   namedGitHost: [32m'github'[39m,
   namedGitHostPath: [32m'user/foo'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD'[39m,
   overridden: [33mfalse[39m
 }
 `
@@ -6487,6 +6535,7 @@ exports[`test/index.ts > TAP > parse args > @a/b@bitbucket:a/b > inspect default
   gitRemote: 'git+ssh://git@bitbucket.org:a/b.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'a/b',
+  remoteURL: 'https://bitbucket.org/a/b/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -7212,6 +7261,7 @@ exports[`test/index.ts > TAP > parse args > foo@bar/foo > inspect default 1`] = 
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'bar/foo',
+  remoteURL: 'https://codeload.github.com/bar/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -7225,6 +7275,7 @@ exports[`test/index.ts > TAP > parse args > foo@bitbucket:user/foo-js > inspect 
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -7238,6 +7289,7 @@ exports[`test/index.ts > TAP > parse args > foo@gitlab:user/foo-js > inspect def
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -7316,6 +7368,7 @@ exports[`test/index.ts > TAP > parse args > foo@user/foo-js > inspect default 1`
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -7603,6 +7656,7 @@ exports[`test/index.ts > TAP > parse args > github:a/b > inspect default 1`] = `
   gitRemote: 'git+ssh://git@github.com:a/b.git',
   namedGitHost: 'github',
   namedGitHostPath: 'a/b',
+  remoteURL: 'https://codeload.github.com/a/b/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -7683,6 +7737,7 @@ exports[`test/index.ts > TAP > parse args > user/foo#notimplemented:value > insp
   gitSelectorParsed: {},
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -7962,6 +8017,7 @@ exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js > inspect de
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -8009,6 +8065,7 @@ exports[`test/index.ts > TAP > parse args > x@f fo o al/ a d s ;f > inspect defa
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
   namedGitHost: 'github',
   namedGitHostPath: 'f fo o al/ a d s ;f',
+  remoteURL: 'https://codeload.github.com/f fo o al/ a d s ;f/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8297,6 +8354,7 @@ exports[`test/index.ts > TAP > parse args > x@git@github.com:12345/foo > inspect
   gitRemote: 'git+ssh://git@github.com:12345/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: '12345/foo',
+  remoteURL: 'https://codeload.github.com/12345/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8620,6 +8678,7 @@ exports[`test/index.ts > TAP > parse args > x@github:user/foo-js > inspect defau
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8650,6 +8709,7 @@ exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js > inspect defau
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo-js/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -8708,6 +8768,7 @@ exports[`test/index.ts > TAP > parse args > x@https://bitbucket.org/user/foo.git
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
   namedGitHost: 'bitbucket',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://bitbucket.org/user/foo/get/HEAD.tar.gz',
   overridden: false
 }
 `
@@ -8721,6 +8782,7 @@ exports[`test/index.ts > TAP > parse args > x@https://github.com/user/foo.git > 
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8734,6 +8796,7 @@ exports[`test/index.ts > TAP > parse args > x@https://github.com/user/project > 
   gitRemote: 'git+ssh://git@github.com:user/project.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/project',
+  remoteURL: 'https://codeload.github.com/user/project/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8747,6 +8810,7 @@ exports[`test/index.ts > TAP > parse args > x@https://gitlab.com/user/foo.git > 
   gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
   namedGitHost: 'gitlab',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://gitlab.com/api/v4/projects/user%2Ffoo/repository/archive.tar.gz?sha=HEAD',
   overridden: false
 }
 `
@@ -8771,6 +8835,7 @@ exports[`test/index.ts > TAP > parse args > x@not-git@hostname.com:some/repo > i
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
   namedGitHost: 'github',
   namedGitHostPath: 'not-git@hostname.com:some/repo',
+  remoteURL: 'https://codeload.github.com/not-git@hostname.com:some/repo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8907,6 +8972,7 @@ exports[`test/index.ts > TAP > parse args > x@user/foo-js > inspect default 1`] 
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
@@ -8972,6 +9038,7 @@ exports[`test/index.ts > TAP > parse args > x@user/foo#notimplemented:value > in
   gitSelectorParsed: {},
   namedGitHost: 'github',
   namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/legacy.tar.gz/HEAD',
   overridden: false
 }
 `
