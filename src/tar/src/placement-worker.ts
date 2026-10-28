@@ -36,6 +36,8 @@ export type UnpackJob = {
   byteLength: number
   target: string
   format?: TarballFormat
+  /** only that dir of the tarball's root dir, see `unpack.ts` */
+  path?: string
 }
 
 /**
@@ -49,6 +51,8 @@ export type CacheEntryJob = {
   file: string
   target: string
   format?: TarballFormat
+  /** as in {@link UnpackJob} */
+  path?: string
 }
 
 export type PlacementJob = UnpackJob | CacheEntryJob
@@ -76,12 +80,13 @@ export const handleJob = (
 ): void => {
   try {
     if (job.kind === 'cacheEntry') {
-      unpackCacheEntrySync(job.file, job.target, job.format)
+      unpackCacheEntrySync(job.file, job.target, job.format, job.path)
     } else {
       unpackSync(
         Buffer.from(job.buffer, job.byteOffset, job.byteLength),
         job.target,
         job.format,
+        job.path,
       )
     }
     port.postMessage({ id: job.id, result: true })

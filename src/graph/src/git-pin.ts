@@ -8,7 +8,7 @@ type Pinned = {
 
 // the full sha in a git node's `resolved`, if any: an archive url's
 // last one, a clone's only as `<remote>#<sha>` (a token is no commit)
-const resolvedCommit = (resolved?: string | null) =>
+export const resolvedCommit = (resolved?: string | null) =>
   remoteOnly(resolved) ?
     /#([0-9a-f]{40}|[0-9a-f]{64})(?:::|$)/.exec(String(resolved))?.[1]
   : resolved
