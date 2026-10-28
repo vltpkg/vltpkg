@@ -59,7 +59,14 @@ export const loadNodes = (
     // for hydrating missing manifest, integrity, and resolved values
     // that may be missing from the lockfile
     const referenceNode = actual?.nodes.get(id)
-    const mani = manifest ?? referenceNode?.manifest
+    // a git node at another commit (moved pin): its manifest is stale
+    const refStale =
+      type === 'git' &&
+      !!integrity &&
+      !!referenceNode?.integrity &&
+      integrity !== referenceNode.integrity
+    const mani =
+      manifest ?? (refStale ? undefined : referenceNode?.manifest)
 
     // Throw if manifest is missing and the option is enabled
     if (!mani && throwOnMissingManifest) {

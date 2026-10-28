@@ -595,6 +595,42 @@ t.test('hosted git resolved', async t => {
   )
 })
 
+t.test('git node at another commit than actual', async t => {
+  const opts = {
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot: t.testdirName,
+  }
+  const id = joinDepIDTuple(['git', 'github:a/b', 'main'])
+  const actual = new Graph(opts)
+  const reg = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  for (const [i, name] of [
+    [id, 'b'],
+    [reg, 'foo'],
+  ] as const) {
+    actual.addNode(i, { name, version: '1.0.0' }).integrity =
+      'sha512-one'
+  }
+  const load = (integrity: `sha512-${string}`, i = id) => {
+    const graph = new Graph(opts)
+    loadNodes(
+      graph,
+      { [i]: [0, 'c', integrity] } as LockfileData['nodes'],
+      {},
+      actual,
+    )
+    return graph.nodes.get(i)
+  }
+  const moved = load('sha512-two')
+  t.equal(moved?.manifest, undefined, 'stale manifest not taken')
+  t.equal(moved?.name, 'c', 'name from the lockfile')
+  t.match(load('sha512-one')?.manifest, { version: '1.0.0' }, 'same')
+  t.match(
+    load('sha512-two', reg)?.manifest,
+    { name: 'foo' },
+    'registry node: other tarball, same manifest',
+  )
+})
+
 t.test(
   'load nodes with optimization path for large graphs',
   async t => {

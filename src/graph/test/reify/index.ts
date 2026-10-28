@@ -2,6 +2,7 @@ import type { DepID } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
   PackageInfoClient,
+  PackageInfoClientExtractOptions,
   PackageInfoClientRequestOptions,
   Resolution,
 } from '@vltpkg/package-info'
@@ -12,6 +13,7 @@ import { Monorepo } from '@vltpkg/workspaces'
 import {
   existsSync,
   lstatSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -38,6 +40,7 @@ import type {
   LockfileNode,
 } from '../../src/index.ts'
 import { actual, ideal, reify } from '../../src/index.ts'
+import { loadObject } from '../../src/lockfile/load.ts'
 import {
   fixtureManifest,
   mockPackageInfo as mockPackageInfoBase,
@@ -2133,3 +2136,112 @@ t.test(
     )
   },
 )
+
+t.test('a moved git pin is re-extracted in place', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'x',
+      version: '1.0.0',
+      dependencies: { b: 'github:a/b#main' },
+    }),
+  })
+  const id = joinDepIDTuple(['git', 'github:a/b', 'main'])
+  const url = 'https://codeload.github.com/a/b/legacy.tar.gz/'
+  const sha = (v: string) => v.repeat(40)
+  // commit c renames the package
+  const name = (v: string) => (v === 'c' ? 'c' : 'b')
+  const mani = (v: string) => ({
+    name: name(v),
+    version: `${v}.0.0`,
+    bin: { [`b${v}`]: 'i.js' },
+  })
+  const extracted: string[] = []
+  const packageInfo = createMockPackageInfo({
+    async extract(
+      spec: Spec | string,
+      target: string,
+      options: PackageInfoClientRequestOptions = {},
+    ): Promise<Resolution> {
+      const { resolved = '' } =
+        options as PackageInfoClientExtractOptions
+      extracted.push(resolved)
+      mkdirSync(target, { recursive: true })
+      writeFileSync(
+        resolve(target, 'package.json'),
+        JSON.stringify(mani(resolved.slice(-1))),
+      )
+      writeFileSync(resolve(target, 'i.js'), '')
+      return { resolved, spec: spec as Spec }
+    },
+  })
+  const opts = () => ({
+    projectRoot: dir,
+    packageInfo,
+    monorepo: Monorepo.maybeLoad(dir),
+    scurry: new PathScurry(dir),
+    packageJson: new PackageJson(),
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  })
+  // the lockfile locking b to commit `v`
+  const graph = (v: string) =>
+    loadObject(
+      { ...opts(), mainManifest: { name: 'x', version: '1.0.0' } },
+      {
+        lockfileVersion: 1,
+        options: {},
+        nodes: {
+          [id]: [
+            0,
+            name(v),
+            `sha512-${v}==`,
+            url + sha(v),
+            null,
+            mani(v),
+            null,
+            null,
+            mani(v).bin,
+          ],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [`${joinDepIDTuple(['file', '.'])} b`]: `prod github:a/b#main ${id}`,
+        } as LockfileEdges,
+      },
+    )
+  const nm = resolve(dir, 'node_modules')
+  const store = resolve(nm, '.vlt', id, 'node_modules')
+  await reify({ ...opts(), graph: graph('a') })
+  writeFileSync(resolve(store, 'dep-link'), '')
+  t.ok(existsSync(resolve(nm, '.bin/ba')))
+
+  const { diff } = await reify({ ...opts(), graph: graph('b') })
+  t.strictSame(
+    [...diff.nodes.add].map(n => n.id),
+    [id],
+  )
+  t.strictSame(extracted, [url + sha('a'), url + sha('b')])
+  t.match(
+    JSON.parse(readFileSync(resolve(nm, 'b/package.json'), 'utf8')),
+    { version: 'b.0.0' },
+  )
+  t.ok(existsSync(resolve(store, 'dep-link')), 'store dir kept')
+  t.ok(existsSync(resolve(nm, '.bin/bb')), 'new bin linked')
+  t.notOk(existsSync(resolve(nm, '.bin/ba')), 'old bin removed')
+  t.match(
+    readFileSync(resolve(dir, 'vlt-lock.json'), 'utf8'),
+    sha('b'),
+  )
+
+  const again = await reify({ ...opts(), graph: graph('b') })
+  t.notOk(again.diff.hasChanges(), 'same pin: no changes')
+
+  const renamed = await reify({ ...opts(), graph: graph('c') })
+  t.equal(renamed.diff.nodes.delete.size, 0, 'renamed: in place')
+  t.match(
+    JSON.parse(readFileSync(resolve(nm, 'b/package.json'), 'utf8')),
+    { name: 'c', version: 'c.0.0' },
+  )
+  t.notOk(existsSync(resolve(store, 'b')), 'old package dir removed')
+  t.ok(existsSync(resolve(store, 'dep-link')), 'store dir kept')
+  t.ok(existsSync(resolve(nm, '.bin/bc')), 'renamed: bin linked')
+})

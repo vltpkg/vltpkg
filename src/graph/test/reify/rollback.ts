@@ -6,11 +6,38 @@ import type { Diff } from '../../src/diff.ts'
 import type { Edge } from '../../src/edge.ts'
 
 const fooId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+const gitId = joinDepIDTuple(['git', 'github:a/b', 'main'])
+const gitLoc = `./node_modules/.vlt/${gitId}/node_modules/b`
+const idleId = joinDepIDTuple(['git', 'github:a/c', 'main'])
+const idleLoc = `./node_modules/.vlt/${idleId}/node_modules/c`
 const diff = {
+  from: {
+    nodes: new Map([
+      [gitId, { inVltStore: (): boolean => true }],
+      [idleId, { inVltStore: (): boolean => true }],
+    ]),
+  },
   nodes: {
     add: new Set([
-      { inVltStore: () => false },
-      { inVltStore: () => true, id: fooId },
+      { inVltStore: (): boolean => false },
+      {
+        inVltStore: (): boolean => true,
+        id: fooId,
+      },
+      // a moved git pin, re-extracted in place
+      {
+        inVltStore: (): boolean => true,
+        id: gitId,
+        extracted: true,
+        resolvedLocation: (s: PathScurry) => s.resolve(gitLoc),
+      },
+      // never extracted: its old dir stays
+      {
+        inVltStore: (): boolean => true,
+        id: idleId,
+        extracted: false,
+        resolvedLocation: (s: PathScurry) => s.resolve(idleLoc),
+      },
     ]),
   },
   edges: { add: new Set([{ deleteThisEdge: true }]) },
@@ -55,5 +82,6 @@ t.test('rollback that works', async t => {
       'node_modules/.vlt/' +
         joinDepIDTuple(['registry', '', 'foo@1.2.3']),
     ),
+    scurry.resolve(gitLoc),
   ])
 })
