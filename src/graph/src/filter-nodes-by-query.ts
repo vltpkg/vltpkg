@@ -33,6 +33,7 @@ const search = async (
   graph: Graph,
   selector: string,
   partSelectors?: QueryOptions['partSelectors'],
+  edgeTargets?: boolean,
 ): Promise<QueryResponse & { unscanned?: Unscanned }> => {
   /* c8 ignore start */
   const securityArchive =
@@ -51,6 +52,12 @@ const search = async (
     hasSkills,
     partSelectors,
   }).search(selector, { signal: new AbortController().signal })
+  // `#x` drops a node another edge name (alias) also points at
+  if (edgeTargets) {
+    const nodes = new Set(res.nodes)
+    for (const e of res.edges) if (e.to) nodes.add(e.to)
+    res.nodes = [...nodes]
+  }
   if (!securityArchive) return res
   // fail closed: callers skip pkgs with no security data, be it from a
   // timed out request or not scanned by socket.dev yet
@@ -65,11 +72,13 @@ const search = async (
 }
 
 /**
- * Filter nodes using a DSS query string
+ * Filter nodes using a DSS query string. `edgeTargets`: plus the
+ * targets of matched edges.
  */
 export const filterNodesByQuery = async (
   graph: Graph,
   selector?: string,
+  edgeTargets?: boolean,
 ): Promise<Set<DepID>> => {
   // shortcut no packages included
   if (selector === ':not(*)' /* c8 ignore next */ || !selector) {
@@ -79,7 +88,12 @@ export const filterNodesByQuery = async (
   if (selector === '*') {
     return new Set(graph.nodes.keys())
   }
-  const { nodes, unscanned } = await search(graph, selector)
+  const { nodes, unscanned } = await search(
+    graph,
+    selector,
+    undefined,
+    edgeTargets,
+  )
   return toIds(nodes.filter(n => !unscanned?.ids.has(n.id)))
 }
 

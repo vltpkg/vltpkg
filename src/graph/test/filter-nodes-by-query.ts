@@ -58,6 +58,20 @@ t.test('filterNodesByQuery', async t => {
     new Set([foo.id]),
     'query selects matches',
   )
+  // alias edge to foo: edgeTargets keeps it by either name
+  graph.addEdge(
+    'prod',
+    Spec.parse('baz', 'npm:foo@^1.0.0', configData),
+    graph.mainImporter,
+    foo,
+  )
+  for (const q of ['#foo', '#baz']) {
+    t.strictSame(
+      await filterNodesByQuery(graph, q, true),
+      new Set([foo.id]),
+      `${q}: edge targets`,
+    )
+  }
   // allow-scripts, reify: no part selectors
   await t.rejects(filterNodesByQuery(graph, '#foo:skill(x)'), {
     message: /:skill\(\) only applies/,

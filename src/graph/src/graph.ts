@@ -200,6 +200,12 @@ export class Graph implements GraphLike {
   lockedResolutions?: Map<string, DepID>
 
   /**
+   * `baseDepID(fromId)\0name` keys of edges `vlt update <pkg>`
+   * re-resolves: the rebuild reuses no detached (locked) node for them.
+   */
+  unlockedEdges?: Set<string>
+
+  /**
    * Tracks the current peer context index.
    */
   currentPeerContextIndex = 0
