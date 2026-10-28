@@ -73,6 +73,12 @@ export type RefreshIdealGraphOptions = BuildIdealAddOptions &
      * Only the lockfile is being written, so nothing is extracted.
      */
     lockfileOnly?: boolean
+
+    /**
+     * Nodes were dropped from the starting graph to re-resolve them:
+     * rebuild every edge.
+     */
+    rebuild?: boolean
   }
 
 /**
@@ -109,6 +115,7 @@ export const refreshIdealGraph = async ({
   transientAdd,
   transientRemove,
   lockfileOnly,
+  rebuild,
   ...specOptions
 }: RefreshIdealGraphOptions) => {
   const seen = new Set<DepID>()
@@ -143,6 +150,7 @@ export const refreshIdealGraph = async ({
 
   // removes all edges to start recalculating the graph
   if (
+    rebuild ||
     add.modifiedDependencies ||
     remove.modifiedDependencies ||
     graph.optionsChanged

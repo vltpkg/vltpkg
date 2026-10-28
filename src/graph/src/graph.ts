@@ -12,6 +12,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import type {
   GraphLike,
   NodeLike,
+  Manifest,
   NormalizedManifest,
   DependencySaveType,
 } from '@vltpkg/types'
@@ -144,6 +145,12 @@ export class Graph implements GraphLike {
    * A set of extraneous dependencies found when building the graph.
    */
   extraneousDependencies = new Set<Edge>()
+
+  /**
+   * Git nodes dropped from the starting graph to pin them: base id →
+   * the manifest they re-resolved to, placed instead of fetching.
+   */
+  repin?: Map<DepID, Manifest>
 
   /**
    * The root of the project this graph represents

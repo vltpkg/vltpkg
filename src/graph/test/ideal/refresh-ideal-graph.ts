@@ -953,6 +953,67 @@ t.test(
   },
 )
 
+t.test('rebuild re-places every edge', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+    dependencies: { bar: '^1.0.0' },
+  }
+  const barManifest = { name: 'bar', version: '1.0.0' }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return spec.name === 'foo' ? fooManifest : barManifest
+    },
+  } as unknown as PackageInfoClient
+
+  const build = async (rebuild: boolean) => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest,
+    })
+    const foo = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', configData),
+      fooManifest,
+    )!
+    const bar = graph.placePackage(
+      foo,
+      'prod',
+      Spec.parse('bar', '^1.0.0', configData),
+      barManifest,
+    )!
+    // dropped to re-resolve, below an importer dep
+    graph.removeNode(bar, undefined, true)
+    await refreshIdealGraph({
+      add: new Map() as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      graph,
+      packageInfo,
+      scurry: new PathScurry(t.testdirName),
+      remover: new RollbackRemove(),
+      rebuild,
+      ...configData,
+    })
+    return graph.nodes
+      .get(joinDepIDTuple(['registry', '', 'foo@1.0.0']))
+      ?.edgesOut.get('bar')?.to?.id
+  }
+
+  t.equal(
+    await build(true),
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+    're-resolved',
+  )
+  t.equal(await build(false), undefined, 'left dangling')
+})
+
 t.test('an options change makes the lockfile stale', async t => {
   const mainManifest = {
     name: 'my-project',
