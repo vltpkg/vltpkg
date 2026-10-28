@@ -25,7 +25,9 @@ const inVltStoreTrue = () => true
 const mockEdge = {}
 
 const diff = {
+  from: { nodes: new Map() },
   nodes: {
+    add: new Set(),
     delete: new Set([
       // not in vlt store
       { name: 'name', inVltStore: inVltStoreFalse, edgesIn: [] },
@@ -75,4 +77,38 @@ t.test('keep', async t => {
     ),
   )
   t.equal(removed.length, 1, 'others removed')
+})
+
+t.test('re-extracted in place under another name', async t => {
+  const id = joinDepIDTuple(['git', 'github:a/b', 'main'])
+  const node = (name: string, inVltStore = inVltStoreTrue) => ({
+    id,
+    inVltStore,
+    resolvedLocation: (s: PathScurry) =>
+      s.resolve(`node_modules/.vlt/${id}/node_modules/${name}`),
+  })
+  removed.length = 0
+  const del = (from: unknown, to: unknown) =>
+    Promise.all(
+      deleteNodes(
+        {
+          from: { nodes: new Map([[id, from]]) },
+          nodes: { add: new Set([to]), delete: new Set() },
+        } as unknown as Diff,
+        mockRemover,
+        scurry,
+      ),
+    )
+  await del(node('b'), node('c'))
+  t.strictSame(
+    removed,
+    [scurry.resolve(`node_modules/.vlt/${id}/node_modules/b`)],
+    'old package dir removed',
+  )
+  removed.length = 0
+  await del(node('b'), node('b'))
+  await del(undefined, node('b'))
+  await del(node('b', inVltStoreFalse), node('c'))
+  await del(node('b'), node('c', inVltStoreFalse))
+  t.strictSame(removed, [], 'same dir, new, or not in the store')
 })

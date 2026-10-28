@@ -47,6 +47,25 @@ export type NodeOptions = SpecOptions & {
 const brotliAlternate = (dist?: Dist) =>
   brotliTarballUrl(dist?.tarball, dist?.alternates)
 
+// the last full sha in a git node's `resolved`, if any
+const resolvedCommit = (resolved?: string) =>
+  resolved
+    ?.match(/(?<![0-9a-f])(?:[0-9a-f]{64}|[0-9a-f]{40})(?![0-9a-f])/g)
+    ?.at(-1)
+
+/**
+ * Same git DepID, other commit (eg `vlt update` moved the pin): by
+ * integrity when both know one, else by a sha in `resolved`. A node
+ * knowing neither (read from node_modules) is no change.
+ */
+const gitPinMoved = (a: Node, b: Node) => {
+  if (!a.id.startsWith('git~')) return false
+  if (a.integrity && b.integrity) return a.integrity !== b.integrity
+  const sa = resolvedCommit(a.resolved)
+  const sb = resolvedCommit(b.resolved)
+  return !!sa && !!sb && sa !== sb
+}
+
 export class Node implements NodeLike {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
@@ -435,7 +454,11 @@ export class Node implements NodeLike {
   set options(_opts: SpecOptions) {}
 
   equals(other: Node) {
-    return this.id === other.id && this.location === other.location
+    return (
+      this.id === other.id &&
+      this.location === other.location &&
+      !gitPinMoved(this, other)
+    )
   }
 
   /**
@@ -466,12 +489,20 @@ export class Node implements NodeLike {
       case 'registry':
         this.#registryNodeResolved(tuple)
         break
-      case 'git':
-        // a hosted git committish is fetched as the host's tarball
+      case 'git': {
+        // a hosted git committish is fetched as the host's tarball, at
+        // the commit package-info locked it to
+        const { remoteURL } = hydrateTuple(
+          tuple,
+          this.#name,
+          this.#options,
+        ).final
         this.resolved =
-          hydrateTuple(tuple, this.#name, this.#options).final
-            .remoteURL ?? resolved
+          remoteURL ?
+            (this.manifest?.dist?.tarball ?? remoteURL)
+          : resolved
         break
+      }
       default:
         this.resolved = resolved
         break

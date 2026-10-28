@@ -23,5 +23,14 @@ export const deleteNodes = (
       rmActions.push(deleteEdge(edge, scurry, remover))
     }
   }
+  // re-extracted in place under another name: drop the old package dir
+  for (const node of diff.nodes.add) {
+    const old = diff.from.nodes.get(node.id)
+    if (!node.inVltStore() || !old?.inVltStore()) continue
+    const path = old.resolvedLocation(scurry)
+    if (path !== node.resolvedLocation(scurry)) {
+      rmActions.push(remover.rm(path))
+    }
+  }
   return rmActions
 }
