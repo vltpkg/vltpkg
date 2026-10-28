@@ -16,19 +16,6 @@ import { __CODE_SPLIT_SCRIPT_NAME } from './update-check.ts'
 import { readUpdateState, writeUpdateState } from './update-state.ts'
 import type { UpdateState } from './update-state.ts'
 
-const upgradeHint = (path: string): string => {
-  const normalized = path.replaceAll('\\', '/')
-  if (normalized.includes('/Cellar/vlt/')) return 'brew upgrade vlt'
-  if (normalized.includes('/.volta/tools/'))
-    return 'volta install vlt@latest'
-  if (
-    normalized.includes('/lib/node_modules/vlt/') ||
-    normalized.includes('/npm/node_modules/vlt/')
-  )
-    return 'npm install -g vlt@latest'
-  return 'https://github.com/vltpkg/vltpkg/releases'
-}
-
 export const notifyUpdate = (conf: LoadedConfig, version: string) => {
   try {
     if (
@@ -114,7 +101,7 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
         state.notifiedAt = now
         writeUpdateState(file, state)
         stderr(
-          `Update available: vlt ${version} -> ${state.latest}\n${upgradeHint(executable)}`,
+          `Update available: vlt ${version} -> ${state.latest}\nvlt install -g vlt`,
         )
       }
       if (now - state.lastCheck < interval) return
