@@ -57,6 +57,13 @@ repo), or `undefined` (eg an npm tarball, or not a tarball). Takes a
 gzipped or raw tarball Buffer and inflates only its head, so it is
 cheap on any size.
 
+### gitArchiveSubmodules(tarData)
+
+`true` if the tarball's root dir has a `.gitmodules` file: a
+`git archive` of a repo with submodules, which it leaves out. Takes a
+gzipped or raw tarball Buffer and reads all of it; `false` if it is
+not a tarball.
+
 ### `class Pool`
 
 The interface the vlt CLI extracts through. All methods are `async`

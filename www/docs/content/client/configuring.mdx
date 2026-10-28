@@ -228,7 +228,8 @@ download a pre-built tarball of the git repository.
 In addition to the n-th path portion expansions performed by
 `--git-host`, this field will also expand the string `$committish` in
 the template, replacing it with the resolved git committish value to
-be fetched.
+be fetched. A repo without a ref gets `HEAD`; with a template without
+`$committish`, it is cloned instead.
 
 Can be set multiple times
 

@@ -23,7 +23,9 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { readdir, rm, utimes, writeFile } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { basename, dirname, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
@@ -1176,6 +1178,95 @@ t.test('resolve', async t => {
     },
   })
   t.equal(warn().length, 1, 'pinned once per run')
+})
+
+t.test('hosted git dep w/o a ref, archive not served', async t => {
+  const track = drainer(t)
+  const pi = track(
+    new PackageInfoClient({
+      ...options,
+      'git-hosts': { privy: `git+${pathToFileURL(repo)}` },
+      'git-host-archives': {
+        privy: `${defaultRegistry}privy/$1/$2/$committish`,
+      },
+    }),
+  )
+  const pin = new RegExp(
+    `^git\\+${pathToFileURL(repo)}#[0-9a-f]{40}$`,
+  )
+  const r = await pi.resolve('x@privy:o/r')
+  t.match(r.resolved, pin, 'cloned')
+  t.match(await pi.manifest('x@privy:o/r'), {
+    dist: { tarball: r.resolved },
+  })
+  t.match(await pi.extract('x@privy:o/r', `${dir}/privy`), {
+    resolved: r.resolved,
+  })
+  t.strictSame(
+    (await pi.tarball('x@privy:o/r')).subarray(0, 2),
+    Buffer.from([0x1f, 0x8b]),
+    'tarball() clones',
+  )
+  t.equal(
+    notFoundURLs.filter(u => u === '/privy/o/r/HEAD').length,
+    1,
+    'archive tried once per run',
+  )
+  await t.rejects(
+    pi.resolve('x@privy:o/r#main'),
+    { message: /failed to fetch URL/ },
+    'a ref is not cloned',
+  )
+})
+
+t.test('hosted git dep w/o a ref, submodules', async t => {
+  const track = drainer(t)
+  const sm = `${dir}/sm`
+  mkdirSync(sm)
+  writeFileSync(
+    `${sm}/package.json`,
+    '{"name":"x","version":"1.0.0"}',
+  )
+  writeFileSync(`${sm}/.gitmodules`, '[submodule "v"]\n')
+  const git = (...args: string[]) =>
+    execFileSync('git', args, { cwd: sm })
+  git('init', '-b', 'main')
+  git('config', 'user.name', 'vltdev')
+  git('config', 'user.email', 'vltdev@vlt.sh')
+  git('config', 'commit.gpgSign', 'false')
+  git('add', '.')
+  git('commit', '-m', 'submodules')
+  const sha = String(git('rev-parse', 'HEAD')).trim()
+  const archive = git(
+    'archive',
+    '--format=tar.gz',
+    '--prefix=r/',
+    'HEAD',
+  )
+  const srv = createServer((_, res) => {
+    res.setHeader('connection', 'close')
+    res.end(archive)
+  })
+  await new Promise<void>(r => srv.listen(0, r))
+  t.teardown(() => srv.close())
+  const { port } = srv.address() as AddressInfo
+  const pi = track(
+    new PackageInfoClient({
+      ...options,
+      'git-hosts': { smy: `git+${pathToFileURL(sm)}` },
+      'git-host-archives': {
+        smy: `http://localhost:${port}/$1/$2/$committish`,
+      },
+    }),
+  )
+  const locked = `git+${pathToFileURL(sm)}#${sha}`
+  t.matchOnly(await pi.resolve('x@smy:o/r'), {
+    resolved: locked,
+    spec: Spec,
+  })
+  t.strictSame((await pi.manifest('x@smy:o/r')).dist, {
+    tarball: locked,
+  })
 })
 
 const tarball = (
