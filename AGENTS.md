@@ -59,7 +59,8 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `.claude-plugin/plugin.json` `skills` and in `skills.sh.json`. Each
   needs a `!/skills/<name>/` line in `.gitignore` and an entry in
   `www/docs/src/lib/skills.ts`. `www/docs` copies them into
-  `public/skills` at prebuild/predev, excluding `evals/`.
+  `public/skills` at prebuild/predev, excluding `evals/`. CI Docs step
+  `lint:skills` checks their docs links and frontmatter.
 
 ## Development
 

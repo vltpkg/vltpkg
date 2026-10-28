@@ -53,7 +53,7 @@ Example answer shape:
 > - `vlt query ':outdated(major)'` — whole graph, not just direct
 >
 > Add `--view=json` for machine-readable output. More:
-> <https://docs.vlt.io/cli/selectors/>
+> <https://docs.vlt.io/client/selectors>
 
 ## Workflow
 
@@ -180,11 +180,11 @@ operators): see [REFERENCE.md](REFERENCE.md).
 Canonical docs — deep-link the section that matches the query
 (verified anchors; don't invent others):
 
-| Query topic                               | Link                                                         |
-| ----------------------------------------- | ------------------------------------------------------------ |
-| syntax, composition, anything structural  | <https://docs.vlt.io/cli/selectors/>                         |
-| malware / typosquats / obfuscation        | <https://docs.vlt.io/cli/security#malware-detection>         |
-| CVEs / CWEs / severity                    | <https://docs.vlt.io/cli/security#vulnerability-detection>   |
-| capabilities (`:eval` `:network` `:fs` …) | <https://docs.vlt.io/cli/security#behavioral-security-risks> |
-| license compliance                        | <https://docs.vlt.io/cli/security#license-compliance>        |
-| security scores                           | <https://docs.vlt.io/cli/security#security-scoring>          |
+| Query topic                               | Link                                                            |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| syntax, composition, anything structural  | <https://docs.vlt.io/client/selectors>                          |
+| malware / typosquats / obfuscation        | <https://docs.vlt.io/client/security#malware-detection>         |
+| CVEs / CWEs / severity                    | <https://docs.vlt.io/client/security#vulnerability-detection>   |
+| capabilities (`:eval` `:network` `:fs` …) | <https://docs.vlt.io/client/security#behavioral-security-risks> |
+| license compliance                        | <https://docs.vlt.io/client/security#license-compliance>        |
+| security scores                           | <https://docs.vlt.io/client/security#security-scoring>          |
