@@ -349,6 +349,16 @@ t.test(
       all,
       'unfiltered updates all',
     )
+    await t.rejects(
+      update({ ...opts({ paths: ['packages/x'] }), target: '#b' }),
+      { cause: { code: 'EUSAGE', found: '#b' } },
+      'target and -w: usage error',
+    )
+    await t.rejects(
+      update({ ...opts(), target: ':nope' }),
+      { cause: { code: 'EUSAGE', found: ':nope' } },
+      'invalid query: usage error',
+    )
     writeFileSync(
       lockfile,
       JSON.stringify({
@@ -541,4 +551,223 @@ t.test('allowSkills', async t => {
       'hidden lockfile kept',
     )
   })
+})
+
+t.test('update target re-resolves only matching deps', async t => {
+  // highest published version in range, exact specs as given
+  const avail: Record<string, string[]> = {
+    a: ['1.0.0'],
+    b: ['1.0.0'],
+    '@s/c': ['1.0.0'],
+    e: ['1.0.0', '2.0.0'],
+  }
+  const deps: Record<string, Record<string, string>> = {
+    // `sc` aliases `@s/c`: one node, two edge names
+    b: { '@s/c': '^1.0.0', e: '^1.0.0', sc: 'npm:@s/c@^1.0.0' },
+  }
+  const pick = (name: string, range: string) => {
+    if (/^\d+\.\d+\.\d+$/.test(range)) return range
+    const major = /^\^(\d+)\./.exec(range)?.[1]
+    return avail[name]!.filter(
+      v => !major || v.startsWith(`${major}.`),
+    ).at(-1)
+  }
+  const packageInfo = {
+    async manifest({ final: f }: Spec) {
+      return {
+        name: f.name,
+        version: pick(f.name, f.bareSpec),
+        dependencies: deps[f.name],
+      }
+    },
+    prefetchResolve: () => () => {},
+  } as unknown as PackageInfoClient
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      dependencies: { a: '^1.0.0', b: '^1.0.0', e: '>=1' },
+    }),
+    'vlt.json': '{}',
+  })
+  t.chdir(dir)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const packageJson = new PackageJson()
+  const opts = (target?: string) =>
+    ({
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson,
+      packageInfo,
+      registries: { npm: 'https://registry.npmjs.org/' },
+      allowScripts: ':not(*)',
+      ...(target && { target }),
+    }) as unknown as UpdateOptions
+  const { install } = await import('../src/install.ts')
+  await install({ ...opts(), lockfileOnly: true })
+
+  for (const n of ['a', 'b', '@s/c']) avail[n]!.push('1.1.0')
+  avail.e = ['1.0.0', '1.1.0', '2.0.0', '2.1.0']
+  const { update } = await t.mockImport<
+    typeof import('../src/update.ts')
+  >('../src/update.ts', {
+    '../src/reify/index.ts': {
+      reify: async () => ({ buildQueue: [], diff: {} }),
+    },
+  })
+  const versions = async (target?: string) => {
+    const { graph } = await update(opts(target))
+    t.equal(graph.unlockedEdges, undefined, 'unlocked edges reset')
+    const res: Record<string, string | undefined> = {}
+    for (const edge of graph.edges) {
+      res[`${edge.from.name} ${edge.name}`] = edge.to?.version
+    }
+    return res
+  }
+  const locked = {
+    'root a': '1.0.0',
+    'root b': '1.0.0',
+    'root e': '2.0.0',
+    'b @s/c': '1.0.0',
+    'b e': '1.0.0',
+    'b sc': '1.0.0',
+  }
+  t.strictSame(await versions('#nope'), locked, 'no match: all kept')
+  t.strictSame(
+    await versions('#a'),
+    { ...locked, 'root a': '1.1.0' },
+    'direct dep',
+  )
+  for (const q of ['#@s/c', '#sc']) {
+    t.strictSame(
+      await versions(q),
+      { ...locked, 'b @s/c': '1.1.0', 'b sc': '1.1.0' },
+      `${q}: transitive dep, its dependent kept, alias too`,
+    )
+  }
+  t.strictSame(
+    await versions('#b'),
+    { ...locked, 'root b': '1.1.0' },
+    'its deps kept',
+  )
+  t.strictSame(
+    await versions(':root > #e'),
+    { ...locked, 'root e': '2.1.0' },
+    'never reuses another locked copy',
+  )
+  t.strictSame(
+    await versions('#e'),
+    { ...locked, 'root e': '2.1.0', 'b e': '1.1.0' },
+    'every copy',
+  )
+  // installed a: its manifest is what `[name=a]` reads
+  const id = Object.keys(
+    (
+      JSON.parse(
+        readFileSync(resolve(dir, 'vlt-lock.json'), 'utf8'),
+      ) as { nodes: Record<string, unknown> }
+    ).nodes,
+  ).find(i => i.endsWith('~a@1.0.0'))!
+  const pkgDir = resolve(
+    dir,
+    'node_modules/.vlt',
+    id,
+    'node_modules/a',
+  )
+  mkdirSync(pkgDir, { recursive: true })
+  writeFileSync(
+    resolve(pkgDir, 'package.json'),
+    JSON.stringify({ name: 'a', version: '1.0.0' }),
+  )
+  symlinkSync(pkgDir, resolve(dir, 'node_modules/a'), 'junction')
+  t.strictSame(
+    await versions('[name=a]'),
+    { ...locked, 'root a': '1.1.0' },
+    'manifest selectors read installed manifests',
+  )
+  const all = {
+    'root a': '1.1.0',
+    'root b': '1.1.0',
+    'root e': '2.1.0',
+    'b @s/c': '1.1.0',
+    'b e': '1.1.0',
+    'b sc': '1.1.0',
+  }
+  t.strictSame(await versions('*'), all, 'every dep, importers kept')
+  t.strictSame(await versions(), all, 'no target: all')
+  // no lockfile: starts from the installed graph
+  rmSync(resolve(dir, 'vlt-lock.json'))
+  t.strictSame(
+    await versions('#nope'),
+    { ...all, 'root a': '1.0.0' },
+    'no lockfile: installed kept',
+  )
+  t.strictSame(
+    await versions('#a'),
+    all,
+    'no lockfile: selected updated',
+  )
+})
+
+t.test('update target moves one git pin', async t => {
+  // current commit of each repo's main branch
+  const head: Record<string, string> = {
+    g: 'a'.repeat(40),
+    h: 'b'.repeat(40),
+  }
+  const packageInfo = {
+    async manifest({ final: f }: Spec) {
+      return {
+        name: f.name,
+        version: '1.0.0',
+        dist: {
+          tarball: `https://codeload.github.com/o/${f.name}/legacy.tar.gz/${head[f.name]}`,
+        },
+      }
+    },
+    prefetchResolve: () => () => {},
+  } as unknown as PackageInfoClient
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      dependencies: { g: 'github:o/g#main', h: 'github:o/h#main' },
+    }),
+    'vlt.json': '{}',
+  })
+  t.chdir(dir)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const opts = {
+    projectRoot: dir,
+    scurry: new PathScurry(dir),
+    packageJson: new PackageJson(),
+    packageInfo,
+    allowScripts: ':not(*)',
+  } as unknown as UpdateOptions
+  const { install } = await import('../src/install.ts')
+  await install({ ...opts, lockfileOnly: true })
+  // both branches moved
+  head.g = 'c'.repeat(40)
+  head.h = 'd'.repeat(40)
+  const { update } = await t.mockImport<
+    typeof import('../src/update.ts')
+  >('../src/update.ts', {
+    '../src/reify/index.ts': {
+      reify: async () => ({ buildQueue: [], diff: {} }),
+    },
+  })
+  const { graph } = await update({ ...opts, target: '#g' })
+  const pins = Object.fromEntries(
+    [...graph.mainImporter.edgesOut.values()].map(e => [
+      e.name,
+      e.to?.resolved?.slice(-40),
+    ]),
+  )
+  t.strictSame(
+    pins,
+    { g: 'c'.repeat(40), h: 'b'.repeat(40) },
+    'only the selected pin moves',
+  )
 })

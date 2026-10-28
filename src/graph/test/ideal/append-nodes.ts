@@ -4279,6 +4279,51 @@ t.test(
   },
 )
 
+t.test('unlockedEdges re-resolve past detached nodes', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+  for (const name of ['foo', 'bar']) {
+    graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse(name, '^1.0.0', configData),
+      { name, version: '1.0.0' },
+    )
+  }
+  graph.unlockedEdges = new Set([`${graph.mainImporter.id}\0foo`])
+  graph.resetEdges()
+  const fetched: string[] = []
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      fetched.push(spec.name)
+      return { name: spec.name, version: '1.1.0' }
+    },
+  } as unknown as PackageInfoClient
+  const deps = ['foo', 'bar'].map(name =>
+    asDependency({
+      spec: Spec.parse(name, '^1.0.0', configData),
+      type: 'prod',
+    }),
+  )
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    deps,
+    new PathScurry(t.testdirName),
+    configData,
+    new Set<DepID>(),
+  )
+  t.strictSame(fetched, ['foo'], 'only the unlocked edge fetches')
+  const version = (name: string) =>
+    graph.mainImporter.edgesOut.get(name)?.to?.version
+  t.equal(version('foo'), '1.1.0', 'unlocked: fresh')
+  t.equal(version('bar'), '1.0.0', 'locked copy reused')
+})
+
 t.test(
   'lockedResolutions ignores a snapshot whose name does not match the spec',
   async t => {

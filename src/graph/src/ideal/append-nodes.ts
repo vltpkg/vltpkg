@@ -483,6 +483,15 @@ const fetchManifestsForDeps = async (
     e.candidate =
       locked && lockedFits(locked, e.spec, fromNode, graph) ? locked
       : graph.findResolution(e.spec, fromNode, e.queryModifier)
+    // re-resolved: only nodes this rebuild placed are reused
+    if (
+      e.candidate?.detached &&
+      graph.unlockedEdges?.has(
+        `${baseDepID(fromNode.id)}\0${e.spec.name}`,
+      )
+    ) {
+      e.candidate = undefined
+    }
     // the tag is fetched below anyway, the locked version is dead weight
     if (e.explicitTag) continue
     if (e.candidate?.detached && !e.candidate.manifest) {
