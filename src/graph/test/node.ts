@@ -243,7 +243,7 @@ t.test('Node', async t => {
   git.setResolved()
   t.strictSame(
     git.resolved,
-    'github:vltpkg/foo',
+    'https://codeload.github.com/vltpkg/foo/legacy.tar.gz/HEAD',
     'should set expected resolved value for a git id type',
   )
   t.matchSnapshot(
