@@ -13,6 +13,7 @@ import { getTypeTarget } from '@vltpkg/types'
 import type { DepID } from '@vltpkg/dep-id'
 import type { GraphLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
+import { gitPinMoved } from '../git-pin.ts'
 
 export const loadNodes = (
   graph: GraphLike,
@@ -63,9 +64,8 @@ export const loadNodes = (
     // a git node at another commit (moved pin): its manifest is stale
     const refStale =
       type === 'git' &&
-      !!integrity &&
-      !!referenceNode?.integrity &&
-      integrity !== referenceNode.integrity
+      !!referenceNode &&
+      gitPinMoved({ integrity, resolved }, referenceNode)
     const mani =
       manifest ?? (refStale ? undefined : referenceNode?.manifest)
 
