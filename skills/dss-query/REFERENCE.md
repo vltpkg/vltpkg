@@ -1,8 +1,8 @@
 # DSS Reference
 
-Compiled from https://docs.vlt.io/cli/selectors/ (source:
-`www/docs/src/content/docs/cli/selectors/`). When in doubt, check
-those docs — they are canonical.
+Compiled from https://docs.vlt.io/client/selectors.md (source:
+`www/docs/content/client/selectors/`). When in doubt, check those docs
+— they are canonical.
 
 ## Attribute selectors
 
