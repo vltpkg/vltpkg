@@ -57,6 +57,7 @@ After Ideal + Actual, compute `Diff` → apply via `reify()`.
 - `graph.resetEdges()` preserves detached nodes for reuse
 - Pass `actual` to `ideal.build()` for early extraction optimization
 - `install`/`uninstall`/`update` build from an unfiltered `Monorepo`: `-w` filters `options.monorepo`, a filtered graph drops other workspaces' lockfile entries
+- `update` `target`: lockfile graph (manifests from actual) minus matching non-importer nodes (+ matched edges' targets: `#x` alone misses a node an alias also points at), edges into them in `graph.unlockedEdges`, forced rebuild; `-w` + target = EUSAGE
 
 ## Sub-rules
 
