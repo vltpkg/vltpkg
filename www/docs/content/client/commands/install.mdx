@@ -484,6 +484,12 @@ For more details, see the
   `--expect-lockfile`) and, like `vlt install`, runs no dependency
   lifecycle scripts unless `--allow-scripts` is set; run `vlt build`
   after to build packages
+- With `vlt-lock.json` and every registry package cached,
+  `--frozen-lockfile` makes no registry requests (git deps may still
+  clone). Registry and cache come from `vlt.json`, `VLT_*` env vars or
+  flags; `.npmrc` and `npm_config_*` aren't read.
+  [Telemetry](/client/configuring#--telemetry) is still sent unless
+  disabled.
 - Peer dependencies are handled automatically with context isolation
   when version conflicts arise
 

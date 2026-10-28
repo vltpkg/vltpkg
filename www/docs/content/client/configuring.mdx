@@ -376,6 +376,13 @@ Number of milliseconds before starting first retry
 
 Maximum number of milliseconds between two retries
 
+### `--telemetry`
+
+Anonymous usage telemetry, on by default. Opt out with
+`--no-telemetry`, `VLT_TELEMETRY=0`, `DO_NOT_TRACK=1` or
+`"telemetry": false` in `vlt.json` `config`. Sent in one attempt at
+exit, no retries; failures are ignored.
+
 ### `-i<name> --identity=<name>`
 
 Provide a string to define an identity for storing auth information
