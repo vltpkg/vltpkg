@@ -1048,13 +1048,13 @@ t.test(
       allowScripts: ':not(*)',
     } as unknown as InstallOptions
 
-    let initCalled = false
+    let initOptions: unknown
     const { install } = await t.mockImport<
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '@vltpkg/init': {
-        init: async () => {
-          initCalled = true
+        init: async (opts: unknown) => {
+          initOptions = opts
         },
       },
       '../src/reify/index.ts': {
@@ -1111,7 +1111,11 @@ t.test(
       install(options, new Map() as AddImportersDependenciesMap),
       'should succeed after init',
     )
-    t.ok(initCalled, 'should call init when package.json is missing')
+    t.strictSame(
+      initOptions,
+      { cwd: dir, packageJson: options.packageJson },
+      'should call init with the shared packageJson when missing',
+    )
   },
 )
 

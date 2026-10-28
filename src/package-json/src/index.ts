@@ -115,6 +115,8 @@ export class PackageJson {
       writeFileSync(filename, stringify(manifest, undefined, indent))
       this.#cache.set(dir, manifest)
       this.#pathCache.set(manifest, dir)
+      // a read that failed before this write is no longer valid
+      this.#errCache.delete(dir)
     } catch (err) {
       // If there was an error writing to this package.json then also delete it from our cache
       // just in case a future read would get stale data.
