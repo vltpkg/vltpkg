@@ -37,6 +37,7 @@ import {
 } from '@vltpkg/types'
 import {
   cloneInstead,
+  gitArchiveChanged,
   gitArchiveRef,
   gitClonePin,
   gitPin,
@@ -696,7 +697,10 @@ export class PackageInfoClient {
           } else {
             await cloneTo(target)
             // intentionally not awaited
-            void rm(target + '/.git', { recursive: true })
+            void rm(target + '/.git', {
+              recursive: true,
+              force: true,
+            })
           }
           end({ how: 'git' })
           return r
@@ -907,7 +911,15 @@ export class PackageInfoClient {
             (er.cause as Record<string, unknown> | undefined)
               ?.code === 'EINTEGRITY'
           ) {
-            buf = await fetchTarball(false)
+            buf = await fetchTarball(false).catch((er: unknown) => {
+              const why = gitArchiveChanged(spec, r.resolved, er)
+              throw why ?
+                  this.#resolveError(spec, options, why, {
+                    url: r.resolved,
+                    cause: er,
+                  })
+                : er
+            })
           } else {
             throw er
           }
