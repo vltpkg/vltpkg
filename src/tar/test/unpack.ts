@@ -108,13 +108,15 @@ type Unpacker = (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ) => Promise<void>
 type UnpackModule = typeof import('../src/unpack.ts')
 const writers: [string, (m: UnpackModule) => Unpacker][] = [
   ['async', m => m.unpack],
   [
     'sync',
-    m => async (b, target, format) => m.unpackSync(b, target, format),
+    m => async (b, target, format, path) =>
+      m.unpackSync(b, target, format, path),
   ],
   // async inflate + sync writes: the default. Runs the whole suite so
   // the three paths cannot drift apart.
@@ -184,6 +186,51 @@ for (const [writer, get] of writers) {
       })
 
       t.end()
+    })
+
+    t.test('only a dir of the root dir', async t => {
+      // a git archive of a monorepo: root dir named after the commit
+      const tar = makeTar([
+        { path: 'o-r-abc/', type: 'Directory' },
+        { path: 'o-r-abc/package.json', size: 1 },
+        'r',
+        { path: 'o-r-abc/pkgs/a/', type: 'Directory' },
+        { path: 'o-r-abc/pkgs/a/package.json', size: pj.length },
+        pj,
+        { path: 'o-r-abc/pkgs/a/lib/x.js', size: 1 },
+        'x',
+        { path: 'o-r-abc/pkgs/ab/package.json', size: 1 },
+        'y',
+      ])
+      const dir = t.testdir()
+      for (const path of ['pkgs/a', './pkgs/a/', 'pkgs\\a']) {
+        const d = `${dir}/${path.length}`
+        await unpack(tar, d, undefined, path)
+        t.strictSame(
+          readdirSync(d, { recursive: true }).map(String).sort(),
+          ['lib', `lib${sep}x.js`, 'package.json'],
+          path,
+        )
+        t.equal(readFileSync(d + '/package.json', 'utf8'), pj)
+      }
+      await unpack(tar, `${dir}/root`, undefined, '.')
+      t.equal(readFileSync(`${dir}/root/package.json`, 'utf8'), 'r')
+      for (const path of [
+        'pkgs/b',
+        'pkgs/a/lib/x.js',
+        '../o-r-abc',
+      ]) {
+        await t.rejects(
+          () => unpack(tar, `${dir}/nope`, undefined, path),
+          { message: 'path not found in tarball', cause: { path } },
+          path,
+        )
+      }
+      t.strictSame(
+        readdirSync(dir).sort(),
+        ['6', '9', 'root'],
+        'no garbage',
+      )
     })
 
     t.test('ignores mode, mtime and uid', async t => {

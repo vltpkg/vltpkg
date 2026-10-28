@@ -23,7 +23,7 @@ import type {
   NodeLike,
 } from '@vltpkg/types'
 import { Edge } from './edge.ts'
-import { gitPinMoved } from './git-pin.ts'
+import { gitPinMoved, resolvedCommit } from './git-pin.ts'
 import type { Graph } from './graph.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
@@ -473,18 +473,28 @@ export class Node implements NodeLike {
         break
       case 'git': {
         // the commit package-info locked it to: a hosted committish as
-        // the host's tarball, else as `<remote>#<sha>`
+        // the host's tarball, else as `<remote>#<sha>`; `::path:` is
+        // the dir it was read from
         const { remoteURL, gitRemote, gitSelectorParsed } =
           hydrateTuple(tuple, this.#name, this.#options).final
         const pinned = this.manifest?.dist?.tarball
         const [pin, path] = pinned?.split('::path:') ?? []
-        // a clone pin of this remote and path only
-        const own =
-          pin?.startsWith(`${gitRemote}#`) &&
-          path === (gitSelectorParsed?.path || undefined)
+        // this path only: a clone pin of this remote, or this repo's
+        // archive at a commit (hosted `::path:`, `#semver:`)
+        const own = path === (gitSelectorParsed?.path || undefined)
+        const sha = own && resolvedCommit(pin)
         this.resolved =
-          remoteURL ? (pinned ?? remoteURL)
-          : own ? pinned
+          remoteURL ? (pin ?? remoteURL)
+          : own && pin?.startsWith(`${gitRemote}#`) ? pinned
+          : (
+            sha &&
+            hydrateTuple(
+              ['git', resolved, sha],
+              this.#name,
+              this.#options,
+            ).final.remoteURL === pin
+          ) ?
+            pin
           : resolved
         break
       }

@@ -1228,6 +1228,10 @@ t.test('hosted git dep w/o a ref, submodules', async t => {
     '{"name":"x","version":"1.0.0"}',
   )
   writeFileSync(`${sm}/.gitmodules`, '[submodule "v"]\n')
+  // a dir not in the archive, as one in a submodule
+  mkdirSync(`${sm}/p`)
+  writeFileSync(`${sm}/p/package.json`, '{"name":"p"}')
+  writeFileSync(`${sm}/.gitattributes`, 'p export-ignore\n')
   const git = (...args: string[]) =>
     execFileSync('git', args, { cwd: sm })
   git('init', '-b', 'main')
@@ -1266,6 +1270,9 @@ t.test('hosted git dep w/o a ref, submodules', async t => {
   })
   t.strictSame((await pi.manifest('x@smy:o/r')).dist, {
     tarball: locked,
+  })
+  t.strictSame((await pi.manifest('x@smy:o/r#::path:p')).dist, {
+    tarball: `${locked}::path:p`,
   })
 })
 

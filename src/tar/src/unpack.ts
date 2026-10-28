@@ -21,6 +21,7 @@ import {
   dirname,
   isAbsolute,
   join,
+  posix,
   relative,
   resolve,
   sep,
@@ -291,12 +292,21 @@ const write = async (
   })
 }
 
+/**
+ * `path`: only what is under that dir of the tarball's root dir, as
+ * the root (eg a package in a git archive of its monorepo).
+ */
 export const unpack = async (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): Promise<void> => {
-  await unpackUnzipped(await decompress(tarData, format), target)
+  await unpackUnzipped(
+    await decompress(tarData, format),
+    target,
+    path,
+  )
 }
 
 /**
@@ -307,8 +317,9 @@ export const unpackSync = (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): void => {
-  unpackUnzippedSync(decompressSync(tarData, format), target)
+  unpackUnzippedSync(decompressSync(tarData, format), target, path)
 }
 
 /**
@@ -328,8 +339,9 @@ export const unpackParallel = async (
   tarData: Buffer,
   target: string,
   format?: TarballFormat,
+  path?: string,
 ): Promise<void> => {
-  unpackUnzippedSync(await decompress(tarData, format), target)
+  unpackUnzippedSync(await decompress(tarData, format), target, path)
 }
 
 /**
@@ -372,11 +384,21 @@ export const tmpName = (target: string) =>
  */
 type TarEntries = { dirs: Set<string>; files: FileEntry[] }
 
+// `path` as a tarDir suffix: `a/b/`, '' for the root
+const subdir = (path?: string) => {
+  const p = path && posix.normalize(`${path.replace(/\\/g, '/')}/`)
+  return !p || p === './' ? '' : p
+}
+
 /**
  * Walk the tar headers and collect what has to be written. No IO, so
  * all writers share it and cannot drift on path sanitization.
  */
-const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
+const parseTarball = (
+  buffer: Buffer,
+  tmp: string,
+  path?: string,
+): TarEntries => {
   /* c8 ignore start */
   if (isGzip(buffer)) {
     throw error('still gzipped after unzipping', {
@@ -411,6 +433,11 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
   }
 
   const entries = new Map<string, Entry>()
+  const sub = subdir(path)
+  const root = (p?: string) => {
+    const d = findTarDir(p)
+    return d && d + sub
+  }
   let tarDir: string | undefined = undefined
   let offset = 0
   let h: Header
@@ -433,7 +460,7 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
     // find the first tarDir in the first entry, and use that.
     switch (h.type) {
       case 'File':
-        if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+        if (!tarDir) tarDir = root(h.path)
         /* c8 ignore next */
         if (!tarDir) continue
         if (!checkFs(h, tarDir, tmp)) continue
@@ -458,7 +485,7 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
 
       case 'Directory':
         /* c8 ignore next 2 */
-        if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+        if (!tarDir) tarDir = root(h.path)
         if (!tarDir) continue
         if (!checkFs(h, tarDir, tmp)) continue
         {
@@ -493,6 +520,10 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
     }
   }
 
+  if (sub && !entries.size) {
+    throw error('path not found in tarball', { path })
+  }
+
   // Per-unpack memo: paths are tmp-scoped and never reused across
   // unpacks. The unique dir set is the memo; making/made globals
   // previously leaked ~18k strings per install.
@@ -511,13 +542,14 @@ const parseTarball = (buffer: Buffer, tmp: string): TarEntries => {
 const unpackUnzipped = async (
   buffer: Buffer,
   target: string,
+  path?: string,
 ): Promise<void> => {
   const tmp = tmpName(target)
   const og = tmp + '.ORIGINAL'
 
   let succeeded = false
   try {
-    const { dirs, files } = parseTarball(buffer, tmp)
+    const { dirs, files } = parseTarball(buffer, tmp, path)
 
     rethrowFirst(
       await Promise.allSettled(
@@ -554,13 +586,17 @@ const unpackUnzipped = async (
   }
 }
 
-const unpackUnzippedSync = (buffer: Buffer, target: string): void => {
+const unpackUnzippedSync = (
+  buffer: Buffer,
+  target: string,
+  path?: string,
+): void => {
   const tmp = tmpName(target)
   const og = tmp + '.ORIGINAL'
 
   let succeeded = false
   try {
-    const { dirs, files } = parseTarball(buffer, tmp)
+    const { dirs, files } = parseTarball(buffer, tmp, path)
 
     for (const d of dirs) {
       mkdirSync(d, { recursive: true, mode: 0o777 })
