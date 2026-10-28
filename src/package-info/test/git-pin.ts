@@ -1,23 +1,31 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { pathToFileURL } from 'node:url'
 import t from 'tap'
+import type { CacheEntry } from '@vltpkg/registry-client'
 import type { Integrity } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
 import {
   cloneInstead,
+  gitArchiveRef,
   gitClonePin,
   gitPinnedCommit,
+  gitPinResolution,
 } from '../src/git-pin.ts'
 import { PackageInfoClient } from '../src/index.ts'
 import { Spec } from '@vltpkg/spec'
 import { drainer } from './fixtures/drainer.ts'
 
 const track = drainer(t)
-const dir = t.testdir({ repo: {}, 'vlt.json': '{}' })
+const dir = t.testdir({ repo: {}, mono: {}, 'vlt.json': '{}' })
 t.chdir(dir)
 unload()
 const repo = `${dir}/repo`
@@ -51,7 +59,7 @@ const server = createServer((req, res) => {
   requests.push(url)
   // a host that never answers
   if (url.startsWith('/down/')) return req.socket.destroy()
-  const m = /^\/(labby|nopax)\/o\/r\/(.+)$/.exec(url)
+  const m = /^\/(labby|nopax|mono)\/o\/r\/(.+)$/.exec(url)
   let body: Buffer
   try {
     if (!m) throw new Error('not found')
@@ -60,7 +68,7 @@ const server = createServer((req, res) => {
       'git',
       [
         '-C',
-        repo,
+        host === 'mono' ? `${dir}/mono` : repo,
         'archive',
         '--format=tar.gz',
         `--prefix=r-${ish}/`,
@@ -91,6 +99,8 @@ const client = (cache = `${dir}/cache`, remote = repo) =>
         nopax: `git+${pathToFileURL(remote)}`,
         fixed: `git+${pathToFileURL(remote)}`,
         down: `git+${pathToFileURL(remote)}`,
+        gone: `git+${pathToFileURL(remote)}`,
+        mono: `git+${pathToFileURL(remote)}`,
       },
       'git-host-archives': {
         labby: `${base()}/labby/$1/$2/$committish`,
@@ -98,6 +108,9 @@ const client = (cache = `${dir}/cache`, remote = repo) =>
         // no $committish: one url for every commit
         fixed: `${base()}/labby/$1/$2/main`,
         down: `${base()}/down/$1/$2/$committish`,
+        // every archive 404s, eg a private repo
+        gone: `${base()}/gone/$1/$2/$committish`,
+        mono: `${base()}/mono/$1/$2/$committish`,
       },
     }),
   )
@@ -289,7 +302,7 @@ t.test('no ref, submodules: cloned at the commit', async t => {
     tarball: locked,
   })
   t.equal(count(head), before + 1, 'HEAD fetched once')
-  t.equal(count(`/labby/o/r/${sha}`), 0, 'no sha archive')
+  t.equal(count(`/labby/o/r/${sha}`), 1, 'then the sha archive')
   const n0 = requests.length
   const d = target()
   t.match(await pi.extract('x@labby:o/r', d), { resolved: locked })
@@ -331,6 +344,12 @@ t.test('cloneInstead', async t => {
     false,
     'a ref',
   )
+  for (const s of [
+    'github:o/r#main::path:a',
+    'github:o/r#semver:1',
+  ]) {
+    t.equal(cloneInstead(Spec.parse(`x@${s}`), er(404)), true, s)
+  }
 })
 
 t.test('cloned git pins', async t => {
@@ -358,4 +377,196 @@ t.test('cloned git pins', async t => {
   ] as const) {
     t.equal(gitPinnedCommit(resolved), commit, String(resolved))
   }
+})
+
+t.test('gitArchiveRef', async t => {
+  const ref = (s: string) => gitArchiveRef(Spec.parse(`x@${s}`).final)
+  const gh = 'https://codeload.github.com/o/r/legacy.tar.gz'
+  t.equal(ref('github:o/r#main'), `${gh}/main`)
+  t.equal(ref('github:o/r#main::path:a'), `${gh}/main`, 'path')
+  t.equal(ref('github:o/r#::path:a'), `${gh}/HEAD`, 'path, no ref')
+  t.equal(ref('github:o/r#pull/1::path:a'), `${gh}/pull/1/head`)
+  t.equal(ref('github:o/r#semver:1'), undefined, 'semver')
+  t.equal(ref('git+https://host/o/r.git#main::path:a'), undefined)
+})
+
+t.test('gitPinResolution', async t => {
+  const pin = {
+    resolved: 'https://h/o/r/a',
+    response: {} as CacheEntry,
+  }
+  const sha = 'a'.repeat(40)
+  const p = Spec.parse('x@github:o/r#main::path:a')
+  t.strictSame(gitPinResolution(p, { ...pin, sha }, 'sha512-x'), {
+    resolved: `git+ssh://git@github.com:o/r.git#${sha}::path:a`,
+    spec: p,
+  })
+  t.strictSame(
+    gitPinResolution(p, pin, 'sha512-x'),
+    { resolved: pin.resolved, integrity: 'sha512-x', spec: p },
+    'no commit: the url',
+  )
+  const r = Spec.parse('x@github:o/r#main')
+  t.strictSame(gitPinResolution(r, { ...pin, sha }, 'sha512-x'), {
+    resolved: pin.resolved,
+    integrity: 'sha512-x',
+    spec: r,
+  })
+})
+
+t.test('::path: and #semver: as archives', async t => {
+  // its own repo: git caches refs per remote
+  const mono = `${dir}/mono`
+  const mgit = (...args: string[]) =>
+    execFileSync('git', args, { cwd: mono, encoding: 'utf8' }).trim()
+  mgit('init', '-b', 'main')
+  mgit('config', 'user.name', 'vltdev')
+  mgit('config', 'user.email', 'vltdev@vlt.sh')
+  mgit('config', 'commit.gpgSign', 'false')
+  mkdirSync(`${mono}/sub`)
+  writeFileSync(`${mono}/package.json`, '{"name":"root"}')
+  const release = (v: string) => {
+    writeFileSync(
+      `${mono}/sub/package.json`,
+      JSON.stringify({ name: 'sub', version: v }),
+    )
+    mgit('add', '.')
+    mgit('commit', '-m', v)
+    mgit('tag', `v${v}`)
+    return mgit('rev-parse', 'HEAD')
+  }
+  const s1 = release('1.0.0')
+  const url = (sha: string) => `${base()}/mono/o/r/${sha}`
+  const sriOf = (sha: string) => sri(served.get(`/mono/o/r/${sha}`)!)
+
+  // no git needed: the remote doesn't exist
+  const nogit = client(`${dir}/c-path`, `${dir}/nope`)
+  const spec = 'x@mono:o/r#main::path:sub'
+  const mani = await nogit.manifest(spec)
+  t.match(mani, { name: 'sub', version: '1.0.0' })
+  t.strictSame(mani.dist, {
+    tarball: `${url(s1)}::path:sub`,
+    integrity: sriOf(s1),
+  })
+  t.equal(
+    (await nogit.resolve(spec)).resolved,
+    `git+${pathToFileURL(`${dir}/nope`)}#${s1}::path:sub`,
+    'resolve(): the commit, path kept',
+  )
+  t.equal(
+    (await nogit.resolve(`x@mono:o/r#${s1}::path:sub`)).resolved,
+    `git+${pathToFileURL(`${dir}/nope`)}#${s1}::path:sub`,
+    'full sha too',
+  )
+  const lock = { resolved: url(s1), integrity: sriOf(s1) }
+  const s2 = release('2.0.0')
+  await nogit.drain()
+  for (const c of [
+    nogit,
+    // a fresh client: from the cache file
+    client(`${dir}/c-path`, `${dir}/nope`),
+    client(`${dir}/c-path-cold`, `${dir}/nope`),
+  ]) {
+    const d = target()
+    t.match(await c.extract(spec, d, lock), lock)
+    t.strictSame(readdirSync(d), ['package.json'], 'only the dir')
+    t.equal(version(d), '1.0.0', 'locked')
+  }
+  t.equal(count('/mono/o/r/main'), 1, 'ref fetched once')
+
+  // the newest matching tag
+  const pi = client(`${dir}/cache`, mono)
+  t.match(await pi.resolve('x@mono:o/r#semver:^1'), {
+    resolved: url(s1),
+    integrity: sriOf(s1),
+  })
+  const both = 'x@mono:o/r#semver:2::path:sub'
+  const m2 = await pi.manifest(both)
+  t.equal(m2.version, '2.0.0')
+  t.strictSame(m2.dist, {
+    tarball: `${url(s2)}::path:sub`,
+    integrity: sriOf(s2),
+  })
+  t.equal(
+    (await pi.resolve(both)).resolved,
+    `git+${pathToFileURL(mono)}#${s2}::path:sub`,
+  )
+
+  // archive not served, or no commit in its url: cloned, as before
+  const pin = (sha: string, path = '') =>
+    `git+${pathToFileURL(mono)}#${sha}${path}`
+  for (const [s, pinned] of [
+    ['gone:o/r#main::path:sub', pin(s2, '::path:sub')],
+    ['gone:o/r#semver:^1', pin(s1)],
+    ['fixed:o/r#main::path:sub', pin(s2, '::path:sub')],
+    ['fixed:o/r#semver:^1', pin(s1)],
+  ] as const) {
+    t.match(
+      await client(`${dir}/cache`, mono).manifest(`x@${s}`),
+      { dist: { tarball: pinned } },
+      s,
+    )
+  }
+  t.equal(count('/gone/o/r/main'), 1)
+  t.equal(count(`/gone/o/r/${s1}`), 1)
+  // an older lockfile's clone row: that commit, no archive
+  const before = requests.length
+  const d = target()
+  await pi.extract(spec, d, { resolved: pin(s1, '::path:sub') })
+  t.equal(version(d), '1.0.0', 'clone row kept')
+  t.equal(requests.length, before, 'no archive')
+  await t.rejects(
+    client().manifest('x@labby:o/r#main::path:nope'),
+    { message: 'tar unpack failed' },
+    'no such dir',
+  )
+
+  // submodules (archives omit them): cloned at the archive's commit;
+  // the dir not in the archive, as one in a submodule
+  writeFileSync(`${mono}/.gitmodules`, '[submodule "v"]\n')
+  writeFileSync(`${mono}/.gitattributes`, 'sub export-ignore\n')
+  const s3 = release('3.0.0')
+  // a remote of its own: git caches tags per remote
+  const msm = `${dir}/msm`
+  execFileSync('git', ['clone', '-q', mono, msm])
+  const sm = client(`${dir}/c-sm`, msm)
+  const cpin = (path = '') => `git+${pathToFileURL(msm)}#${s3}${path}`
+  // `::path:` first: one ref url's pin, other specs' paths
+  for (const [s, pinned] of [
+    ['mono:o/r#semver:^3', cpin()],
+    ['mono:o/r#semver:^3::path:sub', cpin('::path:sub')],
+    ['mono:o/r#main::path:sub', cpin('::path:sub')],
+    [`mono:o/r#${s3}::path:sub`, cpin('::path:sub')],
+    ['mono:o/r#::path:sub', cpin('::path:sub')],
+    ['mono:o/r', cpin()],
+  ] as const) {
+    t.matchOnly(
+      await sm.resolve(`x@${s}`),
+      { resolved: pinned, spec: Spec },
+      s,
+    )
+    const m = await sm.manifest(`x@${s}`)
+    t.strictSame(m.dist, { tarball: pinned }, s)
+    if (pinned.endsWith('sub')) t.equal(m.version, '3.0.0', s)
+  }
+  t.match(
+    await sm.resolve('x@mono:o/r#main'),
+    { resolved: url(s3), integrity: sriOf(s3) },
+    'a ref: the archive',
+  )
+  // the dir at the pinned commit, not the ref's tip
+  execFileSync('git', [
+    '-C',
+    msm,
+    'update-ref',
+    'refs/heads/main',
+    s2,
+  ])
+  t.match(
+    await client(`${dir}/c-sm2`, msm).manifest(
+      'x@mono:o/r#main::path:sub',
+    ),
+    { version: '3.0.0', dist: { tarball: cpin('::path:sub') } },
+    'at the pinned commit',
+  )
 })
