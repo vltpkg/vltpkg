@@ -143,6 +143,13 @@ fetched, like a private repo.
 To pin a commit in `package.json`, use it as the ref:
 `github:user/repo#<sha>`.
 
+A host can re-pack an archive: same commit, other bytes. Installing it
+from the lockfile then fails its integrity check, and the error says
+so. To lock the new archive, run
+[`vlt cache delete "<url>"`](/client/commands/cache#delete), then
+`vlt update`. vlt never clones that commit instead: that would skip
+the integrity check.
+
 Lockfiles from older vlt versions lock git dependencies to a ref, not
 a commit. `vlt install` re-resolves those entries and locks the commit
 their ref points to now. One it can't resolve (offline, host down, ref
