@@ -7,7 +7,11 @@ import { pathToFileURL } from 'node:url'
 import t from 'tap'
 import type { Integrity } from '@vltpkg/types'
 import { unload } from '@vltpkg/vlt-json'
-import { gitClonePin, gitPinnedCommit } from '../src/git-pin.ts'
+import {
+  cloneInstead,
+  gitClonePin,
+  gitPinnedCommit,
+} from '../src/git-pin.ts'
 import { PackageInfoClient } from '../src/index.ts'
 import { Spec } from '@vltpkg/spec'
 import { drainer } from './fixtures/drainer.ts'
@@ -45,6 +49,8 @@ const served = new Map<string, Buffer>()
 const server = createServer((req, res) => {
   const url = req.url ?? ''
   requests.push(url)
+  // a host that never answers
+  if (url.startsWith('/down/')) return req.socket.destroy()
   const m = /^\/(labby|nopax)\/o\/r\/(.+)$/.exec(url)
   let body: Buffer
   try {
@@ -84,12 +90,14 @@ const client = (cache = `${dir}/cache`, remote = repo) =>
         labby: `git+${pathToFileURL(remote)}`,
         nopax: `git+${pathToFileURL(remote)}`,
         fixed: `git+${pathToFileURL(remote)}`,
+        down: `git+${pathToFileURL(remote)}`,
       },
       'git-host-archives': {
         labby: `${base()}/labby/$1/$2/$committish`,
         nopax: `${base()}/nopax/$1/$2/$committish`,
         // no $committish: one url for every commit
         fixed: `${base()}/labby/$1/$2/main`,
+        down: `${base()}/down/$1/$2/$committish`,
       },
     }),
   )
@@ -199,6 +207,130 @@ t.test('ref archive not found', async t => {
     message: /failed to fetch URL/,
     cause: { code: 'ERESOLVE' },
   })
+})
+
+t.test('no ref: the HEAD archive at its commit', async t => {
+  const head = '/labby/o/r/HEAD'
+  const sha = git('rev-parse', 'HEAD')
+  const pinned = `/labby/o/r/${sha}`
+  const before = count(head)
+  const pi = client()
+  const r = await pi.resolve('x@labby:o/r')
+  t.match(r, { resolved: base() + pinned })
+  t.equal(r.integrity, sri(served.get(pinned)!))
+  t.match(await pi.manifest('x@labby:o/r'), {
+    dist: { tarball: base() + pinned, integrity: r.integrity },
+  })
+  const d = target()
+  t.match(await pi.extract('x@labby:o/r', d), {
+    resolved: base() + pinned,
+  })
+  t.equal(version(d), version(repo))
+  t.equal(count(head), before + 1, 'HEAD fetched once per run')
+})
+
+t.test('no ref, locked to a clone or a remote', async t => {
+  const sha = git('rev-parse', 'HEAD')
+  const old = version(repo)
+  const locked = `git+${pathToFileURL(repo)}#${sha}`
+  commit('9.0.0')
+  const before = requests.length
+  const d = target()
+  t.match(
+    await client().extract('x@labby:o/r', d, { resolved: locked }),
+    { resolved: locked },
+  )
+  t.equal(version(d), old, 'the locked commit')
+  const d1 = target()
+  await client().extract('x@labby:o/r#main', d1, { resolved: locked })
+  t.equal(version(d1), old, 'a ref locked to a clone: that commit')
+  const d2 = target()
+  await client().extract('x@labby:o/r', d2, { resolved: 'labby:o/r' })
+  t.equal(version(d2), '9.0.0', 'older lockfile: the default branch')
+  t.equal(requests.length, before, 'no archive fetched')
+  t.match(
+    await client().resolve('x@labby:o/r'),
+    { resolved: `${base()}/labby/o/r/${git('rev-parse', 'HEAD')}` },
+    'moved HEAD, warm cache: the new commit',
+  )
+})
+
+t.test('no ref, archive host not answering', async t => {
+  const pi = client()
+  t.match(
+    (await pi.resolve('x@down:o/r')).resolved,
+    /^git\+file:.*#[0-9a-f]{40}$/,
+    'cloned',
+  )
+  await t.rejects(
+    pi.resolve('x@down:o/r#main'),
+    { message: /Request failed/ },
+    'a ref is not cloned',
+  )
+})
+
+t.test('no ref, submodules: cloned at the commit', async t => {
+  writeFileSync(`${repo}/.gitmodules`, '[submodule "v"]\n')
+  git('add', '.gitmodules')
+  git('commit', '-m', 'submodules')
+  t.teardown(() => {
+    git('rm', '-q', '.gitmodules')
+    git('commit', '-m', 'no submodules')
+  })
+  const sha = git('rev-parse', 'HEAD')
+  const head = '/labby/o/r/HEAD'
+  const before = count(head)
+  const locked = `git+${pathToFileURL(repo)}#${sha}`
+  const pi = client()
+  const r = await pi.resolve('x@labby:o/r')
+  t.equal(r.resolved, locked)
+  t.notOk('integrity' in r, 'no integrity')
+  t.strictSame((await pi.manifest('x@labby:o/r')).dist, {
+    tarball: locked,
+  })
+  t.equal(count(head), before + 1, 'HEAD fetched once')
+  t.equal(count(`/labby/o/r/${sha}`), 0, 'no sha archive')
+  const n0 = requests.length
+  const d = target()
+  t.match(await pi.extract('x@labby:o/r', d), { resolved: locked })
+  t.equal(requests.length, n0, 'cloned')
+  t.equal(version(d), version(repo))
+  t.match(
+    await pi.resolve('x@labby:o/r#main'),
+    { resolved: `${base()}/labby/o/r/${sha}` },
+    'a ref: the archive',
+  )
+  const warn = t.capture(console, 'error')
+  t.match(
+    await client(`${dir}/c-sm`, `${dir}/nope`).resolve('x@nopax:o/r'),
+    { resolved: `${base()}/nopax/o/r/HEAD` },
+    'no commit: the HEAD archive',
+  )
+  t.match(warn(), [{ args: [/not a commit/] }])
+})
+
+t.test('cloneInstead', async t => {
+  const er = (statusCode: number) =>
+    new Error('x', { cause: { response: { statusCode } } })
+  const noRef = Spec.parse('x@github:o/r')
+  for (const s of [401, 403, 404, 410, 500]) {
+    t.equal(cloneInstead(noRef, er(s)), true, String(s))
+  }
+  t.equal(
+    cloneInstead(
+      noRef,
+      new Error('x', { cause: { code: 'EREQUEST' } }),
+    ),
+    true,
+    'request failed',
+  )
+  t.equal(cloneInstead(noRef, new Error('x')), false, 'no cause')
+  t.equal(cloneInstead(noRef, undefined), false, 'undefined')
+  t.equal(
+    cloneInstead(Spec.parse('x@github:o/r#main'), er(404)),
+    false,
+    'a ref',
+  )
 })
 
 t.test('cloned git pins', async t => {

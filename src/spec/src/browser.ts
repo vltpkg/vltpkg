@@ -757,11 +757,20 @@ export class Spec implements SpecLike<Spec> {
       this.namedGitHost = name
       this.namedGitHostPath = hostPath
       this.#parseGitSelector(t)
-      if (this.gitCommittish && !this.gitSelectorParsed?.path) {
-        const archiveHost = this.options['git-host-archives'][name]
+      const archiveHost = this.options['git-host-archives'][name]
+      // no ref: the default branch, if the archive url can name it
+      const head =
+        !this.gitCommittish &&
+        !this.range &&
+        this.gitSelectorParsed?.path === undefined &&
+        !!archiveHost?.includes('$committish')
+      if (
+        (this.gitCommittish || head) &&
+        !this.gitSelectorParsed?.path
+      ) {
         if (
           name === 'github' &&
-          this.gitCommittish.startsWith('pull/') &&
+          this.gitCommittish?.startsWith('pull/') &&
           this.gitCommittish.match(/\//g)?.length === 1
         ) {
           this.gitCommittish += '/head'
@@ -769,7 +778,9 @@ export class Spec implements SpecLike<Spec> {
         if (archiveHost) {
           this.type = 'remote'
           let t = archiveHost
-          t = t.split('$committish').join(this.gitCommittish)
+          t = t
+            .split('$committish')
+            .join(this.gitCommittish || 'HEAD')
           for (let i = 0; i < split.length; i++) {
             t = t.split(`$${i + 1}`).join(split[i])
           }

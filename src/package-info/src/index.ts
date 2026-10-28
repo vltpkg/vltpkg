@@ -33,7 +33,12 @@ import {
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
-import { gitClonePin, gitPin, gitPinnedCommit } from './git-pin.ts'
+import {
+  cloneInstead,
+  gitClonePin,
+  gitPin,
+  gitPinnedCommit,
+} from './git-pin.ts'
 import type { GitPin } from './git-pin.ts'
 import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
@@ -545,8 +550,10 @@ export class PackageInfoClient {
       (
         f.type === 'git' &&
         f.remoteURL &&
+        f.gitCommittish &&
         resolved &&
-        !/^https?:\/\//.test(resolved)
+        !/^https?:\/\//.test(resolved) &&
+        !gitPinnedCommit(resolved)
       ) ?
         f.remoteURL
       : resolved
@@ -577,7 +584,8 @@ export class PackageInfoClient {
           remoteURL,
           gitSelectorParsed,
         } = f
-        if (!remoteURL) {
+        // no archive url, or locked to a clone
+        if (!remoteURL || !/^https?:\/\//.test(r.resolved)) {
           /* c8 ignore start - Impossible, would throw on the resolve */
           if (!gitRemote)
             throw this.#resolveError(
@@ -1193,7 +1201,8 @@ export class PackageInfoClient {
           gitSelectorParsed,
         } = f
         const s: Spec = spec
-        if (!remoteURL) {
+        // no ref: cloned, as before the HEAD archive
+        if (!remoteURL || !gitCommittish) {
           if (!gitRemote) {
             throw this.#resolveError(
               spec,
@@ -1583,7 +1592,10 @@ export class PackageInfoClient {
           remoteURL,
           gitSelectorParsed,
         } = f
-        if (!remoteURL) {
+        if (
+          !remoteURL ||
+          !(await this.#gitArchive(spec, remoteURL, options))
+        ) {
           const s = spec
           if (!gitRemote)
             throw this.#resolveError(spec, options, 'no git remote')
@@ -1644,9 +1656,14 @@ export class PackageInfoClient {
           }
 
           const mani = this.#readExtracted(dir, s, options)
-          // the graph locks a git node to dist.tarball
-          if (pin) mani.dist = { tarball: url, integrity }
-          else if (integrity) mani.dist = { integrity }
+          // the graph locks a git node to dist.tarball; a clone has
+          // no integrity
+          if (pin) {
+            mani.dist =
+              gitPinnedCommit(url) ?
+                { tarball: url }
+              : { tarball: url, integrity }
+          } else if (integrity) mani.dist = { integrity }
           return mani
         })
       }
@@ -1964,18 +1981,18 @@ export class PackageInfoClient {
 
       case 'git': {
         const { gitRemote, remoteURL, gitSelectorParsed } = f
-        if (remoteURL && gitSelectorParsed?.path === undefined) {
-          // known git host with a tarball download endpoint
-          const { resolved, response } = await this.#gitPin(
-            spec,
-            remoteURL,
-            options,
-          )
-          const r = {
-            resolved,
-            integrity: storedIntegrity(response),
-            spec,
-          }
+        // known git host with a tarball download endpoint
+        const pin =
+          remoteURL &&
+          gitSelectorParsed?.path === undefined &&
+          (await this.#gitArchive(spec, remoteURL, options))
+        if (pin) {
+          const { resolved, response } = pin
+          // a clone pin has no integrity
+          const r =
+            gitPinnedCommit(resolved) ?
+              { resolved, spec }
+            : { resolved, integrity: storedIntegrity(response), spec }
           this.#resolutions.set(memoKey, r)
           return r
         }
@@ -2050,6 +2067,19 @@ export class PackageInfoClient {
       this.#gitPins.set(ref, pin)
     }
     return pin
+  }
+
+  // a hosted git dep's archive pin; undefined: clone it instead
+  async #gitArchive(
+    spec: Spec,
+    ref: string,
+    options: PackageInfoClientRequestOptions,
+  ) {
+    try {
+      return await this.#gitPin(spec, ref, options)
+    } catch (er) {
+      if (!cloneInstead(spec, er)) throw er
+    }
   }
 
   /**

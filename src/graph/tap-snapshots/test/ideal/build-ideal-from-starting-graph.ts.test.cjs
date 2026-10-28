@@ -43,7 +43,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
       Edge spec(ipsum@github:lorem/ipsum) -prod-> to: Node {
         id: 'git~github_clorem+ipsum~',
         location: './node_modules/.vlt/git~github_clorem+ipsum~/node_modules/ipsum',
-        resolved: 'github:lorem/ipsum'
+        resolved: 'https://codeload.github.com/lorem/ipsum/legacy.tar.gz/HEAD'
       },
       Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file~linked', location: 'linked', resolved: 'linked' },
       Edge spec(missing@^1.0.0) -prod-> to: Node {

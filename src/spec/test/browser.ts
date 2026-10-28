@@ -453,9 +453,34 @@ t.test('default git host archives', t => {
       'gitlab:a/b#feat/x',
       'https://gitlab.com/api/v4/projects/a%2Fb/repository/archive.tar.gz?sha=feat/x',
     ],
+    // no ref: the default branch
+    [
+      'github:a/b',
+      'https://codeload.github.com/a/b/legacy.tar.gz/HEAD',
+    ],
+    ['a/b', 'https://codeload.github.com/a/b/legacy.tar.gz/HEAD'],
+    [
+      'gitlab:a/b',
+      'https://gitlab.com/api/v4/projects/a%2Fb/repository/archive.tar.gz?sha=HEAD',
+    ],
+    ['bitbucket:a/b', 'https://bitbucket.org/a/b/get/HEAD.tar.gz'],
+    ['gist:a', 'https://codeload.github.com/gist/a/tar.gz/HEAD'],
+    // empty committish: still HEAD
+    [
+      'github:a/b#::foo:bar',
+      'https://codeload.github.com/a/b/legacy.tar.gz/HEAD',
+    ],
+    ['github:a/b#::path:', undefined],
+    ['github:a/b#semver:1', undefined],
+    ['github:a/b#path:x', undefined],
   ] as const) {
     t.equal(Spec.parse('x', spec).remoteURL, url, spec)
   }
+  const s = Spec.parse('x', 'github:a/b', {
+    'git-host-archives': { github: 'https://x/$1/$2/main.tgz' },
+  })
+  t.equal(s.remoteURL, undefined, 'no ref, url w/o $committish')
+  t.equal(s.gitCommittish, undefined, 'no committish')
   t.end()
 })
 
