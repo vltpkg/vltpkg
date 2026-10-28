@@ -71,16 +71,20 @@ The interface the vlt CLI extracts through. On a large enough install,
 the bytes held in memory. Otherwise, and for every other method, the
 work runs on the main thread. See [Unpack workers](#unpack-workers).
 
-#### `pool.unpack(tarData: Buffer, target: string, format?, options?) => Promise<void>`
+#### `pool.unpack(tarData: Buffer, target: string, format?, path?) => Promise<void>`
 
 Unpack the supplied Buffer of data into the target folder. A worker
-gets a copy, so the caller keeps its buffer.
+gets a copy, so the caller keeps its buffer. With `path`, only that
+directory of the tarball's root dir, as the root (eg a package in a
+`git archive` of its monorepo); throws `path not found in tarball` if
+it has no entries there.
 
-#### `pool.unpackCacheEntry(file: string, target: string, format?) => Promise<void>`
+#### `pool.unpackCacheEntry(file: string, target: string, format?, path?) => Promise<void>`
 
 Unpack the tarball inside a vlt cache entry file, whose first 4 bytes
 are the big-endian length of the head before the body. On a worker the
 file is read there, so the main thread never reads or copies the body.
+`path` as in `pool.unpack`.
 
 #### `pool.warm(jobs: number) => Promise<void>`
 

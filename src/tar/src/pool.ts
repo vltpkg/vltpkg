@@ -63,40 +63,45 @@ export class Pool {
 
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
-   * placed. Resolves when the tarball has been extracted. See
+   * placed. Resolves when the tarball has been extracted. `path`: only
+   * that dir of the tarball's root dir, see {@link unpack}. See
    * {@link PlacementPool.unpack}.
    */
   async unpack(
     tarData: Buffer,
     target: string,
     format?: TarballFormat,
+    path?: string,
   ): Promise<void> {
-    if (mode === '0') return unpack(tarData, target, format)
-    if (mode === '1') return unpackSync(tarData, target, format)
-    return this.#pool.unpack(tarData, target, format)
+    if (mode === '0') return unpack(tarData, target, format, path)
+    if (mode === '1') return unpackSync(tarData, target, format, path)
+    return this.#pool.unpack(tarData, target, format, path)
   }
 
   /**
    * Unpack the tarball in the vlt cache entry `file`, whose first 4
    * bytes are the big-endian length of the head before the body. On a
    * worker the file is read there, so the main thread never holds the
-   * body. See {@link PlacementPool.unpackCacheEntry}.
+   * body. `path` as in {@link unpack}. See
+   * {@link PlacementPool.unpackCacheEntry}.
    */
   async unpackCacheEntry(
     file: string,
     target: string,
     format?: TarballFormat,
+    path?: string,
   ): Promise<void> {
     if (mode === '0') {
       return unpack(
         cacheEntryBody(await readFile(file)),
         target,
         format,
+        path,
       )
     }
     if (mode === '1')
-      return unpackCacheEntrySync(file, target, format)
-    return this.#pool.unpackCacheEntry(file, target, format)
+      return unpackCacheEntrySync(file, target, format, path)
+    return this.#pool.unpackCacheEntry(file, target, format, path)
   }
 
   /**

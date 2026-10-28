@@ -37,10 +37,16 @@ import {
 } from '@vltpkg/types'
 import {
   cloneInstead,
+  gitArchiveRef,
   gitClonePin,
   gitPin,
   gitPinnedCommit,
+  gitPinResolution,
+  gitPinTarball,
+  gitSubmodulePin,
+  gitTagPin,
 } from './git-pin.ts'
+import type { GitPin, GitPinned } from './git-pin.ts'
 import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
@@ -315,23 +321,21 @@ const storedIntegrity = (
   : (response.integrity ??
     (response.isGzip ? response.integrityActual : undefined))
 
+// what a run keeps of a git pin: its archive's integrity, not its bytes
+const kept = ({ response, ...pin }: GitPin): GitPinned => ({
+  ...pin,
+  integrity: storedIntegrity(response),
+})
+
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #projectRoot: string
   #tarPool?: Pool
   options: PackageInfoClientOptions
   #resolutions = new Map<string, Resolution>()
-  // ref archive url -> the pin it got this run: the url, the archive
-  // url it was read from, its integrity; no archive bytes (the cache
-  // has those)
-  #gitPins = new Map<
-    string,
-    Promise<{
-      resolved: string
-      archive: string
-      integrity?: Integrity
-    }>
-  >()
+  // ref archive url -> the pin it got this run; no archive bytes (the
+  // cache has those)
+  #gitPins = new Map<string, Promise<GitPinned>>()
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
@@ -659,14 +663,9 @@ export class PackageInfoClient {
 
     switch (f.type) {
       case 'git': {
-        const {
-          gitRemote,
-          gitCommittish,
-          remoteURL,
-          gitSelectorParsed,
-        } = f
-        // no archive url, or locked to a clone
-        if (!remoteURL || !/^https?:\/\//.test(r.resolved)) {
+        const { gitRemote, gitCommittish, gitSelectorParsed } = f
+        // not hosted, or locked to a clone
+        if (!f.namedGitHost || !/^https?:\/\//.test(r.resolved)) {
           /* c8 ignore start - Impossible, would throw on the resolve */
           if (!gitRemote)
             throw this.#resolveError(
@@ -710,6 +709,8 @@ export class PackageInfoClient {
         // brotli bytes carry no signature of their own, so every unpack
         // below has to be told; gzip and raw tar are sniffed.
         const format = tarballFormat(r.resolved)
+        // a git `::path:`: that dir of the archive
+        const sub = f.gitSelectorParsed?.path || undefined
         // git tarballs keep the unpack path
         const storeOn =
           f.type === 'registry' && this.#storeLinker !== 'unpack'
@@ -782,7 +783,12 @@ export class PackageInfoClient {
             })
             // only the head was read here: the unpacker reads the body
             // from the file, on a worker when the pool has them
-            await pool.unpackCacheEntry(cached.path, target, format)
+            await pool.unpackCacheEntry(
+              cached.path,
+              target,
+              format,
+              sub,
+            )
             unpacked()
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
@@ -912,7 +918,7 @@ export class PackageInfoClient {
             url: r.resolved,
             bytes: buf.length,
           })
-          await pool.unpack(buf, target, format)
+          await pool.unpack(buf, target, format, sub)
           unpacked()
         } catch (er) {
           throw this.#resolveError(
@@ -1614,6 +1620,8 @@ export class PackageInfoClient {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
+    // a hosted git dep: the archive at its commit
+    let pin: GitPinned | undefined
 
     switch (f.type) {
       case 'registry': {
@@ -1709,23 +1717,21 @@ export class PackageInfoClient {
       }
 
       case 'git': {
-        const {
-          gitRemote,
-          gitCommittish,
-          remoteURL,
-          gitSelectorParsed,
-        } = f
-        if (
-          !remoteURL ||
-          !(await this.#gitArchive(spec, remoteURL, options))
-        ) {
+        const { gitRemote, gitCommittish, gitSelectorParsed } = f
+        pin = await this.#gitArchive(spec, options)
+        // a clone pin of a dir: from a clone, it may be in a submodule
+        const at =
+          gitSelectorParsed?.path ?
+            gitPinnedCommit(pin?.resolved)
+          : undefined
+        if (!pin || at) {
           const s = spec
           if (!gitRemote)
             throw this.#resolveError(spec, options, 'no git remote')
           return await this.#tmpdir(async dir => {
-            const sha = await clone(gitRemote, gitCommittish, dir, {
-              spec: s,
-            })
+            const sha = await (at ?
+              clone(gitRemote, at, dir)
+            : clone(gitRemote, gitCommittish, dir, { spec: s }))
             const { path } = gitSelectorParsed ?? {}
             const pkgDir =
               path !== undefined ? pathResolve(dir, path) : dir
@@ -1739,8 +1745,8 @@ export class PackageInfoClient {
       }
 
       case 'remote': {
-        const { remoteURL } = f
-        if (!remoteURL) {
+        const url = pin?.resolved ?? f.remoteURL
+        if (!url) {
           throw this.#resolveError(
             spec,
             options,
@@ -1748,15 +1754,12 @@ export class PackageInfoClient {
           )
         }
         const s = spec
-        // a hosted git ref: the archive at its commit
-        const pin =
-          f.type === 'git' ?
-            await this.#gitPin(s, remoteURL, options)
-          : undefined
-        const url = pin?.resolved ?? remoteURL
+        const p = pin
+        // a git `::path:`: that dir of the archive
+        const sub = f.gitSelectorParsed?.path || undefined
         // a pin's archive: from the cache, the pin put it there (a
         // clone pin's manifest is read from the archive at its commit)
-        const archive = pin?.archive ?? remoteURL
+        const archive = p?.archive ?? url
         return await this.#tmpdir(async dir => {
           const response = await this.#fetchURL(s, archive, options)
           const buf = response.buffer()
@@ -1769,7 +1772,7 @@ export class PackageInfoClient {
           try {
             await (
               await this.getTarPool()
-            ).unpack(buf, dir, tarballFormat(archive))
+            ).unpack(buf, dir, tarballFormat(archive), sub)
           } catch (er) {
             throw this.#resolveError(
               s,
@@ -1782,11 +1785,11 @@ export class PackageInfoClient {
           const mani = this.#readExtracted(dir, s, options)
           // the graph locks a git node to dist.tarball; a clone has
           // no integrity
-          if (pin) {
+          if (p) {
             mani.dist =
               gitPinnedCommit(url) ?
                 { tarball: url }
-              : { tarball: url, integrity }
+              : { tarball: gitPinTarball(f, url), integrity }
           } else if (integrity) mani.dist = { integrity }
           return mani
         })
@@ -2104,19 +2107,15 @@ export class PackageInfoClient {
       }
 
       case 'git': {
-        const { gitRemote, remoteURL, gitSelectorParsed } = f
+        const { gitRemote } = f
         // known git host with a tarball download endpoint
-        const pin =
-          remoteURL &&
-          gitSelectorParsed?.path === undefined &&
-          (await this.#gitArchive(spec, remoteURL, options))
+        const pin = await this.#gitArchive(spec, options)
         if (pin) {
-          const { resolved, integrity } = pin
           // a clone pin has no integrity
           const r =
-            gitPinnedCommit(resolved) ?
-              { resolved, spec }
-            : { resolved, integrity, spec }
+            gitPinnedCommit(pin.resolved) ?
+              { resolved: pin.resolved, spec }
+            : gitPinResolution(spec, pin)
           this.#resolutions.set(memoKey, r)
           return r
         }
@@ -2197,24 +2196,26 @@ export class PackageInfoClient {
             rc,
           ),
         )
-        .then(({ resolved, archive, response }) => ({
-          resolved,
-          archive,
-          integrity: storedIntegrity(response),
-        }))
+        .then(kept)
       this.#gitPins.set(ref, pin)
     }
     return pin
   }
 
-  // a hosted git dep's archive pin; undefined: clone it instead
+  // a hosted git dep's archive or clone pin; undefined: clone by ref
   async #gitArchive(
     spec: Spec,
-    ref: string,
     options: PackageInfoClientRequestOptions,
   ) {
+    const f = spec.final
     try {
-      return await this.#gitPin(spec, ref, options)
+      const ref = gitArchiveRef(f)
+      const get = (url: string) => this.#fetchURL(spec, url, options)
+      const pin =
+        ref ? await this.#gitPin(spec, ref, options)
+        : f.range ? await gitTagPin(spec, get, kept)
+        : undefined
+      return pin && (await gitSubmodulePin(spec, pin, get))
     } catch (er) {
       if (!cloneInstead(spec, er)) throw er
     }

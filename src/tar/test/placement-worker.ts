@@ -76,6 +76,40 @@ t.test('handleJob unpacks a tarball from a transferred buffer', t => {
   t.end()
 })
 
+t.test('handleJob unpacks only the `path` dir of the tarball', t => {
+  const d = t.testdir()
+  const replies: PlacementReply[] = []
+  const port = { postMessage: (r: PlacementReply) => replies.push(r) }
+  const sub = JSON.stringify({ name: 'sub', version: '7.0.0' })
+  const mono = makeTar([
+    { path: 'r/package.json', size: 2, type: 'File' },
+    '{}',
+    { path: 'r/sub/package.json', size: sub.length, type: 'File' },
+    sub,
+  ])
+  const target = resolve(d, 'nm/u')
+  handleJob(port, { ...unpackJob(1, mono, target), path: 'sub' })
+  const head = Buffer.alloc(10)
+  head.writeUInt32BE(head.length, 0)
+  const file = resolve(d, 'entry')
+  writeFileSync(file, Buffer.concat([head, mono]))
+  const cached = resolve(d, 'nm/c')
+  handleJob(port, {
+    kind: 'cacheEntry',
+    id: 2,
+    file,
+    target: cached,
+    path: 'sub',
+  })
+  t.strictSame(replies, [
+    { id: 1, result: true },
+    { id: 2, result: true },
+  ])
+  t.equal(version(target), '7.0.0')
+  t.equal(version(cached), '7.0.0')
+  t.end()
+})
+
 t.test('handleJob reports a thrown error', async t => {
   // mock unpackSync to throw, so the catch branch is covered
   const { handleJob } = await t.mockImport<
