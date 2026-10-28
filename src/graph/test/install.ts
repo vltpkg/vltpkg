@@ -2359,6 +2359,93 @@ t.test('explicit adds carry the saved value everywhere', async t => {
   })
 })
 
+t.test('a bare workspace name saves workspace:*', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: 'packages/*' }),
+    packages: {
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.2.3',
+        }),
+      },
+      c: {
+        'package.json': JSON.stringify({
+          name: 'c',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  t.teardown(() => unload('project'))
+  const packageJson = new PackageJson()
+  const opts = (extra?: Record<string, unknown>) =>
+    ({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson,
+      packageInfo: mockPackageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      ...extra,
+    }) as unknown as InstallOptions
+  const addB = (importer: DepID) =>
+    Object.assign(
+      new Map([
+        [
+          importer,
+          new Map<string, Dependency>([
+            [
+              'b',
+              asDependency({
+                spec: Spec.parse('b', ''),
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]),
+      { modifiedDependencies: true },
+    )
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const { install } = await import('../src/install.ts')
+
+  await install(opts(), addB(joinDepIDTuple(['file', '.'])))
+  t.match(JSON.parse(read('package.json')), {
+    dependencies: { b: 'workspace:*' },
+  })
+  for (const f of lockfiles) {
+    t.match(
+      read(f),
+      '"file~_d b": "prod workspace:* workspace~packages+b"',
+    )
+  }
+  await install(opts({ frozenLockfile: true }))
+
+  await install(
+    opts(),
+    addB(joinDepIDTuple(['workspace', 'packages/c'])),
+  )
+  t.match(JSON.parse(read('packages/c/package.json')), {
+    dependencies: { b: 'workspace:*' },
+  })
+  for (const f of lockfiles) {
+    t.match(
+      read(f),
+      '"workspace~packages+c b": "prod workspace:* workspace~packages+b"',
+    )
+  }
+  await install(opts({ frozenLockfile: true }))
+})
+
 // the reify fixture mock re-parses `String(spec)` without a catalog
 // config, so hand it the resolved subspec the real client uses
 const catalogPackageInfo = createMockPackageInfo({

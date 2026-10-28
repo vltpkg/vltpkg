@@ -17,6 +17,11 @@ export const calculateSaveValue = (
     return spec.bareSpec
   }
 
+  // a bare name that linked a workspace
+  if (nodeType === 'workspace' && !spec.bareSpec) {
+    return 'workspace:*'
+  }
+
   if (
     // if not from the registry, save whatever we requested
     nodeType === 'registry' &&
