@@ -1,0 +1,133 @@
+---
+title: vlt update
+sidebar:
+  label: update
+---
+
+Usage:
+
+<Code
+  code="$ vlt update
+$ vlt update [package ...]
+$ vlt update [--target=<query>]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Update dependencies to the newest versions their declared ranges
+allow, and save them to `vlt-lock.json`. `package.json` is not
+changed.
+
+With no arguments, every dependency is resolved again from scratch.
+`--workspace` and `--workspace-group` limit that to the dependencies
+of the given workspaces; other workspaces, and the dependencies they
+share, keep their locked versions.
+
+## Updating some dependencies
+
+Package names, or a [DSS query selector](/client/selectors) given to
+`--target`, pick the dependencies to update. Only those are resolved
+again. Everything else keeps its locked version, including the
+dependencies of an updated package while they still satisfy it.
+
+- a name matches every locked copy of that dependency, at any depth
+  (an alias by its alias name)
+- a selected package is updated for all of its dependents, within each
+  one's range
+- workspaces and the project root are never selected, and a query that
+  matches nothing changes nothing
+- selectors reading `package.json` fields (e.g. `[name=…]`,
+  `:semver()`) need installed packages: run `vlt install` first
+- names or `--target` can't be combined with `--workspace` or
+  `--workspace-group`: select by workspace in the query instead, e.g.
+  `--target=":workspace#a > *"`
+
+## Examples
+
+Update `react` and `react-dom`
+
+<Code
+  code="$ vlt update react react-dom"
+  title="Terminal"
+  lang="bash"
+/>
+
+Update the direct dependencies of the project root
+
+<Code
+  code={`$ vlt update --target=":root > *"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Update the dev dependencies of the project root
+
+<Code
+  code={`$ vlt update --target=":root > *:dev"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Options
+
+### target
+
+DSS query selecting the dependencies to update, in place of package
+names. Command line or env (`VLT_TARGET`) only: a `target` in
+`vlt.json` doesn't apply.
+
+```
+--target=<query>
+```
+
+### workspace
+
+Limit update to matching workspaces. Others, and deps they share, keep
+their locked versions.
+
+```
+--workspace=<path|glob>
+```
+
+### workspace-group
+
+Limit update to workspace groups. Others, and deps they share, keep
+their locked versions.
+
+```
+--workspace-group=<name>
+```
+
+### save-config
+
+Save registry and git host options given on the command line or via
+env (e.g. `--registries name=url`) to the project `vlt.json`, or the
+user `vlt.json` with `--config=user`.
+
+```
+--save-config
+```
+
+### allow-scripts
+
+Filter which packages are allowed to run lifecycle scripts using DSS
+query syntax.
+
+```
+--allow-scripts=<query>
+```
+
+### allow-skills
+
+Link agent skills of packages matching this DSS query into the
+project's agent skill dirs. Saved to `vlt.json`.
+
+```
+--allow-skills=<query>
+```
+
+## Aliases
+
+```
+u
+```
