@@ -19,6 +19,8 @@ Entry: `src/graph/src/ideal/build.ts` → `ideal.build(options)`
 
 Loads Virtual from `vlt-lock.json` (`lockfile.load()`), falls back to Actual (`actual.load()`). Delegates to `buildIdealFromStartingGraph()`.
 
+Git nodes locked to a ref, not a commit (`gitPinned()`, older lockfiles) are re-resolved up front unless `frozenLockfile`/`expectLockfile` (`repinGitRows()`): resolved ones are removed from the starting graph, their manifests go in `graph.repin` (base id → manifest) and `rebuild` resets every edge, so they get pinned. A failed one is kept as is, with a warning; if it has no manifest (no `node_modules`), nothing is removed that run.
+
 ## Merge & Expansion (`build-ideal-from-starting-graph.ts`)
 
 - Computes importer deltas via `get-importer-specs.ts` (compares manifests to graph)
