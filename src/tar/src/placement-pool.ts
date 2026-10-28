@@ -200,7 +200,8 @@ export class PlacementPool {
    * Unpack `tarData` into `target`: on a worker once the pool is
    * threaded, inline otherwise (inflating on libuv's threadpool and
    * writing on the main thread, as before this pool existed). Resolves
-   * when the files are in place.
+   * when the files are in place. `path`: only that dir of the
+   * tarball's root dir, see `unpack()` in `unpack.ts`.
    *
    * The bytes are copied before they go to a worker: the caller may
    * still hold them (the registry client caches its response bodies),
@@ -211,17 +212,18 @@ export class PlacementPool {
     tarData: Buffer,
     target: string,
     format?: TarballFormat,
+    path?: string,
   ): Promise<void> {
     this.#maybeAutoWarm()
     if (this.#inlineNow())
-      return unpackParallel(tarData, target, format)
+      return unpackParallel(tarData, target, format, path)
     const bytes = tarData.byteLength
     await this.#reserve(bytes)
     // the pool may have closed, or lost its last worker, while this
     // waited for room: it is inline now, so place inline
     if (this.#inlineNow()) {
       this.#release(bytes)
-      return unpackParallel(tarData, target, format)
+      return unpackParallel(tarData, target, format, path)
     }
     const copy = new Uint8Array(bytes)
     copy.set(tarData)
@@ -234,6 +236,7 @@ export class PlacementPool {
         byteLength: bytes,
         target,
         format,
+        path,
       },
       bytes,
     )
@@ -243,19 +246,27 @@ export class PlacementPool {
    * Unpack the tarball in the vlt cache entry `file` into `target`. A
    * worker reads the file itself, so the main thread neither reads nor
    * copies the body, and nothing is held against the byte cap. Inline
-   * when the pool is not threaded, like {@link unpack}.
+   * when the pool is not threaded, like {@link unpack}, as is `path`.
    */
   async unpackCacheEntry(
     file: string,
     target: string,
     format?: TarballFormat,
+    path?: string,
   ): Promise<void> {
     this.#maybeAutoWarm()
     if (this.#inlineNow()) {
-      return unpackCacheEntryParallel(file, target, format)
+      return unpackCacheEntryParallel(file, target, format, path)
     }
     await this.#submit(
-      { kind: 'cacheEntry', id: this.#seq++, file, target, format },
+      {
+        kind: 'cacheEntry',
+        id: this.#seq++,
+        file,
+        target,
+        format,
+        path,
+      },
       0,
     )
   }
