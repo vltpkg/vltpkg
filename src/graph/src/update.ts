@@ -15,15 +15,25 @@ import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
 import { existsSync, rmSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { baseDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { Diff } from './diff.ts'
-import { assertQuery } from './filter-nodes-by-query.ts'
+import {
+  assertQuery,
+  filterNodesByQuery,
+} from './filter-nodes-by-query.ts'
+import { error } from '@vltpkg/error-cause'
 import { assertSkillsDirs } from './skills/dirs.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
 
 export type UpdateOptions = LoadOptions & {
   packageInfo: PackageInfoClient
   allowScripts: string
+  /**
+   * DSS query: only matching deps re-resolve, everything else keeps
+   * its locked version. Unset: update all.
+   */
+  target?: string
   /**
    * DSS query: packages whose agent skills get linked into the
    * project's agent skill dirs after update. Selectors may end with
@@ -49,27 +59,74 @@ export type UpdateResult = {
 }
 
 /**
- * Graph to update from. `-w` filtered: the lockfile (else installed)
- * graph minus the selected workspaces' deps, so only those re-resolve
- * (deps shared with other workspaces stay locked). Else: empty.
+ * The lockfile graph, else the installed one. `actual`: manifests for
+ * lockfile nodes.
  */
-const startingGraph = (
+const lockedGraph = (
   options: LoadOptions & { mainManifest: NormalizedManifest },
   monorepo?: Monorepo,
+  actual?: Graph,
 ) => {
-  const fresh = () => new Graph({ ...options, monorepo })
-  if (!options.monorepo || !monorepo) return fresh()
+  try {
+    return loadVirtual({ ...options, monorepo, actual })
+  } catch (err) {
+    if (isPathSecurityError(err)) throw err
+    return (
+      actual ??
+      actualLoad({ ...options, monorepo, loadManifests: true })
+    )
+  }
+}
+
+/** ids of the `-w` selected workspaces, if filtered */
+const selectedWorkspaces = (
+  options: LoadOptions,
+  monorepo?: Monorepo,
+) => {
+  if (!options.monorepo || !monorepo) return
   const selected = new Set(
     [...options.monorepo.values()].map(ws => ws.id),
   )
-  if (selected.size === monorepo.size) return fresh()
-  let graph: Graph
-  try {
-    graph = loadVirtual({ ...options, monorepo })
-  } catch (err) {
-    if (isPathSecurityError(err)) throw err
-    graph = actualLoad({ ...options, monorepo, loadManifests: true })
+  return selected.size === monorepo.size ? undefined : selected
+}
+
+/**
+ * Graph to update from. `target`: the locked graph minus the matching
+ * deps; edges to them re-resolve. `-w` filtered: the locked graph
+ * minus the selected workspaces' deps, so only those re-resolve (deps
+ * shared with other workspaces stay locked). Else: empty.
+ */
+const startingGraph = async (
+  options: LoadOptions & {
+    mainManifest: NormalizedManifest
+    target?: string
+  },
+  monorepo?: Monorepo,
+) => {
+  const fresh = () => new Graph({ ...options, monorepo })
+  if (options.target) {
+    // installed manifests, for selectors that read them
+    const actual = actualLoad({
+      ...options,
+      monorepo,
+      loadManifests: true,
+    })
+    const graph = lockedGraph(options, monorepo, actual)
+    const ids = await filterNodesByQuery(graph, options.target, true)
+    const unlocked = new Set<string>()
+    for (const node of [...graph.nodes.values()]) {
+      if (node.importer || !ids.has(node.id)) continue
+      for (const edge of node.edgesIn) {
+        unlocked.add(`${baseDepID(edge.from.id)}\0${edge.spec.name}`)
+      }
+      graph.removeNode(node, undefined, true)
+    }
+    if (unlocked.size) graph.unlockedEdges = unlocked
+    return graph
   }
+  const selected = selectedWorkspaces(options, monorepo)
+  if (!selected) return fresh()
+  const graph = lockedGraph(options, monorepo)
   for (const importer of graph.importers) {
     if (!selected.has(importer.id)) continue
     for (const edge of importer.edgesOut.values()) {
@@ -95,6 +152,7 @@ export const update = async (
     await assertQuery(allowSkills, 'allow-skills', ['skill'])
     assertSkillsDirs(options.projectRoot, options.skillsDirs)
   }
+  if (options.target) await assertQuery(options.target, 'target')
   let mainManifest: NormalizedManifest | undefined = undefined
   try {
     mainManifest = options.packageJson.read(options.projectRoot)
@@ -116,22 +174,33 @@ export const update = async (
     scurry: options.scurry,
   })
 
+  if (options.target && selectedWorkspaces(options, monorepo)) {
+    throw error(
+      'Cannot combine a package selection with --workspace or --workspace-group',
+      { code: 'EUSAGE', found: options.target },
+    )
+  }
+
   let result: UpdateResult
   try {
     const done = graphStep('build')
+    const start = await startingGraph(
+      { ...options, mainManifest, modifiers },
+      monorepo,
+    )
     const graph = await buildIdealFromStartingGraph({
       ...options,
       add: Object.assign(new Map(), { modifiedDependencies: false }),
       remove: Object.assign(new Map(), {
         modifiedDependencies: false,
       }),
-      graph: startingGraph(
-        { ...options, mainManifest, modifiers },
-        monorepo,
-      ),
+      graph: start,
       modifiers,
       remover,
+      // re-resolved edges below importers need a full rebuild
+      rebuild: !!start.unlockedEdges,
     })
+    start.unlockedEdges = undefined
     done()
 
     const act = actualLoad({
