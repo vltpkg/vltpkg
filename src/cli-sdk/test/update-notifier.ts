@@ -175,7 +175,7 @@ t.test(
     fs.utimesSync(`${s.file}.lock`, expired, expired)
     s.notifyUpdate(s.conf, version)
     t.strictSame(s.messages, [
-      'Update available: vlt 1.0.0 -> 2.0.0\nnpm install -g vlt@latest',
+      'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt',
     ])
     s.notifyUpdate(s.conf, version)
     t.equal(s.messages.length, 1)
@@ -341,38 +341,32 @@ t.test(
   },
 )
 
-t.test('installation-specific upgrade hints', async t => {
-  const s = await setup(t)
-  for (const [path, hint] of [
-    ['/opt/homebrew/Cellar/vlt/1/bin/vlt', 'brew upgrade vlt'],
-    [
+t.test(
+  'upgrade hint is the same for every install location',
+  async t => {
+    const s = await setup(t)
+    for (const path of [
+      '/opt/homebrew/Cellar/vlt/1/bin/vlt',
       '/home/user/.volta/tools/image/packages/vlt/bin/vlt',
-      'volta install vlt@latest',
-    ],
-    [
       '/usr/lib/node_modules/vlt/bin/vlt',
-      'npm install -g vlt@latest',
-    ],
-    [
       'C:\\Users\\name\\AppData\\Roaming\\npm\\node_modules\\vlt\\vlt.js',
-      'npm install -g vlt@latest',
-    ],
-    ['/usr/bin/vlt', 'https://github.com/vltpkg/vltpkg/releases'],
-  ] as const) {
-    s.runtime.executable = path
-    writeUpdateState(s.file, {
-      registry,
-      version,
-      lastCheck: now,
-      latest: '2.0.0',
-    })
-    s.notifyUpdate(s.conf, version)
-    t.equal(
-      s.messages.pop(),
-      `Update available: vlt 1.0.0 -> 2.0.0\n${hint}`,
-    )
-  }
-})
+      '/usr/bin/vlt',
+    ]) {
+      s.runtime.executable = path
+      writeUpdateState(s.file, {
+        registry,
+        version,
+        lastCheck: now,
+        latest: '2.0.0',
+      })
+      s.notifyUpdate(s.conf, version)
+      t.equal(
+        s.messages.pop(),
+        'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt',
+      )
+    }
+  },
+)
 
 t.test(
   'worker and filesystem failures do not affect the command',
