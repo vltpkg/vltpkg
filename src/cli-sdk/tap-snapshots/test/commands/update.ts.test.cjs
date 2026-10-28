@@ -12,17 +12,34 @@ update
 
 exports[`test/commands/update.ts > TAP > usage > usage 1`] = `
 Usage:
-  vlt update
+  vlt update [package ...]
+  vlt update [--target=<query>]
 
 Update dependencies to their latest in-range versions. Discards the lockfile and
 resolves dependencies from scratch (with -w: only matching workspaces'
-dependencies).
+dependencies; with package names or --target: only matching dependencies,
+everything else keeps its locked version).
 
   Aliases
 
     ​u
 
+  Examples
+
+    Update react and react-dom, at any depth
+
+    ​vlt update react react-dom
+
+    Update the direct dependencies of the project root
+
+    ​vlt update --target=":root > *"
+
   Options
+
+    target
+      DSS query selecting the dependencies to update, in place of package names.
+
+      ​--target=<query>
 
     workspace
       Limit update to matching workspaces. Others, and deps they share, keep
