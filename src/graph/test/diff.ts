@@ -245,6 +245,46 @@ t.test('moved git pin', async t => {
   t.equal(renamed.edges.add.size, 1, 'renamed: relinked')
 })
 
+t.test('moved pin of a cloned git dep', async t => {
+  const projectRoot = t.testdir()
+  const remote = 'git+https://host/o/r.git'
+  const id = joinDepIDTuple(['git', remote, 'main'])
+  const graph = (resolved: string) =>
+    loadObject(
+      { projectRoot, mainManifest: { name: 'x', version: '1.0.0' } },
+      {
+        lockfileVersion: 1,
+        options: {},
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'x'],
+          [id]: [0, 'r', null, resolved],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'r')]: `prod ${remote}#main ${id}`,
+        } as LockfileEdges,
+      },
+    )
+  const from = graph(`${remote}#${'a'.repeat(40)}`)
+  const diff = new Diff(from, graph(`${remote}#${'b'.repeat(40)}`))
+  t.strictSame(
+    [...diff.nodes.add].map(n => n.id),
+    [id],
+    're-extracted',
+  )
+  t.equal(diff.nodes.delete.size, 0, 'in place')
+  t.notOk(
+    new Diff(from, graph(`${remote}#${'a'.repeat(40)}`)).hasChanges(),
+    'same pin',
+  )
+  t.ok(
+    new Diff(
+      graph(remote),
+      graph(`${remote}#${'a'.repeat(40)}`),
+    ).hasChanges(),
+    'locked to its remote only: may be another commit',
+  )
+})
+
 t.test('hasChanges method', async t => {
   const projectRoot = t.testdir({
     'vlt.json': JSON.stringify({
