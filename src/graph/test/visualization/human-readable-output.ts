@@ -346,6 +346,19 @@ t.test('cycle', async t => {
     ),
     'should print cycle human readable output',
   )
+  t.equal(
+    humanReadableOutput(
+      {
+        edges: [...b.edgesIn],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [b],
+      },
+      {},
+    ),
+    'my-project\n└─┬ a@1.0.0\n  └─┬ b@1.0.0\n    └── a@1.0.0\n',
+    'select a node in a cycle',
+  )
 })
 
 t.test('nameless package', async t => {
@@ -637,4 +650,58 @@ t.test('overridden aliased package', async t => {
       'should use colors for overridden aliased package',
     )
   })
+})
+
+t.test('every path to selected nodes', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...configData,
+    mainManifest: {
+      name: 'repro',
+      version: '1.0.0',
+      dependencies: { 'agent-base': '7.1.2', debug: '4.4.3' },
+    },
+  })
+  const agentBase = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('agent-base', '7.1.2'),
+    { name: 'agent-base', version: '7.1.2' },
+  )
+  const debug = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('debug', '4.4.3'),
+    { name: 'debug', version: '4.4.3' },
+  )
+  if (!agentBase || !debug) throw new Error('failed to place')
+  graph.addEdge(
+    'prod',
+    Spec.parse('debug', '^4.3.4'),
+    agentBase,
+    debug,
+  )
+  const ms = graph.placePackage(
+    debug,
+    'prod',
+    Spec.parse('ms', '^2.1.3'),
+    { name: 'ms', version: '2.1.3' },
+  )
+  if (!ms) throw new Error('failed to place ms')
+  t.equal(
+    humanReadableOutput(
+      {
+        edges: [...ms.edgesIn],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [ms],
+      },
+      {},
+    ),
+    'repro\n├─┬ agent-base@7.1.2\n│ └── debug@4.4.3\n└─┬ debug@4.4.3\n  └── ms@2.1.3\n',
+    'lists both paths to ms',
+  )
 })
