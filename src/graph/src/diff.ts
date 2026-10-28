@@ -12,6 +12,15 @@ import type { Node } from './node.ts'
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 /**
+ * Same id, re-extracted in place (eg a moved git pin): same dir, or
+ * both in its store dir (the new commit may rename the package). The
+ * store dir stays, links into it are redone.
+ */
+const inPlace = (a: Node, b?: Node) =>
+  !!b &&
+  (a.location === b.location || (a.inVltStore() && b.inVltStore()))
+
+/**
  * A Diff object is a representation of a set of changes from one
  * graph to another, typically from the actual graph as it is reified
  * on disk, to an intended ideal graph.
@@ -75,14 +84,18 @@ export class Diff {
     }
 
     for (const [id, node] of this.from.nodes) {
-      if (!this.to.nodes.get(id)?.equals(node)) {
+      if (!inPlace(node, this.to.nodes.get(id))) {
         this.nodes.delete.add(node)
       }
     }
 
+    // re-extracted in place: links into it are redone, bins may differ
+    const relink = new Set<Node>()
     for (const [id, node] of this.to.nodes) {
-      if (!this.from.nodes.get(id)?.equals(node)) {
+      const from = this.from.nodes.get(id)
+      if (!from?.equals(node)) {
         this.nodes.add.add(node)
+        if (inPlace(node, from)) relink.add(node)
         if (!node.optional) {
           this.optionalOnly = false
         }
@@ -93,7 +106,12 @@ export class Diff {
       // the node with this dep, in the from  graph
       const fromNode = this.from.nodes.get(edge.from.id)
       const fromEdge = fromNode?.edgesOut.get(edge.spec.name)
-      if (fromEdge?.to?.id === edge.to?.id) continue
+      if (
+        fromEdge?.to?.id === edge.to?.id &&
+        !(edge.to && relink.has(edge.to))
+      ) {
+        continue
+      }
       if (fromEdge?.to) this.edges.delete.add(fromEdge)
       if (edge.to) {
         this.edges.add.add(edge)
