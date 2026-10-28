@@ -5,8 +5,15 @@ import type {
 } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 
-/** a hosted git ref locked to a commit: the archive url, its response */
-export type GitPin = { resolved: string; response: CacheEntry }
+/**
+ * a hosted git ref locked to a commit: the archive url or a clone pin,
+ * the archive url its response was read from (the cache has it)
+ */
+export type GitPin = {
+  resolved: string
+  archive: string
+  response: CacheEntry
+}
 
 /** what an archive's head is read with */
 export type Streamer = Pick<RegistryClient, 'requestStream'>
@@ -43,7 +50,8 @@ const archivable = (f: Spec) =>
  * the sha in the head of its archive (pax header; a ref moves, so read
  * off the host, and only that far), else `git ls-remote`. The archive
  * at the sha is what gets locked. No sha, or no url that names one:
- * the ref archive, revalidated, with a warning.
+ * the ref archive, revalidated, with a warning. No ref and submodules
+ * (an archive has none): a clone pin, `<remote>#<sha>`.
  *
  * `get` fetches an archive into the cache (`revalidate`: asking the
  * host even for a cached one); `rc` streams the head of one.
@@ -56,27 +64,40 @@ export const gitPin = async (
 ): Promise<GitPin> => {
   const f = spec.final
   if (fullSha.test(String(f.gitCommittish))) {
-    return { resolved: ref, response: await get(ref) }
+    return { resolved: ref, archive: ref, response: await get(ref) }
   }
-  const resolved = archivable(f) && (await pinnedURL(spec, ref, rc))
+  const sha =
+    archivable(f) ? await commitOf(spec, ref, rc) : undefined
+  const resolved = sha && archiveAt(f, sha)
   if (!resolved) {
     const response = await get(ref, true)
     // eslint-disable-next-line no-console
     console.error(`warning: ${spec}: locked to ${ref}, not a commit`)
-    return { resolved: ref, response }
+    return { resolved: ref, archive: ref, response }
   }
-  return { resolved, response: await get(resolved) }
+  const response = await get(resolved)
+  // no ref, submodules (an archive has none): a clone at the commit
+  if (!f.gitCommittish) {
+    const { gitArchiveSubmodules } =
+      await import('@vltpkg/tar/git-archive-commit')
+    if (gitArchiveSubmodules(response.buffer())) {
+      return {
+        resolved: gitClonePin(f, sha),
+        archive: resolved,
+        response,
+      }
+    }
+  }
+  return { resolved, archive: resolved, response }
 }
 
-// the archive url at the ref's commit, if one can be found
-const pinnedURL = async (spec: Spec, ref: string, rc: Streamer) => {
+// the commit the ref's archive was made from, if it can be found
+const commitOf = async (spec: Spec, ref: string, rc: Streamer) => {
   const data = await readHead(rc, ref, archiveHead)
   // lazy, like the tar pool
   const { gitArchiveCommit } =
     await import('@vltpkg/tar/git-archive-commit')
-  const sha =
-    (data && gitArchiveCommit(data)) ?? (await lsRemote(spec))
-  return sha ? archiveAt(spec.final, sha) : undefined
+  return (data && gitArchiveCommit(data)) ?? (await lsRemote(spec))
 }
 
 // the first `bytes` of what a url serves: a 200 read that far, then
@@ -107,6 +128,24 @@ const readHead = async (
     body.on('error', () => {})
     body.on('close', () => resolve(Buffer.concat(chunks)))
   })
+}
+
+// a failed request: the host's answer, if any
+type Failure = {
+  cause?: { code?: string; response?: { statusCode?: number } }
+}
+
+/**
+ * A hosted git dep without a ref whose archive the host won't serve
+ * (any error answer, eg a private repo) or can't be reached: cloned
+ * instead, as before archives were tried.
+ */
+export const cloneInstead = (spec: Spec, er: unknown) => {
+  const c = (er as Failure | undefined)?.cause
+  return (
+    !spec.final.gitCommittish &&
+    (c?.code === 'EREQUEST' || !!c?.response?.statusCode)
+  )
 }
 
 /** a cloned git dep locked to a commit: `<remote>#<sha>`, path kept */

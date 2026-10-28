@@ -155,6 +155,18 @@ t.test('gitPinned', async t => {
     ],
     [git('github:o/r', ''), 'github:o/r', false, 'no ref'],
     [
+      git('github:o/r', ''),
+      'https://codeload.github.com/o/r/legacy.tar.gz/HEAD',
+      false,
+      'no ref, HEAD url',
+    ],
+    [
+      git('github:o/r', ''),
+      `https://codeload.github.com/o/r/legacy.tar.gz/${sha}`,
+      true,
+      'no ref, sha url',
+    ],
+    [
       git('git+https://host/o/r.git', 'semver:^1'),
       'git+https://host/o/r.git',
       false,
