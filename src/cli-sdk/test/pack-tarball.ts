@@ -1,6 +1,8 @@
 import t from 'tap'
+import * as fs from 'node:fs'
 import { resolve } from 'node:path'
 import { readFile } from 'node:fs/promises'
+import { list as tarList } from 'tar'
 import { packTarball } from '../src/pack-tarball.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
@@ -1617,5 +1619,149 @@ t.test('ignore file support', async t => {
         'src/ included',
       )
     },
+  )
+})
+
+const tarEntries = async (data: Buffer): Promise<string[]> => {
+  const entries: string[] = []
+  await new Promise<void>((res, rej) => {
+    tarList({ onentry: e => entries.push(e.path) })
+      .on('end', () => res())
+      .on('error', rej)
+      .end(data)
+  })
+  return entries
+}
+
+t.test('files globs include nested matches', async t => {
+  const dir = t.testdir({
+    'README.md': '# readme',
+    dist: {
+      'top.js': 'x',
+      nested: { 'index.js': 'x', 'a.txt': 'x' },
+      assets: { 'a.css': 'x' },
+    },
+    src: { 'index.js': 'x', deep: { 'x.ts': 'x' } },
+    lib: {
+      'top.js': 'x',
+      a: { 'x.js': 'x' },
+      b: { c: { 'x.js': 'x' } },
+    },
+    a: { 'one.txt': 'x' },
+    b: { two: { 'z.txt': 'x' } },
+    '.hidden': { 'h.js': 'x' },
+    docs: { 'guide.md': 'x' },
+    node_modules: { dep: { 'index.js': 'x' } },
+    '.git': { 'hook.js': 'x' },
+  })
+  const distFiles = [
+    'dist/assets/a.css',
+    'dist/nested/a.txt',
+    'dist/nested/index.js',
+    'dist/top.js',
+  ]
+  // files entries, expected files, dir entries that must not be packed
+  const cases: [string[], string[], string[]][] = [
+    [
+      ['dist/**/*.js'],
+      ['dist/nested/index.js', 'dist/top.js'],
+      ['package/src/', 'package/lib/', 'package/docs/'],
+    ],
+    [
+      ['**/*.js'],
+      [
+        '.hidden/h.js',
+        'dist/nested/index.js',
+        'dist/top.js',
+        'lib/a/x.js',
+        'lib/b/c/x.js',
+        'lib/top.js',
+        'src/index.js',
+      ],
+      ['package/node_modules/', 'package/.git/'],
+    ],
+    [
+      ['lib/*/x.js'],
+      ['lib/a/x.js'],
+      ['package/lib/b/c/', 'package/dist/'],
+    ],
+    [['src/deep/x.ts'], ['src/deep/x.ts'], ['package/lib/']],
+    [
+      ['lib/*/'],
+      ['lib/a/x.js', 'lib/b/c/x.js', 'lib/top.js'],
+      ['package/dist/'],
+    ],
+    [
+      ['dist/nested/'],
+      ['dist/nested/a.txt', 'dist/nested/index.js'],
+      ['package/dist/assets/'],
+    ],
+    [['{a,b}/**'], ['a/one.txt', 'b/two/z.txt'], ['package/dist/']],
+    // leading `./` or `/` and trailing slashes are dropped, like npm does
+    [['./dist/**/*.js'], ['dist/nested/index.js', 'dist/top.js'], []],
+    [['/dist'], distFiles, []],
+    [['./dist/'], distFiles, []],
+    [['./'], [], ['package/dist/']],
+    [['//dist'], [], ['package/dist/']],
+  ]
+  for (const [files, expected, absentDirs] of cases) {
+    const manifest = { name: 'glob-pkg', version: '1.0.0', files }
+    const result = await packTarball(
+      manifest,
+      dir,
+      createMockConfig(dir),
+    )
+    t.strictSame(
+      result.files.sort(),
+      ['README.md', 'package.json', ...expected].sort(),
+      files.join(),
+    )
+    const entries = await tarEntries(result.tarballData)
+    for (const absent of absentDirs) {
+      t.notOk(
+        entries.includes(absent),
+        `${files.join()}: no ${absent} entry`,
+      )
+    }
+  }
+})
+
+t.test('unreadable dir partially matching a files glob', async t => {
+  const { packTarball } = await t.mockImport<
+    typeof import('../src/pack-tarball.ts')
+  >('../src/pack-tarball.ts', {
+    'node:fs': {
+      ...fs,
+      readdirSync: (path: string) => {
+        if (path.endsWith('nested')) {
+          throw Object.assign(new Error('nope'), { code: 'EACCES' })
+        }
+        return fs.readdirSync(path)
+      },
+    },
+  })
+  const dir = t.testdir({
+    dist: { 'top.js': 'x', nested: { 'index.js': 'x' } },
+  })
+  const manifest = {
+    name: 'glob-pkg',
+    version: '1.0.0',
+    files: ['dist/**/*.js'],
+  }
+  const result = await packTarball(
+    manifest,
+    dir,
+    createMockConfig(dir),
+  )
+  t.strictSame(
+    result.files.sort(),
+    ['dist/top.js', 'package.json'],
+    'unreadable dir is skipped, like npm does',
+  )
+  t.notOk(
+    (await tarEntries(result.tarballData)).includes(
+      'package/dist/nested/',
+    ),
+    'no entry for the unreadable dir',
   )
 })
