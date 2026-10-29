@@ -123,10 +123,13 @@ remote repository.
 
 #### Git dependencies
 
-A hosted git dependency with a ref (`github:`, `gitlab:`, `bitbucket:`
-or `gist:`, eg `github:user/repo#main`) is locked to the commit that
-ref points to: `vlt-lock.json` records the host's archive at that
-commit, and its integrity.
+A git dependency is locked to the commit its ref, `#semver:` range or
+default branch points to. For a hosted one with a ref (`github:`,
+`gitlab:`, `bitbucket:` or `gist:`, eg `github:user/repo#main`),
+`vlt-lock.json` records the host's archive at that commit, and its
+integrity. Others (eg no ref, `::path:`, `#semver:`, `git+https://`
+urls) are cloned: the lockfile records `<repo url>#<sha>`, and
+installs fetch that commit.
 
 - `vlt install` keeps the locked commit after the branch moves.
 - `vlt ci` and `--frozen-lockfile` install exactly that commit.
@@ -134,9 +137,6 @@ commit, and its integrity.
 
 To pin a commit in `package.json`, use it as the ref:
 `github:user/repo#<sha>`.
-
-Other git dependencies (no ref, `::path:`, `#semver:`, `git+https://`
-urls) are cloned and not locked to a commit.
 
 ### Tarballs
 

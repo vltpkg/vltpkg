@@ -631,6 +631,39 @@ t.test('git node at another commit than actual', async t => {
   )
 })
 
+t.test('cloned git row at another commit than actual', async t => {
+  const opts = {
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+    projectRoot: t.testdirName,
+  }
+  const remote = 'git+https://host/o/r.git'
+  const id = joinDepIDTuple(['git', remote, 'main'])
+  const at = (v: string) => `${remote}#${v.repeat(40)}`
+  const actual = new Graph(opts)
+  actual.addNode(id, { name: 'r', version: '1.0.0' }).resolved =
+    at('a')
+  const load = (resolved: string) => {
+    const graph = new Graph(opts)
+    loadNodes(
+      graph,
+      { [id]: [0, 'r', null, resolved] } as LockfileData['nodes'],
+      {},
+      actual,
+    )
+    return graph.nodes.get(id)
+  }
+  t.equal(
+    load(at('b'))?.manifest,
+    undefined,
+    'stale manifest not taken',
+  )
+  t.match(
+    load(at('a'))?.manifest,
+    { version: '1.0.0' },
+    'same commit',
+  )
+})
+
 t.test(
   'load nodes with optimization path for large graphs',
   async t => {

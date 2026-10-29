@@ -318,3 +318,87 @@ t.test('cloning to folder with spaces', async t => {
     )
   }
 })
+
+t.test('a commit sha: exactly it', async t => {
+  const dir = resolve(me, 'moving')
+  fs.mkdirSync(dir)
+  const git = async (...cmd: string[]) =>
+    (await spawnGit(cmd, { cwd: dir })).stdout
+  const commit = async (v: string) => {
+    fs.writeFileSync(`${dir}/v`, v)
+    await git('add', 'v')
+    await git('commit', '-m', v)
+    return git('rev-parse', 'HEAD')
+  }
+  await git('init', '-b', 'main')
+  await git('config', 'user.name', 'pacotedev')
+  await git('config', 'user.email', 'i+pacotedev@izs.me')
+  await git('config', 'commit.gpgSign', 'false')
+  const url = `git+${pathToFileURL(dir)}`
+  const a = await commit('a')
+  // cached: main is at a
+  await revs(url)
+  const b = await commit('b')
+  const v = (d: string) => fs.readFileSync(`${d}/v`, 'utf8')
+  for (const [name, sha, opts] of [
+    ['was a tip', a, {}],
+    ['not in the cached refs', b, {}],
+    ['as the spec', a, { spec: Spec.parse(`x@${url}#${a}`) }],
+    // protocol v0 only serves advertised commits: full clone
+    [
+      'protocol v0',
+      a,
+      {
+        env: {
+          ...process.env,
+          GIT_CONFIG_COUNT: '1',
+          GIT_CONFIG_KEY_0: 'protocol.version',
+          GIT_CONFIG_VALUE_0: '0',
+        },
+      },
+    ],
+  ] as const) {
+    const target = resolve(me, `sha-${name.replace(/ /g, '-')}`)
+    t.equal(
+      await clone(
+        url,
+        'spec' in opts ? undefined : sha,
+        target,
+        opts,
+      ),
+      sha,
+      name,
+    )
+    t.equal(v(target), sha === a ? 'a' : 'b', `${name}: checked out`)
+  }
+})
+
+t.test('a commit sha: checkout errors are not retried', async t => {
+  const dir = resolve(me, 'broken-submodule')
+  fs.mkdirSync(dir)
+  const git = async (...cmd: string[]) =>
+    (await spawnGit(cmd, { cwd: dir })).stdout
+  await git('init', '-b', 'main')
+  await git('config', 'user.name', 'pacotedev')
+  await git('config', 'user.email', 'i+pacotedev@izs.me')
+  await git('config', 'commit.gpgSign', 'false')
+  fs.writeFileSync(
+    `${dir}/.gitmodules`,
+    '[submodule "lib"]\n\tpath = lib\n\turl = ./missing.git\n',
+  )
+  await git('add', '.gitmodules')
+  await git(
+    'update-index',
+    '--add',
+    '--cacheinfo',
+    `160000,${'1'.repeat(40)},lib`,
+  )
+  await git('commit', '-m', 'submodule')
+  const sha = await git('rev-parse', 'HEAD')
+  const er = (await clone(
+    `git+${pathToFileURL(dir)}`,
+    sha,
+    resolve(me, 'sha-broken-submodule'),
+  ).catch((e: unknown) => e)) as { cause?: { args?: string[] } }
+  t.ok(er.cause?.args?.includes('submodule'), 'the submodule error')
+})

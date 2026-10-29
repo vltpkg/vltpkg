@@ -48,3 +48,15 @@ export const gitPin = async (
   }
   return { resolved, response: await get(resolved) }
 }
+
+/** a cloned git dep locked to a commit: `<remote>#<sha>`, path kept */
+export const gitClonePin = (
+  { gitRemote, gitSelectorParsed }: Spec,
+  sha: string,
+) =>
+  `${gitRemote}#${sha}` +
+  (gitSelectorParsed?.path ? `::path:${gitSelectorParsed.path}` : '')
+
+/** the commit a cloned git dep's `resolved` is locked to, if any */
+export const gitPinnedCommit = (resolved?: string) =>
+  /#([0-9a-f]{40}|[0-9a-f]{64})(?:::|$)/.exec(resolved ?? '')?.[1]
