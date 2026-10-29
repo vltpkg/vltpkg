@@ -138,6 +138,17 @@ installs fetch that commit.
 To pin a commit in `package.json`, use it as the ref:
 `github:user/repo#<sha>`.
 
+Lockfiles from older vlt versions lock git dependencies to a ref, not
+a commit. `vlt install` re-resolves those entries and locks the commit
+their ref points to now. One it can't resolve (offline, host down, ref
+gone) is kept as it is, with a warning, and tried again on the next
+install. `vlt ci`, `--frozen-lockfile` and `--expect-lockfile` install
+them as they are: once the ref moved, a hosted one can fail its
+integrity check, so run `vlt install` once and commit the lockfile.
+Older vlt versions may install a git dependency at its ref's current
+commit, even from a newer lockfile: after such an install, or
+restoring its `node_modules` (eg from a CI cache), run `vlt ci` once.
+
 ### Tarballs
 
 <Code
