@@ -25,10 +25,10 @@ exports[`test/config/index.ts > TAP > load both configs, layers merge with proje
   'scoped-registries': {},
   registries: { gh: 'https://npm.pkg.github.com/' },
   'git-host-archives': {
-    github: 'https://api.github.com/repos/$1/$2/tarball/$committish',
+    github: 'https://codeload.github.com/$1/$2/legacy.tar.gz/$committish',
     bitbucket: 'https://bitbucket.org/$1/$2/get/$committish.tar.gz',
     gist: 'https://codeload.github.com/gist/$1/tar.gz/$committish',
-    gitlab: 'https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish'
+    gitlab: 'https://gitlab.com/api/v4/projects/$1%2F$2/repository/archive.tar.gz?sha=$committish'
   }
 }
 `

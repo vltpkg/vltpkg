@@ -62,8 +62,8 @@ Spec {
       "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
       "example": "git+ssh://example.com/$1/$2/archive/$3.tar.gz",
       "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-      "github": "https://api.github.com/repos/$1/$2/tarball/$committish",
-      "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+      "github": "https://codeload.github.com/$1/$2/legacy.tar.gz/$committish",
+      "gitlab": "https://gitlab.com/api/v4/projects/$1%2F$2/repository/archive.tar.gz?sha=$committish",
     },
     "git-hosts": Object {
       "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
@@ -144,8 +144,8 @@ Spec {
     "git-host-archives": Object {
       "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
       "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
-      "github": "https://api.github.com/repos/$1/$2/tarball/$committish",
-      "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+      "github": "https://codeload.github.com/$1/$2/legacy.tar.gz/$committish",
+      "gitlab": "https://gitlab.com/api/v4/projects/$1%2F$2/repository/archive.tar.gz?sha=$committish",
     },
     "git-hosts": Object {
       "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",

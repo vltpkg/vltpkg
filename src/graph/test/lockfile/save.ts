@@ -1197,7 +1197,7 @@ t.test('hosted git round trip', async t => {
   b.integrity = 'sha512-deadbeef'
   save({ ...configData, graph })
 
-  const url = 'https://api.github.com/repos/a/b/tarball/main'
+  const url = 'https://codeload.github.com/a/b/legacy.tar.gz/main'
   const nodes = (
     JSON.parse(
       readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
