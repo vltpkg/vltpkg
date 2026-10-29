@@ -16,6 +16,7 @@ import {
 } from './output.ts'
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
+import { notifyUpdate } from './update-notifier.ts'
 
 export type {
   Command,
@@ -132,6 +133,7 @@ const run = async () => {
 
   const command = await loadCommand(vlt.command)
   await outputCommand(command, vlt, { start, vltVersion: version })
+  notifyUpdate(vlt, version)
 }
 
 export default run
