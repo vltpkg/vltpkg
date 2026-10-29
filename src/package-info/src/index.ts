@@ -33,6 +33,8 @@ import {
   integrityHex,
   tarballFormat,
 } from '@vltpkg/types'
+import { gitPin } from './git-pin.ts'
+import type { GitPin } from './git-pin.ts'
 import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
@@ -312,6 +314,8 @@ export class PackageInfoClient {
   #tarPool?: Pool
   options: PackageInfoClientOptions
   #resolutions = new Map<string, Resolution>()
+  // ref archive url -> the pin it got this run
+  #gitPins = new Map<string, Promise<GitPin>>()
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
@@ -553,8 +557,10 @@ export class PackageInfoClient {
     // is what pins it -- `required`, so a registry that serves the
     // alternate unlabelled is rejected rather than trusted.
     const brotli = !!url && tarballFormat(url) === 'brotli'
+    // a locked hosted git archive is fetched as is, never re-resolved
+    const lockedGit = f.type === 'git' && !!f.remoteURL
     const r: Resolution =
-      url && (integrity || brotli) ?
+      url && (integrity || brotli || lockedGit) ?
         {
           resolved: url,
           integrity,
@@ -1603,18 +1609,16 @@ export class PackageInfoClient {
           )
         }
         const s = spec
+        // a hosted git ref: the archive at its commit
+        const pin =
+          f.type === 'git' ?
+            await this.#gitPin(s, remoteURL, options)
+          : undefined
+        const url = pin?.resolved ?? remoteURL
         return await this.#tmpdir(async dir => {
-          const response = await (
-            await this.getRegistryClient()
-          ).request(remoteURL)
-          if (response.statusCode !== 200) {
-            throw this.#resolveError(
-              s,
-              options,
-              `failed to fetch URL: ${registryErrorMessage(response)}`,
-              { response, url: remoteURL },
-            )
-          }
+          const response =
+            pin?.response ??
+            (await this.#fetchURL(s, remoteURL, options))
           const buf = response.buffer()
           // the graph hands this back to extract() as the lockfile
           // hash: the hash the entry is stored under, or none for an
@@ -1625,7 +1629,7 @@ export class PackageInfoClient {
           try {
             await (
               await this.getTarPool()
-            ).unpack(buf, dir, tarballFormat(remoteURL))
+            ).unpack(buf, dir, tarballFormat(url))
           } catch (er) {
             throw this.#resolveError(
               s,
@@ -1636,7 +1640,9 @@ export class PackageInfoClient {
           }
 
           const mani = this.#readExtracted(dir, s, options)
-          if (integrity) mani.dist = { integrity }
+          // the graph locks a git node to dist.tarball
+          if (pin) mani.dist = { tarball: url, integrity }
+          else if (integrity) mani.dist = { integrity }
           return mani
         })
       }
@@ -1956,7 +1962,16 @@ export class PackageInfoClient {
         const { gitRemote, remoteURL, gitSelectorParsed } = f
         if (remoteURL && gitSelectorParsed?.path === undefined) {
           // known git host with a tarball download endpoint
-          const r = { resolved: remoteURL, spec }
+          const { resolved, response } = await this.#gitPin(
+            spec,
+            remoteURL,
+            options,
+          )
+          const r = {
+            resolved,
+            integrity: storedIntegrity(response),
+            spec,
+          }
           this.#resolutions.set(memoKey, r)
           return r
         }
@@ -2004,6 +2019,42 @@ export class PackageInfoClient {
         })
       }
     }
+  }
+
+  async #fetchURL(
+    spec: Spec,
+    url: string,
+    options: PackageInfoClientRequestOptions,
+    useCache?: false,
+  ) {
+    const response = await (
+      await this.getRegistryClient()
+    ).request(url, useCache === false ? { useCache } : {})
+    if (response.statusCode !== 200) {
+      throw this.#resolveError(
+        spec,
+        options,
+        `failed to fetch URL: ${registryErrorMessage(response)}`,
+        { response, url },
+      )
+    }
+    return response
+  }
+
+  // a hosted git ref locked to its commit, once per ref url per run
+  #gitPin(
+    spec: Spec,
+    ref: string,
+    options: PackageInfoClientRequestOptions,
+  ) {
+    let pin = this.#gitPins.get(ref)
+    if (!pin) {
+      pin = gitPin(spec, ref, (url, useCache) =>
+        this.#fetchURL(spec, url, options, useCache),
+      )
+      this.#gitPins.set(ref, pin)
+    }
+    return pin
   }
 
   /**

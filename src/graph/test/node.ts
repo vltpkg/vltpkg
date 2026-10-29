@@ -1063,3 +1063,60 @@ t.test('copyPackageMetadata', async t => {
     'nothing to copy leaves the kind alone',
   )
 })
+
+t.test('git node locked to a commit', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const sha1 = 'a'.repeat(40)
+  const sha2 = 'b'.repeat(40)
+  const at = (sha: string) =>
+    `https://codeload.github.com/a/b/legacy.tar.gz/${sha}`
+  const id = joinDepIDTuple(['git', 'github:a/b', 'main'])
+  const mk = (integrity?: string, resolved?: string) => {
+    const n = new Node(opts, id)
+    if (integrity) n.integrity = integrity as Dist['integrity']
+    n.resolved = resolved
+    return n
+  }
+
+  const pinned = new Node(opts, id, {
+    name: 'b',
+    dist: { tarball: at(sha1) },
+  })
+  pinned.setResolved()
+  t.equal(pinned.resolved, at(sha1), 'takes the pinned archive')
+  for (const [first, second] of [
+    ['github:a/b', 'main::path:x'],
+    ['git+https://github.com/a/b.git', 'main'],
+  ] as const) {
+    const n = new Node(opts, joinDepIDTuple(['git', first, second]), {
+      dist: { tarball: at(sha1) },
+    })
+    n.setResolved()
+    t.not(n.resolved, at(sha1), `no archive for ${first}#${second}`)
+  }
+
+  const a = mk('sha512-a', at(sha1))
+  t.ok(a.equals(mk('sha512-a', at(sha1))), 'same pin')
+  t.ok(a.equals(mk('sha512-a', at('main'))), 'same bytes')
+  t.notOk(a.equals(mk('sha512-b', at(sha2))), 'other integrity')
+  t.notOk(mk('sha512-b', at(sha2)).equals(a), 'both ways')
+  t.notOk(a.equals(mk(undefined, at(sha2))), 'other sha')
+  t.ok(a.equals(mk(undefined, at(sha1))), 'same sha')
+  t.ok(a.equals(mk()), 'read from node_modules')
+  t.ok(a.equals(mk(undefined, at('main'))), 'no sha to compare')
+  t.notOk(
+    a.equals(mk('sha512-b', at('main'))),
+    'other integrity, no sha',
+  )
+
+  const reg = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const r1 = new Node(opts, reg)
+  r1.integrity = 'sha512-a'
+  const r2 = new Node(opts, reg)
+  r2.integrity = 'sha512-b'
+  t.ok(r1.equals(r2), 'registry nodes: by id only')
+})

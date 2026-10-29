@@ -195,6 +195,56 @@ t.test('diff two graphs', async t => {
   t.matchSnapshot(inspect(diff, { colors: false }), 'diff no color')
 })
 
+t.test('moved git pin', async t => {
+  const projectRoot = t.testdir()
+  const id = joinDepIDTuple(['git', 'github:a/b', 'main'])
+  const url = 'https://codeload.github.com/a/b/legacy.tar.gz/'
+  const graph = (integrity: string, sha: string, name = 'b') =>
+    loadObject(
+      { projectRoot, mainManifest: { name: 'x', version: '1.0.0' } },
+      {
+        lockfileVersion: 1,
+        options: {},
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'x'],
+          [id]: [0, name, integrity, url + sha],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'b')]: 'prod github:a/b#main ' + id,
+        } as LockfileEdges,
+      },
+    )
+  const from = graph('sha512-one==', 'a'.repeat(40))
+  const diff = new Diff(from, graph('sha512-two==', 'b'.repeat(40)))
+  t.strictSame(
+    [...diff.nodes.add].map(n => n.id),
+    [id],
+    're-extracted',
+  )
+  t.equal(diff.nodes.delete.size, 0, 'in place, nothing to delete')
+  t.equal(diff.edges.add.size, 1, 'relinked, bins may differ')
+  t.equal(diff.edges.delete.size, 1)
+  t.notOk(
+    new Diff(
+      from,
+      graph('sha512-one==', 'a'.repeat(40)),
+    ).hasChanges(),
+    'same pin',
+  )
+  // the new commit renames the package: same store dir
+  const renamed = new Diff(
+    from,
+    graph('sha512-two==', 'b'.repeat(40), 'c'),
+  )
+  t.strictSame(
+    [...renamed.nodes.add].map(n => n.id),
+    [id],
+    'renamed: re-extracted',
+  )
+  t.equal(renamed.nodes.delete.size, 0, 'renamed: in place')
+  t.equal(renamed.edges.add.size, 1, 'renamed: relinked')
+})
+
 t.test('hasChanges method', async t => {
   const projectRoot = t.testdir({
     'vlt.json': JSON.stringify({

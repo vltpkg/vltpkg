@@ -15,7 +15,14 @@ export const rollback = async (
   const backRoller = new RollbackRemove()
   for (const node of diff.nodes.add) {
     if (!node.inVltStore()) continue
-    const path = scurry.resolve(store, node.id)
+    // re-extracted in place (moved git pin): only the package is new,
+    // and only once its extraction started
+    const inPlace = !!diff.from.nodes.get(node.id)?.inVltStore()
+    if (inPlace && !node.extracted) continue
+    const path =
+      inPlace ?
+        node.resolvedLocation(scurry)
+      : scurry.resolve(store, node.id)
     /* c8 ignore next */
     promises.push(backRoller.rm(path).catch(() => {}))
   }

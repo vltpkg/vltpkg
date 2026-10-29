@@ -1156,10 +1156,20 @@ t.test('resolve', async t => {
       spec: Spec,
     },
   )
+  // no commit in the archive, nor a ref for git ls-remote
+  const warn = t.capture(console, 'error')
   t.matchOnly(await resolve('x@fakey:abbrev-2.0.0.tgz'), {
     resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+    integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
     spec: Spec,
   })
+  t.match(await pi.manifest('y@fakey:abbrev-2.0.0.tgz'), {
+    dist: {
+      tarball: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+    },
+  })
+  t.equal(warn().length, 1, 'pinned once per run')
 })
 
 const tarball = (
