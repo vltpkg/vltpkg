@@ -471,7 +471,14 @@ export class Graph implements GraphLike {
     const sf = getResolutionCacheKey(f, fromNode.location, extra)
     const cached = this.resolutions.get(sf)
     if (cached && !cached.detached) return cached
-    const nbn = this.nodesByName.get(f.name)
+    const name =
+      f.type === 'workspace' ?
+        (this.monorepo?.get(
+          /* c8 ignore next - workspace specs always have a target */
+          f.workspace ?? f.name,
+        )?.name ?? f.name)
+      : f.name
+    const nbn = this.nodesByName.get(name)
     if (!nbn) return undefined
     const sat = (n: Node) =>
       satisfies(

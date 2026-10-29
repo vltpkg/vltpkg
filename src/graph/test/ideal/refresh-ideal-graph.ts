@@ -1002,3 +1002,37 @@ t.test('an options change makes the lockfile stale', async t => {
   const unchanged = await build(false)
   t.equal(unchanged.lockfileStale, false, 'not flagged')
 })
+
+t.test(
+  'removing a dangling importer edge makes the lockfile stale',
+  async t => {
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      mainManifest: { name: 'root' },
+    })
+    graph.addEdge(
+      'prod',
+      Spec.parse('missing', 'workspace:*'),
+      graph.mainImporter,
+    )
+    await refreshIdealGraph({
+      graph,
+      add: new Map() as AddImportersDependenciesMap,
+      remove: Object.assign(
+        new Map([[graph.mainImporter.id, new Set(['missing'])]]),
+        { modifiedDependencies: true },
+      ),
+      packageInfo: {} as PackageInfoClient,
+      scurry: new PathScurry(t.testdirName),
+      remover: new RollbackRemove(),
+    })
+    t.notOk(
+      graph.mainImporter.edgesOut.has('missing'),
+      'dangling edge is removed',
+    )
+    t.ok(
+      graph.lockfileStale,
+      'the lockfile must be saved despite having no installed node to remove',
+    )
+  },
+)
