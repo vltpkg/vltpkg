@@ -2986,7 +2986,13 @@ t.test('hosted git locked with its git remote', async t => {
       ...lock,
       integrity: `sha512-${nope}`,
     }),
-    { cause: { code: 'EINTEGRITY' } },
+    {
+      message: /locked ref/,
+      cause: {
+        code: 'ERESOLVE',
+        cause: { cause: { code: 'EINTEGRITY' } },
+      },
+    },
     'locked integrity still checked',
   )
 })
@@ -3544,6 +3550,39 @@ t.test('cloned git deps locked to a commit', async t => {
     `${url}#${sha2}::path:sub`,
     'resolve by clone, path kept',
   )
+})
+
+t.test('clone cleanup once the clone is gone', async t => {
+  // a failed install's rollback can remove it first
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
+  const fsp = await import('node:fs/promises')
+  const cleanups: Promise<void>[] = []
+  const { PackageInfoClient } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '@vltpkg/git': {
+      ...(await import('@vltpkg/git')),
+      clone: async () => {},
+    },
+    'node:fs/promises': {
+      ...fsp,
+      rm: (...a: Parameters<typeof fsp.rm>) => {
+        const p = fsp.rm(...a)
+        cleanups.push(p)
+        return p
+      },
+    },
+  })
+  const url = `git+${pathToFileURL(dir)}/repo`
+  await new PackageInfoClient(options).extract(
+    `x@${url}#main`,
+    `${dir}/x`,
+    { resolved: `${url}#${'a'.repeat(40)}` },
+  )
+  t.equal(cleanups.length, 1)
+  await t.resolves(Promise.all(cleanups), 'no ENOENT')
 })
 
 t.test('git spec must have gitRemote', async t => {

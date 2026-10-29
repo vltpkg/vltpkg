@@ -178,3 +178,43 @@ export const gitPinResolution = (
   spec.final.gitSelectorParsed?.path && sha ?
     { resolved: gitClonePin(spec.final, sha), spec }
   : { resolved, integrity, spec }
+
+// a full sha anywhere in a url
+const shaIn = /(?<![0-9a-f])(?:[0-9a-f]{40}|[0-9a-f]{64})(?![0-9a-f])/
+
+/**
+ * Why a hosted git archive failed its locked integrity, if it did: the
+ * host re-packed the archive at the locked commit, or the ref an older
+ * lockfile locked moved.
+ */
+export const gitArchiveChanged = (
+  spec: Spec,
+  url: string,
+  er: unknown,
+) => {
+  const f = spec.final
+  if (
+    !f.namedGitHost ||
+    (er as Failure | undefined)?.cause?.code !== 'EINTEGRITY'
+  ) {
+    return
+  }
+  const sha = shaIn.exec(url)?.[0]
+  if (!sha) {
+    return (
+      'git archive at the locked ref no longer matches the lockfile ' +
+      'integrity: the ref may have moved. Run `vlt install` to lock ' +
+      'its current commit.'
+    )
+  }
+  // the url `vlt update` takes the commit from, if other (eg the
+  // redirect target of an older lockfile's url): may be cached too
+  const now = archiveAt(f, sha)
+  const keys = [url, ...(now && now !== url ? [now] : [])]
+  return (
+    'git archive at the locked commit no longer matches the ' +
+    'lockfile integrity: the host may have re-packed it. To lock ' +
+    `the new one, run \`vlt cache delete "${keys.join('" "')}"\`, ` +
+    'then `vlt update`.'
+  )
+}
