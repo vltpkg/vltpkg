@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { Analytics } from '@vercel/analytics/next'
 import { Providers } from '@/providers'
 import { SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
@@ -43,6 +44,7 @@ const RootLayout = ({ children }: LayoutProps<'/'>) => {
             </SidebarInset>
           </div>
         </Providers>
+        <Analytics />
       </body>
     </html>
   )
