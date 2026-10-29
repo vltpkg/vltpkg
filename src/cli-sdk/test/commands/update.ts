@@ -66,34 +66,53 @@ t.test('unknown spec prefix from package.json', async t => {
   )
 })
 
-t.test('update with arguments throws error', async t => {
-  await t.rejects(
-    Command.command({
-      positionals: ['some-package'],
-      values: {},
-      options,
-      get: (_key: string) => undefined,
-    } as unknown as LoadedConfig),
-    {
-      message: 'Arguments are not yet supported for vlt update',
-      cause: { code: 'EUSAGE' },
+t.test('package names and --target', async t => {
+  let seen: unknown
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/update.ts')
+  >('../../src/commands/update.ts', {
+    '@vltpkg/graph': {
+      async update(opts: { target?: string }) {
+        seen = opts.target
+        return { graph: {} }
+      },
     },
-  )
-})
+  })
+  // target: --target / env; config: vlt.json `target`
+  const run = (
+    positionals: string[],
+    target?: string,
+    config?: string,
+  ) =>
+    command({
+      positionals,
+      values: {},
+      options: config ? { target: config } : options,
+      explicit: target === undefined ? {} : { target },
+      get: (k: string) =>
+        k === 'target' ? (target ?? config) : undefined,
+    } as unknown as LoadedConfig)
 
-t.test('update with multiple arguments throws error', async t => {
-  await t.rejects(
-    Command.command({
-      positionals: ['package-a', 'package-b'],
-      values: {},
-      options,
-      get: (_key: string) => undefined,
-    } as unknown as LoadedConfig),
-    {
-      message: 'Arguments are not yet supported for vlt update',
-      cause: { code: 'EUSAGE' },
-    },
-  )
+  await run(['a', '@s/b', 'c.d'])
+  t.equal(seen, '#a, #@s/b, #c.d', 'names compile to a query')
+  await run([], ':root > *')
+  t.equal(seen, ':root > *', '--target as given')
+  await run([])
+  t.equal(seen, undefined, 'none: update all')
+  await run(['a'], '')
+  t.equal(seen, '#a', 'empty --target: names')
+  await run([], undefined, '#b')
+  t.equal(seen, undefined, 'config target: update all')
+  await run(['a'], undefined, '#b')
+  t.equal(seen, '#a', 'config target + names: names')
+  await t.rejects(run(['a'], '#b'), {
+    cause: { code: 'EUSAGE', found: 'a' },
+  })
+  for (const name of ['a@1', '#a', ':root', '../x']) {
+    await t.rejects(run([name]), {
+      cause: { code: 'EUSAGE', found: name },
+    })
+  }
 })
 
 t.test('views.json returns graph toJSON', t => {

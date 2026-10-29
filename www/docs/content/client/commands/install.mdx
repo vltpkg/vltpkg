@@ -138,7 +138,8 @@ fetched, like a private repo.
 
 - `vlt install` keeps the locked commit after the branch moves.
 - `vlt ci` and `--frozen-lockfile` install exactly that commit.
-- `vlt update` moves it to the ref's current commit.
+- `vlt update` moves it to the ref's current commit;
+  [`vlt update <name>`](/client/commands/update) moves only that one.
 
 To pin a commit in `package.json`, use it as the ref:
 `github:user/repo#<sha>`.

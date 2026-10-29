@@ -5,6 +5,7 @@ import { commandUsage } from '../config/usage.ts'
 import { saveAllowSkills } from '../allow-skills.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
+import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
@@ -16,11 +17,27 @@ export const needsNpmRegistry = true
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'update',
-    usage: '',
+    usage: ['[package ...]', '[--target=<query>]'],
     description: `Update dependencies to their latest in-range versions.
                   Discards the lockfile and resolves dependencies from scratch
-                  (with -w: only matching workspaces' dependencies).`,
+                  (with -w: only matching workspaces' dependencies; with
+                  package names or --target: only matching dependencies,
+                  everything else keeps its locked version).`,
+    examples: {
+      'react react-dom': {
+        description: 'Update react and react-dom, at any depth',
+      },
+      '--target=":root > *"': {
+        description:
+          'Update the direct dependencies of the project root',
+      },
+    },
     options: {
+      target: {
+        value: '<query>',
+        description:
+          'DSS query selecting the dependencies to update, in place of package names.',
+      },
       workspace: {
         value: '<path|glob>',
         description:
@@ -79,14 +96,35 @@ export const views = {
   ),
 } as const satisfies Views<InstallResult>
 
-export const command: CommandFn<InstallResult> = async conf => {
-  // Throw error if any arguments are provided
-  if (conf.positionals.length > 0) {
-    throw error('Arguments are not yet supported for vlt update', {
+// a package name, never a spec or query
+const pkgName = /^(?:@[\w.-]+\/)?[\w.-]+$/
+
+/**
+ * package names compile to a `#name` query, `--target` is one. cli/env
+ * only: a `target` in vlt.json config is not a selection
+ */
+const updateTarget = (conf: LoadedConfig): string | undefined => {
+  const names = conf.positionals
+  const target = conf.explicit.target
+  if (target && names.length) {
+    throw error('Use package names or --target, not both', {
       code: 'EUSAGE',
+      found: names.join(' '),
     })
   }
+  for (const name of names) {
+    if (!pkgName.test(name)) {
+      throw error(
+        'vlt update takes package names, use --target for a query',
+        { code: 'EUSAGE', found: name },
+      )
+    }
+  }
+  return target || names.map(n => `#${n}`).join(', ') || undefined
+}
 
+export const command: CommandFn<InstallResult> = async conf => {
+  const target = updateTarget(conf)
   const persist = planSpecConfigPersist(conf)
   /* c8 ignore start */
   const allowScripts =
@@ -97,6 +135,7 @@ export const command: CommandFn<InstallResult> = async conf => {
   const { buildQueue, graph, skills } = await update({
     ...conf.options,
     allowScripts,
+    target,
     allowSkills: conf.get('allow-skills'),
     skillsDirs: conf.get('skills-dir'),
   }).catch((er: unknown) => {
