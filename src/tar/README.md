@@ -49,6 +49,14 @@ Read the tarball from a file on disk, skipping `offset` leading bytes,
 and unpack it synchronously. The offset lets a tarball be extracted
 straight out of a cache entry whose file starts with a header block.
 
+### gitArchiveCommit(tarData)
+
+The commit a `git archive` tarball was made from: the full sha in the
+`comment` of its leading pax global header (40 hex, 64 for a sha256
+repo), or `undefined` (eg an npm tarball, or not a tarball). Takes a
+gzipped or raw tarball Buffer and inflates only its head, so it is
+cheap on any size.
+
 ### `class Pool`
 
 The interface the vlt CLI extracts through. All methods are `async`
