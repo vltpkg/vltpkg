@@ -64,6 +64,20 @@ t.test('fails on missing package.json file', async t => {
   )
 })
 
+t.test('write clears a cached read error', async t => {
+  const dir = t.testdir({})
+  const pj = new PackageJson()
+  t.throws(() => pj.read(dir), {
+    message: 'Could not read package.json file',
+  })
+  pj.write(dir, { name: 'my-project', version: '1.0.0' })
+  t.match(
+    pj.read(dir),
+    { name: 'my-project', version: '1.0.0' },
+    'should read the written manifest instead of the cached error',
+  )
+})
+
 t.test('fails on malformed package.json file', async t => {
   const dir = t.testdir({
     'package.json': '{%',

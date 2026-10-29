@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
+import { PackageJson } from '@vltpkg/package-json'
 
 t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
@@ -43,6 +44,30 @@ t.test('init', async t => {
   t.matchSnapshot(
     readFileSync(resolve(dir, 'my-project', '.npmignore'), 'utf8'),
     'should init a new .npmignore file',
+  )
+})
+
+t.test('init with a shared packageJson', async t => {
+  const dir = t.testdir({
+    'my-project': {},
+  })
+  const cwd = resolve(dir, 'my-project')
+  const packageJson = new PackageJson()
+  // a failed read before init, as the CLI does at startup
+  t.equal(packageJson.maybeRead(cwd), undefined)
+  const logs: unknown[][] = []
+
+  const result = await init({
+    cwd,
+    packageJson,
+    logger: (...a: unknown[]) => logs.push(a),
+  })
+
+  t.strictSame(logs, [], 'should not log that package.json exists')
+  t.equal(
+    packageJson.read(cwd),
+    result.manifest?.data,
+    'shared instance should hold the written manifest',
   )
 })
 

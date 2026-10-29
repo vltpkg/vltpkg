@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { InitFileResults } from '@vltpkg/init'
+import { PackageJson } from '@vltpkg/package-json'
 
 const inited: string[] = []
 const vltJsonData: Record<string, any> = {}
@@ -40,6 +41,7 @@ t.test('test command', async t => {
   installCalled = false
   await command({
     values: {},
+    options: {},
     get: () => undefined,
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
@@ -125,6 +127,7 @@ t.test('test command with empty workspace array', async t => {
     values: {
       workspace: [],
     },
+    options: {},
     get: () => undefined,
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
@@ -139,6 +142,7 @@ t.test('test command with undefined workspace', async t => {
     values: {
       workspace: undefined,
     },
+    options: {},
     get: () => undefined,
   } as unknown as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
@@ -533,4 +537,103 @@ t.test('workspaces declared in pnpm-workspace.yaml', async t => {
       t.strictSame(vltJsonData.workspaces, want)
     })
   }
+})
+
+t.test('passes the shared packageJson to init', async t => {
+  const packageJson = new PackageJson()
+  const received: unknown[] = []
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/init.ts')
+  >('../../src/commands/init.ts', {
+    '@vltpkg/init': {
+      init: async (opts: { packageJson?: PackageJson }) => {
+        received.push(opts.packageJson)
+      },
+    },
+    '@vltpkg/graph': {
+      install: async () => ({ graph: { toJSON: () => ({}) } }),
+    },
+    '@vltpkg/vlt-json': {
+      load: () => undefined,
+      save: () => {},
+    },
+  })
+  const dir = t.testdir({ '.git': {} })
+  t.chdir(dir)
+
+  await command({
+    values: {},
+    options: { projectRoot: dir, packageJson },
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+  await command({
+    values: { workspace: ['packages/a'] },
+    options: { projectRoot: dir, packageJson },
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+
+  t.equal(received.length, 2)
+  t.ok(
+    received.every(p => p === packageJson),
+    'single-dir and workspace paths both pass conf.options.packageJson',
+  )
+})
+
+t.test('empty dir: install does not re-init', async t => {
+  const realInit = await t.mockImport<typeof import('@vltpkg/init')>(
+    '@vltpkg/init',
+    {
+      '@vltpkg/git': {
+        async getUser() {
+          return undefined
+        },
+      },
+    },
+  )
+  const logs: unknown[][] = []
+  let initCalls = 0
+  const initOpts = (opts: Parameters<typeof realInit.init>[0]) => {
+    initCalls++
+    return realInit.init({
+      ...opts,
+      logger: (...a: unknown[]) => logs.push(a),
+    })
+  }
+  const { command } = await t.mockImport<
+    typeof import('../../src/commands/init.ts')
+  >('../../src/commands/init.ts', {
+    '@vltpkg/init': { ...realInit, init: initOpts },
+    '@vltpkg/graph': {
+      // mirrors install's read of the root manifest and its
+      // init fallback, stubbing out everything past that point
+      install: async (options: {
+        projectRoot: string
+        packageJson: PackageJson
+      }) => {
+        try {
+          options.packageJson.read(options.projectRoot)
+        } catch {
+          await initOpts({
+            cwd: options.projectRoot,
+            packageJson: options.packageJson,
+          })
+        }
+        return { graph: { toJSON: () => ({}) } }
+      },
+    },
+  })
+  const dir = t.testdir({})
+  t.chdir(dir)
+  const packageJson = new PackageJson()
+  // the startup read (Monorepo.maybeLoad) caches a missing-file error
+  t.equal(packageJson.maybeRead(dir), undefined)
+
+  await command({
+    values: {},
+    options: { projectRoot: dir, packageJson },
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+
+  t.equal(initCalls, 1, 'init ran once')
+  t.strictSame(logs, [], 'never logged "package.json already exists"')
 })

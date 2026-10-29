@@ -103,7 +103,10 @@ export const install = async (
     mainManifest = options.packageJson.read(options.projectRoot)
   } catch (err) {
     if (asError(err).message === 'Could not read package.json file') {
-      await init({ cwd: options.projectRoot })
+      await init({
+        cwd: options.projectRoot,
+        packageJson: options.packageJson,
+      })
       mainManifest = options.packageJson.read(options.projectRoot, {
         reload: true,
       })

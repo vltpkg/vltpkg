@@ -100,7 +100,9 @@ export const command: CommandFn<
       mkdirSync(cwd, { recursive: true })
 
       // run the initialization script and collect results
-      results.push(await init({ cwd }))
+      results.push(
+        await init({ cwd, packageJson: conf.options.packageJson }),
+      )
 
       // Check if this workspace path is covered by existing workspace patterns
       const isMatched = Object.values(parsedWSConfig).some(
@@ -168,7 +170,10 @@ export const command: CommandFn<
     return results
   }
 
-  const result = await init({ cwd: process.cwd() })
+  const result = await init({
+    cwd: process.cwd(),
+    packageJson: conf.options.packageJson,
+  })
 
   // run install to set up node_modules and vlt-lock.json
   await install({ ...conf.options, allowScripts })

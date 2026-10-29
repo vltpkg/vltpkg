@@ -20,6 +20,11 @@ export type InitOptions = {
   cwd?: string
   author?: string
   logger?: (...a: unknown[]) => void
+  /**
+   * PackageJson instance to read and write through, so callers that
+   * share one (such as the CLI) see the written manifest in its cache.
+   */
+  packageJson?: PackageJson
 }
 
 export type CustomizableInitOptions = {
@@ -115,8 +120,8 @@ export const init = async ({
   cwd = process.cwd(),
   author,
   logger = stderr,
+  packageJson = new PackageJson(),
 }: InitOptions = {}): Promise<InitFileResults> => {
-  const packageJson = new PackageJson()
   const path = resolve(cwd, 'package.json')
   let existingData: NormalizedManifest | undefined
 
