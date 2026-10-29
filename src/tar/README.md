@@ -73,9 +73,12 @@ on the main thread.
 The pool holds no queue and imposes no limit -- callers are expected
 to cap their own concurrency. (`@vltpkg/graph`'s reify does.)
 
-#### `pool.unpack(tarData: Buffer, target: string) => Promise<void>`
+#### `pool.unpack(tarData: Buffer, target: string, format?, path?) => Promise<void>`
 
-Unpack the supplied Buffer of data into the target folder.
+Unpack the supplied Buffer of data into the target folder. With
+`path`, only that directory of the tarball's root dir, as the root (eg
+a package in a `git archive` of its monorepo); throws
+`path not found in tarball` if it has no entries there.
 
 #### `pool.unpackFile(file: string, target: string, offset = 0) => Promise<void>`
 

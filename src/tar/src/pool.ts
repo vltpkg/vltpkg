@@ -48,16 +48,18 @@ const mode = process.env.VLT_TAR_SYNC
 export class Pool {
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
-   * placed. Resolves when the tarball has been extracted.
+   * placed. Resolves when the tarball has been extracted. `path`: only
+   * that dir of the tarball's root dir, see {@link unpack}.
    */
   async unpack(
     tarData: Buffer,
     target: string,
     format?: TarballFormat,
+    path?: string,
   ): Promise<void> {
-    if (mode === '0') return unpack(tarData, target, format)
-    if (mode === '1') return unpackSync(tarData, target, format)
-    return unpackParallel(tarData, target, format)
+    if (mode === '0') return unpack(tarData, target, format, path)
+    if (mode === '1') return unpackSync(tarData, target, format, path)
+    return unpackParallel(tarData, target, format, path)
   }
 
   /**

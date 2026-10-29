@@ -1088,16 +1088,13 @@ t.test('git node locked to a commit', async t => {
   })
   pinned.setResolved()
   t.equal(pinned.resolved, at(sha1), 'takes the pinned archive')
-  for (const [first, second] of [
-    ['github:a/b', 'main::path:x'],
-    ['git+https://github.com/a/b.git', 'main'],
-  ] as const) {
-    const n = new Node(opts, joinDepIDTuple(['git', first, second]), {
-      dist: { tarball: at(sha1) },
-    })
-    n.setResolved()
-    t.not(n.resolved, at(sha1), `no archive for ${first}#${second}`)
-  }
+  const clone = new Node(
+    opts,
+    joinDepIDTuple(['git', 'git+https://github.com/a/b.git', 'main']),
+    { dist: { tarball: at(sha1) } },
+  )
+  clone.setResolved()
+  t.not(clone.resolved, at(sha1), 'no archive for a cloned dep')
 
   const a = mk('sha512-a', at(sha1))
   t.ok(a.equals(mk('sha512-a', at(sha1))), 'same pin')
@@ -1179,3 +1176,52 @@ t.test('cloned git node locked to a commit', async t => {
   )
   t.notOk(mk(`${remote}#${sha1}`).equals(mk()), 'remote only')
 })
+
+t.test(
+  'hosted git node locked to an archive at a commit',
+  async t => {
+    const opts = {
+      ...options,
+      projectRoot: t.testdirName,
+      graph: {} as GraphLike,
+    }
+    const sha = 'a'.repeat(40)
+    const gh = 'https://codeload.github.com'
+    const url = `${gh}/o/r/legacy.tar.gz/${sha}`
+    const mk = (sel: string, tarball?: string) => {
+      const n = new Node(
+        opts,
+        joinDepIDTuple(['git', 'github:o/r', sel]),
+        {
+          name: 'r',
+          ...(tarball && { dist: { tarball } }),
+        },
+      )
+      n.setResolved()
+      return n.resolved
+    }
+    t.equal(mk('main::path:a', `${url}::path:a`), url, 'path')
+    t.equal(mk('semver:^1', url), url, 'semver')
+    t.equal(mk('semver:^1::path:a', `${url}::path:a`), url)
+    t.equal(mk('main::path:a'), 'github:o/r', 'no pin')
+    // another dir's pin, eg a manifest reused for a changed `::path:`
+    t.equal(mk('main::path:b', `${url}::path:a`), 'github:o/r')
+    t.equal(mk('main::path:a', url), 'github:o/r', 'repo root')
+    t.equal(mk('semver:^1', `${url}::path:a`), 'github:o/r')
+    for (const other of [
+      `${gh}/o/x/legacy.tar.gz/${sha}`,
+      `https://example.com/o/r/${sha}`,
+      `${gh}/o/r/legacy.tar.gz/main`,
+    ]) {
+      t.equal(
+        mk('main::path:a', `${other}::path:a`),
+        'github:o/r',
+        other,
+      )
+    }
+    const clone = `git+ssh://git@github.com:o/r.git#${sha}::path:a`
+    t.equal(mk('main::path:a', clone), clone, 'cloned')
+    // the repo root at a ref: the archive of any dir's pin
+    t.equal(mk('main', `${url}::path:a`), url, 'root')
+  },
+)

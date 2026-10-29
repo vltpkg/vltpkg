@@ -194,6 +194,16 @@ for (const sync of ['0', '1', undefined] as const) {
       )
     }
 
+    const sub = makeTar([
+      { path: 'r/sub/package.json', size: 2 },
+      '{}',
+    ])
+    await p.unpack(sub, resolve(d, 'sub'), undefined, 'sub')
+    t.equal(
+      readFileSync(resolve(d, 'sub/package.json'), 'utf8'),
+      '{}',
+    )
+
     // where the work runs is observable: only the all-sync mode has
     // finished writing by the time unpack() hands back its promise.
     const out = resolve(d, 'timing')

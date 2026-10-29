@@ -125,12 +125,16 @@ remote repository.
 
 A git dependency is locked to the commit its ref, `#semver:` range or
 default branch points to. For a hosted one (`github:`, `gitlab:`,
-`bitbucket:` or `gist:`, eg `github:user/repo` or
-`github:user/repo#main`), `vlt-lock.json` records the host's archive
-at that commit, and its integrity. Others (eg `::path:`, `#semver:`,
-`git+https://` urls, or a repo without a ref that has submodules or
-whose archive can't be fetched, like a private one) are cloned: the
-lockfile records `<repo url>#<sha>`, and installs fetch that commit.
+`bitbucket:` or `gist:`, eg `github:user/repo`,
+`github:user/repo#main` or `github:user/repo#main::path:packages/x`),
+`vlt-lock.json` records the host's archive at that commit, and its
+integrity; with `::path:`, installs unpack only that directory.
+Resolving a `#semver:` range still needs git, to list the tags. Others
+(eg `git+https://` urls) are cloned: the lockfile records
+`<repo url>#<sha>`, and installs fetch that commit. So is a hosted one
+without a ref, or with `::path:` or `#semver:`, whose repo has
+submodules (archives leave them out) or whose archive can't be
+fetched, like a private repo.
 
 - `vlt install` keeps the locked commit after the branch moves.
 - `vlt ci` and `--frozen-lockfile` install exactly that commit.
