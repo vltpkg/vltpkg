@@ -4,7 +4,10 @@ import { resolve } from 'node:path'
 import { gunzipSync, gzipSync } from 'node:zlib'
 import t from 'tap'
 import { Pax } from 'tar'
-import { gitArchiveCommit } from '../src/git-archive-commit.ts'
+import {
+  gitArchiveCommit,
+  gitArchiveSubmodules,
+} from '../src/git-archive-commit.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 // `git archive --format=tar.gz HEAD` of a one-file repo, sha1 and sha256
@@ -101,6 +104,44 @@ t.test('no commit', async t => {
   t.equal(
     gitArchiveCommit(Buffer.from([0x1f, 0x8b, 1, 2, 3])),
     undefined,
+    'bad gzip',
+  )
+})
+
+t.test('submodules', async t => {
+  const gm = '[submodule "v"]\n'
+  const file = (path: string) => [{ path, size: gm.length }, gm]
+  const sub = makeTar([
+    new Pax({ comment: sha }, true).encode(),
+    { path: 'x/', type: 'Directory' },
+    ...file('x/.gitmodules'),
+    { path: 'x/v/', type: 'Directory' },
+  ])
+  t.equal(gitArchiveSubmodules(gzipSync(sub)), true, 'gzipped')
+  t.equal(gitArchiveSubmodules(sub), true, 'raw')
+  t.equal(gitArchiveSubmodules(tgz), false, 'none')
+  t.equal(
+    gitArchiveSubmodules(makeTar(file('x/a/.gitmodules'))),
+    false,
+    'not in the root dir',
+  )
+  t.equal(
+    gitArchiveSubmodules(
+      makeTar([
+        {
+          path: 'x/.gitmodules',
+          type: 'SymbolicLink',
+          linkpath: 'm',
+        },
+      ]),
+    ),
+    false,
+    'not a file',
+  )
+  t.equal(gitArchiveSubmodules(Buffer.from('<html>')), false, 'html')
+  t.equal(
+    gitArchiveSubmodules(Buffer.from([0x1f, 0x8b, 1, 2, 3])),
+    false,
     'bad gzip',
   )
 })

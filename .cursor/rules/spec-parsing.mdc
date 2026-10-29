@@ -28,7 +28,8 @@ Parses dependency specifiers into typed `Spec` objects. Used throughout the grap
 - `overridden` — true if spec was swapped by a graph modifier
 - `range` — parsed semver Range (if applicable)
 - `gitRemote`, `gitSelector`, `namedGitHost`, `namedGitHostPath` — git fields
-- `remoteURL` — for remote type
+- `remoteURL` — for remote type; hosted git: archive url (no ref:
+  `HEAD`; none with `path:`/`semver:`)
 - `catalog`, `catalogName` — catalog protocol fields
 
 ## Usage

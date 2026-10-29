@@ -152,8 +152,9 @@ const fooFromAcmeReg = Spec.parse(
   - gitCommittish - the commit sha, branch, or tag
   - namedGitHost - `github`, `gitlab`, `bitbucket`, etc.
   - remoteURL - when using a named git host with an archive url
-    template, and a committish is provided, this is the url to
-    download a tarball archive
+    template, and no `path` or `semver` selector, this is the url to
+    download a tarball archive (no committish: `HEAD`, if the template
+    has `$committish`)
   - semver - the semver range, if provided in the gitSelector
   - range - the parsed semver range, if valid
 - when `type` === `'registry'`:
