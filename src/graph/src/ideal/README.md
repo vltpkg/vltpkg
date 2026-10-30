@@ -35,7 +35,9 @@ const graph = await ideal.build({
 1. Loads starting graph from `vlt-lock.json` (preferred) or
    `node_modules`
 2. Merges `add`/`remove` with importer manifest deltas
-3. Fetches manifests in parallel (breadth-first)
+3. Fetches manifests in parallel (breadth-first), and speculatively
+   prefetches the dependencies of each manifest as it arrives so the
+   next level is already in flight (`VLT_SPECULATE=0` turns that off)
 4. Reuses existing nodes that satisfy specs
 5. Handles peer dependency context isolation
 6. Optionally extracts tarballs during build (early extraction)
