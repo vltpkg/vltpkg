@@ -14,9 +14,9 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 1. Load Actual (if not provided) with `loadManifests: true`
 2. Compute `Diff(actual, ideal)`, copy Actual `buildState` onto kept nodes (`carryBuildState`) — return early if no changes
 3. Prepare `RollbackRemove` for reversibility
-4. **Extract nodes**: `pruneUnsupportedOptional()` first (after lockfile data captured) drops optional adds failing platform/deprecated check + `gc()`, so they're never extracted/linked. Then `addNodes()` → fetch/extract into `.vlt` store (existing targets moved away first). Optional deps use `optionalFail()` to prune subgraphs instead of failing
+4. **Extract nodes**: `pruneUnsupportedOptional()` first (after lockfile data captured) drops optional adds failing platform/deprecated check + `gc()`, so they're never extracted/linked. Then `warmTarPool()` for the nodes the global store lacks, and `addNodes()` → fetch/extract into `.vlt` store (existing targets moved away first). Optional deps use `optionalFail()` to prune subgraphs instead of failing
 5. **Delete edges**: `deleteEdges()` → remove outdated links + bins
-6. Run extraction+deletion via `callLimit(actions, { limit })` where `limit = Math.max(availableParallelism()-1, 1) * 8`
+6. Run extraction+deletion via `callLimit(actions, { limit })` where `limit = Math.max(64, Math.max(availableParallelism()-1, 1) * 8)`; the tar pool's unpack workers queue the unpacks and cap held bytes
 7. **Add edges**: `addEdges()` → create symlinks + bin links (Windows: `@vltpkg/cmd-shim`)
 8. **Hoist**: `internalHoist()` → `node_modules/.vlt/node_modules/<name>` symlinks. Preference: importer deps > registry > highest version > lexicographic DepID
 9. **Build**: `build()` → lifecycle scripts (preinstall/install/postinstall/prepare), chmod bins. Store-linked packages get private copies (`unshare()`) before their scripts run

@@ -133,6 +133,13 @@ export const build = async (
     })
   } finally {
     releaseResolve()
+    // every manifest is in: free the manifest worker threads. the test
+    // doubles of this module answer manifest() only, so look first
+    const { closeManifestPool } =
+      packageInfo as Partial<PackageInfoClient>
+    if (typeof closeManifestPool === 'function') {
+      await closeManifestPool.call(packageInfo)
+    }
   }
   done()
 
