@@ -172,8 +172,13 @@ const removeDefaultItems = (
   return res
 }
 
-export const lockfileData = ({
-  graph,
+/**
+ * The `options` block of a lockfile: every configured value that bears
+ * on how the graph resolves, with the defaults left out. Shared by the
+ * lockfile and by the install state, which records a digest of it so an
+ * install under a changed configuration is never skipped.
+ */
+export const lockfileOptions = ({
   catalog,
   catalogs,
   'git-hosts': gitHosts,
@@ -182,12 +187,15 @@ export const lockfileData = ({
   registry,
   registries,
   'default-registry-alias': defaultRegistryAlias,
-  saveManifests,
-  saveBuildData,
   'scoped-registries': scopeRegistries,
   'jsr-registries': jsrRegistries,
-  throwOnMissingManifest,
-}: SaveOptions): LockfileData => {
+}: Omit<
+  SaveOptions,
+  | 'graph'
+  | 'saveManifests'
+  | 'saveBuildData'
+  | 'throwOnMissingManifest'
+>): LockfileData['options'] => {
   const cleanGitHosts =
     isRecordStringString(gitHosts) ?
       removeDefaultItems(defaultGitHosts, gitHosts)
@@ -215,36 +223,47 @@ export const lockfileData = ({
   const hasItems = (clean: Record<string, unknown> | undefined) =>
     clean && Object.keys(clean).length
   return {
+    ...(hasItems(cleanModifiers) ?
+      { modifiers: cleanModifiers }
+    : {}),
+    ...(hasItems(catalog) ? { catalog } : {}),
+    ...(hasItems(catalogs) ? { catalogs } : {}),
+    ...(hasItems(cleanScopeRegistries) ?
+      { 'scoped-registries': cleanScopeRegistries }
+    : undefined),
+    ...(hasItems(cleanJsrRegistries) ?
+      { 'jsr-registries': cleanJsrRegistries }
+    : undefined),
+    ...(registry !== undefined ? { registry } : undefined),
+    ...((
+      defaultRegistryAlias !== undefined &&
+      defaultRegistryAlias !== defaultRegistryName
+    ) ?
+      { 'default-registry-alias': defaultRegistryAlias }
+    : undefined),
+    ...(hasItems(cleanRegistries) ?
+      { registries: cleanRegistries }
+    : undefined),
+    ...(hasItems(cleanGitHosts) ?
+      { 'git-hosts': cleanGitHosts }
+    : undefined),
+    ...(hasItems(cleanGitHostArchives) ?
+      { 'git-host-archives': cleanGitHostArchives }
+    : undefined),
+  }
+}
+
+export const lockfileData = (options: SaveOptions): LockfileData => {
+  const {
+    graph,
+    registry,
+    saveManifests,
+    saveBuildData,
+    throwOnMissingManifest,
+  } = options
+  return {
     lockfileVersion: LOCKFILE_VERSION,
-    options: {
-      ...(hasItems(cleanModifiers) ?
-        { modifiers: cleanModifiers }
-      : {}),
-      ...(hasItems(catalog) ? { catalog } : {}),
-      ...(hasItems(catalogs) ? { catalogs } : {}),
-      ...(hasItems(cleanScopeRegistries) ?
-        { 'scoped-registries': cleanScopeRegistries }
-      : undefined),
-      ...(hasItems(cleanJsrRegistries) ?
-        { 'jsr-registries': cleanJsrRegistries }
-      : undefined),
-      ...(registry !== undefined ? { registry } : undefined),
-      ...((
-        defaultRegistryAlias !== undefined &&
-        defaultRegistryAlias !== defaultRegistryName
-      ) ?
-        { 'default-registry-alias': defaultRegistryAlias }
-      : undefined),
-      ...(hasItems(cleanRegistries) ?
-        { registries: cleanRegistries }
-      : undefined),
-      ...(hasItems(cleanGitHosts) ?
-        { 'git-hosts': cleanGitHosts }
-      : undefined),
-      ...(hasItems(cleanGitHostArchives) ?
-        { 'git-host-archives': cleanGitHostArchives }
-      : undefined),
-    },
+    options: lockfileOptions(options),
     nodes: formatNodes(
       graph.nodes.values(),
       saveManifests,

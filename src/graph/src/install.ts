@@ -1,6 +1,7 @@
 import { load as actualLoad } from './actual/load.ts'
 import { build as idealBuild } from './ideal/build.ts'
 import { reify } from './reify/index.ts'
+import { checkInstallState } from './install-state.ts'
 import { GraphModifier } from './modifiers.ts'
 import { init } from '@vltpkg/init'
 import { error } from '@vltpkg/error-cause'
@@ -26,7 +27,7 @@ import { lockfile } from './index.ts'
 import type { Graph } from './index.ts'
 import { updatePackageJson } from './reify/update-importers-package-json.ts'
 import { Monorepo } from '@vltpkg/workspaces'
-import type { Diff } from './diff.ts'
+import { Diff } from './diff.ts'
 import { assertSkillsDirs } from './skills/dirs.ts'
 import { assertQuery } from './filter-nodes-by-query.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
@@ -298,6 +299,51 @@ export const install = async (
 
   let result: InstallResult
   try {
+    // nothing asked for, and nothing changed since the last install
+    // finished: the install state says so from a few stats and readdirs,
+    // without loading either graph. the lockfile gives the result its
+    // graph, and an empty diff says what a comparison would have said.
+    // anything off falls through to the full comparison.
+    const adding =
+      !!add &&
+      (add.modifiedDependencies ||
+        [...add.values()].some(deps => deps.size > 0))
+    if (!adding && !options.cleanInstall && !options.lockfileOnly) {
+      const state = checkInstallState({
+        ...options,
+        modifiers,
+        monorepo: fullMonorepo,
+      })
+      if (state) {
+        const graph = loadVirtual({
+          ...options,
+          mainManifest,
+          modifiers,
+          monorepo: fullMonorepo,
+          specCache,
+          lockfileData,
+        })
+        remover.confirm()
+        const standing: InstallResult = {
+          graph,
+          diff: new Diff(graph, graph),
+          ...(state.buildQueue.length ?
+            { buildQueue: state.buildQueue }
+          : {}),
+        }
+        // skills are linked from the graph as they are after any install
+        if (allowSkills) {
+          const { linkSkills } = await import('./skills/index.ts')
+          standing.skills = await linkSkills({
+            ...options,
+            graph,
+            target: allowSkills,
+          })
+        }
+        return standing
+      }
+    }
+
     const remove = Object.assign(new Map<DepID, Set<string>>(), {
       modifiedDependencies: false,
     })
