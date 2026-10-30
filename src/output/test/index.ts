@@ -32,3 +32,38 @@ t.test('output', async t => {
   t.matchSnapshot(requests, 'requests')
   t.matchSnapshot(steps, 'steps')
 })
+
+t.test('logRequest and graphStep feed the tracer', async t => {
+  const events: { ev: string; fields?: Record<string, unknown> }[] =
+    []
+  const marks: string[] = []
+  const { logRequest, graphStep } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '../src/trace.ts': {
+      tracer: {
+        file: 'x',
+        trace: (ev: string, fields?: Record<string, unknown>) =>
+          events.push({ ev, fields }),
+        mark: (name: string) => marks.push(name),
+      },
+    },
+  })
+  logRequest(new URL('https://example.com/a'), 'complete', {
+    statusCode: 200,
+    durationMs: 3,
+  })
+  graphStep('reify')()
+  t.strictSame(events, [
+    {
+      ev: 'request',
+      fields: {
+        statusCode: 200,
+        durationMs: 3,
+        url: 'https://example.com/a',
+        state: 'complete',
+      },
+    },
+  ])
+  t.strictSame(marks, ['reify', 'reify:done'])
+})

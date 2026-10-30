@@ -1,4 +1,5 @@
 import { graphStep } from '@vltpkg/output'
+import { mark } from '@vltpkg/output/trace'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
@@ -210,16 +211,19 @@ const reify_ = async (
   ).concat(deleteEdges(diff, scurry, remover))
 
   // need to wait, so that the nodes exist to link to
+  mark('reify:extract', { jobs: actions.length, limit })
   if (actions.length) await callLimit(actions, { limit })
 
   // create all node_modules symlinks, and link bins to nm/.bin
   const edgeActions = addEdges(diff, scurry, remover)
+  mark('reify:edges', { jobs: edgeActions.length })
   if (edgeActions.length) await callLimit(edgeActions, { limit })
 
   // link bins that deleted edges removed but other deps still declare
   const binActions = relinkBins(diff, scurry, remover)
   if (binActions.length) await callLimit(binActions, { limit })
 
+  mark('reify:hoist')
   await internalHoist(diff.to, options, remover)
 
   // looks up all nodes setting buildState = 'needed'
@@ -233,9 +237,11 @@ const reify_ = async (
   )
 
   // ensure that all added bins are chmod +x
+  mark('reify:chmod')
   await binChmodAll(diff.nodes.add, scurry)
 
   // run install lifecycle scripts and link any binary files
+  mark('reify:scripts')
   await build(diff, packageJson, scurry, allowScriptsNodes)
 
   // set the buildQueue on the result object containing
@@ -255,6 +261,7 @@ const reify_ = async (
     }
   }
   /* c8 ignore stop */
+  mark('reify:lockfile')
   saveHidden(options)
 
   // delete garbage from the store.
@@ -264,6 +271,7 @@ const reify_ = async (
     scurry,
     options.keepNodes,
   )
+  mark('reify:delete', { jobs: rmActions.length })
   if (rmActions.length) await Promise.all(rmActions)
 
   // updates package.json files if anything was added / removed

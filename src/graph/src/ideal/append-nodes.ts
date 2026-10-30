@@ -8,6 +8,7 @@ import {
 } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import { trace } from '@vltpkg/output/trace'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -1068,6 +1069,13 @@ export const appendNodes = async (
   // BFS MAIN LOOP: Process level by level until no more deps
   while (currentLevelDeps.length > 0) {
     const nextLevelDeps: AppendNodeEntry[] = []
+    /* c8 ignore next */
+    const depth = currentLevelDeps[0]?.depth ?? 0
+    trace('build:level', {
+      from: fromNode.id,
+      depth,
+      entries: currentLevelDeps.length,
+    })
 
     // ============================================================
     // PHASE A: PARALLEL FETCH (READ-ONLY)
@@ -1114,6 +1122,8 @@ export const appendNodes = async (
         },
       ),
     )
+
+    trace('build:level:fetched', { from: fromNode.id, depth })
 
     // ============================================================
     // PHASE B: SERIAL MUTATIONS (DETERMINISTIC ORDER)
@@ -1201,6 +1211,12 @@ export const appendNodes = async (
         nextLevelDeps.push({ ...childDep, depth: nextDepth })
       }
     }
+
+    trace('build:level:placed', {
+      from: fromNode.id,
+      depth,
+      next: nextLevelDeps.length,
+    })
 
     // Advance to next BFS level
     currentLevelDeps = nextLevelDeps
