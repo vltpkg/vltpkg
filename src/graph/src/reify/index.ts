@@ -29,6 +29,7 @@ import {
   checkNeededBuild,
 } from './check-needed-build.ts'
 import { deleteNodes } from './delete-nodes.ts'
+import { saveInstallState } from '../install-state.ts'
 import { internalHoist } from './internal-hoist.ts'
 import { pruneUnsupportedOptional } from './optional-fail.ts'
 import { rollback } from './rollback.ts'
@@ -163,6 +164,8 @@ export const reify = async (
       res.buildQueue = pending
     }
 
+    // the next install can see from this that nothing changed
+    saveInstallState({ ...options, buildQueue: res.buildQueue })
     done()
     return res
   }
@@ -315,6 +318,10 @@ const reify_ = async (
       scurry.resolve('node_modules/.vlt/vlt.json'),
     )
   }
+
+  // last, once every input file is final: what this install left behind,
+  // so the next one can tell it has nothing to do
+  saveInstallState({ ...options, buildQueue: res.buildQueue })
 
   // returns the result object
   return res

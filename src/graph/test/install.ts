@@ -3543,3 +3543,131 @@ t.test('allowSkills', async t => {
     )
   })
 })
+
+t.test('a no-op install skips both graphs', async t => {
+  const { INSTALL_STATE_FILE } =
+    await import('../src/install-state.ts')
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'noop',
+      version: '1.0.0',
+    }),
+  })
+  t.chdir(projectRoot)
+  let manifests = 0
+  const packageInfo = {
+    async manifest() {
+      manifests++
+      return null
+    },
+    async extract(spec: Spec) {
+      return { resolved: '', spec }
+    },
+    async warmTarPool() {},
+    async closeTarPool() {},
+  } as unknown as PackageInfoClient
+  const options = {
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo,
+    allowScripts: ':not(*)',
+  } as unknown as InstallOptions
+  const noAdd = () => new Map() as AddImportersDependenciesMap
+  const linked: unknown[] = []
+  const skills = {
+    linked: [],
+    unchanged: [],
+    removed: [],
+    conflicts: [],
+  }
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/skills/index.ts': {
+      linkSkills: async (o: { graph: unknown }) => {
+        linked.push(o.graph)
+        return skills
+      },
+    },
+  })
+
+  const first = await install(options, noAdd())
+  t.ok(first.diff, 'the first install compared the graphs')
+  const stateFile = resolve(projectRoot, INSTALL_STATE_FILE)
+  t.ok(existsSync(stateFile), 'and left its state behind')
+  // skills are linked from the lockfile graph on the shortcut too
+  const withSkills = await install(
+    { ...options, allowSkills: '#foo' },
+    noAdd(),
+  )
+  t.equal(withSkills.diff?.hasChanges(), false, 'took the shortcut')
+  t.equal(withSkills.skills, skills)
+  t.equal(linked[0], withSkills.graph)
+
+  const second = await install(options, noAdd())
+  t.equal(
+    second.diff?.hasChanges(),
+    false,
+    'the second had nothing to compare',
+  )
+  t.equal(
+    second.graph.nodes.size,
+    1,
+    'the graph comes from the lockfile',
+  )
+  t.equal(second.buildQueue, undefined)
+  t.equal(manifests, 0)
+
+  // a pending build is reported again
+  const state = JSON.parse(readFileSync(stateFile, 'utf8')) as {
+    buildQueue: string[]
+  }
+  state.buildQueue = [joinDepIDTuple(['registry', '', 'x@1.0.0'])]
+  writeFileSync(stateFile, JSON.stringify(state))
+  const third = await install(options, noAdd())
+  t.equal(third.diff?.hasChanges(), false)
+  t.strictSame(third.buildQueue, state.buildQueue)
+
+  // an edited package.json ends the shortcut
+  writeFileSync(
+    resolve(projectRoot, 'package.json'),
+    JSON.stringify({ name: 'noop', version: '1.0.1' }),
+  )
+  const fourth = await install(options, noAdd())
+  t.not(
+    fourth.diff?.from,
+    fourth.diff?.to,
+    'compared the graphs again',
+  )
+  // and the state was refreshed by that install
+  const fifth = await install(options, noAdd())
+  t.equal(
+    fifth.diff?.from,
+    fifth.diff?.to,
+    'nothing to compare again',
+  )
+  // an add with entries never takes the shortcut, flagged or not
+  const sixth = await install(
+    options,
+    new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map<string, Dependency>([
+          [
+            'abbrev',
+            asDependency({
+              spec: Spec.parse('abbrev', '2.0.0'),
+              type: 'dev',
+            }),
+          ],
+        ]),
+      ],
+    ]) as AddImportersDependenciesMap,
+  ).catch(() => undefined)
+  t.equal(
+    sixth,
+    undefined,
+    'the add was attempted (and fails: there is no manifest)',
+  )
+})

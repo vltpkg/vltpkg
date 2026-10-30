@@ -46,6 +46,10 @@ const { diff, buildQueue } = await reify({
 7. Saves lockfiles (`vlt-lock.json` + hidden)
 8. Updates `package.json` if `add`/`remove` modified dependencies
 9. Cleans up deleted nodes from store
+10. Writes `node_modules/.vlt/install-state.json`
+    (`install-state.ts`): what this install left behind, so the next
+    `vlt install` with nothing to add can see from a few stats and
+    readdirs that it has nothing to do, and skip both graphs
 
 ## Result
 

@@ -22,6 +22,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 9. **Build**: `build()` → lifecycle scripts (preinstall/install/postinstall/prepare), chmod bins. Store-linked packages get private copies (`unshare()`) before their scripts run
 10. **Lockfiles**: save main `vlt-lock.json` (`saveData()`), hidden `node_modules/.vlt-lock.json` (`saveHidden()`)
 11. **Cleanup**: gc if optional failures, delete removed nodes, update importer `package.json` if `add/remove` changed deps, confirm rollback
+12. **Install state**: `saveInstallState()` (`src/graph/src/install-state.ts`) writes `node_modules/.vlt/install-state.json` last: stamps (size, mtime, inode) of every input file (manifests, `vlt.json`, `pnpm-workspace.yaml`, both lockfiles), a digest of the lockfile options block (`lockfileOptions()` in `lockfile/save.ts`), the store dir names, each importer's links and the build queue. `install()` checks it first (`checkInstallState()`): when it holds and nothing is being added, the install returns the lockfile graph with an empty diff without loading the actual graph or building the ideal one
 
 ## Module Responsibilities
 
