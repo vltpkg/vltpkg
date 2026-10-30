@@ -16,6 +16,7 @@ import {
 } from './output.ts'
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
+import { mark } from '@vltpkg/output/trace'
 
 export type {
   Command,
@@ -130,6 +131,7 @@ const run = async () => {
     await dispatchRegistry(vlt)
   }
 
+  mark('command', { command: vlt.command })
   const command = await loadCommand(vlt.command)
   await outputCommand(command, vlt, { start, vltVersion: version })
 }
