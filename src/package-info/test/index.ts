@@ -1,6 +1,6 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
-import { Pool, unpackToStoreSync } from '@vltpkg/tar'
+import { Pool, storeIndexPath, unpackToStoreSync } from '@vltpkg/tar'
 import type {
   LinkFromStoreOptions,
   StoreIndex,
@@ -39,6 +39,7 @@ import type {
   PackageInfoClientRequestOptions,
 } from '../src/index.ts'
 import { cacheKey } from '@vltpkg/registry-client'
+import { storeRoot } from '@vltpkg/registry-client/store-root'
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import unzipMain from '@vltpkg/cache-unzip/unzip'
 // not exported: what the background revalidation child runs
@@ -864,10 +865,60 @@ t.test('lazy registry and tar accessors reuse instances', async t => {
   const rc1 = await pi.getRegistryClient()
   const rc2 = await pi.getRegistryClient()
   t.equal(rc1, rc2)
+  // closing before the pool exists is a no-op
+  await t.resolves(pi.closeTarPool())
   const tar1 = await pi.getTarPool()
   const tar2 = await pi.getTarPool()
   t.equal(tar1, tar2)
+  // warming for an install too small for the pool starts nothing
+  await t.resolves(pi.warmTarPool([]))
+  // closing the created pool frees its placement worker threads
+  await t.resolves(pi.closeTarPool())
 })
+
+t.test('warmTarPool is best effort and never rejects', async t => {
+  const pi = new PackageInfoClient({ cache: t.testdirName })
+  pi.getTarPool = async () => {
+    throw new Error('no tar pool today')
+  }
+  await t.resolves(pi.warmTarPool([{}, {}]))
+})
+
+t.test(
+  'warmTarPool counts only the nodes the store lacks',
+  async t => {
+    const track = drainer(t)
+    const dir = t.testdir()
+    const hit: Integrity = `sha512-${Buffer.alloc(64, 1).toString('base64')}`
+    const miss: Integrity = `sha512-${Buffer.alloc(64, 2).toString('base64')}`
+    const warmed: number[] = []
+    const fakePool = {
+      warm: async (jobs: number) => void warmed.push(jobs),
+    }
+    const probe = async (opts: Record<string, unknown> = {}) => {
+      const pi = track(new PackageInfoClient({ cache: dir, ...opts }))
+      pi.getTarPool = async () => fakePool as unknown as Pool
+      await pi.warmTarPool([
+        { integrity: hit },
+        { integrity: miss },
+        {},
+        { integrity: hit },
+      ])
+    }
+    // nothing in the store yet: every node is an unpack
+    await probe({ 'store-linker': 'hardlink' })
+    t.strictSame(warmed, [4])
+    // publish the store entry for `hit`: its two nodes are links
+    const entry = pathResolve(storeRoot(dir), integrityHex(hit) ?? '')
+    mkdirSync(entry, { recursive: true })
+    writeFileSync(storeIndexPath(entry), '{}')
+    await probe({ 'store-linker': 'hardlink' })
+    t.strictSame(warmed, [4, 2])
+    // with the store off (the default here), every node is an unpack
+    await probe()
+    t.strictSame(warmed, [4, 2, 4])
+  },
+)
 
 t.test('packument', async t => {
   t.strictSame(await packument('abbrev', options), pakuAbbrev)

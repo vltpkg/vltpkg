@@ -4,13 +4,14 @@ import type {
   LinkFromStoreOptions,
   StoreLinkResult,
 } from './link-tree.ts'
+import { PlacementPool } from './placement-pool.ts'
+import type { UnpackOptions } from './placement-pool.ts'
 import type { StoreIndex } from './store-index.ts'
 import type { TarballFormat } from '@vltpkg/types'
 import {
   unpack,
   unpackFileParallel,
   unpackFileSync,
-  unpackParallel,
   unpackSync,
   unpackToStoreSync,
 } from './unpack.ts'
@@ -33,31 +34,46 @@ const mode = process.env.VLT_TAR_SYNC
 /**
  * Unpacks tarballs into place.
  *
- * Decompression runs on libuv's threadpool, so packages inflate in
- * parallel; the files are then written synchronously on the main
- * thread, which is measurably faster than the async writers (the libuv
- * round trip per file costs more than the IO). `VLT_TAR_SYNC` switches
- * that pairing; see the constant above.
+ * Unpacking -- inflating, parsing and writing a tarball -- runs on a
+ * {@link PlacementPool} of worker threads once an install is large
+ * enough to pay for their boot (see `warm`), so several packages are
+ * unpacked at once and the main thread stays free for the network and
+ * the graph. Linking a global store entry stays on the main thread; see
+ * `placement-worker.ts` for the measurement behind that. Until then, and on a
+ * machine with no spare core, it runs as it did before the pool
+ * existed: decompression on libuv's threadpool, the files written
+ * synchronously on the main thread, which is measurably faster than the
+ * async writers (the libuv round trip per file costs more than the IO).
+ * `VLT_TAR_SYNC` switches that pairing and disables the pool; see the
+ * constant above.
  *
- * There is no queue here. The only limiter is the caller's: reify caps
- * extraction at `Math.max(availableParallelism() - 1, 1) * 8` in flight
- * (`@vltpkg/graph`, `src/reify/index.ts`). A consumer that is not reify
- * is unbounded -- add your own cap. How many inflate at once is capped
- * lower and elsewhere, by `UV_THREADPOOL_SIZE` (4 by default).
+ * The pool queues placements for its workers and caps the compressed
+ * bytes held between download and unpack. The caller still caps how
+ * many extractions it has in flight: reify does, in
+ * `@vltpkg/graph` `src/reify/index.ts`.
  */
 export class Pool {
+  #placement?: PlacementPool
+
+  get #pool(): PlacementPool {
+    this.#placement ??= new PlacementPool()
+    return this.#placement
+  }
+
   /**
    * Provide the tardata to be unpacked, and the location where it's to be
-   * placed. Resolves when the tarball has been extracted.
+   * placed. Resolves when the tarball has been extracted. The buffer
+   * must not be used afterwards: see {@link PlacementPool.unpack}.
    */
   async unpack(
     tarData: Buffer,
     target: string,
     format?: TarballFormat,
+    options?: UnpackOptions,
   ): Promise<void> {
     if (mode === '0') return unpack(tarData, target, format)
     if (mode === '1') return unpackSync(tarData, target, format)
-    return unpackParallel(tarData, target, format)
+    return this.#pool.unpack(tarData, target, format, options)
   }
 
   /**
@@ -94,7 +110,29 @@ export class Pool {
     target: string,
     opts?: LinkFromStoreOptions,
   ): Promise<StoreLinkResult> {
+    // links stay on the main thread: see `placement-worker.ts`
     return linkFromStore(storeEntry, target, opts)
+  }
+
+  /**
+   * Start the unpack workers for an install about to unpack `jobs`
+   * tarballs, so they boot while the first packages are fetched rather
+   * than on the first placement. Never rejects. See
+   * {@link PlacementPool.warm}.
+   */
+  async warm(jobs: number): Promise<void> {
+    if (mode !== undefined) return
+    await this.#pool.warm(jobs)
+  }
+
+  /**
+   * Terminate the placement worker threads, if any were started. The
+   * pool works without this -- idle workers do not keep the process
+   * alive -- but reify calls it when an install's placement is done, to
+   * free the threads promptly.
+   */
+  async close(): Promise<void> {
+    await this.#placement?.close()
   }
 
   /**
