@@ -2,7 +2,7 @@ import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { logRequest } from '@vltpkg/output'
-import { span } from '@vltpkg/output/trace'
+import { span, trace } from '@vltpkg/output/trace'
 import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
@@ -27,6 +27,7 @@ import type {
   BrotliAlternate,
   Integrity,
   Manifest,
+  NormalizedManifest,
   Packument,
 } from '@vltpkg/types'
 import {
@@ -397,6 +398,14 @@ export class PackageInfoClient {
   // `${registry}${name}@${range}` for every spec that chose a version and
   // `${registry}${name}@${version}` for the version itself.
   #resolvedManifests = new Map<string, Manifest>()
+  // manifest() calls in flight, so a spec asked for twice at once (the
+  // speculative prefetch and the build itself) is fetched and picked once
+  #manifestInflight = new Map<
+    string,
+    Promise<Manifest | NormalizedManifest>
+  >()
+  // specs the speculative prefetch has already asked for
+  #speculated = new Set<string>()
   /**
    * The resolve requests in flight against each registry, with when the
    * registry last delivered a record: the grace a lookup gives the stream
@@ -1638,10 +1647,93 @@ export class PackageInfoClient {
   ) {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
+    const key = this.#manifestInflightKey(spec, options)
+    const inflight = key && this.#manifestInflight.get(key)
+    if (inflight) return inflight
     const end = span('manifest', { spec: String(spec) })
-    const mani = await this.#manifest(spec, options)
+    const p = this.#manifest(spec, options)
+    if (key) {
+      this.#manifestInflight.set(key, p)
+      const clear = () => this.#manifestInflight.delete(key)
+      p.then(clear, clear)
+    }
+    const mani = await p
     end()
     return mani
+  }
+
+  // Only a plain registry lookup is shared: one whose answer depends on
+  // nothing but the spec and whether a stale cache entry may be used.
+  #manifestInflightKey(
+    spec: Spec,
+    options: PackageInfoClientRequestOptions,
+  ): string | undefined {
+    const f = spec.final
+    if (f.type !== 'registry' || !f.registry) return undefined
+    for (const k of Object.keys(options)) {
+      if (k !== 'from' && k !== 'backgroundRevalidate')
+        return undefined
+    }
+    const bg = options.backgroundRevalidate ? 'bg' : 'fg'
+    return `${bg} ${f.registry}${f.name}@${f.bareSpec}`
+  }
+
+  /**
+   * Speculative prefetch: fetch the manifests of `manifest`'s
+   * dependencies now, and theirs in turn, so they are in flight (or
+   * cached) before the ideal graph build asks for them. The build walks
+   * the graph one level at a time and waits for the slowest manifest of a
+   * level before it asks for anything in the next, so without this the
+   * network sits idle at every level barrier.
+   *
+   * Only plain registry ranges are followed; protocols, aliases and
+   * workspace specs are the build's own to resolve. `needed` can rule a
+   * spec out, for one the graph already satisfies. Failures are
+   * swallowed; the build asks again and reports its own.
+   *
+   * A server-side resolve stream, when one is in flight, does not turn
+   * this off: each lookup goes through `manifest()`, which gives the
+   * stream its grace and then races it against a packument fetch, the
+   * same hedge the build's own lookups get. The stream is not yet fast
+   * enough everywhere to be trusted on its own.
+   *
+   * `VLT_SPECULATE=0` turns it off, a field kill switch.
+   */
+  speculate(
+    manifest: Manifest | NormalizedManifest,
+    options: { from?: string; needed?: (spec: Spec) => boolean } = {},
+  ): void {
+    if (process.env.VLT_SPECULATE === '0') return
+    for (const field of [
+      'dependencies',
+      'optionalDependencies',
+    ] as const) {
+      const deps = manifest[field]
+      if (!deps) continue
+      for (const [name, range] of Object.entries(deps)) {
+        if (typeof range !== 'string' || range.includes(':')) continue
+        let spec: Spec
+        try {
+          spec = Spec.parse(name, range, this.options)
+        } catch {
+          continue
+        }
+        const f = spec.final
+        /* c8 ignore next - a registry spec always names its registry */
+        if (f.type !== 'registry' || !f.registry) continue
+        const key = `${f.registry}${f.name}@${f.bareSpec}`
+        if (this.#speculated.has(key)) continue
+        this.#speculated.add(key)
+        if (options.needed && !options.needed(spec)) continue
+        trace('manifest:speculate', { spec: String(spec) })
+        this.#inBackground(
+          this.manifest(spec, {
+            from: options.from,
+            backgroundRevalidate: true,
+          }).then(m => this.speculate(m, options)),
+        )
+      }
+    }
   }
 
   async #manifest(

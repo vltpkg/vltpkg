@@ -86,6 +86,7 @@ type PeerContext = Map<string, PeerContextEntry> & { index?: number }
 ## Performance
 
 - Level parallelism for manifest fetching
+- Speculative prefetch: when a manifest arrives in Phase A, `packageInfo.speculate()` asks for the manifests of its `dependencies` and `optionalDependencies` (plain registry ranges only, skipping any the graph already satisfies, recursively, each spec once, deduped against the build's own lookups by the in-flight memo in `manifest()`), so the next level's manifests are already in flight when this level's barrier lifts. It races the server-side resolve stream the same way the build's lookups do. `VLT_SPECULATE=0` turns it off.
 - Read-only fetch phase prevents timing-based non-determinism
 - `seen` Set prevents cycles and duplicate work
 - Early extraction for new nodes during graph building (skip peer/optional deps)

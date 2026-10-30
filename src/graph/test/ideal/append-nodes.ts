@@ -6059,3 +6059,74 @@ t.test(
     )
   },
 )
+
+t.test('speculates on the dependencies of each manifest', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'root', version: '1.0.0' },
+  })
+  const speculated: { name: string; needed: boolean[] }[] = []
+  const manifests: Record<string, Manifest> = {
+    foo: {
+      name: 'foo',
+      version: '1.0.0',
+      dependencies: { bar: '^1.0.0', baz: '^1.0.0', qux: '^2.0.0' },
+    },
+    bar: { name: 'bar', version: '1.0.0' },
+    baz: { name: 'baz', version: '1.0.0' },
+    qux: { name: 'qux', version: '1.0.0' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return manifests[spec.name] ?? null
+    },
+    speculate(
+      manifest: Manifest,
+      options: { needed?: (spec: Spec) => boolean },
+    ) {
+      const deps = Object.entries(manifest.dependencies ?? {})
+      speculated.push({
+        name: manifest.name ?? '',
+        needed: deps.map(
+          ([name, range]) =>
+            options.needed?.(Spec.parse(name, range, configData)) ??
+            true,
+        ),
+      })
+    },
+  } as unknown as PackageInfoClient
+  // bar is already in the graph: not needed. baz is, and so is qux,
+  // whose only copy in the graph does not satisfy foo's range
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('bar', '^1.0.0', configData),
+    asNormalizedManifest(manifests.bar ?? {}),
+  )
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('qux', '^1.0.0', configData),
+    asNormalizedManifest(manifests.qux ?? {}),
+  )
+  const fooDep = asDependency({
+    spec: Spec.parse('foo', '^1.0.0', configData),
+    type: 'prod',
+  })
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [fooDep],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set<DepID>(),
+    new Map([['foo', fooDep]]),
+  )
+  t.strictSame(speculated, [
+    { name: 'foo', needed: [false, true, true] },
+    { name: 'baz', needed: [] },
+    { name: 'qux', needed: [] },
+  ])
+})
