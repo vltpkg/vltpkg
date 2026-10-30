@@ -465,3 +465,36 @@ t.test(
     )
   },
 )
+
+t.test(
+  'frees the manifest workers once the graph is built',
+  async t => {
+    let closed = 0
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { foo: '^1.0.0' },
+      }),
+    })
+    await build({
+      ...specOptions,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo: {
+        manifest: (spec: Spec) => packageInfo.manifest(spec),
+        async closeManifestPool() {
+          closed++
+        },
+      } as unknown as PackageInfoClient,
+      projectRoot,
+      add: new Map([
+        [joinDepIDTuple(['file', '.']), new Map()],
+      ]) as AddImportersDependenciesMap,
+      remove: new Map() as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+    t.equal(closed, 1, 'closed once the manifests were in')
+  },
+)

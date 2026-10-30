@@ -1,4 +1,10 @@
+// these tests watch what one client does with its cache and its
+// registry; manifest worker threads would do that work in other clients.
+// the pool has its own tests (manifest-pool.ts, manifest-worker.ts)
+process.env.VLT_MANIFEST_THREADS = '0'
+
 import { spawn as spawnGit } from '@vltpkg/git'
+import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { Pool, storeIndexPath, unpackToStoreSync } from '@vltpkg/tar'
 import type {
@@ -5970,4 +5976,163 @@ t.test('prefetchResolve', async t => {
       t.equal(pi.resolvedManifestCount, 0)
     },
   )
+})
+
+t.test('manifest worker pool', async t => {
+  type Job = {
+    spec: string
+    from?: string
+    backgroundRevalidate?: boolean
+  }
+  const made: Record<string, unknown>[] = []
+  const jobs: Job[] = []
+  let closed = 0
+  let answer: (
+    spec: string,
+  ) => Promise<{ manifest: Manifest; vlt: boolean }>
+  let enabled = true
+  class StubPool {
+    constructor(options: Record<string, unknown>) {
+      made.push(options)
+    }
+    get enabled() {
+      return enabled
+    }
+    manifest(spec: Spec, o: Omit<Job, 'spec'> = {}) {
+      jobs.push({ spec: String(spec), ...o })
+      return answer(String(spec))
+    }
+    async close() {
+      closed++
+    }
+  }
+  let threads = 1
+  const { PackageInfoClient: Pooled } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '../src/manifest-pool.ts': {
+      ManifestPool: StubPool,
+      manifestThreads: () => threads,
+      EWORKERLOST: 'EWORKERLOST',
+    },
+  })
+  const track = drainer(t)
+  const dir = t.testdir()
+  const fresh = (extra: Record<string, unknown> = {}) =>
+    track(
+      new Pooled({
+        registry: defaultRegistry,
+        cache: dir,
+        'fetch-retries': 2,
+        // never crosses to a worker
+        packageJson: new PackageJson(),
+        ...extra,
+      }),
+    )
+
+  t.test('a plain lookup is answered by a worker', async t => {
+    jobs.length = 0
+    made.length = 0
+    answer = async spec => ({
+      manifest: {
+        name: 'abbrev',
+        version: '9.9.9',
+        description: spec,
+      },
+      vlt: spec.startsWith('vlt'),
+    })
+    const pi = fresh()
+    const mani = (await pi.manifest('abbrev@^2.0.0', {
+      backgroundRevalidate: true,
+    })) as Manifest
+    t.equal(mani.version, '9.9.9', 'the worker answered')
+    t.strictSame(jobs, [
+      {
+        spec: 'abbrev@^2.0.0',
+        from: process.cwd(),
+        backgroundRevalidate: true,
+      },
+    ])
+    t.equal(made.length, 1, 'one pool')
+    t.strictSame(
+      made[0],
+      { registry: defaultRegistry, cache: dir, 'fetch-retries': 2 },
+      'built from the plain options only',
+    )
+    t.equal(
+      pi.isVltPackument(Spec.parse('abbrev@^2.0.0', pi.options)),
+      false,
+    )
+    // a vlt packument is remembered for the digest the tarball needs
+    await pi.manifest('vltpkg@^1.0.0')
+    t.equal(
+      pi.isVltPackument(Spec.parse('vltpkg@^1.0.0', pi.options)),
+      true,
+    )
+    // the pool is built once and closed with the client
+    await pi.manifest('abbrev@^2.0.0')
+    t.equal(made.length, 1)
+    await pi.closeManifestPool()
+    t.equal(closed, 1)
+  })
+
+  t.test('a worker failure is answered on this thread', async t => {
+    jobs.length = 0
+    answer = async () => {
+      const er: NodeJS.ErrnoException = new Error('worker gone')
+      er.code = 'EWORKERLOST'
+      throw er
+    }
+    const pi = fresh()
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.equal(
+      mani.version,
+      '2.0.0',
+      'resolved against the registry here',
+    )
+    t.equal(jobs.length, 1, 'the worker was asked first')
+    // so is any other error the worker reports
+    answer = async () => {
+      throw new Error('whatever')
+    }
+    const again = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.equal(again.version, '2.0.0')
+    await t.rejects(
+      pi.manifest('definitely-not-a-package@1.0.0'),
+      /Could not resolve|404/,
+      'and a real failure is still this thread’s error',
+    )
+  })
+
+  t.test(
+    'selection options and full lookups stay on this thread',
+    async t => {
+      jobs.length = 0
+      const pi = fresh()
+      await pi.manifest('abbrev@^2.0.0', { before: new Date() })
+      await pi.manifest('abbrev@^2.0.0', { full: true })
+      t.strictSame(jobs, [], 'no worker involved')
+    },
+  )
+
+  t.test('no threads, no pool', async t => {
+    threads = 0
+    made.length = 0
+    jobs.length = 0
+    const pi = fresh()
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    t.equal(mani.version, '2.0.0')
+    t.strictSame(made, [], 'never built')
+    await pi.closeManifestPool()
+    threads = 1
+  })
+
+  t.test('a pool that lost every worker is not asked', async t => {
+    enabled = false
+    jobs.length = 0
+    const pi = fresh()
+    await pi.manifest('abbrev@^2.0.0')
+    t.strictSame(jobs, [])
+    enabled = true
+  })
 })

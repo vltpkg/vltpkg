@@ -62,3 +62,27 @@ A store link logs its request as `store`, a copy from the store as
 if the index has it) and `bindingGyp`, so reify need not read them
 back from disk. With `NODE_DEBUG=vlt`, linked / copied / missed counts
 and the store hit rate are printed at exit.
+
+## Manifest workers
+
+Against a registry that serves full packuments, resolving a manifest
+is mostly main-thread CPU: a cold install of a mid-sized project
+parses about 100MB of packument JSON, which measured 3.5s of a 5.5s
+graph build on two cores, during which no response is read and no node
+is placed. `manifest()` therefore hands plain registry lookups to a
+`ManifestPool` (`src/manifest-pool.ts`, `src/manifest-worker.ts`):
+worker threads that each run their own `PackageInfoClient` over the
+same disk caches. A worker fetches, inflates, parses and picks, and
+posts back only the manifest. Specs route to a worker by the hash of
+their name, so a packument is fetched once, and jobs queue while a
+worker boots.
+
+The main client still answers first from the resolve stream and the
+manifest disk cache, keeps racing a server-side resolve stream the way
+it did, and resolves on its own thread anything a worker cannot answer
+(a lookup with selection options, a `full` packument, a worker that
+died), so every error reported is the usual one.
+
+- `VLT_MANIFEST_THREADS=<n>`: worker count; `0` resolves everything on
+  the main thread. Default: three, or one per core less the main
+  thread's when there are fewer.

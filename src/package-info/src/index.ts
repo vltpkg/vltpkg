@@ -36,12 +36,18 @@ import {
   tarballFormat,
 } from '@vltpkg/types'
 import { fetchResolve } from './resolve-batch.ts'
+import {
+  EWORKERLOST,
+  ManifestPool,
+  manifestThreads,
+} from './manifest-pool.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'node:crypto'
 import { lstatSync } from 'node:fs'
+import { isMainThread } from 'node:worker_threads'
 import {
   mkdir,
   readFile,
@@ -197,6 +203,32 @@ const graceOver = Symbol('graceOver')
 
 // request options that change which manifest is picked, or how; a batch
 // entry never went through pickManifest under them, so they bypass it
+/** The client options a manifest worker's client is built from. */
+const WORKER_OPTION_KEYS = [
+  'projectRoot',
+  'cache',
+  'storeRoot',
+  'identity',
+  'registry',
+  'registries',
+  'scoped-registries',
+  'jsr-registries',
+  'git-hosts',
+  'git-host-archives',
+  'catalog',
+  'catalogs',
+  'default-registry-alias',
+  'fetch-retries',
+  'fetch-retry-factor',
+  'fetch-retry-mintimeout',
+  'fetch-retry-maxtimeout',
+  'stale-while-revalidate-factor',
+  'brotli-tarballs',
+  'store-linker',
+  'workspace',
+  'workspace-group',
+] as const satisfies readonly (keyof PackageInfoClientOptions)[]
+
 const SELECTION_OPTIONS = [
   'before',
   'os',
@@ -320,6 +352,9 @@ export class PackageInfoClient {
   #trustedIntegrities = new Map<string, Integrity>()
   // `${registry}${name}` of every packument served as a vlt packument type
   #vltPackuments = new Set<string>()
+  // the worker threads that fetch, parse and pick manifests; undefined
+  // until the first lookup needs one, null when there are to be none
+  #manifestPool?: ManifestPool | null
   #manifestCacheMinAge = Date.now() - manifestCacheMaxAge
   #cachePath: string
   #storeRoot: string
@@ -422,11 +457,63 @@ export class PackageInfoClient {
     while (this.#background.size) {
       await Promise.all(this.#background)
     }
+    await this.closeManifestPool()
     if (this.#registryClientPromise) {
       await (await this.#registryClientPromise).drain()
     }
     /* c8 ignore next - work started while the cache flushed */
     if (this.#background.size) await this.drain()
+  }
+
+  /**
+   * Whether the manifests of `spec`'s package came from a vlt packument,
+   * so a `.tar.br` it resolves to requires the registry's digest.
+   */
+  isVltPackument(spec: Spec): boolean {
+    const f = spec.final
+    return this.#vltPackuments.has(`${f.registry}${f.name}`)
+  }
+
+  /**
+   * Terminate the manifest worker threads, if any were started. The
+   * ideal graph build calls this once it has every manifest; idle
+   * workers never keep the process alive, so this only frees them early.
+   */
+  async closeManifestPool(): Promise<void> {
+    await this.#manifestPool?.close()
+  }
+
+  // The pool, started on first use when there are threads to run it on
+  // and not closed or lost since; undefined otherwise, which means this
+  // thread resolves the manifest itself.
+  #pool(): ManifestPool | undefined {
+    if (this.#manifestPool === undefined) {
+      // a worker's own client resolves on its thread: no pools of pools
+      /* c8 ignore next - the tests run on the main thread */
+      const size = isMainThread ? manifestThreads() : 0
+      this.#manifestPool =
+        size > 0 ?
+          new ManifestPool(this.#workerOptions(), size)
+        : null
+    }
+    return this.#manifestPool?.enabled ?
+        this.#manifestPool
+      : undefined
+  }
+
+  // The options a worker's client is built with: the configuration that
+  // bears on resolution and caching, and nothing that cannot cross a
+  // thread boundary (a PackageJson, a Monorepo, an AbortSignal).
+  #workerOptions(): PackageInfoClientOptions {
+    const o = this.options
+    const picked: PackageInfoClientOptions = {}
+    for (const key of WORKER_OPTION_KEYS) {
+      const value = o[key]
+      if (value !== undefined) {
+        ;(picked as Record<string, unknown>)[key] = value
+      }
+    }
+    return picked
   }
 
   async getRegistryClient() {
@@ -503,9 +590,8 @@ export class PackageInfoClient {
    * of on the critical path of the first unpack. Only the nodes the
    * global store does not already hold count: a store hit is linked on
    * the main thread, so a warm install of all hits starts no worker.
-   * Best effort and never rejects: if the pool cannot start, unpacking
-   * just runs inline, and a real failure resurfaces at the first
-   * extract.
+   * Best effort and never rejects: if the pool cannot start, unpacking just runs inline,
+   * and a real failure resurfaces at the first extract.
    */
   async warmTarPool(
     nodes: Iterable<{ integrity?: Integrity }>,
@@ -1550,6 +1636,8 @@ export class PackageInfoClient {
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ) {
+    if (typeof spec === 'string')
+      spec = Spec.parse(spec, this.options)
     const end = span('manifest', { spec: String(spec) })
     const mani = await this.#manifest(spec, options)
     end()
@@ -1557,12 +1645,10 @@ export class PackageInfoClient {
   }
 
   async #manifest(
-    spec: Spec | string,
+    spec: Spec,
     options: PackageInfoClientRequestOptions,
   ) {
     const { from = this.#projectRoot } = options
-    if (typeof spec === 'string')
-      spec = Spec.parse(spec, this.options)
     const f = spec.final
 
     switch (f.type) {
@@ -1618,6 +1704,30 @@ export class PackageInfoClient {
         }
 
         const fromPackument = async (): Promise<Manifest> => {
+          // a plain lookup goes to a worker thread, which fetches,
+          // parses and picks off this thread. its failure, whatever it
+          // was, is answered here instead, so the error reported is the
+          // one this thread would have raised
+          const pool =
+            selecting || options.full ? undefined : this.#pool()
+          if (pool) {
+            try {
+              const { manifest, vlt } = await pool.manifest(spec, {
+                from,
+                backgroundRevalidate: options.backgroundRevalidate,
+              })
+              if (vlt)
+                this.#vltPackuments.add(`${f.registry}${f.name}`)
+              return manifest as Manifest
+            } catch (er) {
+              debug(
+                'manifest worker: %s; resolving here',
+                (er as NodeJS.ErrnoException).code === EWORKERLOST ?
+                  (er as Error).message
+                : String(er),
+              )
+            }
+          }
           const mani = pickManifest(
             await this.#packument(f, options, this.#stable(f)),
             spec,
