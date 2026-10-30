@@ -17,10 +17,22 @@ import type { ManifestJob } from '../../src/manifest-worker.ts'
 const port = parentPort
 if (port) {
   if (process.env.STUB_WORKER_BOOT === 'exit') process.exit(1)
+  // a request event, as a real worker's client forwards them
+  port.postMessage({
+    request: {
+      url: 'https://registry.example.com/stub',
+      state: 'start',
+    },
+  })
   const { options } = workerData as {
     options: Record<string, unknown>
   }
-  port.on('message', (job: ManifestJob) => {
+  port.on('message', (job: ManifestJob | { drain: true }) => {
+    // asked to drain: exit on its own, unless told to hang there too
+    if ('drain' in job) {
+      if (process.env.STUB_WORKER_DRAIN !== 'hang') port.close()
+      return
+    }
     const name = job.spec.replace(/@.*$/, '')
     switch (name) {
       case 'hang':
@@ -54,5 +66,10 @@ if (port) {
         })
     }
   })
-  port.postMessage({ ready: true })
+  // slow: report ready only after a while, so a test can catch the boot
+  if (process.env.STUB_WORKER_BOOT === 'slow') {
+    setTimeout(() => port.postMessage({ ready: true }), 500)
+  } else {
+    port.postMessage({ ready: true })
+  }
 }

@@ -2,8 +2,8 @@ import { availableParallelism } from 'node:os'
 import { Worker } from 'node:worker_threads'
 import type { Spec } from '@vltpkg/spec'
 import type { Manifest, NormalizedManifest } from '@vltpkg/types'
+import { emitter } from '@vltpkg/output'
 import { lane, trace } from '@vltpkg/output/trace'
-import { __CODE_SPLIT_SCRIPT_NAME } from './manifest-worker.ts'
 import type {
   ManifestJob,
   ManifestReply,
@@ -32,6 +32,12 @@ export const manifestThreads = (): number => {
 /** The code of the error a lookup gets when its worker is gone. */
 export const EWORKERLOST = 'EWORKERLOST'
 
+/**
+ * How long a worker gets, once the pool closes, to finish its client's
+ * cache writes and exit on its own before it is terminated.
+ */
+export const DRAIN_TIMEOUT_MS = 10_000
+
 export type ManifestAnswer = {
   manifest: Manifest | NormalizedManifest
   /** the manifest came from a vlt packument */
@@ -49,6 +55,8 @@ type Slot = {
   ready: boolean
   /** its worker died: nothing routes here any more */
   dead: boolean
+  /** its worker is being started: jobs queue for it */
+  spawning: boolean
   queue: ManifestJob[]
   busy: number
 }
@@ -85,17 +93,22 @@ export class ManifestPool {
   readonly #slots: Slot[]
   readonly #pending = new Map<number, Pending>()
   #seq = 0
+  #drainTimeoutMs: number
+  #scriptName?: Promise<string>
   #alive: number
   #closed = false
 
   constructor(
     options: ManifestWorkerData['options'],
     size = manifestThreads(),
+    drainTimeoutMs = DRAIN_TIMEOUT_MS,
   ) {
+    this.#drainTimeoutMs = drainTimeoutMs
     this.#data = { options }
     this.#slots = Array.from({ length: size }, () => ({
       ready: false,
       dead: false,
+      spawning: false,
       queue: [],
       busy: 0,
     }))
@@ -133,7 +146,7 @@ export class ManifestPool {
       /* c8 ignore next - the hash is always in range */
       if (!slot) return reject(lost('no worker slot'))
       if (slot.dead) return reject(lost('manifest worker gone'))
-      if (!slot.worker) this.#spawn(slotIndex, slot)
+      if (!slot.worker && !slot.spawning) this.#spawn(slotIndex, slot)
       const id = this.#seq++
       this.#pending.set(id, { slot: slotIndex, resolve, reject })
       const job: ManifestJob = {
@@ -150,9 +163,40 @@ export class ManifestPool {
 
   // only ever for a slot without a worker, while the pool is enabled; a
   // slot whose worker died is never asked again (see #onLost)
+  // The worker script's path, loaded on first spawn. A dynamic import, not
+  // a static one: the worker imports the client, which imports this
+  // pool, and a static import back to the worker would make that a cycle
+  // the bundler can only resolve by moving the worker's own module into
+  // a shared chunk, leaving the worker file without its script name.
+  #script(): Promise<string> {
+    this.#scriptName ??= import('./manifest-worker.ts').then(
+      m => m.__CODE_SPLIT_SCRIPT_NAME,
+    )
+    return this.#scriptName
+  }
+
   #spawn(index: number, slot: Slot): void {
+    slot.spawning = true
+    void this.#script().then(
+      script => {
+        slot.spawning = false
+        // closed while the script loaded: close() already rejected the
+        // jobs queued here
+        if (this.#closed) return
+        this.#start(index, slot, script)
+      },
+      /* c8 ignore start - a module of this package failing to load */
+      (er: unknown) => {
+        slot.spawning = false
+        this.#onLost(index, slot, er as Error, true)
+      },
+      /* c8 ignore stop */
+    )
+  }
+
+  #start(index: number, slot: Slot, script: string): void {
     trace('manifest-pool:spawn', { slot: index })
-    const worker = new Worker(__CODE_SPLIT_SCRIPT_NAME, {
+    const worker = new Worker(script, {
       workerData: this.#data,
       // a worker's client never starts a pool of its own
       env: { ...process.env, VLT_MANIFEST_THREADS: '0' },
@@ -189,6 +233,12 @@ export class ManifestPool {
   }
 
   #onMessage(index: number, slot: Slot, reply: ManifestReply): void {
+    if ('request' in reply) {
+      // straight to the emitter, not logRequest(): the worker's own
+      // tracer already recorded it
+      emitter.emit('request', reply.request)
+      return
+    }
     if ('ready' in reply) {
       slot.ready = true
       trace('manifest-pool:ready', { slot: index })
@@ -220,8 +270,13 @@ export class ManifestPool {
   // lookup is left hanging; the client answers those itself. 'error' and
   // 'exit' both land here, so the first call drops the worker and the
   // second returns.
-  #onLost(index: number, slot: Slot, er: Error): void {
-    if (!slot.worker) return
+  #onLost(
+    index: number,
+    slot: Slot,
+    er: Error,
+    beforeStart = false,
+  ): void {
+    if (!slot.worker && !beforeStart) return
     slot.worker = undefined
     slot.ready = false
     slot.dead = true
@@ -249,21 +304,52 @@ export class ManifestPool {
    */
   async close(): Promise<void> {
     this.#closed = true
-    const workers: Worker[] = []
+    const exits: Promise<void>[] = []
     for (const slot of this.#slots) {
-      if (slot.worker) workers.push(slot.worker)
+      const { worker, ready } = slot
       slot.worker = undefined
       slot.ready = false
       slot.queue = []
       slot.busy = 0
+      if (!worker) continue
+      exits.push(
+        ready ?
+          drain(worker, this.#drainTimeoutMs)
+        : terminate(worker),
+      )
     }
     const er = lost('manifest pool closed')
     for (const [id, pending] of this.#pending) {
       this.#pending.delete(id)
       pending.reject(er)
     }
-    await Promise.all(workers.map(w => w.terminate()))
+    await Promise.all(exits)
   }
+}
+
+// A booted worker's client may still be writing to the disk caches, and
+// it queues cache entries for the unzip and revalidate children that its
+// `beforeExit` hooks spawn. Terminating it would lose both, so it is told
+// to drain and let its event loop empty instead. It stays ref'd until it
+// exits, so the process waits for it, and it is terminated if it takes
+// longer than the drain timeout (DRAIN_TIMEOUT_MS by default).
+const drain = (worker: Worker, timeoutMs: number): Promise<void> =>
+  new Promise<void>(resolve => {
+    const timer = setTimeout(() => {
+      void worker.terminate()
+    }, timeoutMs)
+    timer.unref()
+    worker.once('exit', () => {
+      clearTimeout(timer)
+      resolve()
+    })
+    worker.ref()
+    worker.postMessage({ drain: true })
+  })
+
+// a worker that never booted has written nothing
+const terminate = async (worker: Worker): Promise<void> => {
+  await worker.terminate()
 }
 
 const lost = (message: string): NodeJS.ErrnoException => {

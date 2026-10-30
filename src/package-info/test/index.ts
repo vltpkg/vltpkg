@@ -4,6 +4,7 @@
 process.env.VLT_MANIFEST_THREADS = '0'
 
 import { spawn as spawnGit } from '@vltpkg/git'
+import * as output from '@vltpkg/output'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { Pool, storeIndexPath, unpackToStoreSync } from '@vltpkg/tar'
@@ -2791,6 +2792,9 @@ const tarballURL = `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`
 // only the tarball's request events; the packument logs its own
 const tarballLog = (states: string[]) => ({
   '@vltpkg/output': {
+    // the rest of the module stays real: the manifest pool imports its
+    // emitter
+    ...output,
     logRequest: (u: URL | string, state: string) => {
       if (String(u) === tarballURL) states.push(state)
     },
