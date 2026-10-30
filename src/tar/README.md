@@ -208,3 +208,27 @@ the async writers, which pay a libuv round trip per file. The cost is
 that extraction blocks the event loop while it runs. Set
 `VLT_TAR_SYNC=0` to make `Pool` use the async writers instead -- a
 kill switch, not a supported mode.
+
+## Unpack workers
+
+`Pool.unpack()` hands tarballs to a `PlacementPool` of worker threads
+(`src/placement-pool.ts`, `src/placement-worker.ts`) once an install
+is large enough to pay for their boot: reify calls `Pool.warm(jobs)`
+with the number of packages the global store does not already hold,
+and a pool nobody warmed starts itself after
+`DEFAULT_PLACEMENT_MIN_JOBS` unpacks. Below that, and with no spare
+core, unpacking runs as before: inflate on libuv's threadpool, write
+on the main thread. Each worker inflates, parses and writes one
+tarball at a time; the bytes are transferred, not copied, when the
+caller owns them. The pool caps the compressed bytes held between
+download and unpack (`DEFAULT_HELD_BYTES`), so downloads run ahead of
+the workers without holding every tarball of a large install in
+memory.
+
+Global store links stay on the main thread. They are a fraction of a
+millisecond per package, and on a two-core machine the worker boot and
+round trips measured 48% slower than linking inline.
+
+- `VLT_PLACEMENT_THREADS=<n>`: worker count; `1` places inline.
+- `VLT_TAR_SYNC=0|1`: the older inline strategies; either disables the
+  pool.

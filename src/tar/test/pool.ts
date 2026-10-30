@@ -15,6 +15,9 @@ import { storeIndexPath } from '../src/store-index.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
+// the global store test may place through the worker pool; free the
+// threads when the file is done
+t.teardown(() => p.close())
 
 const makePkg = (name: string, version: string): Buffer => {
   const pj = { name, version }
@@ -207,6 +210,41 @@ for (const sync of ['0', '1', undefined] as const) {
     t.ok(lstatSync(out), 'and always after')
   })
 }
+
+t.test('close is a no-op before any placement', async t => {
+  await t.resolves(new Pool().close())
+})
+
+t.test('warm below the minimum starts nothing', async t => {
+  const p = new Pool()
+  await t.resolves(p.warm(0))
+  await p.close()
+})
+
+t.test(
+  'warm is a no-op under a VLT_TAR_SYNC kill switch',
+  async t => {
+    const prev = process.env.VLT_TAR_SYNC
+    process.env.VLT_TAR_SYNC = '1'
+    t.teardown(() => {
+      if (prev === undefined) delete process.env.VLT_TAR_SYNC
+      else process.env.VLT_TAR_SYNC = prev
+    })
+    const { Pool } = await t.mockImport<
+      typeof import('../src/pool.ts')
+    >('../src/pool.ts', {
+      '../src/placement-pool.ts': {
+        PlacementPool: class {
+          warm() {
+            throw new Error('should not be reached')
+          }
+          async close() {}
+        },
+      },
+    })
+    await t.resolves(new Pool().warm(1000))
+  },
+)
 
 t.test('global store', async t => {
   const d = t.testdir()
