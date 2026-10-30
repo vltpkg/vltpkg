@@ -133,12 +133,14 @@ export const build = async (
     })
   } finally {
     releaseResolve()
-    // every manifest is in: free the manifest worker threads. the test
-    // doubles of this module answer manifest() only, so look first
+    // every manifest is in: wind the manifest worker threads down. not
+    // awaited: a worker finishes its cache writes while reify runs, and
+    // stays ref'd until it exits. the test doubles of this module answer
+    // manifest() only, so look first
     const { closeManifestPool } =
       packageInfo as Partial<PackageInfoClient>
     if (typeof closeManifestPool === 'function') {
-      await closeManifestPool.call(packageInfo)
+      void closeManifestPool.call(packageInfo)
     }
   }
   done()

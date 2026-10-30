@@ -1,6 +1,8 @@
 import type { Spec } from '@vltpkg/spec'
 import type { Manifest } from '@vltpkg/types'
+import { readdirSync } from 'node:fs'
 import { createServer } from 'node:http'
+import { join } from 'node:path'
 import { Worker } from 'node:worker_threads'
 import t from 'tap'
 import {
@@ -135,10 +137,14 @@ t.test(
     })
     t.teardown(() => worker.terminate())
     let sawReady = false
+    // request events the worker's client emitted, forwarded to the pool
+    const forwarded: string[] = []
     const replies = await new Promise<ManifestReply[]>((res, rej) => {
       const got: ManifestReply[] = []
       worker.on('message', (m: ManifestReply) => {
-        if ('ready' in m) {
+        if ('request' in m) {
+          forwarded.push(`${m.request.state} ${m.request.url}`)
+        } else if ('ready' in m) {
           sawReady = true
           worker.postMessage({ id: 1, spec: 'abbrev@^2.0.0' })
           worker.postMessage({ id: 2, spec: 'missing@^1.0.0' })
@@ -150,6 +156,12 @@ t.test(
       worker.on('error', rej)
     })
     t.equal(sawReady, true, 'the worker reported ready first')
+    t.ok(
+      forwarded.some(
+        f => f.startsWith('start ') && f.includes('/abbrev'),
+      ),
+      'its registry requests were forwarded',
+    )
     const byId = new Map(
       replies.map(r => [('id' in r && r.id) || 0, r]),
     )
@@ -163,5 +175,23 @@ t.test(
       error: /404/,
       code: 'ERESOLVE',
     })
+    // asked to drain, the worker finishes its cache writes and exits on
+    // its own (code 0, not terminated), leaving no temp files behind
+    const code = await new Promise<number>(res => {
+      worker.once('exit', res)
+      worker.postMessage({ drain: true })
+    })
+    t.equal(code, 0, 'exited on its own')
+    const rc = join(cache, 'registry-client')
+    const files = readdirSync(rc)
+    t.ok(
+      files.some(f => /^[0-9a-f]{128}$/.test(f)),
+      'the packument was cached',
+    )
+    t.strictSame(
+      files.filter(f => !/^[0-9a-f]{128}(\.key)?$/.test(f)),
+      [],
+      'no temp files remain',
+    )
   },
 )

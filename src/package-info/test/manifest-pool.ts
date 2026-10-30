@@ -36,7 +36,12 @@ t.test('manifestThreads reads VLT_MANIFEST_THREADS', t => {
 })
 
 // A pool backed by the stub worker (see fixtures/stub-manifest-worker.ts)
-const stubPool = async (t: Test, size: number) => {
+const stubPool = async (
+  t: Test,
+  size: number,
+  drainTimeoutMs?: number,
+  mocks: Record<string, unknown> = {},
+) => {
   const { ManifestPool } = await t.mockImport<
     typeof import('../src/manifest-pool.ts')
   >('../src/manifest-pool.ts', {
@@ -46,8 +51,9 @@ const stubPool = async (t: Test, size: number) => {
         'fixtures/stub-manifest-worker.ts',
       ),
     },
+    ...mocks,
   })
-  const pool = new ManifestPool(specOptions, size)
+  const pool = new ManifestPool(specOptions, size, drainTimeoutMs)
   t.teardown(() => pool.close())
   return pool
 }
@@ -182,4 +188,75 @@ t.test('close settles jobs in flight or queued', async t => {
   await t.rejects(pool.manifest(spec('late@1')), {
     code: EWORKERLOST,
   })
+})
+
+t.test('a pool closed while its worker is starting', async t => {
+  const pool = await stubPool(t, 1)
+  // the worker script is still loading when close() runs: the job is
+  // rejected and no worker is ever started
+  const job = pool.manifest(spec('early@1'))
+  await pool.close()
+  await t.rejects(job, { code: EWORKERLOST })
+  await new Promise(r => setTimeout(r, 50))
+  t.equal(pool.workerCount, 0)
+})
+
+t.test(
+  'close lets a booted worker drain and exit on its own',
+  async t => {
+    const pool = await stubPool(t, 1)
+    await pool.manifest(spec('warm@1'))
+    t.equal(pool.readyCount, 1)
+    const start = Date.now()
+    await pool.close()
+    t.ok(Date.now() - start < 5000, 'exited on its own, quickly')
+    t.equal(pool.workerCount, 0)
+  },
+)
+
+t.test('a worker that does not drain is terminated', async t => {
+  process.env.STUB_WORKER_DRAIN = 'hang'
+  t.teardown(() => delete process.env.STUB_WORKER_DRAIN)
+  const pool = await stubPool(t, 1, 50)
+  await pool.manifest(spec('warm@1'))
+  const start = Date.now()
+  await pool.close()
+  t.ok(Date.now() - start >= 40, 'waited for the drain timeout')
+  t.equal(pool.workerCount, 0)
+})
+
+t.test(
+  'request events from a worker reach the main emitter',
+  async t => {
+    const seen: string[] = []
+    // the pool is loaded with its own copy of @vltpkg/output: hand it
+    // an emitter this test can see
+    const emitter = {
+      emit: (name: string, e: { url: unknown }) =>
+        seen.push(`${name} ${String(e.url)}`),
+    }
+    const pool = await stubPool(t, 1, undefined, {
+      '@vltpkg/output': { emitter },
+    })
+    await pool.manifest(spec('warm@1'))
+    t.ok(
+      seen.includes('request https://registry.example.com/stub'),
+      'forwarded',
+    )
+  },
+)
+
+t.test('close terminates a worker that is still booting', async t => {
+  process.env.STUB_WORKER_BOOT = 'slow'
+  t.teardown(() => delete process.env.STUB_WORKER_BOOT)
+  const pool = await stubPool(t, 1)
+  const job = pool.manifest(spec('early@1'))
+  // started, not yet ready
+  while (pool.workerCount === 0)
+    await new Promise(r => setTimeout(r, 5))
+  t.equal(pool.readyCount, 0)
+  const rejected = t.rejects(job, { code: EWORKERLOST })
+  await pool.close()
+  await rejected
+  t.equal(pool.workerCount, 0)
 })

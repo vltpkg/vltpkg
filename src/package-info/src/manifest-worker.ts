@@ -3,6 +3,8 @@ import {
   parentPort,
   workerData,
 } from 'node:worker_threads'
+import { emitter } from '@vltpkg/output'
+import type { Events } from '@vltpkg/output'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { Manifest, NormalizedManifest } from '@vltpkg/types'
@@ -51,6 +53,17 @@ export type ManifestReply =
   | { id: number; error: string; code?: string }
   /** posted once, when the worker has booted and can take jobs */
   | { ready: true }
+  /**
+   * a registry request event from the worker's client, forwarded so the
+   * main thread's reporter counts the requests made on its behalf
+   */
+  | { request: Events['request'] & { url: string } }
+
+/**
+ * Sent by the pool when it closes: finish the client's cache writes, then
+ * let the thread exit on its own so its `beforeExit` hooks run.
+ */
+export type DrainMessage = { drain: true }
 
 /** A port that takes a {@link ManifestReply}; the real one is `parentPort`. */
 export type ReplyPort = {
@@ -114,8 +127,19 @@ if (!isMainThread && parentPort) {
   const { options } = workerData as ManifestWorkerData
   void import('./index.ts').then(({ PackageInfoClient }) => {
     const client = new PackageInfoClient(options)
-    port.on('message', (job: ManifestJob) => {
-      void handleJob(client, port, job)
+    emitter.on('request', event => {
+      port.postMessage({
+        request: { ...event, url: String(event.url) },
+      })
+    })
+    port.on('message', (message: ManifestJob | DrainMessage) => {
+      if ('drain' in message) {
+        // closing the port empties the event loop once the client is
+        // drained: the thread exits, after its beforeExit hooks
+        void client.drain().then(() => port.close())
+        return
+      }
+      void handleJob(client, port, message)
     })
     // tell the pool this worker can take jobs; until then they queue
     port.postMessage({ ready: true })
