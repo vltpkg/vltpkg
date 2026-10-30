@@ -132,6 +132,45 @@ const getFileTypeInfo = (
 const isStringArray = (a: unknown): a is string[] =>
   Array.isArray(a) && !a.some(b => typeof b !== 'string')
 
+// The client's speculative prefetch, bound, or undefined on a client
+// that has none: the test doubles of this module answer manifest() and
+// extract() only.
+const speculator = (
+  packageInfo: PackageInfoClient,
+): PackageInfoClient['speculate'] | undefined => {
+  const { speculate } = packageInfo as Partial<PackageInfoClient>
+  return typeof speculate === 'function' ?
+      speculate.bind(packageInfo)
+    : undefined
+}
+
+// True when a node already in the graph satisfies `spec`, so the
+// speculative prefetch need not ask for its manifest. The parent's
+// location stands in for the child's: only `file:` and `workspace:`
+// specs depend on it, and those are never speculated.
+const satisfiedInGraph = (
+  graph: Graph,
+  spec: Spec,
+  fromNode: Node,
+): boolean => {
+  const nbn = graph.nodesByName.get(spec.final.name)
+  if (!nbn) return false
+  for (const node of nbn) {
+    if (
+      satisfies(
+        node.id,
+        spec.final,
+        fromNode.location,
+        graph.projectRoot,
+        graph.monorepo,
+      )
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
 const actualBases = new WeakMap<Graph, Set<DepID>>()
 const hasActualBase = (actual: Graph, id: DepID): boolean => {
   let bases = actualBases.get(actual)
@@ -613,7 +652,15 @@ const fetchManifestsForDeps = async (
               { from }
             : { from, backgroundRevalidate: true },
           )
-          .then(manifest => manifest as Manifest | undefined)
+          .then(manifest => {
+            // run ahead of the level barrier: ask for this manifest's
+            // dependencies now, so the next level finds them in flight
+            speculator(packageInfo)?.(manifest, {
+              from,
+              needed: s => !satisfiedInGraph(graph, s, fromNode),
+            })
+            return manifest as Manifest | undefined
+          })
           .catch((er: unknown) => {
             // optional deps ignored if inaccessible, but a dep that tried
             // to escape the project is never silently dropped

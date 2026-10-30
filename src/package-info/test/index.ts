@@ -5662,6 +5662,19 @@ t.test('prefetchResolve', async t => {
     // in flight: the server has it and holds the response
     while (!resolveRequests.length)
       await new Promise(r => setTimeout(r, 5))
+    // the stream in flight does not stop the speculative prefetch: its
+    // lookups race the stream the way the build's own do
+    const asked: string[] = []
+    pi.manifest = async spec => {
+      asked.push(String(spec))
+      return { name: 'x', version: '1.0.0' }
+    }
+    pi.speculate({
+      name: 'root',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+    })
+    t.strictSame(asked, ['abbrev@^2.0.0'])
     const start = Date.now()
     await pi.drain()
     t.ok(Date.now() - start < 1000, 'without waiting out the hold')
@@ -5981,6 +5994,105 @@ t.test('prefetchResolve', async t => {
     },
   )
 })
+
+t.test('speculate prefetches dependency manifests', async t => {
+  const track = drainer(t)
+  const pi = track(
+    new PackageInfoClient({
+      registry: 'https://registry.example.com/',
+      cache: t.testdir(),
+    }),
+  )
+  const asked: string[] = []
+  const manifests: Record<string, Manifest> = {
+    'a@^1.0.0': {
+      name: 'a',
+      version: '1.0.0',
+      dependencies: { b: '~2.0.0', a: '^1.0.0' },
+    },
+    'b@~2.0.0': { name: 'b', version: '2.0.0' },
+    'c@1.x': {
+      name: 'c',
+      version: '1.5.0',
+      optionalDependencies: {},
+    },
+    'd@*': { name: 'd', version: '3.0.0' },
+  }
+  pi.manifest = async spec => {
+    asked.push(String(spec))
+    const m = manifests[String(spec)]
+    if (!m) throw new Error('nope ' + String(spec))
+    return m
+  }
+  pi.speculate(
+    {
+      name: 'root',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+        // protocols, aliases and workspaces are the build's own
+        git: 'github:some/repo',
+        alias: 'npm:a@1',
+        ws: 'workspace:*',
+        // a dependency that does not parse as a spec is skipped
+        '../evil': '1.0.0',
+        // the graph already has one that satisfies
+        have: '^4.0.0',
+        // the lookup fails: swallowed
+        missing: '9.9.9',
+      },
+      optionalDependencies: { c: '1.x', d: '*' },
+    },
+    { needed: spec => spec.name !== 'have' },
+  )
+  // the same manifest again adds nothing
+  pi.speculate({
+    name: 'root',
+    version: '1.0.0',
+    dependencies: { a: '^1.0.0' },
+  })
+  await pi.drain()
+  // and nothing at all under the kill switch
+  t.intercept(process, 'env', {
+    value: { ...process.env, VLT_SPECULATE: '0' },
+  })
+  pi.speculate({
+    name: 'root',
+    version: '1.0.0',
+    dependencies: { e: '^5.0.0' },
+  })
+  await pi.drain()
+  t.strictSame(
+    asked.sort(),
+    ['a@^1.0.0', 'b@~2.0.0', 'c@1.x', 'd@*', 'missing@9.9.9'],
+    'the plain registry ranges, recursively, each once',
+  )
+})
+
+t.test(
+  'concurrent manifest lookups of one spec share a fetch',
+  async t => {
+    const track = drainer(t)
+    const dir = t.testdir()
+    const pi = track(
+      new PackageInfoClient({
+        registry: defaultRegistry,
+        cache: dir,
+      }),
+    )
+    const [a, b] = await Promise.all([
+      pi.manifest('abbrev@^2.0.0', { backgroundRevalidate: true }),
+      pi.manifest('abbrev@^2.0.0', { backgroundRevalidate: true }),
+    ])
+    t.strictSame(a, b, 'the same answer')
+    // a lookup with a selection option, or of a non-registry spec, is
+    // not shared
+    const c = await pi.manifest('abbrev@^2.0.0', {
+      before: new Date(),
+    })
+    t.equal((c as Manifest).name, 'abbrev')
+  },
+)
 
 t.test('manifest worker pool', async t => {
   type Job = {
