@@ -36,6 +36,7 @@ import {
   unzipSync as unzipSyncCB,
 } from 'node:zlib'
 import type { TarballFormat } from '@vltpkg/types'
+import { span } from '@vltpkg/output/trace'
 import { findTarDir } from './find-tar-dir.ts'
 import { storeIndexManifest } from './store-index.ts'
 import type { StoreIndex, StoreIndexFile } from './store-index.ts'
@@ -308,7 +309,15 @@ export const unpackSync = (
   target: string,
   format?: TarballFormat,
 ): void => {
-  unpackUnzippedSync(decompressSync(tarData, format), target)
+  const inflated = span('inflate', {
+    bytes: tarData.length,
+    sync: true,
+  })
+  const buffer = decompressSync(tarData, format)
+  inflated({ out: buffer.length })
+  const written = span('write', { bytes: buffer.length })
+  unpackUnzippedSync(buffer, target)
+  written()
 }
 
 /**
@@ -329,7 +338,12 @@ export const unpackParallel = async (
   target: string,
   format?: TarballFormat,
 ): Promise<void> => {
-  unpackUnzippedSync(await decompress(tarData, format), target)
+  const inflated = span('inflate', { bytes: tarData.length })
+  const buffer = await decompress(tarData, format)
+  inflated({ out: buffer.length })
+  const written = span('write', { bytes: buffer.length })
+  unpackUnzippedSync(buffer, target)
+  written()
 }
 
 /**

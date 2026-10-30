@@ -1,4 +1,5 @@
 import { appendNodes } from './append-nodes.ts'
+import { mark } from '@vltpkg/output/trace'
 import {
   compareByHasPeerDeps,
   getNodeOrderedDependencies,
@@ -243,6 +244,7 @@ export const refreshIdealGraph = async ({
 
   // Wait for all extraction promises to complete
   if (extractPromises?.length) {
+    mark('build:extract-wait', { jobs: extractPromises.length })
     await Promise.all(extractPromises)
   }
 }

@@ -2,6 +2,7 @@ import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { logRequest } from '@vltpkg/output'
+import { span } from '@vltpkg/output/trace'
 import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
@@ -562,6 +563,10 @@ export class PackageInfoClient {
           ...(brotli && !integrity ? { digestRequired: true } : {}),
         }
       : await this.resolve(spec, options)
+    const end = span('extract', {
+      spec: String(spec),
+      url: r.resolved,
+    })
 
     switch (f.type) {
       case 'git': {
@@ -597,6 +602,7 @@ export class PackageInfoClient {
             // intentionally not awaited
             void rm(target + '/.git', { recursive: true })
           }
+          end({ how: 'git' })
           return r
         }
         // fallthrough if a remote tarball url present
@@ -649,6 +655,7 @@ export class PackageInfoClient {
             // with no `dist.integrity`), so the lockfile can pin it. same
             // trust the cache-unpack path below puts in that label.
             r.integrity ??= cachedIntegrity
+            end({ how })
             return {
               ...r,
               manifest: index.manifest,
@@ -672,7 +679,12 @@ export class PackageInfoClient {
         })
         if (cached) {
           try {
+            const unpacked = span('tarball:unpack', {
+              url: r.resolved,
+              bytes: cached.body.length,
+            })
             await pool.unpack(cached.body, target, format)
+            unpacked()
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
             // A warm install writes nothing to the cache, so queue the
@@ -684,6 +696,7 @@ export class PackageInfoClient {
             if (storeOn || cached.gzip) {
               rc.queueForStore(cached.key, r.integrity)
             }
+            end({ how: 'cache' })
             return r
           } catch (er) {
             // a systematically failing fast path (every entry still
@@ -701,6 +714,7 @@ export class PackageInfoClient {
           const trustIntegrity =
             this.#trustedIntegrities.get(r.resolved) === r.integrity
 
+          const fetched = span('tarball:fetch', { url: r.resolved })
           const response = await (
             await this.getRegistryClient()
           ).request(r.resolved, {
@@ -708,6 +722,10 @@ export class PackageInfoClient {
             trustIntegrity,
             verifyDigest: r.digestRequired ? 'required' : true,
             ...(useCache === false ? { useCache } : {}),
+          })
+          fetched({
+            status: response.statusCode,
+            fromCache: response.fromCache,
           })
 
           if (response.statusCode !== 200) {
@@ -791,7 +809,12 @@ export class PackageInfoClient {
         }
 
         try {
+          const unpacked = span('tarball:unpack', {
+            url: r.resolved,
+            bytes: buf.length,
+          })
           await pool.unpack(buf, target, format)
+          unpacked()
         } catch (er) {
           throw this.#resolveError(
             spec,
@@ -800,6 +823,7 @@ export class PackageInfoClient {
             { cause: er },
           )
         }
+        end({ how: 'fetch', bytes: buf.length })
         return r
       }
 
@@ -1472,6 +1496,16 @@ export class PackageInfoClient {
   async manifest(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
+  ) {
+    const end = span('manifest', { spec: String(spec) })
+    const mani = await this.#manifest(spec, options)
+    end()
+    return mani
+  }
+
+  async #manifest(
+    spec: Spec | string,
+    options: PackageInfoClientRequestOptions,
   ) {
     const { from = this.#projectRoot } = options
     if (typeof spec === 'string')
