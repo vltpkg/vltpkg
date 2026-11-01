@@ -975,6 +975,7 @@ export class PackageInfoClient {
             { cause: er },
           )
         }
+        end({ how: 'remote', bytes: buf.length })
         return r
       }
       case 'file': {
