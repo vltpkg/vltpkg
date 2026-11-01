@@ -1,5 +1,5 @@
 import t from 'tap'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { Tracer } from '../src/trace.ts'
 import type { TraceEvent } from '../src/trace.ts'
 
@@ -215,6 +215,13 @@ t.test(
     tracer.trace('a')
     tracer.close()
     capture.restore()
+    if (process.platform !== 'win32') {
+      t.equal(
+        statSync(file).mode & 0o777,
+        0o600,
+        'created readable by its owner only',
+      )
+    }
     const lines = readFileSync(file, 'utf8').trim().split('\n')
     t.strictSame(
       lines.map(l => (JSON.parse(l) as TraceEvent).ev),

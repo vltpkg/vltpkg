@@ -35,11 +35,37 @@ if (!file) {
 const bucketArg = args.find(a => a.startsWith('--bucket='))
 const bucketMs = bucketArg ? Number(bucketArg.slice(9)) : 50
 
-const events: Event[] = readFileSync(file, 'utf8')
+const all: Event[] = readFileSync(file, 'utf8')
   .split('\n')
   .filter(Boolean)
   .map(l => JSON.parse(l) as Event)
   .sort((a, b) => a.t - b.t)
+
+// VLT_TRACE appends, so one file can hold several installs. A run begins
+// at the main-thread `open` (tid 0) just before the CLI's `command` phase
+// mark; the cache-unzip and revalidate children it leaves behind inherit
+// VLT_TRACE and open tracers of their own, but never mark `command`, so
+// their events stay with the run that spawned them. Report the last run
+// alone, so one run's phases never stretch into the next.
+const runStarts: number[] = []
+for (const [i, e] of all.entries()) {
+  if (e.ev !== 'phase' || e.name !== 'command') continue
+  let start = i
+  while (
+    start > 0 &&
+    !(all[start]?.ev === 'open' && all[start]?.tid === 0)
+  ) {
+    start--
+  }
+  runStarts.push(start)
+}
+const lastRun = runStarts[runStarts.length - 1] ?? 0
+if (runStarts.length > 1) {
+  console.log(
+    `${runStarts.length} runs in this file; reporting the last one\n`,
+  )
+}
+const events = all.slice(lastRun)
 
 if (!events.length) {
   console.error('empty trace')
@@ -214,19 +240,36 @@ if (present.length || lanes.length) {
     `${pad('t', 7)} ${present.map(k => pad(k, 14)).join('')}${lanes.map(l => pad(`lane:${l} b/q`, 16)).join('')}  phase`,
   )
   const nBuckets = Math.ceil((tEnd - t0) / bucketMs) + 1
-  const counts = present.map(() =>
-    new Array<number>(nBuckets).fill(0),
-  )
-  for (const [i, kind] of present.entries()) {
+  // the peak number of spans of each kind open at once in each bucket:
+  // sweep the starts and ends in time order, and credit the count that
+  // holds over each stretch to every bucket the stretch covers. spans that
+  // run one after the other in a bucket count once, not once each
+  const counts = present.map(kind => {
+    const row = new Array<number>(nBuckets).fill(0)
+    const edges: [number, number][] = []
     for (const s of byKind.get(kind) ?? []) {
-      const b0 = Math.floor((s.start - t0) / bucketMs)
-      const b1 = Math.floor((s.end - t0) / bucketMs)
-      const row = counts[i] ?? []
-      for (let b = b0; b <= b1 && b < nBuckets; b++) {
-        row[b] = (row[b] ?? 0) + 1
-      }
+      edges.push([s.start, 1], [s.end, -1])
     }
-  }
+    // at the same instant an end comes before a start
+    edges.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+    let open = 0
+    let from = t0
+    for (const [t, delta] of edges) {
+      if (open > 0) {
+        const b0 = Math.floor((from - t0) / bucketMs)
+        const b1 = Math.min(
+          Math.floor((t - t0) / bucketMs),
+          nBuckets - 1,
+        )
+        for (let b = b0; b <= b1; b++) {
+          row[b] = Math.max(row[b] ?? 0, open)
+        }
+      }
+      open += delta
+      from = t
+    }
+    return row
+  })
   const laneState = lanes.map(() =>
     new Array<string>(nBuckets).fill(''),
   )

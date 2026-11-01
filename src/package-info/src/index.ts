@@ -527,6 +527,22 @@ export class PackageInfoClient {
     target: string,
     options: PackageInfoClientExtractOptions = {},
   ): Promise<ExtractResolution> {
+    // #extract hands its span back here, so a failure ends it too
+    const extractSpan: { end?: ReturnType<typeof span> } = {}
+    try {
+      return await this.#extract(spec, target, options, extractSpan)
+    } catch (er) {
+      extractSpan.end?.({ how: 'error' })
+      throw er
+    }
+  }
+
+  async #extract(
+    spec: Spec | string,
+    target: string,
+    options: PackageInfoClientExtractOptions,
+    extractSpan: { end?: ReturnType<typeof span> },
+  ): Promise<ExtractResolution> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const {
@@ -567,6 +583,7 @@ export class PackageInfoClient {
       spec: String(spec),
       url: r.resolved,
     })
+    extractSpan.end = end
 
     switch (f.type) {
       case 'git': {
@@ -992,12 +1009,14 @@ export class PackageInfoClient {
           )
         }
         /* c8 ignore stop */
+        end({ how: 'file' })
         return r
       }
       case 'workspace': {
         const ws = this.#getWS(spec, options)
         const rel = relative(dirname(target), ws.fullpath)
         await symlink(rel, target, 'dir')
+        end({ how: 'workspace' })
         return r
       }
     }

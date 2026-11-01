@@ -49,8 +49,11 @@ export type TracerOptions = {
 
 const sharedNow = () => performance.timeOrigin + performance.now()
 
+// Owner-only: traces record full request and tarball URLs, which can
+// carry tokens or signed query parameters. The mode applies when the file
+// is created; an existing file keeps its own.
 const defaultAppend = (file: string, data: string) =>
-  appendFileSync(file, data)
+  appendFileSync(file, data, { mode: 0o600 })
 
 const defaultWrite = (line: string) =>
   process.stderr.write(line + '\n')
