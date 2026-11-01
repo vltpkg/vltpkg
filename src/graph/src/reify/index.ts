@@ -179,8 +179,10 @@ export const reify = async (
     success = true
     res.buildQueue = buildQueue
   } finally {
-    // free the placement worker threads now that placement is done
-    await options.packageInfo.closeTarPool()
+    // Free the placement worker threads now that placement is done. A
+    // failure here must not hide the install's own error or skip the
+    // rollback below.
+    await options.packageInfo.closeTarPool().catch(() => {})
     /* c8 ignore start */
     if (!success) {
       await rollback(remover, diff, scurry).catch(() => {})

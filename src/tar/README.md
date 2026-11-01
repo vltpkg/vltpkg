@@ -51,16 +51,27 @@ straight out of a cache entry whose file starts with a header block.
 
 ### `class Pool`
 
-The interface the vlt CLI extracts through. All methods are `async`
-for the caller's convenience; the work itself is synchronous and runs
-on the main thread.
+The interface the vlt CLI extracts through. On a large enough install,
+`unpack` hands tarballs to worker threads, which queue them and cap
+the bytes held in memory. Otherwise, and for every other method, the
+work runs on the main thread. See [Unpack workers](#unpack-workers).
 
-The pool holds no queue and imposes no limit -- callers are expected
-to cap their own concurrency. (`@vltpkg/graph`'s reify does.)
+#### `pool.unpack(tarData: Buffer, target: string, format?, options?) => Promise<void>`
 
-#### `pool.unpack(tarData: Buffer, target: string) => Promise<void>`
+Unpack the supplied Buffer of data into the target folder. Pass
+`{ owned: true }` when nothing else holds the buffer, so it can be
+handed to a worker without a copy. The buffer must not be used after
+the call either way.
 
-Unpack the supplied Buffer of data into the target folder.
+#### `pool.warm(jobs: number) => Promise<void>`
+
+Start the unpack workers for an install about to unpack `jobs`
+tarballs, so they boot before the first one arrives. Starts nothing
+for a small install. Never rejects.
+
+#### `pool.close() => Promise<void>`
+
+Terminate the unpack workers, if any were started.
 
 #### `pool.unpackFile(file: string, target: string, offset = 0) => Promise<void>`
 
@@ -205,9 +216,10 @@ as possible, and that's all.
 
 Synchronous IO is used because it is faster and costs less CPU than
 the async writers, which pay a libuv round trip per file. The cost is
-that extraction blocks the event loop while it runs. Set
-`VLT_TAR_SYNC=0` to make `Pool` use the async writers instead -- a
-kill switch, not a supported mode.
+that inline extraction blocks the event loop while it runs; the unpack
+workers move that work off the main thread. Set `VLT_TAR_SYNC=0` to
+make `Pool` use the async writers instead -- a kill switch, not a
+supported mode.
 
 ## Unpack workers
 

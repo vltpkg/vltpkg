@@ -170,7 +170,17 @@ export class PlacementPool {
     }
     this.#threaded = true
     this.#started = true
-    while (this.#workers.length < this.#size) this.#spawn()
+    try {
+      while (this.#workers.length < this.#size) this.#spawn()
+    } catch {
+      // `new Worker` can throw, for example when the system is out of
+      // threads. Keep the workers that did start. With none, placement
+      // stays inline, since queued jobs would wait for a worker forever.
+      if (!this.#workers.length) {
+        this.#threaded = false
+        return
+      }
+    }
     await new Promise<void>(resolve => {
       this.#booting.push(resolve)
       this.#checkBooted()

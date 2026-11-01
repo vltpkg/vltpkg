@@ -413,3 +413,43 @@ t.test(
     t.equal(pool.heldBytes, 0)
   },
 )
+
+t.test('a worker that fails to start', async t => {
+  const real = await import('node:worker_threads')
+  let allowed = 0
+  class FlakyWorker extends real.Worker {
+    constructor(...args: ConstructorParameters<typeof real.Worker>) {
+      if (allowed-- <= 0) throw new Error('out of threads')
+      super(...args)
+    }
+  }
+  const { PlacementPool: Pool } = await t.mockImport<
+    typeof import('../src/placement-pool.ts')
+  >('../src/placement-pool.ts', {
+    'node:worker_threads': { ...real, Worker: FlakyWorker },
+  })
+
+  t.test('with none started, placement stays inline', async t => {
+    const d = t.testdir()
+    allowed = 0
+    const pool = new Pool(2, 1)
+    t.teardown(() => pool.close())
+    await pool.warm(5)
+    t.equal(pool.workerCount, 0)
+    t.equal(pool.threaded, false)
+    await pool.unpack(makePkg('i', '1.0.0'), resolve(d, 'nm/i'))
+    t.equal(version(resolve(d, 'nm/i')), '1.0.0', 'unpacked inline')
+  })
+
+  t.test('with some started, placement uses them', async t => {
+    const d = t.testdir()
+    allowed = 1
+    const pool = new Pool(2, 1)
+    t.teardown(() => pool.close())
+    await pool.warm(5)
+    t.equal(pool.workerCount, 1, 'the one that started')
+    t.equal(pool.threaded, true)
+    await pool.unpack(makePkg('w', '2.0.0'), resolve(d, 'nm/w'))
+    t.equal(version(resolve(d, 'nm/w')), '2.0.0', 'unpacked by it')
+  })
+})
