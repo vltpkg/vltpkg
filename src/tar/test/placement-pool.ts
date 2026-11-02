@@ -1,7 +1,7 @@
 import t from 'tap'
 import type { Test } from 'tap'
 import { resolve } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import {
   DEFAULT_HELD_BYTES,
   DEFAULT_PLACEMENT_MIN_JOBS,
@@ -16,6 +16,13 @@ const makePkg = (name: string, version = '1.0.0'): Buffer => {
     { path: 'package/package.json', size: json.length, type: 'File' },
     json,
   ])
+}
+
+// a vlt cache entry: a 4-byte head length, the head, then the body
+const cacheEntry = (body: Buffer): Buffer => {
+  const head = Buffer.alloc(16)
+  head.writeUInt32BE(head.length, 0)
+  return Buffer.concat([head, body])
 }
 
 const version = (dir: string): string =>
@@ -60,6 +67,10 @@ t.test('inline when size is below 2', async t => {
   t.equal(pool.threaded, false)
   await pool.unpack(makePkg('u', '4.0.0'), resolve(d, 'nm/u'))
   t.equal(version(resolve(d, 'nm/u')), '4.0.0')
+  const entry = resolve(d, 'entry')
+  writeFileSync(entry, cacheEntry(makePkg('e', '4.1.0')))
+  await pool.unpackCacheEntry(entry, resolve(d, 'nm/e'))
+  t.equal(version(resolve(d, 'nm/e')), '4.1.0', 'cache entry inline')
   t.equal(pool.heldBytes, 0, 'inline unpacks hold nothing')
   await pool.close() // a no-op with no workers
 })
@@ -102,31 +113,24 @@ t.test('warm starts the workers; unpacking uses them', async t => {
   for (let i = 0; i < 5; i++) {
     t.equal(version(resolve(d, `nm/p${i}`)), `${i}.0.0`)
   }
-  // bytes are copied, or transferred when the caller owns them
-  const owned = makePkg('owned', '5.0.0')
-  const ownedCopy = new Uint8Array(owned.byteLength)
-  ownedCopy.set(owned)
-  const exclusive = Buffer.from(ownedCopy.buffer)
+  // bytes are copied, so the caller's buffer is left intact
+  const kept = makePkg('kept', '5.0.0')
+  const keptLength = kept.byteLength
+  // a cache entry is read by the worker itself
+  const entry = resolve(d, 'entry')
+  writeFileSync(entry, cacheEntry(makePkg('entry', '6.0.0')))
   await Promise.all([
-    pool.unpack(makePkg('copied', '6.0.0'), resolve(d, 'nm/copied')),
-    pool.unpack(exclusive, resolve(d, 'nm/owned'), undefined, {
-      owned: true,
-    }),
-    // owned but a slice of a larger buffer: copied after all
-    pool.unpack(
-      Buffer.concat([
-        Buffer.alloc(3),
-        makePkg('slice', '7.0.0'),
-      ]).subarray(3),
-      resolve(d, 'nm/slice'),
-      undefined,
-      { owned: true },
-    ),
+    pool.unpack(kept, resolve(d, 'nm/kept')),
+    pool.unpackCacheEntry(entry, resolve(d, 'nm/entry')),
   ])
-  t.equal(version(resolve(d, 'nm/copied')), '6.0.0')
-  t.equal(version(resolve(d, 'nm/owned')), '5.0.0')
-  t.equal(version(resolve(d, 'nm/slice')), '7.0.0')
-  t.equal(exclusive.byteLength, 0, 'the owned buffer was transferred')
+  t.equal(version(resolve(d, 'nm/kept')), '5.0.0')
+  t.equal(kept.byteLength, keptLength, 'the caller keeps its bytes')
+  t.equal(version(resolve(d, 'nm/entry')), '6.0.0')
+  await t.rejects(
+    pool.unpackCacheEntry(resolve(d, 'missing'), resolve(d, 'nm/x')),
+    { code: 'ENOENT' },
+    'a worker error comes back as the error',
+  )
   t.equal(pool.heldBytes, 0, 'nothing held once unpacked')
   // a later job reuses an idle worker
   await pool.unpack(makePkg('again', '8.0.0'), resolve(d, 'nm/again'))

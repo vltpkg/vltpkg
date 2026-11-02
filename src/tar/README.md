@@ -58,10 +58,14 @@ work runs on the main thread. See [Unpack workers](#unpack-workers).
 
 #### `pool.unpack(tarData: Buffer, target: string, format?, options?) => Promise<void>`
 
-Unpack the supplied Buffer of data into the target folder. Pass
-`{ owned: true }` when nothing else holds the buffer, so it can be
-handed to a worker without a copy. The buffer must not be used after
-the call either way.
+Unpack the supplied Buffer of data into the target folder. A worker
+gets a copy, so the caller keeps its buffer.
+
+#### `pool.unpackCacheEntry(file: string, target: string, format?) => Promise<void>`
+
+Unpack the tarball inside a vlt cache entry file, whose first 4 bytes
+are the big-endian length of the head before the body. On a worker the
+file is read there, so the main thread never reads or copies the body.
 
 #### `pool.warm(jobs: number) => Promise<void>`
 
@@ -231,11 +235,13 @@ and a pool nobody warmed starts itself after
 `DEFAULT_PLACEMENT_MIN_JOBS` unpacks. Below that, and with no spare
 core, unpacking runs as before: inflate on libuv's threadpool, write
 on the main thread. Each worker inflates, parses and writes one
-tarball at a time; the bytes are transferred, not copied, when the
-caller owns them. The pool caps the compressed bytes held between
-download and unpack (`DEFAULT_HELD_BYTES`), so downloads run ahead of
-the workers without holding every tarball of a large install in
-memory.
+tarball at a time. A downloaded tarball is copied to the worker; a
+cached one is read from its cache file by the worker itself.
+
+The pool caps the bytes of downloaded tarballs waiting for a worker
+(`DEFAULT_HELD_BYTES`). The cap applies once a download has finished,
+so it does not bound the downloads in flight; reify's own concurrency
+limit does that.
 
 Global store links stay on the main thread. They are a fraction of a
 millisecond per package, and on a two-core machine the worker boot and

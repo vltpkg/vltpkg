@@ -1,6 +1,6 @@
 import t from 'tap'
 import { resolve } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { Worker } from 'node:worker_threads'
 import {
   handleJob,
@@ -47,6 +47,24 @@ const version = (dir: string): string =>
     }
   ).version
 
+t.test('handleJob unpacks a cache entry file', t => {
+  const d = t.testdir()
+  const replies: PlacementReply[] = []
+  const port = { postMessage: (r: PlacementReply) => replies.push(r) }
+  const head = Buffer.alloc(10)
+  head.writeUInt32BE(head.length, 0)
+  const file = resolve(d, 'entry')
+  writeFileSync(
+    file,
+    Buffer.concat([head, makePkg('entry', '3.0.0')]),
+  )
+  const target = resolve(d, 'nm/e')
+  handleJob(port, { kind: 'cacheEntry', id: 4, file, target })
+  t.strictSame(replies, [{ id: 4, result: true }])
+  t.equal(version(target), '3.0.0')
+  t.end()
+})
+
 t.test('handleJob unpacks a tarball from a transferred buffer', t => {
   const d = t.testdir()
   const replies: PlacementReply[] = []
@@ -64,6 +82,7 @@ t.test('handleJob reports a thrown error', async t => {
     typeof import('../src/placement-worker.ts')
   >('../src/placement-worker.ts', {
     '../src/unpack.ts': {
+      unpackCacheEntrySync: () => {},
       unpackSync: () => {
         const er: NodeJS.ErrnoException = new Error('nope')
         er.code = 'ETEST'
@@ -85,6 +104,7 @@ t.test('handleJob reports a thrown non-error', async t => {
     typeof import('../src/placement-worker.ts')
   >('../src/placement-worker.ts', {
     '../src/unpack.ts': {
+      unpackCacheEntrySync: () => {},
       unpackSync: () => {
         // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw 'just a string'

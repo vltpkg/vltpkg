@@ -1,6 +1,6 @@
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { TarballFormat } from '@vltpkg/types'
-import { unpackSync } from './unpack.ts'
+import { unpackCacheEntrySync, unpackSync } from './unpack.ts'
 
 /**
  * Unpacking a tarball is synchronous work the main thread cannot
@@ -26,7 +26,7 @@ export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
 /**
  * Unpack a tarball into `target`. The bytes arrive as an `ArrayBuffer`
- * transferred from the main thread, so no copy crosses the boundary.
+ * transferred from the main thread.
  */
 export type UnpackJob = {
   kind: 'unpack'
@@ -38,7 +38,20 @@ export type UnpackJob = {
   format?: TarballFormat
 }
 
-export type PlacementJob = UnpackJob
+/**
+ * Unpack the tarball in a vlt cache entry file into `target`. The
+ * worker reads the file itself, so the main thread never holds or
+ * copies the body.
+ */
+export type CacheEntryJob = {
+  kind: 'cacheEntry'
+  id: number
+  file: string
+  target: string
+  format?: TarballFormat
+}
+
+export type PlacementJob = UnpackJob | CacheEntryJob
 
 /**
  * A worker's reply for job `id`: `true` once unpacked, or the message,
@@ -62,11 +75,15 @@ export const handleJob = (
   job: PlacementJob,
 ): void => {
   try {
-    unpackSync(
-      Buffer.from(job.buffer, job.byteOffset, job.byteLength),
-      job.target,
-      job.format,
-    )
+    if (job.kind === 'cacheEntry') {
+      unpackCacheEntrySync(job.file, job.target, job.format)
+    } else {
+      unpackSync(
+        Buffer.from(job.buffer, job.byteOffset, job.byteLength),
+        job.target,
+        job.format,
+      )
+    }
     port.postMessage({ id: job.id, result: true })
   } catch (er) {
     // a non-Error can be thrown, so narrow before reading its fields

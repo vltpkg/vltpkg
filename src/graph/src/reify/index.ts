@@ -38,14 +38,12 @@ import { binChmodAll } from './bin-chmod.ts'
 import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
 
 // How many extractions reify has in flight at once. An extraction is a
-// download followed by an unpack; the unpack goes to the tar pool's
-// workers, which queue it and cap the bytes held, so this cap mostly
-// governs how far the downloads run ahead. It has to clear the registry
-// client's connection cap, or the network sits idle behind it.
-const limit = Math.max(
-  64,
-  Math.max(availableParallelism() - 1, 1) * 8,
-)
+// download followed by an unpack, so this also bounds the downloaded
+// tarballs held in memory. Raising it to 64 to match the registry
+// client's connection floor was measured slower on 4 vCPUs (svelte -9%,
+// next -4% from a lockfile with the cap at 24): more downloads in flight
+// only lengthen the queue in front of the unpack workers.
+const limit = Math.max(availableParallelism() - 1, 1) * 8
 
 // - [ ] depid's with peer resolutions
 // - [ ] depid shortening

@@ -2479,6 +2479,83 @@ t.test('cachedBody', async t => {
     t.strictSame(rc.cachedBody(url)?.body, tarball)
   })
 
+  t.test('cachedTarball reads only the head', async t => {
+    t.teardown(() => rc.drain())
+    const rc = new RC({ cache: t.testdir() })
+    t.equal(rc.cachedTarball(url), undefined, 'no file at all')
+
+    await write(rc, entry({ ...tarHeaders, integrity }))
+    const found = rc.cachedTarball(url)
+    t.strictSame(found, {
+      path: rc.cache.path(url),
+      key: url,
+      bytes: tarball.length,
+      integrity,
+      gzip: false,
+    })
+    t.equal(
+      rc.cachedTarball(new URL(url), { method: 'GET' })?.path,
+      rc.cache.path(url),
+      'a URL object and an explicit method read the same entry',
+    )
+
+    // a pin is read from the integrity path only
+    const intPath = rc.cache.integrityPath(integrity)
+    if (!intPath) return t.fail('expected an integrity path')
+    t.equal(
+      rc.cachedTarball(url, { integrity }),
+      undefined,
+      'no link',
+    )
+    linkSync(rc.cache.path(url), intPath)
+    t.equal(rc.cachedTarball(url, { integrity })?.path, intPath)
+
+    const gz = gzipSync(tarball)
+    await write(rc, entry(tarHeaders, 200, gz))
+    t.match(rc.cachedTarball(url), { gzip: true, bytes: gz.length })
+
+    // The in-memory copy can be newer than disk, same as cachedBody.
+    rc.cache.set(url, entry(tarHeaders))
+    t.equal(rc.cachedTarball(url), undefined, 'deferred to request')
+    await rc.cache.promise()
+    rc.cache.delete(url)
+
+    await write(rc, entry(tarHeaders, 404))
+    t.equal(rc.cachedTarball(url), undefined, 'not a 200')
+    await write(
+      rc,
+      entry(
+        { ...tarHeaders, 'content-type': 'application/json' },
+        200,
+        Buffer.from('{"hello":"world"}'),
+      ),
+    )
+    t.equal(rc.cachedTarball(url), undefined, 'json body')
+    await write(
+      rc,
+      entry({
+        'cache-control': 'public, max-age=1',
+        date: new Date('2020-01-01').toUTCString(),
+      }),
+    )
+    t.equal(rc.cachedTarball(url), undefined, 'stale entry')
+
+    const path = rc.cache.path(url)
+    writeFileSync(path, Buffer.from([0, 0]))
+    t.equal(rc.cachedTarball(url), undefined, 'stub of a file')
+    const buf = Buffer.from(entry(tarHeaders))
+    buf.writeUInt32BE(0xffffffff, 0)
+    writeFileSync(path, buf)
+    t.equal(rc.cachedTarball(url), undefined, 'absurd head size')
+    buf.writeUInt32BE(2, 0)
+    writeFileSync(path, buf)
+    t.equal(rc.cachedTarball(url), undefined, 'head size too small')
+    const short = buf.subarray(0, 64)
+    short.writeUInt32BE(5000, 0)
+    writeFileSync(path, short)
+    t.equal(rc.cachedTarball(url), undefined, 'truncated head')
+  })
+
   t.test('in-memory entries are left to request()', async t => {
     t.teardown(() => rc.drain())
     const rc = new RC({ cache: t.testdir() })

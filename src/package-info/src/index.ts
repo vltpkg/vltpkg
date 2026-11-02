@@ -526,6 +526,8 @@ export class PackageInfoClient {
         }
         jobs++
       }
+      // nothing to unpack: don't even load the tar pool
+      if (!jobs) return
       await (await this.getTarPool()).warm(jobs)
     } catch {
       // unpacking falls back to inline
@@ -740,20 +742,18 @@ export class PackageInfoClient {
         // fetch path, which throws its own error if the body is
         // genuinely bad.
         const rc = await this.getRegistryClient()
-        const cached = rc.cachedBody(r.resolved, {
+        const cached = rc.cachedTarball(r.resolved, {
           integrity: r.integrity,
         })
         if (cached) {
           try {
             const unpacked = span('tarball:unpack', {
               url: r.resolved,
-              bytes: cached.body.length,
+              bytes: cached.bytes,
             })
-            // read straight from the cache file, so nothing else holds
-            // these bytes: they can go to a worker without a copy
-            await pool.unpack(cached.body, target, format, {
-              owned: true,
-            })
+            // only the head was read here: the unpacker reads the body
+            // from the file, on a worker when the pool has them
+            await pool.unpackCacheEntry(cached.path, target, format)
             unpacked()
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity

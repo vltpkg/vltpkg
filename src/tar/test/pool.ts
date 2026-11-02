@@ -188,7 +188,19 @@ for (const sync of ['0', '1', undefined] as const) {
     await p.unpackFile(file, resolve(d, 'file'))
     await p.unpack(br, resolve(d, 'buf-br'), 'brotli')
     await p.unpackFile(brFile, resolve(d, 'file-br'), 0, 'brotli')
-    for (const out of ['buf', 'file', 'buf-br', 'file-br']) {
+    // a vlt cache entry: a 4-byte head length, the head, then the body
+    const head = Buffer.alloc(12)
+    head.writeUInt32BE(head.length, 0)
+    const entry = resolve(d, 'entry')
+    writeFileSync(entry, Buffer.concat([head, tarData]))
+    await p.unpackCacheEntry(entry, resolve(d, 'entry-out'))
+    for (const out of [
+      'buf',
+      'file',
+      'buf-br',
+      'file-br',
+      'entry-out',
+    ]) {
       t.match(
         JSON.parse(
           readFileSync(resolve(d, out, 'package.json'), 'utf8'),

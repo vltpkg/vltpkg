@@ -7,7 +7,7 @@ import type {
   PlacementJob,
   PlacementReply,
 } from './placement-worker.ts'
-import { unpackParallel } from './unpack.ts'
+import { unpackCacheEntryParallel, unpackParallel } from './unpack.ts'
 
 /**
  * How many placement worker threads to run.
@@ -42,24 +42,13 @@ export const placementThreads = (): number => {
 export const DEFAULT_PLACEMENT_MIN_JOBS = 100
 
 /**
- * How many compressed tarball bytes may sit downloaded but not yet
- * unpacked. Downloads run far ahead of the unpack workers, and without
- * a cap every tarball of a large install could be held in memory at
- * once. A download that would push past the cap waits for room; one
- * larger than the whole cap goes as soon as nothing else is held.
+ * How many bytes of downloaded tarballs may wait for an unpack worker.
+ * A tarball that would push past the cap waits for room before it is
+ * handed over; one larger than the whole cap goes as soon as nothing
+ * else is held. The cap applies after the download, so the downloads
+ * still in flight are bounded by the caller's concurrency, not by this.
  */
 export const DEFAULT_HELD_BYTES = 64 * 1024 * 1024
-
-export type UnpackOptions = {
-  /**
-   * The buffer is exclusively ours and backed by its own `ArrayBuffer`,
-   * so it can be transferred to a worker instead of copied. Never set
-   * this for a buffer anything else still references (the registry
-   * client's in-memory cache keeps its response bodies): a transfer
-   * detaches it for every holder.
-   */
-  owned?: boolean
-}
 
 type Pending = {
   bytes: number
@@ -213,15 +202,15 @@ export class PlacementPool {
    * writing on the main thread, as before this pool existed). Resolves
    * when the files are in place.
    *
-   * The bytes are handed to the worker by transfer when `owned`, else
-   * copied first, since a transfer detaches the buffer for everyone
-   * holding it. Either way the caller must not use `tarData` after.
+   * The bytes are copied before they go to a worker: the caller may
+   * still hold them (the registry client caches its response bodies),
+   * and a transfer would detach them for everyone. For a tarball that
+   * is already on disk, {@link unpackCacheEntry} avoids the copy.
    */
   async unpack(
     tarData: Buffer,
     target: string,
     format?: TarballFormat,
-    { owned = false }: UnpackOptions = {},
   ): Promise<void> {
     this.#maybeAutoWarm()
     if (this.#inlineNow())
@@ -234,36 +223,40 @@ export class PlacementPool {
       this.#release(bytes)
       return unpackParallel(tarData, target, format)
     }
-    // a buffer that fills its own ArrayBuffer and is ours alone can be
-    // transferred; anything else (a slice of a pooled slab, a body the
-    // registry client still caches) is copied into one that can
-    const ab = tarData.buffer
-    let buffer: ArrayBuffer
-    const byteOffset = 0
-    if (
-      owned &&
-      ab instanceof ArrayBuffer &&
-      tarData.byteOffset === 0 &&
-      bytes === ab.byteLength
-    ) {
-      buffer = ab
-    } else {
-      const copy = new Uint8Array(bytes)
-      copy.set(tarData)
-      buffer = copy.buffer
-    }
-    const id = this.#seq++
+    const copy = new Uint8Array(bytes)
+    copy.set(tarData)
     await this.#submit(
       {
         kind: 'unpack',
-        id,
-        buffer,
-        byteOffset,
+        id: this.#seq++,
+        buffer: copy.buffer,
+        byteOffset: 0,
         byteLength: bytes,
         target,
         format,
       },
       bytes,
+    )
+  }
+
+  /**
+   * Unpack the tarball in the vlt cache entry `file` into `target`. A
+   * worker reads the file itself, so the main thread neither reads nor
+   * copies the body, and nothing is held against the byte cap. Inline
+   * when the pool is not threaded, like {@link unpack}.
+   */
+  async unpackCacheEntry(
+    file: string,
+    target: string,
+    format?: TarballFormat,
+  ): Promise<void> {
+    this.#maybeAutoWarm()
+    if (this.#inlineNow()) {
+      return unpackCacheEntryParallel(file, target, format)
+    }
+    await this.#submit(
+      { kind: 'cacheEntry', id: this.#seq++, file, target, format },
+      0,
     )
   }
 
@@ -338,8 +331,8 @@ export class PlacementPool {
     this.#trace()
     // keep the process alive while this worker has a job in flight
     worker.ref()
-    // the tarball bytes are transferred, not copied
-    worker.postMessage(job, [job.buffer])
+    // the tarball bytes, if any, are transferred, not copied again
+    worker.postMessage(job, job.kind === 'unpack' ? [job.buffer] : [])
   }
 
   // Hand the worker the next queued job, or park it idle.

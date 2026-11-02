@@ -7,7 +7,13 @@ import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { randomUUID } from 'node:crypto'
-import { closeSync, openSync, readFileSync, readSync } from 'node:fs'
+import {
+  closeSync,
+  fstatSync,
+  openSync,
+  readFileSync,
+  readSync,
+} from 'node:fs'
 import { availableParallelism } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { setMaxListeners } from 'node:events'
@@ -106,6 +112,23 @@ export type CachedBody = {
   /** the hash the entry was stored under, if it has one */
   integrity?: Integrity
   /** the body on disk is gzipped (`body` may be un-gzipped) */
+  gzip: boolean
+}
+
+/**
+ * A valid cached tarball found by {@link RegistryClient.cachedTarball}.
+ * Only the head was read: the body is still on disk.
+ */
+export type CachedTarball = {
+  /** the cache file it is in */
+  path: string
+  /** the cache key of the request */
+  key: string
+  /** the size of the body on disk, in bytes */
+  bytes: number
+  /** the hash the entry was stored under, if it has one */
+  integrity?: Integrity
+  /** the body on disk is gzipped */
   gzip: boolean
 }
 
@@ -761,32 +784,9 @@ export class RegistryClient {
   ): CachedBody | undefined {
     const { integrity, method = 'GET' } = options
     try {
-      // normalize like request() does, or a url that is not already in
-      // canonical form (an explicit :443, say) keys a different file
-      // and the fast path silently never hits.
-      const key = cacheKey(
-        method,
-        typeof url === 'string' ? new URL(url) : url,
-      )
-
-      // an in-memory value can be newer than disk, since cache.set
-      // writes to disk asynchronously. let request() serve those.
-      // (an in-flight fetch() peeks as undefined, so the probe reads
-      // disk underneath it -- benign, tarball urls are immutable.)
-      if (this.cache.peek(key)) return undefined
-
-      // a pin reads only the integrity path: cache.set hardlinks every
-      // artifact under its hash, while the key holds whatever was last
-      // fetched from that url. nothing here hashes the body, so a miss
-      // -- which sends the caller to request(), which verifies -- is
-      // the safe answer.
-      const paths = new Set<string>()
-      try {
-        const i = this.cache.integrityPath(integrity)
-        if (i) paths.add(i)
-      } catch {}
-      if (!integrity) paths.add(this.cache.path(key))
-
+      const found = this.#cachedPaths(url, method, integrity)
+      if (!found) return undefined
+      const { key, paths } = found
       for (const path of paths) {
         let buf: Buffer
         try {
@@ -817,6 +817,111 @@ export class RegistryClient {
       /* c8 ignore next */
     } catch {}
     return undefined
+  }
+
+  /**
+   * Find a valid cached non-JSON body on disk without reading it: only
+   * the head is read, to check the entry. Bypasses the in-memory cache
+   * LRU like {@link cachedBody}.
+   *
+   * The body's offset is not returned. `cache-unzip` can rewrite the
+   * entry, and its head, before the body is read, so whoever reads the
+   * body takes the head length from the same bytes (see `@vltpkg/tar`'s
+   * `unpackCacheEntry`). A rewrite keeps the same tarball, un-gzipped.
+   *
+   * Does not log a cache hit. Returns undefined on anything unexpected;
+   * callers fall back to {@link request}.
+   */
+  cachedTarball(
+    url: URL | string,
+    options: {
+      integrity?: Integrity
+      method?: CacheableMethod
+    } = {},
+  ): CachedTarball | undefined {
+    const { integrity, method = 'GET' } = options
+    try {
+      const found = this.#cachedPaths(url, method, integrity)
+      if (!found) return undefined
+      const { key, paths } = found
+      for (const path of paths) {
+        let fd: number
+        try {
+          fd = openSync(path, 'r')
+        } catch {
+          continue
+        }
+        try {
+          const size = Buffer.allocUnsafe(4)
+          if (readSync(fd, size, 0, 4, 0) < 4) continue
+          const headSize = size.readUInt32BE(0)
+          // Reject a length we do not believe, so a corrupt file cannot
+          // make us allocate a huge buffer.
+          if (headSize < 7 || headSize > maxHeadSize) continue
+          // two more bytes than the head, to see whether the body is
+          // gzipped
+          const head = Buffer.allocUnsafe(headSize + 2)
+          const read = readSync(fd, head, 0, headSize + 2, 0)
+          if (read < headSize) continue
+          const entry = CacheEntry.decodeHead(head.subarray(0, read))
+          // statusCode must stay first: see cachedBody
+          if (
+            entry.statusCode !== 200 ||
+            !entry.valid ||
+            entry.isJSON
+          ) {
+            continue
+          }
+          return {
+            path,
+            key,
+            bytes: fstatSync(fd).size - headSize,
+            integrity: entry.integrity,
+            gzip: CacheEntry.isGzipEntry(head.subarray(0, read)),
+          }
+        } finally {
+          closeSync(fd)
+        }
+      }
+      /* c8 ignore next */
+    } catch {}
+    return undefined
+  }
+
+  // The cache files that may hold a body for `url`, or undefined when
+  // the in-memory cache should answer instead. Shared by cachedBody and
+  // cachedTarball.
+  #cachedPaths(
+    url: URL | string,
+    method: CacheableMethod,
+    integrity: Integrity | undefined,
+  ): { key: string; paths: Set<string> } | undefined {
+    // normalize like request() does, or a url that is not already in
+    // canonical form (an explicit :443, say) keys a different file
+    // and the fast path silently never hits.
+    const key = cacheKey(
+      method,
+      typeof url === 'string' ? new URL(url) : url,
+    )
+
+    // an in-memory value can be newer than disk, since cache.set
+    // writes to disk asynchronously. let request() serve those.
+    // (an in-flight fetch() peeks as undefined, so the probe reads
+    // disk underneath it -- benign, tarball urls are immutable.)
+    if (this.cache.peek(key)) return undefined
+
+    // a pin reads only the integrity path: cache.set hardlinks every
+    // artifact under its hash, while the key holds whatever was last
+    // fetched from that url. nothing here hashes the body, so a miss
+    // -- which sends the caller to request(), which verifies -- is
+    // the safe answer.
+    const paths = new Set<string>()
+    try {
+      const i = this.cache.integrityPath(integrity)
+      if (i) paths.add(i)
+    } catch {}
+    if (!integrity) paths.add(this.cache.path(key))
+    return { key, paths }
   }
 
   /**
