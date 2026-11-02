@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { mark } from '@vltpkg/output/trace'
 import type { WriteStream } from 'node:tty'
 import {
   formatWithOptions,
@@ -271,7 +272,10 @@ export const outputCommand = async <T>(
     }
 
     if (conf.globalRoot) await sweepPendingRemove(conf.globalRoot)
-    const output = await onDone(await command(conf))
+    const result = await command(conf)
+    mark('command:done')
+    const output = await onDone(result)
+    mark('view:done')
     stopRequestLog()
 
     const duration_ms = Date.now() - start
@@ -309,6 +313,7 @@ export const outputCommand = async <T>(
     // timer is unreffed so even if this is not awaited the process
     // can still exit promptly.
     await flushTelemetry()
+    mark('telemetry:flushed')
   } catch (err) {
     stopRequestLog()
     onError?.(err)

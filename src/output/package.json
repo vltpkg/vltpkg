@@ -53,6 +53,11 @@
       "import": {
         "default": "./src/error.ts"
       }
+    },
+    "./trace": {
+      "import": {
+        "default": "./src/trace.ts"
+      }
     }
   },
   "files": [

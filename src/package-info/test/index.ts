@@ -3276,6 +3276,15 @@ t.test('global store', async t => {
   })
 })
 
+t.test('a failed extraction rejects', async t => {
+  const track = drainer(t)
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  const pi = track(
+    new PackageInfoClient({ projectRoot: dir, cache: dir }),
+  )
+  await t.rejects(pi.extract('file:./missing.tgz', dir + '/target'))
+})
+
 t.test('extraction failures', async t => {
   const dir = t.testdir()
   const { PackageInfoClient } = await t.mockImport<

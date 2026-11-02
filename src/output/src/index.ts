@@ -1,4 +1,5 @@
 import EventEmitter from 'node:events'
+import { tracer } from './trace.ts'
 
 export type Events = {
   request: {
@@ -53,9 +54,16 @@ export const logRequest = (
   details: RequestDetails = {},
 ) => {
   emitter.emit('request', { url, state, ...details })
+  if (tracer.file) {
+    tracer.trace('request', { ...details, url: String(url), state })
+  }
 }
 
 export const graphStep = (step: Events['graphStep']['step']) => {
   emitter.emit('graphStep', { step, state: 'start' })
-  return () => emitter.emit('graphStep', { step, state: 'stop' })
+  tracer.mark(step)
+  return () => {
+    emitter.emit('graphStep', { step, state: 'stop' })
+    tracer.mark(`${step}:done`)
+  }
 }
