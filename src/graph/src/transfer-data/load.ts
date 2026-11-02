@@ -13,6 +13,7 @@ import {
 import { stringifyNode } from '../stringify-node.ts'
 import { loadEdges } from '../lockfile/load-edges.ts'
 import { loadNodes } from '../lockfile/load-nodes.ts'
+import { getTypeTarget } from '@vltpkg/types'
 import type {
   EdgeLike,
   GraphLike,
@@ -101,6 +102,7 @@ export type TransferData = {
     id: string
     name: string
     version: string
+    typeTarget?: string
     location: string
     manifest: NormalizedManifest
     projectRoot?: string
@@ -240,11 +242,15 @@ export const load = (transfered: TransferData): LoadResult => {
     /* c8 ignore next 2 */
     node.dev = importer.dev ?? false
     node.optional = importer.optional ?? false
+    node.typeTarget = importer.typeTarget ?? getTypeTarget(node.name)
     node.confused = false
     node.toJSON = () => ({
       id: node.id,
       name: node.name,
       version: node.version,
+      ...(node.typeTarget ?
+        { typeTarget: node.typeTarget }
+      : undefined),
       location: node.location,
       importer: node.importer,
       manifest: node.manifest,

@@ -374,18 +374,40 @@ t.test('load graph with multiple importers', async () => {
         resolved: 'file:packages/a',
         dev: true,
         optional: true,
+        typeTarget: 'custom-target',
+      },
+      {
+        importer: true,
+        mainImporter: false,
+        id: joinDepIDTuple(['workspace', 'workspace-b']),
+        name: '@types/workspace-b',
+        version: '1.0.0',
+        location: 'packages/b',
+        manifest: {
+          name: '@types/workspace-b',
+          version: '1.0.0',
+        },
       },
     ],
   }
 
   const result = load(multiImporterData)
-  t.strictSame(result.graph.importers.size, 2)
+  t.strictSame(result.graph.importers.size, 3)
 
   const workspaceNode = [...result.graph.importers].find(
     n => n.name === 'workspace-a',
   )
   t.ok(workspaceNode)
   t.strictSame(workspaceNode?.location, 'packages/a')
+  t.equal(workspaceNode?.typeTarget, 'custom-target')
+  t.equal(workspaceNode?.toJSON().typeTarget, 'custom-target')
+
+  const typesNode = [...result.graph.importers].find(
+    n => n.name === '@types/workspace-b',
+  )
+  t.equal(typesNode?.typeTarget, 'workspace-b')
+  t.equal(typesNode?.toJSON().typeTarget, 'workspace-b')
+  t.notOk('typeTarget' in result.graph.mainImporter.toJSON())
 })
 
 t.test('load graph without projectRoot', async () => {
