@@ -376,6 +376,41 @@ export const unpackFileSync = (
 ): void =>
   unpackSync(readFileSync(file).subarray(offset), target, format)
 
+/**
+ * The tarball inside a vlt cache entry file: the file starts with a
+ * 4-byte big-endian length of the head, and the body follows the head.
+ * The length is read from the same bytes as the body, so an entry that
+ * `cache-unzip` rewrote with a different head is still read correctly.
+ */
+export const cacheEntryBody = (entry: Buffer): Buffer => {
+  const headSize = entry.length >= 4 ? entry.readUInt32BE(0) : 0
+  if (headSize < 7 || headSize > entry.length) {
+    throw error('not a cache entry', { found: headSize })
+  }
+  return entry.subarray(headSize)
+}
+
+/**
+ * Unpack the tarball in the vlt cache entry `file`. See
+ * {@link cacheEntryBody}.
+ */
+export const unpackCacheEntrySync = (
+  file: string,
+  target: string,
+  format?: TarballFormat,
+): void =>
+  unpackSync(cacheEntryBody(readFileSync(file)), target, format)
+
+/**
+ * Same, inflating on libuv's threadpool. See {@link unpackParallel}.
+ */
+export const unpackCacheEntryParallel = async (
+  file: string,
+  target: string,
+  format?: TarballFormat,
+): Promise<void> =>
+  unpackParallel(cacheEntryBody(await readFile(file)), target, format)
+
 /** Sibling temp path used to build `target` before renaming it in. */
 export const tmpName = (target: string) =>
   dirname(target) + sep + '.' + basename(target) + '.' + tmpSuffix()

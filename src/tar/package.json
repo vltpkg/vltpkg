@@ -67,6 +67,16 @@
         "default": "./src/link-tree.ts"
       }
     },
+    "./placement-pool": {
+      "import": {
+        "default": "./src/placement-pool.ts"
+      }
+    },
+    "./placement-worker": {
+      "import": {
+        "default": "./src/placement-worker.ts"
+      }
+    },
     "./pool": {
       "import": {
         "default": "./src/pool.ts"

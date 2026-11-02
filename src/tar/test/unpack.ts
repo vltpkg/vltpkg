@@ -14,6 +14,9 @@ import {
   checkFs,
   unpack as unpackAsync,
   unpackFileParallel,
+  cacheEntryBody,
+  unpackCacheEntryParallel,
+  unpackCacheEntrySync,
   unpackFileSync,
   unpackParallel,
   unpackSync,
@@ -800,6 +803,39 @@ t.test('unpackFileSync, brotli', async t => {
   )
   t.equal(readFileSync(resolve(d, 'offset/package.json'), 'utf8'), pj)
 })
+
+t.test('cacheEntryBody', async t => {
+  const body = Buffer.from('the body')
+  const head = Buffer.alloc(9)
+  head.writeUInt32BE(head.length, 0)
+  t.strictSame(cacheEntryBody(Buffer.concat([head, body])), body)
+  t.throws(() => cacheEntryBody(Buffer.from([0, 0])), {
+    message: 'not a cache entry',
+  })
+  const tiny = Buffer.alloc(8)
+  tiny.writeUInt32BE(2, 0)
+  t.throws(() => cacheEntryBody(tiny), 'head length too small')
+  tiny.writeUInt32BE(100, 0)
+  t.throws(() => cacheEntryBody(tiny), 'head longer than the file')
+})
+
+t.test(
+  'unpackCacheEntrySync and unpackCacheEntryParallel',
+  async t => {
+    const head = Buffer.alloc(11)
+    head.writeUInt32BE(head.length, 0)
+    const d = t.testdir({ entry: Buffer.concat([head, tarball]) })
+    const file = resolve(d, 'entry')
+    unpackCacheEntrySync(file, resolve(d, 'sync'))
+    await unpackCacheEntryParallel(file, resolve(d, 'parallel'))
+    for (const out of ['sync', 'parallel']) {
+      t.equal(
+        readFileSync(resolve(d, out, 'package.json'), 'utf8'),
+        pj,
+      )
+    }
+  },
+)
 
 t.test('unpackFileParallel', async t => {
   const head = Buffer.from('cache head bytes')

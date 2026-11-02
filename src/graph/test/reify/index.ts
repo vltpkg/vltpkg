@@ -353,6 +353,47 @@ t.test('super basic reification', async t => {
   )
 })
 
+t.test(
+  'a failure closing the tar pool does not fail reify',
+  async t => {
+    const dir = t.testdir({
+      cache: {},
+      project: {
+        'vlt.json': JSON.stringify({
+          cache: resolve(t.testdirName, 'cache'),
+        }),
+        'package.json': JSON.stringify({
+          name: 'x',
+          version: '1.0.0',
+          dependencies: { lodash: '4' },
+        }),
+      },
+    })
+    const projectRoot = resolve(dir, 'project')
+    const packageInfo = createMockPackageInfo({
+      closeTarPool: async () => {
+        throw new Error('close failed')
+      },
+    })
+    const opts = {
+      projectRoot,
+      registry: 'https://registry.npmjs.org/',
+      packageInfo,
+      registries,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      remover: new RollbackRemove(),
+    }
+    const graph = await ideal.build(opts)
+    await reify({ ...opts, graph, allowScripts: ':not(*)' })
+    t.ok(
+      existsSync(resolve(projectRoot, 'node_modules/lodash')),
+      'installed anyway',
+    )
+  },
+)
+
 t.test('reify with a bin', async t => {
   const dir = t.testdir({
     cache: {},

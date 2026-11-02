@@ -51,16 +51,31 @@ straight out of a cache entry whose file starts with a header block.
 
 ### `class Pool`
 
-The interface the vlt CLI extracts through. All methods are `async`
-for the caller's convenience; the work itself is synchronous and runs
-on the main thread.
+The interface the vlt CLI extracts through. On a large enough install,
+`unpack` hands tarballs to worker threads, which queue them and cap
+the bytes held in memory. Otherwise, and for every other method, the
+work runs on the main thread. See [Unpack workers](#unpack-workers).
 
-The pool holds no queue and imposes no limit -- callers are expected
-to cap their own concurrency. (`@vltpkg/graph`'s reify does.)
+#### `pool.unpack(tarData: Buffer, target: string, format?, options?) => Promise<void>`
 
-#### `pool.unpack(tarData: Buffer, target: string) => Promise<void>`
+Unpack the supplied Buffer of data into the target folder. A worker
+gets a copy, so the caller keeps its buffer.
 
-Unpack the supplied Buffer of data into the target folder.
+#### `pool.unpackCacheEntry(file: string, target: string, format?) => Promise<void>`
+
+Unpack the tarball inside a vlt cache entry file, whose first 4 bytes
+are the big-endian length of the head before the body. On a worker the
+file is read there, so the main thread never reads or copies the body.
+
+#### `pool.warm(jobs: number) => Promise<void>`
+
+Start the unpack workers for an install about to unpack `jobs`
+tarballs, so they boot before the first one arrives. Starts nothing
+for a small install. Never rejects.
+
+#### `pool.close() => Promise<void>`
+
+Terminate the unpack workers, if any were started.
 
 #### `pool.unpackFile(file: string, target: string, offset = 0) => Promise<void>`
 
@@ -205,6 +220,33 @@ as possible, and that's all.
 
 Synchronous IO is used because it is faster and costs less CPU than
 the async writers, which pay a libuv round trip per file. The cost is
-that extraction blocks the event loop while it runs. Set
-`VLT_TAR_SYNC=0` to make `Pool` use the async writers instead -- a
-kill switch, not a supported mode.
+that inline extraction blocks the event loop while it runs; the unpack
+workers move that work off the main thread. Set `VLT_TAR_SYNC=0` to
+make `Pool` use the async writers instead -- a kill switch, not a
+supported mode.
+
+## Unpack workers
+
+`Pool.unpack()` hands tarballs to a `PlacementPool` of worker threads
+(`src/placement-pool.ts`, `src/placement-worker.ts`) once an install
+is large enough to pay for their boot: reify calls `Pool.warm(jobs)`
+with the number of packages the global store does not already hold,
+and a pool nobody warmed starts itself after
+`DEFAULT_PLACEMENT_MIN_JOBS` unpacks. Below that, and with no spare
+core, unpacking runs as before: inflate on libuv's threadpool, write
+on the main thread. Each worker inflates, parses and writes one
+tarball at a time. A downloaded tarball is copied to the worker; a
+cached one is read from its cache file by the worker itself.
+
+The pool caps the bytes of downloaded tarballs waiting for a worker
+(`DEFAULT_HELD_BYTES`). The cap applies once a download has finished,
+so it does not bound the downloads in flight; reify's own concurrency
+limit does that.
+
+Global store links stay on the main thread. They are a fraction of a
+millisecond per package, and on a two-core machine the worker boot and
+round trips measured 48% slower than linking inline.
+
+- `VLT_PLACEMENT_THREADS=<n>`: worker count; `1` places inline.
+- `VLT_TAR_SYNC=0|1`: the older inline strategies; either disables the
+  pool.

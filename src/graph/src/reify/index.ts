@@ -37,6 +37,12 @@ import { copyFileSync } from 'node:fs'
 import { binChmodAll } from './bin-chmod.ts'
 import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
 
+// How many extractions reify has in flight at once. An extraction is a
+// download followed by an unpack, so this also bounds the downloaded
+// tarballs held in memory. Raising it to 64 to match the registry
+// client's connection floor was measured slower on 4 vCPUs (svelte -9%,
+// next -4% from a lockfile with the cap at 24): more downloads in flight
+// only lengthen the queue in front of the unpack workers.
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 
 // - [ ] depid's with peer resolutions
@@ -171,6 +177,10 @@ export const reify = async (
     success = true
     res.buildQueue = buildQueue
   } finally {
+    // Free the placement worker threads now that placement is done. A
+    // failure here must not hide the install's own error or skip the
+    // rollback below.
+    await options.packageInfo.closeTarPool().catch(() => {})
     /* c8 ignore start */
     if (!success) {
       await rollback(remover, diff, scurry).catch(() => {})
@@ -201,6 +211,13 @@ const reify_ = async (
   // unsupported optional deps are dropped only after that, so the
   // lockfile keeps them for other platforms
   pruneUnsupportedOptional(diff)
+
+  // start the unpack workers now that the set of packages to place is
+  // final (the pruned optionals would otherwise inflate it past the
+  // pool's minimum), so they boot while the first packages are fetched
+  // rather than on the critical path of the first unpack. It never
+  // rejects, so there is nothing to await.
+  void packageInfo.warmTarPool(diff.nodes.add)
 
   const actions: (() => Promise<unknown>)[] = addNodes(
     diff,

@@ -1,6 +1,6 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
-import { Pool, unpackToStoreSync } from '@vltpkg/tar'
+import { Pool, storeIndexPath, unpackToStoreSync } from '@vltpkg/tar'
 import type {
   LinkFromStoreOptions,
   StoreIndex,
@@ -39,6 +39,7 @@ import type {
   PackageInfoClientRequestOptions,
 } from '../src/index.ts'
 import { cacheKey } from '@vltpkg/registry-client'
+import { storeRoot } from '@vltpkg/registry-client/store-root'
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import unzipMain from '@vltpkg/cache-unzip/unzip'
 // not exported: what the background revalidation child runs
@@ -864,10 +865,60 @@ t.test('lazy registry and tar accessors reuse instances', async t => {
   const rc1 = await pi.getRegistryClient()
   const rc2 = await pi.getRegistryClient()
   t.equal(rc1, rc2)
+  // closing before the pool exists is a no-op
+  await t.resolves(pi.closeTarPool())
   const tar1 = await pi.getTarPool()
   const tar2 = await pi.getTarPool()
   t.equal(tar1, tar2)
+  // warming for an install too small for the pool starts nothing
+  await t.resolves(pi.warmTarPool([]))
+  // closing the created pool frees its placement worker threads
+  await t.resolves(pi.closeTarPool())
 })
+
+t.test('warmTarPool is best effort and never rejects', async t => {
+  const pi = new PackageInfoClient({ cache: t.testdirName })
+  pi.getTarPool = async () => {
+    throw new Error('no tar pool today')
+  }
+  await t.resolves(pi.warmTarPool([{}, {}]))
+})
+
+t.test(
+  'warmTarPool counts only the nodes the store lacks',
+  async t => {
+    const track = drainer(t)
+    const dir = t.testdir()
+    const hit: Integrity = `sha512-${Buffer.alloc(64, 1).toString('base64')}`
+    const miss: Integrity = `sha512-${Buffer.alloc(64, 2).toString('base64')}`
+    const warmed: number[] = []
+    const fakePool = {
+      warm: async (jobs: number) => void warmed.push(jobs),
+    }
+    const probe = async (opts: Record<string, unknown> = {}) => {
+      const pi = track(new PackageInfoClient({ cache: dir, ...opts }))
+      pi.getTarPool = async () => fakePool as unknown as Pool
+      await pi.warmTarPool([
+        { integrity: hit },
+        { integrity: miss },
+        {},
+        { integrity: hit },
+      ])
+    }
+    // nothing in the store yet: every node is an unpack
+    await probe({ 'store-linker': 'hardlink' })
+    t.strictSame(warmed, [4])
+    // publish the store entry for `hit`: its two nodes are links
+    const entry = pathResolve(storeRoot(dir), integrityHex(hit) ?? '')
+    mkdirSync(entry, { recursive: true })
+    writeFileSync(storeIndexPath(entry), '{}')
+    await probe({ 'store-linker': 'hardlink' })
+    t.strictSame(warmed, [4, 2])
+    // with the store off (the default here), every node is an unpack
+    await probe()
+    t.strictSame(warmed, [4, 2, 4])
+  },
+)
 
 t.test('packument', async t => {
   t.strictSame(await packument('abbrev', options), pakuAbbrev)
@@ -2756,6 +2807,10 @@ t.test('registry tarballs unpack from the cache file', async t => {
           calls.push('unpack')
           return super.unpack(tarData, target)
         }
+        async unpackCacheEntry(file: string, target: string) {
+          calls.push('cacheEntry')
+          return super.unpackCacheEntry(file, target)
+        }
       },
     },
     ...tarballLog(states),
@@ -2773,7 +2828,11 @@ t.test('registry tarballs unpack from the cache file', async t => {
   states.length = 0
   const warm = track(new PackageInfoClient(opts))
   await warm.extract('abbrev@2', dir + '/warm')
-  t.strictSame(calls, ['unpack'], 'warm install unpacked once')
+  t.strictSame(
+    calls,
+    ['cacheEntry'],
+    'warm install unpacked the cache file once',
+  )
   t.strictSame(states, ['cache'], 'logged the hit exactly once')
   t.equal(
     (await warm.getRegistryClient()).cache.peek(tarballURL),
@@ -2803,10 +2862,12 @@ t.test('falls back when the cache file will not unpack', async t => {
   >('../src/index.ts', {
     '@vltpkg/tar': {
       Pool: class BadFilePool extends Pool {
+        async unpackCacheEntry() {
+          calls.push('cacheEntry')
+          throw new Error('bad cache file')
+        }
         async unpack(tarData: Buffer, target: string) {
           calls.push('unpack')
-          // the first unpack is the cache-file fast path
-          if (calls.length === 1) throw new Error('bad cache file')
           return super.unpack(tarData, target)
         }
       },
@@ -2814,7 +2875,7 @@ t.test('falls back when the cache file will not unpack', async t => {
     ...tarballLog(states),
   })
   await track(new PIC(opts)).extract('abbrev@2', dir + '/fallback')
-  t.strictSame(calls, ['unpack', 'unpack'], 'refetched')
+  t.strictSame(calls, ['cacheEntry', 'unpack'], 'refetched')
   t.strictSame(states, ['cache'], 'the hit is not double-counted')
   t.match(
     JSON.parse(readFileSync(dir + '/fallback/package.json', 'utf8')),
@@ -2945,7 +3006,7 @@ t.test('global store', async t => {
       )
       if (noTarball) {
         const rc = await pi.getRegistryClient()
-        rc.cachedBody = () => {
+        rc.cachedTarball = () => {
           throw new Error('read the cached tarball')
         }
         rc.request = () => {
@@ -5365,11 +5426,11 @@ t.test('brotli tarballs', async t => {
 
     // The pin is the label on the entry head, which is what keyed the
     // store lookup. The body is not read on a store hit: what was
-    // linked is the store directory, so a body cachedBody() would
+    // linked is the store directory, so a body cachedTarball() would
     // reject changes nothing.
     const nobody = pi({ cache, 'store-linker': 'hardlink' })
     const nobodyRc = await nobody.getRegistryClient()
-    nobodyRc.cachedBody = () => undefined
+    nobodyRc.cachedTarball = () => undefined
     const c = await nobody.extract('brotli@1.0.0', `${dir}/c`, {
       resolved: brURL,
     })
@@ -5378,10 +5439,10 @@ t.test('brotli tarballs', async t => {
 
     const damaged = pi({ cache, 'store-linker': 'hardlink' })
     const damagedRc = await damaged.getRegistryClient()
-    const cachedBody = damagedRc.cachedBody.bind(damagedRc)
-    damagedRc.cachedBody = (...args) => {
-      const cached = cachedBody(...args)
-      return cached && { ...cached, body: Buffer.from('damaged') }
+    const cachedTarball = damagedRc.cachedTarball.bind(damagedRc)
+    damagedRc.cachedTarball = (...args) => {
+      const cached = cachedTarball(...args)
+      return cached && { ...cached, path: `${dir}/no-such-entry` }
     }
     const d = await damaged.extract('brotli@1.0.0', `${dir}/d`, {
       resolved: brURL,

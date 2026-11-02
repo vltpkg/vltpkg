@@ -22,6 +22,7 @@ import { storeRoot } from '@vltpkg/registry-client/store-root'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { Pool, StoreLinker } from '@vltpkg/tar'
+import { storeIndexPath } from '@vltpkg/tar/store-index'
 import type {
   BrotliAlternate,
   Integrity,
@@ -40,6 +41,7 @@ export type { ResolveRequest } from './resolve-batch.ts'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'node:crypto'
+import { lstatSync } from 'node:fs'
 import {
   mkdir,
   readFile,
@@ -484,6 +486,55 @@ export class PackageInfoClient {
   }
 
   /**
+   * Terminate the tar pool's placement worker threads, if any were
+   * started. Reify calls this once placement is done; it is a no-op when
+   * the pool was never created or ran inline.
+   */
+  async closeTarPool() {
+    // wait out an in-flight getTarPool() so a pool created concurrently
+    // is not missed, then close whatever exists
+    await this.#tarPoolPromise
+    await this.#tarPool?.close()
+  }
+
+  /**
+   * Start the tar pool's unpack workers for an install about to place
+   * `nodes`, so they boot while the first packages are fetched instead
+   * of on the critical path of the first unpack. Only the nodes the
+   * global store does not already hold count: a store hit is linked on
+   * the main thread, so a warm install of all hits starts no worker.
+   * Best effort and never rejects: if the pool cannot start, unpacking
+   * just runs inline, and a real failure resurfaces at the first
+   * extract.
+   */
+  async warmTarPool(
+    nodes: Iterable<{ integrity?: Integrity }>,
+  ): Promise<void> {
+    try {
+      const storeOn = this.#storeLinker !== 'unpack'
+      let jobs = 0
+      for (const { integrity } of nodes) {
+        const hex = storeOn ? integrityHex(integrity) : undefined
+        if (
+          hex &&
+          lstatSync(
+            storeIndexPath(pathResolve(this.#storeRoot, hex)),
+            { throwIfNoEntry: false },
+          )
+        ) {
+          continue
+        }
+        jobs++
+      }
+      // nothing to unpack: don't even load the tar pool
+      if (!jobs) return
+      await (await this.getTarPool()).warm(jobs)
+    } catch {
+      // unpacking falls back to inline
+    }
+  }
+
+  /**
    * A version's Brotli (`.tar.br`) alternate: its absolute URL, plus its
    * hash if the registry sent one. Returns undefined if the version has no
    * alternate, if it has one this client does not use (see
@@ -691,16 +742,18 @@ export class PackageInfoClient {
         // fetch path, which throws its own error if the body is
         // genuinely bad.
         const rc = await this.getRegistryClient()
-        const cached = rc.cachedBody(r.resolved, {
+        const cached = rc.cachedTarball(r.resolved, {
           integrity: r.integrity,
         })
         if (cached) {
           try {
             const unpacked = span('tarball:unpack', {
               url: r.resolved,
-              bytes: cached.body.length,
+              bytes: cached.bytes,
             })
-            await pool.unpack(cached.body, target, format)
+            // only the head was read here: the unpacker reads the body
+            // from the file, on a worker when the pool has them
+            await pool.unpackCacheEntry(cached.path, target, format)
             unpacked()
             logRequest(r.resolved, 'cache')
             r.integrity ??= cached.integrity
