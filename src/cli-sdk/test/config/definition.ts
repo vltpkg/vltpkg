@@ -187,3 +187,39 @@ t.test('silent view option is valid', async t => {
   const { values } = definition.parse(['--view', 'silent'])
   t.equal(values.view, 'silent')
 })
+
+t.test('update notifier options', async t => {
+  t.match(definition.parse([]).values, {
+    'update-notifier': true,
+    'update-check-interval': 86_400,
+  })
+  t.match(
+    definition.parse([
+      '--no-update-notifier',
+      '--update-check-interval=3600',
+    ]).values,
+    {
+      'update-notifier': false,
+      'update-check-interval': 3600,
+    },
+  )
+  for (const value of ['0', '-1', 'Infinity']) {
+    t.throws(() =>
+      definition.parse([`--update-check-interval=${value}`]),
+    )
+  }
+  t.intercept(process, 'env', {
+    value: {
+      ...process.env,
+      VLT_UPDATE_NOTIFIER: 'false',
+      VLT_UPDATE_CHECK_INTERVAL: '60',
+    },
+  })
+  const { definition: environmentDefinition } = await t.mockImport<
+    typeof import('../../src/config/definition.ts')
+  >('../../src/config/definition.ts')
+  t.match(environmentDefinition.parse([]).values, {
+    'update-notifier': false,
+    'update-check-interval': 60,
+  })
+})
