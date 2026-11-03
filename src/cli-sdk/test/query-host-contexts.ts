@@ -218,9 +218,6 @@ t.test('createHostContextsMap', async t => {
         typeof import('../src/query-host-contexts.ts')
       >('../src/query-host-contexts.ts', {
         '@vltpkg/project': {
-          ...(await t.mockImport<typeof import('@vltpkg/project')>(
-            '@vltpkg/project',
-          )),
           readProjectFolders: async () => [
             new PathScurry(dir).cwd.resolve('projectA'),
           ],
@@ -307,9 +304,6 @@ t.test('createHostContextsMap', async t => {
         typeof import('../src/query-host-contexts.ts')
       >('../src/query-host-contexts.ts', {
         '@vltpkg/project': {
-          ...(await t.mockImport<typeof import('@vltpkg/project')>(
-            '@vltpkg/project',
-          )),
           readProjectFolders: async () => [
             new PathScurry(dir).cwd.resolve('projectA'),
           ],
@@ -392,9 +386,6 @@ t.test('createHostContextsMap', async t => {
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
           '@vltpkg/project': {
-            ...(await t.mockImport<typeof import('@vltpkg/project')>(
-              '@vltpkg/project',
-            )),
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('projectA'),
             ],
@@ -561,9 +552,6 @@ t.test('createHostContextsMap', async t => {
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
           '@vltpkg/project': {
-            ...(await t.mockImport<typeof import('@vltpkg/project')>(
-              '@vltpkg/project',
-            )),
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('nested/projectA'),
             ],
@@ -711,9 +699,6 @@ t.test('createHostContextsMap', async t => {
           typeof import('../src/query-host-contexts.ts')
         >('../src/query-host-contexts.ts', {
           '@vltpkg/project': {
-            ...(await t.mockImport<typeof import('@vltpkg/project')>(
-              '@vltpkg/project',
-            )),
             readProjectFolders: async () => [
               new PathScurry(dir).cwd.resolve('projectA'),
               new PathScurry(dir).cwd.resolve('nested/projectB'),
