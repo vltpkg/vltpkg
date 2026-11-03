@@ -10,16 +10,13 @@ This package contains shared helpers to:
 
 - discover candidate project folders
 - load a fresh CLI config for a project root
-- derive project metadata used by host-context and dashboard flows
+
+They back the `:host()` query selector.
 
 ## Usage
 
 ```js
-import {
-  getProjectData,
-  readProjectFolders,
-  reloadConfig,
-} from '@vltpkg/project'
+import { readProjectFolders, reloadConfig } from '@vltpkg/project'
 
 const config = await reloadConfig(process.cwd())
 
@@ -28,15 +25,5 @@ const folders = await readProjectFolders({
   userDefinedProjectPaths: config.options['dashboard-root'] ?? [],
 })
 
-const projects = folders.map(folder =>
-  getProjectData(
-    {
-      packageJson: config.options.packageJson,
-      scurry: config.options.scurry,
-    },
-    folder,
-  ),
-)
-
-console.log(projects)
+console.log(folders.map(folder => folder.fullpath()))
 ```

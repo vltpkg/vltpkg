@@ -10,8 +10,6 @@
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
-    "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/types": "workspace:*",
     "@vltpkg/vlt-json": "workspace:*",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:"
@@ -52,11 +50,6 @@
     ".": {
       "import": {
         "default": "./src/index.ts"
-      }
-    },
-    "./get-project-data": {
-      "import": {
-        "default": "./src/get-project-data.ts"
       }
     },
     "./read-project-folders": {
