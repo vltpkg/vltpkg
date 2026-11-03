@@ -253,9 +253,23 @@ export function mermaidOutput(options: MermaidOutputGraph) {
     }
   }
 
-  for (const item of [...traverse].reverse()) {
-    if (includedItems.has(item.self) && item.parent) {
-      includedItems.set(item.parent, true)
+  // include every parent of an included item, up to the importers
+  const parents = new Map<
+    EdgeLike | NodeLike,
+    (EdgeLike | NodeLike)[]
+  >()
+  for (const { self, parent } of traverse) {
+    if (!parent) continue
+    const list = parents.get(self) ?? []
+    list.push(parent)
+    parents.set(self, list)
+  }
+  const queue = [...includedItems.keys()]
+  for (const item of queue) {
+    for (const parent of parents.get(item) ?? []) {
+      if (includedItems.has(parent)) continue
+      includedItems.set(parent, true)
+      queue.push(parent)
     }
   }
 

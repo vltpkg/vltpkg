@@ -99,9 +99,21 @@ const getTreeItems = (
       }
     }
   }
-  for (const item of [...traverse].reverse()) {
-    if (item.include && item.parent) {
-      item.parent.include = true
+  // seen items list no deps: an included item includes
+  // every item of its parent's node
+  const nodeItems = new Map<NodeLike | undefined, TreeItem[]>()
+  for (const item of traverse) {
+    if (!item.node) continue
+    const list = nodeItems.get(item.node) ?? []
+    list.push(item)
+    nodeItems.set(item.node, list)
+  }
+  const queue = [...traverse].filter(i => i.include)
+  for (const item of queue) {
+    for (const p of nodeItems.get(item.parent?.node) ?? []) {
+      if (p.include) continue
+      p.include = true
+      queue.push(p)
     }
   }
   return treeItems
