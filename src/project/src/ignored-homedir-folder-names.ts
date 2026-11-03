@@ -15,7 +15,6 @@ export const ignoredHomedirFolderNames = [
   process.platform === 'darwin' ?
     [
       'public',
-      'private',
       'applications',
       'applications (parallels)',
       'sites',
