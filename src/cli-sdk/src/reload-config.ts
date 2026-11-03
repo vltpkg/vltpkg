@@ -1,4 +1,4 @@
-import type { LoadedConfig } from '@vltpkg/cli-sdk/config'
+import type { ParsedConfig } from './config/index.ts'
 
 type VltJsonModule = {
   unload: (which?: 'user' | 'project') => void
@@ -6,8 +6,7 @@ type VltJsonModule = {
 
 export const reloadConfig = async (
   folder: string,
-): Promise<LoadedConfig> => {
-  // Clear vlt-json caches to ensure fresh file reads
+): Promise<ParsedConfig> => {
   try {
     const { unload } =
       (await import('@vltpkg/vlt-json')) as VltJsonModule
@@ -16,8 +15,7 @@ export const reloadConfig = async (
     /* c8 ignore next */
   } catch {}
 
-  // Create a fresh config instance for the set operation to avoid cache issues
-  const { Config } = await import('@vltpkg/cli-sdk/config')
+  const { Config } = await import('./config/index.ts')
   // host contexts never switch to the global project
   return Config.load(folder, process.argv, true, false)
 }

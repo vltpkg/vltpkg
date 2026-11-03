@@ -1687,8 +1687,6 @@
     "workspace~src+project typescript": "dev catalog: ~npm~typescript@5.7.3",
     "workspace~src+project path-scurry": "prod catalog: ~npm~path-scurry@2.0.2",
     "workspace~src+project promise-call-limit": "prod catalog: ~npm~promise-call-limit@3.0.2",
-    "workspace~src+project @vltpkg/cli-sdk": "prod workspace:* workspace~src+cli-sdk",
-    "workspace~src+project @vltpkg/vlt-json": "prod workspace:* workspace~src+vlt-json",
     "workspace~src+promise-spawn @eslint/js": "dev catalog: ~npm~@eslint+js@9.39.5",
     "workspace~src+promise-spawn @types/node": "dev catalog: ~npm~@types+node@22.20.1",
     "workspace~src+promise-spawn eslint": "dev catalog: ~npm~eslint@9.39.5~peer.12f3518ce9bee39f",

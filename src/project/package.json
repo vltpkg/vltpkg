@@ -1,6 +1,6 @@
 {
   "name": "@vltpkg/project",
-  "description": "Project discovery and project config utilities",
+  "description": "Project discovery utilities",
   "version": "1.6.2",
   "repository": {
     "type": "git",
@@ -9,8 +9,6 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
-    "@vltpkg/cli-sdk": "workspace:*",
-    "@vltpkg/vlt-json": "workspace:*",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:"
   },
@@ -55,11 +53,6 @@
     "./read-project-folders": {
       "import": {
         "default": "./src/read-project-folders.ts"
-      }
-    },
-    "./reload-config": {
-      "import": {
-        "default": "./src/reload-config.ts"
       }
     }
   },

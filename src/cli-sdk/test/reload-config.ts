@@ -12,7 +12,7 @@ const { reloadConfig } = await t.mockImport<
       if (which) unloadCalls.push(which)
     },
   },
-  '@vltpkg/cli-sdk/config': {
+  '../src/config/index.ts': {
     Config: {
       load: async (
         folder: string,

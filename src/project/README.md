@@ -6,23 +6,22 @@ Project-level utilities shared across workspaces.
 
 ## Overview
 
-This package contains shared helpers to:
-
-- discover candidate project folders
-- load a fresh CLI config for a project root
+This package contains shared helpers to discover candidate project
+folders, skipping well-known non-project folders in the user's home
+directory.
 
 They back the `:host()` query selector.
 
 ## Usage
 
 ```js
-import { readProjectFolders, reloadConfig } from '@vltpkg/project'
-
-const config = await reloadConfig(process.cwd())
+import { PathScurry } from 'path-scurry'
+import { readProjectFolders } from '@vltpkg/project'
 
 const folders = await readProjectFolders({
-  scurry: config.options.scurry,
-  userDefinedProjectPaths: config.options['dashboard-root'] ?? [],
+  scurry: new PathScurry(process.cwd()),
+  // defaults to scanning the user's home directory
+  userDefinedProjectPaths: [],
 })
 
 console.log(folders.map(folder => folder.fullpath()))
