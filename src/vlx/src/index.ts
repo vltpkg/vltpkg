@@ -9,6 +9,8 @@ import type { Integrity, NormalizedManifest } from '@vltpkg/types'
 
 export type VlxManifest = NormalizedManifest & {
   vlx?: {
+    /** the spec this was installed for, to run again when its host is away */
+    spec?: string
     integrity?: Integrity
     signatures?: Resolution['signatures']
   }
