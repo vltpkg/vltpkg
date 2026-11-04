@@ -218,8 +218,8 @@ const commandHelp = {
     defaultOrder: 0,
   },
   skills: {
-    args: '[list|link]',
-    desc: 'Manage agent skills from installed packages',
+    args: '[list|link|init]',
+    desc: 'Manage agent skills',
   },
   token: {
     args: '[add|rm]',
