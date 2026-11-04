@@ -70,6 +70,15 @@ const setExitCode = (result: RunResult) => {
   process.exitCode ||= result.status ?? 1
 }
 
+// 523ms, 1.2s, 2m 5.3s
+const formatElapsed = (ms: number): string => {
+  if (Math.round(ms) < 1000) return `${Math.round(ms)}ms`
+  const tenths = Math.round(ms / 100)
+  const seconds = `${((tenths % 600) / 10).toFixed(1)}s`
+  if (tenths < 600) return seconds
+  return `${Math.floor(tenths / 600)}m ${seconds}`
+}
+
 export const views = {
   // run results for single or multiple will be printed along the way.
   human: result => {
@@ -98,6 +107,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   #monorepo?: Monorepo
   #nodes?: string[]
   #defaultIgnoreMissing = false
+  // workspace labels are padded to this width in multi-workspace output
+  #labelWidth = 0
   conf: LoadedConfig
   projectRoot: string
   view: ViewValues
@@ -216,32 +227,43 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       return this.noArgsMulti()
     }
 
+    const targets = this.getTargets()
+    this.#labelWidth = Math.max(...targets.map(t => t.label.length))
+    const totalStart = performance.now()
+
     // run across workspaces
     let failed = false as boolean
+    let taskCount = 0
+    let failedCount = 0
     const runInDir = async (
       cwd: string,
       label: string,
       signal?: AbortSignal,
     ) => {
+      const start = performance.now()
       const arg = { ...this.bgArg(cwd), signal }
       const result = await this.bg(arg).catch((er: unknown) => {
+        const elapsed = performance.now() - start
         if (isErrorWithCause(er) && isRunResult(er.cause)) {
-          this.printResult(label, er.cause)
+          this.printResult(label, er.cause, elapsed)
         }
         failed = true
         throw er
       })
+      const elapsed = performance.now() - start
       // If we are allowed to ignore missing commands, then command might be
       // an emptry string. If so, we don't print anything and return null to
       // be filtered out later.
       if (!result.command) return null
-      if (!failed) this.printResult(label, result)
+      taskCount++
+      if (!isSingleSuccess(result)) failedCount++
+      if (!failed) this.printResult(label, result, elapsed)
       return result
     }
 
     const resultMap = new Map<string, SpawnResultStdioStrings>()
     if (this.#nodes) {
-      for (const { label, cwd } of this.getTargets()) {
+      for (const { label, cwd } of targets) {
         const result = await runInDir(cwd, label)
         if (result) resultMap.set(label, result)
       }
@@ -255,6 +277,16 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       }
     }
 
+    // summary line, e.g. `3 tasks · 1 failed · 5.1s total`
+    if (this.view === 'human' && taskCount > 0) {
+      const summary = [
+        `${taskCount} ${taskCount === 1 ? 'task' : 'tasks'}`,
+        ...(failedCount ? [`${failedCount} failed`] : []),
+        `${formatElapsed(performance.now() - totalStart)} total`,
+      ].join(' · ')
+      stdout('\n' + styleTextStdout('dim', summary))
+    }
+
     const results: Record<string, RunResult> = {}
     for (const [path, result] of resultMap) {
       results[path] = result
@@ -262,32 +294,35 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     return results
   }
 
-  printResult(path: string, result: RunResult) {
+  printResult(path: string, result: RunResult, elapsed: number) {
+    // a failure fails the command in every view, even with --no-bail
+    if (!isSingleSuccess(result)) setExitCode(result)
     // non-human results just get printed at the end
     if (this.view !== 'human') return
 
-    if (result.status === 0 && result.signal === null) {
+    const label = styleTextStdout(
+      'bold',
+      path.padEnd(this.#labelWidth),
+    )
+    const time = styleTextStdout('dim', `(${formatElapsed(elapsed)})`)
+    if (isSingleSuccess(result)) {
       /* c8 ignore start */
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
       /* c8 ignore stop */
-      stdout(path, 'ok')
+      const check = styleTextStdout('green', '✓')
+      stdout(`${label}  ${check} ${this.arg0} ${time}`)
     } else {
-      stdout(
-        styleTextStdout(
-          ['bgWhiteBright', 'black', 'bold'],
-          path + ' failure',
-        ),
-        {
-          status: result.status,
-          signal: result.signal,
-        },
-      )
+      const cross = styleTextStdout('red', '✗')
+      const exit =
+        result.signal ?
+          `signal ${result.signal}`
+        : `exit code ${result.status}`
+      stdout(`${label}  ${cross} ${this.arg0} ${time}  ${exit}`)
       /* c8 ignore start */
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
       /* c8 ignore stop */
-      setExitCode(result)
     }
   }
 

@@ -58,10 +58,69 @@ t.test('with view', t => {
     execFG,
   )
   t.equal(e.view, 'inspect')
-  t.equal(
-    e.printResult('path', {} as unknown as RunResult),
-    undefined,
+  // nothing is printed, but a failure still sets the exit code
+  const { exitCode } = process
+  process.exitCode = 0
+  const result = (status: number) =>
+    ({ status, signal: null }) as unknown as RunResult
+  t.equal(e.printResult('path', result(0), 0), undefined)
+  t.equal(process.exitCode, 0)
+  t.equal(e.printResult('path', result(2), 0), undefined)
+  t.equal(process.exitCode, 2)
+  process.exitCode = exitCode
+  t.end()
+})
+
+t.test('printResult multi-workspace formatting', t => {
+  const { exitCode } = process
+  const logs = t.capture(console, 'log').args
+  const e = new ExecCommand(
+    {
+      projectRoot: t.testdirName,
+      positionals: ['build'],
+      get() {},
+      options: {
+        packageJson: {
+          read: () => ({}),
+        },
+      },
+      values: {},
+    } as unknown as LoadedConfig,
+    exec,
+    execFG,
   )
+  const result = (r: Partial<RunResult> = {}) =>
+    ({
+      command: 'tsc',
+      args: [],
+      cwd: '/tmp',
+      stdout: '',
+      stderr: '',
+      status: 0,
+      signal: null,
+      ...r,
+    }) as RunResult
+
+  for (const [elapsed, time] of [
+    [12.4, '12ms'],
+    [999.6, '1.0s'],
+    [3100, '3.1s'],
+    [59_960, '1m 0.0s'],
+    [125_300, '2m 5.3s'],
+  ] as const) {
+    e.printResult('packages/ui', result(), elapsed)
+    t.strictSame(logs(), [[`packages/ui  ✓ build (${time})`]], time)
+  }
+
+  e.printResult(
+    'packages/api',
+    result({ status: null, signal: 'SIGTERM' }),
+    500,
+  )
+  t.strictSame(logs(), [
+    ['packages/api  ✗ build (500ms)  signal SIGTERM'],
+  ])
+  process.exitCode = exitCode
   t.end()
 })
 

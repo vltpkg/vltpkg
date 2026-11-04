@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { command, usage, views } from '../../src/commands/run.ts'
-import { setupEnv } from '../fixtures/util.ts'
+import { scrubTimes, setupEnv } from '../fixtures/util.ts'
 import { unload } from '@vltpkg/vlt-json'
 
 setupEnv(t)
@@ -147,10 +147,11 @@ t.test('run script across several workspaces', async t => {
       },
     })
     t.strictSame(
-      new Set(logs()),
+      new Set(scrubTimes(logs())),
       new Set([
-        ['src/a', 'ok'],
-        ['src/b', 'ok'],
+        ['src/a  ✓ hello (T)'],
+        ['src/b  ✓ hello (T)'],
+        ['\n2 tasks · T total'],
       ]),
     )
     t.strictSame(new Set(errs()), new Set())
@@ -197,10 +198,11 @@ t.test('runs --scope targets in dependency order', async t => {
     const logs = t.capture(console, 'log').args
     const result = await command(conf)
     t.strictSame(Object.keys(result), ['src/c', 'src/b', 'src/a'])
-    t.strictSame(logs(), [
-      ['src/c', 'ok'],
-      ['src/b', 'ok'],
-      ['src/a', 'ok'],
+    t.strictSame(scrubTimes(logs()), [
+      ['src/c  ✓ hello (T)'],
+      ['src/b  ✓ hello (T)'],
+      ['src/a  ✓ hello (T)'],
+      ['\n3 tasks · T total'],
     ])
   }
 
@@ -269,7 +271,10 @@ t.test('run script across workspaces with some missing', async t => {
         stderr: '',
       },
     })
-    t.strictSame(new Set(logs()), new Set([['src/a', 'ok']]))
+    t.strictSame(scrubTimes(logs()), [
+      ['src/a  ✓ hello (T)'],
+      ['\n1 task · T total'],
+    ])
     t.strictSame(new Set(errs()), new Set())
   }
 
@@ -399,17 +404,14 @@ t.test('one ws fails, with bail', async t => {
     },
   })
 
+  // src/b runs in parallel, so it may or may not have been printed,
+  // but bailing rejects before the summary line
+  const lines = scrubTimes(logs())
   t.match(
-    new Set(logs()),
-    new Set([
-      [
-        'src/a failure',
-        {
-          status: 1,
-        },
-      ],
-    ]),
+    new Set(lines),
+    new Set([['src/a  ✗ hello (T)  exit code 1']]),
   )
+  t.notOk(lines.some(([line]) => String(line).includes(' total')))
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
@@ -470,20 +472,64 @@ t.test('one ws fails, without bail', async t => {
       stderr: '',
     },
   })
-  t.match(
-    new Set(logs()),
+  t.strictSame(
+    new Set(scrubTimes(logs())),
     new Set([
-      [
-        'src/a failure',
-        {
-          status: 1,
-        },
-      ],
+      ['src/a  ✗ hello (T)  exit code 1'],
+      ['src/b  ✓ hello (T)'],
+      ['\n2 tasks · 1 failed · T total'],
     ]),
   )
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
+})
+
+t.test('one ws fails, without bail, json view', async t => {
+  const { exitCode } = process
+  t.teardown(() => {
+    process.exitCode = exitCode
+  })
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: fail,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  unload()
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values.bail = false
+  conf.values.view = 'json'
+  conf.values.recursive = true
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  process.exitCode = 0
+  const result = await command(conf)
+  t.match(result, {
+    'src/a': { status: 1 },
+    'src/b': { status: 0 },
+  })
+  // results are printed by the json view at the end
+  t.strictSame(logs(), [])
+  t.equal(process.exitCode, 1)
 })
 
 t.test(
@@ -780,10 +826,11 @@ t.test(
       },
     })
     t.strictSame(
-      new Set(logs()),
+      new Set(scrubTimes(logs())),
       new Set([
-        ['src/a', 'ok'],
-        ['src/b', 'ok'],
+        ['src/a  ✓ hello (T)'],
+        ['src/b  ✓ hello (T)'],
+        ['\n2 tasks · T total'],
       ]),
     )
     t.strictSame(new Set(errs()), new Set())

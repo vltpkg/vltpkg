@@ -3,7 +3,7 @@ import { ansiToAnsi } from 'ansi-to-pre'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { command, usage } from '../../src/commands/run-exec.ts'
-import { setupEnv } from '../fixtures/util.ts'
+import { scrubTimes, setupEnv } from '../fixtures/util.ts'
 
 setupEnv(t)
 
@@ -143,12 +143,13 @@ t.test('run script across several workspaces', async t => {
     },
   })
   t.strictSame(
-    new Set(logs()),
+    new Set(scrubTimes(logs())),
     new Set([
       [ansiToAnsi('ok')],
-      ['src/a', 'ok'],
+      ['src/a  ✓ echo (T)'],
       [ansiToAnsi('pj script ok')],
-      ['src/b', 'ok'],
+      ['src/b  ✓ echo (T)'],
+      ['\n2 tasks · T total'],
     ]),
   )
   t.strictSame(new Set(errs()), new Set())

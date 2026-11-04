@@ -137,6 +137,38 @@ vlt run build --recursive
 vlt run test --workspace-group=frontend
 ```
 
+### Output
+
+When a script runs in more than one workspace, vlt prints a status
+line with each workspace's run time as its script finishes, then a
+summary:
+
+```
+packages/shared          ✓ build (408ms)
+packages/config          ✓ build (1.1s)
+packages/user-interface  ✓ build (205ms)
+
+3 tasks · 1.7s total
+```
+
+A failing workspace is marked with `✗` and its exit code or signal.
+With `--bail` (the default), vlt stops at the first failure and prints
+its error. With `--no-bail`, the remaining workspaces still run and
+the summary counts the failures:
+
+```
+packages/shared          ✓ test (8ms)
+packages/config          ✗ test (3ms)  exit code 3
+packages/user-interface  ✓ test (504ms)
+
+3 tasks · 1 failed · 518ms total
+```
+
+Either way, `vlt run` exits with a non-zero code when a workspace
+fails. With `--view=json` (the default when stdout is not a terminal),
+the results of all workspaces are printed as one JSON object instead
+of these lines.
+
 ### Advanced filtering with Queries
 
 Use [DSS queries](/client/selectors) to target specific packages:

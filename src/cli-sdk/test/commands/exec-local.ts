@@ -8,7 +8,7 @@ import {
   views,
 } from '../../src/commands/exec-local.ts'
 import type { ExecResult } from '../../src/exec-command.ts'
-import { setupEnv } from '../fixtures/util.ts'
+import { scrubTimes, setupEnv } from '../fixtures/util.ts'
 
 setupEnv(t)
 
@@ -159,12 +159,13 @@ t.test('run script across several workspaces', async t => {
     },
   })
   t.strictSame(
-    new Set(logs()),
+    new Set(scrubTimes(logs())),
     new Set([
       [ansiToAnsi('ok')],
-      ['src/a', 'ok'],
+      ['src/a  ✓ echo (T)'],
       [ansiToAnsi('ok')],
-      ['src/b', 'ok'],
+      ['src/b  ✓ echo (T)'],
+      ['\n2 tasks · T total'],
     ]),
   )
   t.strictSame(new Set(errs()), new Set())
