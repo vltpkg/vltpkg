@@ -7,6 +7,7 @@
     "url": "https://vlt.sh"
   },
   "skills": [
+    "./skills/vlt-cli",
     "./skills/vlt-registry-migration",
     "./skills/dss-query"
   ]

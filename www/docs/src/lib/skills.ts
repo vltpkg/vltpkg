@@ -36,8 +36,14 @@ const skill = (name: string) => {
   }
 }
 
+export const vltCliSkill = skill('vlt-cli')
+
 export const registryMigrationSkill = skill('vlt-registry-migration')
 
 export const dssQuerySkill = skill('dss-query')
 
-export const skills = [registryMigrationSkill, dssQuerySkill]
+export const skills = [
+  vltCliSkill,
+  registryMigrationSkill,
+  dssQuerySkill,
+]

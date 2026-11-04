@@ -8,8 +8,8 @@
     },
     {
       "title": "vlt client",
-      "description": "Query, filter and security-audit a project's dependencies with the vlt CLI.",
-      "skills": ["dss-query"]
+      "description": "Use the vlt CLI: manage dependencies and registries, and query, filter and security-audit a project's dependencies.",
+      "skills": ["vlt-cli", "dss-query"]
     }
   ]
 }

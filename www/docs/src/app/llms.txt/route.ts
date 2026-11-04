@@ -1,7 +1,11 @@
 import { llms } from 'fumadocs-core/source'
 import { source } from '@/lib/source'
 import { siteUrl } from '@/lib/site-url'
-import { registryMigrationSkill, skills } from '@/lib/skills'
+import {
+  registryMigrationSkill,
+  skills,
+  vltCliSkill,
+} from '@/lib/skills'
 
 const md = (path: string) => new URL(`${path}.md`, siteUrl).href
 const abs = (path: string) => new URL(path, siteUrl).href
@@ -15,7 +19,7 @@ Every page is available as Markdown: append \`.md\` to its URL, or request the p
 
 ## Using these docs
 
-- New to the registry: start at [Quick Start](${md('/registry')}). New to the client: start at [Getting Started with the vlt CLI](${md('/client')}). Moving an existing repository onto a vlt.io registry: follow the [${registryMigrationSkill.name} skill](${abs(registryMigrationSkill.url)}).
+- New to the registry: start at [Quick Start](${md('/registry')}). New to the client: start at [Getting Started with the vlt CLI](${md('/client')}); the [${vltCliSkill.name} skill](${abs(vltCliSkill.url)}) is a short map of the CLI for agents. Moving an existing repository onto a vlt.io registry: follow the [${registryMigrationSkill.name} skill](${abs(registryMigrationSkill.url)}).
 - Commands and config: [CLI Commands](${md('/client/commands')}) links every command's page; [Configuring the vlt CLI](${md('/client/configuring')}) covers options and config files. [Reference](${md('/reference')}) is a glossary of terms.
 - The site's own HTTP API (search, Markdown pages) is described at [openapi.json](${abs('/openapi.json')}).
 - Before running anything that changes a vlt.io account (publishing, unpublishing, deprecating packages, changing access, or creating and revoking tokens), confirm with the user first.
