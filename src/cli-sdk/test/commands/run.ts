@@ -146,19 +146,14 @@ t.test('run script across several workspaces', async t => {
         stderr: '',
       },
     })
-    const logEntries = logs()
-    // 2 per-workspace lines + 1 summary line
-    t.equal(logEntries.length, 3)
-    const perWs = logEntries.slice(0, 2).map(l => l[0] as string)
-    t.match(
-      new Set(perWs),
+    t.strictSame(
+      new Set(scrubTimes(logs())),
       new Set([
-        /src\/a\s+✓ hello \(\d+(\.\d+)?m?s\)/,
-        /src\/b\s+✓ hello \(\d+(\.\d+)?m?s\)/,
+        ['src/a  ✓ hello (T)'],
+        ['src/b  ✓ hello (T)'],
+        ['\n2 tasks · T total'],
       ]),
     )
-    // summary line
-    t.match(logEntries[2]?.[0], /2 tasks · \d+(\.\d+)?m?s total/)
     t.strictSame(new Set(errs()), new Set())
   }
 
@@ -276,11 +271,10 @@ t.test('run script across workspaces with some missing', async t => {
         stderr: '',
       },
     })
-    const logEntries = logs()
-    // 1 per-workspace line + 1 summary line
-    t.equal(logEntries.length, 2)
-    t.match(logEntries[0]?.[0], /src\/a\s+✓ hello \(\d+(\.\d+)?m?s\)/)
-    t.match(logEntries[1]?.[0], /1 task · \d+(\.\d+)?m?s total/)
+    t.strictSame(scrubTimes(logs()), [
+      ['src/a  ✓ hello (T)'],
+      ['\n1 task · T total'],
+    ])
     t.strictSame(new Set(errs()), new Set())
   }
 
@@ -410,17 +404,14 @@ t.test('one ws fails, with bail', async t => {
     },
   })
 
-  const logEntries = logs()
-  // At least 1 failure line (no summary since bail throws)
-  t.ok(logEntries.length >= 1)
-  const failLine = logEntries.find(
-    l => typeof l[0] === 'string' && l[0].includes('✗'),
-  )
-  t.ok(failLine, 'should have a failure line')
+  // src/b runs in parallel, so it may or may not have been printed,
+  // but bailing rejects before the summary line
+  const lines = scrubTimes(logs())
   t.match(
-    failLine?.[0],
-    /src\/a\s+✗ hello \(\d+(\.\d+)?m?s\)\s+exit code 1/,
+    new Set(lines),
+    new Set([['src/a  ✗ hello (T)  exit code 1']]),
   )
+  t.notOk(lines.some(([line]) => String(line).includes(' total')))
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
@@ -481,27 +472,14 @@ t.test('one ws fails, without bail', async t => {
       stderr: '',
     },
   })
-  const logEntries = logs()
-  // Per-workspace lines + summary
-  const failLine = logEntries.find(
-    l => typeof l[0] === 'string' && l[0].includes('✗'),
+  t.strictSame(
+    new Set(scrubTimes(logs())),
+    new Set([
+      ['src/a  ✗ hello (T)  exit code 1'],
+      ['src/b  ✓ hello (T)'],
+      ['\n2 tasks · 1 failed · T total'],
+    ]),
   )
-  t.ok(failLine, 'should have a failure line')
-  t.match(
-    failLine?.[0],
-    /src\/a\s+✗ hello \(\d+(\.\d+)?m?s\)\s+exit code 1/,
-  )
-  const successLine = logEntries.find(
-    l => typeof l[0] === 'string' && l[0].includes('✓'),
-  )
-  t.ok(successLine, 'should have a success line')
-  t.match(successLine?.[0], /src\/b\s+✓ hello \(\d+(\.\d+)?m?s\)/)
-  // summary line
-  const summaryLine = logEntries.find(
-    l => typeof l[0] === 'string' && l[0].includes('total'),
-  )
-  t.ok(summaryLine, 'should have a summary line')
-  t.match(summaryLine?.[0], /2 tasks · \d+(\.\d+)?m?s total/)
   t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode

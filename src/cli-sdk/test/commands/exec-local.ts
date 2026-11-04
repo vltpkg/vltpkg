@@ -1,4 +1,5 @@
 import { unload } from '@vltpkg/vlt-json'
+import { ansiToAnsi } from 'ansi-to-pre'
 import { resolve } from 'node:path'
 import t from 'tap'
 import {
@@ -7,7 +8,7 @@ import {
   views,
 } from '../../src/commands/exec-local.ts'
 import type { ExecResult } from '../../src/exec-command.ts'
-import { setupEnv } from '../fixtures/util.ts'
+import { scrubTimes, setupEnv } from '../fixtures/util.ts'
 
 setupEnv(t)
 
@@ -157,18 +158,15 @@ t.test('run script across several workspaces', async t => {
       stderr: '',
     },
   })
-  const logEntries = logs()
-  // 2 stdout lines + 2 per-workspace lines + 1 summary
-  const wsLines = logEntries.filter(
-    l => typeof l[0] === 'string' && l[0].includes('✓'),
+  t.strictSame(
+    new Set(scrubTimes(logs())),
+    new Set([
+      [ansiToAnsi('ok')],
+      ['src/a  ✓ echo (T)'],
+      [ansiToAnsi('ok')],
+      ['src/b  ✓ echo (T)'],
+      ['\n2 tasks · T total'],
+    ]),
   )
-  t.equal(wsLines.length, 2)
-  t.match(wsLines[0]?.[0], /src\/[ab]\s+✓ echo \(\d+(\.\d+)?m?s\)/)
-  t.match(wsLines[1]?.[0], /src\/[ab]\s+✓ echo \(\d+(\.\d+)?m?s\)/)
-  const summaryLine = logEntries.find(
-    l => typeof l[0] === 'string' && l[0].includes('total'),
-  )
-  t.ok(summaryLine, 'should have a summary line')
-  t.match(summaryLine?.[0], /2 tasks · \d+(\.\d+)?m?s total/)
   t.strictSame(new Set(errs()), new Set())
 })

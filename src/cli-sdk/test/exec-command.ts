@@ -59,7 +59,7 @@ t.test('with view', t => {
   )
   t.equal(e.view, 'inspect')
   t.equal(
-    e.printResult('path', {} as unknown as RunResult),
+    e.printResult('path', {} as unknown as RunResult, 0),
     undefined,
   )
   t.end()
@@ -83,11 +83,8 @@ t.test('printResult multi-workspace formatting', t => {
     exec,
     execFG,
   )
-
-  // success with timing >= 1s
-  e.printResult(
-    'packages/ui',
-    {
+  const result = (r: Partial<RunResult> = {}) =>
+    ({
       command: 'tsc',
       args: [],
       cwd: '/tmp',
@@ -95,35 +92,28 @@ t.test('printResult multi-workspace formatting', t => {
       stderr: '',
       status: 0,
       signal: null,
-    },
-    'build',
-    3100,
-  )
-  const successLogs = logs()
-  t.equal(successLogs.length, 1)
-  t.match(successLogs[0]?.[0], /packages\/ui.*✓ build \(3\.1s\)/)
+      ...r,
+    }) as RunResult
 
-  // failure with signal
+  for (const [elapsed, time] of [
+    [12.4, '12ms'],
+    [999.6, '1.0s'],
+    [3100, '3.1s'],
+    [59_960, '1m 0.0s'],
+    [125_300, '2m 5.3s'],
+  ] as const) {
+    e.printResult('packages/ui', result(), elapsed)
+    t.strictSame(logs(), [[`packages/ui  ✓ build (${time})`]], time)
+  }
+
   e.printResult(
     'packages/api',
-    {
-      command: 'tsc',
-      args: [],
-      cwd: '/tmp',
-      stdout: '',
-      stderr: '',
-      status: null,
-      signal: 'SIGTERM',
-    } as unknown as RunResult,
-    'build',
+    result({ status: null, signal: 'SIGTERM' }),
     500,
   )
-  const failLogs = logs()
-  t.equal(failLogs.length, 1)
-  t.match(
-    failLogs[0]?.[0],
-    /packages\/api.*✗ build \(500ms\)\s+signal SIGTERM/,
-  )
+  t.strictSame(logs(), [
+    ['packages/api  ✗ build (500ms)  signal SIGTERM'],
+  ])
   process.exitCode = exitCode
   t.end()
 })
