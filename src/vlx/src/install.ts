@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { install } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
+import type { Resolution } from '@vltpkg/package-info'
 import type { Spec } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
 import { createHash } from 'node:crypto'
@@ -12,6 +13,7 @@ import { doPrompt } from './do-prompt.ts'
 import type { PromptFn, VlxInfo, VlxOptions } from './index.ts'
 import { inferName } from './infer-name.ts'
 import { vlxInfo } from './info.ts'
+import { lastInstall, unreachable } from './last-install.ts'
 
 /**
  * Install a given package spec in the appropriate folder, if it's not
@@ -43,12 +45,24 @@ export const vlxInstall = async (
     options,
   ))
 
-  const resolution = await packageInfo.resolve(pkgSpec, options)
+  const xdg = new XDG('vlt/vlx')
+  let resolution: Resolution
+  try {
+    resolution = await packageInfo.resolve(pkgSpec, options)
+  } catch (er) {
+    // a hosted git ref resolves off its host, which may be away (eg
+    // offline): then what the same spec got last time, if anything
+    const last =
+      unreachable(er) ?
+        await lastInstall(pkgSpec, xdg.data(), options)
+      : undefined
+    if (!last) throw er
+    return last
+  }
   const hash = createHash('sha512')
     .update(resolution.resolved)
     .digest('hex')
     .substring(0, 8)
-  const xdg = new XDG('vlt/vlx')
   const dir = xdg.data(pkgSpec.name.replace('/', '+') + '-' + hash)
   if (await dirExists(dir)) {
     try {
@@ -73,6 +87,7 @@ export const vlxInstall = async (
       [pkgSpec.name]: resolution.resolved,
     },
     vlx: {
+      spec: String(pkgSpec),
       integrity: resolution.integrity,
       signatures: resolution.signatures,
     },
