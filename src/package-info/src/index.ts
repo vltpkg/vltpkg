@@ -36,7 +36,6 @@ import {
   tarballFormat,
 } from '@vltpkg/types'
 import { gitPin } from './git-pin.ts'
-import type { GitPin } from './git-pin.ts'
 import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
@@ -317,8 +316,12 @@ export class PackageInfoClient {
   #tarPool?: Pool
   options: PackageInfoClientOptions
   #resolutions = new Map<string, Resolution>()
-  // ref archive url -> the pin it got this run
-  #gitPins = new Map<string, Promise<GitPin>>()
+  // ref archive url -> the pin it got this run: the url and its
+  // integrity, no archive bytes (the cache has those)
+  #gitPins = new Map<
+    string,
+    Promise<{ resolved: string; integrity?: Integrity }>
+  >()
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
@@ -1723,9 +1726,8 @@ export class PackageInfoClient {
           : undefined
         const url = pin?.resolved ?? remoteURL
         return await this.#tmpdir(async dir => {
-          const response =
-            pin?.response ??
-            (await this.#fetchURL(s, remoteURL, options))
+          // a pinned archive: from the cache, the pin put it there
+          const response = await this.#fetchURL(s, url, options)
           const buf = response.buffer()
           // the graph hands this back to extract() as the lockfile
           // hash: the hash the entry is stored under, or none for an
@@ -2069,16 +2071,12 @@ export class PackageInfoClient {
         const { gitRemote, remoteURL, gitSelectorParsed } = f
         if (remoteURL && gitSelectorParsed?.path === undefined) {
           // known git host with a tarball download endpoint
-          const { resolved, response } = await this.#gitPin(
+          const { resolved, integrity } = await this.#gitPin(
             spec,
             remoteURL,
             options,
           )
-          const r = {
-            resolved,
-            integrity: storedIntegrity(response),
-            spec,
-          }
+          const r = { resolved, integrity, spec }
           this.#resolutions.set(memoKey, r)
           return r
         }
@@ -2128,15 +2126,17 @@ export class PackageInfoClient {
     }
   }
 
+  // `revalidate`: ask the host even for a cached entry still within
+  // max-age; one it can't reach keeps the entry
   async #fetchURL(
     spec: Spec,
     url: string,
     options: PackageInfoClientRequestOptions,
-    useCache?: false,
+    revalidate?: true,
   ) {
     const response = await (
       await this.getRegistryClient()
-    ).request(url, useCache === false ? { useCache } : {})
+    ).request(url, revalidate ? { forceRevalidate: true } : {})
     if (response.statusCode !== 200) {
       throw this.#resolveError(
         spec,
@@ -2156,9 +2156,20 @@ export class PackageInfoClient {
   ) {
     let pin = this.#gitPins.get(ref)
     if (!pin) {
-      pin = gitPin(spec, ref, (url, useCache) =>
-        this.#fetchURL(spec, url, options, useCache),
-      )
+      pin = this.getRegistryClient()
+        .then(rc =>
+          gitPin(
+            spec,
+            ref,
+            (url, revalidate) =>
+              this.#fetchURL(spec, url, options, revalidate),
+            rc,
+          ),
+        )
+        .then(({ resolved, response }) => ({
+          resolved,
+          integrity: storedIntegrity(response),
+        }))
       this.#gitPins.set(ref, pin)
     }
     return pin
