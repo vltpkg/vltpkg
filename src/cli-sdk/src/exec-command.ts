@@ -295,6 +295,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   printResult(path: string, result: RunResult, elapsed: number) {
+    // a failure fails the command in every view, even with --no-bail
+    if (!isSingleSuccess(result)) setExitCode(result)
     // non-human results just get printed at the end
     if (this.view !== 'human') return
 
@@ -321,7 +323,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
       /* c8 ignore stop */
-      setExitCode(result)
     }
   }
 

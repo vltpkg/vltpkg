@@ -485,6 +485,53 @@ t.test('one ws fails, without bail', async t => {
   process.exitCode = exitCode
 })
 
+t.test('one ws fails, without bail, json view', async t => {
+  const { exitCode } = process
+  t.teardown(() => {
+    process.exitCode = exitCode
+  })
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: fail,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  unload()
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values.bail = false
+  conf.values.view = 'json'
+  conf.values.recursive = true
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  process.exitCode = 0
+  const result = await command(conf)
+  t.match(result, {
+    'src/a': { status: 1 },
+    'src/b': { status: 0 },
+  })
+  // results are printed by the json view at the end
+  t.strictSame(logs(), [])
+  t.equal(process.exitCode, 1)
+})
+
 t.test(
   'if-present with missing script in single project',
   async t => {

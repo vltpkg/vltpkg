@@ -58,10 +58,16 @@ t.test('with view', t => {
     execFG,
   )
   t.equal(e.view, 'inspect')
-  t.equal(
-    e.printResult('path', {} as unknown as RunResult, 0),
-    undefined,
-  )
+  // nothing is printed, but a failure still sets the exit code
+  const { exitCode } = process
+  process.exitCode = 0
+  const result = (status: number) =>
+    ({ status, signal: null }) as unknown as RunResult
+  t.equal(e.printResult('path', result(0), 0), undefined)
+  t.equal(process.exitCode, 0)
+  t.equal(e.printResult('path', result(2), 0), undefined)
+  t.equal(process.exitCode, 2)
+  process.exitCode = exitCode
   t.end()
 })
 
