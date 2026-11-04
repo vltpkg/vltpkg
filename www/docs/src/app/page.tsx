@@ -16,6 +16,7 @@ import {
   PackageIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
+  SquareTerminalIcon,
   TerminalIcon,
   TextSearchIcon,
   UploadIcon,
@@ -25,7 +26,11 @@ import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AgentPrompt } from '@/components/agent-prompt'
 import { Book } from '@/components/book'
-import { dssQuerySkill, registryMigrationSkill } from '@/lib/skills'
+import {
+  dssQuerySkill,
+  registryMigrationSkill,
+  vltCliSkill,
+} from '@/lib/skills'
 import { siteUrl } from '@/lib/site-url'
 
 const lede =
@@ -88,7 +93,7 @@ const jsonLd = {
 
 const prompt = `Help me use vlt in this project. Start by reading ${docs}/llms.txt, which lists every page of the vlt docs. Any page is available as Markdown by adding .md to its URL (for example ${docs}/client/auth.md), and ${docs}/llms-full.txt has the whole site in one file.
 
-1. Install the vlt CLI with \`curl -fsSL https://install.vlt.sh | bash\` (it requires Node.js 22.22 or later), then run \`vlt install\`.
+1. Install the vlt CLI with \`curl -fsSL https://install.vlt.sh | bash\` (it requires Node.js 22.22 or later), then run \`vlt install\`. If you support Agent Skills, the vlt-cli skill at ${docs}${vltCliSkill.url} is a short map of the CLI: install management, registry setup, and where queries go.
 2. To use vlt.io registries, run \`vlt setup\`. It authenticates and configures the account's registry aliases in one step. To move an existing repository (and its CI) onto a vlt.io registry, follow ${docs}${registryMigrationSkill.url}.
 3. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${docs}${dssQuerySkill.url} covers it.
 
@@ -108,6 +113,13 @@ const cards: Card[] = [
     description:
       "Add .md to any page's URL for a plain Markdown copy, or read the whole site in one file.",
     href: '/llms-full.txt',
+  },
+  {
+    icon: SquareTerminalIcon,
+    title: 'vlt CLI skill',
+    description:
+      'An agent skill that maps the vlt CLI: install management, registry setup, and where DSS queries go.',
+    href: vltCliSkill.github,
   },
   {
     icon: TerminalIcon,

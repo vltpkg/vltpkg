@@ -16,6 +16,7 @@ tmp
 /skills/*
 !/skills/vlt-registry-migration/
 !/skills/dss-query/
+!/skills/vlt-cli/
 /scripts/fixtures/
 /results/
 
