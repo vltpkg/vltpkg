@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { command, usage, views } from '../../src/commands/run.ts'
-import { setupEnv } from '../fixtures/util.ts'
+import { scrubTimes, setupEnv } from '../fixtures/util.ts'
 import { unload } from '@vltpkg/vlt-json'
 
 setupEnv(t)
@@ -203,10 +203,11 @@ t.test('runs --scope targets in dependency order', async t => {
     const logs = t.capture(console, 'log').args
     const result = await command(conf)
     t.strictSame(Object.keys(result), ['src/c', 'src/b', 'src/a'])
-    t.strictSame(logs(), [
-      ['src/c', 'ok'],
-      ['src/b', 'ok'],
-      ['src/a', 'ok'],
+    t.strictSame(scrubTimes(logs()), [
+      ['src/c  ✓ hello (T)'],
+      ['src/b  ✓ hello (T)'],
+      ['src/a  ✓ hello (T)'],
+      ['\n3 tasks · T total'],
     ])
   }
 
@@ -800,10 +801,11 @@ t.test(
       },
     })
     t.strictSame(
-      new Set(logs()),
+      new Set(scrubTimes(logs())),
       new Set([
-        ['src/a', 'ok'],
-        ['src/b', 'ok'],
+        ['src/a  ✓ hello (T)'],
+        ['src/b  ✓ hello (T)'],
+        ['\n2 tasks · T total'],
       ]),
     )
     t.strictSame(new Set(errs()), new Set())
