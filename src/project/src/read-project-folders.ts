@@ -1,51 +1,31 @@
 import { availableParallelism, homedir } from 'node:os'
 import { dirname } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
-
 import { callLimit } from 'promise-call-limit'
+import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.ts'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 let home: string
 try {
   home = homedir()
 } catch {
+  // In restricted environments, homedir() might fail.
+  // Fall back to current working directory.
   home = dirname(process.cwd())
 }
 
-const ignoredHomedirFolderNames = [
-  'downloads',
-  'movies',
-  'music',
-  'pictures',
-  'private',
-  'library',
-  'dropbox',
-].concat(
-  process.platform === 'darwin' ?
-    [
-      'public',
-      'private',
-      'applications',
-      'applications (parallels)',
-      'sites',
-      'sync',
-    ]
-  : process.platform === 'win32' ?
-    [
-      'appdata',
-      'application data',
-      'favorites',
-      'links',
-      'videos',
-      'contacts',
-      'searches',
-    ]
-  : ['videos', 'public'],
-)
-
-type ProjectFolderOptions = {
+export type ProjectFolderOptions = {
+  /**
+   * The standard path to read from, defaults to the user's home directory.
+   */
   path?: string
+  /**
+   * A {@link PathScurry} object, for use in globs.
+   */
   scurry: PathScurry
+  /**
+   * A list of user defined project paths set in the configuration file.
+   */
   userDefinedProjectPaths: string[]
 }
 
@@ -69,6 +49,8 @@ export const readProjectFolders = async (
   const result: PathBase[] = []
   const homeEntry = scurry.cwd.resolve(home)
 
+  // read entry point folders to collect which ones
+  // should we recursively traverse to collect project folders
   const paths =
     userDefinedProjectPaths.length ? userDefinedProjectPaths : [path]
 
@@ -107,13 +89,15 @@ export const readProjectFolders = async (
   do {
     t = traverse
     traverse = []
-
     await callLimit(t, { limit })
   } while (traverse.length)
 
   return result
 }
 
+// collectResult will return true in case it finds a directory that
+// has no package.json file in it but that can still be potentially
+// recursive traversed in the future
 const collectResult = async (
   entry: PathBase,
   result: PathBase[],
@@ -139,9 +123,7 @@ const collectResult = async (
     .lstat(`${resolved}/package.json`)
     .catch(() => {})
   const hasValidPackageJson =
-    statPackageJson &&
-    statPackageJson.isFile() &&
-    !statPackageJson.isSymbolicLink()
+    statPackageJson?.isFile() && !statPackageJson.isSymbolicLink()
 
   if (hasValidPackageJson) result.push(entry)
 

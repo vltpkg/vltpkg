@@ -89,6 +89,7 @@ this repository and its corresponding license:
 | [@vltpkg/package-json](./src/package-json)         | [BSD-2-Clause-Patent](./src/package-json/LICENSE)     | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/package-json?logo=npm)     |
 | [@vltpkg/pick-manifest](./src/pick-manifest)       | [BSD-2-Clause-Patent](./src/pick-manifest/LICENSE)    | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/pick-manifest?logo=npm)    |
 | [@vltpkg/promise-spawn](./src/promise-spawn)       | [ISC](./src/promise-spawn/LICENSE)                    | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/promise-spawn?logo=npm)    |
+| [@vltpkg/project](./src/project)                   | [BSD-2-Clause-Patent](./src/project/LICENSE)          | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/project?logo=npm)          |
 | [@vltpkg/query](./src/query)                       | [BSD-2-Clause-Patent](./src/query/LICENSE)            | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/query?logo=npm)            |
 | [@vltpkg/registry-client](./src/registry-client)   | [BSD-2-Clause-Patent](./src/registry-client/LICENSE)  | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/registry-client?logo=npm)  |
 | [@vltpkg/rollback-remove](./src/rollback-remove)   | [BSD-2-Clause-Patent](./src/rollback-remove/LICENSE)  | ![NPM Downloads](https://img.shields.io/npm/dm/@vltpkg/rollback-remove?logo=npm)  |
