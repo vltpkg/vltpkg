@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import t from 'tap'
 
 t.test('renderMermaidSvg', async t => {
@@ -81,6 +82,14 @@ t.test('renderMermaidToPng', async t => {
   t.equal(contents[3], 0x47, 'should have G')
 
   // Call again to exercise the WASM-already-initialized path
+  t.intercept(process, 'env', {
+    value: {
+      ...process.env,
+      __VLT_INTERNAL_RESVG_WASM: createRequire(
+        import.meta.url,
+      ).resolve('@resvg/resvg-wasm/index_bg.wasm'),
+    },
+  })
   const filePath2 = await renderMermaidToPng('graph TD\n  X --> Y')
   t.match(
     filePath2,
