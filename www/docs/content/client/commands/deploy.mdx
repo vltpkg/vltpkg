@@ -1,0 +1,75 @@
+---
+title: vlt deploy
+sidebar:
+  label: deploy
+---
+
+Usage:
+
+<Code code="$ vlt deploy <target-dir>" title="Terminal" lang="bash" />
+
+Copy a workspace and its production dependencies into a standalone
+folder, ready to ship, for example in a Docker image. It works like
+`pnpm deploy`.
+
+<Code
+  code={`# From the project root
+$ vlt deploy -w apps/api ./dist/api
+
+# From inside the workspace folder
+
+$ cd apps/api && vlt deploy ../../dist/api`} title="Terminal"
+lang="bash" />
+
+## What ends up in the target
+
+- The workspace's files, selected the same way
+  [`vlt pack`](/client/commands/pack) selects them (the `files` field,
+  `.npmignore` or `.gitignore`). Build the workspace before deploying
+  it: no lifecycle scripts run.
+- Its `package.json` without `devDependencies`.
+- Every workspace it depends on, copied as a real folder into
+  `.vlt-deploy/` inside the target. Nothing in the target links back
+  to the project, so the folder can be copied or moved on its own.
+- A `node_modules` folder with the production dependencies, and the
+  `vlt.json` and `vlt-lock.json` it was installed from.
+
+Dependencies are installed from the project's `vlt-lock.json`, so the
+target gets the exact versions the project uses. `vlt deploy` fails if
+the lockfile is missing or out of date: run `vlt install` in the
+project first.
+
+<Code
+  code={`FROM node:22-slim
+COPY dist/api /app
+WORKDIR /app
+CMD ["node", "index.js"]`}
+  title="Dockerfile"
+  lang="dockerfile"
+/>
+
+## Lifecycle scripts
+
+Like [`vlt install`](/client/commands/install), `vlt deploy` runs **no
+lifecycle scripts** of dependencies unless allowed with
+`--allow-scripts`. The query is saved to the target's `vlt.json`, so
+`vlt build` in the target uses it too.
+
+<Code
+  code={`$ vlt deploy -w apps/api ./dist/api --allow-scripts="#esbuild"`}
+  title="Terminal"
+  lang="bash"
+/>
+
+## Limitations
+
+- Only one workspace is deployed at a time.
+- `file:` dependencies are not supported.
+
+## Options
+
+| Flag                      | Description                                                 |
+| ------------------------- | ----------------------------------------------------------- |
+| `--workspace=<path>`      | The workspace to deploy, inferred inside a workspace folder |
+| `--allow-scripts=<query>` | Allow matching packages to run lifecycle scripts            |
+| `--force`                 | Remove the contents of the target folder if it is not empty |
