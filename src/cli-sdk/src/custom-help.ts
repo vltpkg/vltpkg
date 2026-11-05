@@ -116,6 +116,10 @@ const commandHelp = {
     args: '<pkg>[@<version>] <message>',
     desc: 'Deprecate a package or version range',
   },
+  deploy: {
+    args: '<target-dir>',
+    desc: 'Copy a workspace and its production dependencies into a folder',
+  },
   'dist-tag': {
     args: '[add|rm|ls] [<args>]',
     desc: 'Manage package distribution tags',

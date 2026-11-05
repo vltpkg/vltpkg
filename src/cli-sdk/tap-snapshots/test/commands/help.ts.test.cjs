@@ -24,6 +24,7 @@ COMMANDS
                  config       [get|pick|lis... Get or set configuration
                  create       <initializer>... Create a new project from a template
 
+                 deploy       <target-dir>     Copy a workspace and its production dependencies into a folder
                  deprecate    <pkg>[@<versi... Deprecate a package or version range
                  dist-tag     [add|rm|ls] [... Manage package distribution tags
                  docs                          Open the docs of the current project

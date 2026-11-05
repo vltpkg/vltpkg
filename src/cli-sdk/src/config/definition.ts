@@ -24,6 +24,7 @@ const canonicalCommands = {
   build: 'build',
   cache: 'cache',
   ci: 'ci',
+  deploy: 'deploy',
   config: 'config',
   create: 'create',
   deprecate: 'deprecate',
