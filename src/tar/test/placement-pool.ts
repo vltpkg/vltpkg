@@ -136,6 +136,27 @@ t.test('warm starts the workers; unpacking uses them', async t => {
   await pool.unpack(makePkg('again', '8.0.0'), resolve(d, 'nm/again'))
   t.equal(version(resolve(d, 'nm/again')), '8.0.0')
   t.equal(pool.workerCount, 2)
+  // `path` reaches the worker: only that dir of the tarball's root dir
+  const sub = JSON.stringify({ name: 'sub', version: '9.0.0' })
+  const mono = makeTar([
+    { path: 'r/package.json', size: 2, type: 'File' },
+    '{}',
+    { path: 'r/sub/package.json', size: sub.length, type: 'File' },
+    sub,
+  ])
+  const monoEntry = resolve(d, 'mono')
+  writeFileSync(monoEntry, cacheEntry(mono))
+  await Promise.all([
+    pool.unpack(mono, resolve(d, 'nm/sub'), undefined, 'sub'),
+    pool.unpackCacheEntry(
+      monoEntry,
+      resolve(d, 'nm/sub-entry'),
+      undefined,
+      'sub',
+    ),
+  ])
+  t.equal(version(resolve(d, 'nm/sub')), '9.0.0')
+  t.equal(version(resolve(d, 'nm/sub-entry')), '9.0.0')
 })
 
 t.test(
