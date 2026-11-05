@@ -1,5 +1,6 @@
 import { constants, gunzipSync } from 'node:zlib'
 import { Header } from 'tar/header'
+import { Parser } from 'tar/parse'
 import { Pax } from 'tar/pax'
 
 // compressed bytes to inflate: git archive needs ~200 for its first 1024
@@ -36,4 +37,25 @@ export const gitArchiveCommit = (
   } catch {
     return undefined
   }
+}
+
+// a file in the tarball's root dir
+const rootGitmodules = /^[^/]+\/\.gitmodules$/
+
+/**
+ * Whether a tarball's root dir has a `.gitmodules` file: a `git
+ * archive` of a repo with submodules, which it leaves out. Takes a
+ * gzipped or raw tarball; `false` if it is not one.
+ */
+export const gitArchiveSubmodules = (tarData: Buffer): boolean => {
+  let found = false
+  try {
+    new Parser({
+      onReadEntry: e => {
+        found ||= e.type === 'File' && rootGitmodules.test(e.path)
+        e.resume()
+      },
+    }).end(tarData)
+  } catch {}
+  return found
 }
