@@ -199,14 +199,15 @@ jobs:
             # Check for packages with known vulnerabilities
             :vulnerable --view=json
 
-            # Check for copy-lefy licenses
+            # Check for copyleft licenses
             *:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0])) --expect-results=0
 
             # Check for missing licenses
             *:license(none) --expect-results=0
 
             # Ensure no deprecated packages
-            :deprecated --expect-results=0
+            # eslint 9 is exempt until we move to ESLint 10: every 9.x release is deprecated
+            :deprecated:not(#eslint:semver(^9)) --expect-results=0
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
