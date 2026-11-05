@@ -1,7 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
-import { install } from '@vltpkg/graph'
-import { saveAllowSkills } from '../allow-skills.ts'
-import type { AllowSkillsSave } from '../allow-skills.ts'
+import { assertQuery, install } from '@vltpkg/graph'
+import { saveAllow } from '../allow-query.ts'
+import type { AllowSave } from '../allow-query.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import {
   assertGlobalOptions,
@@ -68,7 +68,12 @@ export type InstallResult = {
    * `--allow-skills` saved to vlt.json, or kept because another query
    * is stored.
    */
-  allowSkills?: AllowSkillsSave
+  allowSkills?: AllowSave
+  /**
+   * `--allow-scripts` saved to vlt.json, or kept because another query
+   * is stored.
+   */
+  allowScripts?: AllowSave
   /**
    * Bins linked by a `--global` install.
    */
@@ -154,7 +159,7 @@ export const usage: CommandUsage = () =>
       'allow-scripts': {
         value: '<query>',
         description:
-          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax.',
+          'Filter which packages are allowed to run lifecycle scripts using DSS query syntax. Saved to vlt.json.',
       },
       'allow-skills': {
         value: '<query>',
@@ -252,6 +257,7 @@ export const views = {
       : null),
       ...(i.skills ? { skills: skillsJson(i.skills) } : null),
       ...(i.allowSkills ? { allowSkills: i.allowSkills } : null),
+      ...(i.allowScripts ? { allowScripts: i.allowScripts } : null),
       ...(i.global ? { global: i.global } : null),
       ...(i.self ? { self: i.self } : null),
     }
@@ -268,6 +274,9 @@ export const command: CommandFn<
   // TODO: we should probably throw an error if the user
   // tries to install using view=mermaid
   if (conf.globalRoot) assertGlobalOptions(conf)
+  // checked up front: saved after install
+  const scripts = conf.explicit['allow-scripts']
+  if (scripts) await assertQuery(scripts, 'allow-scripts')
   // throws before any global ws dir is created
   const persist = planSpecConfigPersist(conf)
   // vlt i -g vlt: before any global ws or bin dir is created
@@ -322,11 +331,15 @@ export const command: CommandFn<
     ))
   if (persist)
     await conf.addConfigToFile(persist.which, persist.values)
-  // nothing linked on --lockfile-only
+  // nothing linked or built on --lockfile-only
   const allowSkillsSave =
     conf.options['lockfile-only'] ?
       undefined
-    : await saveAllowSkills(conf)
+    : await saveAllow(conf, 'allow-skills')
+  const allowScriptsSave =
+    conf.options['lockfile-only'] ?
+      undefined
+    : await saveAllow(conf, 'allow-scripts')
   /* c8 ignore next 9 - telemetry is best-effort */
   try {
     trackInstall(
@@ -345,6 +358,7 @@ export const command: CommandFn<
     ...(migrated ? { migratedWorkspaces: migrated } : null),
     ...(skills ? { skills } : null),
     ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
+    ...(allowScriptsSave ? { allowScripts: allowScriptsSave } : null),
     ...(global ? { global } : null),
     ...(selfPlan ? { self: await selfPlan.finish(global) } : null),
   }

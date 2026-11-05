@@ -45,7 +45,7 @@ dependencies).
 
     allow-scripts
       Filter which packages are allowed to run lifecycle scripts using DSS query
-      syntax.
+      syntax. Saved to vlt.json.
 
       ​--allow-scripts=<query>
 
