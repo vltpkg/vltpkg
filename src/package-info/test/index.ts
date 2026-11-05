@@ -707,7 +707,9 @@ const server = createServer((req, res) => {
               resolveTrickleMs * (i + 1),
             ),
           )
-        } else if (resolveHoldMs)
+        } else if (resolveGate)
+          void resolveGate.then(() => res.end(ndjson))
+        else if (resolveHoldMs)
           setTimeout(() => res.end(ndjson), resolveHoldMs)
         else res.end(ndjson)
       })
@@ -720,11 +722,15 @@ const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/json')
       res.setHeader('cache-control', 'public, max-age=86400')
       res.setHeader('content-length', json.length)
-      if (capabilitiesHoldMs) {
-        setTimeout(() => res.end(json), capabilitiesHoldMs)
+      const send = () => {
+        capabilitiesServed++
+        res.end(json)
+      }
+      if (capabilitiesGate) {
+        void capabilitiesGate.then(send)
         return
       }
-      return res.end(json)
+      return send()
     }
     case '/no-integrity': {
       const json = JSON.stringify({
@@ -767,13 +773,17 @@ let plainTarRequests = 0
 let noTypeRequests = 0
 let noTypeTarRequests = 0
 let capabilitiesRequests = 0
-// ms the capabilities document is withheld for; 0 answers immediately
-let capabilitiesHoldMs = 0
+// the capabilities documents sent so far
+let capabilitiesServed = 0
+// while set, the capabilities document is withheld until it resolves
+let capabilitiesGate: Promise<void> | undefined
 // what the resolve endpoint serves, and the requests it saw
 const resolveRequests: Record<string, unknown>[] = []
 let resolveRecords: Record<string, unknown>[] = []
 // ms the resolve endpoint withholds its body for; 0 answers immediately
 let resolveHoldMs = 0
+// while set, the resolve body is withheld until it resolves
+let resolveGate: Promise<void> | undefined
 // ms between records when the endpoint trickles them; 0 sends them at once
 let resolveTrickleMs = 0
 let stableRequests: string[] = []
@@ -788,6 +798,13 @@ let capabilitiesDocument: Record<string, unknown> = {
     'application/vnd.vlt.packument-v1+json',
     'application/vnd.npm.install-v1+json',
   ],
+}
+
+/** A held response, and the function that releases it. */
+const held = () => {
+  let release!: () => void
+  const gate = new Promise<void>(res => (release = res))
+  return { gate, release }
 }
 
 const defaultRegistry = `http://localhost:${PORT}/`
@@ -5510,7 +5527,9 @@ t.test('prefetchResolve', async t => {
   t.beforeEach(() => {
     resetCapabilities()
     capabilitiesDocument = { resolve: '0.1' }
-    capabilitiesHoldMs = 0
+    capabilitiesGate = undefined
+    capabilitiesServed = 0
+    resolveGate = undefined
     resolveRequests.length = 0
     resolveHoldMs = 0
     resolveTrickleMs = 0
@@ -5797,20 +5816,18 @@ t.test('prefetchResolve', async t => {
   t.test(
     'a request to a registry that turns out not to serve it is ended',
     async t => {
-      // the endpoint would answer late; the document saying there is no
-      // endpoint ends the request first
+      // the endpoint never answers while the test runs; only the document
+      // saying there is no endpoint can end the request, and drain() waits
+      // on it, so this test finishing is the check
       capabilitiesDocument = {}
-      resolveHoldMs = 2000
+      const body = held()
+      resolveGate = body.gate
+      t.teardown(body.release)
       const pi = freshClient(t)
-      const start = Date.now()
       pi.prefetchResolve(defaultRegistry, { roots })
       const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
       t.equal(mani.version, '2.0.0', 'served by the per-name path')
       await pi.drain()
-      t.ok(
-        Date.now() - start < 1500,
-        'without waiting for the stream',
-      )
       t.equal(resolveRequests.length, 1, 'the request had gone out')
       t.equal(pi.resolvedManifestCount, 0, 'and delivered nothing')
     },
@@ -5819,17 +5836,18 @@ t.test('prefetchResolve', async t => {
   t.test(
     'sends the resolve before the capabilities document arrives',
     async t => {
-      capabilitiesHoldMs = 300
+      const doc = held()
+      capabilitiesGate = doc.gate
       t.intercept(process, 'env', {
         value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
       })
       const pi = freshClient(t)
-      const start = Date.now()
       pi.prefetchResolve(defaultRegistry, { roots })
       const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
       t.equal(mani.version, '2.0.0')
-      t.ok(Date.now() - start < 250, 'answered before the document')
+      t.equal(capabilitiesServed, 0, 'answered before the document')
       t.ok(pi.resolvedManifestCount > 0, 'by the resolve stream')
+      doc.release()
       await pi.capabilities(defaultRegistry)
     },
   )
@@ -5957,7 +5975,8 @@ t.test('prefetchResolve', async t => {
       // the registry is slow to say what it serves; the hedge goes out
       // without waiting for that, with the url that is right regardless
       capabilitiesDocument = {}
-      capabilitiesHoldMs = 300
+      const doc = held()
+      capabilitiesGate = doc.gate
       stableRequests = []
       t.intercept(process, 'env', {
         value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '50' },
@@ -5966,18 +5985,18 @@ t.test('prefetchResolve', async t => {
       pi.prefetchResolve(defaultRegistry, {
         roots: [{ name: 'stable-range', spec: '^1.0.0' }],
       })
-      const start = Date.now()
       const mani = (await pi.manifest(
         'stable-range@^1.0.0',
       )) as Manifest
       t.equal(mani.version, '1.1.0')
-      t.ok(Date.now() - start < 250, 'without waiting for the answer')
+      t.equal(capabilitiesServed, 0, 'without waiting for the answer')
       t.strictSame(stableRequests, ['/stable-range'], 'fetched plain')
       t.equal(
         resolveRequests.length,
         1,
         'the resolve did not wait either',
       )
+      doc.release()
       await pi.capabilities(defaultRegistry)
     },
   )
