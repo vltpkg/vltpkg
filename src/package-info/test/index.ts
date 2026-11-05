@@ -5781,15 +5781,56 @@ t.test('prefetchResolve', async t => {
   )
 
   t.test(
-    'a registry without the endpoint leaves everything alone',
+    'a registry known not to serve the endpoint is not asked',
     async t => {
       capabilitiesDocument = {}
       const pi = freshClient(t)
+      await pi.capabilities(defaultRegistry)
       pi.prefetchResolve(defaultRegistry, { roots })
       const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
       t.equal(mani.version, '2.0.0', 'served by the per-name path')
       t.equal(pi.resolvedManifestCount, 0)
       t.strictSame(resolveRequests, [], 'no resolve request was made')
+    },
+  )
+
+  t.test(
+    'a request to a registry that turns out not to serve it is ended',
+    async t => {
+      // the endpoint would answer late; the document saying there is no
+      // endpoint ends the request first
+      capabilitiesDocument = {}
+      resolveHoldMs = 2000
+      const pi = freshClient(t)
+      const start = Date.now()
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0', 'served by the per-name path')
+      await pi.drain()
+      t.ok(
+        Date.now() - start < 1500,
+        'without waiting for the stream',
+      )
+      t.equal(resolveRequests.length, 1, 'the request had gone out')
+      t.equal(pi.resolvedManifestCount, 0, 'and delivered nothing')
+    },
+  )
+
+  t.test(
+    'sends the resolve before the capabilities document arrives',
+    async t => {
+      capabilitiesHoldMs = 300
+      t.intercept(process, 'env', {
+        value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
+      })
+      const pi = freshClient(t)
+      const start = Date.now()
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+      t.equal(mani.version, '2.0.0')
+      t.ok(Date.now() - start < 250, 'answered before the document')
+      t.ok(pi.resolvedManifestCount > 0, 'by the resolve stream')
+      await pi.capabilities(defaultRegistry)
     },
   )
 
@@ -5932,7 +5973,11 @@ t.test('prefetchResolve', async t => {
       t.equal(mani.version, '1.1.0')
       t.ok(Date.now() - start < 250, 'without waiting for the answer')
       t.strictSame(stableRequests, ['/stable-range'], 'fetched plain')
-      t.strictSame(resolveRequests, [], 'and nothing was resolved')
+      t.equal(
+        resolveRequests.length,
+        1,
+        'the resolve did not wait either',
+      )
       await pi.capabilities(defaultRegistry)
     },
   )

@@ -1436,7 +1436,15 @@ export class PackageInfoClient {
     owner.controller.abort()
   }
 
-  /** Never rejects: a resolve that fails leaves every spec to manifest(). */
+  /**
+   * Never rejects: a resolve that fails leaves every spec to manifest().
+   *
+   * Sent without waiting for the capability document, which on a cold
+   * cache is a round trip of its own. A registry already known not to
+   * serve resolve is not asked. One that turns out not to serve it has
+   * the request ended as soon as its document says so, and any answer
+   * but a 207 already leaves every spec to manifest().
+   */
   async #runResolve(
     registry: string,
     request: ResolveRequest,
@@ -1444,11 +1452,18 @@ export class PackageInfoClient {
     inflight: { lastRecordAt: number },
   ): Promise<void> {
     try {
-      if ((await this.capabilities(registry)).resolve === undefined)
-        return
       const client = await this.getRegistryClient()
-      // the stream's grace runs from when it is asked for, not from the
-      // capabilities round trip before it
+      const known = peekCapabilities(client, registry)
+      if (known && known.resolve === undefined) return
+      const unsupported = new AbortController()
+      if (!known) {
+        this.#inBackground(
+          this.capabilities(registry).then(caps => {
+            if (caps.resolve === undefined) unsupported.abort()
+          }),
+        )
+      }
+      // the stream's grace runs from when it is asked for
       inflight.lastRecordAt = Date.now()
       await fetchResolve(
         client,
@@ -1479,7 +1494,7 @@ export class PackageInfoClient {
             record.manifest,
           )
         },
-        signal,
+        AbortSignal.any([signal, unsupported.signal]),
       )
     } catch {
       // The per-name path still has every spec.
