@@ -451,14 +451,15 @@ export class PackageInfoClient {
   /**
    * Whether the packument for `f` can be fetched with `?stable`: the
    * selector has to be one a prerelease cannot answer, and the registry
-   * must not have told us it does not serve the filter.
+   * has to have said it serves the filter.
    *
    * Never waits on the capability document, which would put a round trip in
    * front of the first packument of every cold install. Until that document
-   * arrives the answer is yes: a registry that does not know `?stable`
-   * ignores the parameter and serves the full packument, which resolution
-   * reads just as well. Once the document does arrive it is authoritative,
-   * so a registry that does not serve the filter stops being asked with it.
+   * arrives the answer is no: the plain url is right on every registry and
+   * cached by every CDN, where a `?stable` the registry does not know is a
+   * cache miss on the npm registry's. The document is on disk for a day
+   * once fetched, so only a registry's first install asks the first level
+   * unfiltered.
    */
   #stable(f: Spec): boolean {
     const { registry } = f
@@ -466,12 +467,11 @@ export class PackageInfoClient {
     const client = this.#registryClient
     if (!client) {
       // the registry client is built lazily, so the first caller starts it
-      // and the document along with it, and asks optimistically meanwhile
+      // and the document along with it
       this.#inBackground(this.capabilities(registry))
-      return true
+      return false
     }
-    const caps = peekCapabilities(client, registry)
-    return !caps || !!caps['stable-filter']
+    return !!peekCapabilities(client, registry)?.['stable-filter']
   }
 
   async getTarPool() {
@@ -1447,6 +1447,9 @@ export class PackageInfoClient {
       if ((await this.capabilities(registry)).resolve === undefined)
         return
       const client = await this.getRegistryClient()
+      // the stream's grace runs from when it is asked for, not from the
+      // capabilities round trip before it
+      inflight.lastRecordAt = Date.now()
       await fetchResolve(
         client,
         registry,

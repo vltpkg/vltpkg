@@ -720,6 +720,10 @@ const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/json')
       res.setHeader('cache-control', 'public, max-age=86400')
       res.setHeader('content-length', json.length)
+      if (capabilitiesHoldMs) {
+        setTimeout(() => res.end(json), capabilitiesHoldMs)
+        return
+      }
       return res.end(json)
     }
     case '/no-integrity': {
@@ -763,6 +767,8 @@ let plainTarRequests = 0
 let noTypeRequests = 0
 let noTypeTarRequests = 0
 let capabilitiesRequests = 0
+// ms the capabilities document is withheld for; 0 answers immediately
+let capabilitiesHoldMs = 0
 // what the resolve endpoint serves, and the requests it saw
 const resolveRequests: Record<string, unknown>[] = []
 let resolveRecords: Record<string, unknown>[] = []
@@ -4394,6 +4400,7 @@ t.test('the ?stable packument filter', async t => {
     'a range no prerelease can answer asks for it',
     async t => {
       const pi = client(t)
+      await pi.capabilities(defaultRegistry)
       t.equal(
         (await pi.manifest('stable-range@^1.0.0')).version,
         '1.1.0',
@@ -4404,6 +4411,7 @@ t.test('the ?stable packument filter', async t => {
 
   await t.test('an exact version asks for it too', async t => {
     const pi = client(t)
+    await pi.capabilities(defaultRegistry)
     t.equal(
       (await pi.manifest('stable-exact@1.0.0')).version,
       '1.0.0',
@@ -4416,8 +4424,6 @@ t.test('the ?stable packument filter', async t => {
     async t => {
       capabilitiesDocument = withoutFilter
       const pi = client(t)
-      // settle the document first: until it lands the client asks
-      // optimistically, which the next subtest covers
       await pi.capabilities(defaultRegistry)
       t.equal(
         (await pi.manifest('stable-nofilter@^1.0.0')).version,
@@ -4446,6 +4452,7 @@ t.test('the ?stable packument filter', async t => {
           resetCapabilities()
           stableRequests = []
           const pi = client(t)
+          await pi.capabilities(defaultRegistry)
           t.equal((await pi.manifest(spec)).version, version)
           t.notMatch(
             stableRequests[0],
@@ -4458,33 +4465,31 @@ t.test('the ?stable packument filter', async t => {
   )
 
   await t.test(
-    'asks optimistically before the document lands',
+    'asks for the full packument until the document lands',
     async t => {
-      // no round trip in front of the first packument of a cold install:
-      // a registry that does not know `?stable` ignores it and serves the
-      // full packument, which resolves just as well
-      capabilitiesDocument = withoutFilter
+      // no round trip in front of the first packument of a cold install,
+      // and no `?stable` the registry might not know: the plain url is
+      // right everywhere, and cached everywhere
       const pi = client(t)
       t.equal(
         (await pi.manifest('stable-optimistic@^1.0.0')).version,
         '1.1.0',
       )
-      t.strictSame(stableRequests, ['/stable-optimistic?stable'])
+      t.strictSame(stableRequests, ['/stable-optimistic'])
     },
   )
 
   await t.test(
-    'stops asking once the registry says it has no filter',
+    'starts asking once the registry says it has the filter',
     async t => {
-      capabilitiesDocument = withoutFilter
       const pi = client(t)
-      // first ask is optimistic, and settles the document behind it
+      // the first ask goes plain, and settles the document behind it
       await pi.manifest('stable-first@^1.0.0')
       await pi.capabilities(defaultRegistry)
       await pi.manifest('stable-second@^1.0.0')
       t.strictSame(stableRequests, [
-        '/stable-first?stable',
-        '/stable-second',
+        '/stable-first',
+        '/stable-second?stable',
       ])
     },
   )
@@ -4530,6 +4535,7 @@ t.test('the ?stable packument filter', async t => {
 
   await t.test('the two shapes cache separately', async t => {
     const pi = client(t)
+    await pi.capabilities(defaultRegistry)
     await pi.manifest('stable-split@^1.0.0')
     await pi.packument('stable-split@^1.0.0')
     t.strictSame(
@@ -5504,6 +5510,7 @@ t.test('prefetchResolve', async t => {
   t.beforeEach(() => {
     resetCapabilities()
     capabilitiesDocument = { resolve: '0.1' }
+    capabilitiesHoldMs = 0
     resolveRequests.length = 0
     resolveHoldMs = 0
     resolveTrickleMs = 0
@@ -5900,6 +5907,33 @@ t.test('prefetchResolve', async t => {
       await t.rejects(pi.manifest('nope@^1.0.0'), {
         cause: { response: { statusCode: 404 } },
       })
+    },
+  )
+
+  t.test(
+    'hedges plain while the capabilities answer is out',
+    async t => {
+      // the registry is slow to say what it serves; the hedge goes out
+      // without waiting for that, with the url that is right regardless
+      capabilitiesDocument = {}
+      capabilitiesHoldMs = 300
+      stableRequests = []
+      t.intercept(process, 'env', {
+        value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '50' },
+      })
+      const pi = freshClient(t)
+      pi.prefetchResolve(defaultRegistry, {
+        roots: [{ name: 'stable-range', spec: '^1.0.0' }],
+      })
+      const start = Date.now()
+      const mani = (await pi.manifest(
+        'stable-range@^1.0.0',
+      )) as Manifest
+      t.equal(mani.version, '1.1.0')
+      t.ok(Date.now() - start < 250, 'without waiting for the answer')
+      t.strictSame(stableRequests, ['/stable-range'], 'fetched plain')
+      t.strictSame(resolveRequests, [], 'and nothing was resolved')
+      await pi.capabilities(defaultRegistry)
     },
   )
 
