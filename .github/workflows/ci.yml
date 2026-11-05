@@ -192,12 +192,14 @@ jobs:
       - name: Enforce Dependency Policies
         uses: vltpkg/policies@v2
         with:
+          # print informational query output, like the vulnerable count
+          show-results: always
           queries: |
             # Block any malware
             :malware --expect-results=0
 
-            # Check for packages with known vulnerabilities
-            :vulnerable --view=json
+            # Report how many packages have known vulnerabilities
+            :vulnerable --view=count
 
             # Check for copyleft licenses
             *:license(copyleft):not(:is([license=MIT],[license=LGPL-3.0-or-later],[license=MPL-2.0],[license=EPL-2.0])) --expect-results=0
