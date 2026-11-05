@@ -266,6 +266,7 @@ t.test(
       ],
     } as OptionsResults<ConfigDefinitions>
 
+    await conf.loadPackageInfo()
     const opts = conf.options
     const { packageInfo, scurry, packageJson, monorepo, ...o } = opts
     t.matchStrict(o, {
@@ -2463,3 +2464,47 @@ t.test('--global', async t => {
     })
   })
 })
+
+t.test(
+  'packageInfo is only loaded for commands that need it',
+  async t => {
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const dir = t.testdir({ 'package.json': '{}' })
+    t.chdir(dir)
+
+    const light = await Config.load(dir, ['run'], true)
+    t.throws(
+      () => light.options.packageInfo,
+      {
+        message: /package-info was not loaded/,
+        cause: { code: 'EUNKNOWN' },
+      },
+      'run does not load package-info',
+    )
+    t.throws(
+      () => ({ ...light.options }),
+      'spreading options throws too',
+    )
+    await light.loadPackageInfo()
+    await light.loadPackageInfo()
+    const pi = light.options.packageInfo
+    t.ok(pi, 'available once loaded')
+    t.equal(light.options.packageInfo, pi, 'memoized')
+    const fake = {} as typeof pi
+    light.options.packageInfo = fake
+    t.equal(light.options.packageInfo, fake, 'can be replaced')
+
+    const heavy = await Config.load(dir, ['install'], true)
+    t.ok(heavy.options.packageInfo, 'install loads it')
+
+    // last: the shared jack definition keeps --version set after this
+    const version = await Config.load(
+      dir,
+      ['install', '--version'],
+      true,
+    )
+    t.throws(() => version.options.packageInfo, '--version skips it')
+  },
+)
