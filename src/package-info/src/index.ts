@@ -451,14 +451,15 @@ export class PackageInfoClient {
   /**
    * Whether the packument for `f` can be fetched with `?stable`: the
    * selector has to be one a prerelease cannot answer, and the registry
-   * must not have told us it does not serve the filter.
+   * has to have said it serves the filter.
    *
    * Never waits on the capability document, which would put a round trip in
    * front of the first packument of every cold install. Until that document
-   * arrives the answer is yes: a registry that does not know `?stable`
-   * ignores the parameter and serves the full packument, which resolution
-   * reads just as well. Once the document does arrive it is authoritative,
-   * so a registry that does not serve the filter stops being asked with it.
+   * arrives the answer is no: the plain url is right on every registry and
+   * cached by every CDN, where a `?stable` the registry does not know is a
+   * cache miss on the npm registry's. The document is on disk for a day
+   * once fetched, so only a registry's first install asks the first level
+   * unfiltered.
    */
   #stable(f: Spec): boolean {
     const { registry } = f
@@ -466,12 +467,11 @@ export class PackageInfoClient {
     const client = this.#registryClient
     if (!client) {
       // the registry client is built lazily, so the first caller starts it
-      // and the document along with it, and asks optimistically meanwhile
+      // and the document along with it
       this.#inBackground(this.capabilities(registry))
-      return true
+      return false
     }
-    const caps = peekCapabilities(client, registry)
-    return !caps || !!caps['stable-filter']
+    return !!peekCapabilities(client, registry)?.['stable-filter']
   }
 
   async getTarPool() {
@@ -1436,7 +1436,15 @@ export class PackageInfoClient {
     owner.controller.abort()
   }
 
-  /** Never rejects: a resolve that fails leaves every spec to manifest(). */
+  /**
+   * Never rejects: a resolve that fails leaves every spec to manifest().
+   *
+   * Sent without waiting for the capability document, which on a cold
+   * cache is a round trip of its own. A registry already known not to
+   * serve resolve is not asked. One that turns out not to serve it has
+   * the request ended as soon as its document says so, and any answer
+   * but a 207 already leaves every spec to manifest().
+   */
   async #runResolve(
     registry: string,
     request: ResolveRequest,
@@ -1444,9 +1452,19 @@ export class PackageInfoClient {
     inflight: { lastRecordAt: number },
   ): Promise<void> {
     try {
-      if ((await this.capabilities(registry)).resolve === undefined)
-        return
       const client = await this.getRegistryClient()
+      const known = peekCapabilities(client, registry)
+      if (known && known.resolve === undefined) return
+      const unsupported = new AbortController()
+      if (!known) {
+        this.#inBackground(
+          this.capabilities(registry).then(caps => {
+            if (caps.resolve === undefined) unsupported.abort()
+          }),
+        )
+      }
+      // the stream's grace runs from when it is asked for
+      inflight.lastRecordAt = Date.now()
       await fetchResolve(
         client,
         registry,
@@ -1476,7 +1494,7 @@ export class PackageInfoClient {
             record.manifest,
           )
         },
-        signal,
+        AbortSignal.any([signal, unsupported.signal]),
       )
     } catch {
       // The per-name path still has every spec.
