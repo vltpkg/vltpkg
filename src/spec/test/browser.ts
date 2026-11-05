@@ -439,6 +439,26 @@ t.test('parse args', t => {
   })
 })
 
+t.test('default git host archives', t => {
+  for (const [spec, url] of [
+    [
+      'github:a/b#main',
+      'https://codeload.github.com/a/b/legacy.tar.gz/main',
+    ],
+    [
+      'github:a/b#pull/1',
+      'https://codeload.github.com/a/b/legacy.tar.gz/pull/1/head',
+    ],
+    [
+      'gitlab:a/b#feat/x',
+      'https://gitlab.com/api/v4/projects/a%2Fb/repository/archive.tar.gz?sha=feat/x',
+    ],
+  ] as const) {
+    t.equal(Spec.parse('x', spec).remoteURL, url, spec)
+  }
+  t.end()
+})
+
 t.test('getOptions', t => {
   t.matchSnapshot(getOptions({}), 'should get default options')
   t.strictSame(

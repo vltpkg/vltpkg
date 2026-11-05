@@ -567,11 +567,14 @@ t.test('hosted git resolved', async t => {
   })
   const legacy = joinDepIDTuple(['git', 'github:a/b', 'main'])
   const missing = joinDepIDTuple(['git', 'github:c/d', 'main'])
+  const api = joinDepIDTuple(['git', 'github:e/f', 'main'])
+  const apiURL = 'https://api.github.com/repos/e/f/tarball/main'
   loadNodes(
     graph,
     {
       [legacy]: [0, 'b', 'sha512-x', 'github:a/b'],
       [missing]: [0, 'd', 'sha512-x'],
+      [api]: [0, 'f', 'sha512-x', apiURL],
     } as LockfileData['nodes'],
     {},
   )
@@ -582,8 +585,13 @@ t.test('hosted git resolved', async t => {
   )
   t.equal(
     graph.nodes.get(missing)?.resolved,
-    'https://api.github.com/repos/c/d/tarball/main',
+    'https://codeload.github.com/c/d/legacy.tar.gz/main',
     'missing value set to the tarball url',
+  )
+  t.equal(
+    graph.nodes.get(api)?.resolved,
+    apiURL,
+    'old default tarball url kept',
   )
 })
 
