@@ -5838,6 +5838,9 @@ t.test('prefetchResolve', async t => {
     async t => {
       const doc = held()
       capabilitiesGate = doc.gate
+      // released on the way out even if the test fails first, so the
+      // client's drain() is not left waiting on the document
+      t.teardown(doc.release)
       t.intercept(process, 'env', {
         value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
       })
@@ -5977,6 +5980,9 @@ t.test('prefetchResolve', async t => {
       capabilitiesDocument = {}
       const doc = held()
       capabilitiesGate = doc.gate
+      // released on the way out even if the test fails first, so the
+      // client's drain() is not left waiting on the document
+      t.teardown(doc.release)
       stableRequests = []
       t.intercept(process, 'env', {
         value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '50' },
