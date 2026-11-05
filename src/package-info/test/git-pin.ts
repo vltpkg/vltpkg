@@ -1,0 +1,342 @@
+import { execFileSync } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { AddressInfo } from 'node:net'
+import { pathToFileURL } from 'node:url'
+import t from 'tap'
+import type { Integrity } from '@vltpkg/types'
+import { unload } from '@vltpkg/vlt-json'
+import { PackageInfoClient } from '../src/index.ts'
+import { drainer } from './fixtures/drainer.ts'
+
+const track = drainer(t)
+const dir = t.testdir({ repo: {}, 'vlt.json': '{}' })
+t.chdir(dir)
+unload()
+const repo = `${dir}/repo`
+const git = (...args: string[]) =>
+  execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim()
+const commit = (version: string) => {
+  writeFileSync(
+    `${repo}/package.json`,
+    JSON.stringify({ name: 'pinned', version }),
+  )
+  git('add', 'package.json')
+  git('commit', '-m', version)
+  return git('rev-parse', 'HEAD')
+}
+git('init', '-b', 'main')
+git('config', 'user.name', 'vltdev')
+git('config', 'user.email', 'vltdev@vlt.sh')
+git('config', 'commit.gpgSign', 'false')
+// archives well past the head that is read for the commit
+writeFileSync(`${repo}/big`, randomBytes(64 * 1024))
+git('add', 'big')
+const sha1 = commit('1.0.0')
+
+const sri = (b: Buffer): Integrity =>
+  `sha512-${createHash('sha512').update(b).digest('base64')}`
+const fullSha = /^[0-9a-f]{40}$/
+
+// a git host serving `git archive` tarballs. like GitLab, the root dir
+// is named after the committish asked for, so ref and sha bytes differ.
+// `nopax` archives a tree: no commit in its pax header. the others
+// serve a ref's archive oddly, the archive at a sha as is:
+// `slow` sends its head and the rest only to a client still there,
+// `short` only its head, `drop` its head then hangs up, `redir`
+// redirects everything to `labby`
+const requests: string[] = []
+const served = new Map<string, Buffer>()
+// `slow` urls the client went away from before the rest was sent
+const cut = new Set<string>()
+const hosts = /^\/(labby|nopax|slow|short|drop|redir)\/o\/r\/(.+)$/
+const handler = (req: IncomingMessage, res: ServerResponse) => {
+  const url = req.url ?? ''
+  requests.push(url)
+  const m = hosts.exec(url)
+  let body: Buffer
+  const [, host, ish = ''] = m ?? []
+  if (host === 'redir') {
+    res.statusCode = 302
+    res.setHeader('location', `/labby/o/r/${ish}`)
+    return res.end()
+  }
+  try {
+    if (!m) throw new Error('not found')
+    body = execFileSync(
+      'git',
+      [
+        '-C',
+        repo,
+        'archive',
+        '--format=tar.gz',
+        `--prefix=r-${ish}/`,
+        host === 'nopax' ? `${ish}^{tree}` : ish,
+      ],
+      { stdio: ['ignore', 'pipe', 'ignore'] },
+    )
+  } catch {
+    res.statusCode = 404
+    return res.end()
+  }
+  served.set(url, body)
+  res.setHeader('content-type', 'application/octet-stream')
+  if (fullSha.test(ish)) return res.end(body)
+  switch (host) {
+    case 'slow':
+      res.write(body.subarray(0, 8192))
+      res.on('close', () => {
+        if (!res.writableFinished) cut.add(url)
+      })
+      setTimeout(() => {
+        if (!res.destroyed) res.end(body.subarray(8192))
+      }, 5000).unref()
+      return
+    case 'short':
+      return res.end(body.subarray(0, 1024))
+    case 'drop':
+      res.write(body.subarray(0, 1024))
+      setTimeout(() => res.socket?.destroy(), 50)
+      return
+  }
+  res.end(body)
+}
+const server = createServer(handler)
+t.before(() => new Promise<void>(r => server.listen(0, r)))
+t.teardown(() => server.close())
+const base = () =>
+  `http://localhost:${(server.address() as AddressInfo).port}`
+
+let n = 0
+const client = (cache = `${dir}/cache`, remote = repo) => {
+  const gitHost = `git+${pathToFileURL(remote)}`
+  return track(
+    new PackageInfoClient({
+      cache,
+      'git-hosts': {
+        labby: gitHost,
+        nopax: gitHost,
+        fixed: gitHost,
+        slow: gitHost,
+        short: gitHost,
+        drop: gitHost,
+        redir: gitHost,
+      },
+      'git-host-archives': {
+        labby: `${base()}/labby/$1/$2/$committish`,
+        nopax: `${base()}/nopax/$1/$2/$committish`,
+        // no $committish: one url for every commit
+        fixed: `${base()}/labby/$1/$2/main`,
+        slow: `${base()}/slow/$1/$2/$committish`,
+        short: `${base()}/short/$1/$2/$committish`,
+        drop: `${base()}/drop/$1/$2/$committish`,
+        redir: `${base()}/redir/$1/$2/$committish`,
+      },
+      // a connection the host drops is not retried
+      'fetch-retries': 0,
+    }),
+  )
+}
+const count = (u: string) => requests.filter(r => r === u).length
+const target = () => `${dir}/x${n++}`
+const version = (d: string) =>
+  (
+    JSON.parse(readFileSync(`${d}/package.json`, 'utf8')) as {
+      version: string
+    }
+  ).version
+
+t.test('locks a ref to the archive at its commit', async t => {
+  const pi = client()
+  const ref = '/labby/o/r/main'
+  const pinned = `/labby/o/r/${sha1}`
+  const r = await pi.resolve('x@labby:o/r#main')
+  t.match(r, { resolved: base() + pinned })
+  t.equal(r.integrity, sri(served.get(pinned)!))
+  t.not(r.integrity, sri(served.get(ref)!), 'sha url bytes')
+  t.match(await pi.manifest('x@labby:o/r#main'), {
+    version: '1.0.0',
+    dist: { tarball: base() + pinned, integrity: r.integrity },
+  })
+  const d = target()
+  t.match(await pi.extract('x@labby:o/r#main', d), {
+    resolved: base() + pinned,
+    integrity: r.integrity,
+  })
+  t.equal(version(d), '1.0.0')
+  t.equal(count(ref), 1, 'ref fetched once per run')
+  t.equal(count(pinned), 1, 'sha archive fetched once per run')
+})
+
+t.test('reads only the head of the ref archive', async t => {
+  const ref = '/slow/o/r/main'
+  const pinned = `/slow/o/r/${sha1}`
+  const pi = client()
+  const r = await pi.resolve('x@slow:o/r#main')
+  t.match(r, { resolved: base() + pinned })
+  t.equal(r.integrity, sri(served.get(pinned)!))
+  t.ok(cut.has(ref), 'gone before the rest of the ref archive')
+  t.equal(count(ref), 1)
+  t.match(await pi.manifest('x@slow:o/r#main'), {
+    version: '1.0.0',
+    dist: { tarball: base() + pinned },
+  })
+  t.equal(count(pinned), 1, 'the pinned archive, from the cache')
+
+  // a head short of what was asked for: as much as there is
+  t.match(await client().resolve('x@short:o/r#main'), {
+    resolved: `${base()}/short/o/r/${sha1}`,
+  })
+  // hung up on partway: what came through
+  t.match(await client().resolve('x@drop:o/r#main'), {
+    resolved: `${base()}/drop/o/r/${sha1}`,
+  })
+})
+
+t.test('a moved ref', async t => {
+  const locked = await client().resolve('x@labby:o/r#main')
+  const sha2 = commit('2.0.0')
+  const ref = '/labby/o/r/main'
+  const before = count(ref)
+  const warm = await client().resolve('x@labby:o/r#main')
+  t.match(warm, { resolved: `${base()}/labby/o/r/${sha2}` })
+  t.equal(count(ref), before + 1, 'ref never from the cache')
+  t.match(
+    await client(`${dir}/cold`).resolve('x@labby:o/r#main'),
+    { resolved: warm.resolved, integrity: warm.integrity },
+    'cold',
+  )
+
+  // the lock wins, with or without its integrity
+  for (const lock of [
+    { resolved: locked.resolved, integrity: locked.integrity },
+    { resolved: locked.resolved },
+  ]) {
+    const d = target()
+    const pi = client(`${dir}/c${n}`)
+    t.match(await pi.extract('x@labby:o/r#main', d, lock), {
+      resolved: locked.resolved,
+      integrity: locked.integrity,
+    })
+    t.equal(version(d), '1.0.0')
+  }
+  t.equal(count(ref), before + 2, 'no ref fetch to extract a lock')
+})
+
+t.test('a full sha is its own pin', async t => {
+  const sha = git('rev-parse', 'HEAD')
+  const url = `/labby/o/r/${sha}`
+  const before = count(url)
+  const spec = `x@labby:o/r#${sha}`
+  t.match(await client().resolve(spec), { resolved: base() + url })
+  t.match(await client().resolve(spec), { resolved: base() + url })
+  t.ok(count(url) <= before + 1, 'cached')
+})
+
+t.test('no commit in the archive', async t => {
+  const warn = t.capture(console, 'error')
+  const sha = git('rev-parse', 'HEAD')
+  t.match(
+    await client().resolve('x@nopax:o/r#main'),
+    { resolved: `${base()}/nopax/o/r/${sha}` },
+    'git ls-remote',
+  )
+  const r = await client(`${dir}/c-nogit`, `${dir}/nope`).resolve(
+    'x@nopax:o/r#main',
+  )
+  t.match(r, { resolved: `${base()}/nopax/o/r/main` }, 'the ref')
+  t.equal(r.integrity, sri(served.get('/nopax/o/r/main')!))
+  const w = warn()
+  t.equal(w.length, 1, 'no warning for git ls-remote')
+  t.match(w[0], {
+    args: [/locked to .*\/nopax\/o\/r\/main, not a commit/],
+  })
+})
+
+t.test('the host answers the head with a redirect', async t => {
+  const ref = '/redir/o/r/main'
+  const sha = git('rev-parse', 'HEAD')
+  const pinned = `/redir/o/r/${sha}`
+  const r = await client().resolve('x@redir:o/r#main')
+  t.match(r, { resolved: base() + pinned }, 'git ls-remote')
+  t.equal(r.integrity, sri(served.get(`/labby/o/r/${sha}`)!))
+  t.equal(count(ref), 1)
+
+  // no git either: the ref archive, through the redirect
+  const warn = t.capture(console, 'error')
+  const pi = client(`${dir}/c-redir`, `${dir}/nope`)
+  t.match(await pi.resolve('x@redir:o/r#main'), {
+    resolved: base() + ref,
+    integrity: sri(served.get('/labby/o/r/main')!),
+  })
+  t.match(await pi.manifest('x@redir:o/r#main'), {
+    version: '2.0.0',
+    dist: { tarball: base() + ref },
+  })
+  t.match(warn(), [{ args: [/not a commit/] }])
+})
+
+t.test('archive url without a committish', async t => {
+  const ref = '/labby/o/r/main'
+  const before = count(ref)
+  const warn = t.capture(console, 'error')
+  const r = await client().resolve('x@fixed:o/r#dev')
+  t.match(r, { resolved: base() + ref })
+  t.equal(r.integrity, sri(served.get(ref)!))
+  t.equal(count(ref), before + 1, 'fetched once')
+  t.match(warn(), [{ args: [/not a commit/] }], 'a moving url')
+})
+
+t.test('ref archive not found', async t => {
+  const warn = t.capture(console, 'error')
+  await t.rejects(client().resolve('x@labby:o/r#nope'), {
+    message: /failed to fetch URL/,
+    cause: { code: 'ERESOLVE' },
+  })
+  t.equal(warn().length, 0, 'no warning for an error')
+})
+
+t.test(
+  'an unpinnable ref, its host gone: the last archive',
+  async t => {
+    // its own host, so it can go away
+    const away = createServer(handler)
+    await new Promise<void>(r => away.listen(0, r))
+    const port = (away.address() as AddressInfo).port
+    const cache = `${dir}/c-away`
+    const pi = () =>
+      track(
+        new PackageInfoClient({
+          cache,
+          'git-hosts': {
+            nopax: `git+${pathToFileURL(`${dir}/nope`)}`,
+          },
+          'git-host-archives': {
+            nopax: `http://localhost:${port}/nopax/$1/$2/$committish`,
+          },
+          'fetch-retries': 0,
+        }),
+      )
+    const warn = t.capture(console, 'error')
+    const online = pi()
+    const r = await online.resolve('x@nopax:o/r#main')
+    t.match(r, {
+      resolved: `http://localhost:${port}/nopax/o/r/main`,
+    })
+    await online.drain()
+    away.closeAllConnections()
+    await new Promise<void>(r => away.close(() => r()))
+    const offline = pi()
+    t.strictSame(
+      await offline.resolve('x@nopax:o/r#main'),
+      r,
+      'the cached archive',
+    )
+    t.match(await offline.manifest('x@nopax:o/r#main'), {
+      version: '2.0.0',
+    })
+    t.equal(warn().length, 2)
+  },
+)
