@@ -107,7 +107,7 @@ export const needsRegistry = true
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'build',
-    usage: ['[<query>]', '--target=<query>'],
+    usage: ['[<query>]', '[--target=<query>]'],
     description: `Build the installed packages that need it: run their
     lifecycle scripts and link their bins. Only does work that is
     actually needed.
@@ -124,7 +124,7 @@ export const usage: CommandUsage = () =>
       target: {
         value: '<query>',
         description:
-          'Query to build instead of allow-scripts. Wins over the query; never saved.',
+          'Query selector to filter packages using DSS syntax.',
       },
       'allow-scripts': {
         value: '<query>',

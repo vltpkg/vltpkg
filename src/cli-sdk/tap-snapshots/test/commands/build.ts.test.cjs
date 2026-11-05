@@ -21,7 +21,7 @@ Object {
 exports[`test/commands/build.ts > TAP > usage > should return usage information 1`] = `
 Usage:
   vlt build [<query>]
-  vlt build --target=<query>
+  vlt build [--target=<query>]
 
 Build the installed packages that need it: run their lifecycle scripts and link
 their bins. Only does work that is actually needed.
@@ -41,7 +41,7 @@ Installs run the scripts it selects. Built packages stay built.
   Options
 
     target
-      Query to build instead of allow-scripts. Wins over the query; never saved.
+      Query selector to filter packages using DSS syntax.
 
       ​--target=<query>
 
