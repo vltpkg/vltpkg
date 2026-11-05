@@ -245,7 +245,7 @@ By default, `vlt build` uses the target
 `:scripts:not(:built):not(:malware)` — it automatically skips packages
 flagged as malware by [Socket](https://socket.dev/).
 
-### pnpm onlyBuiltDependencies vs vlt build --target
+### pnpm onlyBuiltDependencies vs vlt allow-scripts
 
 <Code
   code={JSON.stringify(
@@ -262,18 +262,13 @@ flagged as malware by [Socket](https://socket.dev/).
 />
 
 <Code
-  code="$ vlt build --target='#esbuild, #node-gyp'"
+  code="$ vlt build '#esbuild, #node-gyp'"
   title="Terminal (vlt)"
   lang="bash"
 />
 
-You can persist the target:
-
-<Code
-  code='$ vlt config set "command.build.target=#esbuild, #node-gyp"'
-  title="Terminal"
-  lang="bash"
-/>
+It saves the query as `allow-scripts` in `vlt.json`: installs then run
+those scripts.
 
 See [`vlt build`](/client/commands/build) for full details.
 

@@ -292,7 +292,7 @@ excludes them and security selectors such as `:malware` don't match
 them, but `:not(:malware)` does. In `vlt ls` and `vlt query`, combine
 with `:scanned`, e.g. `:scanned:not(:malware)`.
 
-Scripts fail closed: when a `vlt build` target or `--allow-scripts`
+Scripts fail closed: when an `allow-scripts` or `vlt build --target`
 query uses security selectors, eligible packages (see below) with no
 security data never run their scripts, be it because the request timed
 out or because Socket has not scanned them yet, e.g. a version

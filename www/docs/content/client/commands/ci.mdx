@@ -18,18 +18,19 @@ Like [`vlt install`](/client/commands/install), `vlt ci` runs **no
 lifecycle scripts** of dependencies by default. To opt in:
 
 <Code
-  code={`# Allow scripts for specific packages
+  code={`# Allow scripts for specific packages, this run only
 $ vlt ci --allow-scripts="#esbuild"
 
-# Persist the query for ci in vlt.json
+# Save the query as allow-scripts in vlt.json: vlt ci runs it
 
-$ vlt config set "command.ci.allow-scripts=#esbuild"
+$ vlt build "#esbuild"
 
-# Or build after install (skips packages with malware alerts)
+# Or build after install: the stored query, else the default (no TTY: not saved)
 
 $ vlt ci && vlt build`} title="Terminal" lang="bash" />
 
-See [`vlt build`](/client/commands/build) for build targets.
+See [`vlt build`](/client/commands/build#allow-scripts) for
+`allow-scripts`.
 
 ## Workspaces
 
@@ -42,6 +43,6 @@ them: run `vlt install` and commit `vlt.json` (see
 
 | Flag                      | Description                                                                                           |
 | ------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `--allow-scripts=<query>` | Allow matching packages to run lifecycle scripts                                                      |
+| `--allow-scripts=<query>` | Allow matching packages to run lifecycle scripts (never saved)                                        |
 | `--allow-skills=<query>`  | Link the agent skills of matching packages (never saved), see [`vlt skills`](/client/commands/skills) |
 | `--skills-dir=<path>`     | Dirs to link agent skills into, see [`vlt skills`](/client/commands/skills)                           |
