@@ -216,6 +216,51 @@ const maybeApplyModifierToSpec = (
 }
 
 /**
+ * Marks the edges swapped by a graph modifier in a graph loaded from the
+ * hidden lockfile, which stores the modified specs but not the flag.
+ * Breadth first from the importers, a node's declared deps are matched
+ * when it is first reached, as the ideal build does when placing it.
+ */
+const markOverriddenEdges = (
+  options: LoadOptions,
+  graph: Graph,
+  modifiers: GraphModifier,
+) => {
+  const refs = new Map<Node, Map<string, ModifierActiveEntry>>()
+  const visit = (node: Node) => {
+    if (!refs.has(node)) {
+      refs.set(
+        node,
+        modifiers.tryDependencies(node, [
+          ...getDependencies(node, options).values(),
+        ]),
+      )
+    }
+  }
+  for (const importer of graph.importers) {
+    modifiers.tryImporter(importer)
+    visit(importer)
+  }
+  for (const [node, modifierRefs] of refs) {
+    for (const edge of node.edgesOut.values()) {
+      const activeModifier = modifierRefs.get(edge.name)
+      if (activeModifier) {
+        const { spec } = maybeApplyModifierToSpec(
+          edge.spec,
+          edge.name,
+          modifierRefs,
+        )
+        if (spec !== edge.spec) edge.spec.overridden = true
+        if (edge.to)
+          modifiers.updateActiveEntry(edge.to, activeModifier)
+      }
+      if (edge.to) visit(edge.to)
+    }
+  }
+  modifiers.rollbackActiveEntries()
+}
+
+/**
  * Reads the current directory defined at `currDir` and looks for folder
  * names and their realpath resolution, normalizing scoped package names
  * and removing any invalid symlinks from the list of items that should
@@ -539,6 +584,7 @@ export const load = (options: LoadOptions): Graph => {
         scurry,
       })
       verifyImporterNodeModules(graph, projectRoot)
+      if (modifiers) markOverriddenEdges(options, graph, modifiers)
       done()
       return graph
     } catch {
