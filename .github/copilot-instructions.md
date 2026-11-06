@@ -59,6 +59,8 @@ Following is a list of each workspace along with a brief description:
   for security data fetched from Socket.dev APIs
 - src/semver, `@vltpkg/semver` - A library for parsing, validating &
   comparing Semantic Versions
+- src/skills, `@vltpkg/skills` - The repo's agent skills, packaged for
+  `vlt skills`
 - src/spec, `@vltpkg/spec` - Parses package specifiers, this defines
   our Spec class which is heavily used in our Graph and adjancent
   libraries
