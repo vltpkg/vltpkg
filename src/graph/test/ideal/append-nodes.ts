@@ -1336,13 +1336,15 @@ t.test('modifiers sharing a path all apply', async t => {
       { ':root > #a > #c': '1.0.0', '#a > #b': '1.0.0' },
     ]
     for (const modifiers of cases) {
-      const { a } = await run(t, modifiers)
-      t.equal(a?.modifier, Object.keys(modifiers)[0], 'a modifier')
-      for (const name of ['b', 'c']) {
-        const edge = a?.edgesOut.get(name)
-        t.equal(edge?.spec.bareSpec, '1.0.0', `a -> ${name} spec`)
-        t.equal(edge?.to?.version, '1.0.0', `a -> ${name} version`)
-      }
+      await t.test(Object.keys(modifiers).join(', '), async t => {
+        const { a } = await run(t, modifiers)
+        t.equal(a?.modifier, Object.keys(modifiers)[0], 'a modifier')
+        for (const name of ['b', 'c']) {
+          const edge = a?.edgesOut.get(name)
+          t.equal(edge?.spec.bareSpec, '1.0.0', `a -> ${name} spec`)
+          t.equal(edge?.to?.version, '1.0.0', `a -> ${name} version`)
+        }
+      })
     }
   })
 
@@ -1370,14 +1372,16 @@ t.test('modifiers sharing a path all apply', async t => {
       { '#a > #p': '1.0.0', '#a > #b': '1.0.0' },
       { '#a > #b': '1.0.0', '#a > #p': '1.0.0' },
     ]) {
-      const { a } = await run(t, modifiers)
-      const p = a?.edgesOut.get('p')
-      t.equal(p?.type, 'peer')
-      t.equal(p?.spec.bareSpec, '1.0.0')
-      t.equal(p?.to?.version, '1.0.0')
-      const b = a?.edgesOut.get('b')
-      t.equal(b?.spec.bareSpec, '1.0.0')
-      t.equal(b?.to?.version, '1.0.0')
+      await t.test(Object.keys(modifiers).join(', '), async t => {
+        const { a } = await run(t, modifiers)
+        const p = a?.edgesOut.get('p')
+        t.equal(p?.type, 'peer')
+        t.equal(p?.spec.bareSpec, '1.0.0')
+        t.equal(p?.to?.version, '1.0.0')
+        const b = a?.edgesOut.get('b')
+        t.equal(b?.spec.bareSpec, '1.0.0')
+        t.equal(b?.to?.version, '1.0.0')
+      })
     }
   })
 })

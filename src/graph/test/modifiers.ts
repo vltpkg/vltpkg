@@ -959,17 +959,19 @@ t.test('GraphModifier', async t => {
           { '#b > #c': '2.0.0', '#b > #d': '3.0.0' },
           { '#b > #d': '3.0.0', '#b > #c': '2.0.0' },
         ]) {
-          const { modifier, root, node, dep } = setup(t, modifiers)
-          const lead = dep(root, 'b')
-          t.equal(
-            lead?.modifier.query,
-            Object.keys(modifiers)[0],
-            'first key leads on a tie',
-          )
-          modifier.updateActiveEntry(node('b'), lead!)
-          t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
-          t.equal(dep(node('b'), 'd')?.modifier.query, '#b > #d')
-          t.equal(modifier.activeModifiers.size, 0, 'all complete')
+          await t.test(Object.keys(modifiers).join(', '), async t => {
+            const { modifier, root, node, dep } = setup(t, modifiers)
+            const lead = dep(root, 'b')
+            t.equal(
+              lead?.modifier.query,
+              Object.keys(modifiers)[0],
+              'first key leads on a tie',
+            )
+            modifier.updateActiveEntry(node('b'), lead!)
+            t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
+            t.equal(dep(node('b'), 'd')?.modifier.query, '#b > #d')
+            t.equal(modifier.activeModifiers.size, 0, 'all complete')
+          })
         }
       },
     )
@@ -981,15 +983,17 @@ t.test('GraphModifier', async t => {
           { ':root > #b > #d': '3.0.0', '#b > #c': '2.0.0' },
           { '#b > #c': '2.0.0', ':root > #b > #d': '3.0.0' },
         ]) {
-          const { modifier, root, node, dep } = setup(t, modifiers)
-          const lead = dep(root, 'b')
-          t.equal(lead?.modifier.query, ':root > #b > #d')
-          modifier.updateActiveEntry(node('b'), lead!)
-          t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
-          t.equal(
-            dep(node('b'), 'd')?.modifier.query,
-            ':root > #b > #d',
-          )
+          await t.test(Object.keys(modifiers).join(', '), async t => {
+            const { modifier, root, node, dep } = setup(t, modifiers)
+            const lead = dep(root, 'b')
+            t.equal(lead?.modifier.query, ':root > #b > #d')
+            modifier.updateActiveEntry(node('b'), lead!)
+            t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
+            t.equal(
+              dep(node('b'), 'd')?.modifier.query,
+              ':root > #b > #d',
+            )
+          })
         }
       },
     )
