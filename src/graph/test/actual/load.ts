@@ -1702,6 +1702,114 @@ t.test('modifiers with the hidden lockfile', async t => {
       'first step of a selector',
     )
   })
+
+  await t.test('every target of a modifier', async t => {
+    // the first step of the selector matches two nodes: m@1.0.0 from
+    // the root and m@3.0.0 from a, both have their b dep swapped
+    const modifiers = { '#m > #b': '2.0.0' }
+    const withModifier = (spec: string) =>
+      joinDepIDTuple([
+        'registry',
+        '',
+        spec,
+        joinExtra({ modifier: '#m > #b' }),
+      ])
+    const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+    const m1DepID = withModifier('m@1.0.0')
+    const m3DepID = withModifier('m@3.0.0')
+    const bDepID = withModifier('b@2.0.0')
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'hidden-many-targets',
+        version: '1.0.0',
+        dependencies: { a: '^1.0.0', m: '^1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({ modifiers }),
+      node_modules: {
+        // no store: only the hidden lockfile can place these nodes
+        '.vlt-lock.json': JSON.stringify({
+          lockfileVersion: 1,
+          options: { ...configData, modifiers },
+          nodes: {
+            [aDepID]: [
+              0,
+              'a',
+              null,
+              null,
+              null,
+              {
+                name: 'a',
+                version: '1.0.0',
+                dependencies: { m: '^3.0.0' },
+              },
+            ],
+            [m1DepID]: [
+              0,
+              'm',
+              null,
+              null,
+              null,
+              {
+                name: 'm',
+                version: '1.0.0',
+                dependencies: { b: '^1.0.0' },
+              },
+            ],
+            [m3DepID]: [
+              0,
+              'm',
+              null,
+              null,
+              null,
+              {
+                name: 'm',
+                version: '3.0.0',
+                dependencies: { b: '^1.0.0' },
+              },
+            ],
+            [bDepID]: [
+              0,
+              'b',
+              null,
+              null,
+              null,
+              { name: 'b', version: '2.0.0' },
+            ],
+          },
+          edges: {
+            [`${rootDepID} a`]: `prod ^1.0.0 ${aDepID}`,
+            [`${rootDepID} m`]: `prod ^1.0.0 ${m1DepID}`,
+            [`${aDepID} m`]: `prod ^3.0.0 ${m3DepID}`,
+            [`${m1DepID} b`]: `prod 2.0.0 ${bDepID}`,
+            [`${m3DepID} b`]: `prod 2.0.0 ${bDepID}`,
+          },
+        }),
+      },
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests: true,
+      modifiers: new GraphModifier({ ...configData }),
+      ...configData,
+    })
+    t.ok(graph.nodes.get(m3DepID), 'loaded from the hidden lockfile')
+    t.equal(
+      graph.nodes.get(m1DepID)?.edgesOut.get('b')?.spec.overridden,
+      true,
+      'target reached from the root',
+    )
+    t.equal(
+      graph.nodes.get(m3DepID)?.edgesOut.get('b')?.spec.overridden,
+      true,
+      'target reached from a dependency',
+    )
+  })
 })
 
 t.test('various DepID types with peerSetHash', async t => {

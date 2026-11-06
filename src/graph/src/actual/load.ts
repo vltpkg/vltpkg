@@ -218,23 +218,32 @@ const maybeApplyModifierToSpec = (
 /**
  * Marks the edges swapped by a graph modifier in a graph loaded from the
  * hidden lockfile, which stores the modified specs but not the flag.
- * Matches modifiers the same way the `node_modules` walk does: breadth
- * first from the importers, against the specs each manifest declares.
+ * Breadth first from the importers, a node's declared deps are matched
+ * when it is first reached, as the ideal build does when placing it.
  */
 const markOverriddenEdges = (
   options: LoadOptions,
   graph: Graph,
   modifiers: GraphModifier,
 ) => {
-  const queue = new Set<Node>()
+  const refs = new Map<Node, Map<string, ModifierActiveEntry>>()
+  const visit = (node: Node) => {
+    if (!refs.has(node)) {
+      refs.set(
+        node,
+        modifiers.tryDependencies(node, [
+          ...getDependencies(node, options).values(),
+        ]),
+      )
+    }
+  }
   for (const importer of graph.importers) {
     modifiers.tryImporter(importer)
-    queue.add(importer)
   }
-  for (const node of queue) {
-    const modifierRefs = modifiers.tryDependencies(node, [
-      ...getDependencies(node, options).values(),
-    ])
+  for (const importer of graph.importers) {
+    visit(importer)
+  }
+  for (const [node, modifierRefs] of refs) {
     for (const edge of node.edgesOut.values()) {
       const activeModifier = modifierRefs.get(edge.name)
       if (activeModifier) {
@@ -247,7 +256,7 @@ const markOverriddenEdges = (
         if (edge.to)
           modifiers.updateActiveEntry(edge.to, activeModifier)
       }
-      if (edge.to) queue.add(edge.to)
+      if (edge.to) visit(edge.to)
     }
   }
   modifiers.rollbackActiveEntries()
