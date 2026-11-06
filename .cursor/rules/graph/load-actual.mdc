@@ -34,6 +34,8 @@ Represents what's currently installed on disk.
 
 `maybeApplyModifierToSpec()`: calls `modifiers.tryDependencies()` before placing, swaps spec if complete breadcrumb match (marks as `overridden`).
 
+Hidden lockfile fast path: `markOverriddenEdges()` re-runs the same matching (BFS from importers, against declared manifest specs) to set `overridden` on edges, since the lockfile stores the modified spec but not the flag.
+
 ## Options
 
 - `projectRoot`, `packageJson`, `scurry` (required), `monorepo?`, `mainManifest?`

@@ -216,6 +216,44 @@ const maybeApplyModifierToSpec = (
 }
 
 /**
+ * Marks the edges swapped by a graph modifier in a graph loaded from the
+ * hidden lockfile, which stores the modified specs but not the flag.
+ * Matches modifiers the same way the `node_modules` walk does: breadth
+ * first from the importers, against the specs each manifest declares.
+ */
+const markOverriddenEdges = (
+  options: LoadOptions,
+  graph: Graph,
+  modifiers: GraphModifier,
+) => {
+  const queue = new Set<Node>()
+  for (const importer of graph.importers) {
+    modifiers.tryImporter(importer)
+    queue.add(importer)
+  }
+  for (const node of queue) {
+    const modifierRefs = modifiers.tryDependencies(node, [
+      ...getDependencies(node, options).values(),
+    ])
+    for (const edge of node.edgesOut.values()) {
+      const activeModifier = modifierRefs.get(edge.name)
+      if (activeModifier) {
+        const { spec } = maybeApplyModifierToSpec(
+          edge.spec,
+          edge.name,
+          modifierRefs,
+        )
+        if (spec !== edge.spec) edge.spec.overridden = true
+        if (edge.to)
+          modifiers.updateActiveEntry(edge.to, activeModifier)
+      }
+      if (edge.to) queue.add(edge.to)
+    }
+  }
+  modifiers.rollbackActiveEntries()
+}
+
+/**
  * Reads the current directory defined at `currDir` and looks for folder
  * names and their realpath resolution, normalizing scoped package names
  * and removing any invalid symlinks from the list of items that should
@@ -539,6 +577,7 @@ export const load = (options: LoadOptions): Graph => {
         scurry,
       })
       verifyImporterNodeModules(graph, projectRoot)
+      if (modifiers) markOverriddenEdges(options, graph, modifiers)
       done()
       return graph
     } catch {

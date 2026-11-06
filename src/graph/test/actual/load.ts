@@ -1,6 +1,6 @@
 import { existsSync, rmSync } from 'fs'
 import { resolve } from 'node:path'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, joinExtra } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
@@ -1481,6 +1481,227 @@ t.test('hidden lockfile', async t => {
       )
     },
   )
+})
+
+t.test('modifiers with the hidden lockfile', async t => {
+  await t.test('marks overridden edges', async t => {
+    const modifiers = {
+      '#a > #c': '2.0.0',
+      ':root > #b:semver(^1.0.0)': '2.0.0',
+      ':root > #d': '^3.0.0',
+    }
+    const withModifier = (spec: string, modifier: string) =>
+      joinDepIDTuple(['registry', '', spec, joinExtra({ modifier })])
+    const aDepID = withModifier('a@1.0.0', '#a > #c')
+    const cModDepID = withModifier('c@2.0.0', '#a > #c')
+    const bDepID = withModifier(
+      'b@2.0.0',
+      ':root > #b:semver(^1.0.0)',
+    )
+    const cDepID = joinDepIDTuple(['registry', '', 'c@1.0.0'])
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'hidden-modifiers',
+        version: '1.0.0',
+        dependencies: { a: '^1.0.0', b: '^1.0.0', d: '^1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({ modifiers }),
+      node_modules: {
+        // no store: only the hidden lockfile can place these nodes
+        '.vlt-lock.json': JSON.stringify({
+          lockfileVersion: 1,
+          options: { ...configData, modifiers },
+          nodes: {
+            [aDepID]: [
+              0,
+              'a',
+              null,
+              null,
+              null,
+              {
+                name: 'a',
+                version: '1.0.0',
+                dependencies: { c: '^1.0.0' },
+              },
+            ],
+            [bDepID]: [
+              0,
+              'b',
+              null,
+              null,
+              null,
+              {
+                name: 'b',
+                version: '2.0.0',
+                dependencies: { c: '^1.0.0' },
+              },
+            ],
+            [cModDepID]: [
+              0,
+              'c',
+              null,
+              null,
+              null,
+              { name: 'c', version: '2.0.0' },
+            ],
+            [cDepID]: [
+              0,
+              'c',
+              null,
+              null,
+              null,
+              { name: 'c', version: '1.0.0' },
+            ],
+          },
+          edges: {
+            [`${rootDepID} a`]: `prod ^1.0.0 ${aDepID}`,
+            [`${rootDepID} b`]: `prod 2.0.0 ${bDepID}`,
+            [`${rootDepID} d`]: 'prod ^3.0.0 MISSING',
+            [`${aDepID} c`]: `prod 2.0.0 ${cModDepID}`,
+            [`${bDepID} c`]: `prod ^1.0.0 ${cDepID}`,
+          },
+        }),
+      },
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests: true,
+      modifiers: new GraphModifier({ ...configData }),
+      ...configData,
+    })
+    const a = graph.nodes.get(aDepID)
+    const b = graph.nodes.get(bDepID)
+    t.ok(a, 'loaded from the hidden lockfile')
+    const root = graph.mainImporter.edgesOut
+    t.equal(
+      root.get('a')?.spec.overridden,
+      false,
+      'first step of a selector',
+    )
+    t.equal(
+      a?.edgesOut.get('c')?.spec.overridden,
+      true,
+      'nested target',
+    )
+    t.equal(
+      b?.edgesOut.get('c')?.spec.overridden,
+      false,
+      'same name elsewhere',
+    )
+    t.equal(
+      root.get('b')?.spec.overridden,
+      true,
+      'qualifier matches the declared spec',
+    )
+    t.equal(
+      root.get('d')?.spec.overridden,
+      true,
+      'missing dependency',
+    )
+  })
+
+  await t.test('round trip through the hidden lockfile', async t => {
+    // walk node_modules (writes the hidden lockfile), drop the store,
+    // then load again: only the hidden lockfile can provide the graph
+    const aDepID = joinDepIDTuple([
+      'registry',
+      '',
+      'a@1.0.0',
+      joinExtra({ modifier: ':root > #a > #b' }),
+    ])
+    const bDepID = joinDepIDTuple([
+      'registry',
+      '',
+      'b@2.0.0',
+      joinExtra({ modifier: ':root > #a > #b' }),
+    ])
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'hidden-roundtrip',
+        version: '1.0.0',
+        dependencies: { a: '^1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: { ':root > #a > #b': '^2.0.0' },
+      }),
+      node_modules: {
+        '.vlt': {
+          [aDepID]: {
+            node_modules: {
+              a: {
+                'package.json': JSON.stringify({
+                  name: 'a',
+                  version: '1.0.0',
+                  dependencies: { b: '^1.0.0' },
+                }),
+              },
+              b: t.fixture(
+                'symlink',
+                `../../${bDepID}/node_modules/b`,
+              ),
+            },
+          },
+          [bDepID]: {
+            node_modules: {
+              b: {
+                'package.json': JSON.stringify({
+                  name: 'b',
+                  version: '2.0.0',
+                }),
+              },
+            },
+          },
+        },
+        a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+      },
+    })
+    t.chdir(projectRoot)
+    const loadIt = (skipHiddenLockfile: boolean) => {
+      unload('project')
+      return load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        skipHiddenLockfile,
+        modifiers: new GraphModifier({ ...configData }),
+        ...configData,
+      })
+    }
+    const walked = loadIt(true)
+    const edge = (g: typeof walked) =>
+      g.nodes.get(aDepID)?.edgesOut.get('b')
+    t.equal(
+      edge(walked)?.spec.overridden,
+      true,
+      'walk marks the edge',
+    )
+    t.ok(
+      existsSync(resolve(projectRoot, 'node_modules/.vlt-lock.json')),
+      'walk writes the hidden lockfile',
+    )
+    rmSync(resolve(projectRoot, 'node_modules/.vlt'), {
+      recursive: true,
+    })
+    const hidden = loadIt(false)
+    t.equal(
+      edge(hidden)?.spec.overridden,
+      true,
+      'hidden lockfile marks it too',
+    )
+    t.equal(
+      hidden.mainImporter.edgesOut.get('a')?.spec.overridden,
+      false,
+      'first step of a selector',
+    )
+  })
 })
 
 t.test('various DepID types with peerSetHash', async t => {
