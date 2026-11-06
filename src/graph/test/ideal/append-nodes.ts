@@ -822,6 +822,183 @@ t.test('spec edge removal', async t => {
   )
 })
 
+t.test('modifiers apply to peer edges', async t => {
+  const versions: Record<string, string[]> = {
+    react: ['19.3.1', '18.3.1', '18.2.0'],
+    'react-dom': ['18.3.1'],
+    scheduler: ['0.23.2'],
+  }
+
+  const run = async (
+    t: Test,
+    rootDeps: Record<string, string>,
+    modifiers: Record<string, string>,
+    optionalPeer = false,
+  ) => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: rootDeps,
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({ modifiers }),
+    })
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const { name, range } = spec.final
+        const version = versions[name]?.find(v => {
+          const parsed = parseVersion(v)
+          return !!parsed && !!range?.test(parsed)
+        })
+        if (!version) return null
+        if (name !== 'react-dom') return { name, version }
+        return {
+          name,
+          version,
+          dependencies: { scheduler: '^0.23.2' },
+          peerDependencies: { react: '^18.3.1' },
+          ...(optionalPeer ?
+            { peerDependenciesMeta: { react: { optional: true } } }
+          : {}),
+        }
+      },
+    } as PackageInfoClient
+    const graph = new Graph({
+      projectRoot: dir,
+      ...configData,
+      mainManifest,
+    })
+    const deps = Object.entries(rootDeps).map(([name, bareSpec]) =>
+      asDependency({
+        spec: Spec.parse(name, bareSpec, configData),
+        type: 'prod',
+      }),
+    )
+    t.chdir(dir)
+    reload('modifiers', 'project')
+    const graphModifier = GraphModifier.load(configData)
+    graphModifier.tryImporter(graph.mainImporter)
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(dir),
+      configData,
+      new Set<DepID>(),
+      new Map(deps.map(dep => [dep.spec.name, dep])),
+      graphModifier,
+      graphModifier.tryDependencies(graph.mainImporter, deps),
+    )
+    const [reactDom] = graph.nodesByName.get('react-dom') ?? []
+    return {
+      graph,
+      edge: reactDom?.edgesOut.get('react'),
+      reactNodes: [...(graph.nodesByName.get('react') ?? [])],
+    }
+  }
+
+  await t.test('swaps the spec of an unsatisfied peer', async t => {
+    const { edge, reactNodes } = await run(
+      t,
+      { 'react-dom': '18.3.1' },
+      { '#react-dom > #react': '18.2.0' },
+    )
+    t.equal(edge?.type, 'peer')
+    t.equal(edge?.spec.bareSpec, '18.2.0')
+    t.equal(edge?.to?.version, '18.2.0')
+    t.equal(edge?.to?.modifier, '#react-dom > #react')
+    t.equal(reactNodes.length, 1, 'a single react node')
+  })
+
+  await t.test('widened range links the sibling', async t => {
+    const { graph, edge, reactNodes } = await run(
+      t,
+      { react: '^19.0.0', 'react-dom': '18.3.1' },
+      { '#react-dom > #react': '^18.3.1 || ^19' },
+    )
+    t.equal(edge?.spec.bareSpec, '^18.3.1 || ^19')
+    t.equal(edge?.to?.version, '19.3.1')
+    t.equal(
+      edge?.to,
+      graph.mainImporter.edgesOut.get('react')?.to,
+      'links the root react node',
+    )
+    t.equal(reactNodes.length, 1, 'a single react node')
+  })
+
+  await t.test('pinned away from a satisfying sibling', async t => {
+    const { graph, edge, reactNodes } = await run(
+      t,
+      { react: '18.3.1', 'react-dom': '18.3.1' },
+      { '#react-dom > #react': '18.2.0' },
+    )
+    t.equal(edge?.spec.bareSpec, '18.2.0')
+    t.equal(edge?.to?.version, '18.2.0')
+    t.equal(
+      graph.mainImporter.edgesOut.get('react')?.to?.version,
+      '18.3.1',
+      'root keeps its own react',
+    )
+    t.equal(reactNodes.length, 2)
+  })
+
+  await t.test('removes the peer', async t => {
+    const { edge, reactNodes } = await run(
+      t,
+      { 'react-dom': '18.3.1' },
+      { '#react-dom > #react': '-' },
+    )
+    t.notOk(edge, 'no react edge')
+    t.equal(reactNodes.length, 0, 'no react node')
+  })
+
+  await t.test('universal selector', async t => {
+    const { edge } = await run(
+      t,
+      { 'react-dom': '18.3.1' },
+      { '#react': '18.2.0' },
+    )
+    t.equal(edge?.spec.bareSpec, '18.2.0')
+    t.equal(edge?.to?.version, '18.2.0')
+  })
+
+  await t.test('importer anchored selector', async t => {
+    const { edge } = await run(
+      t,
+      { 'react-dom': '18.3.1' },
+      { ':root > #react-dom > #react': '18.2.0' },
+    )
+    t.equal(edge?.spec.bareSpec, '18.2.0')
+    t.equal(edge?.to?.version, '18.2.0')
+  })
+
+  await t.test('optional peer without a provider', async t => {
+    const { edge, reactNodes } = await run(
+      t,
+      { 'react-dom': '18.3.1' },
+      { '#react-dom > #react': '18.2.0' },
+      true,
+    )
+    t.equal(edge?.type, 'peerOptional')
+    t.equal(edge?.spec.bareSpec, '18.2.0')
+    t.notOk(edge?.to, 'dangling edge')
+    t.equal(reactNodes.length, 0)
+  })
+
+  await t.test('partial match keeps the peer spec', async t => {
+    const { edge, reactNodes } = await run(
+      t,
+      { 'react-dom': '18.3.1' },
+      { '#react-dom > #react > #loose-envify': '1.3.1' },
+    )
+    t.equal(edge?.spec.bareSpec, '^18.3.1')
+    t.equal(edge?.to?.version, '18.3.1')
+    t.equal(reactNodes.length, 1)
+  })
+})
+
 // Add a test for the error handling when a node can't be placed
 t.test(
   'appendNodes error handling when node cannot be placed',
