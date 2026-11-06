@@ -823,6 +823,69 @@ t.test('modifiers integration', async t => {
     },
   )
 
+  await t.test('modifiers sharing a path all apply', async t => {
+    const aDepID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+    const bDepID = joinDepIDTuple(['registry', '', 'b@2.0.0'])
+    const cDepID = joinDepIDTuple(['registry', '', 'c@2.0.0'])
+    const pkg = (
+      name: string,
+      version: string,
+      dependencies?: Record<string, string>,
+    ) => ({
+      'package.json': JSON.stringify({ name, version, dependencies }),
+    })
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'modifiers-shared-path',
+        version: '1.0.0',
+        dependencies: { a: '^1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({
+        modifiers: { '#a > #b': '^2.0.0', '#a > #c': '^2.0.0' },
+      }),
+      node_modules: {
+        '.vlt': {
+          [aDepID]: {
+            node_modules: {
+              a: pkg('a', '1.0.0', { b: '^1.0.0', c: '^1.0.0' }),
+              b: t.fixture(
+                'symlink',
+                `../../${bDepID}/node_modules/b`,
+              ),
+              c: t.fixture(
+                'symlink',
+                `../../${cDepID}/node_modules/c`,
+              ),
+            },
+          },
+          [bDepID]: { node_modules: { b: pkg('b', '2.0.0') } },
+          [cDepID]: { node_modules: { c: pkg('c', '2.0.0') } },
+        },
+        a: t.fixture('symlink', `.vlt/${aDepID}/node_modules/a`),
+      },
+    })
+
+    t.chdir(projectRoot)
+    unload('project')
+
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests: true,
+      modifiers: new GraphModifier({ ...configData }),
+      ...configData,
+    })
+
+    const nodeA = graph.nodes.get(aDepID)
+    for (const name of ['b', 'c']) {
+      const edge = nodeA?.edgesOut.get(name)
+      t.equal(edge?.spec.bareSpec, '^2.0.0', `a -> ${name} spec`)
+      t.equal(edge?.spec.overridden, true, `a -> ${name} overridden`)
+    }
+  })
+
   await t.test(
     'should apply modifiers for missing dependencies',
     async t => {

@@ -200,6 +200,15 @@ export class GraphModifier {
   activeModifiers = new Set<ModifierActiveEntry>()
   /** A set of all modifier string values loaded from vlt.json */
   modifierNames = new Set<string>()
+  /**
+   * Partial entries that matched the same dependency as the entry
+   * {@link GraphModifier.tryNewDependency} returned, advanced along
+   * with it by {@link GraphModifier.updateActiveEntry}.
+   */
+  #companions = new WeakMap<
+    ModifierActiveEntry,
+    ModifierActiveEntry[]
+  >()
   /** Spec options used when expanding `:workspace` targets */
   #options: SpecOptions = {}
   /** `<importer> > :workspace` modifiers, expanded once a graph is known */
@@ -424,10 +433,12 @@ export class GraphModifier {
    * active parsing modifier entries along with possible starting-level
    * modifiers.
    *
-   * Any entries in which the breachcrumb have already reached its last
-   * element will be prioritized, along with checking for specificity,
-   * the complete entry with the highest specificity will be returned or just
-   * the entry with the highest specificity if no complete entry is found.
+   * Entries whose qualifier rejects the spec are skipped. Of the rest,
+   * the complete entry (breadcrumb at its last element) with the highest
+   * specificity is returned, or the partial entry with the highest
+   * specificity if no complete entry is found. The other partial entries
+   * are advanced along with it by {@link GraphModifier.updateActiveEntry},
+   * so modifiers sharing a path each reach their own target.
    * Returns `undefined` if no matching entry is found.
    *
    * This method works with the assumption that it's going to be called
@@ -469,36 +480,36 @@ export class GraphModifier {
         this.newModifier(from, initial)
       all.set(initialEntry.modifier.breadcrumb, initialEntry)
     }
-    // selects the active entry that should apply to this dependency,
-    // any active entry that is done parsing has the priority, if we
-    // find multiple entries then we use css specificity to pick a winner
-    // if we have multiple matches but no active entry is complete, then
-    // we pick the one with the highest specificity breadcrumb
+    const isComplete = (active: ModifierActiveEntry) =>
+      active.interactiveBreadcrumb.current ===
+      active.modifier.breadcrumb.last
     const arr = [...all.values()]
-    const completeEntries = arr.filter(
-      active =>
-        active.interactiveBreadcrumb.current ===
-        active.modifier.breadcrumb.last,
-    )
     // deregister completed entries
-    for (const entry of completeEntries) {
-      this.deregisterModifier(entry.modifier)
+    for (const entry of arr) {
+      if (isComplete(entry)) this.deregisterModifier(entry.modifier)
     }
-    // returns the highest specificity entry from either the complete entries
-    // if any were found or from any of the entries if available, otherwise
-    // it will return undefined as no entry is found in the `all` map
-    const entries = completeEntries.length ? completeEntries : arr
-    return all.get(
+    // entries whose pseudo selector comparators reject the spec stop here
+    const matching = arr.filter(i =>
+      matchesQualifier(i.interactiveBreadcrumb.current, spec),
+    )
+    // complete entries all end on this edge, so the most specific one
+    // wins it; partial entries end further down, so all of them go on
+    const complete = matching.filter(isComplete)
+    const partial = matching.filter(i => !isComplete(i))
+    const lead = all.get(
       specificitySort(
-        entries
-          // here we filter out any entries that do not match the
-          // pseudo selector comparators used in the breadcrumb item
-          .filter(i =>
-            matchesQualifier(i.interactiveBreadcrumb.current, spec),
-          )
-          .map(i => i.modifier.breadcrumb),
+        (complete.length ? complete : partial).map(
+          i => i.modifier.breadcrumb,
+        ),
       )[0],
     )
+    if (lead) {
+      this.#companions.set(
+        lead,
+        partial.filter(i => i !== lead),
+      )
+    }
+    return lead
   }
 
   /**
@@ -525,9 +536,19 @@ export class GraphModifier {
   /**
    * Updates an active entry state keeping track of items in the multi-level
    * active entries map. If the current breadcrumb state shows there's no more
-   * items left, then we deregister the modifier.
+   * items left, then we deregister the modifier. Partial entries that
+   * matched the same dependency in {@link GraphModifier.tryNewDependency}
+   * are updated along with it.
    */
   updateActiveEntry(from: Node, active: ModifierActiveEntry): void {
+    for (const companion of this.#companions.get(active) ?? []) {
+      this.#advance(from, companion)
+    }
+    this.#companions.delete(active)
+    this.#advance(from, active)
+  }
+
+  #advance(from: Node, active: ModifierActiveEntry): void {
     const { modifier } = active
     const interactiveBreadcrumb = active.interactiveBreadcrumb.next()
     const name = interactiveBreadcrumb.current?.name

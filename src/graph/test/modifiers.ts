@@ -932,6 +932,131 @@ t.test('GraphModifier', async t => {
     },
   )
 
+  await t.test('modifiers sharing a path all apply', async t => {
+    const setup = (t: Test, modifiers: Record<string, string>) => {
+      t.chdir(
+        t.testdir({ 'vlt.json': JSON.stringify({ modifiers }) }),
+      )
+      reload('modifiers', 'project')
+      const modifier = new GraphModifier(mockSpecOptions)
+      const graph = getSimpleGraph()
+      const node = (name: string) =>
+        [...graph.nodes.values()].find(n => n.name === name) as Node
+      const root = graph.mainImporter as Node
+      modifier.tryImporter(root)
+      const dep = (from: Node, name: string) =>
+        modifier.tryNewDependency(
+          from,
+          Spec.parse(name, '^1.0.0', mockSpecOptions),
+        )
+      return { modifier, root, node, dep }
+    }
+
+    await t.test(
+      'partial entries with a specificity tie',
+      async t => {
+        for (const modifiers of [
+          { '#b > #c': '2.0.0', '#b > #d': '3.0.0' },
+          { '#b > #d': '3.0.0', '#b > #c': '2.0.0' },
+        ]) {
+          const { modifier, root, node, dep } = setup(t, modifiers)
+          const lead = dep(root, 'b')
+          t.equal(
+            lead?.modifier.query,
+            Object.keys(modifiers)[0],
+            'first key leads on a tie',
+          )
+          modifier.updateActiveEntry(node('b'), lead!)
+          t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
+          t.equal(dep(node('b'), 'd')?.modifier.query, '#b > #d')
+          t.equal(modifier.activeModifiers.size, 0, 'all complete')
+        }
+      },
+    )
+
+    await t.test(
+      'partial entries of different specificity',
+      async t => {
+        for (const modifiers of [
+          { ':root > #b > #d': '3.0.0', '#b > #c': '2.0.0' },
+          { '#b > #c': '2.0.0', ':root > #b > #d': '3.0.0' },
+        ]) {
+          const { modifier, root, node, dep } = setup(t, modifiers)
+          const lead = dep(root, 'b')
+          t.equal(lead?.modifier.query, ':root > #b > #d')
+          modifier.updateActiveEntry(node('b'), lead!)
+          t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
+          t.equal(
+            dep(node('b'), 'd')?.modifier.query,
+            ':root > #b > #d',
+          )
+        }
+      },
+    )
+
+    await t.test('a complete entry and a longer one', async t => {
+      const { modifier, root, node, dep } = setup(t, {
+        '#b': '2.0.0',
+        '#b > #c': '3.0.0',
+      })
+      const lead = dep(root, 'b')
+      t.equal(lead?.modifier.query, '#b', 'complete entry swaps b')
+      modifier.updateActiveEntry(node('b'), lead!)
+      t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
+    })
+
+    await t.test('a longer entry through a complete one', async t => {
+      const { modifier, root, node, dep } = setup(t, {
+        '#b > #d': '2.0.0',
+        '#b > #d > #e': '3.0.0',
+      })
+      const leadB = dep(root, 'b')
+      t.equal(leadB?.modifier.query, '#b > #d > #e')
+      modifier.updateActiveEntry(node('b'), leadB!)
+      const leadD = dep(node('b'), 'd')
+      t.equal(
+        leadD?.modifier.query,
+        '#b > #d',
+        'complete entry swaps d',
+      )
+      modifier.updateActiveEntry(node('d'), leadD!)
+      t.equal(dep(node('d'), 'e')?.modifier.query, '#b > #d > #e')
+    })
+
+    await t.test(
+      'a complete entry rejected by its qualifier',
+      async t => {
+        const { modifier, root, node, dep } = setup(t, {
+          ':root > #b:semver(^2)': '2.0.0',
+          '#b > #c': '3.0.0',
+        })
+        const lead = dep(root, 'b')
+        t.equal(
+          lead?.modifier.query,
+          '#b > #c',
+          'partial entry leads',
+        )
+        modifier.updateActiveEntry(node('b'), lead!)
+        t.equal(dep(node('b'), 'c')?.modifier.query, '#b > #c')
+      },
+    )
+
+    await t.test(
+      'a partial entry rejected by its qualifier',
+      async t => {
+        const { modifier, root, node, dep } = setup(t, {
+          '#b:semver(^2) > #c': '2.0.0',
+          '#b > #d': '3.0.0',
+        })
+        const lead = dep(root, 'b')
+        t.equal(lead?.modifier.query, '#b > #d')
+        modifier.updateActiveEntry(node('b'), lead!)
+        t.equal(dep(node('b'), 'c'), undefined, 'c is not modified')
+        t.equal(dep(node('b'), 'd')?.modifier.query, '#b > #d')
+      },
+    )
+  })
+
   await t.test('rollbackActiveEntries with cycle graph', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({
@@ -1077,13 +1202,11 @@ t.test('GraphModifier', async t => {
         nodeB,
         Spec.parse('c', '^1.0.0', options),
       )
-      if (resultC) {
-        t.equal(
-          resultC.modifier.query,
-          ':root > #b > #c',
-          'should match c from b with the most specific query',
-        )
-      }
+      t.equal(
+        resultC?.modifier.query,
+        ':root > #b > #c',
+        'should match c from b with the most specific query',
+      )
 
       // Set up an edge to rollback
       const newEdge = createMockEdge(nodeA, nodeB, 'test-edge')
