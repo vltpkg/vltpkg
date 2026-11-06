@@ -11,7 +11,7 @@ Overrides/resolutions and package extensions via DSS selectors in `vlt.json`.
 
 - **Edge modifiers** (overrides): Replace dependency specs. Value = string spec (e.g., `"^1.0.0"`, `"-"` to remove)
 - **Node modifiers** (package extensions): Augment manifests. Value = object with deps/peerDeps/etc.
-- Uses DSS (Dependency Selector Syntax) for matching. Most specific selector wins (CSS specificity) among selectors that end on the same edge; every other match continues.
+- Uses DSS (Dependency Selector Syntax) for matching. Most specific selector wins (CSS specificity) among selectors that end on the same edge; longer selectors passing through that edge keep matching below it.
 
 ## User Config (`vlt.json`)
 

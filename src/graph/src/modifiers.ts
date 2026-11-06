@@ -136,6 +136,13 @@ const matchesQualifier = (
 ): boolean => !!item?.comparator({ semver: spec.semver })
 
 /**
+ * Has this active entry reached the last item of its breadcrumb?
+ */
+const isComplete = (active: ModifierActiveEntry): boolean =>
+  active.interactiveBreadcrumb.current ===
+  active.modifier.breadcrumb.last
+
+/**
  * Class representing loaded modifiers configuration for a project.
  *
  * Instances of this class can be used as a helper to modify the graph
@@ -480,9 +487,6 @@ export class GraphModifier {
         this.newModifier(from, initial)
       all.set(initialEntry.modifier.breadcrumb, initialEntry)
     }
-    const isComplete = (active: ModifierActiveEntry) =>
-      active.interactiveBreadcrumb.current ===
-      active.modifier.breadcrumb.last
     const arr = [...all.values()]
     // deregister completed entries
     for (const entry of arr) {
