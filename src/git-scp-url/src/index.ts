@@ -61,7 +61,7 @@ const correctUrl = (url: string): string => {
     // then we replace the last : with a / to create a valid path
     corrected =
       url.slice(0, lastColon) + '/' + url.slice(lastColon + 1)
-    // // and we find our new first : position
+    // and we find our new first : position
     firstColon = corrected.indexOf(':')
   }
 
