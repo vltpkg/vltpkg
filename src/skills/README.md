@@ -8,12 +8,12 @@ depend on them and pin a version.
 Install the package with vlt and link its skills:
 
 ```bash
-vlt install -D @vltpkg/skills --allow-skills='#@vltpkg/skills'
+vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"
 ```
 
 To link only one skill, end the selector with `:skill()`:
-`--allow-skills='#@vltpkg/skills:skill(vlt-cli)'`. After a plain
-`vlt install`, `vlt skills link '#@vltpkg/skills'` links them. See
+`--allow-skills="#@vltpkg/skills:skill(vlt-cli)"`. After a plain
+`vlt install`, `vlt skills link "#@vltpkg/skills"` links them. See
 [`vlt skills`](https://docs.vlt.io/client/commands/skills) for where
 the links go.
 

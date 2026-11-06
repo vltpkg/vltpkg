@@ -8,7 +8,7 @@ const install = (name: string) =>
   `vlx skills add vltpkg/vltpkg -- --skill ${name}`
 
 const installPackage = (name: string) =>
-  `vlt install -D @vltpkg/skills --allow-skills='#@vltpkg/skills:skill(${name})'`
+  `vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills:skill(${name})"`
 
 // skills live in the repo's skills/, where `vlx skills add` finds them; scripts/skills.mts
 // copies them into public/, which serves them as-is. read at build time for llms.txt and llms-full.txt
