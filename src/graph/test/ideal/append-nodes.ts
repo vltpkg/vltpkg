@@ -1256,6 +1256,136 @@ t.test(
   },
 )
 
+t.test('modifiers sharing a path all apply', async t => {
+  const registry: Record<
+    string,
+    Record<string, Partial<Manifest>>
+  > = {
+    a: {
+      '1.0.0': {
+        dependencies: { b: '^1.0.0', c: '^1.0.0' },
+        peerDependencies: { p: '^1.0.0' },
+      },
+    },
+    b: {
+      '2.0.0': { dependencies: { d: '^1.0.0' } },
+      '1.1.0': {},
+      '1.0.0': {},
+    },
+    c: { '2.0.0': {}, '1.1.0': {}, '1.0.0': {} },
+    d: { '2.0.0': {}, '1.1.0': {}, '1.0.0': {} },
+    p: { '1.1.0': {}, '1.0.0': {} },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const { name, range } = spec.final
+      const versions = registry[name] ?? {}
+      const version = Object.keys(versions).find(v => {
+        const parsed = parseVersion(v)
+        return !!parsed && !!range?.test(parsed)
+      })
+      return version ? { name, version, ...versions[version] } : null
+    },
+  } as PackageInfoClient
+
+  const run = async (t: Test, modifiers: Record<string, string>) => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { a: '^1.0.0' },
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({ modifiers }),
+    })
+    const graph = new Graph({
+      projectRoot: dir,
+      ...configData,
+      mainManifest,
+    })
+    const deps = [
+      asDependency({
+        spec: Spec.parse('a', '^1.0.0', configData),
+        type: 'prod',
+      }),
+    ]
+    t.chdir(dir)
+    reload('modifiers', 'project')
+    const graphModifier = GraphModifier.load(configData)
+    graphModifier.tryImporter(graph.mainImporter)
+    await appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps,
+      new PathScurry(dir),
+      configData,
+      new Set<DepID>(),
+      new Map(deps.map(dep => [dep.spec.name, dep])),
+      graphModifier,
+      graphModifier.tryDependencies(graph.mainImporter, deps),
+    )
+    const [a] = graph.nodesByName.get('a') ?? []
+    return { graph, a }
+  }
+
+  await t.test('different targets', async t => {
+    const cases: Record<string, string>[] = [
+      { '#a > #b': '1.0.0', '#a > #c': '1.0.0' },
+      { '#a > #c': '1.0.0', '#a > #b': '1.0.0' },
+      { ':root > #a > #c': '1.0.0', '#a > #b': '1.0.0' },
+    ]
+    for (const modifiers of cases) {
+      await t.test(Object.keys(modifiers).join(', '), async t => {
+        const { a } = await run(t, modifiers)
+        t.equal(a?.modifier, Object.keys(modifiers)[0], 'a modifier')
+        for (const name of ['b', 'c']) {
+          const edge = a?.edgesOut.get(name)
+          t.equal(edge?.spec.bareSpec, '1.0.0', `a -> ${name} spec`)
+          t.equal(edge?.to?.version, '1.0.0', `a -> ${name} version`)
+        }
+      })
+    }
+  })
+
+  await t.test(
+    'a longer modifier through a swapped edge',
+    async t => {
+      const { graph, a } = await run(t, {
+        '#a > #b': '2.0.0',
+        '#a > #b > #d': '1.0.0',
+      })
+      const b = a?.edgesOut.get('b')
+      t.equal(b?.spec.bareSpec, '2.0.0')
+      t.equal(b?.to?.version, '2.0.0')
+      t.equal(b?.to?.modifier, '#a > #b')
+      const d = b?.to?.edgesOut.get('d')
+      t.equal(d?.spec.bareSpec, '1.0.0')
+      t.equal(d?.to?.version, '1.0.0')
+      t.equal(d?.to?.modifier, '#a > #b > #d')
+      t.equal(graph.nodesByName.get('b')?.size, 1, 'a single b node')
+    },
+  )
+
+  await t.test('a peer and a regular dependency', async t => {
+    for (const modifiers of [
+      { '#a > #p': '1.0.0', '#a > #b': '1.0.0' },
+      { '#a > #b': '1.0.0', '#a > #p': '1.0.0' },
+    ]) {
+      await t.test(Object.keys(modifiers).join(', '), async t => {
+        const { a } = await run(t, modifiers)
+        const p = a?.edgesOut.get('p')
+        t.equal(p?.type, 'peer')
+        t.equal(p?.spec.bareSpec, '1.0.0')
+        t.equal(p?.to?.version, '1.0.0')
+        const b = a?.edgesOut.get('b')
+        t.equal(b?.spec.bareSpec, '1.0.0')
+        t.equal(b?.to?.version, '1.0.0')
+      })
+    }
+  })
+})
+
 t.test('early extraction during appendNodes', async t => {
   t.test(
     'extract nodes that do not exist in actual graph',

@@ -153,6 +153,10 @@ Inline comments can be added to selector keys for clarity.
 CSS-like specificity rules determine which modifier applies when
 multiple selectors match the same dependency. Here, the more specific
 `:root > #express > #cookie` takes precedence over `#cookie`.
+Specificity only decides between modifiers that select the same
+dependency: modifiers sharing part of a path, like
+`#react-dom > #scheduler` and `#react-dom > #loose-envify`, each apply
+to their own target.
 
 ### Semver Pseudo-Selectors
 
