@@ -98,7 +98,7 @@ export const install = async (
     }
   }
 
-  let mainManifest: NormalizedManifest | undefined = undefined
+  let mainManifest: NormalizedManifest | undefined
   try {
     mainManifest = options.packageJson.read(options.projectRoot)
   } catch (err) {

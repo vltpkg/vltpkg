@@ -145,7 +145,7 @@ export const squat = async (state: ParserState) => {
     if (!report) continue
 
     // At this point we know report exists and has alerts
-    let exclude = true
+    let exclude: boolean
 
     if (kind === undefined && comparator === undefined) {
       // Pseudo state form: match ANY squat level

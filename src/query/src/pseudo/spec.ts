@@ -24,7 +24,7 @@ export const parseInternals = (
   // tries to parse the first param as a string node, otherwise defaults
   // to reading all postcss nodes as just strings, since it just means
   // the value was defined as an unquoted string
-  let specValue = ''
+  let specValue: string
 
   if (nodes.length === 0) {
     throw new Error('No nodes provided to parseInternals')

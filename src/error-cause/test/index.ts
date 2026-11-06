@@ -34,7 +34,7 @@ t.test('setting causes', async t => {
 
   t.test('error try/catch', async t => {
     const typeCause = (_: ErrorCauseOptions) => {}
-    let cause: unknown = null
+    let cause: unknown
     try {
       throw new Error('foo')
     } catch (er) {

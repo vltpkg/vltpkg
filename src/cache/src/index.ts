@@ -171,7 +171,7 @@ export class Cache extends LRUCache<
    */
   *walkSync() {
     const dir = opendirSync(this.#path, { bufferSize: 1024 })
-    let entry: Dirent | null = null
+    let entry: Dirent | null
     while (null !== (entry = dir.readSync())) {
       const f = resolve(this.#path, entry.name)
       if (f.endsWith('.key')) {

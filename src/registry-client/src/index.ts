@@ -1168,7 +1168,7 @@ export class RegistryClient {
       )
     }
 
-    let response: Dispatcher.ResponseData | null = null
+    let response: Dispatcher.ResponseData | null
     try {
       response = await this.agent.request(
         options as Dispatcher.RequestOptions,

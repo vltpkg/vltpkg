@@ -156,7 +156,7 @@ export const score = async (state: ParserState) => {
 
     const scoreValue = report.score[kind]
 
-    let exclude = false
+    let exclude: boolean
     switch (comparator) {
       case '>':
         exclude = scoreValue <= rate

@@ -87,7 +87,7 @@ export const path = async (state: ParserState) => {
   }
 
   // Extract and validate the path pattern
-  let pathPattern = ''
+  let pathPattern: string
   if (isStringNode(selector.nodes[0])) {
     pathPattern = removeQuotes(asStringNode(selector.nodes[0]).value)
   } else {

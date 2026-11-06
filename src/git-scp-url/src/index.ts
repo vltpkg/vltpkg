@@ -42,7 +42,7 @@ const correctUrl = (url: string): string => {
   const firstAt = url.indexOf('@')
   const lastHash = url.lastIndexOf('#')
   let firstColon = url.indexOf(':')
-  let lastColon = url.lastIndexOf(
+  const lastColon = url.lastIndexOf(
     ':',
     lastHash > -1 ? lastHash : Infinity,
   )
@@ -61,9 +61,8 @@ const correctUrl = (url: string): string => {
     // then we replace the last : with a / to create a valid path
     corrected =
       url.slice(0, lastColon) + '/' + url.slice(lastColon + 1)
-    // // and we find our new : positions
+    // and we find our new first : position
     firstColon = corrected.indexOf(':')
-    lastColon = corrected.lastIndexOf(':')
   }
 
   if (firstColon === -1 && !url.includes('//')) {
