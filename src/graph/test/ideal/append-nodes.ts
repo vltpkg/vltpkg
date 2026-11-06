@@ -2517,7 +2517,7 @@ t.test('skip peerOptional dependencies', async t => {
     })
 
     // Track if packageInfo.manifest was called
-    let manifestCalled = false
+    let manifestCalled: boolean
     const packageInfo = {
       async manifest(spec: Spec) {
         manifestCalled = true

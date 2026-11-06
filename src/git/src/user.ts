@@ -8,8 +8,8 @@ export type GitUser = {
 export const getUser = async (
   opts = {},
 ): Promise<GitUser | undefined> => {
-  let name = ''
-  let email = ''
+  let name: string
+  let email: string
 
   // retrieve user.name
   const oldFlagUserNameResult = await spawn(

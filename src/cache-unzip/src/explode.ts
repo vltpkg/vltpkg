@@ -54,7 +54,7 @@ const rm = (path: string) =>
 const entryIntegrity = (buf: Buffer): string | undefined => {
   const headSize = buf.readUInt32BE(0)
   let key: string | undefined
-  for (let i = 7, size = 4; i + 4 <= headSize; i += size) {
+  for (let i = 7, size: number; i + 4 <= headSize; i += size) {
     size = Math.max(4, buf.readUInt32BE(i))
     const h = buf.toString('utf8', i + 4, i + size)
     if (key === undefined) key = h.toLowerCase()

@@ -1,12 +1,12 @@
 {
   "workspaces": ["src/*", "infra/*", "www/*"],
   "catalog": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22.19.2",
     "@types/pacote": "^11.1.8",
     "@types/semver": "^7.7.1",
     "@types/ssri": "^7.1.5",
-    "eslint": "^9.39.1",
+    "eslint": "^10.14.0",
     "lru-cache": "^11.2.4",
     "lz-string": "^1.5.0",
     "minimatch": "^10.1.1",
@@ -25,9 +25,12 @@
     "tar": "^7.5.2",
     "tshy": "^3.1.0",
     "typedoc": "~0.27.9",
-    "typescript-eslint": "^8.49.0",
+    "typescript-eslint": "^8.56.0",
     "typescript": "5.7.3",
     "walk-up-path": "^4.0.0"
+  },
+  "modifiers": {
+    "#eslint-plugin-import > #eslint": "^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0 || ^8 || ^9 || ^10"
   },
   "config": {
     "registry": "https://registry.npmjs.org/",

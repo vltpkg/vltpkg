@@ -126,7 +126,7 @@ export const command: CommandFn<
     // if there are workspaces that were not matched by existing
     // patterns, we add them to the workspaces config
     if (addToConfig.length > 0) {
-      let workspaces = workspacesConfig
+      let workspaces: typeof workspacesConfig
       // if the original workspaces config is a string, we'll need
       // to convert it to an array in order to append the recently
       // added workspaces

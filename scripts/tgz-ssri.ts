@@ -31,6 +31,7 @@ const ssriFromFile = (file: string): string => {
   } catch (err) {
     throw new Error(
       `Failed to generate integrity for ${file}: ${err}`,
+      { cause: err },
     )
   }
 }

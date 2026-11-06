@@ -580,7 +580,7 @@ export const normalizeKeywords = (
 ): NormalizedKeywords | undefined => {
   if (!keywords) return
 
-  let keywordArray: string[] = []
+  let keywordArray: string[]
 
   if (typeof keywords === 'string') {
     // Handle comma-separated string values
@@ -652,7 +652,7 @@ export const normalizeOs = (
 ): NormalizedOs | undefined => {
   if (!os) return
 
-  let osArray: string[] = []
+  let osArray: string[]
 
   if (typeof os === 'string') {
     // Handle single OS string
@@ -683,7 +683,7 @@ export const normalizeCpu = (
 ): NormalizedCpu | undefined => {
   if (!cpu) return
 
-  let cpuArray: string[] = []
+  let cpuArray: string[]
 
   if (typeof cpu === 'string') {
     // Handle single CPU string
@@ -714,7 +714,7 @@ export const normalizeLibc = (
 ): NormalizedLibc | undefined => {
   if (!libc) return
 
-  let libcArray: string[] = []
+  let libcArray: string[]
 
   if (typeof libc === 'string') {
     // Handle single libc string

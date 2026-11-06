@@ -120,7 +120,7 @@ export const parseInternals = (
   // tries to parse the first param as a string node, otherwise defaults
   // to reading all postcss nodes as just strings, since it just means
   // the value was defined as an unquoted string
-  let semverValue = ''
+  let semverValue: string
   try {
     semverValue = removeQuotes(
       asStringNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])

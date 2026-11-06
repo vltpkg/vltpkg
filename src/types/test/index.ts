@@ -1,8 +1,11 @@
 import type {
   Bugs,
+  ConditionalValue,
   ConditionalValueObject,
   Dist,
+  Exports,
   ExportsSubpaths,
+  Funding,
   Imports,
   Integrity,
   JSONField,
@@ -196,8 +199,8 @@ t.test('keyID', t => {
   //@ts-expect-error
   const str: KeyID = 'hello'
   t.equal(isKeyID(str), false)
-  let keyOK = ''
-  keyOK = 'SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA'
+  const keyOK =
+    'SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA' as string
   //@ts-expect-error - still just a string as far as TS knows
   const kNope: KeyID = keyOK
   kNope
@@ -222,9 +225,8 @@ t.test('integrity', t => {
   const iNotInt: Integrity = 'hello'
   t.equal(isIntegrity(iNotInt), false)
   t.throws(() => asIntegrity('hello'))
-  let intOK = ''
-  intOK =
-    'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+  const intOK =
+    'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==' as string
   //@ts-expect-error - still just a string as far as TS knows
   const iNope: Integrity = intOK
   iNope
@@ -352,97 +354,116 @@ t.test('brotliTarballUrl', t => {
 
 t.test('type checks', t => {
   //@ts-expect-error
-  let b: Bugs = { hello: 'world' }
+  const b: Bugs = { hello: 'world' }
   b
-  b = { url: 'string' }
-  b = { email: 'string' }
+  const _b1: Bugs = { url: 'string' }
+  const _b2: Bugs = { email: 'string' }
   //@ts-expect-error
-  b = 123
+  const _b3: Bugs = 123
   //@ts-expect-error
-  let c: ConditionalValue = { default: true }
+  const c: ConditionalValue = { default: true }
   c
-  c = { default: 'string' }
-  c = null
+  const _c1: ConditionalValue = { default: 'string' }
+  const _c2: ConditionalValue = null
   //@ts-expect-error
-  let cv: ConditionalValueObject = 'string'
+  const cv: ConditionalValueObject = 'string'
   cv
   //@ts-expect-error
-  cv = null
-  cv = { default: { require: 'string' } }
+  const _cv1: ConditionalValueObject = null
+  const _cv2: ConditionalValueObject = {
+    default: { require: 'string' },
+  }
   //@ts-expect-error
-  let d: Dist = { nope: 'not ok' }
+  const d: Dist = { nope: 'not ok' }
   d
-  d = { tarball: 'url' }
+  const _d1: Dist = { tarball: 'url' }
+  const _d2: Dist = {
+    tarball: 'url',
+    //@ts-expect-error
+    integrity: 'rando blaregosasedf',
+  }
+  const _d3: Dist = {
+    tarball: 'url',
+    integrity: 'sha512-this is fine',
+  }
   //@ts-expect-error
-  d = { tarball: 'url', integrity: 'rando blaregosasedf' }
-  d = { tarball: 'url', integrity: 'sha512-this is fine' }
-  //@ts-expect-error
-  let e: Exports = null
+  const e: Exports = null
   e
-  e = { require: { default: 'string' } }
+  const _e1: Exports = { require: { default: 'string' } }
   //@ts-expect-error
-  let es: ExportsSubpaths = null
+  const es: ExportsSubpaths = null
   es
   //@ts-expect-error
-  es = { 'invalid path': 'foo' }
-  es = { '.': { default: 'foo' } }
-  es = { './foo': null }
-  es = { './foo': null, '.': { default: 'foo' } }
-  es = {}
+  const _es1: ExportsSubpaths = { 'invalid path': 'foo' }
+  const _es2: ExportsSubpaths = { '.': { default: 'foo' } }
+  const _es3: ExportsSubpaths = { './foo': null }
+  const _es4: ExportsSubpaths = {
+    './foo': null,
+    '.': { default: 'foo' },
+  }
+  const _es5: ExportsSubpaths = {}
 
   //@ts-expect-error
-  let f: Funding = true
+  const f: Funding = true
   f
-  f = { url: 'string' }
-  f = 'string'
-  f = ['string', 'string']
-  f = ['string', { url: 'string' }]
+  const _f1: Funding = { url: 'string' }
+  const _f2: Funding = 'string'
+  const _f3: Funding = ['string', 'string']
+  const _f4: Funding = ['string', { url: 'string' }]
 
   //@ts-expect-error
-  let imp: Imports = null
+  const imp: Imports = null
   imp
   //@ts-expect-error
-  imp = { './invalid': 'subpath' }
-  imp = { '#valid': 'subpath' }
+  const _imp1: Imports = { './invalid': 'subpath' }
+  const _imp2: Imports = { '#valid': 'subpath' }
 
   //@ts-expect-error
-  let ig: Integrity = 'hello'
+  const ig: Integrity = 'hello'
   ig
   //@ts-expect-error
-  ig = true
+  const _ig1: Integrity = true
   //@ts-expect-error
-  ig = { Integrity: 'sha512-asdf' }
-  ig = 'sha512-asdf'
+  const _ig2: Integrity = { Integrity: 'sha512-asdf' }
+  const _ig3: Integrity = 'sha512-asdf'
 
   //@ts-expect-error
-  let jf: JSONField = /x/
+  const jf: JSONField = /x/
   jf
   //@ts-expect-error
-  jf = () => {}
-  jf = { hello: [{ world: null }] }
-  jf = null
-  jf = true
-  jf = 123
+  const _jf1: JSONField = () => {}
+  const _jf2: JSONField = { hello: [{ world: null }] }
+  const _jf3: JSONField = null
+  const _jf4: JSONField = true
+  const _jf5: JSONField = 123
 
   //@ts-expect-error
-  let k: KeyID = 'heblo'
+  const k: KeyID = 'heblo'
   k
-  k = 'SHA256:asdf'
+  const _k1: KeyID = 'SHA256:asdf'
   //@ts-expect-error
-  k = true
+  const _k2: KeyID = true
 
-  let m: Manifest = {}
+  const m: Manifest = {}
   m
   //@ts-expect-error
-  m = { name: true, dependencies: /x/ }
-  m = { name: 'x', version: '1.0.0', license: 'MIT' }
+  const _m1: Manifest = { name: true, dependencies: /x/ }
+  const _m2: Manifest = {
+    name: 'x',
+    version: '1.0.0',
+    license: 'MIT',
+  }
   //@ts-expect-error
-  m = { name: 'x', version: '1.0.0', license: 123 }
+  const _m3: Manifest = { name: 'x', version: '1.0.0', license: 123 }
 
   //@ts-expect-error
   let rm: ManifestRegistry = {}
   rm
-  rm = { name: 'string', version: 'string', dist: { tarball: 'url' } }
+  const _rm1: ManifestRegistry = {
+    name: 'string',
+    version: 'string',
+    dist: { tarball: 'url' },
+  }
   rm = {
     name: 'string',
     version: 'string',
@@ -474,20 +495,20 @@ t.test('type checks', t => {
   //@ts-expect-error
   pdm.foo = 'bar'
 
-  let pr: Person = { name: 'x' }
+  const pr: Person = { name: 'x' }
   pr
   //@ts-expect-error
-  pr = { name: true }
-  pr = 'Hello'
-  pr = { name: '', email: '', url: '' }
+  const _pr1: Person = { name: true }
+  const _pr2: Person = 'Hello'
+  const _pr3: Person = { name: '', email: '', url: '' }
 
-  let r: Repository = { type: 'git', url: 'github' }
+  const r: Repository = { type: 'git', url: 'github' }
   r
-  r = 'git+ssh://git@github.com:a/b'
+  const _r1: Repository = 'git+ssh://git@github.com:a/b'
   //@ts-expect-error
-  r = { url: 'github' }
+  const _r2: Repository = { url: 'github' }
   //@ts-expect-error
-  r = { type: 'git' }
+  const _r3: Repository = { type: 'git' }
 
   t.pass('all typechecks passed')
   t.end()

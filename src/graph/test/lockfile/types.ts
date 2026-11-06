@@ -28,17 +28,17 @@ import {
 t.test('lockfile type checks', t => {
   // LockfileData type checks
   //@ts-expect-error - missing required properties
-  let ld: LockfileData = {}
+  const ld: LockfileData = {}
   ld
-  ld = {
+  const _ld1: LockfileData = {
     //@ts-expect-error - options must be an object
     options: null,
     nodes: {},
     edges: {},
   }
   //@ts-expect-error - nodes must be a record
-  ld = { options: {}, nodes: null, edges: {} }
-  ld = {
+  const _ld2: LockfileData = { options: {}, nodes: null, edges: {} }
+  const _ld3: LockfileData = {
     options: {},
     nodes: {},
     //@ts-expect-error - edges must be a record
@@ -46,7 +46,7 @@ t.test('lockfile type checks', t => {
   }
 
   // Valid LockfileData
-  ld = {
+  const _ld4: LockfileData = {
     lockfileVersion: 1,
     options: {},
     nodes: {},
@@ -63,7 +63,7 @@ t.test('lockfile type checks', t => {
   const validEdgeValue =
     `prod ^1.0.0 ${otherDepId}` as LockfileEdgeValue
 
-  ld = {
+  const _ld5: LockfileData = {
     lockfileVersion: 1,
     options: {
       registries: { npm: 'https://registry.npmjs.org/' },
@@ -87,20 +87,31 @@ t.test('lockfile type checks', t => {
 
   // LockfileNode type checks
   //@ts-expect-error - must be a tuple with at least flags
-  let ln: LockfileNode = {}
+  const ln: LockfileNode = {}
   ln
   //@ts-expect-error - flags must be a number
-  ln = ['invalid']
+  const _ln1: LockfileNode = ['invalid']
   //@ts-expect-error - flags must be 0-7
-  ln = [8]
+  const _ln2: LockfileNode = [8]
 
   // Valid LockfileNode variations
-  ln = [0] // minimal
-  ln = [1, 'pkg-name'] // with name
-  ln = [2, 'pkg-name', 'sha512-abc=='] // with integrity
-  ln = [3, 'pkg-name', 'sha512-abc==', 'https://example.com/pkg.tgz'] // with resolved
-  ln = [0, 'pkg-name', null, null, '/path/to/pkg'] // with location
-  ln = [
+  const _ln3: LockfileNode = [0] // minimal
+  const _ln4: LockfileNode = [1, 'pkg-name'] // with name
+  const _ln5: LockfileNode = [2, 'pkg-name', 'sha512-abc=='] // with integrity
+  const _ln6: LockfileNode = [
+    3,
+    'pkg-name',
+    'sha512-abc==',
+    'https://example.com/pkg.tgz',
+  ] // with resolved
+  const _ln7: LockfileNode = [
+    0,
+    'pkg-name',
+    null,
+    null,
+    '/path/to/pkg',
+  ] // with location
+  const _ln8: LockfileNode = [
     1,
     'pkg-name',
     null,
@@ -108,7 +119,7 @@ t.test('lockfile type checks', t => {
     null,
     { name: 'pkg', version: '1.0.0' },
   ] // with manifest
-  ln = [
+  const _ln9: LockfileNode = [
     2,
     'pkg-name',
     null,
@@ -117,7 +128,7 @@ t.test('lockfile type checks', t => {
     null,
     { name: 'pkg', version: '1.0.0' },
   ] // with rawManifest
-  ln = [
+  const _ln10: LockfileNode = [
     3,
     'pkg-name',
     'sha512-abc==',
@@ -129,64 +140,65 @@ t.test('lockfile type checks', t => {
 
   // LockfileNodeFlags type checks
   //@ts-expect-error - must be 0 through 7
-  let lnf: LockfileNodeFlags = 8
+  const lnf: LockfileNodeFlags = 8
   lnf
   //@ts-expect-error - must be a number
-  lnf = 'invalid'
+  const _lnf1: LockfileNodeFlags = 'invalid'
 
   // Valid LockfileNodeFlags
-  lnf = 0
-  lnf = 1
-  lnf = 2
-  lnf = 3
+  const _lnf2: LockfileNodeFlags = 0
+  const _lnf3: LockfileNodeFlags = 1
+  const _lnf4: LockfileNodeFlags = 2
+  const _lnf5: LockfileNodeFlags = 3
   // brotli, alone and combined
-  lnf = 4
-  lnf = 5
-  lnf = 6
-  lnf = 7
+  const _lnf6: LockfileNodeFlags = 4
+  const _lnf7: LockfileNodeFlags = 5
+  const _lnf8: LockfileNodeFlags = 6
+  const _lnf9: LockfileNodeFlags = 7
 
   // LockfileEdges type checks
-  let le: LockfileEdges = {}
+  const le: LockfileEdges = {}
   le
   //@ts-expect-error - values must be LockfileEdgeValue format
-  le = {
+  const _le1: LockfileEdges = {
     [`${validDepId} dep-name` as LockfileEdgeKey]: 'invalid-value',
   }
 
   // Valid LockfileEdges
-  le = {}
+  const _le2: LockfileEdges = {}
   const fromDepId = joinDepIDTuple(['registry', '', 'from@1.0.0'])
   const toDepId = joinDepIDTuple(['registry', '', 'to@1.0.0'])
   const edgeKey1 = `${fromDepId} dep-name` as LockfileEdgeKey
   const edgeKey2 = `${fromDepId} other-dep` as LockfileEdgeKey
   const edgeValue1 = `prod ^1.0.0 ${toDepId}` as LockfileEdgeValue
   const edgeValue2 = 'dev ^2.0.0 MISSING' as LockfileEdgeValue
-  le = {
+  const _le3: LockfileEdges = {
     [edgeKey1]: edgeValue1,
     [edgeKey2]: edgeValue2,
   }
 
   // LockfileEdgeKey type checks
   //@ts-expect-error - must be in format "${DepID} ${string}"
-  let lek: LockfileEdgeKey = 'invalid-format'
+  const lek: LockfileEdgeKey = 'invalid-format'
   lek
   //@ts-expect-error - must be a string
-  lek = 123
+  const _lek1: LockfileEdgeKey = 123
 
   // Valid LockfileEdgeKey (template literal type)
-  lek = `${fromDepId} dep-name`
+  const _lek2: LockfileEdgeKey = `${fromDepId} dep-name`
 
   // LockfileEdgeValue type checks
   //@ts-expect-error - must be in format "${DependencyTypeShort} ${Spec['bareSpec']} ${DepID | 'MISSING'}"
-  let lev: LockfileEdgeValue = 'invalid-format'
+  const lev: LockfileEdgeValue = 'invalid-format'
   lev
   //@ts-expect-error - must be a string
-  lev = 123
+  const _lev1: LockfileEdgeValue = 123
 
   // Valid LockfileEdgeValue (template literal type)
-  lev = `prod ^1.0.0 ${toDepId}`
-  lev = 'dev ^2.0.0 MISSING'
-  lev = `opt ~1.5.0 ${toDepId}` as LockfileEdgeValue
+  const _lev2: LockfileEdgeValue = `prod ^1.0.0 ${toDepId}`
+  const _lev3: LockfileEdgeValue = 'dev ^2.0.0 MISSING'
+  const _lev4: LockfileEdgeValue =
+    `opt ~1.5.0 ${toDepId}` as LockfileEdgeValue
 
   t.pass('all lockfile type checks passed')
   t.end()

@@ -273,7 +273,7 @@ export abstract class RunnerBase<
     const queue: [n: Node, ...r: Node[]][] = [
       ...directDependents,
     ].map(dd => [dd, d])
-    let step: undefined | [n: Node, ...r: Node[]] = undefined
+    let step: undefined | [n: Node, ...r: Node[]]
     while (undefined !== (step = queue.shift())) {
       /* c8 ignore next */
       if (!dependents.has(step[0])) continue
