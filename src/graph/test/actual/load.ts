@@ -1810,6 +1810,82 @@ t.test('modifiers with the hidden lockfile', async t => {
       'target reached from a dependency',
     )
   })
+
+  await t.test('every importer', async t => {
+    const modifiers = { ':workspace > #x': '2.0.0' }
+    const xDepID = joinDepIDTuple([
+      'registry',
+      '',
+      'x@2.0.0',
+      joinExtra({ modifier: ':workspace > #x' }),
+    ])
+    const rootDepID = joinDepIDTuple(['file', '.'])
+    const wsDepID = joinDepIDTuple(['workspace', 'packages/w'])
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'hidden-many-importers',
+        version: '1.0.0',
+        dependencies: { x: '^1.0.0' },
+      }),
+      'vlt.json': JSON.stringify({
+        workspaces: { packages: ['./packages/*'] },
+        modifiers,
+      }),
+      packages: {
+        w: {
+          'package.json': JSON.stringify({
+            name: 'w',
+            version: '1.0.0',
+            dependencies: { x: '^1.0.0' },
+          }),
+          node_modules: {},
+        },
+      },
+      node_modules: {
+        // no store: only the hidden lockfile can place these nodes
+        '.vlt-lock.json': JSON.stringify({
+          lockfileVersion: 1,
+          options: { ...configData, modifiers },
+          nodes: {
+            [xDepID]: [
+              0,
+              'x',
+              null,
+              null,
+              null,
+              { name: 'x', version: '2.0.0' },
+            ],
+          },
+          edges: {
+            [`${rootDepID} x`]: `prod 2.0.0 ${xDepID}`,
+            [`${wsDepID} x`]: `prod 2.0.0 ${xDepID}`,
+          },
+        }),
+      },
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests: true,
+      modifiers: new GraphModifier({ ...configData }),
+      ...configData,
+    })
+    t.ok(graph.nodes.get(xDepID), 'loaded from the hidden lockfile')
+    t.equal(
+      graph.mainImporter.edgesOut.get('x')?.spec.overridden,
+      true,
+      'root importer edge',
+    )
+    t.equal(
+      graph.nodes.get(wsDepID)?.edgesOut.get('x')?.spec.overridden,
+      true,
+      'workspace importer edge',
+    )
+  })
 })
 
 t.test('various DepID types with peerSetHash', async t => {

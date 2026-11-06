@@ -239,8 +239,6 @@ const markOverriddenEdges = (
   }
   for (const importer of graph.importers) {
     modifiers.tryImporter(importer)
-  }
-  for (const importer of graph.importers) {
     visit(importer)
   }
   for (const [node, modifierRefs] of refs) {
