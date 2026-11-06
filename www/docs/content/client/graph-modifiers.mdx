@@ -109,6 +109,21 @@ removed. Normal selector rules apply: the most specific matching
 modifier wins, whatever its value (see
 [Specificity Resolution](#specificity-resolution)).
 
+### Peer Dependencies
+
+```json
+{
+  "modifiers": {
+    "#eslint-plugin-import > #eslint": "^8 || ^9 || ^10"
+  }
+}
+```
+
+Modifiers apply to peer dependencies too: the peer edge resolves with
+the modified spec. Here the `eslint` peer range of
+`eslint-plugin-import` is widened, so the project's `eslint` 10
+satisfies it.
+
 ### Adding Comments to Selectors
 
 ```json

@@ -959,6 +959,29 @@ const processPlacementTasks = async (
     // when the peer would have resolved
     for (const dep of nextDeps) nextPeerDeps.delete(dep.spec.name)
 
+    // modifiers match peers too: swap a fully matched peer's spec
+    // before it is resolved, a `-` value drops the peer
+    const modifierRefs = modifiers?.tryDependencies(node, [
+      ...nextDeps,
+      ...nextPeerDeps.values(),
+    ])
+    for (const [name, dep] of nextPeerDeps) {
+      const active = modifierRefs?.get(name)
+      if (
+        !active ||
+        active.interactiveBreadcrumb.current !==
+          active.modifier.breadcrumb.last ||
+        !('spec' in active.modifier)
+      ) {
+        continue
+      }
+      if (active.modifier.spec.bareSpec === '-') {
+        nextPeerDeps.delete(name)
+        continue
+      }
+      nextPeerDeps.set(name, { ...dep, spec: active.modifier.spec })
+    }
+
     // finish peer placement for this node, resolving satisfied peers
     // to seen nodes from the peer context and adding unsatisfied peers
     // to `nextDeps` so they get processed along regular dependencies
@@ -977,7 +1000,7 @@ const processPlacementTasks = async (
     childDepsToProcess.push({
       node,
       deps: nextDeps,
-      modifierRefs: modifiers?.tryDependencies(node, nextDeps),
+      modifierRefs,
       peerContext,
       updateContext,
     })

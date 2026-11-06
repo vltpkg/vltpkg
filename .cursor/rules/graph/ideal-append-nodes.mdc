@@ -72,7 +72,7 @@ If first satisfying node fails peer check, lazy-load `graph.nodesByName.get(name
 
 ## Modifier Integration
 
-Check `activeModifier?.interactiveBreadcrumb.current === modifier.breadcrumb.last` for complete match. If complete and has `spec`, swap it. If `spec.bareSpec === '-'`, skip dep entirely. After placement: `modifiers.updateActiveEntry(node, active)`.
+Check `activeModifier?.interactiveBreadcrumb.current === modifier.breadcrumb.last` for complete match. If complete and has `spec`, swap it. If `spec.bareSpec === '-'`, skip dep entirely. After placement: `modifiers.updateActiveEntry(node, active)`. Peers go through `tryDependencies` too: a complete edge modifier swaps the peer spec (or drops it on `-`) in `nextPeerDeps` before `endPeerPlacement`.
 
 ## Key Types
 
