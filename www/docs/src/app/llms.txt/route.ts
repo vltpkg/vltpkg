@@ -26,9 +26,9 @@ Every page is available as Markdown: append \`.md\` to its URL, or request the p
 
 ## Agent skills
 
-Follow a skill by reading its link. Skills with an \`Install:\` command can also be added to a project with the [skills CLI](https://skills.sh/docs/cli).
+Follow a skill by reading its link. Skills with an \`Install:\` command can also be added to a project with the [skills CLI](https://skills.sh/docs/cli), or with vlt from the \`@vltpkg/skills\` package.
 
-${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description} Install: \`${s.install}\``).join('\n')}
+${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description} Install: \`${s.install}\` or \`${s.installPackage}\``).join('\n')}
 
 ## Pages
 `

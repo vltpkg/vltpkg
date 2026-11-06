@@ -1,0 +1,31 @@
+{
+  "name": "@vltpkg/skills",
+  "description": "Agent skills for the vlt CLI and vlt.io registries",
+  "version": "1.6.4",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/skills"
+  },
+  "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "prepack": "node scripts/build.ts"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "agent-skills",
+    "skills",
+    "vlt"
+  ],
+  "bugs": {
+    "url": "https://github.com/vltpkg/vltpkg/issues"
+  },
+  "homepage": "https://github.com/vltpkg/vltpkg/tree/main/src/skills#readme"
+}

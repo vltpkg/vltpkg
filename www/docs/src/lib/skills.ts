@@ -7,6 +7,9 @@ const tree = 'https://github.com/vltpkg/vltpkg/tree/main'
 const install = (name: string) =>
   `vlx skills add vltpkg/vltpkg -- --skill ${name}`
 
+const installPackage = (name: string) =>
+  `vlt install -D @vltpkg/skills --allow-skills='#@vltpkg/skills:skill(${name})'`
+
 // skills live in the repo's skills/, where `vlx skills add` finds them; scripts/skills.mts
 // copies them into public/, which serves them as-is. read at build time for llms.txt and llms-full.txt
 const skill = (name: string) => {
@@ -31,6 +34,7 @@ const skill = (name: string) => {
     url,
     github: `${tree}${dir}`,
     install: install(name),
+    installPackage: installPackage(name),
     description,
     content: content.trim(),
   }
