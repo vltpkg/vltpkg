@@ -17,6 +17,7 @@ import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
 import { parse, stringify } from 'polite-json'
 import ignore from 'ignore'
+import { getPublishConfig } from './publish-config.ts'
 
 export type PackTarballResult = {
   name: string
@@ -331,11 +332,7 @@ export const packTarball = async (
 
   // Check if publishDirectory is configured via CLI flag or package.json publishConfig.directory
   const cliPublishDir = config.get('publish-directory')
-  const manifestPublishDir = (
-    manifest as NormalizedManifest & {
-      publishConfig?: { directory?: string }
-    }
-  ).publishConfig?.directory
+  const manifestPublishDir = getPublishConfig(manifest)?.directory
 
   const publishDirectory = cliPublishDir ?? manifestPublishDir
   if (publishDirectory) {
