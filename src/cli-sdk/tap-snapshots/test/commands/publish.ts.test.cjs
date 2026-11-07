@@ -16,6 +16,10 @@ and then upload it to the configured registry.
 The registry is the package's \`publishConfig.registry\` if set (no other registry
 config needed), else \`--registry\`, else a configured alias.
 
+When publishing more than one package (\`--recursive\`, \`--workspace\`,
+\`--workspace-group\` or \`--scope\`), private packages and versions already on the
+registry are skipped instead of failing the run.
+
   Aliases
 
     ​pub

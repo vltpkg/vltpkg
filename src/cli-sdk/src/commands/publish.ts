@@ -25,6 +25,8 @@ import { minimatch } from 'minimatch'
 import { resolveRegistry } from '../require-registry.ts'
 import { stderr } from '../output.ts'
 import { getPublishConfig } from '../publish-config.ts'
+import { isErrorWithCause, isObject } from '@vltpkg/types'
+import type { NormalizedManifest, Packument } from '@vltpkg/types'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -36,7 +38,11 @@ export const usage: CommandUsage = () =>
     and then upload it to the configured registry.
 
     The registry is the package's \`publishConfig.registry\` if set (no other
-    registry config needed), else \`--registry\`, else a configured alias.`,
+    registry config needed), else \`--registry\`, else a configured alias.
+
+    When publishing more than one package (\`--recursive\`, \`--workspace\`,
+    \`--workspace-group\` or \`--scope\`), private packages and versions
+    already on the registry are skipped instead of failing the run.`,
     options: {
       tag: {
         description: 'Publish the package with the given tag',
@@ -92,12 +98,23 @@ export type CommandResultSingle = {
   files: string[]
 }
 
+/** A target left out of a multi-package publish. */
+export type CommandResultSkipped = {
+  id: string
+  name?: string
+  version?: string
+  /** Absent for private packages, which are never sent anywhere. */
+  registry?: string
+  skipped: 'private' | 'already published'
+}
+
 export type CommandResult =
-  CommandResultSingle | CommandResultSingle[]
+  CommandResultSingle | (CommandResultSingle | CommandResultSkipped)[]
 
 export const views = {
   human: results => {
-    const item = (r: CommandResultSingle) => {
+    const item = (r: CommandResultSingle | CommandResultSkipped) => {
+      if ('skipped' in r) return `⏭️ ${r.id} skipped (${r.skipped})`
       const lines = [
         `📦 Package: ${r.id}`,
         `🏷️ Tag: ${r.tag}`,
@@ -193,14 +210,41 @@ export const command: CommandFn<CommandResult> = async conf => {
     error('No workspaces or query results found'),
   )
 
-  const results: CommandResultSingle[] = []
-  for (const target of await resolveTargets(locations, conf)) {
-    results.push(await commandSingle(target, conf))
+  const targets = await resolveTargets(locations, conf)
+  // a check that fails is ignored anyway, so don't wait out retries
+  const checker = new RegistryClient({
+    ...conf.options,
+    'fetch-retries': 0,
+  })
+  // every check starts now; each publish waits only for its own
+  const checks = targets.map(
+    t => [t, skipReason(t, checker)] as const,
+  )
+  const results: (CommandResultSingle | CommandResultSkipped)[] = []
+  for (const [target, check] of checks) {
+    const reason = await check
+    if (reason) {
+      results.push(skipped(target, reason))
+      continue
+    }
+    try {
+      results.push(await commandSingle(target, conf))
+    } catch (err) {
+      // the check can miss a version: a stale packument, or one that was
+      // unpublished (gone from the packument, but never reusable)
+      if (!refusedAsExisting(err)) throw err
+      results.push(skipped(target, 'already published'))
+    }
   }
   return results
 }
 
-type Target = { manifestDir: string; registry: string }
+type Target = {
+  manifestDir: string
+  manifest: NormalizedManifest
+  /** Not resolved for private packages, which are never published. */
+  registryUrl?: URL
+}
 
 /**
  * Registry of every target, before anything runs or publishes.
@@ -217,13 +261,84 @@ const resolveTargets = async (
     assert(manifestPath, 'No package.json found')
     const manifestDir = dirname(manifestPath)
     const manifest = conf.options.packageJson.read(manifestDir)
-    const registry =
-      getPublishConfig(manifest)?.registry ??
-      (await (fallback ??= resolveRegistry(conf)))
-    targets.push({ manifestDir, registry })
+    const registryUrl =
+      manifest.private ? undefined : (
+        new URL(
+          registryBase(
+            getPublishConfig(manifest)?.registry ??
+              (await (fallback ??= resolveRegistry(conf))),
+          ),
+        )
+      )
+    targets.push({ manifestDir, manifest, registryUrl })
   }
   return targets
 }
+
+const packumentUrl = (name: string, registryUrl: URL) =>
+  new URL(
+    name.startsWith('@') ? name.replace('/', '%2F') : name,
+    registryUrl,
+  )
+
+/**
+ * Why a target of a multi-package publish is left out, if it is.
+ *
+ * "Already published" is read off the packument rather than the PUT's
+ * failure: npmjs.org refuses a republish with a 403, the same status as
+ * a permission error, and by then the lifecycle scripts have run.
+ * Anything short of a clear yes (404, auth error, network failure) is a
+ * no, so the publish goes ahead and reports the real error.
+ */
+const skipReason = async (
+  { manifest, registryUrl }: Target,
+  rc: RegistryClient,
+): Promise<CommandResultSkipped['skipped'] | undefined> => {
+  if (manifest.private) return 'private'
+  assert(registryUrl)
+  const { name, version } = manifest
+  if (!name || !version) return undefined
+  // ponytail: checks the version from before lifecycle scripts run, so a
+  // prepack that bumps the version is checked against the old one
+  try {
+    const res = await rc.request(packumentUrl(name, registryUrl), {
+      useCache: false,
+      headers: { accept: 'application/vnd.npm.install-v1+json' },
+    })
+    if (res.statusCode !== 200) return undefined
+    const { versions } = res.json() as Partial<Packument>
+    return versions?.[version] ? 'already published' : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * A PUT the registry refused because the version exists: 409 from vlt.io,
+ * a 403 that says so from npmjs.org. Other 403s are permission errors.
+ */
+const refusedAsExisting = (err: unknown) => {
+  if (!isErrorWithCause(err) || !isObject(err.cause)) return false
+  const { status } = err.cause
+  return (
+    status === 409 ||
+    (status === 403 && /previously published/i.test(err.message))
+  )
+}
+
+const skipped = (
+  { manifestDir, manifest: { name, version }, registryUrl }: Target,
+  reason: CommandResultSkipped['skipped'],
+): CommandResultSkipped => ({
+  id:
+    name && version ? `${name}@${version}`
+    : name ? name
+    : manifestDir,
+  name,
+  version,
+  registry: registryUrl?.origin,
+  skipped: reason,
+})
 
 /** Of several readmes at the package root, npm prefers the markdown one. */
 const README_MARKDOWN_EXTENSION =
@@ -256,21 +371,19 @@ const readPublishReadme = (
 }
 
 const commandSingle = async (
-  { manifestDir, registry }: Target,
+  { manifestDir, manifest, registryUrl }: Target,
   conf: LoadedConfig,
-) => {
-  const manifest = conf.options.packageJson.read(manifestDir)
-
+): Promise<CommandResultSingle> => {
   assert(
     !manifest.private,
     error('Package has been marked as private'),
   )
+  assert(registryUrl)
 
   const { 'dry-run': dry = false, otp } = conf.options
   const publishConfig = getPublishConfig(manifest)
   const tag = publishConfig?.tag ?? conf.options.tag
   const access = publishConfig?.access ?? conf.options.access
-  const registryUrl = new URL(registryBase(registry))
 
   const runOptions = {
     cwd: manifestDir,
@@ -370,10 +483,7 @@ const commandSingle = async (
     registry: registryUrl.href,
   })
 
-  const publishUrl = new URL(
-    name.startsWith('@') ? name.replace('/', '%2F') : name,
-    registryUrl,
-  )
+  const publishUrl = packumentUrl(name, registryUrl)
 
   if (!dry) {
     // the same guidance whether the registry refused the request or the
@@ -449,5 +559,5 @@ const commandSingle = async (
     size: tarballData.length,
     unpackedSize,
     files,
-  } as CommandResultSingle
+  }
 }
