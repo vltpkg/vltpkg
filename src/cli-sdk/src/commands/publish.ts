@@ -218,7 +218,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   })
   // every check starts now; each publish waits only for its own
   const checks = targets.map(
-    t => [t, skipReason(t, checker)] as const,
+    t => [t, skipReason(t, checker, conf)] as const,
   )
   const results: (CommandResultSingle | CommandResultSkipped)[] = []
   for (const [target, check] of checks) {
@@ -293,11 +293,22 @@ const packumentUrl = (name: string, registryUrl: URL) =>
 const skipReason = async (
   { manifest, registryUrl }: Target,
   rc: RegistryClient,
+  conf: LoadedConfig,
 ): Promise<CommandResultSkipped['skipped'] | undefined> => {
   if (manifest.private) return 'private'
   assert(registryUrl)
   const { name, version } = manifest
   if (!name || !version) return undefined
+  // A publish directory can hold its own package.json, often written by
+  // prepack, so what gets published isn't known before the scripts run.
+  // Reading a leftover one could skip a new release; leave it to the
+  // PUT, whose refusal of an existing version is still a skip.
+  if (
+    conf.get('publish-directory') ||
+    getPublishConfig(manifest)?.directory
+  ) {
+    return undefined
+  }
   // ponytail: checks the version from before lifecycle scripts run, so a
   // prepack that bumps the version is checked against the old one
   try {

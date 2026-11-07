@@ -2234,6 +2234,36 @@ t.test('multi-package publish skips', async t => {
     t.equal(b!.id, resolve(config.projectRoot, 'packages/b'))
   })
 
+  t.test('a publish directory leaves it to the PUT', async t => {
+    t.test('publishConfig.directory', async t => {
+      published('a', '1.0.0')
+      const config = monorepo(t, {
+        a: {
+          name: 'a',
+          version: '1.0.0',
+          publishConfig: { directory: '.' },
+        },
+      })
+      await command(config)
+      t.strictSame(calls(), [`PUT ${reg}/a`])
+    })
+    t.test('--publish-directory', async t => {
+      published('a', '1.0.0')
+      const values: Record<string, unknown> = { recursive: true }
+      const config = monorepo(
+        t,
+        { a: { name: 'a', version: '1.0.0' } },
+        values,
+      )
+      values['publish-directory'] = resolve(
+        config.projectRoot,
+        'packages/a',
+      )
+      await command(config)
+      t.strictSame(calls(), [`PUT ${reg}/a`])
+    })
+  })
+
   t.test('a package that cannot be packed still fails', async t => {
     const config = monorepo(t, { a: { name: 'a' } })
     await t.rejects(command(config), {

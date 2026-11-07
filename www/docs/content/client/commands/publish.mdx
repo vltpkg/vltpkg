@@ -76,7 +76,9 @@ shouldn't publish and keeps going:
   `skipped (already published)`. Before anything runs, vlt looks each
   version up in its registry's package metadata. If that metadata is
   stale and the registry refuses the publish because the version
-  exists, the package is still skipped. So you can bump only some
+  exists, the package is still skipped. A package with a publish
+  directory is only checked that way, since its version isn't known
+  until its lifecycle scripts have run. So you can bump only some
   packages, or rerun after a partial failure.
 
 Skipped packages are included in the output, including `--view=json`.
