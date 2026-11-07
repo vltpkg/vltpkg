@@ -17,6 +17,7 @@ import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
 import { parse, stringify } from 'polite-json'
 import ignore from 'ignore'
+import { getPublishDirectory } from './publish-config.ts'
 
 export type PackTarballResult = {
   name: string
@@ -330,18 +331,12 @@ export const packTarball = async (
   let packDir = dir
 
   // Check if publishDirectory is configured via CLI flag or package.json publishConfig.directory
-  const cliPublishDir = config.get('publish-directory')
-  const manifestPublishDir = (
-    manifest as NormalizedManifest & {
-      publishConfig?: { directory?: string }
-    }
-  ).publishConfig?.directory
-
-  const publishDirectory = cliPublishDir ?? manifestPublishDir
-  if (publishDirectory) {
-    // CLI flag paths are used as-is; publishConfig.directory is relative to the package dir
-    const resolvedPublishDir =
-      cliPublishDir ? publishDirectory : join(dir, publishDirectory)
+  const resolvedPublishDir = getPublishDirectory(
+    manifest,
+    dir,
+    config,
+  )
+  if (resolvedPublishDir) {
     // Validate that the publish directory exists and is a directory
     assert(
       existsSync(resolvedPublishDir),

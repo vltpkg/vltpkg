@@ -2,7 +2,10 @@ import t from 'tap'
 import type { Test } from 'tap'
 import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
-import type { CommandResultSingle } from '../../src/commands/publish.ts'
+import type {
+  CommandResultSingle,
+  CommandResultSkipped,
+} from '../../src/commands/publish.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import {
@@ -95,6 +98,44 @@ t.beforeEach(() => {
 t.afterEach(() => {
   RegistryClient.prototype.request = originalRequest
 })
+
+const calls = () => requests.map(r => `${r.method ?? 'GET'} ${r.url}`)
+
+const makeMonorepo = (
+  t: Test,
+  pkgs: Record<string, object>,
+  options: Omit<TestConfig['options'], 'packageJson'>,
+  values: Record<string, unknown> = { recursive: true },
+) => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    packages: Object.fromEntries(
+      Object.entries(pkgs).map(([name, manifest]) => [
+        name,
+        { 'package.json': JSON.stringify(manifest) },
+      ]),
+    ),
+  })
+  return makeTestConfig({
+    projectRoot: dir,
+    options: {
+      packageJson: new PackageJson(),
+      tag: 'latest',
+      monorepo: Object.keys(pkgs).map(name => ({
+        name,
+        path: `packages/${name}`,
+        fullpath: resolve(dir, 'packages', name),
+      })),
+      ...options,
+    },
+    positionals: ['publish'],
+    values,
+  })
+}
 
 t.test('usage', async t => {
   t.matchSnapshot(usage().usage())
@@ -1929,46 +1970,15 @@ t.test('readme in publish metadata', async t => {
 })
 
 t.test('publishConfig.registry alone is enough', async t => {
-  const monorepoDir = (t: Test, aConfig: object, bConfig: object) => {
-    const dir = t.testdir({
-      'package.json': JSON.stringify({
-        name: 'root',
-        version: '1.0.0',
-      }),
-      'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
-      packages: {
-        a: {
-          'package.json': JSON.stringify({
-            name: 'a',
-            version: '1.0.0',
-            ...aConfig,
-          }),
-        },
-        b: {
-          'package.json': JSON.stringify({
-            name: 'b',
-            version: '1.0.0',
-            ...bConfig,
-          }),
-        },
+  const monorepoDir = (t: Test, aConfig: object, bConfig: object) =>
+    makeMonorepo(
+      t,
+      {
+        a: { name: 'a', version: '1.0.0', ...aConfig },
+        b: { name: 'b', version: '1.0.0', ...bConfig },
       },
-    })
-    return makeTestConfig({
-      projectRoot: dir,
-      options: {
-        packageJson: new PackageJson(),
-        registries: {},
-        tag: 'latest',
-        monorepo: ['a', 'b'].map(name => ({
-          name,
-          path: `packages/${name}`,
-          fullpath: resolve(dir, 'packages', name),
-        })),
-      },
-      positionals: ['publish'],
-      values: { recursive: true },
-    })
-  }
+      { registries: {} },
+    )
   const custom = (path: string) => ({
     publishConfig: { registry: `https://custom.example.com/${path}` },
   })
@@ -2015,13 +2025,12 @@ t.test('publishConfig.registry alone is enough', async t => {
   t.test('each workspace uses its own publishConfig', async t => {
     const config = monorepoDir(t, custom('a'), custom('b'))
     await command(config)
-    t.strictSame(
-      requests.map(r => r.url),
-      [
-        'https://custom.example.com/a/a',
-        'https://custom.example.com/b/b',
-      ],
-    )
+    t.strictSame(calls(), [
+      'GET https://custom.example.com/a/a',
+      'GET https://custom.example.com/b/b',
+      'PUT https://custom.example.com/a/a',
+      'PUT https://custom.example.com/b/b',
+    ])
   })
 
   t.test('missing registry fails before publishing any', async t => {
@@ -2049,6 +2058,7 @@ t.test('publishConfig.registry alone is enough', async t => {
     for (const [aConfig, bConfig, want] of [
       [{}, {}, 1],
       [custom('a'), custom('b'), 0],
+      [{ private: true }, custom('b'), 0],
     ] as const) {
       calls = 0
       const config = monorepoDir(t, aConfig, bConfig)
@@ -2056,5 +2066,212 @@ t.test('publishConfig.registry alone is enough', async t => {
       await cmd.command(config)
       t.equal(calls, want)
     }
+  })
+})
+
+t.test('multi-package publish skips', async t => {
+  const reg = 'https://registry.npmjs.org'
+  const monorepo = (
+    t: Test,
+    pkgs: Record<string, object>,
+    values?: Record<string, unknown>,
+  ) => makeMonorepo(t, pkgs, { registry: reg }, values)
+  const published = (name: string, version: string) =>
+    mockResponses.set(`${reg}/${name}`, {
+      statusCode: 200,
+      json: { versions: { [version]: {} } },
+    })
+  t.test('skips private and already-published packages', async t => {
+    published('b', '1.0.0')
+    published('c', '0.9.0')
+    const config = monorepo(t, {
+      a: { name: 'a', version: '1.0.0', private: true },
+      b: { name: 'b', version: '1.0.0' },
+      c: { name: 'c', version: '1.0.0' },
+    })
+    const [a, b, c] = (await command(config)) as [
+      CommandResultSkipped,
+      CommandResultSkipped,
+      CommandResultSingle,
+    ]
+    t.strictSame(a, {
+      id: 'a@1.0.0',
+      name: 'a',
+      version: '1.0.0',
+      registry: undefined,
+      skipped: 'private',
+    })
+    t.equal(b.skipped, 'already published')
+    t.equal(b.registry, reg)
+    t.equal(c.id, 'c@1.0.0')
+    t.strictSame(calls(), [
+      `GET ${reg}/b`,
+      `GET ${reg}/c`,
+      `PUT ${reg}/c`,
+    ])
+  })
+
+  t.test('applies to --workspace selections too', async t => {
+    published('a', '1.0.0')
+    const config = monorepo(
+      t,
+      { a: { name: 'a', version: '1.0.0' } },
+      { workspace: ['a'] },
+    )
+    const [a] = (await command(config)) as [CommandResultSkipped]
+    t.equal(a.skipped, 'already published')
+  })
+
+  t.test('other errors still fail the run', async t => {
+    mockResponses.set(`${reg}/a`, {
+      statusCode: 403,
+      text: '{"error":"forbidden"}',
+    })
+    const config = monorepo(t, {
+      a: { name: 'a', version: '1.0.0' },
+      b: { name: 'b', version: '1.0.0' },
+    })
+    await t.rejects(command(config), {
+      message: 'Failed to publish package',
+    })
+    t.strictSame(calls(), [
+      `GET ${reg}/a`,
+      `GET ${reg}/b`,
+      `PUT ${reg}/a`,
+    ])
+  })
+
+  t.test('a PUT refused as existing is a skip too', async t => {
+    for (const [statusCode, error] of [
+      [
+        403,
+        'You cannot publish over the previously published versions: 1.0.0.',
+      ],
+      [409, 'Conflict'],
+    ] as const) {
+      mockResponses.set(`${reg}/a`, {
+        statusCode,
+        text: JSON.stringify({ error }),
+      })
+      const config = monorepo(t, {
+        a: { name: 'a', version: '1.0.0' },
+        b: { name: 'b', version: '1.0.0' },
+      })
+      const [a, b] = (await command(config)) as [
+        CommandResultSkipped,
+        CommandResultSingle,
+      ]
+      t.equal(a.skipped, 'already published', String(statusCode))
+      t.equal(a.registry, reg)
+      t.equal(b.id, 'b@1.0.0')
+    }
+  })
+
+  t.test('a failed check leaves it to the publish', async t => {
+    const mocked = RegistryClient.prototype.request
+    RegistryClient.prototype.request = async function (
+      this: RegistryClient,
+      url: URL | string,
+      opts?: { method?: string },
+    ) {
+      if (!opts?.method) throw new Error('network down')
+      return mocked.call(this, url, opts)
+    }
+    const config = monorepo(t, { a: { name: 'a', version: '1.0.0' } })
+    const [a] = (await command(config)) as [CommandResultSingle]
+    t.equal(a.id, 'a@1.0.0')
+    t.strictSame(calls(), [`PUT ${reg}/a`])
+  })
+
+  t.test('dry-run reports what would be skipped', async t => {
+    published('b', '1.0.0')
+    const config = monorepo(t, {
+      a: { name: 'a', version: '1.0.0', private: true },
+      b: { name: 'b', version: '1.0.0' },
+      c: { name: 'c', version: '1.0.0' },
+    })
+    config.options['dry-run'] = true
+    const results = (await command(config)) as (
+      CommandResultSingle | CommandResultSkipped
+    )[]
+    t.strictSame(
+      results.map(r => ('skipped' in r ? r.skipped : 'publish')),
+      ['private', 'already published', 'publish'],
+    )
+    t.strictSame(calls(), [`GET ${reg}/b`, `GET ${reg}/c`])
+    const human = views.human(results)
+    t.match(human, '⏭️ a@1.0.0 skipped (private)')
+    t.match(human, '⏭️ b@1.0.0 skipped (already published)')
+    t.match(human, '📦 Package: c@1.0.0')
+  })
+
+  t.test('names a skipped package however it can', async t => {
+    const config = monorepo(t, {
+      a: { name: 'a', private: true },
+      b: { private: true },
+    })
+    const [a, b] = (await command(config)) as CommandResultSkipped[]
+    t.strictSame(a, {
+      id: 'a',
+      name: 'a',
+      version: undefined,
+      registry: undefined,
+      skipped: 'private',
+    })
+    t.equal(b!.id, resolve(config.projectRoot, 'packages/b'))
+  })
+
+  t.test('a publish directory leaves it to the PUT', async t => {
+    t.test('publishConfig.directory', async t => {
+      published('a', '1.0.0')
+      const config = monorepo(t, {
+        a: {
+          name: 'a',
+          version: '1.0.0',
+          publishConfig: { directory: '.' },
+        },
+      })
+      await command(config)
+      t.strictSame(calls(), [`PUT ${reg}/a`])
+    })
+    t.test('--publish-directory', async t => {
+      published('a', '1.0.0')
+      const values: Record<string, unknown> = { recursive: true }
+      const config = monorepo(
+        t,
+        { a: { name: 'a', version: '1.0.0' } },
+        values,
+      )
+      values['publish-directory'] = resolve(
+        config.projectRoot,
+        'packages/a',
+      )
+      await command(config)
+      t.strictSame(calls(), [`PUT ${reg}/a`])
+    })
+  })
+
+  t.test('a package that cannot be packed still fails', async t => {
+    const config = monorepo(t, { a: { name: 'a' } })
+    await t.rejects(command(config), {
+      message: 'Package must have a name and version',
+    })
+  })
+
+  t.test('a single package is not skipped', async t => {
+    published('a', '1.0.0')
+    const dir = t.testdir({
+      'package.json': JSON.stringify({ name: 'a', version: '1.0.0' }),
+      'vlt.json': '{}',
+    })
+    t.chdir(dir)
+    await command(
+      makeTestConfig({
+        projectRoot: dir,
+        options: { packageJson: new PackageJson(), registry: reg },
+        positionals: ['publish'],
+      }),
+    )
+    t.strictSame(calls(), [`PUT ${reg}/a`], 'no check, just the PUT')
   })
 })
