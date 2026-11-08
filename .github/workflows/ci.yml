@@ -208,8 +208,7 @@ jobs:
             *:license(none) --expect-results=0
 
             # Ensure no deprecated packages
-            # eslint 9 is exempt until we move to ESLint 10: every 9.x release is deprecated
-            :deprecated:not(#eslint:semver(^9)) --expect-results=0
+            :deprecated --expect-results=0
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
