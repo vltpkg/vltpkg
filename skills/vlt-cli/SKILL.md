@@ -8,8 +8,9 @@ description:
   (DSS) queries to commands. Use when the user wants to use vlt in a
   project, add or update a dependency with vlt, fix "Missing registry
   configuration" (ECONFIG), set up registries or tokens for vlt, work
-  with vlt workspaces, or asks which vlt command or flag does
-  something or what `vlr` and `vlx` are.
+  with vlt workspaces, ship an agent skill from a package, or asks
+  which vlt command or flag does something or what `vlr` and `vlx`
+  are.
 ---
 
 # Using the vlt CLI
@@ -56,7 +57,10 @@ A map of the CLI, one line per command. For anything deeper, defer to
   when needed.
 - `vlt skills list|link [query]`: show or link the agent skills
   shipped by installed packages; `--allow-skills=<query>` on install
-  links them automatically.
+  links them automatically. `vlt skills init [<name>]` scaffolds a
+  skill for the project to ship: `skills/<name>/SKILL.md`, or a root
+  `SKILL.md` named after the package, added to package.json `files`
+  when needed. It never overwrites and needs no registry.
 - Everything else (`init`, `create`, publishing, account and token
   commands, `cache`, `bugs|docs|repo` openers): `vlt -a`.
 
