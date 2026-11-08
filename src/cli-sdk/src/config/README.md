@@ -57,8 +57,10 @@ resolve or fetch packages export `needsRegistry = true`, and
 `outputCommand()` throws an `ECONFIG` error before invoking them when
 nothing is configured (neither `--registry` nor the
 `--default-registry-alias` alias). `--help` is still answered first,
-so usage is readable with nothing set up. Inside a command, use the
-`requireRegistry(conf)` helper rather than a non-null assertion.
+so usage is readable with nothing set up. Export a `(conf) => boolean`
+instead when only some subcommands need one (`vlt skills init`
+doesn't). Inside a command, use the `requireRegistry(conf)` helper
+rather than a non-null assertion.
 
 `publish` and `unpublish` skip that gate: a package's
 `publishConfig.registry` alone is enough, so they resolve the registry

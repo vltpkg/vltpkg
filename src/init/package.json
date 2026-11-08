@@ -9,10 +9,12 @@
   },
   "author": "vlt technology inc. <support@vlt.sh> (http://vlt.sh)",
   "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/types": "workspace:*"
+    "@vltpkg/types": "workspace:*",
+    "minimatch": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

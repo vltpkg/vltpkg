@@ -22,9 +22,10 @@ export type Command<T> = {
    * specs. There is no default registry, so `outputCommand()` fails
    * early with an `ECONFIG` error when one of these runs unconfigured.
    * `publish`/`unpublish` check in-command instead, since
-   * `publishConfig.registry` may suffice.
+   * `publishConfig.registry` may suffice. A function decides per
+   * invocation, e.g. when only some subcommands need one.
    */
-  needsRegistry?: boolean
+  needsRegistry?: boolean | ((conf: LoadedConfig) => boolean)
   /**
    * Set to `true` by commands that install packages (`install`,
    * `update`, `uninstall`, `ci`, `exec`/`vlx`). `outputCommand()`

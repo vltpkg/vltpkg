@@ -391,6 +391,38 @@ t.test('outputCommand', async t => {
       },
     )
 
+    t.test('function form: decided per invocation', async t => {
+      const seen: LoadedConfig[] = []
+      const fnCommand = (needs: boolean): Command<true> => ({
+        ...registryCommand,
+        needsRegistry: conf => {
+          seen.push(conf)
+          return needs
+        },
+      })
+      const conf = {
+        explicit: {},
+        values: { view: 'json' },
+        options: { registries: {} },
+        abort,
+      } as unknown as LoadedConfig
+      const logs = t.capture(console, 'log').args
+      await outputCommand(fnCommand(false), conf)
+      t.strictSame(logs(), [['true']], 'runs with no registry')
+      t.equal(seen[0], conf, 'gets the config')
+
+      errsPrinted.length = 0
+      aborted.length = 0
+      const { exitCode = 0 } = process
+      t.teardown(() => {
+        if (t.passing()) process.exitCode = exitCode
+      })
+      await outputCommand(fnCommand(true), conf)
+      t.strictSame(logs(), [], 'not run')
+      t.equal(process.exitCode, 1)
+      t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
+    })
+
     t.test('runs when a built-in alias is overridden', async t => {
       // gh overridden to a non-default URL counts as user-configured
       const logs = t.capture(console, 'log').args

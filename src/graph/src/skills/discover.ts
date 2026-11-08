@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { isSkillName } from '@vltpkg/init'
 import { parse } from '@vltpkg/semver'
 import type { PathScurry } from 'path-scurry'
 import type { Node } from '../node.ts'
@@ -62,8 +63,6 @@ export type SkillFrontmatter = {
 
 // safe single path segment, no dotfiles or scopes
 const skillDirName = /^[a-z0-9][a-z0-9._-]*$/i
-// agentskills.io `name`
-const specName = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const topKey = /^([A-Za-z0-9_-]+):/
 const blockIndicator = /^[>|][-+1-9]*$/
 
@@ -175,9 +174,9 @@ const scan = (dir: string, pkgName: string): Found[] => {
   if (isFile(root)) {
     const { name, description } = readFrontmatter(root)
     const skill =
-      name && name.length <= 64 && specName.test(name) ?
-        name
-      : pkgName.slice(pkgName.lastIndexOf('/') + 1)
+      name && isSkillName(name) ? name : (
+        pkgName.slice(pkgName.lastIndexOf('/') + 1)
+      )
     if (skillDirName.test(skill) && !isSkillMd(skill)) {
       found.push({ skill, path: dir, name, description })
     }

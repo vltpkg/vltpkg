@@ -7,7 +7,8 @@ sidebar:
 Usage:
 
 <Code
-  code="$ vlt skills [list|link] [<query>] [--view=human|json|mermaid]"
+  code={`$ vlt skills [list|link] [<query>] [--view=human|json|mermaid]
+$ vlt skills init [<name>] [--workspace=<path>]`}
   title="Terminal"
   lang="bash"
 />
@@ -18,7 +19,7 @@ An agent skill is a folder with a `SKILL.md` file, as defined by the
 [Agent Skills specification](https://agentskills.io/specification).
 Packages can ship them alongside their code, and `vlt skills` links
 them into your project's agent skill dirs so coding agents can find
-them.
+them. Create your own with `vlt skills init`.
 
 ## How `vlt` finds skills
 
@@ -116,6 +117,9 @@ order is used.
 
 ### Shipping skills in a package
 
+`vlt skills init <name>` creates `skills/<name>/SKILL.md` and adds
+`skills` to `files` when needed ([`init`](#init)).
+
 <Code
   code={`my-tool/
 ├── package.json
@@ -128,7 +132,8 @@ order is used.
 />
 
 - Publish the skills: if `package.json` has `files`, add the skill
-  dirs (or a root `SKILL.md`) to it. Check with `vlt pack --dry-run`.
+  dirs (or a root `SKILL.md`) to it (`vlt skills init` does). Check
+  with `vlt pack --dry-run`.
 - A package that is a single skill can put `SKILL.md` at its root.
 - Skills built into `dist/skills/` are found too.
 
@@ -389,6 +394,42 @@ $ vlt skills link
 # New allow-skills: #skills:skill(find-skills), #agent-skills:skill(react*)
 # on another machine, both are linked
 $ vlt ci`}
+  title="Terminal"
+  lang="bash"
+/>
+
+### `init`
+
+Creates a starter skill for the project to ship, then prints how to
+edit, check and install it. It only writes files: no registry or
+install needed.
+
+- `vlt skills init <name>` writes `skills/<name>/SKILL.md`, the first
+  dir `vlt` scans.
+- `vlt skills init` writes a root `SKILL.md` named after the package,
+  without its scope (`@s/my-tool` gives `my-tool`). Pass a `<name>`
+  when that isn't a valid skill name.
+- Names use lowercase letters, digits and single `-`, up to 64
+  characters: the specification's `name` rule.
+- An existing `SKILL.md` is never overwritten: it is reported and
+  nothing changes. A file or symlink at `skills/` or `skills/<name>/`
+  is an error.
+- When `package.json` has `files` and none of them ships the skill,
+  `skills` (or `SKILL.md`) is added to it.
+- Run it in a workspace dir, or pass `-w <path>`, to create the skill
+  in that workspace and edit its `package.json`.
+- `--view=json` prints `skill` (`name`, `path`), `package`, `manifest`
+  (`path`, the `added` entry) when `files` changed, `exists` when
+  nothing was written, and `query`, the `allow-skills` that links it.
+
+<Code
+  code={`$ vlt skills init my-skill
+Wrote SKILL.md to /path/to/my-tool/skills/my-skill/SKILL.md
+Added "skills" to package.json files
+\nEdit skills/my-skill/SKILL.md: its description and instructions.
+Check the skill ships with \`vlt pack --dry-run\`.
+Projects that install this package link it with:
+\n  vlt install my-tool --allow-skills="#my-tool:skill(my-skill)"`}
   title="Terminal"
   lang="bash"
 />
