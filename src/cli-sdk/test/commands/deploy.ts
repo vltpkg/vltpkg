@@ -17,6 +17,12 @@ let installed: InstallOpts[] = []
 let installError: unknown
 let buildQueue: string[] = []
 let unloaded: string[] = []
+// what Monorepo.maybeLoad returns for a source project, by its root.
+// Other roots are deploy targets.
+const projects = new Map<
+  string,
+  { values: () => unknown[] } | undefined
+>()
 t.beforeEach(() => {
   installed = []
   installError = undefined
@@ -45,10 +51,8 @@ const { command, usage, views } = await t.mockImport<
   },
   '@vltpkg/workspaces': {
     Monorepo: {
-      maybeLoad: (root: string, opts: Record<string, unknown>) => ({
-        root,
-        ...opts,
-      }),
+      maybeLoad: (root: string, opts: Record<string, unknown>) =>
+        projects.has(root) ? projects.get(root) : { root, ...opts },
     },
   },
   '../../src/reload-config.ts': {
@@ -83,15 +87,23 @@ const makeConf = ({
   positionals,
   values = {},
   monorepo,
+  allWorkspaces = monorepo,
   force,
 }: {
   dir: string
   positionals: string[]
   values?: Record<string, unknown>
+  /** conf.options.monorepo, filtered by -w in the real config */
   monorepo?: Workspace[]
+  /** every workspace in the project */
+  allWorkspaces?: Workspace[]
   force?: boolean
-}) =>
-  ({
+}) => {
+  projects.set(
+    dir,
+    allWorkspaces ? { values: () => allWorkspaces } : undefined,
+  )
+  return {
     positionals,
     projectRoot: dir,
     options: {
@@ -99,7 +111,8 @@ const makeConf = ({
       ...(monorepo ? { monorepo: { values: () => monorepo } } : {}),
     },
     get: (key: string) => values[key],
-  }) as unknown as LoadedConfig
+  } as unknown as LoadedConfig
+}
 
 const lockfile = (
   edges: LockfileData['edges'],
@@ -184,6 +197,15 @@ t.test('views', t => {
   t.matchSnapshot(
     views.human({ path: '/out', workspaces: [], graph }),
     'human, no workspaces',
+  )
+  t.matchSnapshot(
+    views.human({
+      path: '/out',
+      workspaces: [],
+      graph,
+      buildQueue: ['~npm~esbuild@0.25.0', '~npm~sharp@0.34.0'],
+    }),
+    'human, two packages to build',
   )
   t.strictSame(views.json(result), {
     path: '/out',
@@ -396,7 +418,6 @@ t.test('choosing the workspace', async t => {
 t.test('the target folder', async t => {
   const dir = monorepoFixture(t)
   t.chdir(dir)
-  const monorepo = [ws(dir, 'apps/app'), ws(dir, 'libs/lib')]
   const values = { workspace: ['apps/app'] }
   const run = (target: string, force?: boolean) =>
     command(
@@ -404,7 +425,9 @@ t.test('the target folder', async t => {
         dir,
         positionals: [target],
         values,
-        monorepo,
+        // like the real config with -w apps/app
+        monorepo: [ws(dir, 'apps/app')],
+        allWorkspaces: [ws(dir, 'apps/app'), ws(dir, 'libs/lib')],
         force,
       }),
     )
@@ -413,10 +436,15 @@ t.test('the target folder', async t => {
     message: 'The deploy target cannot contain project files',
     cause: { code: 'EUSAGE', found: dir },
   })
+  // libs/lib is not selected with -w, but --force must not empty it
   await t.rejects(run('libs', true), {
     message: 'The deploy target cannot contain project files',
     cause: { found: resolve(dir, 'libs/lib') },
   })
+  t.ok(
+    existsSync(resolve(dir, 'libs/lib/package.json')),
+    'the workspace is untouched',
+  )
 
   writeFileSync(resolve(dir, 'a-file'), 'x')
   await t.rejects(run('a-file'), {
@@ -454,11 +482,13 @@ t.test('install failures', async t => {
 
   installError = new Error(
     'Lockfile is out of sync with package.json. Run "vlt install" to update.\n' +
+      '  .: 1 dependency to add (abbrev)\n' +
       '  ./.vlt-deploy/libs/lib: 1 dependency to add (ms)',
   )
   await t.rejects(run('out'), {
     message:
       'vlt-lock.json is out of date, run "vlt install" in the project first.\n' +
+      '  ./apps/app: 1 dependency to add (abbrev)\n' +
       '  ./libs/lib: 1 dependency to add (ms)',
     cause: { cause: installError },
   })
@@ -478,4 +508,21 @@ t.test('install failures', async t => {
   await t.rejects(run('kept', true), 'not an error')
   t.ok(existsSync(kept), 'existing target is kept')
   t.notOk(existsSync(resolve(kept, 'package.json')), 'and emptied')
+})
+
+t.test('out of date project without workspaces', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({ dependencies: { ms: '^2' } }),
+    'vlt-lock.json': lockfile({}),
+  })
+  t.chdir(dir)
+  installError = new Error(
+    'Lockfile is out of sync with package.json. Run "vlt install" to update.\n' +
+      '  .: 1 dependency to add (ms)',
+  )
+  await t.rejects(command(makeConf({ dir, positionals: ['out'] })), {
+    message:
+      'vlt-lock.json is out of date, run "vlt install" in the project first.\n' +
+      '  .: 1 dependency to add (ms)',
+  })
 })

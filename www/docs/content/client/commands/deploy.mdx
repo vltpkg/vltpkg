@@ -8,9 +8,9 @@ Usage:
 
 <Code code="$ vlt deploy <target-dir>" title="Terminal" lang="bash" />
 
-Copy a workspace and its production dependencies into a standalone
-folder, ready to ship, for example in a Docker image. It works like
-`pnpm deploy`.
+Copy a workspace, or a project without workspaces, and its production
+dependencies into a standalone folder, ready to ship, for example in a
+Docker image. It works like `pnpm deploy`.
 
 <Code
   code={`# From the project root
@@ -68,8 +68,9 @@ lifecycle scripts** of dependencies unless allowed with
 
 ## Options
 
-| Flag                      | Description                                                 |
-| ------------------------- | ----------------------------------------------------------- |
-| `--workspace=<path>`      | The workspace to deploy, inferred inside a workspace folder |
-| `--allow-scripts=<query>` | Allow matching packages to run lifecycle scripts            |
-| `--force`                 | Remove the contents of the target folder if it is not empty |
+| Flag                       | Description                                                    |
+| -------------------------- | -------------------------------------------------------------- |
+| `--workspace=<path>`       | The workspace to deploy, inferred inside a workspace folder    |
+| `--workspace-group=<name>` | Deploy the workspace in this group; it must select exactly one |
+| `--allow-scripts=<query>`  | Allow matching packages to run lifecycle scripts               |
+| `--force`                  | Remove the contents of the target folder if it is not empty    |

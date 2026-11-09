@@ -30,11 +30,11 @@ export const usage: CommandUsage = () =>
   commandUsage({
     command: 'deploy',
     usage: '<target-dir>',
-    description: `Copy a workspace and its production dependencies into a
-                  standalone folder, ready to ship (for example in a
-                  Docker image).
+    description: `Copy a workspace, or a project without workspaces, and
+                  its production dependencies into a standalone folder,
+                  ready to ship (for example in a Docker image).
 
-                  The workspace's files are copied the same way
+                  The package's files are copied the same way
                   'vlt pack' selects them. Workspaces it depends on are
                   copied too, as real folders inside the target, so
                   nothing links back to the project. Dependencies are
@@ -57,6 +57,11 @@ export const usage: CommandUsage = () =>
       workspace: {
         value: '<path|glob>',
         description: 'The workspace to deploy.',
+      },
+      'workspace-group': {
+        value: '<name>',
+        description:
+          'Deploy the workspace in this group. The group must select exactly one workspace.',
       },
       'allow-scripts': {
         value: '<query>',
@@ -100,8 +105,12 @@ export const views = {
       )
     }
     if (r.buildQueue?.length) {
+      const count =
+        r.buildQueue.length === 1 ?
+          '1 package needs'
+        : `${r.buildQueue.length} packages need`
       lines.push(
-        `🔨 ${r.buildQueue.length} packages need to be built, run "vlt build" in ${r.path} to complete the deploy.`,
+        `🔨 ${count} to be built, run "vlt build" in ${r.path} to complete the deploy.`,
       )
     }
     return lines.join('\n')
@@ -115,6 +124,8 @@ export const views = {
 /** The package to deploy: a workspace, or the project itself */
 type Source = {
   dir: string
+  /** the path relative to the project root, `.` for the project */
+  path: string
   id: DepID
 }
 
@@ -126,7 +137,11 @@ const pickSource = (conf: LoadedConfig): Source => {
   const all = [...(monorepo?.values() ?? [])]
 
   if (!all.length) {
-    return { dir: projectRoot, id: joinDepIDTuple(['file', '.']) }
+    return {
+      dir: projectRoot,
+      path: '.',
+      id: joinDepIDTuple(['file', '.']),
+    }
   }
 
   // options.monorepo is not filtered when the workspace was inferred
@@ -161,7 +176,7 @@ const pickSource = (conf: LoadedConfig): Source => {
       },
     )
   }
-  return { dir: ws.fullpath, id: ws.id }
+  return { dir: ws.fullpath, path: ws.path, id: ws.id }
 }
 
 /** true when `dir` is `parent` or a folder inside it */
@@ -178,12 +193,17 @@ const prepareTarget = async (
   target: string,
   conf: LoadedConfig,
 ): Promise<boolean> => {
-  // --force empties the target, so it must hold no source files
+  // --force empties the target, so it must hold no source files.
+  // conf.options.monorepo only has the workspaces selected with -w, so
+  // load all of them.
+  const { scurry, packageJson } = conf.options
+  const monorepo = Monorepo.maybeLoad(conf.projectRoot, {
+    scurry,
+    packageJson,
+  })
   const sources = [
     conf.projectRoot,
-    ...[...(conf.options.monorepo?.values() ?? [])].map(
-      ws => ws.fullpath,
-    ),
+    ...[...(monorepo?.values() ?? [])].map(ws => ws.fullpath),
   ]
   const found = sources.find(dir => within(dir, target))
   if (found) {
@@ -377,6 +397,7 @@ export const command: CommandFn<DeployResult> = async conf => {
 
     const { buildQueue, graph } = await installTarget(
       target,
+      source.path,
       allowScripts,
     )
     return {
@@ -392,17 +413,25 @@ export const command: CommandFn<DeployResult> = async conf => {
       ...(buildQueue?.length ? { buildQueue } : null),
     }
   } catch (er) {
-    if (created) await rm(target, { recursive: true, force: true })
-    else await emptyDir(target)
+    // The cleanup is best effort. If it fails too (for example a locked
+    // file on Windows), the user still sees the error that stopped the
+    // deploy.
+    await Promise.allSettled([
+      created ?
+        rm(target, { recursive: true, force: true })
+      : emptyDir(target),
+    ])
     throw er
   }
 }
 
 /**
  * The frozen install fails when the project lockfile does not match
- * the package.json files. Point at the project instead of the target.
+ * the package.json files. Point at the project instead of the target:
+ * the deployed package is `.` in the target, and `sourcePath` in the
+ * project.
  */
-const outOfDate = (er: unknown) => {
+const outOfDate = (er: unknown, sourcePath: string) => {
   if (
     !(er instanceof Error) ||
     !er.message.startsWith('Lockfile is out of sync')
@@ -410,9 +439,14 @@ const outOfDate = (er: unknown) => {
     return er
   }
   // keep the list of changes, it names what is out of date
+  const location = sourcePath === '.' ? '.' : `./${sourcePath}`
   const details = er.message
     .slice(er.message.indexOf('\n'))
     .replaceAll(`./${deployWorkspacesDir}/`, './')
+    .replace(
+      /^( +)\.:/gm,
+      (_, indent: string) => `${indent}${location}:`,
+    )
   return error(
     `vlt-lock.json is out of date, run "vlt install" in the project first.${details}`,
     { cause: er },
@@ -422,6 +456,7 @@ const outOfDate = (er: unknown) => {
 /** Install the target from the lockfile written into it */
 const installTarget = async (
   target: string,
+  sourcePath: string,
   allowScripts?: string,
 ) => {
   // the target has its own vlt.json, load the config from there
@@ -440,7 +475,7 @@ const installTarget = async (
     expectLockfile: true,
   }).catch((er: unknown) => {
     done()
-    throw outOfDate(er)
+    throw outOfDate(er, sourcePath)
   })
   done()
   return result
