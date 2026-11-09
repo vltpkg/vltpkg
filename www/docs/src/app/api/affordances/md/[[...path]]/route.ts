@@ -18,7 +18,7 @@ const markdown = (body: BodyInit | null, status = 200) =>
 export const GET = async (request: Request) => {
   const path = mdPagePath(new URL(request.url).pathname)
   // the homepage is cards and links, so its markdown is the llms.txt index
-  if (path === '/') return markdown((await llmsTxt()).body)
+  if (path === '/') return markdown((await llmsTxt(request)).body)
   const res = await md(request)
   // the html 404 streams as a 200, so the plugin can't tell it apart; answer with a body agents can act on.
   // files (llms.txt, sitemap.xml) and redirects come back as they are

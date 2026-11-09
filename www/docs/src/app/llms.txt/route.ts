@@ -1,4 +1,6 @@
-import { llms } from 'fumadocs-core/source'
+import { createLlmsTxtHandler } from '@affordances/md/next'
+import type { LlmsLink } from '@affordances/md/next'
+import type * as PageTree from 'fumadocs-core/page-tree'
 import { source } from '@/lib/source'
 import { siteUrl } from '@/lib/site-url'
 import {
@@ -10,12 +12,9 @@ import {
 const md = (path: string) => new URL(`${path}.md`, siteUrl).href
 const abs = (path: string) => new URL(path, siteUrl).href
 
-// the llms.txt shape: a title, a one-line summary, how to use the docs, then the page index
-const intro = `# vlt docs
-
-> Documentation for vlt, the package registry built for JavaScript: the vlt.io registry (private packages, npm mirrors, access control, tokens) and the \`vlt\` client, an npm-compatible package manager.
-
-Every page is available as Markdown: append \`.md\` to its URL, or request the page with an \`Accept: text/markdown\` header. The links below point at the Markdown versions. [llms-full.txt](${abs('/llms-full.txt')}) holds every page except the generated API reference, plus the agent skills, in one file.
+// the plugin adds the title, summary and its own "Every page is also Markdown" line; its llms-full line would claim
+// every page, so ours (which says what's left out) leads instead
+const intro = `[llms-full.txt](${abs('/llms-full.txt')}) holds every page except the generated API reference, plus the agent skills, in one file.
 
 ## Using these docs
 
@@ -28,23 +27,62 @@ Every page is available as Markdown: append \`.md\` to its URL, or request the p
 
 Follow a skill by reading its link. Skills with an \`Install:\` command can also be added to a project with the [skills CLI](https://skills.sh/docs/cli), or with vlt from the \`@vltpkg/skills\` package.
 
-${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description} Install: \`${s.install}\` or \`${s.installPackage}\``).join('\n')}
+${skills.map(s => `- [${s.name}](${abs(s.url)}): ${s.description} Install: \`${s.install}\` or \`${s.installPackage}\``).join('\n')}`
 
-## Pages
-`
+type Section = { title: string; pages: LlmsLink[] }
 
-// drop typedoc's `_media` README copies, which the sidebar hides too; point links at the markdown twins
-export const GET = async () =>
-  new Response(
-    intro +
-      (await llms(source).index())
-        .split('\n')
-        .filter(line => !line.includes('_media'))
-        .slice(1) // fumadocs' own `# Docs` heading
-        .join('\n')
-        .replace(
-          /\]\((\/[^)]*)\)/g,
-          (_, path: string) => `](${md(path)})`,
-        ),
-    { headers: { 'Content-Type': 'text/plain; charset=utf-8' } },
-  )
+// tree names are react nodes; the sidebar's are all plain strings
+const name = (node: PageTree.Node) =>
+  typeof node.name === 'string' ? node.name : ''
+
+// named and described like fumadocs' own llms index: the page's title, not its (shorter) sidebar label
+const link = (item: PageTree.Item): LlmsLink => {
+  const { title, description } = source.getNodePage(item)?.data ?? {}
+  return {
+    url: item.url,
+    title: title ?? name(item),
+    ...(description && { description }),
+  }
+}
+
+// the sidebar tree, one section per group named by its path (Client / Commands); a group's pages that follow a
+// nested group continue under the group's own name. typedoc's `_media` README copies stay out, as in the sidebar
+const sections = () => {
+  const out: Section[] = []
+  const walk = (nodes: PageTree.Node[], trail: string[]) => {
+    let current: Section | undefined
+    for (const node of nodes) {
+      if (node.type === 'separator') {
+        trail = [name(node)]
+        current = undefined
+      } else if (node.type === 'folder') {
+        if (node.name === '_media') continue
+        walk(
+          node.index ? [node.index, ...node.children] : node.children,
+          [...trail, name(node)],
+        )
+        current = undefined
+      } else {
+        if (!current)
+          out.push(
+            (current = {
+              title: trail.join(' / ') || 'Pages',
+              pages: [],
+            }),
+          )
+        current.pages.push(link(node))
+      }
+    }
+  }
+  walk(source.pageTree.children, [])
+  return out
+}
+
+export const GET = createLlmsTxtHandler({
+  title: 'vlt docs',
+  summary:
+    'Documentation for vlt, the package registry built for JavaScript: the vlt.io registry (private packages, npm mirrors, access control, tokens) and the `vlt` client, an npm-compatible package manager.',
+  intro,
+  full: false,
+  sections,
+})

@@ -155,3 +155,13 @@ void test('/llms.txt links the OpenAPI spec', async () => {
     /\/openapi\.json\)/,
   )
 })
+
+// its pages are fetched from the site itself; a failed fetch leaves the page out, which the route answers with a 503
+void test('/llms-full.txt holds every page', async () => {
+  const res = await get('/llms-full.txt')
+  assert.equal(res.status, 200)
+  assert.match(
+    await res.text(),
+    /^# Authentication \(\S+\/client\/auth\)$/m,
+  )
+})
