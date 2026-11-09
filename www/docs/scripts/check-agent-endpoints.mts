@@ -24,7 +24,8 @@ for (const path of ['/', '/client/auth']) {
     assert.equal(md.status, 200)
     assert.match(type(md), /^text\/markdown/)
     assert.ok(varies(md), 'markdown response has Vary: Accept')
-    assert.match(await md.text(), /^# \S/)
+    // pages open with @affordances/md's frontmatter (title, url, …); the homepage is the llms.txt index
+    assert.match(await md.text(), /^(---\n[\s\S]*?\n---\n\n)?# \S/)
 
     const html = await get(path, 'text/html')
     assert.equal(html.status, 200)

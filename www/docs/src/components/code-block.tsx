@@ -43,7 +43,11 @@ const highlight = async ({
     themes,
     defaultColor: false,
   }).children
-  // CodeCard owns the <pre>; keep shiki's <code> and its token spans
+  // CodeCard owns the <pre>; keep shiki's <code> and its token spans. `language-*` gives the markdown twin its fence lang
+  if (pre.type === 'element' && lang !== 'text')
+    for (const code of pre.children)
+      if (code.type === 'element')
+        code.properties.className = [`language-${lang}`]
   const content = toJsxRuntime(
     {
       type: 'root',

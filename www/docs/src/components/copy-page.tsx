@@ -61,7 +61,7 @@ const AiActions = ({ url }: { url: string }) => {
 }
 
 // a split button in the code card's dress (components/code-card.tsx): the card is the frame, the copy action its
-// inset panel, its corners the frame's radius less the padding. the page's `/<url>.md` twin (see next.config.ts rewrites) is what gets copied, viewed and linked
+// inset panel, its corners the frame's radius less the padding. the page's `/<url>.md` twin (served by withMd in next.config.ts) is what gets copied, viewed and linked
 export const CopyPage = ({ url }: { url: string }) => {
   const { copied, copy } = useCopy(1500)
   const markdown = useRef<Promise<string>>(null)

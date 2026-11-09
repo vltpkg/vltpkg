@@ -9,6 +9,7 @@ import { PageNav } from '@/components/page-nav'
 import { CopyPage } from '@/components/copy-page'
 import { TextSelection } from '@/components/text-selection'
 import { ScrollToTop } from '@/components/scroll-to-top'
+import { AgentMain, AgentSkip } from '@affordances/md/react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -114,35 +115,42 @@ const DocPage = async ({
               </BreadcrumbList>
             </Breadcrumb>
           )}
-          <article className="typeset typeset-docs">
-            <div className="flex items-start justify-between gap-4">
-              {/* min-w-0 + anywhere-wrapping: long unbroken titles (@vltpkg/package-json) otherwise push Copy page off-screen */}
-              <h1 className="min-w-0 [overflow-wrap:anywhere]">
-                {page.data.title}
-              </h1>
-              <CopyPage url={page.url} />
-            </div>
-            {page.data.description && (
-              <p className="text-muted-foreground mt-4 text-base leading-[1.6]">
-                {page.data.description}
-              </p>
-            )}
-            <MDX
-              components={{
-                ...components,
-                a: ({ href = '', children }) => {
-                  // typedoc emits bare relative links (`foo.md`), fumadocs only resolves `./` or `../`
-                  const relative =
-                    /^[./#]|:/.test(href) ? href : `./${href}`
-                  return (
-                    <a href={source.resolveHref(relative, page)}>
-                      {children}
-                    </a>
-                  )
-                },
-              }}
-            />
-          </article>
+          {/* the article is the page's markdown twin; the description is already in its frontmatter */}
+          <AgentMain>
+            <article className="typeset typeset-docs">
+              <div className="flex items-start justify-between gap-4">
+                {/* min-w-0 + anywhere-wrapping: long unbroken titles (@vltpkg/package-json) otherwise push Copy page off-screen */}
+                <h1 className="min-w-0 [overflow-wrap:anywhere]">
+                  {page.data.title}
+                </h1>
+                <AgentSkip>
+                  <CopyPage url={page.url} />
+                </AgentSkip>
+              </div>
+              {page.data.description && (
+                <p
+                  data-affordances-md="skip"
+                  className="text-muted-foreground mt-4 text-base leading-[1.6]">
+                  {page.data.description}
+                </p>
+              )}
+              <MDX
+                components={{
+                  ...components,
+                  a: ({ href = '', children }) => {
+                    // typedoc emits bare relative links (`foo.md`), fumadocs only resolves `./` or `../`
+                    const relative =
+                      /^[./#]|:/.test(href) ? href : `./${href}`
+                    return (
+                      <a href={source.resolveHref(relative, page)}>
+                        {children}
+                      </a>
+                    )
+                  },
+                }}
+              />
+            </article>
+          </AgentMain>
           {/* pt-16 keeps the old minimum gap on long pages */}
           <div className="mt-auto pt-16">
             <PageNav url={page.url} />
