@@ -52,6 +52,38 @@ to it.
   lang="bash"
 />
 
+### dry-run
+
+Show what would be published without actually publishing.
+
+<Code code="$ vlt publish --dry-run" title="Terminal" lang="bash" />
+
+## Publishing workspaces
+
+`--recursive` publishes every workspace in the monorepo. To publish
+only some of them, pass `--workspace=<path|glob>`,
+`--workspace-group=<name>` or a [DSS query](/client/selectors) with
+`--scope=<query>`.
+
+<Code code="$ vlt publish --recursive" title="Terminal" lang="bash" />
+
+With any of these flags, vlt skips the packages it shouldn't publish
+and keeps going, even if the selection matches only one package:
+
+- **Private packages** show up as `skipped (private)`.
+- **Versions already on the registry** show up as
+  `skipped (already published)`. vlt finds them in the registry's
+  package metadata before anything runs, or when the registry refuses
+  the publish because the version exists. Packages with a publish
+  directory are only caught the second way.
+
+Skipped packages are included in the output, including `--view=json`.
+Any other failure, such as an authentication error, still stops the
+run. `--dry-run` shows only the skips found before anything runs.
+
+Without these flags, a private package or an existing version is still
+an error.
+
 ## Publishing in CI
 
 ### Service token
