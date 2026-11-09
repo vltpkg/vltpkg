@@ -24,8 +24,9 @@ type Workspace = WorkspaceBase & {
   dirName: string
 }
 
+// src/skills ships no TypeScript, so it has no typescript devDependency
 const isStandardTypeScriptWorkspace = (ws: Workspace) =>
-  ws.dirName.startsWith('src/')
+  ws.dirName.startsWith('src/') && !!ws.pj.devDependencies?.typescript
 
 const writeJson = async (p: string, data: unknown) =>
   writeFormatted(p, JSON.stringify(data, null, 2) + '\n')

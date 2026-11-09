@@ -26,6 +26,7 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `src/xdg`, `src/url-open`, `src/promise-spawn`, `src/cmd-shim`,
   `src/rollback-remove`, `src/dot-prop`, `src/fast-split`,
   `src/pick-manifest`, `src/project`, `src/vlt-json`, `src/which`
+- **Agent skills:** `src/skills`
 - **Infra:** `infra/benchmark`, `infra/cli`, `infra/cli-js`,
   `infra/smoke-test`
 - **Docs:** `www/docs` → https://docs.vlt.sh
@@ -60,7 +61,10 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   needs a `!/skills/<name>/` line in `.gitignore` and an entry in
   `www/docs/src/lib/skills.ts`. `www/docs` copies them into
   `public/skills` at prebuild/predev, excluding `evals/`. CI Docs step
-  `lint:skills` checks their docs links and frontmatter.
+  `lint:skills` checks their docs links and frontmatter. `src/skills`
+  (`@vltpkg/skills`) copies every root skill into `dist/skills` at
+  prepack; for the package, a new skill only needs its row in
+  `src/skills/README.md`.
 
 ## Development
 
