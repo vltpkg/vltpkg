@@ -350,9 +350,14 @@ t.test('a re-packed archive', async t => {
   })
   t.ok(
     er?.message.endsWith(
-      `\`vlt cache delete "${lock.resolved}"\`, then \`vlt update\`.`,
+      `\`vlt cache delete "${lock.resolved}"\`, then \`vlt update x\`.`,
     ),
     'how to lock the new archive',
+  )
+  await t.rejects(
+    cold().extract(spec, target(), { ...lock, names: ['my-x'] }),
+    { message: /, then `vlt update my-x`\.$/ },
+    'by what its dependents call it',
   )
   t.not(
     (await cold().resolve(spec)).integrity,
@@ -401,6 +406,28 @@ t.test('gitArchiveChanged', async t => {
     ],
   ] as const) {
     t.match(gitArchiveChanged(spec, url, er('EINTEGRITY')), want, url)
+  }
+  // the names `vlt update` takes: what dependents call it, else the
+  // spec's name; never a spec or a DepID
+  const rows: [Spec, string[] | undefined, string][] = [
+    [git, undefined, 'x'],
+    [git, [], 'x'],
+    [git, ['my-x', 'x', 'my-x'], 'my-x x'],
+    [Spec.parse('@s/x@github:o/r#main'), undefined, '@s/x'],
+    // hydrate()'s spec of a nameless node
+    [Spec.parse('(unknown)', 'github:o/r#main'), undefined, '<name>'],
+    [git, ['git·github%3Ao%2Fr·main', 'a b'], '<name>'],
+  ]
+  for (const [spec, names, want] of rows) {
+    t.ok(
+      gitArchiveChanged(
+        spec,
+        `${gh}/${sha}`,
+        er('EINTEGRITY'),
+        names,
+      )?.endsWith(`, then \`vlt update ${want}\`.`),
+      `${String(names)}: ${want}`,
+    )
   }
   for (const [spec, e, name] of [
     [git, er('EREQUEST'), 'other error'],

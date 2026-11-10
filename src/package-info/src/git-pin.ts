@@ -257,15 +257,20 @@ export const gitPinResolution = (
 // a full sha anywhere in a url
 const shaIn = /(?<![0-9a-f])(?:[0-9a-f]{40}|[0-9a-f]{64})(?![0-9a-f])/
 
+// a name `vlt update` takes: a package name, never a spec or query
+const pkgName = /^(?:@[\w.-]+\/)?[\w.-]+$/
+
 /**
  * Why a hosted git archive failed its locked integrity, if it did: the
  * host re-packed the archive at the locked commit, or the ref an older
- * lockfile locked moved.
+ * lockfile locked moved. `names`: what dependents call it (aliases
+ * included), for `vlt update <name>`. Default: the spec's name.
  */
 export const gitArchiveChanged = (
   spec: Spec,
   url: string,
   er: unknown,
+  names: string[] = [],
 ) => {
   const f = spec.final
   if (
@@ -286,10 +291,15 @@ export const gitArchiveChanged = (
   // redirect target of an older lockfile's url): may be cached too
   const now = archiveAt(f, sha)
   const keys = [url, ...(now && now !== url ? [now] : [])]
+  // only this dep re-resolves, everything else stays locked
+  const deps = new Set(
+    (names.length ? names : [spec.name]).filter(n => pkgName.test(n)),
+  )
+  const update = deps.size ? [...deps].join(' ') : '<name>'
   return (
     'git archive at the locked commit no longer matches the ' +
     'lockfile integrity: the host may have re-packed it. To lock ' +
     `the new one, run \`vlt cache delete "${keys.join('" "')}"\`, ` +
-    'then `vlt update`.'
+    `then \`vlt update ${update}\`.`
   )
 }
