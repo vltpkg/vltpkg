@@ -1,9 +1,12 @@
 import t from 'tap'
 import {
+  appendAllow,
   configLabel,
+  hasAllowSelector,
   keptLine,
   saveAllow,
   savedLine,
+  skillsLinkDefault,
   storedAllow,
   writeAllow,
 } from '../src/allow-query.ts'
@@ -145,4 +148,54 @@ t.test('lines', async t => {
     keptLine('allow-scripts', { query: '#b', which: 'project' }),
     'allow-scripts is already set (vlt.json): "#b"; not replaced. Run vlt build to change it, or edit vlt.json',
   )
+})
+
+t.test('hasAllowSelector', async t => {
+  const name = '@vltpkg/skills'
+  for (const q of [
+    '#@vltpkg/skills',
+    ' #@vltpkg/skills ',
+    '#@vltpkg/skills:skill(vlt-cli, dss-query)',
+    '#other,#@vltpkg/skills:skill(a,b)',
+    ':not(:malware), #@vltpkg/skills',
+    '/* c */ #@vltpkg/skills',
+  ]) {
+    t.equal(hasAllowSelector(q, name), true, q)
+  }
+  for (const q of [
+    undefined,
+    '',
+    ' ',
+    '*',
+    '#other',
+    '#@vltpkg/skills-x',
+    ':not(#@vltpkg/skills)',
+    ':root > #@vltpkg/skills',
+    '#@vltpkg/skills:v(1)',
+    '#@vltpkg/skills#x',
+    '#@vltpkg/skills,',
+    '#@vltpkg/skills:skill(a):skill(b)',
+  ]) {
+    t.equal(hasAllowSelector(q, name), false, String(q))
+  }
+})
+
+t.test('appendAllow', async t => {
+  const name = '@vltpkg/skills'
+  t.equal(skillsLinkDefault, ':not(:malware)')
+  for (const [stored, query] of [
+    [undefined, ':not(:malware), #@vltpkg/skills'],
+    ['', ':not(:malware), #@vltpkg/skills'],
+    ['#other', '#other, #@vltpkg/skills'],
+    [' #other ', '#other, #@vltpkg/skills'],
+    ['*', '*, #@vltpkg/skills'],
+    [':not(*)', '#@vltpkg/skills'],
+    ['#@vltpkg/skills', '#@vltpkg/skills'],
+    [
+      '#a, #@vltpkg/skills:skill(vlt-cli)',
+      '#a, #@vltpkg/skills:skill(vlt-cli)',
+    ],
+  ] as const) {
+    t.equal(appendAllow(stored, name), query, String(stored))
+  }
 })

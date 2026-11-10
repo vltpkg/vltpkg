@@ -11,6 +11,11 @@ Install the package with vlt and link its skills:
 vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"
 ```
 
+Or run `vlt setup --skills`: it does the same in one step, and adds
+`#@vltpkg/skills` to a stored `allow-skills` instead of keeping it, so
+a fresh clone and `vlt ci` link the skills too. See
+[`vlt setup`](https://docs.vlt.io/client/commands/setup#install-vlts-agent-skills).
+
 To link only one skill, end the selector with `:skill()`:
 `--allow-skills="#@vltpkg/skills:skill(vlt-cli)"`. After a plain
 `vlt install`, `vlt skills link "#@vltpkg/skills"` links them. See

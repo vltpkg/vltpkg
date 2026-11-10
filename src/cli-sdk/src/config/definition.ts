@@ -581,6 +581,13 @@ export const definition = j
                     your shell config (your user \`Path\` on Windows).
                     Asks first, unless \`--yes\`. Command line only.`,
     },
+    skills: {
+      description: `With \`vlt setup\`, install vlt's agent skills
+                    (\`@vltpkg/skills\`) in the current project: add it
+                    to \`devDependencies\`, save \`allow-skills\` to the
+                    project \`vlt.json\` and link the skills. Command
+                    line only.`,
+    },
     'no-modify-path': {
       description: `Never edit shell config files (or the user
                     \`Path\` on Windows) to add a folder to your

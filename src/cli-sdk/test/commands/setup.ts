@@ -1,11 +1,19 @@
 import t from 'tap'
 import type { Test } from 'tap'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import type {
+  AddImportersDependenciesMap,
+  LinkSkillsResult,
+} from '@vltpkg/graph'
 import { normalizeRegistryKey } from '@vltpkg/registry-client'
 import type { Token } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { SetupResult } from '../../src/commands/setup.ts'
+import type {
+  SetupResult,
+  SetupSkillsResult,
+} from '../../src/commands/setup.ts'
 import type {
   PathSetupOptions,
   PathSetupPlan,
@@ -13,6 +21,26 @@ import type {
 import { shellPathCommand } from '../../src/shell.ts'
 
 type Added = [string, Record<string, unknown>]
+
+// what the skills step gets from `install()` and `reloadConfig()`
+type SkillsMock = {
+  /** returned by reloadConfig */
+  reloaded?: LoadedConfig
+  reloadError?: Error
+  installError?: Error
+  links?: LinkSkillsResult
+}
+
+type InstallCall = {
+  opts: {
+    allowSkills?: string
+    lockfileOnly?: boolean
+    allowScripts?: string
+    skillsDirs?: string[]
+    projectRoot?: string
+  }
+  add?: AddImportersDependenciesMap
+}
 
 // a `-Rtap` run from a terminal inherits a TTY stdin
 t.intercept(process.stdin, 'isTTY', { value: false })
@@ -33,7 +61,12 @@ const loadSetup = async (
   initialTokens?: Record<string, Token>,
   saveError?: Error,
   path?: PathMock,
+  skills: SkillsMock & { events?: string[] } = {},
 ) => {
+  // close, reload, install and config writes, in order
+  const events = skills.events ?? []
+  const installs: InstallCall[] = []
+  const reloads: { folder: string; env?: string }[] = []
   const loginCalls: (string | string[])[] = []
   const questions: string[] = []
   const logged: string[] = []
@@ -135,11 +168,34 @@ const loadSetup = async (
           if (a instanceof Error) throw a
           return a
         },
-        close: () => {},
+        close: () => events.push('close'),
       }),
     },
     '../../src/output.ts': {
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
+    },
+    '@vltpkg/graph': {
+      ...(await import('@vltpkg/graph')),
+      install: async (
+        opts: InstallCall['opts'],
+        add?: AddImportersDependenciesMap,
+      ) => {
+        events.push('install')
+        installs.push({ opts, add })
+        if (skills.installError) throw skills.installError
+        return {
+          graph: {},
+          ...(skills.links ? { skills: skills.links } : null),
+        }
+      },
+    },
+    '../../src/reload-config.ts': {
+      reloadConfig: async (folder: string) => {
+        events.push('reload')
+        reloads.push({ folder, env: process.env.VLT_REGISTRIES })
+        if (skills.reloadError) throw skills.reloadError
+        return skills.reloaded
+      },
     },
     ...pathMocks,
   })
@@ -149,6 +205,8 @@ const loadSetup = async (
       // registry wizard: no globalRoot
       command: (conf: LoadedConfig) =>
         mod.command(conf) as Promise<SetupResult>,
+      skillsCommand: (conf: LoadedConfig) =>
+        mod.command(conf) as Promise<SetupSkillsResult>,
     },
     loginCalls,
     questions,
@@ -156,6 +214,9 @@ const loadSetup = async (
     kcWrites,
     stored,
     calls,
+    events,
+    installs,
+    reloads,
   }
 }
 
@@ -173,30 +234,64 @@ const makeConf = (
     noModifyPath?: boolean
     globalProject?: () =>
       { root: string; binDir?: string } | undefined
+    /** the root package.json; unset: none */
+    manifest?: Record<string, unknown>
+    /** the root package.json once installed */
+    installed?: Record<string, unknown>
+    explicit?: Record<string, unknown>
+    globalRoot?: string
+    registry?: string
+    skillsDir?: string[]
+    /** records config writes and aborts */
+    events?: string[]
+    projectRoot?: string
   },
   added: Added[],
 ): LoadedConfig =>
   ({
+    projectRoot: opts.projectRoot ?? '/p',
+    globalRoot: opts.globalRoot,
     positionals: opts.positionals ?? [],
+    explicit: opts.explicit ?? {},
+    values: {},
     get: (k: string) =>
       k === 'yes' ? opts.yes
       : k === 'config' ? opts.config
       : k === 'no-modify-path' ? opts.noModifyPath
+      : k === 'skills-dir' ? opts.skillsDir
       : undefined,
     globalProject:
       opts.globalProject ??
       (() => ({ root: '/g', binDir: undefined })),
     options: {
       registries: opts.registries ?? {},
+      registry: opts.registry,
+      'default-registry-alias': 'npm',
       identity: opts.identity ?? '',
+      packageJson: {
+        maybeRead: (dir: string) =>
+          dir === '/p' ? opts.manifest : undefined,
+        read: (dir: string, o?: { reload?: boolean }) => {
+          const m =
+            o?.reload ?
+              (opts.installed ?? opts.manifest)
+            : opts.manifest
+          if (dir !== '/p' || !m) {
+            throw new Error('Could not read package.json file')
+          }
+          return m
+        },
+      },
     },
     layers: opts.layers ?? {},
     addConfigToFile: async (
       which: string,
       values: Record<string, unknown>,
     ) => {
+      opts.events?.push('write')
       added.push([which, values])
     },
+    abort: () => opts.events?.push('abort'),
   }) as unknown as LoadedConfig
 
 t.test('usage', async t => {
@@ -965,6 +1060,7 @@ const pathConf = (
     globalRoot: '/g',
     projectRoot: '/g',
     globalBinDir: o.globalBinDir,
+    explicit: {},
     positionals: o.positionals ?? [],
     get: (k: string) =>
       k === 'yes' ? o.yes
@@ -1243,4 +1339,697 @@ t.test('--path', async t => {
       '✅ /b is already added to your PATH in your Windows user environment\n   Open a new terminal, or run: set "PATH=%PATH%;/b"',
     )
   })
+})
+
+const SKILLS = '@vltpkg/skills'
+const npm = { npm: 'https://registry.npmjs.org/' }
+const acme = {
+  npm: 'https://registry.vlt.io/acme/npm/',
+  main: 'https://registry.vlt.io/acme/main/',
+}
+const pkg = { name: 'p', version: '1.0.0' }
+const installedPkg = {
+  ...pkg,
+  devDependencies: { [SKILLS]: '^1.6.4' },
+}
+const fresh = `:not(:malware), #${SKILLS}`
+const skillRow = (skill: string, dir = '.agents/skills') => ({
+  name: SKILLS,
+  version: '1.6.4',
+  id: joinDepIDTuple(['registry', '', `${SKILLS}@1.6.4`]),
+  skill,
+  path: `/p/node_modules/${SKILLS}/dist/skills/${skill}`,
+  linked: [],
+  dir,
+  mount: `${dir}/${skill}`,
+})
+const links: LinkSkillsResult = {
+  linked: [
+    skillRow('dss-query'),
+    skillRow('vlt-cli'),
+    skillRow('vlt-cli', '.claude/skills'),
+  ],
+  unchanged: [],
+  removed: [],
+  conflicts: [],
+  dirs: ['.agents/skills', '.claude/skills'],
+}
+const skillsQ = 'Do you want to install vlt skills? (Y/n) '
+const wizardQs = [
+  'Authenticate with your vlt.io account now? (Y/n) ',
+  'Add another registry alias? (y/N) ',
+]
+
+// the `add` map of `vlt install -D @vltpkg/skills` on the root
+const assertAdd = (t: Test, add?: AddImportersDependenciesMap) => {
+  t.equal(add?.modifiedDependencies, true)
+  t.strictSame(
+    [...(add?.keys() ?? [])],
+    [joinDepIDTuple(['file', '.'])],
+  )
+  const deps = add?.get(joinDepIDTuple(['file', '.']))
+  t.strictSame([...(deps?.keys() ?? [])], [SKILLS])
+  t.equal(deps?.get(SKILLS)?.type, 'dev')
+  t.equal(deps?.get(SKILLS)?.spec.name, SKILLS)
+}
+
+type ConfOpts = Parameters<typeof makeConf>[0]
+
+t.test('wizard skills step', async t => {
+  const run = async (
+    t: Test,
+    {
+      answers = [],
+      conf = {},
+      reloaded = {},
+      skills = {},
+    }: {
+      answers?: (string | Error)[]
+      conf?: ConfOpts
+      reloaded?: ConfOpts
+      skills?: SkillsMock
+    } = {},
+  ) => {
+    const added: Added[] = []
+    const events: string[] = []
+    const r = await loadSetup(
+      conf.yes ? [] : ['n', 'n', ...answers],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        events,
+        links,
+        reloaded: makeConf(
+          {
+            registries: acme,
+            manifest: pkg,
+            installed: installedPkg,
+            events,
+            ...reloaded,
+          },
+          added,
+        ),
+        ...skills,
+      },
+    )
+    // tap writes to stdout too: restore before asserting
+    const written = t.capture(process.stdout, 'write', () => true)
+    const result = await r.mod
+      .command(
+        makeConf(
+          {
+            positionals: ['acme'],
+            config: 'project',
+            globalProject: () => undefined,
+            manifest: pkg,
+            events,
+            ...conf,
+          },
+          added,
+        ),
+      )
+      .finally(() => written.restore())
+    return {
+      ...r,
+      result,
+      added,
+      events,
+      written: written.args().map(a => String(a[0])),
+    }
+  }
+  const tty = (t: Test) =>
+    t.intercept(process.stdin, 'isTTY', { value: true })
+  const saved = [
+    ['project', { registries: acme }],
+    ['project', { 'allow-skills': fresh }],
+  ]
+
+  t.test('answer default', async t => {
+    tty(t)
+    t.intercept(process, 'env', {
+      value: { VLT_REGISTRIES: 'npm=https://registry.npmjs.org/' },
+    })
+    const { result, questions, events, added, installs, reloads } =
+      await run(t, { answers: [''] })
+    t.strictSame(questions, [...wizardQs, skillsQ])
+    t.strictSame(
+      events,
+      ['write', 'close', 'reload', 'install', 'write'],
+      'readline closed, saved after the install',
+    )
+    t.strictSame(added, saved)
+    t.strictSame(reloads, [{ folder: '/p', env: undefined }])
+    t.strictSame(result.skills, {
+      status: 'installed',
+      query: fresh,
+      saved: true,
+      added: '^1.6.4',
+      links,
+    })
+    t.equal(installs.length, 1)
+    t.match(installs[0]?.opts, {
+      allowSkills: fresh,
+      lockfileOnly: false,
+      allowScripts: ':not(*)',
+      projectRoot: undefined,
+    })
+    assertAdd(t, installs[0]?.add)
+    t.notOk('skillsHint' in result)
+  })
+
+  t.test(
+    'answer yes, keeps registries given for this run',
+    async t => {
+      tty(t)
+      t.intercept(process, 'env', {
+        value: { VLT_REGISTRIES: 'npm=https://x/\nteam=https://t/' },
+      })
+      const { result, reloads } = await run(t, {
+        answers: ['y'],
+        conf: { explicit: { registries: ['team=https://t/'] } },
+      })
+      t.strictSame(reloads, [
+        { folder: '/p', env: 'team=https://t/' },
+      ])
+      t.match(result.skills, { status: 'installed' })
+    },
+  )
+
+  t.test('--yes', async t => {
+    const { result, questions, added, installs } = await run(t, {
+      conf: { yes: true },
+    })
+    t.strictSame(questions, [])
+    t.strictSame(added, saved)
+    t.equal(installs.length, 1)
+    t.match(result.skills, { status: 'installed', query: fresh })
+  })
+
+  t.test('after the PATH step', async t => {
+    tty(t)
+    t.intercept(process, 'env', { value: { SHELL: '/bin/zsh' } })
+    const added: Added[] = []
+    const events: string[] = []
+    const r = await loadSetup(
+      ['n', 'n', 'n', 'n'],
+      undefined,
+      undefined,
+      undefined,
+      {},
+      { events },
+    )
+    const written = t.capture(process.stdout, 'write', () => true)
+    const result = await r.mod
+      .command(
+        makeConf(
+          {
+            positionals: ['acme'],
+            config: 'project',
+            manifest: pkg,
+            events,
+          },
+          added,
+        ),
+      )
+      .finally(() => written.restore())
+    t.strictSame(r.questions, [
+      ...wizardQs,
+      'Setup PATH for global installs? (Y/n) ',
+      skillsQ,
+    ])
+    t.match(result, {
+      path: { status: 'cancelled' },
+      skills: { status: 'cancelled' },
+    })
+  })
+
+  t.test('not a terminal', async t => {
+    const { result, questions, events } = await run(t)
+    t.strictSame(questions, wizardQs)
+    t.notOk('skills' in result)
+    t.strictSame(events, ['write', 'close'])
+  })
+
+  t.test('no package.json', async t => {
+    tty(t)
+    const { result, questions, events } = await run(t, {
+      conf: { manifest: undefined },
+    })
+    t.strictSame(questions, wizardQs)
+    t.notOk('skills' in result)
+    t.notOk('skillsHint' in result)
+    t.strictSame(events, ['write', 'close'])
+  })
+
+  t.test('nothing to do', async t => {
+    tty(t)
+    const query = `#${SKILLS}:skill(vlt-cli)`
+    const { result, questions, events } = await run(t, {
+      conf: {
+        manifest: installedPkg,
+        layers: { project: { 'allow-skills': query } },
+      },
+    })
+    t.strictSame(questions, wizardQs)
+    t.strictSame(result.skills, { status: 'unchanged', query })
+    t.strictSame(events, ['write', 'close'], 'no install')
+  })
+
+  t.test('answer no', async t => {
+    tty(t)
+    const { result, events } = await run(t, { answers: ['n'] })
+    t.strictSame(result.skills, { status: 'cancelled' })
+    t.strictSame(events, ['write', 'close'])
+  })
+
+  t.test('Ctrl-C skips', async t => {
+    tty(t)
+    const abort = Object.assign(new Error('Aborted with Ctrl+C'), {
+      name: 'AbortError',
+    })
+    const { result, written, events } = await run(t, {
+      answers: [abort],
+    })
+    t.strictSame(written, ['\n'])
+    t.strictSame(result.skills, { status: 'cancelled' })
+    t.strictSame(events, ['write', 'close'])
+  })
+
+  t.test('prompt error', async t => {
+    tty(t)
+    const { result } = await run(t, { answers: [new Error('boom')] })
+    t.strictSame(result.skills, { status: 'failed', message: 'boom' })
+  })
+
+  t.test('install fails, --yes too', async t => {
+    for (const [conf, readline] of [
+      [{}, ['close']],
+      [{ yes: true }, []],
+    ] as const) {
+      tty(t)
+      const { result, added, events } = await run(t, {
+        answers: ['y'],
+        conf,
+        skills: {
+          installError: new Error('Missing or invalid token'),
+        },
+      })
+      t.strictSame(result.skills, {
+        status: 'failed',
+        message: 'Missing or invalid token',
+      })
+      t.strictSame(
+        added,
+        [['project', { registries: acme }]],
+        'no allow-skills saved',
+      )
+      t.strictSame(events, [
+        'write',
+        ...readline,
+        'reload',
+        'install',
+        'abort',
+      ])
+    }
+  })
+
+  t.test('reload fails', async t => {
+    const { result, installs } = await run(t, {
+      conf: { yes: true },
+      skills: { reloadError: new Error('bad vlt.json') },
+    })
+    t.strictSame(result.skills, {
+      status: 'failed',
+      message: 'bad vlt.json',
+    })
+    t.strictSame(installs, [])
+  })
+
+  t.test('user config never asks, hints', async t => {
+    tty(t)
+    for (const config of [undefined, 'user']) {
+      const { result, questions, installs, reloads } = await run(t, {
+        conf: { config },
+      })
+      t.strictSame(questions, wizardQs)
+      t.notOk('skills' in result)
+      t.equal(result.skillsHint, true)
+      t.strictSame(installs, [])
+      t.strictSame(reloads, [])
+    }
+    for (const conf of [
+      { manifest: undefined },
+      {
+        manifest: { ...pkg, optionalDependencies: { [SKILLS]: '1' } },
+        layers: { user: { 'allow-skills': `#${SKILLS}` } },
+      },
+    ]) {
+      const { result } = await run(t, {
+        conf: { config: 'user', ...conf },
+      })
+      t.notOk('skillsHint' in result)
+    }
+    const { result } = await run(t, {
+      conf: {
+        config: 'user',
+        manifest: installedPkg,
+        layers: { project: { 'allow-skills': '#other,' } },
+      },
+    })
+    t.equal(result.skillsHint, true, 'invalid query selects nothing')
+  })
+})
+
+t.test('--skills', async t => {
+  const run = async ({
+    conf = {},
+    reloaded = {},
+    skills = {},
+  }: {
+    conf?: ConfOpts
+    reloaded?: ConfOpts
+    skills?: SkillsMock
+  } = {}) => {
+    const added: Added[] = []
+    const events: string[] = []
+    const r = await loadSetup(
+      [],
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        events,
+        links,
+        reloaded: makeConf(
+          {
+            registries: npm,
+            manifest: pkg,
+            installed: installedPkg,
+            events,
+            ...reloaded,
+          },
+          added,
+        ),
+        ...skills,
+      },
+    )
+    const res = r.mod.skillsCommand(
+      makeConf(
+        {
+          explicit: { skills: true },
+          registries: npm,
+          manifest: pkg,
+          events,
+          ...conf,
+        },
+        added,
+      ),
+    )
+    return { ...r, res, added, events }
+  }
+
+  t.test('installs', async t => {
+    for (const yes of [undefined, true]) {
+      const { res, added, installs, reloads, questions, loginCalls } =
+        await run({ conf: { yes } })
+      t.strictSame(await res, {
+        skills: {
+          status: 'installed',
+          query: fresh,
+          saved: true,
+          added: '^1.6.4',
+          links,
+        },
+      })
+      t.strictSame(added, [['project', { 'allow-skills': fresh }]])
+      t.strictSame(reloads, [{ folder: '/p', env: undefined }])
+      t.strictSame(questions, [], 'no prompt, --yes or not')
+      t.strictSame(loginCalls, [])
+      assertAdd(t, installs[0]?.add)
+      t.match(installs[0]?.opts, {
+        allowSkills: fresh,
+        lockfileOnly: false,
+      })
+    }
+  })
+
+  t.test('skills-dir and nothing linked', async t => {
+    const { res, installs } = await run({
+      reloaded: { skillsDir: ['.agents/skills'] },
+      skills: { links: undefined },
+    })
+    t.notOk('links' in (await res).skills)
+    t.strictSame(installs[0]?.opts.skillsDirs, ['.agents/skills'])
+  })
+
+  t.test('saved allow-skills', async t => {
+    for (const [layers, query] of [
+      [{}, fresh],
+      [
+        { project: { 'allow-skills': '#other' } },
+        `#other, #${SKILLS}`,
+      ],
+      [{ project: { 'allow-skills': ':not(*)' } }, `#${SKILLS}`],
+      [{ user: { 'allow-skills': '#other' } }, `#other, #${SKILLS}`],
+      [
+        {
+          project: { 'allow-skills': '' },
+          user: { 'allow-skills': '#other' },
+        },
+        fresh,
+      ],
+    ] as const) {
+      const { res, added, installs } = await run({
+        reloaded: { layers },
+      })
+      t.match(await res, { skills: { query, saved: true } })
+      t.strictSame(added, [['project', { 'allow-skills': query }]])
+      t.equal(installs[0]?.opts.allowSkills, query)
+    }
+    // selected, not a dependency yet
+    const query = `#other, #${SKILLS}:skill(vlt-cli, dss-query)`
+    const { res, added, installs } = await run({
+      reloaded: { layers: { project: { 'allow-skills': query } } },
+    })
+    t.strictSame(await res, {
+      skills: { status: 'installed', query, added: '^1.6.4', links },
+    })
+    t.strictSame(added, [], 'nothing saved')
+    assertAdd(t, installs[0]?.add)
+  })
+
+  t.test('a root dependency keeps its type and spec', async t => {
+    const manifest = { ...pkg, dependencies: { [SKILLS]: '1.6.4' } }
+    const { res, added, installs } = await run({
+      reloaded: { manifest, installed: manifest },
+    })
+    t.strictSame(await res, {
+      skills: {
+        status: 'installed',
+        query: fresh,
+        saved: true,
+        links,
+      },
+    })
+    t.equal(installs[0]?.add, undefined, 'nothing added')
+    t.strictSame(added, [['project', { 'allow-skills': fresh }]])
+  })
+
+  t.test('not saved to devDependencies', async t => {
+    const { res } = await run({ reloaded: { installed: pkg } })
+    t.notOk('added' in (await res).skills)
+  })
+
+  t.test('again', async t => {
+    const query = `#${SKILLS}`
+    const { res, added, installs } = await run({
+      reloaded: {
+        manifest: installedPkg,
+        layers: { project: { 'allow-skills': query } },
+      },
+    })
+    t.strictSame(await res, {
+      skills: { status: 'unchanged', query },
+    })
+    t.strictSame(installs, [])
+    t.strictSame(added, [])
+  })
+
+  t.test('install fails', async t => {
+    const { res, added, events } = await run({
+      skills: { installError: new Error('nope') },
+    })
+    await t.rejects(res, { message: 'nope' })
+    t.strictSame(added, [])
+    t.strictSame(events, ['reload', 'install', 'abort'])
+  })
+
+  t.test('usage errors', async t => {
+    const cases: [ConfOpts, string, string][] = [
+      [{ positionals: ['acme'] }, 'takes no arguments', 'acme'],
+      [
+        { config: 'user' },
+        "doesn't support --config=user yet",
+        '--config=user',
+      ],
+      [
+        { globalRoot: '/g' },
+        "can't be combined with --path",
+        '--path',
+      ],
+    ]
+    for (const [conf, message, found] of cases) {
+      const { res, installs, reloads } = await run({ conf })
+      await t.rejects(res, {
+        message: `\`vlt setup --skills\` ${message}`,
+        cause: { code: 'EUSAGE', found },
+      })
+      t.strictSame(installs, [])
+      t.strictSame(reloads, [])
+    }
+  })
+
+  t.test('no package.json', async t => {
+    const { res, installs } = await run({
+      conf: { manifest: undefined },
+    })
+    await t.rejects(res, {
+      message: /^No package\.json found .* Run `vlt init`/,
+      cause: { code: 'ECONFIG', found: '/p' },
+    })
+    t.strictSame(installs, [])
+  })
+
+  t.test('broken package.json', async t => {
+    const projectRoot = t.testdir({ 'package.json': '{' })
+    const { res, installs } = await run({
+      conf: { manifest: undefined, projectRoot },
+    })
+    await t.rejects(res, {
+      message: 'Could not read package.json file',
+    })
+    t.strictSame(installs, [])
+  })
+
+  t.test('no registry', async t => {
+    const none = await run({ conf: { registries: {} } })
+    await t.rejects(none.res, {
+      message: /^Missing registry configuration/,
+      cause: { code: 'ECONFIG' },
+    })
+    const main = await run({
+      conf: { registries: {}, registry: 'https://r/' },
+    })
+    await t.rejects(main.res, {
+      message: /^Missing npm registry configuration/,
+    })
+    t.strictSame([...none.installs, ...main.installs], [])
+  })
+})
+
+t.test('skills views', async t => {
+  const { mod } = await loadSetup([])
+  const installed = {
+    status: 'installed',
+    query: fresh,
+    saved: true,
+    added: '^1.6.4',
+    links,
+  } as const
+  const lines = [
+    'Added @vltpkg/skills to devDependencies',
+    '🔗 Linked 2 agent skills into .agents/skills, .claude/skills',
+    `Saved allow-skills="${fresh}" to vlt.json`,
+  ].join('\n')
+  t.equal(mod.views.human({ skills: installed }), lines)
+  t.equal(
+    mod.views.human({
+      skills: { status: 'installed', query: '#x', saved: true },
+    }),
+    'Saved allow-skills="#x" to vlt.json',
+  )
+  t.equal(
+    mod.views.human({
+      skills: { status: 'installed', query: '#x', added: '^1.6.4' },
+    }),
+    'Added @vltpkg/skills to devDependencies',
+    'already selected: nothing saved',
+  )
+  t.equal(
+    mod.views.human({ skills: { status: 'unchanged', query: '#x' } }),
+    '✅ The vlt skills are already set up: @vltpkg/skills is a dependency and allow-skills selects it.',
+  )
+
+  const head =
+    'Configured 1 registry alias for "acme" in project config:\n  npm -> u'
+  const tail =
+    '\n\nYou can now install packages, e.g.:\n  vlt install <pkg>'
+  const wizard = {
+    account: 'acme',
+    which: 'project',
+    registries: { npm: 'u' },
+  } as const
+  const view = (skills?: SetupResult['skills']) =>
+    mod.views.human({ ...wizard, ...(skills ? { skills } : {}) })
+  t.equal(view(installed), `${head}\n\n${lines}${tail}`)
+  t.equal(view({ status: 'unchanged', query: '#x' }), head + tail)
+  t.equal(
+    view({ status: 'cancelled' }),
+    head +
+      '\n\nℹ️  Skipped. Run `vlt setup --skills` later to install the vlt skills.' +
+      tail,
+  )
+  t.equal(
+    view({ status: 'failed', message: 'nope' }),
+    head +
+      '\n\n⚠️  Could not install the vlt skills: nope\n   Run `vlt setup --skills` to try again.' +
+      tail,
+  )
+  t.equal(
+    mod.views.human({ ...wizard, which: 'user', skillsHint: true }),
+    head.replace('project', 'user') +
+      tail +
+      "\n\nRun `vlt setup --skills` to install vlt's agent skills in this project.",
+  )
+
+  const json = {
+    ...installed,
+    links: {
+      linked: [
+        '.agents/skills/dss-query',
+        '.agents/skills/vlt-cli',
+        '.claude/skills/vlt-cli',
+      ],
+      removed: [],
+      conflicts: [],
+      dirs: ['.agents/skills', '.claude/skills'],
+    },
+  }
+  t.strictSame(mod.views.json({ skills: installed }), {
+    skills: json,
+  })
+  t.strictSame(mod.views.json({ ...wizard, skills: installed }), {
+    ...wizard,
+    skills: json,
+  })
+  for (const r of [
+    { skills: { status: 'unchanged', query: '#x' } },
+    { ...wizard, skills: { status: 'installed', query: '#x' } },
+    wizard,
+  ] as const) {
+    t.strictSame(mod.views.json(r), r)
+  }
+  const path = {
+    status: 'in-path' as const,
+    dir: '/b',
+    shell: 'zsh' as const,
+    files: [],
+    backups: [],
+    command: '',
+    source: '',
+  }
+  t.strictSame(mod.views.json({ path }), { path })
 })

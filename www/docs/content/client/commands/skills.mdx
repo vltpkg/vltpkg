@@ -452,6 +452,13 @@ Saved allow-skills="#agent-browser:skill(agent-browser)" to vlt.json`}
   lang="bash"
 />
 
+vlt's own skills ship in `@vltpkg/skills`: `vlt setup --skills`
+installs and links them, and saves `allow-skills`
+([details](/client/commands/setup#install-vlts-agent-skills)). It is
+the same as
+`vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"`,
+except that it adds to a stored query instead of keeping it.
+
 - Installs only add links. They re-point a link to the new version of
   its package, in every dir, and remove links whose skill is gone:
   dangling, package removed, or skill no longer shipped. They never

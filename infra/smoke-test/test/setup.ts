@@ -180,7 +180,10 @@ t.test(
 const fresh = { VLT_REGISTRY: '', VLT_REGISTRIES: '' }
 
 // answers each wizard prompt once, as it appears
-const answer = (path: string): MultipleCommandOptions['onOutput'] => {
+const answer = (
+  path: string,
+  skills = 'n\r',
+): MultipleCommandOptions['onOutput'] => {
   // variants run in parallel
   const seen = new WeakMap<(d: string) => void, Set<string>>()
   return ({ output, write }) => {
@@ -190,6 +193,7 @@ const answer = (path: string): MultipleCommandOptions['onOutput'] => {
       ['Authenticate with your vlt.io account now?', 'n\r'],
       ['Add another registry alias?', '\r'],
       ['Setup PATH for global installs?', path],
+      ['Do you want to install vlt skills?', skills],
     ] as const) {
       if (!done.has(q) && output.includes(q)) {
         done.add(q)
@@ -259,6 +263,162 @@ t.test('setup --yes never asks', async t => {
         t.notOk(existsSync(join(dirs.data, 'vlt', 'global', 'env')))
       },
     },
+  )
+  t.equal(res.status, 0)
+})
+
+type SkillsJson = { skills: { status: string; query?: string } }
+// the wizard prints a line before the json
+const json = (stdout: string) =>
+  JSON.parse(stdout.slice(stdout.indexOf('{'))) as SkillsJson
+// t.fullname is not a valid package name
+const packageJson = { name: 'smoke', version: '1.0.0' }
+const readJson = (...p: string[]) =>
+  JSON.parse(readFileSync(join(...p), 'utf8')) as Record<
+    string,
+    Record<string, unknown> | undefined
+  >
+
+t.test('setup --skills', async t => {
+  const args = ['setup', '--skills', '--view=json']
+  const res = await runMultiple(t, args, {
+    match: ['status'],
+    packageJson,
+    project: {
+      'vlt.json': JSON.stringify({
+        config: { 'allow-skills': '#other' },
+      }),
+    },
+    test: async ({ t, dirs, raw, run }) => {
+      t.match(json(raw.stdout), {
+        skills: {
+          status: 'installed',
+          query: '#other, #@vltpkg/skills',
+          saved: true,
+          added: /^\^1\./,
+        },
+      })
+      t.match(
+        readJson(dirs.project, 'package.json').devDependencies,
+        {
+          '@vltpkg/skills': /^\^1\./,
+        },
+      )
+      t.equal(
+        readJson(dirs.project, 'vlt.json').config?.['allow-skills'],
+        '#other, #@vltpkg/skills',
+      )
+      const skills = join(dirs.project, '.agents', 'skills')
+      t.ok(existsSync(join(skills, 'vlt-cli', 'SKILL.md')), 'linked')
+      t.match(
+        readFileSync(join(skills, '.gitignore'), 'utf8'),
+        /^# >>> vlt agent skills[\s\S]*^\/vlt-cli$/m,
+      )
+
+      const again = await run(args)
+      t.equal(again.status, 0)
+      t.match(json(again.stdout), {
+        skills: { status: 'unchanged' },
+      })
+    },
+  })
+  t.equal(res.status, 0)
+})
+
+t.test('setup --skills usage errors', async t => {
+  for (const [args, msg] of [
+    [['acme'], 'takes no arguments'],
+    [['--config=user'], "doesn't support --config=user"],
+  ] as const) {
+    await t.test(args.join(' '), async t => {
+      const res = await runMultiple(
+        t,
+        ['setup', '--skills', ...args],
+        {
+          match: ['status'],
+        },
+      )
+      t.equal(res.status, 1)
+      t.match(res.output, msg)
+    })
+  }
+  await t.test('no package.json', async t => {
+    const res = await runMultiple(t, ['setup', '--skills'], {
+      match: ['status'],
+      packageJson: false,
+      test: async ({ t, dirs }) => {
+        t.notOk(existsSync(join(dirs.project, 'package.json')))
+      },
+    })
+    t.equal(res.status, 1)
+    t.match(res.output, 'Run `vlt init`')
+  })
+})
+
+t.test('setup --config=project --yes, skills step fails', async t => {
+  const res = await runMultiple(
+    t,
+    ['setup', 'acme', '--config=project', '--yes', '--view=json'],
+    {
+      match: ['status'],
+      packageJson,
+      // registry.vlt.io/acme needs a token: the new registries are used
+      env: fresh,
+      test: async ({ t, dirs, raw }) => {
+        t.match(json(raw.stdout), {
+          skills: { status: 'failed' },
+        })
+        const { config } = readJson(dirs.project, 'vlt.json')
+        t.match(config?.registries, {
+          npm: 'https://registry.vlt.io/acme/npm/',
+        })
+        t.notOk(config && 'allow-skills' in config)
+        t.notOk(
+          'devDependencies' in readJson(dirs.project, 'package.json'),
+        )
+      },
+    },
+  )
+  t.equal(res.status, 0)
+})
+
+t.test(
+  'setup --config=project, skills declined',
+  { skip: process.platform === 'win32' },
+  async t => {
+    const res = await runMultiple(
+      t,
+      ['setup', 'acme', '--config=project'],
+      {
+        tty: true,
+        match: ['status'],
+        packageJson,
+        env: { SHELL: '/bin/bash', ...fresh },
+        onOutput: answer('n\r', 'n\r'),
+        test: async ({ t, dirs }) => {
+          t.notOk(existsSync(join(dirs.project, 'node_modules')))
+        },
+      },
+    )
+    t.match(res.output, 'Do you want to install vlt skills? (Y/n)')
+    t.match(res.output, 'Run `vlt setup --skills` later')
+    t.equal(res.status, 0)
+  },
+)
+
+t.test('setup hints at the skills in a project', async t => {
+  const res = await runMultiple(
+    t,
+    ['setup', 'acme', '--yes', '--view=human'],
+    {
+      match: ['status'],
+      packageJson,
+      env: fresh,
+    },
+  )
+  t.match(
+    res.output,
+    "Run `vlt setup --skills` to install vlt's agent skills in this project.",
   )
   t.equal(res.status, 0)
 })

@@ -1,17 +1,46 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import { asDependency, install } from '@vltpkg/graph'
+import type {
+  AddImportersDependenciesMap,
+  LinkSkillsResult,
+} from '@vltpkg/graph'
 import {
   getKC,
   normalizeRegistryKey,
   RegistryClient,
 } from '@vltpkg/registry-client'
-import { defaultRegistries } from '@vltpkg/spec'
-import { asError, isErrorWithCause, isObject } from '@vltpkg/types'
+import { defaultRegistries, Spec } from '@vltpkg/spec'
+import {
+  asError,
+  isErrorWithCause,
+  isObject,
+  longDependencyTypes,
+} from '@vltpkg/types'
+import type { NormalizedManifest } from '@vltpkg/types'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { createInterface } from 'node:readline/promises'
+import {
+  appendAllow,
+  hasAllowSelector,
+  savedLine,
+  storedAllow,
+} from '../allow-query.ts'
+import { linkLines, skillsJson } from '../allow-skills.ts'
 import { configWriteTarget } from '../config/index.ts'
 import type { LoadedConfig } from '../config/index.ts'
 import { registrySelectionFields } from '../config/merge-layers.ts'
 import { commandUsage } from '../config/usage.ts'
-import { normalizeRegistryURL } from '../require-registry.ts'
+import { installOptions } from '../install-options.ts'
+import { reloadConfig } from '../reload-config.ts'
+import {
+  hasConfiguredRegistry,
+  hasNpmRegistry,
+  missingNpmRegistryError,
+  missingRegistryError,
+  normalizeRegistryURL,
+} from '../require-registry.ts'
 import { stdout } from '../output.ts'
 import { resolveGlobalBinDir } from '../global-bin-dir.ts'
 import {
@@ -120,6 +149,39 @@ export type SetupResult = {
    * no-modify-path)
    */
   path?: SetupPathResult['path'] | SetupPathFailed
+  /**
+   * skills step outcome (--config=project); absent when skipped (no
+   * package.json, no terminal)
+   */
+  skills?: SetupSkills
+  /** user config, in a project without the vlt skills */
+  skillsHint?: true
+}
+
+/** The package with vlt's agent skills. */
+export const SKILLS = '@vltpkg/skills'
+
+export type SetupSkills =
+  | {
+      status: 'installed'
+      /** the `allow-skills` linked */
+      query: string
+      /** `query` saved to the project vlt.json */
+      saved?: true
+      /** the spec added to `devDependencies` */
+      added?: string
+      links?: LinkSkillsResult
+    }
+  | {
+      /** a root dependency, and `allow-skills` selects it */
+      status: 'unchanged'
+      query: string
+    }
+  | { status: 'cancelled' }
+  | { status: 'failed'; message: string }
+
+export type SetupSkillsResult = {
+  skills: Extract<SetupSkills, { status: 'installed' | 'unchanged' }>
 }
 
 export type SetupPathFailed = {
@@ -186,9 +248,42 @@ const pathView = (
   }
 }
 
+const skillsView = (r: SetupSkills, wizard = false): string => {
+  switch (r.status) {
+    case 'installed':
+      return [
+        ...(r.added ? [`Added ${SKILLS} to devDependencies`] : []),
+        ...linkLines(r.links),
+        ...(r.saved ?
+          [savedLine('allow-skills', r.query, 'project')]
+        : []),
+      ].join('\n')
+    case 'unchanged':
+      return wizard ? '' : (
+          `✅ The vlt skills are already set up: ${SKILLS} is a dependency and allow-skills selects it.`
+        )
+    case 'cancelled':
+      return 'ℹ️  Skipped. Run `vlt setup --skills` later to install the vlt skills.'
+    case 'failed':
+      return [
+        `⚠️  Could not install the vlt skills: ${r.message}`,
+        '   Run `vlt setup --skills` to try again.',
+      ].join('\n')
+  }
+}
+
+const skillsOut = (r: SetupSkills) =>
+  'links' in r && r.links ? { ...r, links: skillsJson(r.links) } : r
+
 export const views = {
-  human: (result: SetupResult | SetupPathResult): string => {
-    if (!('account' in result)) return pathView(result.path)
+  human: (
+    result: SetupResult | SetupPathResult | SetupSkillsResult,
+  ): string => {
+    if (!('account' in result)) {
+      return 'skills' in result ?
+          skillsView(result.skills)
+        : pathView(result.path)
+    }
     const lines = [
       `Configured ${Object.keys(result.registries).length} registry ${
         Object.keys(result.registries).length === 1 ?
@@ -209,14 +304,30 @@ export const views = {
     }
     const path = result.path && pathView(result.path, true)
     if (path) lines.push('', path)
+    const skills = result.skills && skillsView(result.skills, true)
+    if (skills) lines.push('', skills)
     lines.push(
       '',
       'You can now install packages, e.g.:',
       '  vlt install <pkg>',
     )
+    if (result.skillsHint) {
+      lines.push(
+        '',
+        "Run `vlt setup --skills` to install vlt's agent skills in this project.",
+      )
+    }
     return lines.join('\n')
   },
-} as const satisfies Views<SetupResult | SetupPathResult>
+  json: (
+    result: SetupResult | SetupPathResult | SetupSkillsResult,
+  ) =>
+    'skills' in result && result.skills ?
+      { ...result, skills: skillsOut(result.skills) }
+    : result,
+} as const satisfies Views<
+  SetupResult | SetupPathResult | SetupSkillsResult
+>
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -224,6 +335,7 @@ export const usage: CommandUsage = () =>
     usage: [
       '[<account>]',
       '--path [--yes] [--global-bin-dir=<path>]',
+      '--skills',
     ],
     description: `Configure the registry aliases for your vlt.io account so
                   that \`vlt install\` and \`vlx\` work out of the box.
@@ -239,6 +351,14 @@ export const usage: CommandUsage = () =>
                   \`Setup PATH for global installs? (Y/n)\`: yes adds
                   it (same as \`--path\`), no skips it. Run
                   \`vlt setup --path\` later to do just that step.
+
+                  With \`--config=project\`, in a project with a
+                  \`package.json\`, it then asks \`Do you want to
+                  install vlt skills? (Y/n)\` (\`--yes\` accepts): yes
+                  adds \`@vltpkg/skills\` to \`devDependencies\`, saves
+                  \`allow-skills\` to the project \`vlt.json\` and links
+                  the skills. Run \`vlt setup --skills\` to do just that
+                  step.
 
                   With \`--path\`, add the global bin folder
                   (\`--global-bin-dir\`) to your \`PATH\` instead: writes
@@ -262,12 +382,18 @@ export const usage: CommandUsage = () =>
         description:
           'Skip interactive prompts (requires <account> and does not ' +
           'open a browser for authentication). With --path: edit ' +
-          'without asking. Without --path: skips the PATH prompt.',
+          'without asking. Without --path: skips the PATH prompt. ' +
+          'With --config=project: installs the vlt skills.',
       },
       path: {
         description:
           'Only add the global bin folder to your PATH via your ' +
           'shell config (user Path on Windows).',
+      },
+      skills: {
+        description:
+          "Only install vlt's agent skills (`@vltpkg/skills`) in " +
+          'the current project. No prompt.',
       },
       'global-bin-dir': {
         value: '<path>',
@@ -410,11 +536,190 @@ const offerPath = async (
   }
 }
 
+const isRootDep = (m: NormalizedManifest) =>
+  [...longDependencyTypes].some(t => m[t]?.[SKILLS] !== undefined)
+
+// the stored allow-skills, if it selects the root dep: nothing to do
+const setUpQuery = (conf: LoadedConfig, m: NormalizedManifest) => {
+  const stored = storedAllow(conf, 'allow-skills')?.query
+  return isRootDep(m) && hasAllowSelector(stored, SKILLS) ?
+      stored
+    : undefined
+}
+
+// a project (root package.json) without the vlt skills
+const needsSkills = (conf: LoadedConfig) => {
+  const m = conf.options.packageJson.maybeRead(conf.projectRoot)
+  return !!m && !setUpQuery(conf, m)
+}
+
+/**
+ * `vlt install -D @vltpkg/skills` on the project root, linking what the
+ * stored `allow-skills` plus `#@vltpkg/skills` selects. Saves that
+ * query to the project vlt.json once installed.
+ */
+const installSkills = async (
+  conf: LoadedConfig,
+): Promise<SetupSkillsResult['skills']> => {
+  const { packageJson } = conf.options
+  const manifest = packageJson.read(conf.projectRoot)
+  const stored = storedAllow(conf, 'allow-skills')?.query
+  const query = appendAllow(stored, SKILLS)
+  const dep = isRootDep(manifest)
+  if (dep && query === stored) return { status: 'unchanged', query }
+  // a root dep keeps its type and spec
+  const add: AddImportersDependenciesMap | undefined =
+    dep ? undefined : (
+      Object.assign(
+        new Map([
+          [
+            joinDepIDTuple(['file', '.']),
+            new Map([
+              [
+                SKILLS,
+                asDependency({
+                  spec: Spec.parseArgs(SKILLS, conf.options),
+                  type: 'dev',
+                }),
+              ],
+            ]),
+          ],
+        ]),
+        { modifiedDependencies: true },
+      )
+    )
+  const { skills: links } = await install(
+    {
+      ...installOptions(conf),
+      // always linked
+      lockfileOnly: false,
+      allowSkills: query,
+    },
+    add,
+  ).catch((er: unknown) => {
+    conf.abort()
+    throw er
+  })
+  // installed and linked: a failure saves nothing
+  const saved = query !== stored
+  if (saved) {
+    await conf.addConfigToFile('project', { 'allow-skills': query })
+  }
+  const added =
+    dep ? undefined : (
+      packageJson.read(conf.projectRoot, { reload: true })
+        .devDependencies?.[SKILLS]
+    )
+  return {
+    status: 'installed',
+    query,
+    ...(saved && { saved }),
+    ...(added && { added }),
+    ...(links && { links }),
+  }
+}
+
+// parse() exported the merged registries as VLT_REGISTRIES, which
+// outranks the ones just saved: keep only those given for this run
+const resetRegistriesEnv = (conf: LoadedConfig) => {
+  const pairs = conf.explicit.registries
+  if (pairs?.length) process.env.VLT_REGISTRIES = pairs.join('\n')
+  else delete process.env.VLT_REGISTRIES
+}
+
+// end of the wizard, --config=project only
+const offerSkills = async (
+  conf: LoadedConfig,
+  yes: boolean,
+  ask: (q: string) => Promise<string>,
+  close: () => void,
+): Promise<SetupSkills | undefined> => {
+  try {
+    const manifest = conf.options.packageJson.maybeRead(
+      conf.projectRoot,
+    )
+    // never turns a folder into a project
+    if (!manifest) return
+    const query = setUpQuery(conf, manifest)
+    if (query) return { status: 'unchanged', query }
+    if (!yes) {
+      if (!process.stdin.isTTY) return
+      const answer = await ask(
+        'Do you want to install vlt skills? (Y/n) ',
+      ).catch((er: unknown) => {
+        // Ctrl-C
+        if (asError(er).name !== 'AbortError') throw er
+        process.stdout.write('\n')
+        return 'n'
+      })
+      if (/^n/i.test(answer)) return { status: 'cancelled' }
+    }
+    // a raw-mode stdin would swallow Ctrl-C during the install
+    close()
+    // the install needs the registries just saved
+    resetRegistriesEnv(conf)
+    return await installSkills(await reloadConfig(conf.projectRoot))
+  } catch (er) {
+    // registries are already saved
+    return { status: 'failed', message: asError(er).message }
+  }
+}
+
+// `vlt setup --skills`: no prompt, fails like `vlt install`
+const setupSkills = async (
+  conf: LoadedConfig,
+): Promise<SetupSkillsResult> => {
+  if (conf.positionals.length) {
+    throw error('`vlt setup --skills` takes no arguments', {
+      code: 'EUSAGE',
+      found: conf.positionals[0],
+    })
+  }
+  if (conf.get('config') === 'user') {
+    throw error(
+      "`vlt setup --skills` doesn't support --config=user yet",
+      { code: 'EUSAGE', found: '--config=user' },
+    )
+  }
+  const { packageJson } = conf.options
+  if (!packageJson.maybeRead(conf.projectRoot)) {
+    // a broken one: its own error
+    if (existsSync(resolve(conf.projectRoot, 'package.json'))) {
+      packageJson.read(conf.projectRoot)
+    }
+    throw error(
+      'No package.json found in the project root. Run `vlt init` to create one.',
+      { code: 'ECONFIG', found: conf.projectRoot },
+    )
+  }
+  if (!hasConfiguredRegistry(conf)) throw missingRegistryError()
+  if (!hasNpmRegistry(conf)) {
+    throw missingNpmRegistryError(
+      conf.options['default-registry-alias'],
+    )
+  }
+  return {
+    skills: await installSkills(await reloadConfig(conf.projectRoot)),
+  }
+}
+
 export const command: CommandFn<
-  SetupResult | SetupPathResult
+  SetupResult | SetupPathResult | SetupSkillsResult
 > = async conf => {
   // set only by --path, see Config#globalProject
   const root = conf.globalRoot
+  if (conf.explicit.skills === true) {
+    if (root) {
+      throw error(
+        "`vlt setup --skills` can't be combined with --path",
+        {
+          code: 'EUSAGE',
+          found: '--path',
+        },
+      )
+    }
+    return setupSkills(conf)
+  }
   if (root) return setupPath(conf, root)
   const yes = !!conf.get('yes')
   const which = configWriteTarget(conf, 'user')
@@ -423,6 +728,12 @@ export const command: CommandFn<
   const ask = async (question: string): Promise<string> => {
     rl ??= createInterface(process.stdin, process.stdout)
     return (await rl.question(question)).trim()
+  }
+  const close = () => {
+    if (!rl) return
+    rl.close()
+    process.stdin.pause()
+    rl = undefined
   }
 
   try {
@@ -546,17 +857,23 @@ export const command: CommandFn<
     // 8. offer PATH setup for global installs
     const path = await offerPath(conf, yes, ask)
 
+    // 9. offer the vlt skills when setting up a project, else a hint
+    const skills =
+      which === 'project' ?
+        await offerSkills(conf, yes, ask, close)
+      : undefined
+    const skillsHint = which === 'user' && needsSkills(conf)
+
     return {
       account,
       which,
       registries,
       ...(shadowedByProject ? { shadowedByProject } : undefined),
       ...(path ? { path } : undefined),
+      ...(skills ? { skills } : undefined),
+      ...(skillsHint ? { skillsHint } : undefined),
     }
   } finally {
-    if (rl) {
-      rl.close()
-      process.stdin.pause()
-    }
+    close()
   }
 }

@@ -1423,6 +1423,7 @@
     "workspace~src+cli-sdk @vltpkg/config": "prod workspace:* workspace~src+config",
     "workspace~src+cli-sdk @vltpkg/dep-id": "prod workspace:* workspace~src+dep-id",
     "workspace~src+cli-sdk @vltpkg/dot-prop": "prod workspace:* workspace~src+dot-prop",
+    "workspace~src+cli-sdk @vltpkg/dss-parser": "prod workspace:* workspace~src+dss-parser",
     "workspace~src+cli-sdk @vltpkg/error-cause": "prod workspace:* workspace~src+error-cause",
     "workspace~src+cli-sdk @vltpkg/git": "prod workspace:* workspace~src+git",
     "workspace~src+cli-sdk @vltpkg/graph": "prod workspace:* workspace~src+graph",
