@@ -448,7 +448,7 @@ Object {
   },
   "migrate-workspaces": Object {
     "description": String(
-      Save workspaces read from the \`workspaces\` field of the root \`package.json\` or from \`pnpm-workspace.yaml\` to the project \`vlt.json\` on \`vlt install\`. \`vlt.json\` then takes precedence.
+      Save workspaces read from the \`workspaces\` field of the root \`package.json\` or from \`pnpm-workspace.yaml\` to the project \`vlt.json\` on \`vlt install\`. \`vlt.json\` then takes precedence. Each install also saves dependencies that link a workspace by a plain range or dist-tag as \`workspace:*\` in every importer's \`package.json\`.
       
       Set \`--no-migrate-workspaces\` to skip this; an already saved \`workspaces\` field stays until removed.
     ),

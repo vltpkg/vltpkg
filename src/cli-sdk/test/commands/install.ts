@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { GraphModifier } from '@vltpkg/graph'
 import type { Graph } from '@vltpkg/graph'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -14,6 +15,7 @@ const Command = await t.mockImport<
   typeof import('../../src/commands/install.ts')
 >('../../src/commands/install.ts', {
   '@vltpkg/graph': {
+    GraphModifier,
     assertQuery: async () => {},
     async install() {
       log += 'install\n'
@@ -364,6 +366,7 @@ t.test('frozen-lockfile flag', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      GraphModifier,
       assertQuery: async () => {},
       async install(opts: any, add: any) {
         log += `install frozenLockfile=${opts.frozenLockfile}\n`
@@ -416,6 +419,7 @@ t.test('lockfile-only flag', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      GraphModifier,
       assertQuery: async () => {},
       async install(opts: any, add: any) {
         log += `install lockfileOnly=${opts.lockfileOnly}\n`
@@ -462,6 +466,7 @@ t.test('persists spec config after install', async t => {
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        GraphModifier,
         assertQuery: async () => {},
         async install() {
           log += 'install\n'
@@ -548,15 +553,24 @@ t.test('migrates workspaces after install', async t => {
     source: 'package.json' as const,
     workspaces: ['packages/*'],
   }
+  const spec = {
+    importer: 'packages/app',
+    name: 'utils',
+    type: 'dependencies' as const,
+    from: '^1.0.0',
+    to: 'workspace:*' as const,
+  }
   const setup = async (
     options: Record<string, unknown>,
     fail = false,
+    { specs = [] as (typeof spec)[], save = true } = {},
   ) => {
     const calls: string[] = []
     const Command = await t.mockImport<
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        GraphModifier,
         assertQuery: async () => {},
         async install() {
           calls.push('install')
@@ -569,9 +583,17 @@ t.test('migrates workspaces after install', async t => {
       },
       '../../src/save-types.ts': { addTypesDeps: async () => {} },
       '../../src/migrate-workspaces.ts': {
+        findWorkspaceSpecs: () => {
+          calls.push('find')
+          return specs
+        },
+        addWorkspaceSpecs: (_: unknown, s: (typeof spec)[]) => {
+          calls.push(`add ${s.length}`)
+          return s
+        },
         migrateWorkspaces: (c: LoadedConfig) => {
           calls.push(`migrate ${c === conf}`)
-          return migrated
+          return save ? migrated : undefined
         },
       },
     })
@@ -591,22 +613,42 @@ t.test('migrates workspaces after install', async t => {
   t.test('saves after install', async t => {
     const { run, calls } = await setup({})
     const res = await run()
-    t.strictSame(calls, ['install', 'migrate true'])
+    t.strictSame(calls, ['find', 'add 0', 'install', 'migrate true'])
     t.strictSame(res.migratedWorkspaces, migrated)
     t.match(Command.views.json(res), { migratedWorkspaces: migrated })
+  })
+  t.test('workspace references saved by the install', async t => {
+    const { run, calls } = await setup({}, false, { specs: [spec] })
+    const res = await run()
+    t.strictSame(calls, ['find', 'add 1', 'install', 'migrate true'])
+    t.strictSame(res.migratedWorkspaces, {
+      ...migrated,
+      specs: [spec],
+    })
+    t.match(Command.views.json(res), {
+      migratedWorkspaces: { specs: [spec] },
+    })
+  })
+  t.test('references w/o a vlt.json save', async t => {
+    const { run } = await setup({}, false, {
+      specs: [spec],
+      save: false,
+    })
+    const res = await run()
+    t.strictSame(res.migratedWorkspaces, { specs: [spec] })
   })
   for (const flag of ['frozen-lockfile', 'expect-lockfile']) {
     t.test(`not with --${flag}`, async t => {
       const { run, calls } = await setup({ [flag]: true })
       const res = await run()
-      t.strictSame(calls, ['install'])
+      t.strictSame(calls, ['find', 'add 0', 'install'])
       t.equal(res.migratedWorkspaces, undefined)
     })
   }
   t.test('failed install, no write', async t => {
     const { run, calls } = await setup({}, true)
     await t.rejects(run(), { message: 'install failed' })
-    t.strictSame(calls, ['install'])
+    t.strictSame(calls, ['find', 'add 0', 'install'])
   })
   t.end()
 })
@@ -634,6 +676,7 @@ t.test('allow-skills', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      GraphModifier,
       assertQuery: async () => {},
       async install(opts: {
         allowSkills?: string
@@ -714,6 +757,7 @@ t.test('saves --allow-skills after install', async t => {
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        GraphModifier,
         assertQuery: async () => {},
         async install() {
           log.push('install')
@@ -836,6 +880,7 @@ t.test('--global', async t => {
     typeof import('../../src/commands/install.ts')
   >('../../src/commands/install.ts', {
     '@vltpkg/graph': {
+      GraphModifier,
       assertQuery: async () => {},
       async install(o: { keepNodes?: Set<string> }, a: unknown) {
         const k = o.keepNodes ? ` ${[...o.keepNodes].join()}` : ''
@@ -1072,6 +1117,7 @@ t.test('saves --allow-scripts after install', async t => {
       typeof import('../../src/commands/install.ts')
     >('../../src/commands/install.ts', {
       '@vltpkg/graph': {
+        GraphModifier,
         assertQuery: async (q: string, flag: string) => {
           log.push(`check ${flag} ${q}`)
           if (o.invalid) throw new Error('bad query')

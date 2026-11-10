@@ -352,12 +352,18 @@ field of the root `package.json`, and `vlt install` copies it to
 />
 
 Exclusion patterns such as `!packages/legacy` are honored and copied
-too. `package.json` is left as-is for npm. Commit `vlt.json`: `vlt ci`
-reads workspaces from it only.
+too. The `package.json` `workspaces` field is left as-is for npm.
+Commit `vlt.json`: `vlt ci` reads workspaces from it only.
 
 npm has no `workspace:` protocol, so local packages are referenced by
-plain ranges. Add `":project > :workspace": "workspace:*"` to
-`modifiers` in the same `vlt.json` to always link them, see
+plain ranges. `vlt install` then rewrites the ones that link a
+workspace to `workspace:*` in each `package.json`, see
+[Rewriting workspace references](/client/workspaces#rewriting-workspace-references).
+After that, npm can no longer install the project. To keep it working
+on the same files, set `"migrate-workspaces": false` in the `config`
+of `vlt.json`, add the `workspaces` field there yourself, and add
+`":project > :workspace": "workspace:*"` to `modifiers` to always link
+them, see
 [Implicit workspace references](/client/graph-modifiers#implicit-workspace-references).
 
 Edit `vlt.json` to use vlt's named groups, which let you run
@@ -386,9 +392,10 @@ operations against a subset of your workspaces:
   update `vlt.json` too.
 - **Named groups** — supported only in `vlt.json`, since a
   `package.json` using them would be meaningless to npm.
-- **Local package references** — vlt links a workspace referenced by a
-  plain range only while its version matches. The
-  `:project > :workspace` modifier above links it always.
+- **Local package references** — `vlt install` rewrites a plain range
+  that links a workspace to `workspace:*`. Kept plain ranges link only
+  while the workspace version matches; the `:project > :workspace`
+  modifier above links them always.
 
 ### Workspace Commands
 
@@ -452,12 +459,12 @@ match the same dependency.
 4. Leave your `workspaces` field in `package.json` — `vlt install`
    copies it to `vlt.json`
 5. Move `overrides` from `package.json` to `modifiers` in `vlt.json`
-6. Add `":project > :workspace": "workspace:*"` to `modifiers` in
-   `vlt.json` so local packages referenced by plain ranges are always
-   linked
-7. Run `vlt install` then `vlt build`
-8. Commit `vlt.json` and `vlt-lock.json`
-9. Update CI scripts: replace `npm ci` with
+6. Run `vlt install` then `vlt build`; local packages referenced by
+   plain ranges are rewritten to `workspace:*`, after which npm can no
+   longer install the project (to keep it working, see
+   [Workspaces](#workspaces) first)
+7. Commit `vlt.json`, `vlt-lock.json` and the `package.json` files
+8. Update CI scripts: replace `npm ci` with
    `vlt install --expect-lockfile && vlt build`
-10. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
-11. Update any `npx` usage to `vlx`
+9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
+10. Update any `npx` usage to `vlx`

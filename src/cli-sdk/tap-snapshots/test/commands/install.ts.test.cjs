@@ -89,7 +89,7 @@ appropriately.
 
     no-migrate-workspaces
       Don't save workspaces read from package.json or pnpm-workspace.yaml to
-      vlt.json.
+      vlt.json, or rewrite plain ranges that link a workspace to workspace:*.
 
       ​--no-migrate-workspaces
 

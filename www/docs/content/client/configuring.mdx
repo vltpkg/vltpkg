@@ -557,7 +557,9 @@ Enable for every install with `"config": { "save-types": true }` in
 On by default. `vlt install` saves workspaces read from the
 `workspaces` field of the root `package.json` or from
 `pnpm-workspace.yaml` to the project `vlt.json`, which then takes
-precedence. Set `--no-migrate-workspaces` or
+precedence. Each install also saves dependencies that link a workspace
+by a plain range or dist-tag as `workspace:*`. Set
+`--no-migrate-workspaces` or
 `"config": { "migrate-workspaces": false }` in `vlt.json` to skip
 this; an already saved `workspaces` field stays until removed. See
 [Workspaces](/client/workspaces#saving-workspaces-to-vltjson).

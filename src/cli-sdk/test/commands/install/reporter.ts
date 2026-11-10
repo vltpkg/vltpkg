@@ -244,6 +244,47 @@ t.test('allow-skills saved or kept', async t => {
   }
 })
 
+t.test('workspace references rewritten', async t => {
+  const done = async (
+    migratedWorkspaces: InstallResult['migratedWorkspaces'],
+  ) => {
+    const r = reporter()
+    r.start()
+    await r.done({ migratedWorkspaces }, { time: 1 })
+    await setTimeout(50)
+    const res = out
+    r.error(new Error('x'))
+    return res
+  }
+  const spec = (importer: string, name: string) => ({
+    importer,
+    name,
+    type: 'dependencies' as const,
+    from: '^1.0.0',
+    to: 'workspace:*' as const,
+  })
+  const both = await done({
+    source: 'package.json',
+    workspaces: ['packages/*'],
+    specs: [
+      spec('.', 'a'),
+      spec('packages/app', 'a'),
+      spec('packages/app', 'b'),
+    ],
+  })
+  t.match(both, 'Saved workspaces from package.json to vlt.json')
+  t.match(
+    both,
+    'Rewrote 3 workspace references to workspace:* in package.json, packages/app/package.json',
+  )
+  const one = await done({ specs: [spec('packages/app', 'a')] })
+  t.match(
+    one,
+    'Rewrote 1 workspace reference to workspace:* in packages/app/package.json',
+  )
+  t.notMatch(one, 'Saved workspaces')
+})
+
 t.test('allow-scripts saved or kept', async t => {
   const done = async (r: Partial<InstallResult>) => {
     const rep = reporter()
