@@ -14,6 +14,7 @@ import type {
   Dependency,
 } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
+import type { Node } from '../node.ts'
 import { baseDepID, hydrate, splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
@@ -69,19 +70,27 @@ const validateFileDepNode = (graph: Graph, id: DepID) => {
   }
 }
 
+// ms a git row's host gets to answer its re-pin: re-pinning is an
+// upgrade, not needed to install, and a host that drops packets would
+// hold every install for as long as the OS waits (minutes)
+const repinTimeout = 10_000
+
 /**
  * Git rows locked to a ref, not a commit (older lockfiles): re-resolved
  * up front. One that resolves is dropped, and the build places it from
- * that manifest, pinned; one that can't (offline, ref gone) is kept.
+ * that manifest, pinned; one that can't (offline, ref gone, its host
+ * doesn't answer within {@link repinTimeout}) is kept.
  */
 const repinGitRows = async (
   graph: Graph,
   packageInfo: PackageInfoClient,
   options: SpecOptions,
 ) => {
-  const unpinned = [...graph.nodes.values()].filter(
-    n => n.id.startsWith('git~') && !gitPinned(n),
-  )
+  // no array of every node: most graphs have no git rows
+  const unpinned: Node[] = []
+  for (const n of graph.nodes.values()) {
+    if (n.id.startsWith('git~') && !gitPinned(n)) unpinned.push(n)
+  }
   const names = new Map(unpinned.map(n => [baseDepID(n.id), n.name]))
   const repin = new Map<DepID, Manifest>()
   await Promise.all(
@@ -95,7 +104,9 @@ const repinGitRows = async (
       try {
         repin.set(
           base,
-          (await packageInfo.manifest(spec)) as Manifest,
+          (await packageInfo.manifest(spec, {
+            gitHostTimeout: repinTimeout,
+          })) as Manifest,
         )
       } catch (er) {
         if (isPathSecurityError(er)) throw er

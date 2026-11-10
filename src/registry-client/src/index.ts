@@ -21,7 +21,7 @@ import { pipeline } from 'node:stream'
 import type { Readable } from 'node:stream'
 import { setTimeout } from 'node:timers/promises'
 import { createGunzip } from 'node:zlib'
-import type { Agent, Dispatcher } from 'undici'
+import type { Agent, Dispatcher, RetryHandler } from 'undici'
 import { RetryAgent } from 'undici'
 import { userAgent } from '@vltpkg/user-agent'
 import { addHeader } from './add-header.ts'
@@ -285,6 +285,14 @@ export type RegistryClientRequestOptions = Omit<
    * @internal
    */
   forceRevalidate?: boolean | 'background'
+
+  /**
+   * Milliseconds the host gets to accept the connection. Unset: as long
+   * as the OS waits (minutes, for a host that drops packets). An abort
+   * can't end that wait, so a caller that would give up on such a host
+   * sets this. Such requests use a connection pool of their own.
+   */
+  connectTimeout?: number
 }
 
 /**
@@ -312,23 +320,29 @@ export { userAgent }
 // of body handling.
 // keepAliveTimeoutThreshold: undici default. Values >= the server's
 // Keep-Alive hint (Node http: timeout=5) reset the socket every response.
+const connectOptions = {
+  timeout: 600_000,
+  keepAlive: true,
+  keepAliveInitialDelay: 30_000,
+  sessionTimeout: 600,
+}
 const agentOptions: Agent.Options = {
   bodyTimeout: 600_000,
   headersTimeout: 600_000,
   keepAliveMaxTimeout: 1_200_000,
   keepAliveTimeout: 600_000,
-  connect: {
-    timeout: 600_000,
-    keepAlive: true,
-    keepAliveInitialDelay: 30_000,
-    sessionTimeout: 600,
-  },
+  connect: connectOptions,
   connections: Math.min(
     128,
     Math.max(64, (availableParallelism() - 1) * 8),
   ),
   pipelining: 1,
 }
+
+// a url's path without trailing slashes, and its query: `/` at the
+// root of a host, as a request needs one
+const requestPath = (u: URL) =>
+  (u.pathname.replace(/\/+$/, '') || '/') + u.search
 
 const xdg = new XDG('vlt')
 
@@ -355,6 +369,26 @@ export class RegistryClient {
   // request() calls not settled yet, awaited by drain()
   #inFlight = new Set<Promise<void>>()
   #signal?: AbortSignal
+  #retryOptions: RetryHandler.RetryOptions
+  // connectTimeout -> the agent whose connections get it
+  #agents = new Map<number, RetryAgent>()
+
+  /** what a request is sent with: its own `connectTimeout`, if any */
+  #agent(connectTimeout?: number) {
+    if (connectTimeout === undefined) return this.agent
+    let agent = this.#agents.get(connectTimeout)
+    if (!agent) {
+      agent = new RetryAgent(
+        getDispatcher({
+          ...agentOptions,
+          connect: { ...connectOptions, timeout: connectTimeout },
+        }),
+        this.#retryOptions,
+      )
+      this.#agents.set(connectTimeout, agent)
+    }
+    return agent
+  }
 
   /** the request's own signal joined with the client's */
   #withSignal<S>(
@@ -400,7 +434,7 @@ export class RegistryClient {
       },
     })
     const dispatch = getDispatcher(agentOptions)
-    this.agent = new RetryAgent(dispatch, {
+    this.#retryOptions = {
       maxRetries,
       timeoutFactor,
       minTimeout,
@@ -417,7 +451,8 @@ export class RegistryClient {
         'EPIPE',
         'UND_ERR_SOCKET',
       ],
-    })
+    }
+    this.agent = new RetryAgent(dispatch, this.#retryOptions)
   }
 
   /**
@@ -960,7 +995,7 @@ export class RegistryClient {
       ...options,
       signal: this.#withSignal(options.signal),
       method: options.method ?? 'GET',
-      path: u.pathname.replace(/\/+$/, '') + u.search,
+      path: requestPath(u),
       origin: u.origin,
       headers: addHeader(
         addHeader(
@@ -989,9 +1024,9 @@ export class RegistryClient {
 
     logRequest(url, 'start', { method: o.method })
     const requestStart = Date.now()
-    const response = await this.agent.request(
-      o as Dispatcher.RequestOptions,
-    )
+    const response = await this.#agent(
+      options.connectTimeout,
+    ).request(o as Dispatcher.RequestOptions)
     logRequest(url, 'complete', {
       method: o.method,
       statusCode: response.statusCode,
@@ -1124,7 +1159,7 @@ export class RegistryClient {
     redirections.add(String(url))
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- deprecated for callers; this is the one place that sets it
-    options.path = u.pathname.replace(/\/+$/, '') + u.search
+    options.path = requestPath(u)
     options.origin = u.origin
     options.headers = addHeader(
       addHeader(
@@ -1170,7 +1205,7 @@ export class RegistryClient {
 
     let response: Dispatcher.ResponseData | null
     try {
-      response = await this.agent.request(
+      response = await this.#agent(options.connectTimeout).request(
         options as Dispatcher.RequestOptions,
       )
       /* c8 ignore start */

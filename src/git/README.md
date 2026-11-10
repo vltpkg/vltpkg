@@ -168,6 +168,10 @@ no value is found, it will return `undefined`.
 - `cwd` The current working dir for the git command. Particularly for
   `find` and `is` and `isClean`, it's good to know that this defaults
   to `process.cwd()`, as one might expect.
+- `timeout` Milliseconds a git command gets: then it is killed, its
+  pipes are closed (a helper git started may still hold them, eg one
+  connecting to a host that doesn't answer), and it fails without a
+  retry.
 - Any other options that can be passed to
   [`@vltpkg/promise-spawn`](http://npm.im/@vltpkg/promise-spawn), or
   `child_process.spawn()`.
