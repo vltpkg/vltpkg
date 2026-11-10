@@ -78,7 +78,14 @@ export type Dependency = {
 export type AddImportersDependenciesMap = Map<
   DepID,
   Map<string, Dependency>
-> & { modifiedDependencies: boolean }
+> & {
+  modifiedDependencies: boolean
+  /**
+   * The names the caller asked to add, snapshotted before the entries
+   * read from the manifests are merged in. Only these are saved.
+   */
+  explicit?: Map<DepID, Set<string>>
+}
 
 /**
  * A `Map` object representing nodes to be removed from the ideal graph.

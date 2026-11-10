@@ -43,6 +43,8 @@ export const buildIdealFromStartingGraph = async (
   for (const [id, deps] of options.add) {
     explicit.set(id, new Set(deps.keys()))
   }
+  // so that updatePackageJson saves only what the user asked for
+  options.add.explicit = explicit
 
   // merge modifiedDependencies flags
   options.add.modifiedDependencies =

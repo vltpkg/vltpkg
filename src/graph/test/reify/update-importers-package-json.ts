@@ -1126,3 +1126,66 @@ t.test('stores the saved value on importer edges', async t => {
     t.equal(graph.lockfileStale, true)
   })
 })
+
+t.test('saves only the explicitly added names', async t => {
+  const rootMani = {
+    name: 'root',
+    version: '1.0.0',
+    devDependencies: { ms: '^2.1.3' },
+    peerDependencies: { ms: '^2.1.3' },
+    peerDependenciesMeta: { ms: { optional: true } },
+  }
+  const graph = new Graph({
+    mainManifest: rootMani,
+    projectRoot: t.testdirName,
+    ...specOptions,
+  })
+  const root = graph.mainImporter
+  const fooSpec = Spec.parse('foo', '^1.0.0', specOptions)
+  const msSpec = Spec.parse('ms', '^2.1.3', specOptions)
+  const foo = graph.addNode(
+    undefined,
+    { name: 'foo', version: '1.0.0' },
+    fooSpec,
+    'foo',
+    '1.0.0',
+  )
+  const ms = graph.addNode(
+    undefined,
+    { name: 'ms', version: '2.1.3' },
+    msSpec,
+    'ms',
+    '2.1.3',
+  )
+  graph.addEdge('prod', fooSpec, root, foo)
+  graph.addEdge('dev', msSpec, root, ms)
+  // `ms` was merged in from the manifest, only `foo` was requested
+  const add = Object.assign(
+    new Map([
+      [
+        root.id,
+        new Map([
+          ['foo', asDependency({ spec: fooSpec, type: 'prod' })],
+          ['ms', asDependency({ spec: msSpec, type: 'dev' })],
+        ]),
+      ],
+    ]),
+    {
+      modifiedDependencies: true,
+      explicit: new Map([[root.id, new Set(['foo'])]]),
+    },
+  ) as AddImportersDependenciesMap
+  updatePackageJson({
+    packageJson: new PackageJson(),
+    graph,
+    add,
+  })
+  t.strictSame(root.manifest, {
+    name: 'root',
+    version: '1.0.0',
+    devDependencies: { ms: '^2.1.3' },
+    peerDependencies: { ms: '^2.1.3' },
+    peerDependenciesMeta: { ms: { optional: true } },
+    dependencies: { foo: '^1.0.0' },
+  })
+})

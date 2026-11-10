@@ -103,6 +103,11 @@ const addOrRemoveDeps = (
       }
     } else {
       const [name, dep] = deleteNameOrAddItem
+      // entries merged in from the manifest are not saved, saving
+      // them would drop the other types listing the same name
+      const explicit = (addOrRemove as AddImportersDependenciesMap)
+        .explicit
+      if (explicit && !explicit.get(nodeId)?.has(name)) continue
       // peerOptional also needs to add peerDependenciesMeta entry
       const depTypeShort = resolveSaveType(node, name, dep.type)
       const depType =
