@@ -50,7 +50,8 @@ export const skillsLinkDefault = ':not(:malware)'
 
 /**
  * Whether a top-level selector of `query` is `#<name>`, optionally
- * ending in `:skill()`. An invalid query has none.
+ * ending in `:skill()`. An invalid query has none. Parsed loosely,
+ * as installs read it (a stray comma is fine).
  */
 export const hasAllowSelector = (
   query: string | undefined,
@@ -58,7 +59,7 @@ export const hasAllowSelector = (
 ): boolean => {
   if (!query) return false
   try {
-    return parse(query).nodes.some(sel => {
+    return parse(query, { loose: true }).nodes.some(sel => {
       const [id, part, ...rest] = sel.nodes.filter(
         n => !isCommentNode(n),
       )
@@ -76,17 +77,25 @@ export const hasAllowSelector = (
 
 /**
  * `stored` with a `#<name>` selector added (a union, nothing dropped).
- * None stored: the `vlt skills link` default and the selector;
+ * None or blank stored: the `vlt skills link` default and the selector;
  * `:not(*)`: the selector only; already selected: `stored`.
  */
 export const appendAllow = (
   stored: string | undefined,
   name: string,
-): string =>
-  !stored ? `${skillsLinkDefault}, #${name}`
-  : stored === ':not(*)' ? `#${name}`
-  : hasAllowSelector(stored, name) ? stored
-  : `${stored.trim()}, #${name}`
+): string => {
+  // installs ignore a trailing comma
+  const q = stored
+    ?.trim()
+    .replace(/(?<!\\),$/, '')
+    .trim()
+  return (
+    !stored || !q ? `${skillsLinkDefault}, #${name}`
+    : q === ':not(*)' ? `#${name}`
+    : hasAllowSelector(q, name) ? stored
+    : `${q}, #${name}`
+  )
+}
 
 /** The file's name in messages. */
 export const configLabel = (which: WhichConfig): string =>

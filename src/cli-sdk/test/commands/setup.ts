@@ -9,6 +9,7 @@ import type {
 import { normalizeRegistryKey } from '@vltpkg/registry-client'
 import type { Token } from '@vltpkg/registry-client'
 import { defaultRegistries } from '@vltpkg/spec'
+import { definition } from '../../src/config/definition.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type {
   SetupResult,
@@ -37,13 +38,21 @@ type InstallCall = {
     lockfileOnly?: boolean
     allowScripts?: string
     skillsDirs?: string[]
-    projectRoot?: string
+    registries?: Record<string, string>
   }
   add?: AddImportersDependenciesMap
 }
 
 // a `-Rtap` run from a terminal inherits a TTY stdin
 t.intercept(process.stdin, 'isTTY', { value: false })
+// `--skills` is read from the command line
+const argv = (...args: string[]) => [
+  process.execPath,
+  'vlt',
+  'setup',
+  ...args,
+]
+t.intercept(process, 'argv', { value: argv() })
 
 type PathMock = {
   inPath?: boolean
@@ -161,15 +170,23 @@ const loadSetup = async (
       normalizeRegistryKey,
     },
     'node:readline/promises': {
-      createInterface: () => ({
-        question: async (q: string) => {
-          questions.push(q)
-          const a = queue.shift() ?? ''
-          if (a instanceof Error) throw a
-          return a
-        },
-        close: () => events.push('close'),
-      }),
+      createInterface: () => {
+        // Ctrl-C closes it, like node's
+        let closed = false
+        return {
+          question: async (q: string) => {
+            if (closed) throw new Error('readline was closed')
+            questions.push(q)
+            const a = queue.shift() ?? ''
+            if (a instanceof Error) {
+              closed = a.name === 'AbortError'
+              throw a
+            }
+            return a
+          },
+          close: () => events.push('close'),
+        }
+      },
     },
     '../../src/output.ts': {
       stdout: (...a: unknown[]) => logged.push(a.join(' ')),
@@ -253,6 +270,7 @@ const makeConf = (
     globalRoot: opts.globalRoot,
     positionals: opts.positionals ?? [],
     explicit: opts.explicit ?? {},
+    jack: definition,
     values: {},
     get: (k: string) =>
       k === 'yes' ? opts.yes
@@ -1061,6 +1079,7 @@ const pathConf = (
     projectRoot: '/g',
     globalBinDir: o.globalBinDir,
     explicit: {},
+    jack: definition,
     positionals: o.positionals ?? [],
     get: (k: string) =>
       k === 'yes' ? o.yes
@@ -1493,7 +1512,7 @@ t.test('wizard skills step', async t => {
       allowSkills: fresh,
       lockfileOnly: false,
       allowScripts: ':not(*)',
-      projectRoot: undefined,
+      registries: acme,
     })
     assertAdd(t, installs[0]?.add)
     t.notOk('skillsHint' in result)
@@ -1530,39 +1549,59 @@ t.test('wizard skills step', async t => {
   t.test('after the PATH step', async t => {
     tty(t)
     t.intercept(process, 'env', { value: { SHELL: '/bin/zsh' } })
-    const added: Added[] = []
-    const events: string[] = []
-    const r = await loadSetup(
-      ['n', 'n', 'n', 'n'],
-      undefined,
-      undefined,
-      undefined,
-      {},
-      { events },
-    )
-    const written = t.capture(process.stdout, 'write', () => true)
-    const result = await r.mod
-      .command(
-        makeConf(
-          {
-            positionals: ['acme'],
-            config: 'project',
-            manifest: pkg,
-            events,
-          },
-          added,
-        ),
+    const abort = Object.assign(new Error('Aborted with Ctrl+C'), {
+      name: 'AbortError',
+    })
+    // Ctrl-C closes the readline: the skills prompt opens a new one
+    for (const pathAnswer of ['n', abort]) {
+      const added: Added[] = []
+      const events: string[] = []
+      const r = await loadSetup(
+        ['n', 'n', pathAnswer, 'n'],
+        undefined,
+        undefined,
+        undefined,
+        {},
+        { events },
       )
-      .finally(() => written.restore())
-    t.strictSame(r.questions, [
-      ...wizardQs,
-      'Setup PATH for global installs? (Y/n) ',
-      skillsQ,
-    ])
+      const written = t.capture(process.stdout, 'write', () => true)
+      const result = await r.mod
+        .command(
+          makeConf(
+            {
+              positionals: ['acme'],
+              config: 'project',
+              manifest: pkg,
+              events,
+            },
+            added,
+          ),
+        )
+        .finally(() => written.restore())
+      t.strictSame(r.questions, [
+        ...wizardQs,
+        'Setup PATH for global installs? (Y/n) ',
+        skillsQ,
+      ])
+      t.match(result, {
+        path: { status: 'cancelled' },
+        skills: { status: 'cancelled' },
+      })
+    }
+  })
+
+  t.test('--skills only from the command line', async t => {
+    tty(t)
+    const { result, questions, installs } = await run(t, {
+      answers: ['n'],
+      conf: { explicit: { skills: true } },
+    })
+    t.strictSame(questions, [...wizardQs, skillsQ], 'the wizard')
     t.match(result, {
-      path: { status: 'cancelled' },
+      account: 'acme',
       skills: { status: 'cancelled' },
     })
+    t.strictSame(installs, [])
   })
 
   t.test('not a terminal', async t => {
@@ -1695,7 +1734,7 @@ t.test('wizard skills step', async t => {
       conf: {
         config: 'user',
         manifest: installedPkg,
-        layers: { project: { 'allow-skills': '#other,' } },
+        layers: { project: { 'allow-skills': `#${SKILLS},(` } },
       },
     })
     t.equal(result.skillsHint, true, 'invalid query selects nothing')
@@ -1703,6 +1742,7 @@ t.test('wizard skills step', async t => {
 })
 
 t.test('--skills', async t => {
+  t.intercept(process, 'argv', { value: argv('--skills') })
   const run = async ({
     conf = {},
     reloaded = {},
@@ -1739,7 +1779,6 @@ t.test('--skills', async t => {
     const res = r.mod.skillsCommand(
       makeConf(
         {
-          explicit: { skills: true },
           registries: npm,
           manifest: pkg,
           events,
@@ -1793,6 +1832,10 @@ t.test('--skills', async t => {
         `#other, #${SKILLS}`,
       ],
       [{ project: { 'allow-skills': ':not(*)' } }, `#${SKILLS}`],
+      [
+        { project: { 'allow-skills': '#other,' } },
+        `#other, #${SKILLS}`,
+      ],
       [{ user: { 'allow-skills': '#other' } }, `#other, #${SKILLS}`],
       [
         {
@@ -1844,18 +1887,19 @@ t.test('--skills', async t => {
   })
 
   t.test('again', async t => {
-    const query = `#${SKILLS}`
-    const { res, added, installs } = await run({
-      reloaded: {
-        manifest: installedPkg,
-        layers: { project: { 'allow-skills': query } },
-      },
-    })
-    t.strictSame(await res, {
-      skills: { status: 'unchanged', query },
-    })
-    t.strictSame(installs, [])
-    t.strictSame(added, [])
+    for (const query of [`#${SKILLS}`, `#other, #${SKILLS},`]) {
+      const { res, added, installs } = await run({
+        reloaded: {
+          manifest: installedPkg,
+          layers: { project: { 'allow-skills': query } },
+        },
+      })
+      t.strictSame(await res, {
+        skills: { status: 'unchanged', query },
+      })
+      t.strictSame(installs, [])
+      t.strictSame(added, [])
+    }
   })
 
   t.test('install fails', async t => {

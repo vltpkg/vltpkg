@@ -708,7 +708,8 @@ export const command: CommandFn<
 > = async conf => {
   // set only by --path, see Config#globalProject
   const root = conf.globalRoot
-  if (conf.explicit.skills === true) {
+  // command line only, like --path
+  if (conf.jack.parseRaw(process.argv).values.skills === true) {
     if (root) {
       throw error(
         "`vlt setup --skills` can't be combined with --path",
@@ -725,15 +726,21 @@ export const command: CommandFn<
   const which = configWriteTarget(conf, 'user')
 
   let rl: ReturnType<typeof createInterface> | undefined
-  const ask = async (question: string): Promise<string> => {
-    rl ??= createInterface(process.stdin, process.stdout)
-    return (await rl.question(question)).trim()
-  }
   const close = () => {
     if (!rl) return
     rl.close()
     process.stdin.pause()
     rl = undefined
+  }
+  const ask = async (question: string): Promise<string> => {
+    rl ??= createInterface(process.stdin, process.stdout)
+    try {
+      return (await rl.question(question)).trim()
+    } catch (er) {
+      // Ctrl-C closes it: a later question needs a new one
+      close()
+      throw er
+    }
   }
 
   try {

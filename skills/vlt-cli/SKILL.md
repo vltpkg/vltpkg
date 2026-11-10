@@ -139,10 +139,10 @@ the `registries.npm` alias; a scalar `registry` is not enough.
 - Plain `vlt setup` (user config) never offers them; in a project
   without them, it ends with a hint to run `vlt setup --skills`.
   `--config=user` is not supported by `--skills` yet.
-- Same result by hand:
-  `vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"`,
-  but that keeps an already stored `allow-skills`, so the next clone
-  may not link them. Docs:
+- Narrower by hand:
+  `vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"`
+  saves only `#@vltpkg/skills`, and keeps an already stored
+  `allow-skills`, so the next clone may not link them. Docs:
   <https://docs.vlt.io/client/commands/setup.md>.
 
 ## DSS queries

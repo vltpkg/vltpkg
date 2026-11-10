@@ -159,6 +159,9 @@ t.test('hasAllowSelector', async t => {
     '#other,#@vltpkg/skills:skill(a,b)',
     ':not(:malware), #@vltpkg/skills',
     '/* c */ #@vltpkg/skills',
+    // installs ignore a stray comma
+    '#@vltpkg/skills,',
+    '#other,, #@vltpkg/skills',
   ]) {
     t.equal(hasAllowSelector(q, name), true, q)
   }
@@ -173,7 +176,7 @@ t.test('hasAllowSelector', async t => {
     ':root > #@vltpkg/skills',
     '#@vltpkg/skills:v(1)',
     '#@vltpkg/skills#x',
-    '#@vltpkg/skills,',
+    '#@vltpkg/skills,(',
     '#@vltpkg/skills:skill(a):skill(b)',
   ]) {
     t.equal(hasAllowSelector(q, name), false, String(q))
@@ -186,11 +189,17 @@ t.test('appendAllow', async t => {
   for (const [stored, query] of [
     [undefined, ':not(:malware), #@vltpkg/skills'],
     ['', ':not(:malware), #@vltpkg/skills'],
+    [' ', ':not(:malware), #@vltpkg/skills'],
+    [',', ':not(:malware), #@vltpkg/skills'],
     ['#other', '#other, #@vltpkg/skills'],
     [' #other ', '#other, #@vltpkg/skills'],
+    ['#other, ', '#other, #@vltpkg/skills'],
+    ['#a\\,', '#a\\,, #@vltpkg/skills'],
     ['*', '*, #@vltpkg/skills'],
     [':not(*)', '#@vltpkg/skills'],
     ['#@vltpkg/skills', '#@vltpkg/skills'],
+    ['#@vltpkg/skills,', '#@vltpkg/skills,'],
+    [':not(*),', '#@vltpkg/skills'],
     [
       '#a, #@vltpkg/skills:skill(vlt-cli)',
       '#a, #@vltpkg/skills:skill(vlt-cli)',

@@ -70,14 +70,14 @@ project.
 
 ## Options
 
-| Flag                       | Description                                                                                                                                                            |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                                                                      |
-| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                                                                     |
-| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs, step 7 is skipped, step 8 installs the skills. With `--path`: edit without asking. |
-| `--path`                   | Only add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                                                             |
-| `--skills`                 | Only install vlt's agent skills in the current project, see [below](#install-vlts-agent-skills). No prompt.                                                            |
-| `--global-bin-dir=<path>`  | The folder to add.                                                                                                                                                     |
+| Flag                       | Description                                                                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                                                                                                                                    |
+| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                                                                                                                                   |
+| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs, step 7 is skipped, step 8 installs the skills (with `--config=project`, in a project with a `package.json`). With `--path`: edit without asking. |
+| `--path`                   | Only add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                                                                                                                           |
+| `--skills`                 | Only install vlt's agent skills in the current project, see [below](#install-vlts-agent-skills). No prompt.                                                                                                                          |
+| `--global-bin-dir=<path>`  | The folder to add.                                                                                                                                                                                                                   |
 
 ## Examples
 
