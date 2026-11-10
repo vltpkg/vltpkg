@@ -19,7 +19,11 @@ import { initSkill } from '@vltpkg/init'
 import type { InitSkillResult } from '@vltpkg/init'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 import { pickQuery } from '../allow-prompt.ts'
-import { savedLine, writeAllow } from '../allow-query.ts'
+import {
+  savedLine,
+  skillsLinkDefault,
+  writeAllow,
+} from '../allow-query.ts'
 import { unmatchedLines, unscannedLines } from '../allow-skills.ts'
 import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
@@ -359,7 +363,7 @@ export const command: CommandFn<SkillsResult> = async conf => {
     case 'link': {
       const pick = await pickQuery(conf, target, {
         key: 'allow-skills',
-        defaultQuery: ':not(:malware)',
+        defaultQuery: skillsLinkDefault,
         saveDefault: true,
         check: q => assertQuery(q, 'allow-skills', ['skill']),
       })

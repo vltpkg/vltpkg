@@ -8,7 +8,8 @@ Usage:
 
 <Code
   code={`$ vlt setup [<account>]
-$ vlt setup --path`}
+$ vlt setup --path
+$ vlt setup --skills`}
   title="Terminal"
   lang="bash"
 />
@@ -51,6 +52,14 @@ wizard.
    (see [below](#add-global-bins-to-your-path)); no skips it, and
    `vlt setup --path` does just that step later. Not asked with
    `--yes`, without a terminal, or with `--no-modify-path`.
+8. With `--config=project`, in a project with a `package.json`, asks
+   `Do you want to install vlt skills? (Y/n)`. Yes installs
+   [vlt's agent skills](#install-vlts-agent-skills) in the project; no
+   skips it, and `vlt setup --skills` does just that step later.
+   `--yes` accepts without asking. Not asked without a terminal (and
+   without `--yes`), or when the project already has them. Plain
+   `vlt setup` (user config) never asks: in a project without the
+   skills, it ends with a hint to run `vlt setup --skills`.
 
 If the project you run this in configures its own registries, the
 output says so:
@@ -61,13 +70,14 @@ project.
 
 ## Options
 
-| Flag                       | Description                                                                                                                                |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                                          |
-| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                                         |
-| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs, step 7 is skipped. With `--path`: edit without asking. |
-| `--path`                   | Only add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                                 |
-| `--global-bin-dir=<path>`  | The folder to add.                                                                                                                         |
+| Flag                       | Description                                                                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--config=<user\|project>` | Which config file to write to. Defaults to `user`; use `project` for the project.                                                                                                                                                    |
+| `--registries=<name=url>`  | Additional registry aliases to stage non-interactively. Can be set multiple times.                                                                                                                                                   |
+| `--yes`                    | Skip interactive prompts. Requires `<account>`, no browser auth; step 6 still runs, step 7 is skipped, step 8 installs the skills (with `--config=project`, in a project with a `package.json`). With `--path`: edit without asking. |
+| `--path`                   | Only add the global bin folder to your `PATH`, see [below](#add-global-bins-to-your-path).                                                                                                                                           |
+| `--skills`                 | Only install vlt's agent skills in the current project, see [below](#install-vlts-agent-skills). No prompt.                                                                                                                          |
+| `--global-bin-dir=<path>`  | The folder to add.                                                                                                                                                                                                                   |
 
 ## Examples
 
@@ -94,6 +104,10 @@ Write to the project's `vlt.json` instead of your user config:
 Add global bins to your `PATH`:
 
 <Code code="$ vlt setup --path" title="Terminal" lang="bash" />
+
+Install vlt's agent skills in an existing project:
+
+<Code code="$ vlt setup --skills" title="Terminal" lang="bash" />
 
 ## Add global bins to your PATH
 
@@ -147,9 +161,76 @@ If the folder changes, the new one is added and the old entry stays.
 Open a new terminal afterwards (on Windows, also restart editors like
 VS Code), or run the line it prints.
 
+## Install vlt's agent skills
+
+`@vltpkg/skills` packages vlt's
+[agent skills](/client/commands/skills) (`vlt-cli`, `dss-query`,
+`vlt-registry-migration`), so coding agents in the project know how to
+use vlt. `vlt setup --config=project` offers them at its end;
+`vlt setup --skills` runs just that step, in a project that was set up
+earlier or by someone else. It never prompts, so agents and scripts
+can run it as is.
+
+<Code
+  code={`$ vlt setup --skills
+Added @vltpkg/skills to devDependencies
+🔗 Linked 3 agent skills into .agents/skills, .claude/skills
+Saved allow-skills=":not(:malware), #@vltpkg/skills" to vlt.json`}
+  title="Terminal"
+  lang="bash"
+/>
+
+It works like `vlt install -D @vltpkg/skills --allow-skills="<query>"`
+on the project root:
+
+1. Adds `@vltpkg/skills` to the root `devDependencies` and installs.
+   If it already is a dependency of the root, its type and spec are
+   kept. In a monorepo, the dependency goes to the root.
+2. Links the skills the query selects into the project's
+   [agent skill dirs](/client/commands/skills#where-skills-are-linked)
+   (`.agents/skills`, `.claude/skills`, …, or `skills-dir`), writing
+   their `.gitignore` blocks. Like any install, it only adds links.
+3. Saves `allow-skills` to the project `vlt.json`, so a fresh clone
+   and `vlt ci` link the skills too. Commit `package.json`,
+   `vlt-lock.json` and `vlt.json`.
+
+Unlike `vlt install --allow-skills`, which keeps a stored query, it
+adds a `#@vltpkg/skills` selector to it (a comma list is a union, so
+nothing that was selected is dropped):
+
+| Stored `allow-skills` (project `vlt.json`, else user)                 | Saved to the project `vlt.json`   |
+| --------------------------------------------------------------------- | --------------------------------- |
+| none                                                                  | `:not(:malware), #@vltpkg/skills` |
+| a query with no `#@vltpkg/skills` selector, e.g. `#other`             | `#other, #@vltpkg/skills`         |
+| a query with a `#@vltpkg/skills` selector, with or without `:skill()` | unchanged                         |
+| `:not(*)` (skills turned off)                                         | `#@vltpkg/skills`                 |
+
+`:not(:malware)` is the default of `vlt skills link`. With it,
+installs in the project link the skills of every installed package
+that is not flagged as malware, and need security data to do so:
+skills of packages Socket has not scanned are left out
+([fail closed](/client/commands/skills#safety)), as in any project
+that ran `vlt skills link`. Narrow it with `vlt skills link <query>`.
+
+- Running it again changes nothing.
+- It needs a configured registry (`registries.npm`), like any install.
+- No `package.json` at the project root is an error: run `vlt init`
+  first.
+- It always acts on the current project: `--config=user` isn't
+  supported yet, and it can't be combined with `--path`.
+- `vlt setup --skills` fails like `vlt install`. In the wizard, the
+  registries are already saved, so a failed install (e.g. a 401 after
+  skipping authentication) is a warning with the command to run later,
+  and setup still succeeds. Nothing is saved to `vlt.json` when the
+  install or the link fails.
+- `--view=json` reports it under `skills`: `status` (`installed`,
+  `unchanged`, `cancelled` or `failed`), the `query`, and the linked
+  skills.
+
 ## See also
 
 - [Working with Named Registries](/client/registries)
 - [Authentication](/client/auth)
 - [`vlt login`](/client/commands/login)
 - [Global Installs](/client/global-installs)
+- [`vlt skills`](/client/commands/skills)

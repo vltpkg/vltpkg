@@ -2,6 +2,8 @@ import { commandUsage } from '../config/usage.ts'
 import { assertQuery, install } from '@vltpkg/graph'
 import { saveAllow } from '../allow-query.ts'
 import type { AllowSave } from '../allow-query.ts'
+import { skillsJson } from '../allow-skills.ts'
+import { installOptions } from '../install-options.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
 import {
   assertGlobalOptions,
@@ -172,16 +174,6 @@ export const usage: CommandUsage = () =>
       },
     },
   })
-
-// link mounts; `unchanged` left out
-const skillsJson = ({
-  linked,
-  unchanged: _,
-  ...rest
-}: LinkSkillsResult) => ({
-  linked: linked.map(s => s.mount),
-  ...rest,
-})
 
 export const views = {
   json: i => {
@@ -376,29 +368,10 @@ const runInstall = async (
   // global ws has only the package as dep
   if (conf.values['save-types'] && !globalAdd)
     await addTypesDeps(conf, add)
-  const frozenLockfile = conf.options['frozen-lockfile']
-  const expectLockfile = conf.options['expect-lockfile']
-  const lockfileOnly = conf.options['lockfile-only']
-  const saveExact = conf.values['save-exact']
-  const savePrefix = conf.values['save-prefix']
-  /* c8 ignore start */
-  const allowScripts =
-    conf.get('allow-scripts') ?
-      String(conf.get('allow-scripts'))
-    : ':not(*)'
-  /* c8 ignore stop */
-  const allowSkills = conf.get('allow-skills')
   return install(
     {
-      ...conf.options,
-      frozenLockfile,
-      expectLockfile,
-      allowScripts,
-      allowSkills,
-      skillsDirs: conf.get('skills-dir'),
-      lockfileOnly,
-      saveExact,
-      savePrefix,
+      ...installOptions(conf),
+      allowSkills: conf.get('allow-skills'),
       ...(keep ? { keepNodes: new Set([keep]) } : null),
     },
     add,

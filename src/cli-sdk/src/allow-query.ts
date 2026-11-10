@@ -1,3 +1,9 @@
+import {
+  isCommentNode,
+  isIdentifierNode,
+  isPseudoNode,
+  parse,
+} from '@vltpkg/dss-parser'
 import type { WhichConfig } from '@vltpkg/vlt-json'
 import { configWriteTarget } from './config/index.ts'
 import type { LoadedConfig } from './config/index.ts'
@@ -37,6 +43,58 @@ export const storedAllow = (
   if (project && key in project) return undefined
   const u = user?.[key]
   return u ? { query: u, which: 'user' } : undefined
+}
+
+/** `allow-skills` of `vlt skills link` when none is stored. */
+export const skillsLinkDefault = ':not(:malware)'
+
+/**
+ * Whether a top-level selector of `query` is `#<name>`, optionally
+ * ending in `:skill()`. An invalid query has none. Parsed loosely,
+ * as installs read it (a stray comma is fine).
+ */
+export const hasAllowSelector = (
+  query: string | undefined,
+  name: string,
+): boolean => {
+  if (!query) return false
+  try {
+    return parse(query, { loose: true }).nodes.some(sel => {
+      const [id, part, ...rest] = sel.nodes.filter(
+        n => !isCommentNode(n),
+      )
+      return (
+        isIdentifierNode(id) &&
+        id.value === name &&
+        !rest.length &&
+        (!part || (isPseudoNode(part) && part.value === ':skill'))
+      )
+    })
+  } catch {
+    return false
+  }
+}
+
+/**
+ * `stored` with a `#<name>` selector added (a union, nothing dropped).
+ * None or blank stored: the `vlt skills link` default and the selector;
+ * `:not(*)`: the selector only; already selected: `stored`.
+ */
+export const appendAllow = (
+  stored: string | undefined,
+  name: string,
+): string => {
+  // installs ignore a trailing comma
+  const q = stored
+    ?.trim()
+    .replace(/(?<!\\),$/, '')
+    .trim()
+  return (
+    !stored || !q ? `${skillsLinkDefault}, #${name}`
+    : q === ':not(*)' ? `#${name}`
+    : hasAllowSelector(q, name) ? stored
+    : `${q}, #${name}`
+  )
 }
 
 /** The file's name in messages. */

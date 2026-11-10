@@ -8,9 +8,9 @@ description:
   (DSS) queries to commands. Use when the user wants to use vlt in a
   project, add or update a dependency with vlt, fix "Missing registry
   configuration" (ECONFIG), set up registries or tokens for vlt, work
-  with vlt workspaces, ship an agent skill from a package, or asks
-  which vlt command or flag does something or what `vlr` and `vlx`
-  are.
+  with vlt workspaces, ship an agent skill from a package, install
+  vlt's agent skills in a project, or asks which vlt command or flag
+  does something or what `vlr` and `vlx` are.
 ---
 
 # Using the vlt CLI
@@ -89,7 +89,8 @@ the `registries.npm` alias; a scalar `registry` is not enough.
 
 - `vlt setup [<account>]`: vlt.io accounts. Authenticates and writes
   the account's `npm` (mirror) and `main` (private) aliases to the
-  user vlt.json.
+  user vlt.json (`--config=project`: the project one, then it offers
+  vlt's agent skills, see below).
 - `vlt config set registries.npm=https://registry.npmjs.org/`: plain
   npm, no login. Writes the project vlt.json; add `--config=user` for
   every project. Any `registries.<alias>=<url>` works the same, and
@@ -110,6 +111,39 @@ the `registries.npm` alias; a scalar `registry` is not enough.
 - Docs: <https://docs.vlt.io/client/registries.md>,
   <https://docs.vlt.io/client/auth.md>. Moving a repo and its CI onto
   vlt.io: the `vlt-registry-migration` skill.
+
+## vlt's agent skills
+
+`@vltpkg/skills` packages this skill, `dss-query` and
+`vlt-registry-migration`. To give a project's agents these skills:
+
+- `vlt setup --skills`: the command to run in an existing project. No
+  prompt (safe for agents), no account, registry or token changes,
+  only acts on the current project. It needs a root `package.json`
+  (else run `vlt init`) and a configured `registries.npm`, like any
+  install. Running it again changes nothing.
+- It changes: `@vltpkg/skills` in the root `devDependencies` (a root
+  dependency keeps its type and spec); `allow-skills` in the project
+  vlt.json, a `#@vltpkg/skills` selector added to the stored query
+  (nothing stored: `:not(:malware), #@vltpkg/skills`, which links the
+  skills of every non-malware package on each install and needs Socket
+  data, fail closed); links in the agent skill dirs (`.agents/skills`,
+  `.claude/skills`, ..., or `skills-dir`) with their `.gitignore`
+  blocks. Commit package.json, vlt-lock.json and vlt.json: `vlt ci` in
+  a fresh clone links them again.
+- `vlt setup <account> --config=project` asks
+  `Do you want to install vlt skills? (Y/n)` at its end, in a project
+  with a `package.json` (interactive, and it rewrites the registries:
+  not for agents). `--yes` accepts; without a terminal and without
+  `--yes` it is skipped. A failed install there is only a warning.
+- Plain `vlt setup` (user config) never offers them; in a project
+  without them, it ends with a hint to run `vlt setup --skills`.
+  `--config=user` is not supported by `--skills` yet.
+- Narrower by hand:
+  `vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"`
+  saves only `#@vltpkg/skills`, and keeps an already stored
+  `allow-skills`, so the next clone may not link them. Docs:
+  <https://docs.vlt.io/client/commands/setup.md>.
 
 ## DSS queries
 

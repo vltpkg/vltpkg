@@ -604,6 +604,10 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "skills": Object {
+    "description": "With \`vlt setup\`, install vlt's agent skills (\`@vltpkg/skills\`) in the current project: add it to \`devDependencies\`, save \`allow-skills\` to the project \`vlt.json\` and link the skills. Command line only.",
+    "type": "boolean",
+  },
   "skills-dir": Object {
     "description": "Dirs to link agent skills into (see \`allow-skills\`), relative to the project root. Replaces detection: \`.agents/skills\`, plus \`<folder>/skills\` for each agent folder at the project root (e.g. \`.claude/\`), \`.claude/skills\` inside Claude Code, and existing \`.<name>/skills\` dirs. An empty list (\`[]\` in vlt.json, or \`--skills-dir=\`) links nothing. Each dir must be inside the project, not in node_modules.",
     "hint": "path",
@@ -806,6 +810,7 @@ Array [
   "--scope=<query>",
   "--scoped-registries=<@scope=url>",
   "--script-shell=<program>",
+  "--skills",
   "--skills-dir=<path>",
   "--stale-while-revalidate-factor=<n>",
   "--store-linker=<auto | hardlink | clone | copy | unpack>",
@@ -889,6 +894,7 @@ Array [
   "scope",
   "scoped-registries",
   "script-shell",
+  "skills",
   "skills-dir",
   "stale-while-revalidate-factor",
   "store-linker",

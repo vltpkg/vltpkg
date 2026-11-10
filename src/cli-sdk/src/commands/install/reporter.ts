@@ -18,7 +18,7 @@ import {
 } from '../../self-update.ts'
 import { persistedEntries } from '../../persist-spec-config.ts'
 import { keptLine, savedLine } from '../../allow-query.ts'
-import { unmatchedLines, unscannedLines } from '../../allow-skills.ts'
+import { linkLines } from '../../allow-skills.ts'
 import { globalBinsLines } from '../../global.ts'
 import { offerPathSetup } from '../../shell-setup/index.ts'
 
@@ -175,40 +175,7 @@ export class InstallReporter extends ViewClass {
         : _result.global
       for (const l of globalBinsLines(bins)) out += `\n${l}`
     }
-    const {
-      linked = [],
-      removed = [],
-      conflicts = [],
-      skipped = [],
-      gitignore = [],
-      unmatched = [],
-    } = _result.skills ?? {}
-    const s = (n: number) => (n === 1 ? '' : 's')
-    const skills: string[] = []
-    if (linked.length) {
-      // one per skill, linked in any number of dirs
-      const n = new Set(linked.map(r => `${r.id}\0${r.skill}`)).size
-      const dirs = [...new Set(linked.map(r => r.dir))].join(', ')
-      skills.push(`🔗 Linked ${n} agent skill${s(n)} into ${dirs}`)
-    }
-    if (removed.length) {
-      skills.push(
-        `🧹 Removed ${removed.length} stale skill link${s(removed.length)}: ${removed.join(', ')}`,
-      )
-    }
-    if (conflicts.length) {
-      skills.push(
-        `⚠️ ${conflicts.length} skill link${s(conflicts.length)} skipped, path in use or taken by another package: ${conflicts.join(', ')}`,
-      )
-    }
-    skills.push(...unmatchedLines(unmatched))
-    if (skipped.length) {
-      skills.push(`⚠️ Skipped ${skipped.join(', ')}`)
-    }
-    if (gitignore.length) {
-      skills.push(`⚠️ Could not update ${gitignore.join(', ')}`)
-    }
-    skills.push(...unscannedLines(_result.skills ?? {}))
+    const skills = linkLines(_result.skills)
     if (skills.length) out += `\n${skills.join('\n')}\n`
     const saved = _result.persistedConfig
     if (saved) {

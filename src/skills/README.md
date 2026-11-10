@@ -11,6 +11,14 @@ Install the package with vlt and link its skills:
 vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"
 ```
 
+Or run `vlt setup --skills`: it installs and links them as well, and
+adds `#@vltpkg/skills` to a stored `allow-skills` instead of keeping
+it, so a fresh clone and `vlt ci` link the skills too. With none
+stored it saves `:not(:malware), #@vltpkg/skills`: from then on
+installs link the skills of every package not flagged as malware, and
+need security data to do so. See
+[`vlt setup`](https://docs.vlt.io/client/commands/setup#install-vlts-agent-skills).
+
 To link only one skill, end the selector with `:skill()`:
 `--allow-skills="#@vltpkg/skills:skill(vlt-cli)"`. After a plain
 `vlt install`, `vlt skills link "#@vltpkg/skills"` links them. See
