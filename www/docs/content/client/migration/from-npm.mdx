@@ -461,11 +461,10 @@ match the same dependency.
 5. Move `overrides` from `package.json` to `modifiers` in `vlt.json`
 6. Run `vlt install` then `vlt build`; local packages referenced by
    plain ranges are rewritten to `workspace:*`, after which npm can no
-   longer install the project
+   longer install the project (to keep it working, see
+   [Workspaces](#workspaces) first)
 7. Commit `vlt.json`, `vlt-lock.json` and the `package.json` files
-8. To keep npm working instead, see [Workspaces](#workspaces) before
-   the first `vlt install`
-9. Update CI scripts: replace `npm ci` with
+8. Update CI scripts: replace `npm ci` with
    `vlt install --expect-lockfile && vlt build`
-10. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
-11. Update any `npx` usage to `vlx`
+9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
+10. Update any `npx` usage to `vlx`

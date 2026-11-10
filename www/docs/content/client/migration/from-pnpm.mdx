@@ -509,13 +509,12 @@ Some pnpm-specific features don't have direct equivalents:
    `vlt.json`
 6. Run `vlt install` then `vlt build`; local packages referenced by
    plain ranges (`link-workspace-packages`) are rewritten to
-   `workspace:*`
+   `workspace:*` (to keep plain ranges instead, see
+   [Workspaces](#workspaces) first)
 7. Commit `vlt.json`, `vlt-lock.json` and the `package.json` files
-8. To keep plain ranges instead, see [Workspaces](#workspaces) before
-   the first `vlt install`
-9. Update CI scripts: replace `pnpm install --frozen-lockfile` with
+8. Update CI scripts: replace `pnpm install --frozen-lockfile` with
    `vlt install --frozen-lockfile && vlt build`
-10. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
-11. Update any `pnpm dlx` usage to `vlx`
-12. Remove `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings
+9. Update CI auth: replace `NPM_TOKEN` with `VLT_TOKEN`
+10. Update any `pnpm dlx` usage to `vlx`
+11. Remove `pnpm-workspace.yaml` and pnpm-specific `.npmrc` settings
     once no other tool reads them
