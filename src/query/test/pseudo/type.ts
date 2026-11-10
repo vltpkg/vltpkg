@@ -37,6 +37,22 @@ t.test('selects nodes by type', async t => {
     return state
   }
 
+  const graph = getSimpleGraph()
+  const a = [...graph.nodes.values()].find(n => n.name === 'a')!
+  const b = [...graph.nodes.values()].find(n => n.name === 'b')!
+  a.typeTarget = 'missing'
+  b.typeTarget = 'a'
+  const definitions = await type(getState(':type', graph))
+  t.same([...definitions.partial.nodes].map(n => n.name).sort(), [
+    'a',
+    'b',
+  ])
+  const orphans = await type(getState(':type(orphan)', graph))
+  t.same(
+    [...orphans.partial.nodes].map(n => n.name),
+    ['a'],
+  )
+
   await t.test(
     'selects nodes of specified type in simple graph',
     async t => {

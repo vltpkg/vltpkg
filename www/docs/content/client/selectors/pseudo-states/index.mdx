@@ -62,6 +62,47 @@ Find workspaces that have changed since main:
   lang="bash"
 />
 
+## Type definition associations
+
+| Selector | Matches                                     |
+| -------- | ------------------------------------------- |
+| `:types` | Packages with a types package in the graph  |
+| `:type`  | Types packages, including explicit installs |
+
+`@types/react` is associated with `react`; `@types/scope__name` is
+associated with `@scope/name`. Both lockfiles store the target name,
+including when the target is missing. Older lockfiles infer it on
+load.
+
+<Code
+  code="$ vlt query '#react:types'"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code code="$ vlt query ':type'" title="Terminal" lang="bash" />
+
+Use `:type(orphan)` to find types packages whose target is missing:
+
+<Code
+  code="$ vlt query ':type(orphan)'"
+  title="Terminal"
+  lang="bash"
+/>
+
+A missing target does not mean the types package is unused. For
+example, `@types/node` can be needed even though the Node.js runtime
+is not a package in the graph.
+
+Use `:not(:type)` to exclude types packages from a query:
+
+<Code code="$ vlt query ':not(:type)'" title="Terminal" lang="bash" />
+
+Associations match names across the graph, including workspaces,
+without checking version compatibility. Bundled definitions alone do
+not make a package match `:types`. These selectors do not change
+install, uninstall, script execution, or bin linking behavior.
+
 ## Dependency type states
 
 | Selector      | Description                             |
