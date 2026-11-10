@@ -49,7 +49,8 @@ export type GitOptions = PickManifestOptions &
      */
     fakePlatform?: NodeJS.Platform
     /**
-     * Just to test rev lookup without continually clearing the cache
+     * Look the refs up afresh, and throw if that fails (the cached
+     * lookup resolves `undefined`). The result is still cached.
      */
     noGitRevCache?: boolean
   }

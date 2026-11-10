@@ -2977,6 +2977,80 @@ t.test('hosted git locked with its git remote', async t => {
   )
 })
 
+t.test(
+  'gitHostTimeout: the host asked first, once per run',
+  async t => {
+    const track = drainer(t)
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(dir)
+    unload()
+    const real = await import('../src/git-host.ts')
+    const asked: [string | undefined, number][] = []
+    const down = new Error('down.example did not answer within 5s')
+    const { PackageInfoClient } = await t.mockImport<
+      typeof import('../src/index.ts')
+    >('../src/index.ts', {
+      '../src/git-host.ts': {
+        ...real,
+        gitHostAnswers: async (spec: Spec, ms: number) => {
+          const host = real.gitHost(spec)
+          asked.push([host, ms])
+          if (host?.includes('down.example')) throw down
+        },
+      },
+    })
+    const pi = track(
+      new PackageInfoClient({
+        ...options,
+        'git-hosts': {
+          fakey: `git+${pathToFileURL(repo)}#committish`,
+        },
+        'git-host-archives': { fakey: tarballURL },
+        cache: dir + '/c',
+      }),
+    )
+    const answers = { gitHostTimeout: 5000 }
+
+    t.match(
+      await pi.manifest('x@fakey:abbrev-2.0.0.tgz', answers),
+      { name: 'abbrev', version: '2.0.0' },
+      'an archive host that answers',
+    )
+    t.match(
+      await pi.manifest(`x@git+${pathToFileURL(repo)}#main`, answers),
+      { name: 'abbrev', version: '2.0.0' },
+      'a remote that answers',
+    )
+    for (const name of ['x', 'y']) {
+      await t.rejects(
+        pi.manifest(
+          `${name}@git+https://down.example/o/r.git#main`,
+          answers,
+        ),
+        down,
+        `${name}: a remote that does not`,
+      )
+    }
+    // asked again: the same hosts
+    await pi.manifest('y@fakey:abbrev-2.0.0.tgz', answers)
+    // unasked
+    await pi.manifest('x@fakey:abbrev-2.0.0.tgz')
+    await t.rejects(
+      pi.manifest(
+        { toString: () => 'x', final: { type: 'git' } } as Spec,
+        answers,
+      ),
+      { message: 'no git remote' },
+      'no host to ask',
+    )
+    t.strictSame(asked, [
+      [new URL(tarballURL).origin, 5000],
+      [`git+${pathToFileURL(repo)}`, 5000],
+      ['git+https://down.example/o/r.git', 5000],
+    ])
+  },
+)
+
 t.test('global store', async t => {
   const integrity: Integrity =
     pakuAbbrev.versions['2.0.0'].dist.integrity

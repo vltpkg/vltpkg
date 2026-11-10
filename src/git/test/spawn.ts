@@ -141,3 +141,59 @@ process.exit(1)
     er,
   )
 })
+
+t.test('timeout', async t => {
+  const runs = resolve(repo, 'timeout-runs')
+  const hang = resolve(repo, 'hang.cjs')
+  // a git that never ends, whose helper (eg `git-remote-https` stuck
+  // connecting) holds its pipes open for a while longer
+  fs.writeFileSync(
+    hang,
+    `
+const { appendFileSync } = require('node:fs')
+const { spawn } = require('node:child_process')
+appendFileSync(${JSON.stringify(runs)}, 'x')
+console.error('Connection timed out')
+spawn(process.execPath, ['-e', 'setTimeout(() => {}, 20_000)'], {
+  stdio: 'inherit',
+})
+setTimeout(() => {}, 60_000)
+`,
+  )
+  const start = Date.now()
+  await t.rejects(
+    spawn([hang], {
+      cwd: repo,
+      git: process.execPath,
+      // time for a busy CI box to start node and run the script
+      timeout: 4000,
+      'fetch-retry-mintimeout': 1,
+      //@ts-expect-error
+      allowReplace: true,
+    }),
+    {
+      message: 'git did not finish within 4000ms',
+      cause: { stderr: /Connection timed out/ },
+    },
+  )
+  t.ok(Date.now() - start < 15_000, 'not held by the helper')
+  t.equal(
+    fs.readFileSync(runs, 'utf8'),
+    'x',
+    'not retried, though its message is one that is',
+  )
+
+  const quick = resolve(repo, 'quick.js')
+  fs.writeFileSync(quick, `console.log('done')`)
+  t.match(
+    await spawn([quick], {
+      cwd: repo,
+      git: process.execPath,
+      timeout: 10_000,
+      //@ts-expect-error
+      allowReplace: true,
+    }),
+    { status: 0, stdout: 'done' },
+    'one that ends in time',
+  )
+})
