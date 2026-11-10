@@ -237,6 +237,12 @@ export type PackageInfoClientExtractOptions =
      * Other network bodies are always checked.
      */
     fromLockfile?: boolean
+    /**
+     * What dependents call the package (aliases included), for error
+     * advice that names it, eg `vlt update <name>`. Default: the spec's
+     * name.
+     */
+    names?: string[]
   }
 
 // the maximum duration of a manifest cache file
@@ -633,6 +639,7 @@ export class PackageInfoClient {
       integrity,
       resolved,
       fromLockfile = false,
+      names,
     } = options
     const f = spec.final
     // vlt <= 1.6.0 locked hosted git tarballs with the bare git remote
@@ -922,7 +929,12 @@ export class PackageInfoClient {
               ?.code === 'EINTEGRITY'
           ) {
             buf = await fetchTarball(false).catch((er: unknown) => {
-              const why = gitArchiveChanged(spec, r.resolved, er)
+              const why = gitArchiveChanged(
+                spec,
+                r.resolved,
+                er,
+                names,
+              )
               throw why ?
                   this.#resolveError(spec, options, why, {
                     url: r.resolved,

@@ -54,6 +54,7 @@ t.beforeEach(() => {
 const mockNode = (props: Record<string, any>) =>
   ({
     resolvedFromLockfile: false,
+    edgesIn: new Set(),
     ...props,
     resolvedLocation: (scurry: PathScurry) =>
       scurry.cwd.resolve(props.location).fullpath(),
@@ -135,6 +136,27 @@ t.test('successfully extract a node', async t => {
     'resolved passed',
   )
   t.equal(options.fromLockfile, true, 'fromLockfile passed')
+  t.strictSame(options.names, [], 'no dependents, no names')
+})
+
+t.test('names dependents call it by', async t => {
+  const id = joinDepIDTuple(['git', 'github:o/r', 'main'])
+  const node = mockNode({
+    id,
+    location: `./node_modules/.vlt/${id}/node_modules/r`,
+    name: 'r',
+    // an alias, its own name, and that name again
+    edgesIn: new Set(['my-r', 'r', 'r'].map(name => ({ name }))),
+  })
+  await extractNode(
+    node,
+    new PathScurry(t.testdir()),
+    mockRemover,
+    getOptions(configData),
+    mockPackageInfo,
+    mockDiff,
+  )
+  t.strictSame(extracted[0]?.[2].names, ['my-r', 'r'])
 })
 
 t.test('missing target is not removed', async t => {

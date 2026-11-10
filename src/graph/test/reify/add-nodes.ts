@@ -36,6 +36,7 @@ const isOptionalFalse = () => false
 const isOptionalTrue = () => true
 
 const node = (props: Record<string, any>) => ({
+  edgesIn: new Set(),
   ...props,
   resolvedLocation: (scurry: PathScurry) =>
     scurry.cwd.resolve(props.location).fullpath(),

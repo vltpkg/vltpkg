@@ -79,6 +79,8 @@ export const extractNode = async (
     integrity,
     resolved,
     fromLockfile: node.resolvedFromLockfile,
+    // what dependents call it, aliases included: `vlt update <name>`
+    names: [...new Set([...node.edgesIn].map(e => e.name))],
   }
 
   const extracted = (r: ExtractResolution): ExtractResult => {
