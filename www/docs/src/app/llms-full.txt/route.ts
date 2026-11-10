@@ -10,27 +10,34 @@ const pages = () =>
     .map(page => page.url)
     .filter(url => !url.startsWith('/client/api-reference'))
 
-const full = createLlmsFullHandler({ pages })
+const full = createLlmsFullHandler({
+  pages,
+  // the agent skills, headed `# Title (url)` like the pages
+  append: request =>
+    skills
+      .map(({ url, content }) =>
+        content.replace(
+          /^# (.+)/,
+          `# $1 (${new URL(url, request.url).href})`,
+        ),
+      )
+      .join('\n\n'),
+  // a 503 is never stored, so serving a stale copy while it renders again is safe
+  publicCache: 'hours',
+})
 
-// the plugin has no `append`, so the agent skills go after its pages, headed `# Title (url)` like them
+// the plugin 503s on a failed render, but takes a 401/403 (a protected preview, a firewall) as a page left out
+// by design; an incomplete file must not be cached as if it were the whole site, so check each page made it
 export const GET = async (request: Request) => {
   const res = await full(request)
+  if (res.status !== 200) return res
   const body = await res.text()
-  const skillTexts = skills.map(({ url, content }) =>
-    content.replace(
-      /^# (.+)/,
-      `# $1 (${new URL(url, request.url).href})`,
-    ),
-  )
-  const text = `${body}\n${skillTexts.join('\n\n')}\n`
-  // a page whose self-fetch failed is silently left out, so check each one made it (headed `# Title (url)`);
-  // an incomplete file must not be cached as if it were the whole site
   const missing = pages().filter(
     path => !body.includes(` (${new URL(path, request.url).href})\n`),
   )
-  if (!missing.length) return new Response(text, res)
+  if (!missing.length) return new Response(body, res)
   return new Response(
-    `${text}\n> Incomplete: ${missing.length} of ${pages().length} pages failed to render, so they're missing above. Try again shortly. Missing: ${missing.join(', ')}\n`,
+    `llms-full.txt is incomplete: ${missing.length} of ${pages().length} pages couldn't be rendered. Try again shortly. Missing: ${missing.join(', ')}\n`,
     {
       status: 503,
       headers: {

@@ -132,7 +132,8 @@ export const CodeCard = ({
         'text-foreground overflow-x-auto rounded-xl border bg-(--code-editor-background) p-4 font-mono text-[13px] leading-snug [&_span]:text-(--shiki-light) dark:[&_span]:text-(--shiki-dark)',
         className,
       )}
-      // the markdown twin's fence title
+      // the markdown twin's fence lang and title
+      data-language={tab.lang === 'text' ? undefined : tab.lang}
       data-title={tab.title}
       {...props}>
       {tab.content}

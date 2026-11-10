@@ -115,7 +115,7 @@ const DocPage = async ({
               </BreadcrumbList>
             </Breadcrumb>
           )}
-          {/* the article is the page's markdown twin; the description is already in its frontmatter */}
+          {/* the article is the page's markdown twin */}
           <AgentMain>
             <article className="typeset typeset-docs">
               <div className="flex items-start justify-between gap-4">
@@ -128,9 +128,7 @@ const DocPage = async ({
                 </AgentSkip>
               </div>
               {page.data.description && (
-                <p
-                  data-affordances-md="skip"
-                  className="text-muted-foreground mt-4 text-base leading-[1.6]">
+                <p className="text-muted-foreground mt-4 text-base leading-[1.6]">
                   {page.data.description}
                 </p>
               )}

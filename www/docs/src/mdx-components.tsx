@@ -307,11 +307,13 @@ export const components: MDXComponents = {
         </TabsList>
         {items.map((item, i) => (
           // panels hold article content, so keep the prose size rather than the primitive's text-sm.
-          // every panel stays in the html, hidden by css, so the markdown twin has all of them
+          // every panel stays in the html, hidden by css (forceMount never sets `hidden`), and the markdown twin
+          // keeps each one under its tab's label
           <TabsContent
             key={i}
             value={String(i)}
             forceMount
+            data-affordances-md="show"
             className="text-(length:--text-body) data-[state=inactive]:hidden">
             {item.props.children}
           </TabsContent>
