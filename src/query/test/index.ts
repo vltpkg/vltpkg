@@ -100,6 +100,7 @@ t.test('simple graph', async t => {
     [':root, #a, :foo', ['my-project', 'a']], // should be loose on multiple selectors
     [':not(:foo), #a', ['a']], // a negated invalid selector also matches nothing
     [':not(:has(:foo)), #a', ['a']], // same when nested in another selector
+    [':not(:has(:foo, #b)), #a', ['a']], // even when :has() also lists a valid selector
     [':not(:foo, #b), #a', ['a']], // same next to a valid selector
     ['[name==a], #b', ['b']], // unsupported attribute operator matches nothing
     [':root + *, #b', ['b']], // unsupported combinator matches nothing
