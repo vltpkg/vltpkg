@@ -122,6 +122,25 @@ t.test('simple graph', async t => {
     )
   }
 
+  await t.test(
+    'invalid :path() pattern on non-path nodes',
+    async t => {
+      // minimatch rejects patterns longer than 64 KiB; `#b` is a
+      // registry node, so no node path is ever matched against it
+      const pattern = 'a'.repeat(64 * 1024 + 1)
+      t.strictSame(
+        (
+          await query.search(
+            `:not(#b:path("${pattern}")), #a`,
+            mockSearchOptions,
+          )
+        ).nodes.map(i => i.name),
+        ['a'],
+        'a negated invalid :path() also matches nothing',
+      )
+    },
+  )
+
   await t.test('comments extraction', async t => {
     const result = await query.search(
       '/* comment one */ :root /* comment two */ > * /* comment three */',
