@@ -75,6 +75,11 @@ export type ParserState = {
   hostContexts?: HostContextsMap
   importers: Set<NodeLike>
   initial: GraphSelectionState
+  /**
+   * set once loose mode ignores an invalid part of the selector being
+   * walked, see `ignoreInvalid()`
+   */
+  invalid?: boolean
   loose?: boolean
   next?: PostcssNode
   prev?: PostcssNode

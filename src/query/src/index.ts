@@ -14,6 +14,7 @@ import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo, pseudoSelectorNames } from './pseudo.ts'
 import { queryError, selectorText } from './error.ts'
+import { ignoreInvalid } from './pseudo/helpers.ts'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import type {
@@ -115,7 +116,7 @@ export const walk = async (
 
   if (!parserFn) {
     if (state.loose) {
-      return state
+      return ignoreInvalid(state)
     }
 
     throw queryError(

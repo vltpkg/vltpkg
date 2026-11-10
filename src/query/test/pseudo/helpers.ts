@@ -8,6 +8,7 @@ import {
   removeEdge,
   removeUnlinkedNodes,
   clear,
+  ignoreInvalid,
   assertSecurityArchive,
 } from '../../src/pseudo/helpers.ts'
 import {
@@ -241,6 +242,23 @@ t.test('clear', async t => {
     // Verify the function returns the state
     t.equal(result, state, 'should return the state object')
   })
+})
+
+t.test('ignoreInvalid', async t => {
+  const graph = getSimpleGraph()
+  const state = {
+    partial: {
+      edges: new Set(graph.edges),
+      nodes: new Set(graph.nodes.values()),
+    },
+  } as ParserState
+
+  const result = ignoreInvalid(state)
+
+  t.equal(state.partial.nodes.size, 0, 'should clear all nodes')
+  t.equal(state.partial.edges.size, 0, 'should clear all edges')
+  t.equal(state.invalid, true, 'should mark the state as invalid')
+  t.equal(result, state, 'should return the state object')
 })
 
 t.test('assertSecurityArchive', async t => {

@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
+import {
+  ignoreInvalid,
+  removeDanglingEdges,
+  removeNode,
+} from './pseudo/helpers.ts'
 import { didYouMean, queryError, selectorText } from './error.ts'
 import {
   asPostcssNodeWithChildren,
@@ -113,6 +117,10 @@ const has = async (state: ParserState) => {
         comment: state.comment,
         specificity: { ...state.specificity },
       })
+      // let an enclosing `:not()` know about ignored invalid selectors
+      if (nestedState.invalid) {
+        state.invalid = true
+      }
       for (const n of nestedState.collect.nodes) {
         collectNodes.add(n)
       }
@@ -251,6 +259,11 @@ const not = async (state: ParserState) => {
         comment: state.comment,
         specificity: { ...state.specificity },
       })
+      // loose mode ignores an invalid selector by making it match
+      // nothing, negating that would match everything instead
+      if (nestedState.invalid) {
+        return ignoreInvalid(state)
+      }
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
       }
@@ -403,9 +416,7 @@ export const pseudo = async (state: ParserState) => {
 
   if (!parserFn) {
     if (state.loose) {
-      state.partial.edges.clear()
-      state.partial.nodes.clear()
-      return state
+      return ignoreInvalid(state)
     }
 
     // `:difff(x)` should still suggest `:diff`, so drop any arguments

@@ -1,6 +1,10 @@
 import { asPseudoNode } from '@vltpkg/dss-parser'
 import { queryError } from '../error.ts'
-import { clear, removeDanglingEdges, removeNode } from './helpers.ts'
+import {
+  ignoreInvalid,
+  removeDanglingEdges,
+  removeNode,
+} from './helpers.ts'
 import type { ParserState } from '../types.ts'
 
 /**
@@ -10,7 +14,7 @@ import type { ParserState } from '../types.ts'
 export const skills = async (state: ParserState) => {
   // `:skills(x)`: likely a `:skill(x)` typo
   if (asPseudoNode(state.current).nodes.length) {
-    if (state.loose) return clear(state)
+    if (state.loose) return ignoreInvalid(state)
     throw queryError(':skills takes no arguments', state.current, {
       wanted: ':skill',
     })

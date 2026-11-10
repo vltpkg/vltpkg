@@ -79,23 +79,30 @@ const createCustomState = (options: {
 
 t.test('createPathMatcher function', async t => {
   // Import the module inside the test so we can mock it
-  const { createPathMatcher } = await t.mockImport<
+  const { createPathMatcher, path: mockedPath } = await t.mockImport<
     typeof import('../../src/pseudo/path.ts')
   >('../../src/pseudo/path.ts', {
     minimatch: {
-      minimatch: (
-        path: string,
-        pattern: string,
-        options: any = {},
-      ) => {
-        if (pattern === 'throw-error') {
-          throw new Error('Minimatch error')
+      Minimatch: class {
+        pattern: string
+        options: { matchBase?: boolean }
+        constructor(
+          pattern: string,
+          options: { matchBase?: boolean } = {},
+        ) {
+          if (pattern === 'throw-error') {
+            throw new Error('Minimatch error')
+          }
+          this.pattern = pattern
+          this.options = options
         }
-        // Special handling for * pattern with matchBase option
-        if (pattern === '*' && options.matchBase) {
-          return true // Always match for * with matchBase
+        match(path: string) {
+          // Special handling for * pattern with matchBase option
+          if (this.pattern === '*' && this.options.matchBase) {
+            return true // Always match for * with matchBase
+          }
+          return path.includes(this.pattern)
         }
-        return path.includes(pattern)
       },
     },
   })
@@ -131,12 +138,37 @@ t.test('createPathMatcher function', async t => {
   )
 
   await t.test(
+    'reports invalid glob patterns in loose mode',
+    async t => {
+      let invalid = 0
+      const matcher = createPathMatcher('throw-error', true, () => {
+        invalid++
+      })
+      t.equal(invalid, 1, 'should call onInvalid before matching')
+      t.equal(matcher('any-path'), false, 'should not match')
+      t.equal(matcher('other-path'), false, 'should not match')
+      t.equal(invalid, 1, 'should call onInvalid only once')
+    },
+  )
+
+  await t.test(
+    'marks the state invalid for a bad pattern in loose mode',
+    async t => {
+      const state = getState(':path("throw-error")')
+      state.loose = true
+      const res = await mockedPath(state)
+      t.strictSame([...res.partial.nodes], [], 'should match nothing')
+      t.equal(res.invalid, true, 'should mark the state invalid')
+    },
+  )
+
+  await t.test(
     'throws for invalid glob patterns in strict mode',
     async t => {
       t.throws(
-        () => createPathMatcher('throw-error')('any-path'),
+        () => createPathMatcher('throw-error'),
         /Invalid glob pattern in :path selector/,
-        'should throw with correct message',
+        'should throw with correct message before matching',
       )
     },
   )
@@ -481,6 +513,7 @@ t.test(':path selector', async t => {
       [],
       'should handle invalid glob patterns gracefully in loose mode',
     )
+    t.equal(res.invalid, true, 'should mark the state invalid')
   })
 
   await t.test('error handling in strict mode', async t => {
@@ -547,6 +580,7 @@ t.test(':path selector', async t => {
         [],
         'should return empty result for non-string selector in loose mode',
       )
+      t.equal(res.invalid, true, 'should mark the state invalid')
     },
   )
 
@@ -602,6 +636,44 @@ t.test(':path selector', async t => {
       'should throw error for invalid glob patterns in strict mode',
     )
   })
+
+  await t.test(
+    'checks the pattern when no path-based node is selected',
+    async t => {
+      // minimatch rejects patterns longer than 64 KiB
+      const query = `:path("${'a'.repeat(64 * 1024 + 1)}")`
+      const registryOnly = (state: ParserState) => {
+        for (const node of state.partial.nodes) {
+          if (splitDepID(node.id)[0] !== 'registry') {
+            state.partial.nodes.delete(node)
+          }
+        }
+        t.ok(state.partial.nodes.size, 'has registry nodes')
+        return state
+      }
+
+      await t.test('loose mode', async t => {
+        const state = registryOnly(getState(query, getSimpleGraph()))
+        state.loose = true
+        const res = await path(state)
+        t.strictSame(
+          [...res.partial.nodes],
+          [],
+          'should match nothing',
+        )
+        t.equal(res.invalid, true, 'should mark the state invalid')
+      })
+
+      await t.test('strict mode', async t => {
+        const state = registryOnly(getState(query, getSimpleGraph()))
+        await t.rejects(
+          path(state),
+          /Invalid glob pattern in :path selector/,
+          'should throw for the invalid pattern',
+        )
+      })
+    },
+  )
 
   await t.test(
     'handles path-based vs non-path-based nodes',

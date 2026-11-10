@@ -163,13 +163,16 @@ t.test('usnupported combinator', async t => {
 })
 
 t.test('usnupported combinator [loose mode]', async t => {
-  await t.resolves(
-    testCombinator(
-      { value: '+', type: 'combinator' },
-      undefined,
-      undefined,
-      true,
-    ),
-    'should resolve with no error',
+  const simpleGraph = getSimpleGraph()
+  const all: GraphSelectionState = {
+    edges: new Set<EdgeLike>(simpleGraph.edges),
+    nodes: new Set<NodeLike>(simpleGraph.nodes.values()),
+  }
+  const res = await testCombinator(
+    { value: '+', type: 'combinator' },
+    all,
+    all,
+    true,
   )
+  t.strictSame(res.nodes, [], 'should not match any node')
 })

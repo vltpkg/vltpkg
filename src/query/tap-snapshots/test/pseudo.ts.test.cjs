@@ -756,6 +756,34 @@ Object {
 }
 `
 
+exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:not(:foo, [name=a]))" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:not(:foo))" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:not(:has(:foo)))" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:not(:not(:foo)))" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:root)" 1`] = `
 Object {
   "edges": Array [],
@@ -796,26 +824,8 @@ Object {
 
 exports[`test/pseudo.ts > TAP > pseudo > query > ":is(#foo, [name===z], :root +, :nonexistingselector)" 1`] = `
 Object {
-  "edges": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "e",
-    "f",
-  ],
-  "nodes": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "my-project",
-  ],
+  "edges": Array [],
+  "nodes": Array [],
 }
 `
 

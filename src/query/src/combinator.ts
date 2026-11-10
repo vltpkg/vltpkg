@@ -1,5 +1,6 @@
 import { asCombinatorNode } from '@vltpkg/dss-parser'
 import { queryError } from './error.ts'
+import { ignoreInvalid } from './pseudo/helpers.ts'
 import type { CombinatorName } from '@vltpkg/dss-parser'
 import type { EdgeLike, NodeLike } from '@vltpkg/types'
 import type { ParserState, ParserFn } from './types.ts'
@@ -122,7 +123,7 @@ export const combinator = async (state: ParserState) => {
     curr.value && combinatorSelectorsMap.get(curr.value)
   if (!parserFn) {
     if (state.loose) {
-      return state
+      return ignoreInvalid(state)
     }
 
     throw queryError(

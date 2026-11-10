@@ -98,6 +98,12 @@ t.test('simple graph', async t => {
     [':path(".")', ['my-project']], // path selector for root
     [':path("**/a/**")', []], // should not match since 'a' is not workspace or file type
     [':root, #a, :foo', ['my-project', 'a']], // should be loose on multiple selectors
+    [':not(:foo), #a', ['a']], // a negated invalid selector also matches nothing
+    [':not(:has(:foo)), #a', ['a']], // same when nested in another selector
+    [':not(:has(:foo, #b)), #a', ['a']], // even when :has() also lists a valid selector
+    [':not(:foo, #b), #a', ['a']], // same next to a valid selector
+    ['[name==a], #b', ['b']], // unsupported attribute operator matches nothing
+    [':root + *, #b', ['b']], // unsupported combinator matches nothing
   ])
 
   const query = new Query({
@@ -115,6 +121,25 @@ t.test('simple graph', async t => {
       `query > "${q}"`,
     )
   }
+
+  await t.test(
+    'invalid :path() pattern on non-path nodes',
+    async t => {
+      // minimatch rejects patterns longer than 64 KiB; `#b` is a
+      // registry node, so no node path is ever matched against it
+      const pattern = 'a'.repeat(64 * 1024 + 1)
+      t.strictSame(
+        (
+          await query.search(
+            `:not(#b:path("${pattern}")), #a`,
+            mockSearchOptions,
+          )
+        ).nodes.map(i => i.name),
+        ['a'],
+        'a negated invalid :path() also matches nothing',
+      )
+    },
+  )
 
   await t.test('comments extraction', async t => {
     const result = await query.search(
