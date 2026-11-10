@@ -16,7 +16,7 @@ import type { Test } from 'tap'
 import { createHash } from 'node:crypto'
 import type { Integrity } from '@vltpkg/types'
 import t from 'tap'
-import type { Dispatcher } from 'undici'
+import type { Agent as UndiciAgent, Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.ts'
 import * as registryError from '../src/registry-error.ts'
 import { cacheKey } from '../src/index.ts'
@@ -2938,6 +2938,60 @@ t.test('requestStream', async t => {
     )
     body.resume()
     t.equal(seen.url, '/-/vlt/resolve?x=1')
+  })
+
+  t.test('the root of a host keeps its slash', async t => {
+    t.teardown(() => rc.drain())
+    const rc = new RC({ cache: t.testdir() })
+    const { body } = await rc.requestStream(base, { method: 'HEAD' })
+    body.resume()
+    t.strictSame([seen.method, seen.url], ['HEAD', '/'])
+    await rc.request(`${base}/?q=1`, { useCache: false })
+    t.strictSame([seen.method, seen.url], ['GET', '/?q=1'])
+  })
+
+  t.test('connectTimeout: a pool of its own per value', async t => {
+    const { Agent } = await import('undici')
+    const made: UndiciAgent.Options[] = []
+    const { RegistryClient } = await mockIndex(t, {
+      '../src/proxy.ts': {
+        getDispatcher: (o: UndiciAgent.Options) => {
+          made.push(o)
+          return new Agent(o)
+        },
+      },
+    })
+    t.teardown(() => rc.drain())
+    const rc = new RegistryClient({ cache: t.testdir() })
+    t.equal(made.length, 1, 'the default pool')
+    const timeouts = () =>
+      made.map(o => (o.connect as { timeout?: number }).timeout)
+
+    const { statusCode, body } = await rc.requestStream(
+      `${base}/missing`,
+      { connectTimeout: 1234 },
+    )
+    body.resume()
+    t.equal(statusCode, 404, 'answered through it')
+    t.strictSame(timeouts(), [600_000, 1234])
+    const { connect: _, ...rest } = made[1]!
+    const { connect: __, ...dflt } = made[0]!
+    t.strictSame(rest, dflt, 'otherwise the default options')
+
+    const res = await rc.request(`${base}/missing`, {
+      connectTimeout: 1234,
+      useCache: false,
+    })
+    t.equal(res.statusCode, 404, 'request() too')
+    ;(await rc.requestStream(`${base}/missing`)).body.resume()
+    t.strictSame(timeouts(), [600_000, 1234], 'pools reused')
+
+    ;(
+      await rc.requestStream(`${base}/missing`, {
+        connectTimeout: 99,
+      })
+    ).body.resume()
+    t.strictSame(timeouts(), [600_000, 1234, 99])
   })
 })
 

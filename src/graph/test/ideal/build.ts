@@ -481,9 +481,15 @@ t.test('git rows locked to a ref are re-pinned', async t => {
   const archive = 'https://codeload.github.com/o/r/legacy.tar.gz/'
   const fooInt = 'sha512-foo'
   const calls: string[] = []
+  // how long each re-resolve gave the git host to answer
+  const bounds: [string, number | undefined][] = []
   const packageInfo = {
-    async manifest(spec: Spec) {
+    async manifest(
+      spec: Spec,
+      opts: { gitHostTimeout?: number } = {},
+    ) {
       calls.push(spec.name)
+      bounds.push([spec.name, opts.gitHostTimeout])
       switch (spec.name) {
         case 'foo':
           return {
@@ -573,6 +579,19 @@ t.test('git rows locked to a ref are re-pinned', async t => {
     calls.filter(n => n !== 'foo').sort(),
     ['r', 't'],
     're-resolved once each',
+  )
+  t.strictSame(
+    bounds.filter(([n]) => n !== 'foo').sort(),
+    [
+      ['r', 10_000],
+      ['t', 10_000],
+    ],
+    'a host that does not answer in 10s is not waited on',
+  )
+  t.strictSame(
+    bounds.filter(([n]) => n === 'foo').map(([, b]) => b),
+    [undefined],
+    'only the re-pins are bounded',
   )
 
   for (const flag of ['frozenLockfile', 'expectLockfile']) {

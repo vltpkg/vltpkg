@@ -36,6 +36,7 @@ import {
   tarballFormat,
 } from '@vltpkg/types'
 import { gitClonePin, gitPin, gitPinnedCommit } from './git-pin.ts'
+import { gitHost, gitHostAnswers } from './git-host.ts'
 import { fetchResolve } from './resolve-batch.ts'
 import type { ResolveRequest } from './resolve-batch.ts'
 export type { ResolveRequest } from './resolve-batch.ts'
@@ -177,6 +178,13 @@ export type PackageInfoClientRequestOptions = PickManifestOptions &
      * specs are unaffected.
      */
     backgroundRevalidate?: boolean
+    /**
+     * Milliseconds a git dep's host gets to answer (connect to its
+     * archive host, `git ls-remote` its remote) before the manifest is
+     * given up on; once per host per run. Unset: as long as the OS
+     * waits, minutes for one that drops packets.
+     */
+    gitHostTimeout?: number
   }
 
 /**
@@ -322,6 +330,8 @@ export class PackageInfoClient {
     string,
     Promise<{ resolved: string; integrity?: Integrity }>
   >()
+  // git host -> whether it answered in time this run (a rejection)
+  #gitHosts = new Map<string, Promise<void>>()
   packageJson: PackageJson
   monorepo?: Monorepo
   #trustedIntegrities = new Map<string, Integrity>()
@@ -1600,6 +1610,9 @@ export class PackageInfoClient {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
+    if (f.type === 'git' && options.gitHostTimeout !== undefined) {
+      await this.#gitHostAnswers(spec, options.gitHostTimeout)
+    }
 
     switch (f.type) {
       case 'registry': {
@@ -2149,6 +2162,21 @@ export class PackageInfoClient {
       )
     }
     return response
+  }
+
+  // whether a git dep's host answers within `ms`, once per host per run
+  #gitHostAnswers(spec: Spec, ms: number) {
+    const host = gitHost(spec)
+    // no remote: the manifest() throws its own error
+    if (!host) return
+    let answers = this.#gitHosts.get(host)
+    if (!answers) {
+      answers = gitHostAnswers(spec, ms, () =>
+        this.getRegistryClient(),
+      )
+      this.#gitHosts.set(host, answers)
+    }
+    return answers
   }
 
   // a hosted git ref locked to its commit, once per ref url per run
