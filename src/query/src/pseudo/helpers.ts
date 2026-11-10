@@ -80,6 +80,16 @@ export const clear = (state: ParserState): ParserState => {
 }
 
 /**
+ * Loose mode: ignores an invalid part of a selector, making it match
+ * nothing. Marks the state as `invalid` so that `:not()` can tell an
+ * ignored selector apart from one that genuinely matched nothing.
+ */
+export const ignoreInvalid = (state: ParserState): ParserState => {
+  state.invalid = true
+  return clear(state)
+}
+
+/**
  * Reusable security selector alert filter.
  */
 export const createSecuritySelectorFilter = (

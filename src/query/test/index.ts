@@ -98,6 +98,11 @@ t.test('simple graph', async t => {
     [':path(".")', ['my-project']], // path selector for root
     [':path("**/a/**")', []], // should not match since 'a' is not workspace or file type
     [':root, #a, :foo', ['my-project', 'a']], // should be loose on multiple selectors
+    [':not(:foo), #a', ['a']], // a negated invalid selector also matches nothing
+    [':not(:has(:foo)), #a', ['a']], // same when nested in another selector
+    [':not(:foo, #b), #a', ['a']], // same next to a valid selector
+    ['[name==a], #b', ['b']], // unsupported attribute operator matches nothing
+    [':root + *, #b', ['b']], // unsupported combinator matches nothing
   ])
 
   const query = new Query({

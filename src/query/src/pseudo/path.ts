@@ -12,6 +12,7 @@ import {
   removeDanglingEdges,
   removeQuotes,
   clear,
+  ignoreInvalid,
 } from './helpers.ts'
 import type { ParserState } from '../types.ts'
 
@@ -36,8 +37,15 @@ export function normalizePath(path: string): string {
 /**
  * Creates a path matcher function that tests if
  * a given path matches a glob pattern.
+ *
+ * In loose mode an invalid pattern matches nothing and calls
+ * `onInvalid` instead of throwing.
  */
-export function createPathMatcher(pattern: string, loose = false) {
+export function createPathMatcher(
+  pattern: string,
+  loose = false,
+  onInvalid?: () => void,
+) {
   const normalizedPattern = normalizePath(pattern)
   const isRoot = normalizedPattern === '' || pattern.trim() === '.'
 
@@ -56,6 +64,7 @@ export function createPathMatcher(pattern: string, loose = false) {
     } catch (err) {
       // In loose mode, return false for invalid patterns
       if (loose) {
+        onInvalid?.()
         return false
       }
       // In strict mode, throw an error
@@ -92,7 +101,7 @@ export const path = async (state: ParserState) => {
     pathPattern = removeQuotes(asStringNode(selector.nodes[0]).value)
   } else {
     if (state.loose) {
-      return clear(state)
+      return ignoreInvalid(state)
     }
     throw error(
       'Failed to parse path pattern in :path selector',
@@ -111,7 +120,7 @@ export const path = async (state: ParserState) => {
     (pathPattern.includes('[') && !pathPattern.includes(']'))
   ) {
     if (state.loose) {
-      return clear(state)
+      return ignoreInvalid(state)
     }
     throw error(
       'Invalid glob pattern in :path selector',
@@ -120,7 +129,13 @@ export const path = async (state: ParserState) => {
   }
 
   // Create path matcher function
-  const matchPath = createPathMatcher(pathPattern, state.loose)
+  const matchPath = createPathMatcher(
+    pathPattern,
+    state.loose,
+    () => {
+      state.invalid = true
+    },
+  )
 
   // Filter nodes by path
   for (const node of state.partial.nodes) {

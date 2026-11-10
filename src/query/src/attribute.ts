@@ -1,7 +1,10 @@
 import { asAttributeNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
 import { queryError } from './error.ts'
-import { removeDanglingEdges } from './pseudo/helpers.ts'
+import {
+  ignoreInvalid,
+  removeDanglingEdges,
+} from './pseudo/helpers.ts'
 import type { AttributeOperatorName } from '@vltpkg/dss-parser'
 import type { NodeLike, JSONField, Manifest } from '@vltpkg/types'
 import type { ParserState } from './types.ts'
@@ -163,7 +166,7 @@ export const attribute = async (
   const operatorFn = attributeSelectorsMap.get(String(curr.operator))
   if (!operatorFn) {
     if (state.loose) {
-      return state
+      return ignoreInvalid(state)
     }
 
     throw queryError(

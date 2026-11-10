@@ -115,12 +115,12 @@ t.test('pseudo', async t => {
     [':is(:root)', all, ['my-project']], // can match a single node
     [':is([name=a], [name=b], [name=f])', all, ['a', 'b', 'f']], // can match multiple nodes
     [':is(:root)', empty, []], // can't match from empty partial
-    [
-      ':is(#foo, [name===z], :root +, :nonexistingselector)',
-      all,
-      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // ignore any invalid selectors on loose mode
+    [':is(#foo, [name===z], :root +, :nonexistingselector)', all, []], // ignore any invalid selectors on loose mode
     [':is(:foo)', all, []], // broken selectors fail to match items when in loose mode
+    [':is(:not(:foo))', all, []], // negating a broken selector also fails to match items
+    [':is(:not(:has(:foo)))', all, []], // same when the broken selector is nested
+    [':is(:not(:not(:foo)))', all, []], // or negated twice
+    [':is(:not(:foo, [name=a]))', all, []], // or listed next to a valid one
     [':is([name=a], [name=b], [name=f])', empty, []], // can match multiple nodes if no partial
     [':missing', all, []], // no dangling edges in this graph
     [':not(:root)', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // can negate single node

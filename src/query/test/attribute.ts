@@ -156,10 +156,13 @@ t.test('bad operator', async t => {
 })
 
 t.test('bad operator [loose mode]', async t => {
-  await t.resolves(
-    testAttr('[name==foo]', undefined, undefined, true),
-    'should resolve with no error',
-  )
+  const simpleGraph = getSimpleGraph()
+  const all: GraphSelectionState = {
+    edges: new Set<EdgeLike>(simpleGraph.edges),
+    nodes: new Set<NodeLike>(simpleGraph.nodes.values()),
+  }
+  const res = await testAttr('[name==foo]', all, all, true)
+  t.strictSame(res.nodes, [], 'should not match any node')
 })
 
 t.test(

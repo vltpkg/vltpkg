@@ -79,7 +79,7 @@ const createCustomState = (options: {
 
 t.test('createPathMatcher function', async t => {
   // Import the module inside the test so we can mock it
-  const { createPathMatcher } = await t.mockImport<
+  const { createPathMatcher, path: mockedPath } = await t.mockImport<
     typeof import('../../src/pseudo/path.ts')
   >('../../src/pseudo/path.ts', {
     minimatch: {
@@ -127,6 +127,29 @@ t.test('createPathMatcher function', async t => {
         false,
         'should return false for any path',
       )
+    },
+  )
+
+  await t.test(
+    'reports invalid glob patterns in loose mode',
+    async t => {
+      let invalid = 0
+      const matcher = createPathMatcher('throw-error', true, () => {
+        invalid++
+      })
+      t.equal(matcher('any-path'), false, 'should not match')
+      t.equal(invalid, 1, 'should call onInvalid')
+    },
+  )
+
+  await t.test(
+    'marks the state invalid for a bad pattern in loose mode',
+    async t => {
+      const state = getState(':path("throw-error")')
+      state.loose = true
+      const res = await mockedPath(state)
+      t.strictSame([...res.partial.nodes], [], 'should match nothing')
+      t.equal(res.invalid, true, 'should mark the state invalid')
     },
   )
 
@@ -481,6 +504,7 @@ t.test(':path selector', async t => {
       [],
       'should handle invalid glob patterns gracefully in loose mode',
     )
+    t.equal(res.invalid, true, 'should mark the state invalid')
   })
 
   await t.test('error handling in strict mode', async t => {
@@ -547,6 +571,7 @@ t.test(':path selector', async t => {
         [],
         'should return empty result for non-string selector in loose mode',
       )
+      t.equal(res.invalid, true, 'should mark the state invalid')
     },
   )
 
