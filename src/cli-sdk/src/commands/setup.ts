@@ -1,6 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { asDependency, install } from '@vltpkg/graph'
+import { asDependency, assertQuery, install } from '@vltpkg/graph'
 import type {
   AddImportersDependenciesMap,
   LinkSkillsResult,
@@ -567,6 +567,8 @@ const installSkills = async (
   const query = appendAllow(stored, SKILLS)
   const dep = isRootDep(manifest)
   if (dep && query === stored) return { status: 'unchanged', query }
+  // fail like `vlt install` would: the append could make it pass
+  if (stored) await assertQuery(stored, 'allow-skills', ['skill'])
   // a root dep keeps its type and spec
   const add: AddImportersDependenciesMap | undefined =
     dep ? undefined : (

@@ -1694,6 +1694,21 @@ t.test('wizard skills step', async t => {
     }
   })
 
+  t.test('invalid stored allow-skills, --yes', async t => {
+    const { result, added, installs } = await run(t, {
+      conf: { yes: true },
+      reloaded: {
+        layers: { project: { 'allow-skills': ':malwre' } },
+      },
+    })
+    t.match(result.skills, {
+      status: 'failed',
+      message: /^Invalid --allow-skills query: /,
+    })
+    t.strictSame(installs, [])
+    t.strictSame(added, [['project', { registries: acme }]])
+  })
+
   t.test('reload fails', async t => {
     const { result, installs } = await run(t, {
       conf: { yes: true },
@@ -1896,6 +1911,23 @@ t.test('--skills', async t => {
       })
       t.strictSame(await res, {
         skills: { status: 'unchanged', query },
+      })
+      t.strictSame(installs, [])
+      t.strictSame(added, [])
+    }
+  })
+
+  t.test('an invalid stored allow-skills fails', async t => {
+    for (const manifest of [pkg, installedPkg]) {
+      const { res, added, installs } = await run({
+        reloaded: {
+          manifest,
+          layers: { project: { 'allow-skills': ':malwre' } },
+        },
+      })
+      await t.rejects(res, {
+        message: /^Invalid --allow-skills query: /,
+        cause: { code: 'EUSAGE', found: ':malwre' },
       })
       t.strictSame(installs, [])
       t.strictSame(added, [])

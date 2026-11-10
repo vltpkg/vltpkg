@@ -452,15 +452,6 @@ Saved allow-skills="#agent-browser:skill(agent-browser)" to vlt.json`}
   lang="bash"
 />
 
-vlt's own skills ship in `@vltpkg/skills`: `vlt setup --skills`
-installs and links them, like
-`vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"`. It
-adds `#@vltpkg/skills` to a stored `allow-skills` instead of keeping
-it, and with none stored it saves `:not(:malware), #@vltpkg/skills`:
-from then on installs link the skills of every package not flagged as
-malware, and need security data to do so
-([details](/client/commands/setup#install-vlts-agent-skills)).
-
 - Installs only add links. They re-point a link to the new version of
   its package, in every dir, and remove links whose skill is gone:
   dangling, package removed, or skill no longer shipped. They never
@@ -477,6 +468,15 @@ malware, and need security data to do so
 - Dir changes take effect for new links; old ones go on the next
   `vlt skills link`. An invalid query or `skills-dir` fails before
   anything is installed.
+
+vlt's own skills ship in `@vltpkg/skills`: `vlt setup --skills`
+installs and links them, like
+`vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"`. It
+adds `#@vltpkg/skills` to a stored `allow-skills` instead of keeping
+it, and with none stored it saves `:not(:malware), #@vltpkg/skills`:
+from then on installs link the skills of every package not flagged as
+malware, and need security data to do so
+([details](/client/commands/setup#install-vlts-agent-skills)).
 
 ## Safety
 
