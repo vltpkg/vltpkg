@@ -65,7 +65,13 @@ jobs:
           check-latest: true
 
       - name: Install dependencies
-        run: vlt install
+        run: |
+          vlt install
+          # the released vlt used to bootstrap may rewrite vlt-lock.json in
+          # an older format than the source on main, and the `git add -A`
+          # below would commit that into the release PR. keep the
+          # lockfile exactly as it is on main.
+          git checkout -- vlt-lock.json
 
       - name: Get Previous CLI Version Number
         id: previous-version
