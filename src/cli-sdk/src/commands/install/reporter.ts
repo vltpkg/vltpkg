@@ -184,8 +184,21 @@ export class InstallReporter extends ViewClass {
       }
     }
     const migrated = _result.migratedWorkspaces
-    if (migrated) {
+    if (migrated?.source) {
       out += `\nSaved workspaces from ${migrated.source} to vlt.json`
+    }
+    if (migrated?.specs) {
+      const n = migrated.specs.length
+      const files = [
+        ...new Set(
+          migrated.specs.map(m =>
+            m.importer === '.' ?
+              'package.json'
+            : `${m.importer}/package.json`,
+          ),
+        ),
+      ]
+      out += `\nRewrote ${n} workspace reference${s(n)} to workspace:* in ${files.join(', ')}`
     }
     for (const [key, a] of [
       ['allow-skills', _result.allowSkills],

@@ -1800,6 +1800,39 @@ t.test('trailing :workspace', async t => {
     )
   })
 
+  await t.test('importer without a graph', async t => {
+    const { modifier, root } = setup(t, {
+      ':project > :workspace': 'workspace:*',
+      ':root > #d': '2.0.0',
+    })
+    const plain = { importer: true, mainImporter: true }
+    t.equal(
+      modifier.importerEdgeModifier(plain, spec('a')),
+      undefined,
+      'nothing to expand :workspace with',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(plain, spec('d'))?.query,
+      ':root > #d',
+    )
+    modifier.expandWorkspaceNames(['a', 'a'])
+    t.equal(
+      modifier.importerEdgeModifier(plain, spec('a'))?.query,
+      ':project > :workspace',
+      'expanded by name',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(plain, spec('b')),
+      undefined,
+      'other names untouched',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(root, spec('b'))?.query,
+      ':project > :workspace',
+      'expanded with a graph node',
+    )
+  })
+
   await t.test('nameless workspaces are skipped', async t => {
     const { modifier, graph, root } = setup(t, {
       ':project > :workspace': 'workspace:*',

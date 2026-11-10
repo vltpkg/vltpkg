@@ -22,8 +22,15 @@ import type { SelfUpdate } from '../self-update.ts'
 import { planSpecConfigPersist } from '../persist-spec-config.ts'
 import { asUnknownSpecPrefix } from '../require-registry.ts'
 import { addTypesDeps } from '../save-types.ts'
-import { migrateWorkspaces } from '../migrate-workspaces.ts'
-import type { MigratedWorkspaces } from '../migrate-workspaces.ts'
+import {
+  addWorkspaceSpecs,
+  findWorkspaceSpecs,
+  migrateWorkspaces,
+} from '../migrate-workspaces.ts'
+import type {
+  MigratedSpec,
+  MigratedWorkspaces,
+} from '../migrate-workspaces.ts'
 import type { SpecConfigPersistPlan } from '../persist-spec-config.ts'
 import { trackInstall } from '../telemetry.ts'
 import type { DepID } from '@vltpkg/dep-id'
@@ -59,9 +66,12 @@ export type InstallResult = {
    */
   persistedConfig?: SpecConfigPersistPlan
   /**
-   * Workspaces saved to vlt.json from package.json or pnpm-workspace.yaml.
+   * Workspaces saved to vlt.json from package.json or pnpm-workspace.yaml,
+   * and workspace references saved as `workspace:*`.
    */
-  migratedWorkspaces?: MigratedWorkspaces
+  migratedWorkspaces?: Partial<MigratedWorkspaces> & {
+    specs?: MigratedSpec[]
+  }
   /**
    * Agent skill links added or removed.
    */
@@ -135,7 +145,7 @@ export const usage: CommandUsage = () =>
       },
       'no-migrate-workspaces': {
         description:
-          "Don't save workspaces read from package.json or pnpm-workspace.yaml to vlt.json.",
+          "Don't save workspaces read from package.json or pnpm-workspace.yaml to vlt.json, or rewrite plain ranges that link a workspace to workspace:*.",
       },
       workspace: {
         value: '<path|glob>',
@@ -288,11 +298,15 @@ export const command: CommandFn<
     conf.globalRoot ?
       await runningStoreDep(conf.globalRoot)
     : undefined
+  // saved by the install itself
+  const workspaceSpecs =
+    conf.globalRoot ? [] : findWorkspaceSpecs(conf)
   const installStart = Date.now()
-  const { buildQueue, graph, diff, skills } = await runInstall(
+  const { buildQueue, graph, diff, skills, specs } = await runInstall(
     conf,
     globalAdd?.add,
     keep,
+    workspaceSpecs,
   ).catch(async (er: unknown) => {
     if (globalAdd) await removeGlobalWorkspaces(globalAdd.created)
     throw asUnknownSpecPrefix(er)
@@ -347,7 +361,14 @@ export const command: CommandFn<
     graph,
     diff,
     ...(persist ? { persistedConfig: persist } : null),
-    ...(migrated ? { migratedWorkspaces: migrated } : null),
+    ...(migrated || specs.length ?
+      {
+        migratedWorkspaces: {
+          ...migrated,
+          ...(specs.length ? { specs } : null),
+        },
+      }
+    : null),
     ...(skills ? { skills } : null),
     ...(allowSkillsSave ? { allowSkills: allowSkillsSave } : null),
     ...(allowScriptsSave ? { allowScripts: allowScriptsSave } : null),
@@ -361,6 +382,7 @@ const runInstall = async (
   conf: LoadedConfig,
   globalAdd?: AddImportersDependenciesMap,
   keep?: DepID,
+  workspaceSpecs: MigratedSpec[] = [],
 ) => {
   const monorepo = conf.options.monorepo
   const scurry = conf.options.scurry
@@ -368,7 +390,8 @@ const runInstall = async (
   // global ws has only the package as dep
   if (conf.values['save-types'] && !globalAdd)
     await addTypesDeps(conf, add)
-  return install(
+  const specs = addWorkspaceSpecs(add, workspaceSpecs, conf)
+  const result = await install(
     {
       ...installOptions(conf),
       allowSkills: conf.get('allow-skills'),
@@ -376,4 +399,5 @@ const runInstall = async (
     },
     add,
   )
+  return { ...result, specs }
 }

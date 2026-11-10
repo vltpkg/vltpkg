@@ -177,15 +177,55 @@ source, opt out before the first `vlt install` (or remove the saved
 or `pnpm-workspace.yaml`, it warns and ignores them; run `vlt install`
 and commit `vlt.json` first.
 
+### Rewriting workspace references
+
+With `migrate-workspaces` on, every `vlt install` also saves
+dependencies that link a workspace by a plain range or dist-tag as
+`workspace:*`, in the `package.json` of the root and of each
+workspace, and writes the same specs to `vlt-lock.json`:
+
+```
+Saved workspaces from package.json to vlt.json
+Rewrote 2 workspace references to workspace:* in package.json, packages/app/package.json
+```
+
+`"@acme/utils": "^1.0.0"` becomes `"@acme/utils": "workspace:*"` when
+the `@acme/utils` workspace version satisfies `^1.0.0`, in
+`dependencies`, `devDependencies` and `optionalDependencies`, keeping
+the dependency type. It runs on every install, not only the first, so
+a plain range added later is rewritten too, and it covers the whole
+project whatever `--workspace` selects. Left as is:
+
+- specs that already use `workspace:`
+- ranges the workspace version does not satisfy, which keep resolving
+  from the registry, each with a warning such as
+  `Warning: @acme/utils@^2.0.0 in packages/app does not match workspace @acme/utils (1.2.0), kept as is`
+- `peerDependencies`, and names that the same `package.json` also
+  lists as a peer or under another dependency type
+- aliases (`npm:@acme/utils@^1.0.0`) and `file:`, git or URL specs
+- dependencies a [graph modifier](/client/graph-modifiers) removes or
+  points at anything other than a `workspace:` spec
+
+Nothing is rewritten by `vlt ci`, `--frozen-lockfile` or
+`--expect-lockfile`. Commit the `package.json` files with `vlt.json`
+and `vlt-lock.json`.
+
+npm and yarn v1 cannot install `workspace:` specs, so after the
+rewrite they no longer install the project. `vlt pack` and
+`vlt publish` replace `workspace:*` with the workspace's exact
+version: a published workspace that depended on `^1.0.0` ships
+`1.2.0`. To keep the plain ranges, opt out with
+`--no-migrate-workspaces` and see the next section.
+
 ### Linking workspaces referenced by plain ranges
 
 npm and yarn v1 have no `workspace:` protocol, and pnpm with
 `link-workspace-packages` does not need one, so their `package.json`
-files reference local packages by plain ranges such as `^1.0.0`. vlt
-links such a dependency to the workspace only while the workspace
-version satisfies the range and fetches it from the registry
-otherwise. To always link them, add one graph modifier to the same
-`vlt.json`:
+files reference local packages by plain ranges such as `^1.0.0`.
+Unless [rewritten](#rewriting-workspace-references), vlt links such a
+dependency to the workspace only while the workspace version satisfies
+the range and fetches it from the registry otherwise. To always link
+them, add one graph modifier to the same `vlt.json`:
 
 ```json
 {

@@ -255,13 +255,15 @@ export class GraphModifier {
   /**
    * The modifier governing the direct `importer -> spec.name` edge, see
    * {@link GraphModifier.targetsImporterEdge}. The most specific one
-   * wins, same as during the graph build.
+   * wins, same as during the graph build. Without a graph node,
+   * `<importer> > :workspace` modifiers only cover the names given to
+   * {@link GraphModifier.expandWorkspaceNames}.
    */
   importerEdgeModifier(
-    importer: Node,
+    importer: Node | Pick<Node, 'importer' | 'mainImporter'>,
     spec: Spec,
   ): ModifierEntry | undefined {
-    this.#expandWorkspaceTargets(importer)
+    if ('graph' in importer) this.#expandWorkspaceTargets(importer)
     const found: ModifierEntry[] = []
     for (const mod of this.#modifiers) {
       const { last } = mod.breadcrumb
@@ -385,30 +387,38 @@ export class GraphModifier {
     for (const importer of graph.importers) {
       // nameless workspaces are named after their folder, never link those
       const name = importer.manifest?.name
-      if (
-        importer.mainImporter ||
-        !name ||
-        this.#expandedNames.has(name)
-      ) {
-        continue
+      if (importer.mainImporter || !name) continue
+      this.#expandWorkspaceName(name)
+    }
+  }
+
+  /**
+   * Expands `<importer> > :workspace` modifiers for these workspace
+   * names, for callers that read importer edges before there is a
+   * graph, see {@link GraphModifier.importerEdgeModifier}.
+   */
+  expandWorkspaceNames(names: Iterable<string>) {
+    for (const name of names) this.#expandWorkspaceName(name)
+  }
+
+  #expandWorkspaceName(name: string) {
+    if (this.#expandedNames.has(name)) return
+    this.#expandedNames.add(name)
+    for (const { query, value } of this.#workspaceTargets) {
+      // fresh breadcrumb per name: items are a linked list and the
+      // active entry maps key on the last item's name
+      const breadcrumb = parseBreadcrumb(query)
+      breadcrumb.last.name = name
+      const mod: EdgeModifierEntry = {
+        breadcrumb,
+        query,
+        refs: new Set(),
+        spec: Spec.parse(name, value, this.#options),
+        type: 'edge',
+        value,
       }
-      this.#expandedNames.add(name)
-      for (const { query, value } of this.#workspaceTargets) {
-        // fresh breadcrumb per name: items are a linked list and the
-        // active entry maps key on the last item's name
-        const breadcrumb = parseBreadcrumb(query)
-        breadcrumb.last.name = name
-        const mod: EdgeModifierEntry = {
-          breadcrumb,
-          query,
-          refs: new Set(),
-          spec: Spec.parse(name, value, this.#options),
-          type: 'edge',
-          value,
-        }
-        this.#edgeModifiers.add(mod)
-        this.#register(mod)
-      }
+      this.#edgeModifiers.add(mod)
+      this.#register(mod)
     }
   }
 
