@@ -121,6 +121,32 @@ $ vlt install bitbucket:user/repo`} title="Terminal" lang="bash" />
 When using `#semver:<range>`, vlt looks for matching tags/refs in the
 remote repository.
 
+#### Private GitHub repositories
+
+A `github:` dependency with a ref (eg `github:user/repo#v1.0.0`, or a
+`git+ssh://git@github.com:user/repo.git#v1.0.0` url) is downloaded as
+an archive from `codeload.github.com`, without a token, so a private
+repository fails with a 404. Download it from the GitHub REST API
+instead: point the `github` archive template at the API, then add a
+GitHub token that can read the repository's contents:
+
+<Code
+  code={`$ vlt config set 'git-host-archives.github=https://api.github.com/repos/$1/$2/tarball/$committish'
+$ vlt token add --registry=https://api.github.com`}
+  title="Terminal"
+  lang="bash"
+/>
+
+`vlt config set` saves the template to the project `vlt.json`, so
+`vlt ci` and everyone else on the project use it too. `vlt token add`
+prompts for the token and keeps it in the vlt keychain; it is only
+sent to `api.github.com`, which redirects to a short-lived download
+url. See
+[`--git-host-archives`](/client/configuring#-anametemplate---git-host-archivesnametemplate).
+
+A `git+https://github.com/user/repo.git#v1.0.0` url is cloned with git
+instead, using your git credentials.
+
 ### Tarballs
 
 <Code

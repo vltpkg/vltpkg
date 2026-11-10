@@ -348,7 +348,16 @@ export const definition = j
                     In addition to the n-th path portion expansions performed
                     by \`--git-host\`, this field will also expand the
                     string \`$committish\` in the template, replacing it with
-                    the resolved git committish value to be fetched.`,
+                    the resolved git committish value to be fetched.
+
+                    \`github\`, \`gitlab\`, \`bitbucket\` and \`gist\` have
+                    default templates; a name set here replaces its
+                    default. The \`github\` default downloads from
+                    \`codeload.github.com\` without a token, so private
+                    repos 404: for those, set
+                    \`github=https://api.github.com/repos/$1/$2/tarball/$committish\`
+                    and add a GitHub token with
+                    \`vlt token add --registry=https://api.github.com\`.`,
     },
   })
 
