@@ -198,7 +198,7 @@ export class InstallReporter extends ViewClass {
           ),
         ),
       ]
-      out += `\nRewrote ${n} workspace reference${s(n)} to workspace:* in ${files.join(', ')}`
+      out += `\nRewrote ${n} workspace reference${n === 1 ? '' : 's'} to workspace:* in ${files.join(', ')}`
     }
     for (const [key, a] of [
       ['allow-skills', _result.allowSkills],
