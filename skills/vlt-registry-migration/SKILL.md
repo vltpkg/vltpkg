@@ -45,9 +45,11 @@ Each account has two registries:
 No private packages and no account wanted (e.g. an open-source repo)?
 Point the default registry at the shared
 `https://registry.vlt.io/upstream/npm/` instead: read-only, no token,
-and any token sent is ignored. Skip the account slug in step 1 and the
-scope routing in step 2, but still set the default registry. Skip the
-auth setup in steps 4 and 5; see
+and any token sent is ignored. Usage limits apply: it suits
+open-source and low-volume installs; for unlimited usage, use an
+account's `npm` mirror. Skip the account slug in step 1 and the scope
+routing in step 2, but still set the default registry. Skip the auth
+setup in steps 4 and 5; see
 [Public npm Mirror](https://docs.vlt.io/registry/public-mirror.md). If
 the repo publishes to npm, check its publish workflow first: with the
 mirror as the default, `npm publish` targets the read-only mirror.
