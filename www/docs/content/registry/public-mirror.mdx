@@ -185,7 +185,11 @@ describes:
   project publishes to npm, keep `https://registry.npmjs.org/` as its
   publish registry (for example `publishConfig.registry` in
   `package.json`), because with the mirror as your default registry,
-  `npm publish` would target the mirror.
+  `npm publish` would target the mirror. For a scoped package, an
+  `@scope:registry` mapping takes priority over both
+  `publishConfig.registry` and `--registry`, so leave it unset or
+  point it at npm too (see
+  [publishing with npm](/registry/publishing/npm)).
 - **Account and dashboard APIs.** Tokens, members, and settings still
   require you to sign in.
 
