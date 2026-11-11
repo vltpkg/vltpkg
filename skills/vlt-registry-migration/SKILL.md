@@ -48,7 +48,12 @@ Point the default registry at the shared
 and any token sent is ignored. Skip the account slug in step 1 and the
 scope routing in step 2, but still set the default registry. Skip the
 auth setup in steps 4 and 5; see
-[Public npm Mirror](https://docs.vlt.io/registry/public-mirror.md).
+[Public npm Mirror](https://docs.vlt.io/registry/public-mirror.md). If
+the repo publishes to npm, check its publish workflow first: with the
+mirror as the default, `npm publish` targets the read-only mirror.
+Keep `https://registry.npmjs.org/` as the publish registry
+(`publishConfig.registry` in `package.json`, or `--registry` on the
+publish command), and confirm script changes with the user.
 
 Accounts ([sign up](https://docs.vlt.io/registry.md#sign-up),
 [tokens](https://docs.vlt.io/registry/tokens.md#personal-and-service-tokens)):

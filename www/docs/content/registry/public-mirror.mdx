@@ -180,8 +180,12 @@ describes:
   as [public](/registry/publishing#package-visibility) in `main` are
   the exception: anyone can install them without a token.
 - **Writes.** You can't publish, unpublish, deprecate, or change
-  dist-tags through `upstream`. Publishing always goes to your
-  account's `main` registry with a token that has `package:write`.
+  dist-tags through `upstream`. To publish to vlt, use your account's
+  `main` registry with a token that has `package:write`. If your
+  project publishes to npm, keep `https://registry.npmjs.org/` as its
+  publish registry (for example `publishConfig.registry` in
+  `package.json`), because with the mirror as your default registry,
+  `npm publish` would target the mirror.
 - **Account and dashboard APIs.** Tokens, members, and settings still
   require you to sign in.
 
