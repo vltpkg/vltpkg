@@ -42,11 +42,12 @@ Each account has two registries:
 - `https://registry.vlt.io/acme/main/`: the account's own packages.
   Map the scope to it.
 
-No private packages and no account wanted (e.g. an open source repo)?
+No private packages and no account wanted (e.g. an open-source repo)?
 Point the default registry at the shared
 `https://registry.vlt.io/upstream/npm/` instead: read-only, no token,
-and any token sent is ignored. Skip the auth setup in steps 4 and 5;
-see
+and any token sent is ignored. Skip the account slug in step 1 and the
+scope routing in step 2, but still set the default registry. Skip the
+auth setup in steps 4 and 5; see
 [Public npm Mirror](https://docs.vlt.io/registry/public-mirror.md).
 
 Accounts ([sign up](https://docs.vlt.io/registry.md#sign-up),

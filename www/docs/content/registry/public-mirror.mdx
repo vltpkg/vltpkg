@@ -32,7 +32,8 @@ for the latest numbers.
 <TabItem label="vlt">
 
 <Code
-  code={`$ vlt config set registry=https://registry.vlt.io/upstream/npm/
+  code={`$ vlt config set registry=https://registry.vlt.io/upstream/npm/ \\
+  registries.npm=https://registry.vlt.io/upstream/npm/
 $ vlt install`}
   title="Terminal"
   lang="bash"
@@ -73,12 +74,17 @@ $ pnpm install`}
 
 <TabItem label="yarn">
 
+For yarn 2+ ("Berry"):
+
 <Code
   code={`$ yarn config set npmRegistryServer "https://registry.vlt.io/upstream/npm/"
 $ yarn install`}
   title="Terminal"
   lang="bash"
 />
+
+Yarn 1 (Classic) uses `yarn config set registry` with the same URL
+instead.
 
 </TabItem>
 
@@ -166,11 +172,13 @@ The open path covers **reads through `upstream` only**. Everything
 else works the way [Authentication & Tokens](/registry/tokens)
 describes:
 
-- **Your account's registries.**
-  `https://registry.vlt.io/<account>/npm/` and
-  `https://registry.vlt.io/<account>/main/` still require a token,
-  even though the `npm` mirror serves the same public packages. A
-  request without a token gets `401`.
+- **Your account's registries.** The account's
+  `https://registry.vlt.io/<account>/npm/` mirror and restricted
+  packages in `https://registry.vlt.io/<account>/main/` still require
+  a token, even though the `npm` mirror serves the same public
+  packages. A request without a token gets `401`. Packages published
+  as [public](/registry/publishing#package-visibility) in `main` are
+  the exception: anyone can install them without a token.
 - **Writes.** You can't publish, unpublish, deprecate, or change
   dist-tags through `upstream`. Publishing always goes to your
   account's `main` registry with a token that has `package:write`.
