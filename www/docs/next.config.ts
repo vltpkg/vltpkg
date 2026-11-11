@@ -1,48 +1,13 @@
 import path from 'path'
 import { createMDX } from 'fumadocs-mdx/next'
+import { withMd } from '@affordances/md/next'
 
 import type { NextConfig } from 'next'
-
-const acceptsMarkdown = {
-  type: 'header',
-  key: 'accept',
-  value: '.*text/markdown.*',
-} as const
-
-// extensionless pages; skips the markdown route itself and anything with a file extension
-// (`.md` urls, llms.txt, sitemap.xml, openapi.json), which has no markdown twin
-const pages = '/:path((?!llms\\.mdx/)(?!.*\\.[a-z0-9]+$).+)'
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: true,
   partialPrefetching: true,
-  rewrites: async () => ({
-    // agents that ask for markdown get it at the page's own url; runs before the filesystem, which would
-    // otherwise match the html page first
-    beforeFiles: [
-      {
-        source: '/',
-        has: [acceptsMarkdown],
-        destination: '/llms.mdx',
-      },
-      {
-        source: pages,
-        has: [acceptsMarkdown],
-        destination: '/llms.mdx/:path',
-      },
-    ],
-    // `/client/auth.md` serves that page as plain markdown
-    afterFiles: [
-      { source: '/:path+.md', destination: '/llms.mdx/:path+' },
-    ],
-  }),
-  // those urls answer with html or markdown depending on `Accept`, so caches must key on it
-  headers: async () =>
-    ['/', pages].map(source => ({
-      source,
-      headers: [{ key: 'Vary', value: 'Accept' }],
-    })),
   // the old Starlight site's URLs
   redirects: async () => [
     {
@@ -73,4 +38,5 @@ const nextConfig: NextConfig = {
 
 const withMDX = createMDX()
 
-export default withMDX(nextConfig)
+// withMd serves every page as markdown at `/<page>.md` and to `Accept: text/markdown`
+export default withMDX(withMd(nextConfig))

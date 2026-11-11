@@ -263,7 +263,9 @@ export const components: MDXComponents = {
         <StepperList className="pl-0">
           {items.map((item, i) => (
             <Step key={i}>
-              <StepCount>{i + 1}</StepCount>
+              <StepCount data-affordances-md="skip">
+                {i + 1}
+              </StepCount>
               <StepContent className="min-w-0 [&>:first-child]:mt-0">
                 {item.props.children}
               </StepContent>
@@ -305,11 +307,15 @@ export const components: MDXComponents = {
           ))}
         </TabsList>
         {items.map((item, i) => (
-          // panels hold article content, so keep the prose size rather than the primitive's text-sm
+          // panels hold article content, so keep the prose size rather than the primitive's text-sm.
+          // every panel stays in the html, hidden by css (forceMount never sets `hidden`), and the markdown twin
+          // keeps each one under its tab's label
           <TabsContent
             key={i}
             value={String(i)}
-            className="text-(length:--text-body)">
+            forceMount
+            data-affordances-md="show"
+            className="text-(length:--text-body) data-[state=inactive]:hidden">
             {item.props.children}
           </TabsContent>
         ))}
