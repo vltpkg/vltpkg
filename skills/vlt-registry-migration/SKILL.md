@@ -42,6 +42,24 @@ Each account has two registries:
 - `https://registry.vlt.io/acme/main/`: the account's own packages.
   Map the scope to it.
 
+No private packages and no account wanted (e.g. an open-source repo)?
+Point the default registry at the shared
+`https://registry.vlt.io/upstream/npm/` instead: read-only, no token,
+and any token sent is ignored. Usage limits apply: it suits
+open-source and low-volume installs; for unlimited usage, use an
+account's `npm` mirror. Skip the account slug in step 1 and the scope
+routing in step 2, but still set the default registry. Skip the auth
+setup in steps 4 and 5; see
+[Public npm Mirror](https://docs.vlt.io/registry/public-mirror.md). If
+the repo publishes to npm, check its publish workflow first: with the
+mirror as the default, `npm publish` targets the read-only mirror.
+Keep `https://registry.npmjs.org/` as the publish registry
+(`publishConfig.registry` in `package.json`, or `--registry` on the
+publish command); for a scoped package an `@scope:registry` mapping
+wins over both, so leave it unset or point it at npm too
+([publishing with npm](https://docs.vlt.io/registry/publishing/npm.md)).
+Confirm script changes with the user.
+
 Accounts ([sign up](https://docs.vlt.io/registry.md#sign-up),
 [tokens](https://docs.vlt.io/registry/tokens.md#personal-and-service-tokens)):
 invite each developer, who logs in (or creates a personal token). CI,

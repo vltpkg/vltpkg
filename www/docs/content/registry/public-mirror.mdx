@@ -1,0 +1,216 @@
+---
+title: Public npm Mirror
+sidebar:
+  label: Public npm Mirror
+  order: 1
+---
+
+The vlt registry serves an open mirror of the public npm registry at:
+
+```
+https://registry.vlt.io/upstream/npm/
+```
+
+Anyone can use it as an ordinary npm registry. It needs **no account,
+no login, and no token**. It's read-only: you can install from it, but
+you can't publish to it.
+
+It's intended for **open source packages**: projects, CI pipelines,
+and contributors that install public packages and don't need private
+packages or a mirror scoped to their own account. If you need either
+of those, see the [Quick Start](/registry).
+
+It's also currently **faster than `registry.npmjs.org`** at installing
+the same dependencies with the same npm client. See the
+[registry benchmarks](https://benchmarks.vlt.io/registries/average)
+for the latest numbers.
+
+<Aside type="caution" title="Usage limits apply">
+  The upstream mirror is a shared, free service with usage limits. It
+  isn't meant to replace a registry for high-volume installs. For
+  unlimited usage, use your account's `npm` mirror; see [Upstream
+  mirror or your account's
+  mirror?](#upstream-mirror-or-your-accounts-mirror).
+</Aside>
+
+## Use it as your registry
+
+<Tabs syncKey="pkg-manager">
+
+<TabItem label="vlt">
+
+<Code
+  code={`$ vlt config set registry=https://registry.vlt.io/upstream/npm/ \\
+  registries.npm=https://registry.vlt.io/upstream/npm/
+$ vlt install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+</TabItem>
+
+<TabItem label="npm">
+
+<Code
+  code={`$ npm config set registry https://registry.vlt.io/upstream/npm/ --location=project
+$ npm install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+This writes the following to the project's `.npmrc`. No `_authToken`
+line is needed:
+
+<Code
+  code="registry=https://registry.vlt.io/upstream/npm/"
+  title=".npmrc"
+  lang="ini"
+/>
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+<Code
+  code={`$ pnpm config set registry https://registry.vlt.io/upstream/npm/ --location=project
+$ pnpm install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+</TabItem>
+
+<TabItem label="yarn">
+
+For yarn 2+ ("Berry"):
+
+<Code
+  code={`$ yarn config set npmRegistryServer "https://registry.vlt.io/upstream/npm/"
+$ yarn install`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Yarn 1 (Classic) uses `yarn config set registry` with the same URL
+instead.
+
+</TabItem>
+
+<TabItem label="bun">
+
+<Code
+  code={`[install]
+registry = "https://registry.vlt.io/upstream/npm/"`}
+  title="bunfig.toml"
+  lang="toml"
+/>
+
+</TabItem>
+
+<TabItem label="deno">
+
+<Code
+  code="registry=https://registry.vlt.io/upstream/npm/"
+  title=".npmrc"
+  lang="ini"
+/>
+
+</TabItem>
+
+</Tabs>
+
+Lockfiles behave the same way they do with your account's mirror. See
+[Set up your package manager](/registry#set-up-your-package-manager)
+for which ones to keep and which to regenerate.
+
+## What anonymous requests can read
+
+Requests without a token can read everything an npm client needs to
+install packages:
+
+| Resource                               | Example path                                                   |
+| -------------------------------------- | -------------------------------------------------------------- |
+| Packuments (a package's full metadata) | `/upstream/npm/react`                                          |
+| Version manifests                      | `/upstream/npm/react/latest`                                   |
+| Dist-tags                              | `/upstream/npm/-/package/react/dist-tags`                      |
+| Tarballs                               | `/upstream/npm/react/-/react-19.3.1.tgz`                       |
+| Search                                 | `/upstream/npm/-/v1/search?text=react`                         |
+| vlt batch endpoints                    | `/upstream/npm/-/vlt/manifests`, `/upstream/npm/-/vlt/resolve` |
+
+For example, with `curl`:
+
+<Code
+  code={`# packument
+$ curl https://registry.vlt.io/upstream/npm/react
+# manifest for a dist-tag or version
+$ curl https://registry.vlt.io/upstream/npm/react/latest
+# tarball (take the exact URL from the manifest's dist.tarball)
+$ curl -O https://registry.vlt.io/upstream/npm/react/-/react-19.3.1.tgz`}
+  title="Terminal"
+  lang="bash"
+/>
+
+Tarball URLs follow the standard npm layout, and the `dist.tarball`
+field in each manifest points back at the mirror, so tarballs download
+through `registry.vlt.io` too.
+
+## Tokens are ignored on this path
+
+Requests to `/upstream/npm/` are handled the same way whether or not
+they carry credentials. The registry's edge removes any
+`Authorization` header before the request reaches the registry, so:
+
+- every caller gets the same response for the same request;
+- an old, expired, or revoked token in your `.npmrc` or keychain can't
+  make an install fail with `401 Unauthorized`;
+- you don't need a `//registry.vlt.io/upstream/npm/:_authToken=` line,
+  and adding one has no effect.
+
+## What still requires a token
+
+The open path covers **reads through `upstream` only**. Everything
+else works the way [Authentication & Tokens](/registry/tokens)
+describes:
+
+- **Your account's registries.** The account's
+  `https://registry.vlt.io/<account>/npm/` mirror and restricted
+  packages in `https://registry.vlt.io/<account>/main/` still require
+  a token, even though the `npm` mirror serves the same public
+  packages. A request without a token gets `401`. Packages published
+  as [public](/registry/publishing#package-visibility) in `main` are
+  the exception: anyone can install them without a token.
+- **Writes.** You can't publish, unpublish, deprecate, or change
+  dist-tags through `upstream`. To publish to vlt, use your account's
+  `main` registry with a token that has `package:write`. If your
+  project publishes to npm, keep `https://registry.npmjs.org/` as its
+  publish registry (for example `publishConfig.registry` in
+  `package.json`), because with the mirror as your default registry,
+  `npm publish` would target the mirror. For a scoped package, an
+  `@scope:registry` mapping takes priority over both
+  `publishConfig.registry` and `--registry`, so leave it unset or
+  point it at npm too (see
+  [publishing with npm](/registry/publishing/npm)).
+- **Account and dashboard APIs.** Tokens, members, and settings still
+  require you to sign in.
+
+<Aside type="note">
+  Sending an **invalid** token to one of your account's registries
+  still returns `401`. It isn't treated as an anonymous request. Only
+  the `upstream` path drops credentials.
+</Aside>
+
+## Upstream mirror or your account's mirror?
+
+Both serve the same public npm packages. Use your account's `npm`
+mirror when you also want:
+
+- unlimited usage;
+- private `@<account>/...` packages from your `main` registry, using
+  the same token;
+- installs tied to your account's members, roles, and tokens, so you
+  control who can read through your registry;
+- a single place to switch your projects and CI to, which you can
+  later extend with private packages without changing registry URLs.
+
+Use the `upstream` mirror for open source projects, quick experiments,
+and environments where you can't or don't want to manage a secret.

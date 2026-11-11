@@ -20,6 +20,7 @@ const note = `Every page is also Markdown: add \`.md\` to its URL, or request it
 const intro = `## Using these docs
 
 - New to the registry: start at [Quick Start](${md('/registry')}). New to the client: start at [Getting Started with the vlt CLI](${md('/client')}); the [${vltCliSkill.name} skill](${abs(vltCliSkill.url)}) is a short map of the CLI for agents. Moving an existing repository onto a vlt.io registry: follow the [${registryMigrationSkill.name} skill](${abs(registryMigrationSkill.url)}).
+- Installing public npm packages with no vlt.io account or token: use the shared, read-only mirror at \`https://registry.vlt.io/upstream/npm/\` (usage limits apply; an account's own \`npm\` mirror has none), see [Public npm Mirror](${md('/registry/public-mirror')}). Other vlt.io registries need a token, including an account's own \`npm\` mirror; the only exception is reading packages published as public in an account's \`main\` registry. Every write needs a token.
 - Commands and config: [CLI Commands](${md('/client/commands')}) links every command's page; [Configuring the vlt CLI](${md('/client/configuring')}) covers options and config files. [Reference](${md('/reference')}) is a glossary of terms.
 - The site's own HTTP API (search, Markdown pages) is described at [openapi.json](${abs('/openapi.json')}).
 - Before running anything that changes a vlt.io account (publishing, unpublishing, deprecating packages, changing access, or creating and revoking tokens), confirm with the user first.

@@ -58,7 +58,12 @@ never do more than the person who created it.
   [Package visibility](/registry/publishing#package-visibility) for
   how to set and change the level.
 - The account's `npm` mirror serves public packages and is readable by
-  any authenticated account member.
+  any authenticated account member. Requests without a token get
+  `401`.
+- Anyone can read public npm packages without a token through the
+  shared [public npm mirror](/registry/public-mirror) at
+  `https://registry.vlt.io/upstream/npm/`. It's read-only and is the
+  only mirror path open to anonymous requests. Limits apply.
 
 ### Granting a team access to a package
 
