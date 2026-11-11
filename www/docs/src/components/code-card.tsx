@@ -132,6 +132,9 @@ export const CodeCard = ({
         'text-foreground overflow-x-auto rounded-xl border bg-(--code-editor-background) p-4 font-mono text-[13px] leading-snug [&_span]:text-(--shiki-light) dark:[&_span]:text-(--shiki-dark)',
         className,
       )}
+      // the markdown twin's fence lang and title
+      data-language={tab.lang === 'text' ? undefined : tab.lang}
+      data-title={tab.title}
       {...props}>
       {tab.content}
     </pre>
@@ -144,6 +147,7 @@ export const CodeCard = ({
       {tabs.length === 1 ?
         <>
           <figcaption
+            data-affordances-md="skip"
             data-state="active"
             className="group relative h-11 w-fit">
             <TabFace tab={active} first />
@@ -153,7 +157,9 @@ export const CodeCard = ({
       : <TabsPrimitive.Root
           value={value}
           onValueChange={onValueChange}>
-          <TabsPrimitive.List className="flex h-11 pr-9">
+          <TabsPrimitive.List
+            data-affordances-md="skip"
+            className="flex h-11 pr-9">
             {tabs.map((tab, i) => (
               <TabsPrimitive.Trigger
                 key={i}
@@ -164,7 +170,13 @@ export const CodeCard = ({
             ))}
           </TabsPrimitive.List>
           {tabs.map((tab, i) => (
-            <TabsPrimitive.Content key={i} value={String(i)} asChild>
+            // every tab stays in the html, hidden by css, so the markdown twin has all of them
+            <TabsPrimitive.Content
+              key={i}
+              value={String(i)}
+              forceMount
+              asChild
+              className="data-[state=inactive]:hidden">
               {pre(tab)}
             </TabsPrimitive.Content>
           ))}

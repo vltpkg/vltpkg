@@ -5,51 +5,6 @@ import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb'
 import type { InferPageType } from 'fumadocs-core/source'
 import { pageSchema } from 'fumadocs-core/source/schema'
 
-// the slice of an mdast node the stringifier reads (mdast types aren't a direct dependency)
-type MdNode = {
-  type: string
-  name?: string | null
-  attributes?: {
-    type: string
-    name?: string
-    value?: string | { value: string } | null
-  }[]
-}
-
-// a jsx attribute as a string: `a="x"` or a literal expression like a={`x`}
-const attr = (node: MdNode, name: string) => {
-  const found = node.attributes?.find(
-    a => a.type === 'mdxJsxAttribute' && a.name === name,
-  )
-  const value = found?.value
-  if (typeof value === 'string') return value
-  const literal = value?.value.trim().match(/^([`'"])([\s\S]*)\1$/)
-  return literal?.[2].replace(/\\([`$])/g, '$1')
-}
-
-// the Starlight stand-ins as plain markdown
-const stringifyComponent = (node: MdNode) => {
-  if (
-    node.type !== 'mdxJsxFlowElement' &&
-    node.type !== 'mdxJsxTextElement'
-  )
-    return
-  switch (node.name) {
-    case 'Code': {
-      const title = attr(node, 'title')
-      return `${title ? `${title}:\n\n` : ''}\`\`\`${attr(node, 'lang') ?? ''}\n${attr(node, 'code') ?? ''}\n\`\`\``
-    }
-    case 'LinkCard': {
-      const description = attr(node, 'description')
-      return `- [${attr(node, 'title') ?? ''}](${attr(node, 'href') ?? ''})${description ? `: ${description}` : ''}`
-    }
-    case 'Image':
-      return `![${attr(node, 'alt') ?? ''}](${attr(node, 'src') ?? ''})`
-    case 'Badge':
-      return attr(node, 'text') ?? ''
-  }
-}
-
 // the slice of a hast node rehypeCodeMeta touches (hast types aren't a direct dependency)
 type HastNode = {
   type: string
@@ -72,7 +27,6 @@ const rehypeCodeMeta = () => (tree: HastNode) => {
 }
 
 // `loose` keeps Starlight's `sidebar` frontmatter, which the default schema strips
-// `includeProcessedMarkdown` gives each page plain markdown via `getText("processed")`, for llms-full.txt
 const docs = defineDocs({
   dir: 'content',
   docs: {
@@ -82,17 +36,6 @@ const docs = defineDocs({
       rehypeCodeOptions: false,
       rehypePlugins: [rehypeCodeMeta],
     }),
-    postprocess: {
-      includeProcessedMarkdown: {
-        stringify: stringifyComponent,
-        headingIds: false,
-        // layout wrappers (Aside, Tabs, Steps, CardGrid…) keep only their content
-        filterElement: node =>
-          node.type === 'mdxjsEsm' ? false
-          : node.type.startsWith('mdxJsx') ? 'children-only'
-          : true,
-      },
-    },
   },
 })
 
@@ -116,12 +59,6 @@ export const source = loader({
     ],
   },
 })
-
-// a page as plain markdown, for `/<page>.md` and llms-full.txt
-export const pageMarkdown = async (
-  page: InferPageType<typeof source>,
-) =>
-  `# ${page.data.title} (${page.url})\n\n${(await page.data.getText('processed')).trim()}`
 
 // typedoc pages share titles across packages ("Reference", "index", "browser"), so name the package too
 export const pageTitle = (page: InferPageType<typeof source>) => {

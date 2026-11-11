@@ -24,7 +24,8 @@ for (const path of ['/', '/client/auth']) {
     assert.equal(md.status, 200)
     assert.match(type(md), /^text\/markdown/)
     assert.ok(varies(md), 'markdown response has Vary: Accept')
-    assert.match(await md.text(), /^# \S/)
+    // pages open with @affordances/md's frontmatter (title, url, …); the homepage is the llms.txt index
+    assert.match(await md.text(), /^(---\n[\s\S]*?\n---\n\n)?# \S/)
 
     const html = await get(path, 'text/html')
     assert.equal(html.status, 200)
@@ -152,5 +153,15 @@ void test('/llms.txt links the OpenAPI spec', async () => {
   assert.match(
     await (await get('/llms.txt')).text(),
     /\/openapi\.json\)/,
+  )
+})
+
+// its pages are fetched from the site itself; @affordances/md answers 503 if any failed, so a 200 holds every page
+void test('/llms-full.txt holds every page', async () => {
+  const res = await get('/llms-full.txt')
+  assert.equal(res.status, 200)
+  assert.match(
+    await res.text(),
+    /^# Authentication \(\S+\/client\/auth\)$/m,
   )
 })
