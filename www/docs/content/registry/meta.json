@@ -1,6 +1,7 @@
 {
   "pages": [
     "index",
+    "public-mirror",
     "using-packages",
     "access",
     "dashboard",

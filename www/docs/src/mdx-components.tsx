@@ -292,7 +292,8 @@ export const components: MDXComponents = {
         <TabsList
           variant="line"
           data-not-typeset
-          className="max-w-full justify-start overflow-x-auto">
+          // overflow-x-auto turns overflow-y to auto too; hide it so the 1px-taller triggers don't add a scrollbar
+          className="max-w-full justify-start overflow-x-auto overflow-y-hidden">
           {items.map((item, i) => (
             <TabsTrigger
               key={i}
