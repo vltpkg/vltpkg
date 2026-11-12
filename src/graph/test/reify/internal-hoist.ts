@@ -262,6 +262,7 @@ t.test('scope dirs are made before linking', async t => {
     'git@github.com/vltpkg/foo',
     'main',
   ])
+  const barId = joinDepIDTuple(['registry', '', '@vltpkg/bar@1.0.0'])
   const hoist = async (t: Test, scopeDir: boolean) => {
     const mainManifest = { name: 'root' }
     const projectRoot = t.testdir({
@@ -275,9 +276,25 @@ t.test('scope dirs are made before linking', async t => {
             'symlink',
             `../.vlt/${gitId}/node_modules/@vltpkg/foo`,
           ),
+          bar: t.fixture(
+            'symlink',
+            `../.vlt/${barId}/node_modules/@vltpkg/bar`,
+          ),
         },
         '.vlt': {
           ...(scopeDir ? { node_modules: { '@vltpkg': {} } } : {}),
+          [barId]: {
+            node_modules: {
+              '@vltpkg': {
+                bar: {
+                  'package.json': JSON.stringify({
+                    name: '@vltpkg/bar',
+                    version: '1.0.0',
+                  }),
+                },
+              },
+            },
+          },
           [gitId]: {
             node_modules: {
               '@vltpkg': {
@@ -333,7 +350,11 @@ t.test('scope dirs are made before linking', async t => {
     const scope = scurry.resolve(
       'node_modules/.vlt/node_modules/@vltpkg',
     )
-    t.strictSame(readdirSync(scope), ['foo'], 'scoped link hoisted')
+    t.strictSame(
+      readdirSync(scope).sort((a, b) => a.localeCompare(b, 'en')),
+      ['bar', 'foo'],
+      'scoped links hoisted',
+    )
     return { made, noParent, scope }
   }
 
