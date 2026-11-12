@@ -392,7 +392,8 @@ export const checkPeerEdgesCompatible = (
 
     // an earlier version locked this peer to its parent's registry:
     // keep it as locked, a rebuild stops on it instead
-    if (pinnedRegistry(existingEdge) !== undefined) continue
+    const pinned = pinnedRegistry(existingEdge, graph.lockfileRouting)
+    if (pinned !== undefined) continue
 
     const peerSpec = Spec.parse(peerName, peerBareSpec, parseOpts)
 

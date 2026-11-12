@@ -1,7 +1,8 @@
 import { baseDepID, getTuple, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
-import type { Spec } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { isErrorWithCause, isObject } from '@vltpkg/types'
 import type { Edge } from '../edge.ts'
 import type { Graph } from '../graph.ts'
@@ -14,16 +15,16 @@ import type { Node } from '../node.ts'
 export type RegistryPins = Map<string, string>
 
 /**
- * The {@link RegistryPins} of a locked graph, if any. Lockfile edges
- * parse with the routing stored in the lockfile, so a deliberate config
- * change creates no pins.
+ * The {@link RegistryPins} of a locked graph, if any. Its edges are
+ * judged by `graph.lockfileRouting`, so a deliberate config change
+ * creates no pins.
  */
 export const collectRegistryPins = (
   graph: Graph,
 ): RegistryPins | undefined => {
   let pins: RegistryPins | undefined
   for (const edge of graph.edges) {
-    const registry = pinnedRegistry(edge)
+    const registry = pinnedRegistry(edge, graph.lockfileRouting)
     if (registry === undefined) continue
     pins ??= new Map()
     pins.set(pinKey(edge.from, edge.name), registry)
@@ -33,18 +34,26 @@ export const collectRegistryPins = (
 
 /**
  * The DepID registry segment of the target of an edge with no registry
- * prefix, when the spec now resolves to another registry: what earlier
- * versions locked while unprefixed dependencies used their parent's
- * registry. Edges placed by this version are never pinned.
+ * prefix, when its spec resolves to another registry under `routing`,
+ * the options the lockfile was written with (the current ones for a
+ * graph not loaded from a lockfile): what earlier versions locked while
+ * unprefixed dependencies used their parent's registry. A lockfile this
+ * version wrote has none.
  */
-export const pinnedRegistry = ({
-  spec,
-  to,
-}: Edge): string | undefined => {
+export const pinnedRegistry = (
+  { spec, to }: Edge,
+  routing?: SpecOptions,
+): string | undefined => {
   if (!to || !isUnprefixed(spec)) return
   const [type, registry] = splitDepID(to.id)
   if (type !== 'registry' || to.name !== spec.final.name) return
-  return registryOf(spec) === registry ? undefined : registry
+  if (registryOf(spec) === registry) return
+  if (routing) {
+    const { name, bareSpec } = spec.final
+    const written = Spec.parse(name, bareSpec, routing)
+    if (registryOf(written) === registry) return
+  }
+  return registry
 }
 
 /**

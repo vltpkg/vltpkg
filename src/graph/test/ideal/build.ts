@@ -909,14 +909,22 @@ t.test('a lockfile written with registry inheritance', async t => {
       },
       // unrelated to the public utils
       utils: { name: 'utils', version: '1.2.0' },
+      '@acme/ui': { name: '@acme/ui', version: '1.0.0' },
     },
     [corpproxy]: {
       '@acme/kit': kitManifest,
       'lodash-x': { name: 'lodash-x', version: '1.0.0' },
+      utils: { name: 'utils', version: '1.5.0' },
     },
     [npm]: {
       utils: { name: 'utils', version: '1.9.0' },
       'lodash-x': { name: 'lodash-x', version: '1.0.0' },
+      '@acme/ui': { name: '@acme/ui', version: '1.0.0' },
+      'pub-lib': {
+        name: 'pub-lib',
+        version: '1.0.0',
+        dependencies: { utils: '^1' },
+      },
     },
   }
   const fetched: string[] = []
@@ -932,6 +940,8 @@ t.test('a lockfile written with registry inheritance', async t => {
         response: { statusCode: 404 },
       })
     },
+    // sent when `registry` is set
+    prefetchResolve: () => () => {},
   } as unknown as PackageInfoClient
   const internalLib = joinDepIDTuple([
     'registry',
@@ -1080,6 +1090,105 @@ t.test('a lockfile written with registry inheritance', async t => {
     })
     t.equal(utilsOf(graph)?.version, '1.9.0', 're-resolved')
   })
+
+  t.test(
+    'a config change on a lockfile with no inheritance',
+    async t => {
+      // routing the lockfile does not store was at its default
+      const id = (registry: string, nameVersion: string) =>
+        joinDepIDTuple(['registry', registry, nameVersion])
+      const npmUtils = id('npm', 'utils@1.9.0')
+      const lockOf = (
+        nodes: Record<string, [0, string]>,
+        edges: Record<string, string>,
+      ) =>
+        JSON.stringify({
+          lockfileVersion: LOCKFILE_VERSION,
+          options: { registries },
+          nodes,
+          edges,
+        })
+      const rootUtils = {
+        dependencies: { utils: '^1' },
+        vltLock: lockOf(
+          { [npmUtils]: [0, 'utils'] },
+          {
+            [edgeKey(['file', '.'], 'utils')]: `prod ^1 ${npmUtils}`,
+          },
+        ),
+      }
+      const rootTarget = (graph: Graph, name: string) =>
+        graph.mainImporter.edgesOut.get(name)?.to?.id
+
+      t.test('default-registry-alias', async t => {
+        const graph = await run(t, {
+          ...rootUtils,
+          options: getOptions({
+            registries,
+            'default-registry-alias': 'corp',
+          }),
+        })
+        t.equal(rootTarget(graph, 'utils'), corpUtils)
+      })
+
+      t.test('a new scoped-registries entry', async t => {
+        const npmUi = id('npm', '@acme/ui@1.0.0')
+        const graph = await run(t, {
+          dependencies: { '@acme/ui': '^1' },
+          vltLock: lockOf(
+            { [npmUi]: [0, '@acme/ui'] },
+            {
+              [edgeKey(['file', '.'], '@acme/ui')]:
+                `prod ^1 ${npmUi}`,
+            },
+          ),
+          options: getOptions({
+            registries,
+            'scoped-registries': { '@acme': corp },
+          }),
+        })
+        t.equal(
+          rootTarget(graph, '@acme/ui'),
+          id('corp', '@acme/ui@1.0.0'),
+        )
+      })
+
+      t.test('registry', async t => {
+        const graph = await run(t, {
+          ...rootUtils,
+          options: getOptions({ registries, registry: corpproxy }),
+        })
+        t.equal(
+          rootTarget(graph, 'utils'),
+          id('corpproxy', 'utils@1.5.0'),
+        )
+      })
+
+      t.test('a dependency of a prefixed package', async t => {
+        const pubLib = id('npm', 'pub-lib@1.0.0')
+        const graph = await run(t, {
+          dependencies: { 'pub-lib': 'npm:pub-lib@^1' },
+          vltLock: lockOf(
+            { [pubLib]: [0, 'pub-lib'], [npmUtils]: [0, 'utils'] },
+            {
+              [edgeKey(['file', '.'], 'pub-lib')]:
+                `prod npm:pub-lib@^1 ${pubLib}`,
+              [`${pubLib} utils`]: `prod ^1 ${npmUtils}`,
+            },
+          ),
+          options: getOptions({
+            registries,
+            'default-registry-alias': 'corpproxy',
+          }),
+        })
+        const [lib] = graph.nodesByName.get('pub-lib') ?? []
+        t.equal(
+          lib?.edgesOut.get('utils')?.to?.id,
+          id('corpproxy', 'utils@1.5.0'),
+        )
+      })
+    },
+  )
 
   t.test('a JSR proxy is no options change', async t => {
     const jsrRegistries = { jsr: 'https://jsr.example.com/' }

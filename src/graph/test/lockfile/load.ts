@@ -1324,6 +1324,43 @@ t.test('optionsChanged detection', async t => {
     },
   )
 
+  t.test('lockfileRouting keeps the stored routing', async t => {
+    const registries = {
+      npm: 'https://registry.npmjs.org/',
+      internal: 'https://internal.example.com/',
+    }
+    const jsrRegistries = { jsr: 'https://jsr.example.com/' }
+    const lockfile: LockfileData = {
+      ...baseLockfileData,
+      options: {
+        registries,
+        'scoped-registries': { '@acme': registries.internal },
+        'jsr-registries': jsrRegistries,
+      },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        registry: 'https://other.example.com/',
+        'default-registry-alias': 'internal',
+        'scoped-registries': { '@other': registries.internal },
+        mainManifest,
+        projectRoot,
+      },
+      lockfile,
+    )
+    t.strictSame(graph.lockfileRouting, {
+      registry: undefined,
+      'default-registry-alias': undefined,
+      'scoped-registries': { '@acme': registries.internal },
+      'jsr-registries': jsrRegistries,
+      registries: { ...configData.registries, ...registries },
+    })
+  })
+
   t.test(
     'optionsChanged is true when registry is changed',
     async t => {
