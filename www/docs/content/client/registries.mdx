@@ -559,14 +559,15 @@ explicit prefix with a [graph modifier](/client/graph-modifiers).
 
 #### Lockfiles from earlier versions
 
-Earlier versions of vlt resolved the dependencies without a prefix of
-a package installed through an alias or a scope mapping from that
+Earlier versions of vlt resolved the unprefixed dependencies of a
+package installed through an alias or a scope mapping from that
 package's registry. A plain `vlt install`,
 `vlt install --frozen-lockfile` or `vlt ci` keeps the packages your
 `vlt-lock.json` already has. The next change to the graph (adding or
-removing a dependency, editing `package.json`, or `vlt update`)
-resolves them again with the current rule, and if a locked package
-would move to another registry, vlt stops and names both:
+removing a dependency, editing `package.json`, changing the registry
+configuration, or `vlt update`) resolves them again with the current
+rule, and if a locked package would move to another registry, vlt
+stops and names both:
 
 ```
 Resolve Error: utils@^1 is locked to corp but now resolves from npm.

@@ -211,6 +211,15 @@ export class Graph implements GraphLike {
   lockedResolutions?: Map<string, DepID>
 
   /**
+   * The registry routing of the lockfile this graph was loaded from:
+   * its stored `registry`, `default-registry-alias`, `scoped-registries`
+   * and `jsr-registries` (unstored = the built-in default), with the
+   * merged `registries`. Locked edges are judged by it for registry
+   * pins, so a config change since then is no pin.
+   */
+  lockfileRouting?: SpecOptions
+
+  /**
    * Locked unprefixed edges whose target is not from the registry their
    * spec resolves to, taken before a rebuild: re-resolving one from that
    * registry stops.

@@ -110,6 +110,33 @@ t.test('collectRegistryPins', async t => {
     ]),
   )
   t.strictSame([...(pins?.values() ?? [])], ['corp', 'corp', 'corp'])
+
+  // the lockfile was written with npm as the default, corp is now
+  const locked = graphWith([
+    ['root', 'lib', 'corp:internal-lib@^1', lib],
+    [lib, 'utils', '^1', corpUtils],
+  ])
+  locked.lockfileRouting = { registries: options.registries }
+  locked.addEdge(
+    'prod',
+    Spec.parse('pub', '^1', {
+      ...options,
+      'default-registry-alias': 'corp',
+    }),
+    locked.mainImporter,
+    locked.addNode(
+      registryId('npm', 'pub@1.0.0'),
+      undefined,
+      undefined,
+      'pub',
+      '1.0.0',
+    ),
+  )
+  t.strictSame(
+    [...(collectRegistryPins(locked)?.values() ?? [])],
+    ['corp'],
+    'a config change is no pin, an inherited target is',
+  )
 })
 
 t.test('assertNoRegistryDrift', async t => {
