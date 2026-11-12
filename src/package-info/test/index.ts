@@ -6049,6 +6049,59 @@ t.test('prefetchResolve', async t => {
     t.equal(resolveRequests.length, 1, 'its records are still here')
   })
 
+  t.test(
+    'a record that lands while the cache is read is not lost',
+    async t => {
+      // the lookup misses the map and goes to disk; the stream delivers
+      // its key and settles before that read comes back
+      t.intercept(process, 'env', {
+        value: { ...process.env, VLT_BATCH_RESOLVE_WAIT_MS: '5000' },
+      })
+      const disk = held()
+      t.teardown(disk.release)
+      // the lookup's cache file, set once the client can name it
+      const gated = { path: '' }
+      const fsp = await import('node:fs/promises')
+      const { PackageInfoClient: PIC } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        'node:fs/promises': {
+          ...fsp,
+          stat: async (path: string) => {
+            if (path === gated.path) await disk.gate
+            return fsp.stat(path)
+          },
+          readFile: async (path: string, encoding: 'utf8') => {
+            if (path === gated.path) await disk.gate
+            return fsp.readFile(path, encoding)
+          },
+        },
+      })
+      // before t.testdir(), see freshClient
+      t.teardown(() => pi.drain())
+      const pi = new PIC({
+        registry: defaultRegistry,
+        cache: t.testdir(),
+      })
+      gated.path = pi._manifestCachePath(
+        Spec.parse('abbrev@^2.0.0', { registry: defaultRegistry }),
+        {},
+      )!
+      pi.prefetchResolve(defaultRegistry, { roots })
+      const lookup = pi.manifest('abbrev@^2.0.0')
+      // a key the stream does not carry is answered only once every
+      // request has settled
+      await t.rejects(pi.manifest('nope@^1.0.0'))
+      t.equal(pi.resolvedManifestCount, 2, 'the record has landed')
+      disk.release()
+      t.strictSame(
+        await lookup,
+        { name: 'abbrev', version: '2.0.0' },
+        'the record, not a packument fetch',
+      )
+    },
+  )
+
   t.test('a manifest in the local cache never waits', async t => {
     // the stream is held, and the key is on disk from an earlier run
     resolveHoldMs = 1500
@@ -6081,6 +6134,200 @@ t.test('prefetchResolve', async t => {
     await pi.capabilities(defaultRegistry)
     await pi.drain()
   })
+
+  t.test(
+    'a resolved manifest is cached like a picked one',
+    async t => {
+      resolveRecords = [
+        {
+          status: 200,
+          name: 'abbrev',
+          requested: ['^2.0.0', 'latest'],
+          manifest: {
+            name: 'abbrev',
+            version: '2.0.0',
+            dist: { tarball: 'abbrev-2.0.0.tgz' },
+          },
+        },
+        { end: true, status: 200, returned: 1, unresolved: 0 },
+      ]
+      const record = {
+        name: 'abbrev',
+        version: '2.0.0',
+        dist: {
+          tarball: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+        },
+      }
+      // before t.testdir(), see freshClient
+      t.teardown(() => Promise.all([pi.drain(), later.drain()]))
+      const cache = t.testdir()
+      const pi = new PackageInfoClient({
+        registry: defaultRegistry,
+        cache,
+      })
+      // a later run on the same cache, with no resolve
+      const later = new PackageInfoClient({
+        registry: defaultRegistry,
+        cache,
+      })
+      const cachePath = (spec: string) =>
+        pi._manifestCachePath(
+          Spec.parse(spec, { registry: defaultRegistry }),
+          {},
+        )!
+      pi.prefetchResolve(defaultRegistry, { roots })
+      t.strictSame(await pi.manifest('abbrev@^2.0.0'), record)
+      t.strictSame(await pi.manifest('abbrev@^2.0.0'), record)
+      t.strictSame(await pi.manifest('abbrev@2.0.0'), record)
+      // a moving selector has no cache file
+      t.strictSame(await pi.manifest('abbrev@latest'), record)
+      await pi.drain()
+
+      const range = cachePath('abbrev@^2.0.0')
+      const exact = cachePath('abbrev@2.0.0')
+      for (const path of [range, exact]) {
+        t.strictSame(
+          JSON.parse(readFileSync(path, 'utf8')),
+          { ...record, __VLT_PACKUMENT: true },
+          'the record, marked as a vlt manifest',
+        )
+      }
+      t.strictSame(
+        (await readdir(dirname(range))).sort(),
+        [basename(range), basename(exact)].sort(),
+        'those two files and nothing else',
+      )
+
+      t.strictSame(
+        await later.manifest('abbrev@^2.0.0'),
+        record,
+        'read from disk',
+      )
+      t.match(
+        await later.resolve('abbrev@^2.0.0'),
+        { resolved: record.dist.tarball, digestRequired: true },
+        'the tarball digest is still required',
+      )
+      t.equal(later.resolvedManifestCount, 0, 'with no resolve')
+    },
+  )
+
+  t.test(
+    'a stale cache file is rewritten, a fresh one is not',
+    async t => {
+      const cached = {
+        name: 'abbrev',
+        version: '2.0.0',
+        cached: true,
+      }
+      const lookUp = async (t: Test, age: number) => {
+        const pi = freshClient(t)
+        const exact = pi._manifestCachePath(
+          Spec.parse('abbrev@2.0.0', { registry: defaultRegistry }),
+          {},
+        )!
+        mkdirSync(dirname(exact), { recursive: true })
+        writeFileSync(exact, JSON.stringify(cached))
+        const mtime = new Date(Date.now() - age)
+        await utimes(exact, mtime, mtime)
+        pi.prefetchResolve(defaultRegistry, { roots })
+        await pi.manifest('abbrev@^2.0.0')
+        t.strictSame(
+          await pi.manifest('abbrev@2.0.0'),
+          { name: 'abbrev', version: '2.0.0' },
+          'this run answers from the stream',
+        )
+        await pi.drain()
+        return JSON.parse(readFileSync(exact, 'utf8')) as unknown
+      }
+      t.test('fresh', async t => {
+        t.strictSame(await lookUp(t, 0), cached)
+      })
+      t.test('stale', async t => {
+        t.strictSame(await lookUp(t, 1000 * 60 * 60 * 24), {
+          name: 'abbrev',
+          version: '2.0.0',
+          __VLT_PACKUMENT: true,
+        })
+      })
+    },
+  )
+
+  t.test('what is cached is the record as delivered', async t => {
+    resolveRecords = [
+      {
+        status: 200,
+        name: 'abbrev',
+        requested: ['^2.0.0'],
+        manifest: {
+          name: 'abbrev',
+          version: '2.0.0',
+          bin: './cli.js',
+        },
+      },
+      { end: true, status: 200, returned: 1, unresolved: 0 },
+    ]
+    const pi = freshClient(t)
+    pi.prefetchResolve(defaultRegistry, { roots })
+    const mani = (await pi.manifest('abbrev@^2.0.0')) as Manifest
+    // what the graph's normalizeManifest does to it
+    mani.bin = { abbrev: 'cli.js' }
+    await pi.manifest('abbrev@2.0.0')
+    await pi.drain()
+    for (const spec of ['abbrev@^2.0.0', 'abbrev@2.0.0']) {
+      const path = pi._manifestCachePath(
+        Spec.parse(spec, { registry: defaultRegistry }),
+        {},
+      )!
+      t.strictSame(
+        JSON.parse(readFileSync(path, 'utf8')),
+        {
+          name: 'abbrev',
+          version: '2.0.0',
+          bin: './cli.js',
+          __VLT_PACKUMENT: true,
+        },
+        spec,
+      )
+    }
+  })
+
+  t.test(
+    'a cache that cannot be written still answers from the stream',
+    async t => {
+      const { PackageInfoClient: PIC } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        'node:fs/promises': {
+          ...(await import('node:fs/promises')),
+          writeFile: async () => {
+            throw new Error('write failed')
+          },
+        },
+      })
+      // before t.testdir(), see freshClient
+      t.teardown(() => pi.drain())
+      const cache = t.testdir()
+      const pi = new PIC({ registry: defaultRegistry, cache })
+      pi.prefetchResolve(defaultRegistry, { roots })
+      t.strictSame(await pi.manifest('abbrev@^2.0.0'), {
+        name: 'abbrev',
+        version: '2.0.0',
+      })
+      t.strictSame(await pi.manifest('abbrev@2.0.0'), {
+        name: 'abbrev',
+        version: '2.0.0',
+      })
+      await pi.drain()
+      t.strictSame(
+        await readdir(pathResolve(cache, 'package-info')).catch(
+          () => [],
+        ),
+        [],
+        'nothing written',
+      )
+    },
+  )
 
   t.test(
     'a spec the resolve did not deliver falls through',
