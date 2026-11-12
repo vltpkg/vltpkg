@@ -21,6 +21,7 @@ import type {
   AddImportersDependenciesMap,
   Dependency,
 } from '../src/dependencies.ts'
+import type { Graph } from '../src/graph.ts'
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
@@ -2457,6 +2458,98 @@ t.test('install with frozenLockfile and changed options', async t => {
   )
 })
 
+t.test(
+  'a frozen install builds from the frozen check graph',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { 'strip-ansi': '^7.0.1' },
+      }),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const realLoad = await import('../src/lockfile/load.ts')
+    const realIdeal = await import('../src/ideal/build.ts')
+    const loaded: Graph[] = []
+    // a clean install hands the old node_modules to a detached rm
+    // process, which holds the fixture on windows (EBUSY); keep it
+    // aside for tap to sweep
+    const RollbackRemoveMock = class extends RollbackRemove {
+      confirm() {}
+    }
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: RollbackRemoveMock,
+      },
+      '../src/lockfile/load.ts': {
+        ...realLoad,
+        load: (o: Parameters<typeof realLoad.load>[0]) => {
+          const graph = realLoad.load(o)
+          loaded.push(graph)
+          return graph
+        },
+      },
+    })
+    // the ideal build loads the lockfile itself
+    const { install: installReloading } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: RollbackRemoveMock,
+      },
+      '../src/ideal/build.ts': {
+        ...realIdeal,
+        build: (o: Parameters<typeof realIdeal.build>[0]) =>
+          realIdeal.build({ ...o, lockfileGraph: undefined }),
+      },
+    })
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        registries: { npm: 'https://registry.npmjs.org/' },
+        ...extra,
+      }) as unknown as InstallOptions
+    const ci = () =>
+      opts({
+        expectLockfile: true,
+        frozenLockfile: true,
+        cleanInstall: true,
+      })
+    const read = (f: string) =>
+      readFileSync(resolve(projectRoot, f), 'utf8')
+    const outputs = () => ({
+      lockfile: read('vlt-lock.json'),
+      hidden: JSON.parse(
+        read('node_modules/.vlt-lock.json'),
+      ) as unknown,
+    })
+
+    await install(opts())
+    await installReloading(ci())
+    const expected = outputs()
+
+    loaded.length = 0
+    const { graph } = await install(ci())
+    t.equal(loaded.length, 1, 'the lockfile is loaded once')
+    t.equal(graph, loaded[0], 'the ideal graph is the checked one')
+    t.strictSame(outputs(), expected, 'same lockfiles')
+
+    // node_modules is there: the ideal build hydrates from it
+    loaded.length = 0
+    await install(opts({ frozenLockfile: true }))
+    t.equal(loaded.length, 2, 'loaded again with an actual graph')
+    t.strictSame(outputs(), expected, 'lockfiles unchanged')
+  },
+)
+
 t.test('a legacy importer edge heals its type', async t => {
   const packageInfo = createMockPackageInfo()
   const projectRoot = t.testdir({
@@ -2784,6 +2877,10 @@ t.test('a bare workspace name saves workspace:*', async t => {
   const read = (f: string) =>
     readFileSync(resolve(projectRoot, f), 'utf8')
   const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const edge = (f: string, key: string) =>
+    (JSON.parse(read(f)) as { edges: Record<string, string> }).edges[
+      key
+    ]
   const { install } = await import('../src/install.ts')
 
   await install(opts(), addB(joinDepIDTuple(['file', '.'])))
@@ -2791,9 +2888,9 @@ t.test('a bare workspace name saves workspace:*', async t => {
     dependencies: { b: 'workspace:*' },
   })
   for (const f of lockfiles) {
-    t.match(
-      read(f),
-      '"file~_d b": "prod workspace:* workspace~packages+b"',
+    t.equal(
+      edge(f, 'file~_d b'),
+      'prod workspace:* workspace~packages+b',
     )
   }
   await install(opts({ frozenLockfile: true }))
@@ -2806,9 +2903,9 @@ t.test('a bare workspace name saves workspace:*', async t => {
     dependencies: { b: 'workspace:*' },
   })
   for (const f of lockfiles) {
-    t.match(
-      read(f),
-      '"workspace~packages+c b": "prod workspace:* workspace~packages+b"',
+    t.equal(
+      edge(f, 'workspace~packages+c b'),
+      'prod workspace:* workspace~packages+b',
     )
   }
   await install(opts({ frozenLockfile: true }))

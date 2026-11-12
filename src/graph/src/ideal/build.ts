@@ -51,6 +51,12 @@ export type BuildIdealOptions = LoadActualOptions & {
    * A {@link PackageInfoClient} instance to read manifest info from.
    */
   packageInfo: PackageInfoClient
+  /**
+   * The graph `vlt-lock.json` loads into with these options and no
+   * actual graph, already loaded by the caller: the starting graph,
+   * instead of loading the lockfile again.
+   */
+  lockfileGraph?: Graph
 }
 
 /**
@@ -146,9 +152,9 @@ export const build = async (
   const { packageInfo, packageJson, scurry, monorepo } = options
   const mainManifest =
     options.mainManifest ?? packageJson.read(options.projectRoot)
-  let graph
+  let graph = options.lockfileGraph
   try {
-    graph = loadVirtual({
+    graph ??= loadVirtual({
       ...options,
       mainManifest,
       monorepo,

@@ -17,7 +17,7 @@ Entry: `src/graph/src/ideal/build.ts` → `ideal.build(options)`
 
 ## Starting Graph (`build.ts`)
 
-Loads Virtual from `vlt-lock.json` (`lockfile.load()`), falls back to Actual (`actual.load()`). Delegates to `buildIdealFromStartingGraph()`.
+Loads Virtual from `vlt-lock.json` (`lockfile.load()`), falls back to Actual (`actual.load()`). A `lockfileGraph` option is used as is instead: `install()` passes the frozen check's graph when there is no actual graph (`vlt ci`), so the lockfile is loaded once. Delegates to `buildIdealFromStartingGraph()`.
 
 Git nodes locked to a ref, not a commit (`gitPinned()`, older lockfiles) are re-resolved up front unless `frozenLockfile`/`expectLockfile` (`repinGitRows()`): resolved ones are removed from the starting graph, their manifests go in `graph.repin` (base id → manifest) and `rebuild` resets every edge, so they get pinned. Each re-resolve passes `gitHostTimeout` (10s): a host that doesn't answer in time (connect to its archive host, `git ls-remote` of its remote) fails it, rather than waiting minutes for the OS. A failed one is kept as is, with a warning; if it has no manifest (no `node_modules`), nothing is removed that run.
 

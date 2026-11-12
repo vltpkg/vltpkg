@@ -10,7 +10,7 @@ Auto-generated on install. Ensures reproducible installs, readable diffs, perfor
 ## Files
 
 - `vlt-lock.json` — main lockfile (committed to source control)
-- `node_modules/.vlt-lock.json` — hidden lockfile with manifests+build data (perf optimization)
+- `node_modules/.vlt-lock.json` — hidden lockfile with manifests+build data (perf optimization), compact JSON (one line, only ever parsed)
 
 ## Module Architecture (`src/graph/src/lockfile/`)
 

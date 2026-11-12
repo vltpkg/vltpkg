@@ -152,6 +152,27 @@ t.test('save', async t => {
       ),
     )
   })
+
+  await t.test('the hidden lockfile is compact', async t => {
+    saveHidden({ ...configData, graph })
+    const content = readFileSync(
+      resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+      'utf8',
+    )
+    t.notMatch(content, '\n', 'a single line')
+    t.equal(
+      content,
+      JSON.stringify(
+        lockfileData({
+          ...configData,
+          graph,
+          saveManifests: true,
+          saveBuildData: true,
+          throwOnMissingManifest: true,
+        }),
+      ),
+    )
+  })
 })
 
 t.test('missing registries', async t => {
