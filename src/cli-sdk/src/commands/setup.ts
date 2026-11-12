@@ -308,7 +308,7 @@ export const views = {
     if (!result.shadowedByProject) {
       lines.push(
         '',
-        "Installs now use your account's npm mirror (no usage limits), e.g.:",
+        "Installs now use your account's npm mirror, e.g.:",
         '  vlt install <pkg>',
       )
     }
@@ -341,8 +341,7 @@ export const usage: CommandUsage = () =>
     description: `Connect vlt to your vlt.io account. vlt installs public
                   packages without it, through vlt's public npm mirror;
                   setup points the \`npm\` alias at your account's npm
-                  mirror (no usage limits) and adds your private \`main\`
-                  registry.
+                  mirror and adds your private \`main\` registry.
 
                   Sign up or log in at ${VLT_SIGNUP_URL} first. The wizard
                   authenticates against your account, stores the token
