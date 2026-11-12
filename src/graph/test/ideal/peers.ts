@@ -1251,6 +1251,124 @@ t.test('checkPeerEdgesCompatible', async t => {
       )
     },
   )
+
+  t.test(
+    'peer specs under an aliased parent parse with the root configuration',
+    async t => {
+      const options = {
+        ...configData,
+        registries: {
+          ...configData.registries,
+          corp: 'https://corp.example.com/',
+        },
+      } satisfies SpecOptions
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...options,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const kit = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('kit', 'corp:kit@^1.0.0', options),
+        { name: 'kit', version: '1.0.0' },
+      )!
+      const lx100 = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('lodash-x', '1.0.0', options),
+        { name: 'lodash-x', version: '1.0.0' },
+      )!
+      // the parent provides its own copy
+      const lx110 = graph.placePackage(
+        kit,
+        'prod',
+        Spec.parse('lodash-x', '1.1.0', options),
+        { name: 'lodash-x', version: '1.1.0' },
+      )!
+      const plugin = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('plugin', '^1.0.0', options),
+        {
+          name: 'plugin',
+          version: '1.0.0',
+          peerDependencies: { 'lodash-x': '^1.0.0' },
+        },
+      )!
+      graph.addEdge(
+        'peer',
+        Spec.parse('lodash-x', '^1.0.0', options),
+        plugin,
+        lx100,
+      )
+
+      const result = checkPeerEdgesCompatible(
+        plugin,
+        kit,
+        new Map(),
+        graph,
+      )
+      t.equal(result.compatible, false, 'forks onto the parent copy')
+      t.equal(result.forkEntry?.target, lx110)
+    },
+  )
+
+  t.test(
+    'a peer edge locked to its parent registry is kept',
+    async t => {
+      const options = {
+        ...configData,
+        registries: {
+          ...configData.registries,
+          corp: 'https://corp.example.com/',
+        },
+      } satisfies SpecOptions
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...options,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const kit = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('kit', 'corp:kit@^1.0.0', options),
+        {
+          name: 'kit',
+          version: '1.0.0',
+          peerDependencies: { 'lodash-x': '^1.0.0' },
+        },
+      )!
+      // the app's own copy
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('lodash-x', '^1.0.0', options),
+        { name: 'lodash-x', version: '1.0.0' },
+      )
+      // what an earlier version locked: the peer from kit's registry
+      const corpCopy = graph.addNode(
+        joinDepIDTuple(['registry', 'corp', 'lodash-x@1.0.0']),
+        { name: 'lodash-x', version: '1.0.0' },
+      )
+      graph.addEdge(
+        'peer',
+        Spec.parse('lodash-x', '^1.0.0', options),
+        kit,
+        corpCopy,
+      )
+
+      t.strictSame(
+        checkPeerEdgesCompatible(
+          kit,
+          graph.mainImporter,
+          new Map(),
+          graph,
+        ),
+        { compatible: true },
+      )
+    },
+  )
 })
 
 t.test('retrievePeerContextHash', async t => {
@@ -3101,6 +3219,53 @@ t.test('startPeerPlacement', async t => {
     t.equal(result.peerSetHash, 'peer.1', 'should have peer set hash')
     t.ok(result.queuedEntries.length > 0, 'should have entries')
   })
+
+  t.test(
+    'siblings of an aliased parent parse with the root configuration',
+    async t => {
+      const options = {
+        ...configData,
+        registries: {
+          ...configData.registries,
+          corp: 'https://corp.example.com/',
+        },
+      } satisfies SpecOptions
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...options,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const kit = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('kit', 'corp:kit@^1.0.0', options),
+        {
+          name: 'kit',
+          version: '1.0.0',
+          dependencies: { 'lodash-x': '^1.0.0' },
+        },
+      )!
+
+      const result = startPeerPlacement(
+        new Map(),
+        {
+          name: 'plugin',
+          version: '1.0.0',
+          peerDependencies: { 'lodash-x': '^1.0.0' },
+        },
+        kit,
+        options,
+      )
+
+      const [sibling] = result.queuedEntries
+      t.equal(sibling?.spec.name, 'lodash-x')
+      t.equal(
+        sibling?.spec.registry,
+        options.registry,
+        'not the parent registry',
+      )
+    },
+  )
 })
 
 t.test('endPeerPlacement', async t => {

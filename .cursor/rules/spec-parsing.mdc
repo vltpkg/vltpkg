@@ -124,6 +124,11 @@ back to the `npm` alias name via `convertToKnownShortRegistryName`, so
 the mirror URL never leaks into DepIDs (empty-registry DepIDs stay
 canonical).
 
+`getOptions()` fills `scoped-registries['@jsr']` with `jsr-registries.jsr`
+(else `defaultScopeRegistries['@jsr']`) under the user's own entries, so
+the `@jsr/*` deps of a JSR package resolve from JSR without inheriting
+their parent's registry.
+
 ## Architecture
 
 - `src/spec/src/browser.ts` — core `Spec` class (browser-compatible, no node APIs)

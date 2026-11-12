@@ -8,7 +8,6 @@ import {
   defaultJsrRegistries,
   defaultRegistries,
   defaultRegistryName,
-  defaultScopeRegistries,
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -16,6 +15,7 @@ import {
   getFlagNumFromNode,
   getBuildStateFromNode,
   LOCKFILE_VERSION,
+  scopeRegistryDefaults,
 } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -224,7 +224,10 @@ export const lockfileData = ({
     : undefined
   const cleanScopeRegistries =
     isRecordStringString(scopeRegistries) ?
-      removeDefaultItems(defaultScopeRegistries, scopeRegistries)
+      removeDefaultItems(
+        scopeRegistryDefaults(jsrRegistries),
+        scopeRegistries,
+      )
     : undefined
   const cleanJsrRegistries =
     isRecordStringString(jsrRegistries) ?

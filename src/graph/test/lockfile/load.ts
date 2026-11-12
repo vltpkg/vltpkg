@@ -1,12 +1,22 @@
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { SpecOptions } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
-import { defaultGitHostArchives, defaultGitHosts } from '@vltpkg/spec'
+import {
+  defaultGitHostArchives,
+  defaultGitHosts,
+  getOptions,
+  Spec,
+} from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { LockfileNode } from '../../src/index.ts'
+import { asDependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
+import { appendNodes } from '../../src/ideal/append-nodes.ts'
+import { save } from '../../src/lockfile/save.ts'
 import {
   diffLockfileOptions,
   load,
@@ -1314,6 +1324,43 @@ t.test('optionsChanged detection', async t => {
     },
   )
 
+  t.test('lockfileRouting keeps the stored routing', async t => {
+    const registries = {
+      npm: 'https://registry.npmjs.org/',
+      internal: 'https://internal.example.com/',
+    }
+    const jsrRegistries = { jsr: 'https://jsr.example.com/' }
+    const lockfile: LockfileData = {
+      ...baseLockfileData,
+      options: {
+        registries,
+        'scoped-registries': { '@acme': registries.internal },
+        'jsr-registries': jsrRegistries,
+      },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = loadObject(
+      {
+        ...configData,
+        registry: 'https://other.example.com/',
+        'default-registry-alias': 'internal',
+        'scoped-registries': { '@other': registries.internal },
+        mainManifest,
+        projectRoot,
+      },
+      lockfile,
+    )
+    t.strictSame(graph.lockfileRouting, {
+      registry: undefined,
+      'default-registry-alias': undefined,
+      'scoped-registries': { '@acme': registries.internal },
+      'jsr-registries': jsrRegistries,
+      registries: { ...configData.registries, ...registries },
+    })
+  })
+
   t.test(
     'optionsChanged is true when registry is changed',
     async t => {
@@ -2049,6 +2096,43 @@ t.test('diffLockfileOptions', async t => {
     'a stored default entry w/o config is not reported',
   )
 
+  const jsr = { jsr: 'https://jsr.example.com/' }
+  const jsrProxy = getOptions({
+    ...baseOptions,
+    'jsr-registries': jsr,
+  })
+  t.strictSame(
+    diff(jsrProxy, { 'jsr-registries': jsr }),
+    [],
+    'the @jsr scope that follows a JSR proxy is no entry',
+  )
+  t.strictSame(
+    diff(jsrProxy, {
+      'jsr-registries': jsr,
+      'scoped-registries': { '@jsr': jsr.jsr },
+    }),
+    [],
+    'nor is it once stored',
+  )
+  t.strictSame(
+    diff(
+      getOptions({
+        ...jsrProxy,
+        'scoped-registries': { '@jsr': 'https://other.example.com/' },
+      }),
+      { 'jsr-registries': jsr },
+    ),
+    [
+      {
+        section: 'scoped-registries',
+        key: '@jsr',
+        from: undefined,
+        to: 'https://other.example.com/',
+      },
+    ],
+    'a @jsr entry of the user is',
+  )
+
   t.test('modifiers and the optionsChanged parity', async t => {
     const projectRoot = t.testdir({
       'vlt-lock.json': JSON.stringify(baseLockfileData),
@@ -2251,3 +2335,62 @@ t.test('loadEdges skips malformed edge records', async t => {
   loadEdges(graph, edges, { registry: 'https://registry.npmjs.org/' })
   t.equal(graph.edges.size, 1, 'only the valid edge is loaded')
 })
+
+t.test(
+  'a lockfile load agrees with the build on an aliased parent child',
+  async t => {
+    const registries = {
+      npm: 'https://registry.npmjs.org/',
+      a: 'https://a.example.com/',
+    }
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { bar: 'a:bar@1.x' },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    // x is on both registries
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const { name, registry } = spec.final
+        return name === 'bar' ?
+            { name, version: '1.2.3', dependencies: { x: '1.x' } }
+          : {
+              name,
+              version: registry === registries.a ? '1.9.9' : '1.0.0',
+            }
+      },
+    } as unknown as PackageInfoClient
+    const built = new Graph({ projectRoot, mainManifest, registries })
+    await appendNodes(
+      packageInfo,
+      built,
+      built.mainImporter,
+      [
+        asDependency({
+          type: 'prod',
+          spec: Spec.parse('bar', 'a:bar@1.x', { registries }),
+        }),
+      ],
+      new PathScurry(projectRoot),
+      { registries },
+      new Set<DepID>(),
+    )
+    save({ registries, graph: built })
+    const loaded = load({ registries, projectRoot, mainManifest })
+
+    const xEdge = (graph: Graph) => {
+      const [bar] = graph.nodesByName.get('bar') ?? []
+      const edge = bar?.edgesOut.get('x')
+      return [edge?.spec.final.registry, edge?.to?.id]
+    }
+    const expected = [
+      registries.npm,
+      joinDepIDTuple(['registry', 'npm', 'x@1.0.0']),
+    ]
+    t.strictSame(xEdge(built), expected, 'built')
+    t.strictSame(xEdge(loaded), expected, 'loaded')
+  },
+)

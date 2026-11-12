@@ -6,7 +6,6 @@ import {
   defaultJsrRegistries,
   defaultRegistries,
   defaultRegistryName,
-  defaultScopeRegistries,
 } from '@vltpkg/spec'
 import { isRecordStringString } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -15,7 +14,7 @@ import { resolve } from 'node:path'
 import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
 import { Graph } from '../graph.ts'
-import { LOCKFILE_VERSION } from './types.ts'
+import { LOCKFILE_VERSION, scopeRegistryDefaults } from './types.ts'
 import type { PathScurry } from 'path-scurry'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -144,7 +143,7 @@ const buildCurrentOptions = (
   const cleanScopeRegistries =
     isRecordStringString(options['scoped-registries']) ?
       removeDefaultItems(
-        defaultScopeRegistries,
+        scopeRegistryDefaults(options['jsr-registries']),
         options['scoped-registries'],
       )
     : undefined
@@ -217,7 +216,6 @@ type OptionsValue =
 // became the default) = no entry
 const sectionDefaults: Record<string, Record<string, string>> = {
   registries: defaultRegistries,
-  'scoped-registries': defaultScopeRegistries,
   'jsr-registries': defaultJsrRegistries,
   'git-hosts': defaultGitHosts,
   'git-host-archives': defaultGitHostArchives,
@@ -225,6 +223,16 @@ const sectionDefaults: Record<string, Record<string, string>> = {
 
 const asRecord = (o: LockfileData['options']) =>
   o as Record<string, OptionsValue>
+
+/** {@link scopeRegistryDefaults} under the lockfile's own `jsr-registries` */
+const storedScopeRegistryDefaults = (
+  stored: Record<string, OptionsValue>,
+) => {
+  const jsr = stored['jsr-registries']
+  return scopeRegistryDefaults(
+    isRecordStringString(jsr) ? jsr : undefined,
+  )
+}
 
 const unionKeys = (
   a: Record<string, unknown> = {},
@@ -321,7 +329,10 @@ export const diffLockfileOptions = (
         )
       }
     } else {
-      const defaults = sectionDefaults[section]
+      const defaults =
+        section === 'scoped-registries' ?
+          storedScopeRegistryDefaults(stored)
+        : sectionDefaults[section]
       const storedRecord =
         defaults && isRecordStringString(from) ?
           removeDefaultItems(defaults, from)
@@ -382,6 +393,7 @@ export const loadObject = (
     registry,
     registries,
     'default-registry-alias': defaultRegistryAlias,
+    'jsr-registries': jsrRegistries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
     /* c8 ignore next */
@@ -444,6 +456,14 @@ export const loadObject = (
     options.registries,
     registries,
   )
+  // what was not stored was at its default when the lockfile was written
+  graph.lockfileRouting = {
+    registry,
+    'default-registry-alias': defaultRegistryAlias,
+    'scoped-registries': scopeRegistries,
+    'jsr-registries': jsrRegistries,
+    registries: mergedOptions.registries,
+  }
   loadNodes(
     graph,
     lockfileData.nodes,
@@ -464,14 +484,6 @@ export const loadObject = (
         ]),
       }
   loadEdges(graph, lockfileData.edges, mergedOptions, specCache)
-
-  // hydrate missing node-level registry data
-  for (const node of graph.nodes.values()) {
-    const [firstEdge] = node.edgesIn
-    if (firstEdge?.spec.registry) {
-      node.registry = firstEdge.spec.registry
-    }
-  }
 
   graph.sortNodes()
   return graph

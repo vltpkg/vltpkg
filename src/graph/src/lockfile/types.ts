@@ -1,4 +1,5 @@
 import type { DepID } from '@vltpkg/dep-id'
+import { defaultScopeRegistries } from '@vltpkg/spec'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type {
   Integrity,
@@ -64,6 +65,17 @@ export type SpecCache = Map<string, Spec>
  * Bump when making breaking format changes.
  */
 export const LOCKFILE_VERSION = 1
+
+/**
+ * The `scoped-registries` entries that are defaults, not user routing:
+ * `@jsr` follows `jsr-registries.jsr`, as `getOptions` maps it.
+ */
+export const scopeRegistryDefaults = (
+  jsrRegistries: Record<string, string> | undefined,
+): Record<string, string> => ({
+  ...defaultScopeRegistries,
+  ...(jsrRegistries?.jsr ? { '@jsr': jsrRegistries.jsr } : {}),
+})
 
 export const getFlagNumFromNode = (node: {
   optional?: boolean

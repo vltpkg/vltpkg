@@ -44,6 +44,10 @@ import {
   postPlacementPeerCheck,
   startPeerPlacement,
 } from './peers.ts'
+import {
+  assertNoRegistryDrift,
+  withParentRegistryHint,
+} from './registry-drift.ts'
 import { compareByHasPeerDeps } from './sorting.ts'
 import type {
   ExplicitAddMap,
@@ -402,6 +406,8 @@ const fetchManifestsForDeps = async (
   const reuseTasks: ReuseTask[] = []
   const forkRequests: PeerContextEntryInput[] = []
 
+  const from = scurry.resolve(fromNode.location)
+
   // resolve the spec each dep is placed with before any lookup
   const entries: DepEntry[] = []
   for (const { spec: originalSpec, type } of deps) {
@@ -437,6 +443,8 @@ const fetchManifestsForDeps = async (
         continue
       }
     }
+    // after the swap: a modifier with a registry prefix settles it
+    assertNoRegistryDrift(graph, fromNode, spec, from)
     entries.push({
       spec,
       type,
@@ -458,7 +466,6 @@ const fetchManifestsForDeps = async (
   // pick the reuse candidate once, here, so the placement loop below
   // does not repeat the lookup, and hydrate it when it is a bare
   // detached copy from a lockfile loaded without node_modules
-  const from = scurry.resolve(fromNode.location)
   const pending: Promise<void>[] = []
   for (const e of entries) {
     // prefer the existing edge target when it still satisfies: lockfile
@@ -640,7 +647,7 @@ const fetchManifestsForDeps = async (
             if (!isExplicit && (edgeOptional || fromNode.optional)) {
               return undefined
             }
-            throw er
+            throw withParentRegistryHint(er, spec, fromNode)
           })
 
     // awaited below; a throw before that must not leave it unhandled
@@ -908,12 +915,7 @@ const processPlacementTasks = async (
           const type = shorten(depTypeName, name, manifest)
           let depSpec: Spec
           try {
-            depSpec = Spec.parse(name, bareSpec, {
-              ...options,
-              // git/file/remote parents have no spec.registry, so fall
-              // back to the configured one. see vltpkg/vltpkg#1580.
-              registry: spec.registry ?? options.registry,
-            })
+            depSpec = Spec.parse(name, bareSpec, options)
           } catch (er) {
             throw asDependencySpecError(er, node, type)
           }
@@ -997,6 +999,16 @@ const processPlacementTasks = async (
         continue
       }
       nextPeerDeps.set(name, { ...dep, spec: active.modifier.spec })
+    }
+
+    // a pinned peer stops before it is linked to another registry's
+    // copy, as a pinned dependency does before its fetch
+    if (graph.registryPins) {
+      /* c8 ignore next - appendNodes always passes scurry */
+      const from = scurry?.resolve(node.location) ?? node.location
+      for (const { spec } of nextPeerDeps.values()) {
+        assertNoRegistryDrift(graph, node, spec, from)
+      }
     }
 
     // finish peer placement for this node, resolving satisfied peers

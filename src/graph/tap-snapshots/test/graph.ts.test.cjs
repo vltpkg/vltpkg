@@ -171,7 +171,6 @@ Set {
     "peerSetHash": undefined,
     "platform": undefined,
     "projectRoot": #
-    "registry": undefined,
     "resolved": undefined,
     "resolvedFromLockfile": false,
     "typeTarget": undefined,
@@ -255,7 +254,9 @@ Set {
               "npm": "https://registry.npmjs.org/",
             },
             "registry": "https://registry.npmjs.org/",
-            "scoped-registries": Object {},
+            "scoped-registries": Object {
+              "@jsr": "https://npm.jsr.io/",
+            },
           },
           "overridden": false,
           "range": undefined,
@@ -296,7 +297,6 @@ Set {
           "peerSetHash": undefined,
           "platform": undefined,
           "projectRoot": #
-          "registry": undefined,
           "resolved": undefined,
           "resolvedFromLockfile": false,
           "typeTarget": undefined,
@@ -383,7 +383,9 @@ Set {
               "npm": "https://registry.npmjs.org/",
             },
             "registry": "https://registry.npmjs.org/",
-            "scoped-registries": Object {},
+            "scoped-registries": Object {
+              "@jsr": "https://npm.jsr.io/",
+            },
           },
           "overridden": false,
           "range": undefined,
@@ -424,7 +426,6 @@ Set {
           "peerSetHash": undefined,
           "platform": undefined,
           "projectRoot": #
-          "registry": undefined,
           "resolved": undefined,
           "resolvedFromLockfile": false,
           "typeTarget": undefined,
@@ -460,7 +461,6 @@ Set {
     "peerSetHash": undefined,
     "platform": undefined,
     "projectRoot": #
-    "registry": undefined,
     "resolved": undefined,
     "resolvedFromLockfile": false,
     "typeTarget": undefined,
@@ -492,7 +492,6 @@ Set {
     "peerSetHash": undefined,
     "platform": undefined,
     "projectRoot": #
-    "registry": undefined,
     "resolved": undefined,
     "resolvedFromLockfile": false,
     "typeTarget": undefined,

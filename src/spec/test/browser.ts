@@ -567,6 +567,46 @@ t.test('built-in npm registry', t => {
   t.end()
 })
 
+t.test('@jsr scope default', t => {
+  const bare = Spec.parse('@jsr/std__path', '^1', {})
+  t.equal(bare.registry, 'https://npm.jsr.io/', 'routed to jsr')
+  t.equal(bare.scopeRegistry, 'https://npm.jsr.io/')
+  t.equal(
+    bare.conventionalRegistryTarball,
+    undefined,
+    'no tarball guess for a jsr registry',
+  )
+
+  t.equal(
+    Spec.parse('@jsr/std__path', '^1', {
+      'jsr-registries': { jsr: 'https://jsr.local/' },
+    }).registry,
+    'https://jsr.local/',
+    'follows the jsr alias',
+  )
+
+  t.equal(
+    Spec.parse('@jsr/std__path', '^1', {
+      'jsr-registries': { jsr: 'https://jsr.local/' },
+      'scoped-registries': { '@jsr': 'https://mine.local/' },
+    }).registry,
+    'https://mine.local/',
+    'a scoped-registries entry wins',
+  )
+
+  t.equal(
+    Spec.parse('@luca/cases', 'jsr:1', {}).final.registry,
+    'https://npm.jsr.io/',
+    'jsr: specs unchanged',
+  )
+  t.equal(
+    Spec.parse('foo', '^1', {}).registry,
+    'https://registry.vlt.io/upstream/npm/',
+    'other names unaffected',
+  )
+  t.end()
+})
+
 t.test(
   'setting default registry does not configure the npm: alias',
   async t => {

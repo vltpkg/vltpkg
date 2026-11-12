@@ -1,4 +1,5 @@
 import { appendNodes } from './append-nodes.ts'
+import { collectRegistryPins } from './registry-drift.ts'
 import { mark } from '@vltpkg/output/trace'
 import {
   compareByHasPeerDeps,
@@ -182,6 +183,7 @@ export const refreshIdealGraph = async ({
       }
     }
     graph.lockedResolutions = locked
+    graph.registryPins ??= collectRegistryPins(graph)
     graph.resetEdges()
     // the options block on disk no longer matches the config this graph
     // was built with, so the lockfile has to be written even when the
@@ -233,6 +235,7 @@ export const refreshIdealGraph = async ({
 
   // locked resolutions only apply to the rebuild that captured them
   graph.lockedResolutions = undefined
+  graph.registryPins = undefined
 
   for (const importer of graph.importers) {
     for (const [name, edge] of importer.edgesOut) {

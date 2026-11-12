@@ -129,6 +129,11 @@ which records the alias in `package.json`:
 }
 ```
 
+The alias covers that package only: its own `@acme/*` dependencies
+resolve through `scoped-registries`, so keep the scope mapped when a
+package depends on other private packages (see
+[Registry Consistency](/client/registries#registry-consistency)).
+
 ### Public packages
 
 Public packages on `main` install without a token — the registry

@@ -108,7 +108,11 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
   options: {
-    registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' }
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      a: 'https://a.example.com/',
+      b: 'https://b.example.com/'
+    }
   },
   nodes: {
     '~a~bar@1.2.3': [
@@ -119,27 +123,6 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
       <1 empty item>,
       { name: 'bar', version: '1.2.3', dependencies: { x: '1.x' } }
     ],
-    '~a~x@1.99.99': [
-      0,
-      'x',
-      <1 empty item>,
-      'https://a.example.com/x/-/x-1.99.99.tgz',
-      <1 empty item>,
-      {
-        name: 'x',
-        version: '1.99.99',
-        description: 'x on a',
-        dependencies: { y: '1' }
-      }
-    ],
-    '~a~y@1.99.99': [
-      0,
-      'y',
-      <1 empty item>,
-      'https://a.example.com/y/-/y-1.99.99.tgz',
-      <1 empty item>,
-      { name: 'y', version: '1.99.99' }
-    ],
     '~b~baz@1.2.3': [
       0,
       'baz',
@@ -148,35 +131,34 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
       <1 empty item>,
       { name: 'baz', version: '1.2.3', dependencies: { x: '1.x' } }
     ],
-    '~b~x@1.1.1': [
+    '~npm~x@1.5.0': [
       0,
       'x',
       <1 empty item>,
-      'https://b.example.com/x/-/x-1.1.1.tgz',
+      'https://registry.npmjs.org/x/-/x-1.5.0.tgz',
       <1 empty item>,
       {
         name: 'x',
-        version: '1.1.1',
-        description: 'x on b',
-        dependencies: { y: '1000' }
+        version: '1.5.0',
+        description: 'x on npm',
+        dependencies: { y: '1' }
       }
     ],
-    '~b~y@1000.0.0': [
+    '~npm~y@1.0.0': [
       0,
       'y',
       <1 empty item>,
-      'https://b.example.com/y/-/y-1000.0.0.tgz',
+      'https://registry.npmjs.org/y/-/y-1.0.0.tgz',
       <1 empty item>,
-      { name: 'y', version: '1000.0.0' }
+      { name: 'y', version: '1.0.0' }
     ]
   },
   edges: {
     'file~_d bar': 'prod a:bar@1.x ~a~bar@1.2.3',
     'file~_d baz': 'prod b:baz@1.x ~b~baz@1.2.3',
-    '~a~bar@1.2.3 x': 'prod 1.x ~a~x@1.99.99',
-    '~a~x@1.99.99 y': 'prod 1 ~a~y@1.99.99',
-    '~b~baz@1.2.3 x': 'prod 1.x ~b~x@1.1.1',
-    '~b~x@1.1.1 y': 'prod 1000 ~b~y@1000.0.0'
+    '~a~bar@1.2.3 x': 'prod 1.x ~npm~x@1.5.0',
+    '~b~baz@1.2.3 x': 'prod 1.x ~npm~x@1.5.0',
+    '~npm~x@1.5.0 y': 'prod 1 ~npm~y@1.0.0'
   }
 }
 `
