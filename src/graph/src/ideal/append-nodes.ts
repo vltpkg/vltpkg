@@ -459,7 +459,7 @@ const fetchManifestsForDeps = async (
   // pick the reuse candidate once, here, so the placement loop below
   // does not repeat the lookup, and hydrate it when it is a bare
   // detached copy from a lockfile loaded without node_modules
-  const from = scurry.resolve(fromNode.location)
+  const from = fromNode.resolvedLocation(scurry)
   const pending: Promise<void>[] = []
   for (const e of entries) {
     // prefer the existing edge target when it still satisfies: lockfile
