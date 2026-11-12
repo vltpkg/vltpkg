@@ -28,7 +28,7 @@ import { basename, dirname, resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
 import { unload } from '@vltpkg/vlt-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { workspaceCache } from '@vltpkg/workspaces'
+import { Monorepo, workspaceCache } from '@vltpkg/workspaces'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -376,9 +376,11 @@ t.test('install with cleanInstall option (ci command)', async t => {
 // `vlt ci` through the real reify, with the detached child that deletes
 // parked dirs replaced by a fake that records the paths it is handed: a
 // real one holds the testdir on windows (EBUSY)
+const rootParkName = /^\.VLT\.DELETE\.[^.]+\.node_modules$/
 const ciSetup = async (
   t: Test,
   fixture: Parameters<Test['testdir']>[0],
+  rollbackMocks: Record<string, unknown> = {},
 ) => {
   t.teardown(() => unload('project'))
   const projectRoot = t.testdir(fixture)
@@ -390,6 +392,7 @@ const ciSetup = async (
   const { RollbackRemove: SpawnMockRemove } = await t.mockImport<
     typeof import('@vltpkg/rollback-remove')
   >('@vltpkg/rollback-remove', {
+    ...rollbackMocks,
     'node:child_process': {
       spawn: () => {
         const paths: string[] = []
@@ -421,16 +424,24 @@ const ciSetup = async (
         },
       )
     ).install
-  const opts = (extra?: Record<string, unknown>) =>
-    ({
+  // with the monorepo the cli passes, so reify sees the workspaces
+  const opts = (extra?: Record<string, unknown>) => {
+    const scurry = new PathScurry(projectRoot)
+    const packageJson = new PackageJson()
+    return {
       projectRoot,
-      scurry: new PathScurry(projectRoot),
-      packageJson: new PackageJson(),
+      scurry,
+      packageJson,
+      monorepo: Monorepo.maybeLoad(projectRoot, {
+        scurry,
+        packageJson,
+      }),
       packageInfo: mockPackageInfo,
       allowScripts: ':not(*)',
       registries: { npm: 'https://registry.npmjs.org/' },
       ...extra,
-    }) as unknown as InstallOptions
+    } as unknown as InstallOptions
+  }
   const ci = {
     cleanInstall: true,
     expectLockfile: true,
@@ -439,7 +450,7 @@ const ciSetup = async (
   // the root node_modules, as `vlt ci` parks it
   const isRootPark = (p: string) =>
     dirname(resolve(p)) === resolve(projectRoot) &&
-    /^\.VLT\.DELETE\.[^.]+\.node_modules$/.test(basename(p))
+    rootParkName.test(basename(p))
   const parked = () =>
     readdirSync(projectRoot).filter(f => f.startsWith('.VLT.DELETE.'))
   return {
@@ -596,14 +607,21 @@ t.test(
 )
 
 t.test('a failed ci restores node_modules', async t => {
-  const setup = async (t: Test) => {
-    const s = await ciSetup(t, {
-      'package.json': JSON.stringify({
-        name: 'root',
-        version: '1.0.0',
-        dependencies: { abbrev: '2.0.0' },
-      }),
-    })
+  const setup = async (
+    t: Test,
+    rollbackMocks?: Record<string, unknown>,
+  ) => {
+    const s = await ciSetup(
+      t,
+      {
+        'package.json': JSON.stringify({
+          name: 'root',
+          version: '1.0.0',
+          dependencies: { abbrev: '2.0.0' },
+        }),
+      },
+      rollbackMocks,
+    )
     await s.install(s.opts())
     writeFileSync(resolve(s.projectRoot, 'node_modules/.marker'), '')
     s.spawned.length = 0
@@ -657,6 +675,48 @@ t.test('a failed ci restores node_modules', async t => {
     })
     await t.rejects(install(s.opts(s.ci)), /idealBuild failed/)
     restored(t, s)
+  })
+
+  t.test('or deletes it when it cannot be put back', async t => {
+    const fsp = await import('node:fs/promises')
+    const s = await setup(t, {
+      'node:fs/promises': {
+        ...fsp,
+        rename: async (from: string, to: string) => {
+          if (rootParkName.test(basename(from))) {
+            throw Object.assign(new Error('directory not empty'), {
+              code: 'ENOTEMPTY',
+            })
+          }
+          return fsp.rename(from, to)
+        },
+      },
+    })
+    await t.rejects(
+      s.install(
+        s.opts({
+          ...s.ci,
+          packageInfo: createMockPackageInfo({
+            extract: async () => {
+              throw error('extract failed')
+            },
+          }),
+        }),
+      ),
+      /extract failed/,
+    )
+    const handed = s.spawned.flat().map(p => resolve(p))
+    t.ok(
+      handed.some(s.isRootPark),
+      'node_modules is handed to a child',
+    )
+    t.strictSame(
+      s
+        .parked()
+        .filter(f => !handed.includes(resolve(s.projectRoot, f))),
+      [],
+      'nothing parked is left behind',
+    )
   })
 })
 
@@ -1655,14 +1715,14 @@ t.test(
     } as unknown as InstallOptions
 
     const removedPaths: string[] = []
-    let confirmed = false
-    let rolledBack = false
+    const events: string[] = []
 
     const { install } = await t.mockImport<
       typeof import('../src/install.ts')
     >('../src/install.ts', {
       '../src/ideal/build.ts': {
         build: async () => {
+          events.push('idealBuild')
           throw error('idealBuild failed for testing', {})
         },
       },
@@ -1673,12 +1733,13 @@ t.test(
         RollbackRemove: class MockRollbackRemove {
           async rm(path: string) {
             removedPaths.push(path)
+            events.push('rm')
           }
           confirm() {
-            confirmed = true
+            events.push('confirm')
           }
           async rollback() {
-            rolledBack = true
+            events.push('rollback')
           }
         },
       },
@@ -1698,11 +1759,11 @@ t.test(
       removedPaths.some(p => p.includes('node_modules')),
       'should have attempted to remove node_modules directory',
     )
-    t.notOk(
-      confirmed,
-      'should not hand node_modules to a child before the install succeeded',
+    t.strictSame(
+      events,
+      ['rm', 'idealBuild', 'rollback', 'confirm'],
+      'should rollback removal after error, and confirm only what is left',
     )
-    t.ok(rolledBack, 'should rollback removal after error')
   },
 )
 

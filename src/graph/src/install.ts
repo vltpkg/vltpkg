@@ -378,6 +378,8 @@ export const install = async (
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
+    // what ci could not put back is deleted, never left parked
+    if (options.cleanInstall) remover.confirm()
     // Remove hidden lockfile on failure
     try {
       const hiddenLockfile = resolve(
