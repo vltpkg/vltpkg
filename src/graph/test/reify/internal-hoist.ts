@@ -2,17 +2,21 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
-import { readdirSync } from 'node:fs'
+import * as fs from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
+import type { MakeDirectoryOptions, PathLike, symlink } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import type { Node } from '../../src/index.ts'
 import { actual } from '../../src/index.ts'
 import {
   internalHoist,
   pickNodeToHoist,
 } from '../../src/reify/internal-hoist.ts'
+import { symlinkSyncMkdirp } from '../../src/reify/symlink-sync.ts'
 
 t.test('basic hoisting', async t => {
   const mainManifest = { name: 'root' }
@@ -250,6 +254,100 @@ t.test('basic hoisting with existing links to replace', async t => {
     ),
     ['foo'],
   )
+})
+
+t.test('scope dirs are made before linking', async t => {
+  const gitId = joinDepIDTuple([
+    'git',
+    'git@github.com/vltpkg/foo',
+    'main',
+  ])
+  const hoist = async (t: Test, scopeDir: boolean) => {
+    const mainManifest = { name: 'root' }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      'vlt.json': JSON.stringify({
+        dependencies: { '@vltpkg/foo': 'github:vltpkg/foo' },
+      }),
+      node_modules: {
+        '@vltpkg': {
+          foo: t.fixture(
+            'symlink',
+            `../.vlt/${gitId}/node_modules/@vltpkg/foo`,
+          ),
+        },
+        '.vlt': {
+          ...(scopeDir ? { node_modules: { '@vltpkg': {} } } : {}),
+          [gitId]: {
+            node_modules: {
+              '@vltpkg': {
+                foo: {
+                  'package.json': JSON.stringify({
+                    name: '@vltpkg/foo',
+                    version: '1.1.1',
+                  }),
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+    const made: string[] = []
+    const noParent: string[] = []
+    const { internalHoist } = await t.mockImport<
+      typeof import('../../src/reify/internal-hoist.ts')
+    >('../../src/reify/internal-hoist.ts', {
+      'node:fs': {
+        ...fs,
+        mkdirSync: (
+          path: PathLike,
+          options?: MakeDirectoryOptions,
+        ) => {
+          made.push(String(path))
+          return fs.mkdirSync(path, options)
+        },
+      },
+      '../../src/reify/symlink-sync.ts': {
+        symlinkSyncMkdirp: (
+          target: string,
+          link: string,
+          type?: symlink.Type,
+        ) => {
+          if (!existsSync(dirname(link))) noParent.push(link)
+          symlinkSyncMkdirp(target, link, type)
+        },
+      },
+    })
+    const scurry = new PathScurry(projectRoot)
+    const graph = actual.load({
+      projectRoot,
+      mainManifest,
+      scurry,
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.load(projectRoot),
+    })
+    await internalHoist(graph, { projectRoot, scurry }, {
+      rm: async (path: string) => await rm(path),
+    } as unknown as RollbackRemove)
+    const scope = scurry.resolve(
+      'node_modules/.vlt/node_modules/@vltpkg',
+    )
+    t.strictSame(readdirSync(scope), ['foo'], 'scoped link hoisted')
+    return { made, noParent, scope }
+  }
+
+  t.test('fresh hoist dir', async t => {
+    const { made, noParent, scope } = await hoist(t, false)
+    t.strictSame(noParent, [], 'no link into a missing dir')
+    t.strictSame(made, [scope], 'scope dir made once')
+  })
+
+  t.test('scope dir already there', async t => {
+    const { made, noParent } = await hoist(t, true)
+    t.strictSame(noParent, [], 'no link into a missing dir')
+    t.strictSame(made, [], 'listed scope dir not made again')
+  })
 })
 
 t.test(
