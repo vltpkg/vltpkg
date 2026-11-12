@@ -747,12 +747,34 @@ for (const [writer, get] of writers) {
         makeTar([{ path: 'package/big', size: body.length }, body]),
       )
       const small = brotliCompressSync(makeTar([...pjEntry]))
+      // ratio above 8: the guess is too small, so it takes more chunks
+      const sparse = Buffer.alloc(256 * 1024)
+      const n = noise(64 * 256)
+      for (let i = 0; i < 64; i++) {
+        n.copy(sparse, i * 4096, i * 256, (i + 1) * 256)
+      }
+      const sparseTar = makeTar([
+        { path: 'package/sparse', size: sparse.length },
+        sparse,
+      ])
+      const high = brotliCompressSync(sparseTar)
+      t.ok(high.length * 8 < sparseTar.length, 'guess too small')
+      t.ok(high.length * 8 > 64 * 1024, 'above the floor')
       const dir = t.testdir()
       await unpack(big, dir + '/big', 'brotli')
       t.ok(readFileSync(dir + '/big/big').equals(body), 'same bytes')
       await unpack(small, dir + '/small', 'brotli')
       t.equal(readFileSync(dir + '/small/package.json', 'utf8'), pj)
-      t.strictSame(chunks, [big.length * 8, 64 * 1024])
+      await unpack(high, dir + '/high', 'brotli')
+      t.ok(
+        readFileSync(dir + '/high/sparse').equals(sparse),
+        'same bytes',
+      )
+      t.strictSame(chunks, [
+        big.length * 8,
+        64 * 1024,
+        high.length * 8,
+      ])
     })
 
     t.test(

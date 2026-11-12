@@ -1125,6 +1125,21 @@ t.test('multi-member and 0 / 0xffffffff trailers', async t => {
   ])
 })
 
+t.test('the gunzip chunk is capped at 256 MiB', async t => {
+  const { CacheEntry, chunks } = await withChunkSizes(t)
+  const json = noiseJSON(300 * 1024)
+  const body = Buffer.concat([
+    gzipSync(json),
+    Buffer.from([0, 0xff, 0xff, 0xff, 0xff]),
+  ])
+  t.ok(body.length * 1000 + 1 > 256 * 1024 * 1024, 'above the cap')
+  t.strictSame(
+    gzipEntry(CacheEntry, body).json(),
+    JSON.parse(json.toString()) as unknown,
+  )
+  t.strictSame(chunks, [256 * 1024 * 1024])
+})
+
 t.test('gzip body shorter than a trailer', t => {
   const c = gzipEntry(CacheEntry, Buffer.from([0x1f, 0x8b]))
   t.throws(() => c.unzip(), { code: 'Z_BUF_ERROR' })

@@ -666,8 +666,6 @@ export class CacheEntry {
   #gunzip(): Buffer {
     // without a content-length, every _body read is a fresh concat
     const body = this._body
-    // we know that if we know it's gzip, that the body has been
-    // flattened to a single buffer, so save the extra call.
     /* c8 ignore start */
     if (body.length === 0) throw error('Invalid buffer, cant unzip')
     /* c8 ignore stop */
