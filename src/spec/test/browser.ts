@@ -504,6 +504,7 @@ t.test('getOptions memoized per options object', t => {
   t.not(getOptions({}), getOptions({}), 'keyed by identity')
   t.strictSame(getOptions({}), getOptions({}))
   t.strictSame(getOptions(), getOptions({}), 'no options')
+  t.not(getOptions(), getOptions(), 'no options: filled fresh')
   t.end()
 })
 

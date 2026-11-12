@@ -437,7 +437,11 @@ t.test('BFS parents resolve without path-scurry', async t => {
   )
   const foo = [...(graph.nodesByName.get('foo') ?? [])][0]
   t.ok(foo)
-  t.equal(froms.get('bar'), foo?.resolvedLocation(scurry))
+  t.equal(
+    froms.get('bar'),
+    foo && new PathScurry(t.testdirName).resolve(foo.location),
+    'from is what path-scurry resolves',
+  )
 })
 
 t.test('append file type of nodes', async t => {
