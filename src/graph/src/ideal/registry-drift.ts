@@ -1,25 +1,17 @@
 import { baseDepID, getTuple, splitDepID } from '@vltpkg/dep-id'
-import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import type { Spec } from '@vltpkg/spec'
 import { isErrorWithCause, isObject } from '@vltpkg/types'
+import type { Edge } from '../edge.ts'
 import type { Graph } from '../graph.ts'
 import type { Node } from '../node.ts'
 
 /**
- * A locked edge with no registry prefix whose target came from another
- * registry than the one its spec resolves to: what earlier versions
- * wrote while unprefixed dependencies used their parent's registry.
+ * The DepID registry segment of each {@link pinnedRegistry} target,
+ * keyed by declaring package (registry and name) and dep name.
  */
-export type RegistryPin = {
-  id: DepID
-  /** the DepID registry segment of the locked target */
-  registry: string
-}
-
-/** Pins keyed by declaring package (registry and name) and dep name. */
-export type RegistryPins = Map<string, RegistryPin>
+export type RegistryPins = Map<string, string>
 
 /**
  * The {@link RegistryPins} of a locked graph, if any. Lockfile edges
@@ -30,15 +22,29 @@ export const collectRegistryPins = (
   graph: Graph,
 ): RegistryPins | undefined => {
   let pins: RegistryPins | undefined
-  for (const { from, name, spec, to } of graph.edges) {
-    if (!to || !isUnprefixed(spec)) continue
-    const [type, registry] = splitDepID(to.id)
-    if (type !== 'registry' || to.name !== spec.final.name) continue
-    if (registryOf(spec) === registry) continue
+  for (const edge of graph.edges) {
+    const registry = pinnedRegistry(edge)
+    if (registry === undefined) continue
     pins ??= new Map()
-    pins.set(pinKey(from, name), { id: to.id, registry })
+    pins.set(pinKey(edge.from, edge.name), registry)
   }
   return pins
+}
+
+/**
+ * The DepID registry segment of the target of an edge with no registry
+ * prefix, when the spec now resolves to another registry: what earlier
+ * versions locked while unprefixed dependencies used their parent's
+ * registry. Edges placed by this version are never pinned.
+ */
+export const pinnedRegistry = ({
+  spec,
+  to,
+}: Edge): string | undefined => {
+  if (!to || !isUnprefixed(spec)) return
+  const [type, registry] = splitDepID(to.id)
+  if (type !== 'registry' || to.name !== spec.final.name) return
+  return registryOf(spec) === registry ? undefined : registry
 }
 
 /**
@@ -51,11 +57,10 @@ export const assertNoRegistryDrift = (
   spec: Spec,
   from: string,
 ) => {
-  const pin = graph.registryPins?.get(pinKey(fromNode, spec.name))
-  if (!pin || !isUnprefixed(spec)) return
+  const was = graph.registryPins?.get(pinKey(fromNode, spec.name))
+  if (was === undefined || !isUnprefixed(spec)) return
   const now = registryOf(spec)
-  if (now === pin.registry) return
-  const was = pin.registry
+  if (now === was) return
   throw error(
     `${spec} is locked to ${was} but now resolves from ${now}.\n` +
       `${label(fromNode)} declares it with no registry prefix, and ` +
@@ -144,7 +149,17 @@ const label = (node: Node) =>
 
 /** The graph modifier selector of the edge from `fromNode`. */
 const selector = (fromNode: Node, spec: Spec) =>
-  `${fromNode.mainImporter ? ':root' : `#${fromNode.name}`} > #${spec.name}`
+  `${fromNode.mainImporter ? ':root' : `#${depName(fromNode)}`} > #${spec.name}`
+
+/**
+ * The dependency name `#name` matches `node` by: the name of an edge
+ * into it, which an alias (`"internal": "corp:internal-lib@^1"`) sets
+ * apart from the package name.
+ */
+const depName = (node: Node) => {
+  const [edge] = node.edgesIn
+  return edge?.name ?? node.name
+}
 
 /** The URL of a DepID registry segment. */
 const urlOf = (registry: string, spec: Spec) =>

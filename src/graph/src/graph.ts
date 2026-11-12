@@ -211,8 +211,9 @@ export class Graph implements GraphLike {
   lockedResolutions?: Map<string, DepID>
 
   /**
-   * Locked edges whose target came from their parent's registry, taken
-   * before a rebuild: re-resolving one from another registry stops.
+   * Locked unprefixed edges whose target is not from the registry their
+   * spec resolves to, taken before a rebuild: re-resolving one from that
+   * registry stops.
    */
   registryPins?: RegistryPins
 

@@ -109,14 +109,7 @@ t.test('collectRegistryPins', async t => {
       ['root', 'top', '^1', registryId('corp', 'top@1.0.0')],
     ]),
   )
-  t.strictSame(
-    [...(pins?.values() ?? [])],
-    [
-      { id: corpUtils, registry: 'corp' },
-      { id: registryId('corp', 'cat@1.0.0'), registry: 'corp' },
-      { id: registryId('corp', 'top@1.0.0'), registry: 'corp' },
-    ],
-  )
+  t.strictSame([...(pins?.values() ?? [])], ['corp', 'corp', 'corp'])
 })
 
 t.test('assertNoRegistryDrift', async t => {
@@ -211,6 +204,19 @@ t.test('assertNoRegistryDrift', async t => {
     },
     'an importer parent',
   )
+
+  // `#name` matches the dependency name, not the package name
+  graph.addEdge(
+    'prod',
+    Spec.parse('internal', 'corp:internal-lib@^2', options),
+    graph.mainImporter,
+    parent,
+  )
+  t.throws(drift(spec('utils')), {
+    message: new RegExp(
+      '\nTo keep corp, add "#internal > #utils": "corp:utils@\\^1"',
+    ),
+  })
 })
 
 t.test('withParentRegistryHint', async t => {
@@ -325,5 +331,17 @@ t.test('withParentRegistryHint', async t => {
         ),
       },
     )
+  })
+
+  t.test('an aliased parent', async t => {
+    graph.addEdge(
+      'prod',
+      Spec.parse('internal', 'corp:internal-lib@^1', options),
+      graph.mainImporter,
+      parent,
+    )
+    t.match(withParentRegistryHint(notFound(utils), utils, parent), {
+      message: /add "#internal > #utils": "corp:utils@\^1"/,
+    })
   })
 })
