@@ -5,7 +5,7 @@ import { ExecCommand } from '../exec-command.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 export { views } from '../exec-command.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () =>
   commandUsage({

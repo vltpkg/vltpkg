@@ -15,7 +15,7 @@ import type { NodeLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { ParserState } from '../../src/types.ts'
 
-// the `npm` alias is no longer built in; configure it so the
+// pin the `npm` alias to npmjs, not the built-in public mirror, so the
 // default-registry DepIDs hydrate to the npm registry URL. Typed as
 // SpecOptions so the surrounding `as NodeLike` casts stay valid.
 const npmSpecOptions: SpecOptions = {

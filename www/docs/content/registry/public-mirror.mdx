@@ -15,6 +15,10 @@ Anyone can use it as an ordinary npm registry. It needs **no account,
 no login, and no token**. It's read-only: you can install from it, but
 you can't publish to it.
 
+It's also the vlt CLI's built-in default: the `npm` registry alias
+(`registries.npm`) points here unless you configure it, so vlt uses
+the mirror with no config at all.
+
 It's intended for **open source packages**: projects, CI pipelines,
 and contributors that install public packages and don't need private
 packages or a mirror scoped to their own account. If you need either
@@ -39,13 +43,24 @@ for the latest numbers.
 
 <TabItem label="vlt">
 
+No config needed: it's vlt's built-in `npm` registry.
+
+<Code code="$ vlt install" title="Terminal" lang="bash" />
+
+To pin it explicitly, for example in a project whose user config
+points elsewhere:
+
 <Code
-  code={`$ vlt config set registry=https://registry.vlt.io/upstream/npm/ \\
-  registries.npm=https://registry.vlt.io/upstream/npm/
-$ vlt install`}
+  code="$ vlt config set registries.npm=https://registry.vlt.io/upstream/npm/"
   title="Terminal"
   lang="bash"
 />
+
+A `registry` scalar (for example from `vlt login`) still takes
+precedence for bare specs.
+
+Since the mirror is read-only, `vlt publish` and the account commands
+never use it; they need a registry you configure.
 
 </TabItem>
 

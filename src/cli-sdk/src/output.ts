@@ -15,6 +15,7 @@ import { printErr, formatOptions } from './print-err.ts'
 import {
   hasConfiguredRegistry,
   hasNpmRegistry,
+  hasReadableRegistry,
   missingNpmRegistryError,
   missingRegistryError,
 } from './require-registry.ts'
@@ -266,10 +267,13 @@ export const outputCommand = async <T>(
       typeof needsRegistry === 'function' ?
         needsRegistry(conf)
       : needsRegistry
-    if (registry && !hasConfiguredRegistry(conf)) {
+    if (registry === 'write' && !hasConfiguredRegistry(conf)) {
       throw missingRegistryError()
     }
-    if (needsNpmRegistry && !hasNpmRegistry(conf)) {
+    if (
+      (registry === 'read' && !hasReadableRegistry(conf)) ||
+      (needsNpmRegistry && !hasNpmRegistry(conf))
+    ) {
       throw missingNpmRegistryError(
         conf.options['default-registry-alias'],
       )

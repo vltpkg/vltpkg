@@ -194,6 +194,16 @@ export class Graph implements GraphLike {
   lockfileStale = false
 
   /**
+   * The configured `registries.npm` URL, when the lockfile this graph
+   * was loaded from left `npm` at the built-in default (vlt's public
+   * npm mirror). Saving leaves it out of the lockfile until a node
+   * resolves through it, so installing from such a lockfile with
+   * another `registries.npm` (e.g. an account mirror) does not rewrite
+   * it.
+   */
+  unpinnedNpmRegistry?: string
+
+  /**
    * Lockfile edge targets captured immediately before `resetEdges()`.
    * Used by the ideal builder to reuse locked resolutions across a rebuild.
    */

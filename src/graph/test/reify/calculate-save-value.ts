@@ -2,8 +2,8 @@ import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 import { calculateSaveValue } from '../../src/reify/calculate-save-value.ts'
 
-// the `npm` alias is no longer built in; configure it so `npm:` specs
-// resolve in these cases.
+// pin the `npm` alias to npmjs, not the built-in public mirror, for the
+// `npm:` specs in these cases.
 const specOptions = {
   registries: { npm: 'https://registry.npmjs.org/' },
 }

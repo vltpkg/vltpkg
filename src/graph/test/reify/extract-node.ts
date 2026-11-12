@@ -15,8 +15,8 @@ import { extractNode } from '../../src/reify/extract-node.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
-  // the `npm` alias is no longer built in; configure it so the default
-  // registry DepID hydrates back to the `npm` alias name
+  // pin the `npm` alias to npmjs, not the built-in public mirror, so the
+  // default registry DepID hydrates back to the `npm` alias name
   registries: { npm: 'https://registry.npmjs.org/' },
 }
 

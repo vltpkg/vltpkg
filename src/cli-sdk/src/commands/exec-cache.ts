@@ -77,7 +77,7 @@ const usageDef = {
   },
 } as const satisfies CommandUsageDefinition
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () => commandUsage(usageDef)
 

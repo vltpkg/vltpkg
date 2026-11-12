@@ -854,10 +854,10 @@ t.test('init', async t => {
       Command.needsRegistry({
         positionals,
       } as unknown as LoadedConfig)
-    t.equal(needs(['init', 'x']), false)
-    t.equal(needs(['init']), false)
+    t.equal(needs(['init', 'x']), undefined)
+    t.equal(needs(['init']), undefined)
     for (const p of [[], ['list'], ['ls'], ['link']]) {
-      t.equal(needs(p), true, p.join(' '))
+      t.equal(needs(p), 'read', p.join(' '))
     }
   })
 

@@ -11,15 +11,19 @@ import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
 
 /**
- * There is no default registry. This is the single message used
- * everywhere a registry is required but missing.
+ * A write or account command has no registry the user configured. The
+ * built-in `npm` alias is a read-only public mirror, so it never
+ * satisfies these commands.
  */
 export const missingRegistryError = (): Error =>
   error(
     [
       'Missing registry configuration.',
       '',
-      'vlt has no default registry. Run `vlt setup` to get configured.',
+      "vlt's built-in `npm` registry is a read-only public mirror, so this",
+      'command needs a registry you configure. Run `vlt setup` to use your',
+      'vlt.io account, pass `--registry=<url>`, or, to publish, set',
+      '`publishConfig.registry` in package.json.',
       '',
       'See https://docs.vlt.sh/cli for other ways to set a registry.',
     ].join('\n'),
@@ -92,7 +96,9 @@ export const parseSpecArg = (
  * Install-related commands need the alias that bare specs resolve
  * through (not merely some other configured registry) so packages and
  * transitive deps get stable, alias-keyed DepIDs. That alias is
- * `registries.npm` unless `default-registry-alias` points elsewhere.
+ * `registries.npm` (built in: vlt's public npm mirror) unless
+ * `default-registry-alias` points elsewhere, so this is only reachable
+ * when that alias has no URL.
  */
 export const missingNpmRegistryError = (
   alias: string = defaultRegistryName,
@@ -101,8 +107,10 @@ export const missingNpmRegistryError = (
     [
       `Missing ${alias} registry configuration.`,
       '',
-      `Install commands require the \`registries.${alias}\` alias.`,
-      'Run `vlt setup` to get configured.',
+      `Bare specs resolve through the \`registries.${alias}\` alias`,
+      '(`default-registry-alias`), which has no URL. Set it with',
+      `\`vlt config set registries.${alias}=<url>\`, or point`,
+      '`default-registry-alias` at a configured alias.',
       '',
       'See https://docs.vlt.sh/cli for other ways to set a registry.',
     ].join('\n'),
@@ -150,16 +158,26 @@ export const resolveRegistryAlias = (
 }
 
 /**
+ * Whether `alias` resolves to vlt's built-in, read-only npm mirror.
+ * A user-configured `npm` alias (any other URL) is not it.
+ */
+export const isBuiltinMirror = (
+  alias: string,
+  url: string,
+): boolean =>
+  alias === defaultRegistryName && url === defaultRegistries.npm
+
+/**
  * The registries the user has actually configured, when no explicit
  * `--registry` URL is set. Order follows the `registries` config (which
  * preserves insertion order).
  *
- * Built-in defaults (eg `gh`) are excluded so they don't implicitly
- * satisfy "a registry is configured" for account/auth commands. A
- * built-in alias the user has overridden to a different URL counts as
- * configured. Built-in aliases can still be targeted explicitly via
- * `vlt registry <alias> <cmd>` (which resolves through
- * {@link resolveRegistryAlias}).
+ * Built-in defaults (`gh`, and the read-only `npm` mirror) are excluded
+ * so they don't implicitly satisfy "a registry is configured" for
+ * account/auth commands. A built-in alias the user has overridden to a
+ * different URL counts as configured. The built-in `gh` alias can still
+ * be targeted explicitly via `vlt registry gh <cmd>`; the built-in
+ * `npm` mirror cannot, since it is read-only.
  */
 const gatherCandidates = (
   conf: LoadedConfig,
@@ -171,7 +189,7 @@ const gatherCandidates = (
 }
 
 /**
- * Whether the current config provides a registry a `needsRegistry`
+ * Whether the config provides a registry a `needsRegistry: 'write'`
  * command could act against without prompting for setup. True when an
  * explicit `--registry` URL is set or the user has configured at least
  * one non-default registry alias. Kept consistent with
@@ -182,15 +200,24 @@ export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
   !!conf.options.registry || gatherCandidates(conf).length > 0
 
 /**
- * Whether the alias bare specs resolve through is configured:
- * `registries.npm` by default, or whatever `default-registry-alias`
- * points at. A scalar `--registry` or some unrelated alias is not
- * enough: install-related commands need the default alias itself.
+ * Whether the alias bare specs resolve through has a URL (the built-in
+ * `npm` mirror counts): `registries.npm` by default, or whatever
+ * `default-registry-alias` points at. A scalar `--registry` or some
+ * unrelated alias is not enough: install-related commands need the
+ * default alias itself.
  * Kept next to {@link hasConfiguredRegistry} so both pre-command
  * gates share the same config surface.
  */
 export const hasNpmRegistry = (conf: LoadedConfig): boolean =>
   !!conf.options.registries[conf.options['default-registry-alias']]
+
+/**
+ * Whether a read-only command (`needsRegistry: 'read'`) has a registry
+ * to fetch from: anything {@link hasConfiguredRegistry} accepts, or the
+ * default alias (the built-in `npm` mirror unless configured).
+ */
+export const hasReadableRegistry = (conf: LoadedConfig): boolean =>
+  hasConfiguredRegistry(conf) || hasNpmRegistry(conf)
 
 /**
  * Synchronous, non-interactive registry resolution used by
@@ -202,15 +229,14 @@ export const requireRegistry = (
   conf: LoadedConfig,
   alias?: string,
 ): string => {
-  if (alias !== undefined) return resolveRegistryAlias(conf, alias)
+  if (alias !== undefined) return resolveWriteAlias(conf, alias)
   const { registry } = conf.options
   if (registry) return registry
   const candidates = gatherCandidates(conf)
   const [first, second] = candidates
   if (!first) throw missingRegistryError()
   if (!second) return first.url
-  const defaultUrl =
-    conf.options.registries[conf.options['default-registry-alias']]
+  const defaultUrl = configuredDefaultUrl(conf)
   if (defaultUrl) return defaultUrl
   throw ambiguousRegistryError(candidates)
 }
@@ -237,7 +263,7 @@ export const resolveRegistry = async (
     output?: NodeJS.WritableStream
   } = {},
 ): Promise<string> => {
-  if (alias !== undefined) return resolveRegistryAlias(conf, alias)
+  if (alias !== undefined) return resolveWriteAlias(conf, alias)
   const { registry } = conf.options
   if (registry) return registry
   const candidates = gatherCandidates(conf)
@@ -249,7 +275,32 @@ export const resolveRegistry = async (
   if (interactive) {
     return selectRegistry(candidates, { defaultAlias, input, output })
   }
-  const defaultUrl = conf.options.registries[defaultAlias]
+  const defaultUrl = configuredDefaultUrl(conf)
   if (defaultUrl) return defaultUrl
   throw ambiguousRegistryError(candidates)
+}
+
+/**
+ * {@link resolveRegistryAlias} for account/auth commands: the built-in
+ * `npm` mirror is read-only, so naming it is a missing registry.
+ */
+const resolveWriteAlias = (
+  conf: LoadedConfig,
+  alias: string,
+): string => {
+  const url = resolveRegistryAlias(conf, alias)
+  if (isBuiltinMirror(alias, url)) throw missingRegistryError()
+  return url
+}
+
+/**
+ * The `default-registry-alias` URL used as the non-interactive
+ * fallback, unless it is the built-in, read-only `npm` mirror.
+ */
+const configuredDefaultUrl = (
+  conf: LoadedConfig,
+): string | undefined => {
+  const alias = conf.options['default-registry-alias']
+  const url = conf.options.registries[alias]
+  return url && !isBuiltinMirror(alias, url) ? url : undefined
 }

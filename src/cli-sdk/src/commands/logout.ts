@@ -3,7 +3,7 @@ import { commandUsage } from '../config/usage.ts'
 import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'write'
 
 export const usage: CommandUsage = () =>
   commandUsage({

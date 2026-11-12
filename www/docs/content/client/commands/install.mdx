@@ -53,14 +53,24 @@ described above.
 
 ### Registry packages
 
-Installing by name (a **bare spec**) requires a registry to be
-configured — the `npm` alias has no built-in URL. Run
-[`vlt setup`](/client/registries#getting-started-with-vlt-setup) once
-to configure your account's registries. `vlt install` (and
-`vlt update`, `vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) require
-`registries.npm` specifically — or, if you changed
-`default-registry-alias`, the alias it names — and fail with a config
-error when it is missing.
+Installing by name (a **bare spec**) works with no configuration: the
+built-in `npm` alias is
+[vlt's public npm mirror](/registry/public-mirror), so package
+metadata and tarballs come from `registry.vlt.io`. The mirror is
+read-only and has usage limits; run
+[`vlt setup`](/client/registries#getting-started-with-vlt-setup) to
+use your account's npm mirror instead, or set another registry:
+
+<Code
+  code="$ vlt config set registries.npm=https://registry.npmjs.org/"
+  title="Terminal"
+  lang="bash"
+/>
+
+`vlt install` (and `vlt update`, `vlt uninstall`, `vlt ci`,
+`vlx`/`vlt exec`) resolve bare specs through `registries.npm` — or, if
+you changed `default-registry-alias`, the alias it names — and fail
+with a config error when that alias has no URL.
 
 <Code
   code={`# Latest version

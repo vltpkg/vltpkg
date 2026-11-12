@@ -16,12 +16,12 @@ Run an account command against a specific configured registry,
 selected by its [`registries`](/client/registries) alias instead of a
 full URL.
 
-vlt has no default registry, so account and authentication commands
-need to know _which_ registry to act against.
-`vlt registry <alias> <command>` scopes any of those commands to the
-registry configured under `<alias>` in your `vlt.json` — handy when
-you have more than one (for example the `npm` and `main` aliases
-created by [`vlt setup`](/client/commands/setup)).
+vlt's built-in `npm` alias is a read-only public mirror, so account
+and authentication commands need to know _which_ configured registry
+to act against. `vlt registry <alias> <command>` scopes any of those
+commands to the registry configured under `<alias>` in your `vlt.json`
+— handy when you have more than one (for example the `npm` and `main`
+aliases created by [`vlt setup`](/client/commands/setup)).
 
 ## Groupable commands
 

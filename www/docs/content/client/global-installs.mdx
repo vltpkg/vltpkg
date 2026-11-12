@@ -102,10 +102,11 @@ lockfile plus one workspace manifest.
 
 The lockfile records the registries it was resolved with (user config
 plus the folder's `vlt.json`). Use the same registries on every
-machine (e.g. [`vlt setup`](/client/commands/setup) with the same
-account), else `vlt install -g` rewrites the lockfile and
-`--frozen-lockfile` fails. Registries set in the folder's `vlt.json`
-are committed with it and override same-named user ones:
+machine (the built-in default everywhere, or
+[`vlt setup`](/client/commands/setup) with the same account), else
+`vlt install -g` rewrites the lockfile and `--frozen-lockfile` fails.
+Registries set in the folder's `vlt.json` are committed with it and
+override same-named user ones:
 
 <Code
   code={JSON.stringify(

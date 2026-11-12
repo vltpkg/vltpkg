@@ -34,6 +34,25 @@ const config = {
 
 t.strictSame(await Command.command(config), { username: 'username' })
 
+t.test('the built-in npm mirror is not a whoami target', async t => {
+  t.equal(Command.needsRegistry, 'write')
+  await t.rejects(
+    Command.command({
+      options: {
+        'default-registry-alias': 'npm',
+        registries: {
+          gh: 'https://npm.pkg.github.com/',
+          npm: 'https://registry.vlt.io/upstream/npm/',
+        },
+      },
+    } as unknown as LoadedConfig),
+    {
+      message: /^Missing registry configuration/,
+      cause: { code: 'ECONFIG' },
+    },
+  )
+})
+
 t.strictSame(Command.views.json({}), {})
 t.strictSame(
   Command.views.human({ username: 'username' }),

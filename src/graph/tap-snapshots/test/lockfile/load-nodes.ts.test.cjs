@@ -78,7 +78,7 @@ Array [
     "optional": false,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.vlt.io/upstream/npm/foo/-/foo-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {
@@ -129,7 +129,7 @@ Array [
     "optional": false,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.vlt.io/upstream/npm/baz/-/baz-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {
@@ -199,7 +199,7 @@ Object {
     "name": "test",
     "version": "1.0.0",
   },
-  "resolved": undefined,
+  "resolved": "https://registry.vlt.io/upstream/npm/foo/-/foo-1.0.0.tgz",
   "version": "1.0.0",
 }
 `
@@ -307,7 +307,7 @@ Array [
     "optional": true,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.vlt.io/upstream/npm/bar/-/bar-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {
@@ -330,7 +330,7 @@ Array [
     "optional": false,
     "platform": undefined,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.vlt.io/upstream/npm/foo/-/foo-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {
@@ -397,7 +397,7 @@ Array [
     "integrity": undefined,
     "name": "standalone",
     "optional": false,
-    "resolved": undefined,
+    "resolved": "https://registry.vlt.io/upstream/npm/standalone/-/standalone-1.0.0.tgz",
     "version": "1.0.0",
   },
 ]

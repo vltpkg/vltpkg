@@ -219,12 +219,14 @@ export const definition = j
                     For example, \`express@latest\` will be resolved by looking
                     up the metadata from this registry.
 
-                    There is **no default**. When unset, bare specifiers fall
-                    back to the registry alias named by
-                    \`--default-registry-alias\` (\`npm\` by default). If that
-                    alias is also unconfigured, commands that need a registry
-                    fail with a config error. Run \`vlt setup\` (or
-                    \`vlt login\`) to configure one.
+                    There is **no default**. When unset, bare specifiers
+                    resolve through the registry alias named by
+                    \`--default-registry-alias\` (\`npm\` by default: vlt's
+                    public, read-only npm mirror,
+                    \`https://registry.vlt.io/upstream/npm/\`, unless
+                    configured). Publishing and account commands need a
+                    registry you configure: run \`vlt setup\`, or set this
+                    option.
 
                     See https://docs.vlt.sh/cli
       `,
@@ -240,11 +242,12 @@ export const definition = j
                     \`--registry\` nor a matching \`--scoped-registries\` entry
                     applies.
 
-                    Defaults to \`npm\`. Note that the \`npm\` alias has **no**
-                    built-in URL -- it must be configured (for example via
-                    \`vlt setup\`, which points it at your vlt.io registry),
-                    otherwise bare specifiers will have no registry to resolve
-                    against.
+                    Defaults to \`npm\`. The built-in \`npm\` alias is vlt's
+                    public, read-only npm mirror
+                    (\`https://registry.vlt.io/upstream/npm/\`), which has
+                    usage limits. \`vlt setup\` points it at your vlt.io
+                    account's npm mirror, or set \`registries.npm\` to use
+                    another registry (e.g. \`https://registry.npmjs.org/\`).
       `,
     },
   })
@@ -262,10 +265,9 @@ export const definition = j
                     vlt --registries loc=http://reg.local install foo@loc:foo@1.x
                     \`\`\`
 
-                    There is **no** built-in \`npm\` registry URL; the \`npm\`
-                    alias must be configured (e.g. via \`vlt setup\`) before it
-                    can be used. The \`gh\` alias has a built-in default
-                    that can be overridden here. A name used by
+                    The \`npm\` (vlt's public npm mirror) and \`gh\` (GitHub
+                    Packages) aliases are built in and can be overridden
+                    here. A name used by
                     \`--jsr-registries\` or \`--git-hosts\` (e.g. \`jsr\`,
                     \`github\`), or a built-in protocol (e.g. \`file\`), is
                     an error.

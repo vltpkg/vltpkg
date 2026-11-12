@@ -253,8 +253,8 @@ t.test(
 
     const graph = await build({
       ...specOptions,
-      // the `npm` alias is no longer built in; configure it so the
-      // `npm:foo` alias resolves
+      // pin the `npm` alias to npmjs, not the built-in public mirror,
+      // for the `npm:foo` alias
       registries: {
         ...specOptions.registries,
         npm: 'https://registry.npmjs.org/',

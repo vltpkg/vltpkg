@@ -15,7 +15,7 @@ import { createHostContextsMap } from '../query-host-contexts.ts'
 import { sortScopeLocations } from '../sort-scope-locations.ts'
 import { minimatch } from 'minimatch'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () =>
   commandUsage({

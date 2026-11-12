@@ -5113,9 +5113,9 @@ t.test('packument parse failure retries once', async t => {
 })
 
 t.test('no registry configured', async t => {
-  // there is no default registry -- both places that build a registry
-  // URL throw ECONFIG rather than a bare `Invalid URL` TypeError
-  const noRegistry = { cache }
+  // a default-registry-alias with no URL -- both places that build a
+  // registry URL throw ECONFIG rather than a bare `Invalid URL` TypeError
+  const noRegistry = { cache, 'default-registry-alias': 'nope' }
   await t.rejects(packument('abbrev@latest', noRegistry), {
     cause: { code: 'ECONFIG' },
   })

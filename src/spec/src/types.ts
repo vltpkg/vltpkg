@@ -10,10 +10,12 @@ export type SpecOptionsFilled = {
   /**
    * The registry where a spec should be resolved against.
    *
-   * There is **no default**. If no registry is configured, registry-type
-   * specs parsed without one will have `spec.registry === undefined`, and
-   * anything that needs to build a registry URL will fail. Named registry
-   * aliases (`gh:`, `jsr:`) and `scoped-registries` are unaffected.
+   * There is **no default**: when unset, bare specs resolve through the
+   * `default-registry-alias` (the built-in `npm` alias, vlt's public npm
+   * mirror, unless configured). Only when that alias has no URL do
+   * registry-type specs get `spec.registry === undefined`, and anything
+   * that needs to build a registry URL fails. Named registry aliases
+   * (`gh:`, `jsr:`) and `scoped-registries` are unaffected.
    *
    * For bare specs, this takes precedence over the
    * `default-registry-alias` lookup but not over a matching
@@ -26,9 +28,10 @@ export type SpecOptionsFilled = {
    * protocol resolve through, when no `registry` or `scoped-registries`
    * entry applies.
    *
-   * Defaults to `'npm'`. The `npm` alias itself has **no** built-in URL --
-   * it must be configured (e.g. via `vlt setup`), otherwise bare specs
-   * resolve with `spec.registry === undefined`.
+   * Defaults to `'npm'`, whose built-in URL is vlt's public, read-only
+   * npm mirror (`https://registry.vlt.io/upstream/npm/`). `vlt setup` or
+   * `registries.npm` point it elsewhere. An alias with no URL makes bare
+   * specs resolve with `spec.registry === undefined`.
    */
   'default-registry-alias': string
   /** shorthand prefix names for known registries */

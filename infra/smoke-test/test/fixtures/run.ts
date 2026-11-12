@@ -182,10 +182,10 @@ const spawnCommand = async (
       }
 
       const spawnEnv = {
-        // there is no default registry, so registry-hitting commands
-        // need one configured. individual tests can override this.
+        // pin registry.npmjs.org so CI does not depend on the shared
+        // public mirror (the built-in npm alias). individual tests can
+        // override this.
         VLT_REGISTRY: 'https://registry.npmjs.org/',
-        // install-related commands also require the npm alias
         VLT_REGISTRIES: 'npm=https://registry.npmjs.org/',
         ...variant.env,
         ...env,

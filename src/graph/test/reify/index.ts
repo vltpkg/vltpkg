@@ -56,8 +56,9 @@ const createMockPackageInfo = (
 
 const mockPackageInfo = createMockPackageInfo()
 
-// the `npm` alias is no longer a built-in default; configure it so bare
-// specs resolve and default-registry DepIDs canonicalize to `~npm~...`.
+// pin the `npm` alias to npmjs, not the built-in public mirror, so bare
+// specs resolve there and default-registry DepIDs canonicalize to
+// `~npm~...`.
 const registries = { npm: 'https://registry.npmjs.org/' }
 
 t.test('integrity learned while extracting is pinned', async t => {
