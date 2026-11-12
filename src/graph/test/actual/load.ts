@@ -2491,3 +2491,82 @@ t.test('catalog spec errors', async t => {
     )
   })
 })
+
+t.test('deps of an aliased package use the root config', async t => {
+  const options = {
+    ...configData,
+    registries: {
+      ...configData.registries,
+      corp: 'https://corp.example.com/',
+    },
+  } satisfies SpecOptions
+  const fooId = joinDepIDTuple(['registry', 'corp', 'foo@1.0.0'])
+  const barId = joinDepIDTuple(['registry', 'npm', 'bar@1.0.0'])
+  const projectRoot = t.testdir({
+    'vlt.json': '{}',
+    'package.json': JSON.stringify({
+      name: 'app',
+      version: '1.0.0',
+      dependencies: { foo: 'corp:foo@^1.0.0' },
+    }),
+    node_modules: {
+      '.vlt': {
+        [fooId]: {
+          node_modules: {
+            foo: {
+              'package.json': JSON.stringify({
+                name: 'foo',
+                version: '1.0.0',
+                // baz is missing
+                dependencies: { bar: '^1.0.0', baz: '^1.0.0' },
+              }),
+            },
+            bar: t.fixture(
+              'symlink',
+              `../../${barId}/node_modules/bar`,
+            ),
+          },
+        },
+        [barId]: {
+          node_modules: {
+            bar: {
+              'package.json': JSON.stringify({
+                name: 'bar',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+      foo: t.fixture('symlink', `.vlt/${fooId}/node_modules/foo`),
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const registries = (loadManifests: boolean) => {
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests,
+      skipHiddenLockfile: true,
+      ...options,
+    })
+    const foo = graph.nodes.get(fooId)
+    return {
+      bar: foo?.edgesOut.get('bar')?.spec.final.registry,
+      baz: foo?.edgesOut.get('baz')?.spec.final.registry,
+    }
+  }
+  t.strictSame(
+    registries(false),
+    { bar: options.registry, baz: undefined },
+    'hydrated from the DepID',
+  )
+  t.strictSame(
+    registries(true),
+    { bar: options.registry, baz: options.registry },
+    'parsed from the manifest, missing dep included',
+  )
+})

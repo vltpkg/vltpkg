@@ -12,6 +12,7 @@ import {
   shorten,
   shouldInstallDepType,
 } from '../src/dependencies.ts'
+import { Graph } from '../src/graph.ts'
 import { Spec } from '@vltpkg/spec'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
@@ -188,7 +189,6 @@ const createMockNode = (
   projectRoot: '/test',
   dev: false,
   optional: false,
-  registry: 'https://registry.npmjs.org/',
   toJSON: () => ({}) as any,
   toString: () => 'test-node',
   setResolved: () => {},
@@ -263,7 +263,6 @@ t.test('getRawDependencies', async t => {
     t.strictSame(lodash?.name, 'lodash')
     t.strictSame(lodash?.bareSpec, '^4.17.21')
     t.strictSame(lodash?.type, 'dependencies')
-    t.strictSame(lodash?.registry, 'https://registry.npmjs.org/')
 
     const jest = result.get('jest')
     t.strictSame(jest?.name, 'jest')
@@ -598,27 +597,6 @@ t.test('getRawDependencies', async t => {
     )
     t.ok(result.has('lodash'), 'should include dependency')
   })
-
-  t.test('should use node registry in dependencies', async t => {
-    const manifest: Manifest = {
-      dependencies: {
-        lodash: '^4.17.21',
-      },
-    }
-    const customRegistry = 'https://custom.registry.com/'
-    const node = createMockNode(
-      { registry: customRegistry },
-      manifest,
-    )
-    const result = getRawDependencies(node)
-
-    const lodash = result.get('lodash')
-    t.strictSame(
-      lodash?.registry,
-      customRegistry,
-      'should use node registry',
-    )
-  })
 })
 
 t.test('getDependencies', async t => {
@@ -709,57 +687,43 @@ t.test('getDependencies', async t => {
     )
   })
 
-  t.test(
-    'should pass registry from node to spec parsing',
-    async t => {
-      const manifest: Manifest = {
-        dependencies: {
-          'scoped-pkg': '^1.0.0',
-        },
-      }
-      const customRegistry = 'https://custom.registry.com/'
-      const node = createMockNode(
-        { registry: customRegistry },
-        manifest,
-      )
-      const result = getDependencies(node, {})
-
-      const scopedPkg = result.get('scoped-pkg')
-      t.ok(scopedPkg?.spec, 'should have parsed spec')
-      // The spec should have been created with the custom registry
-      t.strictSame(
-        scopedPkg?.spec.name,
-        'scoped-pkg',
-        'should parse name correctly',
-      )
-    },
-  )
-
-  t.test(
-    'falls back to options.registry when the node has none',
-    async t => {
-      const manifest: Manifest = {
+  t.test('parses with options whatever the parent', async t => {
+    const options = {
+      registry: 'https://options.registry.com/',
+      registries: { corp: 'https://corp.example.com/' },
+    }
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      mainManifest: { name: 'root', version: '1.0.0' },
+      ...options,
+    })
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', 'corp:foo@^1.0.0', options),
+      {
+        name: 'foo',
+        version: '1.0.0',
         dependencies: { lodash: '^4.17.21' },
-      }
-      const node = createMockNode({ registry: undefined }, manifest)
-      const optionsRegistry = 'https://options.registry.com/'
-      const result = getDependencies(node, {
-        registry: optionsRegistry,
-      })
-      t.strictSame(
-        result.get('lodash')?.spec.registry,
-        optionsRegistry,
-        'uses the configured registry',
-      )
+      },
+    )!
+    t.equal(
+      node.id,
+      joinDepIDTuple(['registry', 'corp', 'foo@1.0.0']),
+    )
+    t.strictSame(
+      getDependencies(node, options).get('lodash')?.spec.registry,
+      options.registry,
+      'not the parent registry',
+    )
 
-      // and with neither, the built-in npm mirror
-      const none = getDependencies(node, {})
-      t.strictSame(
-        none.get('lodash')?.spec.registry,
-        'https://registry.vlt.io/upstream/npm/',
-      )
-    },
-  )
+    // and with none configured, the built-in npm mirror
+    const none = getDependencies(node, {})
+    t.strictSame(
+      none.get('lodash')?.spec.registry,
+      'https://registry.vlt.io/upstream/npm/',
+    )
+  })
 
   t.test('should pass options to spec parsing', async t => {
     const manifest: Manifest = {

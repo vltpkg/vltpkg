@@ -1,13 +1,18 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, splitDepID } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { getOptions, Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { asDependency } from '../../src/dependencies.ts'
+import type { Graph } from '../../src/graph.ts'
 import { build } from '../../src/ideal/build.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 import { LOCKFILE_VERSION } from '../../src/lockfile/types.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { DepIDTuple } from '@vltpkg/dep-id'
@@ -882,4 +887,182 @@ t.test('a re-pin path-safety error is never kept', async t => {
     }),
     { message: 'bad name' },
   )
+})
+
+t.test('a lockfile written with registry inheritance', async t => {
+  const npm = 'https://registry.npmjs.org/'
+  const corp = 'https://corp.example.com/'
+  const registries = { npm, corp }
+  const options = getOptions({ registries })
+  const served: Record<string, Record<string, Manifest>> = {
+    [corp]: {
+      'internal-lib': {
+        name: 'internal-lib',
+        version: '1.0.0',
+        dependencies: { utils: '^1' },
+      },
+      // unrelated to the public utils
+      utils: { name: 'utils', version: '1.2.0' },
+    },
+    [npm]: {
+      utils: { name: 'utils', version: '1.9.0' },
+      'lodash-x': { name: 'lodash-x', version: '1.0.0' },
+    },
+  }
+  const fetched: string[] = []
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const { registry = '', name } = spec.final
+      fetched.push(`${registry}${name}`)
+      const mani = served[registry]?.[name]
+      if (mani) return mani
+      throw error('failed to fetch packument: 404 Not Found', {
+        code: 'ERESOLVE',
+        spec,
+        response: { statusCode: 404 },
+      })
+    },
+  } as unknown as PackageInfoClient
+  const internalLib = joinDepIDTuple([
+    'registry',
+    'corp',
+    'internal-lib@1.0.0',
+  ])
+  const corpUtils = joinDepIDTuple([
+    'registry',
+    'corp',
+    'utils@1.2.0',
+  ])
+  const lockfile = (
+    lockOptions: Record<string, unknown> = { registries },
+  ) =>
+    JSON.stringify({
+      lockfileVersion: LOCKFILE_VERSION,
+      options: lockOptions,
+      nodes: {
+        [internalLib]: [0, 'internal-lib'],
+        [corpUtils]: [0, 'utils'],
+      },
+      edges: {
+        [edgeKey(['file', '.'], 'internal-lib')]:
+          `prod corp:internal-lib@^1 ${internalLib}`,
+        [`${internalLib} utils`]: `prod ^1 ${corpUtils}`,
+      },
+    })
+  const run = async (
+    t: Test,
+    {
+      add = [],
+      modifiers,
+      vltLock = lockfile(),
+    }: {
+      add?: string[]
+      modifiers?: Record<string, string>
+      vltLock?: string
+    } = {},
+  ) => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'app',
+        version: '1.0.0',
+        dependencies: { 'internal-lib': 'corp:internal-lib@^1' },
+      }),
+      'vlt.json': JSON.stringify(modifiers ? { modifiers } : {}),
+      'vlt-lock.json': vltLock,
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    fetched.length = 0
+    const deps = new Map(
+      add.map(name => [
+        name,
+        asDependency({
+          type: 'prod',
+          spec: Spec.parse(name, '^1', options),
+        }),
+      ]),
+    )
+    return build({
+      ...options,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      add: Object.assign(
+        new Map([[joinDepIDTuple(['file', '.']), deps]]),
+        { modifiedDependencies: add.length > 0 },
+      ),
+      remove: Object.assign(new Map(), {
+        modifiedDependencies: false,
+      }) as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+      modifiers: GraphModifier.maybeLoad(options),
+    })
+  }
+  // a modifier marks the nodes on its path, so look up by name
+  const internalLibOf = (graph: Graph) => {
+    const [node] = graph.nodesByName.get('internal-lib') ?? []
+    return node
+  }
+  const utilsOf = (graph: Graph) =>
+    internalLibOf(graph)?.edgesOut.get('utils')?.to
+
+  t.test('an unchanged graph keeps the lockfile', async t => {
+    const graph = await run(t)
+    t.equal(utilsOf(graph)?.id, corpUtils)
+    t.strictSame(fetched, [], 'nothing fetched')
+  })
+
+  t.test('a graph change stops before fetching', async t => {
+    await t.rejects(run(t, { add: ['lodash-x'] }), {
+      message:
+        'utils@^1 is locked to corp but now resolves from npm.\n' +
+        'internal-lib@1.0.0 declares it with no registry prefix, and ' +
+        "unprefixed dependencies no longer use their parent's " +
+        'registry.\n' +
+        'To keep corp, add "#internal-lib > #utils": "corp:utils@^1" ' +
+        'to "modifiers" in vlt.json.\n' +
+        'To use npm, add "#internal-lib > #utils": "npm:utils@^1" ' +
+        'instead, or delete vlt-lock.json and node_modules and run ' +
+        'vlt install.',
+      cause: { code: 'ERESOLVE', found: 'npm', wanted: 'corp' },
+    })
+    t.notOk(fetched.includes(`${npm}utils`), 'not fetched from npm')
+  })
+
+  t.test('a modifier keeps the old registry', async t => {
+    const graph = await run(t, {
+      add: ['lodash-x'],
+      modifiers: { '#internal-lib > #utils': 'corp:utils@^1' },
+    })
+    const utils = utilsOf(graph)
+    t.equal(utils?.version, '1.2.0')
+    t.equal(utils && splitDepID(utils.id)[1], 'corp')
+    t.ok(graph.mainImporter.edgesOut.get('lodash-x')?.to, 'added')
+  })
+
+  t.test('a modifier accepts the new registry', async t => {
+    const graph = await run(t, {
+      add: ['lodash-x'],
+      modifiers: { '#internal-lib > #utils': 'npm:utils@^1' },
+    })
+    const utils = utilsOf(graph)
+    t.equal(utils?.version, '1.9.0')
+    t.equal(utils && splitDepID(utils.id)[1], 'npm')
+    const lib = internalLibOf(graph)
+    t.equal(lib && splitDepID(lib.id)[1], 'corp', 'the rest is kept')
+  })
+
+  t.test('a deliberate config change is not drift', async t => {
+    // the lockfile's own routing sent unprefixed deps to corp
+    const graph = await run(t, {
+      add: ['lodash-x'],
+      vltLock: lockfile({
+        registries,
+        'default-registry-alias': 'corp',
+      }),
+    })
+    t.equal(utilsOf(graph)?.version, '1.9.0', 're-resolved')
+  })
 })

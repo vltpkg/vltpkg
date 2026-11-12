@@ -39,7 +39,6 @@ Options stored: `modifiers`, `catalog`, `catalogs`, `scoped-registries`, `jsr-re
 
 - `ideal/build.ts`: loads lockfile first (prefer Virtual), falls back to Actual
 - `actual/load.ts`: uses hidden lockfile for fast path
-- After loading: hydrates missing node registry data from first incoming edge
 
 ## Performance (>50 nodes)
 

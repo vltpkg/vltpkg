@@ -75,7 +75,14 @@ export const getOptions = (
   registry: options?.registry,
   'default-registry-alias':
     options?.['default-registry-alias'] ?? defaultRegistryName,
-  'scoped-registries': options?.['scoped-registries'] ?? {},
+  // JSR packages name their JSR deps `@jsr/*`: send that scope to the
+  // jsr alias unless the user maps it
+  'scoped-registries': {
+    '@jsr':
+      options?.['jsr-registries']?.jsr ??
+      defaultScopeRegistries['@jsr'],
+    ...options?.['scoped-registries'],
+  },
   'git-hosts':
     options?.['git-hosts'] ?
       {

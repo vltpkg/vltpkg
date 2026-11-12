@@ -350,15 +350,6 @@ const parseDir = (
 
       if (depId) {
         let h = hydrate(depId, alias, options)
-        // if the parsed registry value is using the default value, then
-        // the node should inherit the registry value from its parent node
-        if (
-          h.type === 'registry' &&
-          h.registry === h.options.registry &&
-          fromNode.registry
-        ) {
-          h.registry = fromNode.registry
-        }
 
         // Check for active modifiers and replace spec even when not loading manifests
         const { spec: modifiedSpec, queryModifier } =
@@ -406,13 +397,7 @@ const parseDir = (
       const depType = shorten(type, alias, fromNode.manifest)
       let spec: Spec
       try {
-        spec = Spec.parse(alias, bareSpec, {
-          ...options,
-          // fall back to options.registry (which the lockfile merges into)
-          // so importer-level edges don't silently revert to the default
-          // npm registry. see vltpkg/vltpkg#1580.
-          registry: fromNode.registry ?? options.registry,
-        })
+        spec = Spec.parse(alias, bareSpec, options)
       } catch (er) {
         throw asDependencySpecError(er, fromNode, depType)
       }
@@ -489,10 +474,7 @@ const parseDir = (
       const depType = shorten(type, name, fromNode.manifest)
       let spec: Spec
       try {
-        spec = Spec.parse(name, bareSpec, {
-          ...options,
-          registry: fromNode.registry ?? options.registry,
-        })
+        spec = Spec.parse(name, bareSpec, options)
       } catch (er) {
         throw asDependencySpecError(er, fromNode, depType)
       }

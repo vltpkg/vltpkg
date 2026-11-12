@@ -503,6 +503,33 @@ t.test('use shorten registry name whenever possible', t => {
   t.end()
 })
 
+t.test('@jsr names get the jsr registry segment', t => {
+  const mani = { name: '@jsr/std__path', version: '1.0.0' }
+  const expected = joinDepIDTuple([
+    'registry',
+    'jsr',
+    '@jsr/std__path@1.0.0',
+  ])
+  resetCaches()
+  t.equal(
+    getId(Spec.parse('@jsr/std__path', '^1', {}), mani),
+    expected,
+  )
+  resetCaches()
+  t.equal(
+    getId(
+      Spec.parse('@jsr/std__path', '^1', {
+        'jsr-registries': { jsr: 'https://jsr.local/' },
+      }),
+      mani,
+    ),
+    expected,
+    'a jsr proxy keeps the alias name',
+  )
+  resetCaches()
+  t.end()
+})
+
 t.test('invalid values', t => {
   //@ts-expect-error
   t.throws(() => hydrateTuple(['workspace']))

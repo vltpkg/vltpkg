@@ -21,7 +21,6 @@ exports[`test/node.ts > TAP > Node > should print with special tag name 1`] = `
   manifest: [Object],
   typeTarget: undefined,
   projectRoot: #
-  registry: undefined,
   modifier: undefined,
   version: '1.0.0',
   resolved: undefined,

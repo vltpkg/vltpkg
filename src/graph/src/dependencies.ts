@@ -48,7 +48,6 @@ export type RawDependency = {
   name: string
   bareSpec: string
   type: DependencyTypeLong
-  registry?: string
 }
 
 /**
@@ -216,12 +215,7 @@ export const getRawDependencies = (node: NodeLike) => {
         ) {
           continue
         }
-        dependencies.set(name, {
-          name,
-          type: depType,
-          bareSpec,
-          registry: node.registry,
-        })
+        dependencies.set(name, { name, type: depType, bareSpec })
       }
     }
   }
@@ -295,12 +289,7 @@ export const getDependencies = (
     const depType = shorten(type, name, node.manifest)
     let spec: Spec
     try {
-      spec = Spec.parse(name, bareSpec, {
-        ...options,
-        // fall back to options.registry so deps don't lose the configured
-        // registry when the node itself has none. see vltpkg/vltpkg#1580.
-        registry: node.registry ?? options.registry,
-      })
+      spec = Spec.parse(name, bareSpec, options)
     } catch (er) {
       throw asDependencySpecError(er, node, depType)
     }

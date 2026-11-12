@@ -210,13 +210,6 @@ export class Node implements NodeLike {
   projectRoot: string
 
   /**
-   * For registry nodes, this is the registry we fetched them from.
-   * Needed because their un-prefixed dependencies need to come from
-   * the same registry, if it's not the default.
-   */
-  registry?: string
-
-  /**
    * If this node has been modified as part of applying a {@link GraphModifier}
    * then this field will contain the modifier query that was applied.
    * Otherwise, it will be `undefined`.

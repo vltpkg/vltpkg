@@ -7805,7 +7805,9 @@ Object {
   },
   "registry": undefined,
   "default-registry-alias": "npm",
-  "scoped-registries": Object {},
+  "scoped-registries": Object {
+    "@jsr": "https://npm.jsr.io/",
+  },
   "git-hosts": Object {
     "github": "git+ssh://git@github.com:$1/$2.git",
     "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",

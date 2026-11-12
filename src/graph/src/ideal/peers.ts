@@ -74,23 +74,15 @@ const nodeSatisfiesSpec = (
   )
 
 /**
- * Parse a spec with registry options from a parent node context.
- *
- * Inherits registry configuration from `graph.mainImporter.options` to ensure
- * consistent scope-registry and custom registry mappings. The `fromNode.registry`
- * override allows scoped packages to use their configured registry.
+ * Parse a spec with the root configuration in
+ * `graph.mainImporter.options`, whatever registry the declaring package
+ * came from.
  */
 const parseSpec = (
   name: string,
   bareSpec: string,
-  fromNode: Node,
   graph: Graph,
-): Spec =>
-  Spec.parse(name, bareSpec, {
-    ...graph.mainImporter.options,
-    registry:
-      fromNode.registry ?? graph.mainImporter.options.registry,
-  })
+): Spec => Spec.parse(name, bareSpec, graph.mainImporter.options)
 
 /**
  * Take private ownership of an entry's `specs` before writing to it: a
@@ -176,7 +168,7 @@ const shouldIgnoreContextMismatch = (
     if (!declared) continue
 
     // Parent declares this package - check if context target satisfies it
-    const parentSpec = parseSpec(peerName, declared, fromNode, graph)
+    const parentSpec = parseSpec(peerName, declared, graph)
     // If context target doesn't satisfy parent's spec, ignore the mismatch
     // because parent will resolve its own version anyway
     return !nodeSatisfiesSpec(
@@ -322,11 +314,7 @@ export const checkPeerEdgesCompatible = (
   }
 
   // Per-call memoization: avoid repeated satisfies() calls with identical args
-  const parseOpts = {
-    ...graph.mainImporter.options,
-    registry:
-      fromNode.registry ?? graph.mainImporter.options.registry,
-  }
+  const parseOpts = graph.mainImporter.options
   const fromLocation = fromNode.location
   const projectRoot = fromNode.projectRoot
   const monorepo = graph.monorepo
@@ -879,10 +867,7 @@ export const startPeerPlacement = (
 
     // get any potential sibling dependency from the
     // parent node that might have not been parsed yet
-    const siblingDeps = getDependencies(fromNode, {
-      ...options,
-      registry: fromNode.registry ?? options.registry,
-    })
+    const siblingDeps = getDependencies(fromNode, options)
     for (const [depName, dep] of siblingDeps) {
       queueMap.set(depName, dep)
     }
