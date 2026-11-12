@@ -33,7 +33,7 @@ alwaysApply: false
 
 ## Node (`node.ts`)
 
-**Identity**: `id: DepID`, `manifest?`, `name`, `version`, `integrity`, `resolved`, `registry`, `modifier`
+**Identity**: `id: DepID`, `manifest?`, `name`, `version`, `integrity`, `resolved`, `modifier`
 
 **Location**: `location` (default: `./node_modules/.vlt/<DepID>/node_modules/<name>`), `inVltStore()` (memoized), `resolvedLocation(scurry)` (memoized per location + scurry cwd), `nodeModules(scurry)`, `setDefaultLocation()`
 

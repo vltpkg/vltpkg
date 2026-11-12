@@ -511,12 +511,20 @@ t.test('resolve against the correct registries', async t => {
     dependencies: { y: '1000' },
   }
   const byManifest = { name: 'y', version: '1000.0.0' }
+  const npmxManifest = {
+    name: 'x',
+    version: '1.5.0',
+    description: 'x on npm',
+    dependencies: { y: '1' },
+  }
+  const npmyManifest = { name: 'y', version: '1.0.0' }
 
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
   })
 
   const registries = {
+    npm: 'https://registry.npmjs.org/',
     a: 'https://a.example.com/',
     b: 'https://b.example.com/',
   }
@@ -540,6 +548,8 @@ t.test('resolve against the correct registries', async t => {
           }
         case 'x':
           switch (spec.registry) {
+            case registries.npm:
+              return npmxManifest
             case registries.a:
               return axManifest
             case registries.b:
@@ -549,6 +559,8 @@ t.test('resolve against the correct registries', async t => {
           }
         case 'y':
           switch (spec.registry) {
+            case registries.npm:
+              return npmyManifest
             case registries.a:
               return ayManifest
             case registries.b:
@@ -590,7 +602,269 @@ t.test('resolve against the correct registries', async t => {
     new Set<DepID>(),
     add,
   )
+  // unprefixed deps resolve from the root configuration, not from the
+  // registry their parent came from
+  const x = joinDepIDTuple(['registry', 'npm', 'x@1.5.0'])
+  t.strictSame(
+    [...(graph.nodesByName.get('x') ?? [])].map(n => n.id),
+    [x],
+    'one x, from npm',
+  )
+  for (const name of ['bar', 'baz']) {
+    const [parent] = graph.nodesByName.get(name) ?? []
+    t.equal(parent?.edgesOut.get('x')?.to?.id, x, `${name} uses it`)
+  }
   t.matchSnapshot(inspect(graph, { colors: false, depth: 4 }))
+})
+
+/**
+ * Serves `served[registry][name]`; anything else is a registry 404.
+ */
+const registryPackageInfo = (
+  served: Record<string, Record<string, Manifest>>,
+) =>
+  ({
+    async manifest(spec: Spec) {
+      const { registry = '', name } = spec.final
+      const mani = served[registry]?.[name]
+      if (mani) return mani
+      throw error('failed to fetch packument: 404 Not Found', {
+        code: 'ERESOLVE',
+        spec,
+        url: `${registry}${name}`,
+        response: { statusCode: 404 },
+      })
+    },
+  }) as unknown as PackageInfoClient
+
+/** Append the root `dependencies` to a fresh graph. */
+const appendRoot = async (
+  t: Test,
+  options: SpecOptions,
+  dependencies: Record<string, string>,
+  packageInfo: PackageInfoClient,
+) => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...options,
+    mainManifest: { name: 'app', version: '1.0.0', dependencies },
+  })
+  const deps = Object.entries(dependencies).map(([name, bareSpec]) =>
+    asDependency({
+      type: 'prod',
+      spec: Spec.parse(name, bareSpec, options),
+    }),
+  )
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    deps,
+    new PathScurry(t.testdirName),
+    options,
+    new Set<DepID>(),
+  )
+  return graph
+}
+
+const npm = 'https://registry.npmjs.org/'
+const corp = 'https://corp.example.com/'
+
+/** The ids of the nodes named `name`. */
+const idsOf = (graph: Graph, name: string) =>
+  [...(graph.nodesByName.get(name) ?? [])].map(n => n.id)
+
+t.test(
+  'scoped dep of an aliased package uses the scope mapping',
+  async t => {
+    const options = {
+      registries: { npm, corp },
+      'scoped-registries': { '@acme': corp },
+    } satisfies SpecOptions
+    const graph = await appendRoot(
+      t,
+      options,
+      { '@acme/ui': 'corp:@acme/ui@^1' },
+      registryPackageInfo({
+        [corp]: {
+          '@acme/ui': {
+            name: '@acme/ui',
+            version: '1.0.0',
+            dependencies: { '@acme/tokens': '^1', 'lodash-x': '^1' },
+          },
+          '@acme/tokens': { name: '@acme/tokens', version: '1.0.0' },
+        },
+        [npm]: { 'lodash-x': { name: 'lodash-x', version: '1.0.0' } },
+      }),
+    )
+    t.strictSame(idsOf(graph, '@acme/tokens'), [
+      joinDepIDTuple(['registry', 'corp', '@acme/tokens@1.0.0']),
+    ])
+    t.strictSame(idsOf(graph, 'lodash-x'), [
+      joinDepIDTuple(['registry', 'npm', 'lodash-x@1.0.0']),
+    ])
+  },
+)
+
+t.test('jsr package with npm dependencies', async t => {
+  const jsr = 'https://npm.jsr.io/'
+  const options = { registries: { npm } } satisfies SpecOptions
+  const graph = await appendRoot(
+    t,
+    options,
+    { '@oak/oak': 'jsr:^17' },
+    registryPackageInfo({
+      [jsr]: {
+        '@jsr/oak__oak': {
+          name: '@jsr/oak__oak',
+          version: '17.2.2',
+          dependencies: {
+            '@jsr/std__path': '^1',
+            'path-to-regexp': '^6',
+          },
+        },
+        '@jsr/std__path': {
+          name: '@jsr/std__path',
+          version: '1.0.0',
+        },
+      },
+      [npm]: {
+        'path-to-regexp': {
+          name: 'path-to-regexp',
+          version: '6.3.0',
+        },
+      },
+    }),
+  )
+  t.strictSame(idsOf(graph, '@jsr/std__path'), [
+    joinDepIDTuple(['registry', 'jsr', '@jsr/std__path@1.0.0']),
+  ])
+  t.strictSame(idsOf(graph, 'path-to-regexp'), [
+    joinDepIDTuple(['registry', 'npm', 'path-to-regexp@6.3.0']),
+  ])
+})
+
+t.test(
+  'a peer of an aliased package links to the app copy',
+  async t => {
+    const options = {
+      registries: { npm, corp },
+    } satisfies SpecOptions
+    const graph = await appendRoot(
+      t,
+      options,
+      { kit: 'corp:kit@^1', 'lodash-x': '^1' },
+      registryPackageInfo({
+        [corp]: {
+          kit: {
+            name: 'kit',
+            version: '1.0.0',
+            peerDependencies: { 'lodash-x': '^1' },
+          },
+        },
+        [npm]: { 'lodash-x': { name: 'lodash-x', version: '1.0.0' } },
+      }),
+    )
+    const lodash = joinDepIDTuple([
+      'registry',
+      'npm',
+      'lodash-x@1.0.0',
+    ])
+    t.strictSame(idsOf(graph, 'lodash-x'), [lodash], 'one copy')
+    const [kit] = graph.nodesByName.get('kit') ?? []
+    t.equal(kit?.edgesOut.get('lodash-x')?.to?.id, lodash)
+  },
+)
+
+t.test('a 404 under a registry parent names it', async t => {
+  const partner = 'https://partner.example.com/'
+  const options = {
+    registries: { npm, partner },
+  } satisfies SpecOptions
+  const widget = (dependencies: Record<string, string>) => ({
+    name: 'widget',
+    version: '1.0.0',
+    dependencies,
+  })
+  // partner hosts what its packages depend on: the closed world
+  const served = (dependencies: Record<string, string>) =>
+    registryPackageInfo({
+      [partner]: {
+        widget: widget(dependencies),
+        gear: { name: 'gear', version: '1.0.0' },
+        '@p/gear': { name: '@p/gear', version: '1.0.0' },
+      },
+    })
+
+  await t.rejects(
+    appendRoot(
+      t,
+      options,
+      { widget: 'partner:widget@^1' },
+      served({ gear: '^1' }),
+    ),
+    {
+      message:
+        'failed to fetch packument: 404 Not Found\n' +
+        'gear has no registry prefix, so it was requested from npm, ' +
+        'but its parent widget@1.0.0 came from partner. To install it ' +
+        'from partner, add "#widget > #gear": "partner:gear@^1" to ' +
+        '"modifiers" in vlt.json.',
+      cause: {
+        code: 'ERESOLVE',
+        url: `${npm}gear`,
+        response: { statusCode: 404 },
+      },
+    },
+    'unscoped',
+  )
+
+  await t.rejects(
+    appendRoot(
+      t,
+      options,
+      { widget: 'partner:widget@^1' },
+      served({ '@p/gear': '^1' }),
+    ),
+    {
+      message: new RegExp(
+        'To install it from partner, map @p to ' +
+          'https://partner\\.example\\.com/ in scoped-registries, or ' +
+          'add "#widget > #@p/gear": "partner:@p/gear@\\^1" to ' +
+          '"modifiers" in vlt\\.json\\.$',
+      ),
+    },
+    'scoped',
+  )
+
+  await t.rejects(
+    appendRoot(
+      t,
+      {
+        ...options,
+        'scoped-registries': { '@acme': 'https://acme.example.com/' },
+      },
+      { widget: 'partner:widget@^1' },
+      served({ '@acme/gear': '^1' }),
+    ),
+    { message: /^failed to fetch packument: 404 Not Found$/ },
+    'a scope-mapped dep is a config choice: no hint',
+  )
+
+  const graph = await appendRoot(
+    t,
+    options,
+    { widget: 'partner:widget@^1' },
+    registryPackageInfo({
+      [partner]: {
+        widget: {
+          ...widget({}),
+          optionalDependencies: { gear: '^1' },
+        },
+      },
+    }),
+  )
+  t.strictSame(idsOf(graph, 'gear'), [], 'optional still skipped')
 })
 
 // Add a basic test for appendNodes that verifies it can handle

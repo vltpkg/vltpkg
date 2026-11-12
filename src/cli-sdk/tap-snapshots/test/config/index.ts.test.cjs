@@ -22,7 +22,7 @@ exports[`test/config/index.ts > TAP > load both configs, layers merge with proje
   'jsr-registries': { jsr: 'https://npm.jsr.io/' },
   registry: undefined,
   'default-registry-alias': 'npm',
-  'scoped-registries': {},
+  'scoped-registries': { '@jsr': 'https://npm.jsr.io/' },
   registries: {
     gh: 'https://npm.pkg.github.com/',
     npm: 'https://registry.vlt.io/upstream/npm/'

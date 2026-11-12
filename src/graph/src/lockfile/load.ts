@@ -465,14 +465,6 @@ export const loadObject = (
       }
   loadEdges(graph, lockfileData.edges, mergedOptions, specCache)
 
-  // hydrate missing node-level registry data
-  for (const node of graph.nodes.values()) {
-    const [firstEdge] = node.edgesIn
-    if (firstEdge?.spec.registry) {
-      node.registry = firstEdge.spec.registry
-    }
-  }
-
   graph.sortNodes()
   return graph
 }

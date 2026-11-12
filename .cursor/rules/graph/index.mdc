@@ -58,6 +58,7 @@ After Ideal + Actual, compute `Diff` → apply via `reify()`.
 - Pass `actual` to `ideal.build()` for early extraction optimization
 - `install`/`uninstall`/`update` build from an unfiltered `Monorepo`: `-w` filters `options.monorepo`, a filtered graph drops other workspaces' lockfile entries
 - `update` `target`: lockfile graph (manifests from actual) minus matching non-importer nodes (+ matched edges' targets: `#x` alone misses a node an alias also points at), edges into them in `graph.unlockedEdges`, forced rebuild; `-w` + target = EUSAGE
+- `update` (every path) sets `graph.registryPins` from the locked graph (`ideal/registry-drift.ts`), so a re-resolve that moves a locked package to another registry stops
 
 ## Sub-rules
 

@@ -26,6 +26,7 @@ import { copyPackageMetadata, Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
 import type { PeerContext } from './ideal/types.ts'
+import type { RegistryPins } from './ideal/registry-drift.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -208,6 +209,12 @@ export class Graph implements GraphLike {
    * Used by the ideal builder to reuse locked resolutions across a rebuild.
    */
   lockedResolutions?: Map<string, DepID>
+
+  /**
+   * Locked edges whose target came from their parent's registry, taken
+   * before a rebuild: re-resolving one from another registry stops.
+   */
+  registryPins?: RegistryPins
 
   /**
    * `baseDepID(fromId)\0name` keys of edges `vlt update <pkg>`
@@ -658,7 +665,6 @@ export class Graph implements GraphLike {
       }
     }
     const toNode = this.addNode(depId, manifest, spec)
-    toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
     if (samePackage) copyPackageMetadata(toNode, samePackage)

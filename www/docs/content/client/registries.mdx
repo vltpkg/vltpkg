@@ -469,6 +469,17 @@ caching proxy in your organization's network), override it with
 vlt config set jsr-registries=jsr=https://jsr.local/
 ```
 
+JSR packages name their own JSR dependencies with `@jsr/*` names (for
+example `@jsr/std__path`). vlt maps the `@jsr` scope to the `jsr`
+alias URL by default, so those come from JSR, while the npm
+dependencies of a JSR package resolve from your configured registry
+like any other dependency without a prefix. Overriding
+`jsr-registries.jsr` moves the `@jsr` scope with it, and a
+`scoped-registries` entry for `@jsr` overrides both. Packages
+installed through an additional alias in `jsr-registries` still get
+their `@jsr/*` dependencies from the `@jsr` scope, so map `@jsr` to
+that host as well if they must come from it.
+
 #### `gh:`
 
 The `gh:` alias is a special alias that allows you to install packages
@@ -487,20 +498,18 @@ URL can be overridden via `--registries`.
 
 ### Registry Consistency
 
-There is a common question that is brought up when discussing the use
-of multiple registries, which vlt handles properly.
+A dependency written without a registry prefix resolves from your
+configuration at every depth of the graph: a matching
+`scoped-registries` entry, then the `registry` scalar, then
+`registries[<default-registry-alias>]` (see
+[Bare specs](#bare-specs-and---default-registry-alias)). The registry
+of the package that declares it plays no part, which is also how npm,
+pnpm, Yarn, Bun and Deno resolve dependencies.
 
-The concern is this:
-
-Consider a package `foo` that you wish to fetch from the registry
-`https://registry.foo.com/`. This package `foo` depends on a package
-`bar`, also in that same registry, with the expectation that you're
-fetching _all_ of your packages from that registry, and so, it does
-not use any kind of prefix or specifier to indicate where it can be
-found.
-
-That is, inside of the `foo` package's `package.json` file, it
-contains this:
+Consider a package `foo` that you install from the registry
+`https://registry.foo.com/` with `vlt install foo:foo@1.2.3`. It
+depends on a package `bar`, published to that same registry, without
+any prefix:
 
 ```json
 {
@@ -512,21 +521,75 @@ contains this:
 }
 ```
 
-On the public npm registry a _different_ package by the name of `bar`
-exists, which is _not_ compatible with `foo`'s usage.
+The `foo:` alias applies to `foo` only, so `bar@1.x` resolves from
+your default registry. If a _different_ package named `bar` exists
+there, that one is installed. To keep private packages on their own
+registry:
 
-So the concern is, if I do `vlt install foo:foo@1.2.3`, then it'll
-fetch the `foo` package from the `foo` registry just fine. So far so
-good. However, then it will attempt to resolve the dependencies of the
-foo package, `bar@1.x`. Because `bar@1.x` does not _also_ have a
-registry specifier, you might think that it will attempt to fetch from
-the public npm registry, which would be wrong!
+1. **Scope your private packages and map the scope.** With
+   `@mycompany/foo` depending on `@mycompany/bar`, a single
+   `scoped-registries` entry sends every `@mycompany/*` package to
+   your registry at any depth, while their public dependencies come
+   from your default registry:
 
-The vlt client handles this by defaulting every dependency to the same
-registry where its dependent came from, when resolving the dependency
-graph, so they are safe to use in your applications, without fear that
-the dependencies will be fetched from the incorrect registry later
-down the resolution process.
+   ```json
+   {
+     "scoped-registries": {
+       "@mycompany": "https://registry.foo.com/"
+     }
+   }
+   ```
+
+2. **Use an alias for an explicit one-off.** `foo:foo@1.2.3` picks the
+   registry for `foo` itself, not for its dependencies.
+3. **Use `npm:` inside published packages that must be unambiguous.**
+   A dependency written as `npm:bar@1.x` always resolves through the
+   consumer's `npm` alias.
+4. **For a registry that hosts everything your project installs**,
+   make it your default registry (`default-registry-alias`, or
+   `registries.npm`), or scope its packages as above.
+
+When a dependency without a prefix is not found on your default
+registry and the package that declares it came from another one, the
+error names that registry and shows how to install the dependency from
+it: map its scope in `scoped-registries`, or give that edge an
+explicit prefix with a [graph modifier](/client/graph-modifiers).
+
+#### Lockfiles from earlier versions
+
+Earlier versions of vlt resolved the dependencies without a prefix of
+a package installed through an alias or a scope mapping from that
+package's registry. A plain `vlt install`,
+`vlt install --frozen-lockfile` or `vlt ci` keeps the packages your
+`vlt-lock.json` already has. The next change to the graph (adding or
+removing a dependency, editing `package.json`, or `vlt update`)
+resolves them again with the current rule, and if a locked package
+would move to another registry, vlt stops and names both:
+
+```
+Resolve Error: utils@^1 is locked to corp but now resolves from npm.
+internal-lib@1.0.0 declares it with no registry prefix, and unprefixed dependencies no longer use their parent's registry.
+To keep corp, add "#internal-lib > #utils": "corp:utils@^1" to "modifiers" in vlt.json.
+To use npm, add "#internal-lib > #utils": "npm:utils@^1" instead, or delete vlt-lock.json and node_modules and run vlt install.
+```
+
+To keep the locked package, give that edge the prefix of its registry
+with a graph modifier in `vlt.json` (for a scoped package, mapping its
+scope in `scoped-registries` works too):
+
+```json
+{
+  "modifiers": {
+    "#internal-lib > #utils": "corp:utils@^1"
+  }
+}
+```
+
+To take the package from the new registry instead, use that registry's
+prefix, `"npm:utils@^1"` here. The rest of the lockfile is kept either
+way, and an accepting modifier can be removed once an install with it
+has run. Deleting `vlt-lock.json` and `node_modules` and running
+`vlt install` also works, but resolves every dependency again.
 
 ### Caution: Registry Aliases Are Not For Published Packages
 
@@ -537,6 +600,12 @@ At the time of this writing, only the vlt client supports arbitrary
 registry alias specifiers, and there is no broad consensus on which
 aliases point to which registries, or even any clear understanding
 about how such consensus might be found.
+
+An alias written in a published package resolves through the
+consumer's `registries` configuration at any depth, so it only works
+for consumers who define that alias (anyone else gets a config error).
+The dependencies of the aliased package still resolve from the
+consumer's configuration, not from the alias.
 
 While they are perfectly safe to use within your own application, they
 should _not_ be used in library code that you publish for wider

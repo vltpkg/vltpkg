@@ -23,6 +23,7 @@ import {
   filterNodesByQuery,
 } from './filter-nodes-by-query.ts'
 import { error } from '@vltpkg/error-cause'
+import { collectRegistryPins } from './ideal/registry-drift.ts'
 import { assertSkillsDirs } from './skills/dirs.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
 
@@ -94,7 +95,8 @@ const selectedWorkspaces = (
  * Graph to update from. `target`: the locked graph minus the matching
  * deps; edges to them re-resolve. `-w` filtered: the locked graph
  * minus the selected workspaces' deps, so only those re-resolve (deps
- * shared with other workspaces stay locked). Else: empty.
+ * shared with other workspaces stay locked). Else: empty. Each one
+ * carries the registry pins of the locked graph.
  */
 const startingGraph = async (
   options: LoadOptions & {
@@ -112,6 +114,7 @@ const startingGraph = async (
       loadManifests: true,
     })
     const graph = lockedGraph(options, monorepo, actual)
+    graph.registryPins = collectRegistryPins(graph)
     const ids = await filterNodesByQuery(graph, options.target)
     const unlocked = new Set<string>()
     for (const node of [...graph.nodes.values()]) {
@@ -125,8 +128,15 @@ const startingGraph = async (
     return graph
   }
   const selected = selectedWorkspaces(options, monorepo)
-  if (!selected) return fresh()
+  if (!selected) {
+    const graph = fresh()
+    graph.registryPins = collectRegistryPins(
+      lockedGraph(options, monorepo),
+    )
+    return graph
+  }
   const graph = lockedGraph(options, monorepo)
+  graph.registryPins = collectRegistryPins(graph)
   for (const importer of graph.importers) {
     if (!selected.has(importer.id)) continue
     for (const edge of importer.edgesOut.values()) {
