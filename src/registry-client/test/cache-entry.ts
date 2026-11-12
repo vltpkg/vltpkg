@@ -1018,7 +1018,7 @@ t.test('VLT_TAR_MAX_UNPACKED_BYTES caps unzip', async t => {
   })
 })
 
-// a gzipped JSON body that does not repeat, so its ratio stays low
+// a JSON body that does not repeat, so its gzip ratio stays low
 const noiseJSON = (n: number) => {
   const b = Buffer.alloc(n)
   let x = 1
