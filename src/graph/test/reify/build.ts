@@ -396,6 +396,16 @@ t.test('walks only the importers when no script may run', async t => {
     },
     'an added dependency is allowed: full walk',
   )
+  const app = diff.to.nodes.get(
+    joinDepIDTuple(['workspace', 'src/app']),
+  )
+  if (!app) throw new Error('no app workspace??')
+  diff.nodes.add.add(app)
+  t.strictSame(
+    await buildWith([app.id]),
+    importersOnly,
+    'an added importer is allowed',
+  )
 })
 
 t.test(
