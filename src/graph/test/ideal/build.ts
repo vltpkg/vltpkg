@@ -1213,16 +1213,21 @@ t.test('a lockfile written with registry inheritance', async t => {
       dependencies: { internal: 'corp:internal-lib@^1' },
       vltLock: lockfile(undefined, 'internal'),
     }
-    await t.rejects(run(t, aliased), {
-      message:
-        /To keep corp, add "#internal > #utils": "corp:utils@\^1"/,
+    t.test('names the alias in the advice', async t => {
+      await t.rejects(run(t, aliased), {
+        message:
+          /To keep corp, add "#internal > #utils": "corp:utils@\^1"/,
+      })
     })
-    const graph = await run(t, {
-      ...aliased,
-      modifiers: { '#internal > #utils': 'corp:utils@^1' },
+
+    t.test('the advice works', async t => {
+      const graph = await run(t, {
+        ...aliased,
+        modifiers: { '#internal > #utils': 'corp:utils@^1' },
+      })
+      const utils = utilsOf(graph)
+      t.equal(utils && splitDepID(utils.id)[1], 'corp')
     })
-    const utils = utilsOf(graph)
-    t.equal(utils && splitDepID(utils.id)[1], 'corp', 'advice works')
   })
 
   t.test('a peer locked to its parent registry', async t => {
