@@ -20,6 +20,8 @@ import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { appendNodes } from '../../src/ideal/append-nodes.ts'
 import { peerSpecKey } from '../../src/ideal/peers.ts'
+import { collectRegistryPins } from '../../src/ideal/registry-drift.ts'
+import type { RegistryPins } from '../../src/ideal/registry-drift.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { Node } from '../../src/node.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
@@ -643,12 +645,14 @@ const appendRoot = async (
   options: SpecOptions,
   dependencies: Record<string, string>,
   packageInfo: PackageInfoClient,
+  registryPins?: RegistryPins,
 ) => {
   const graph = new Graph({
     projectRoot: t.testdirName,
     ...options,
     mainManifest: { name: 'app', version: '1.0.0', dependencies },
   })
+  graph.registryPins = registryPins
   const deps = Object.entries(dependencies).map(([name, bareSpec]) =>
     asDependency({
       type: 'prod',
@@ -736,6 +740,9 @@ t.test('jsr package with npm dependencies', async t => {
       },
     }),
   )
+  t.strictSame(idsOf(graph, '@jsr/oak__oak'), [
+    joinDepIDTuple(['registry', 'jsr', '@jsr/oak__oak@17.2.2']),
+  ])
   t.strictSame(idsOf(graph, '@jsr/std__path'), [
     joinDepIDTuple(['registry', 'jsr', '@jsr/std__path@1.0.0']),
   ])
@@ -775,6 +782,68 @@ t.test(
     t.equal(kit?.edgesOut.get('lodash-x')?.to?.id, lodash)
   },
 )
+
+t.test('a pinned peer stops before it is linked', async t => {
+  const options = { registries: { npm, corp } } satisfies SpecOptions
+  const packageInfo = registryPackageInfo({
+    [corp]: {
+      kit: {
+        name: 'kit',
+        version: '1.0.0',
+        peerDependencies: { 'lodash-x': '^1' },
+      },
+    },
+    [npm]: { 'lodash-x': { name: 'lodash-x', version: '1.0.0' } },
+  })
+  const dependencies = { kit: 'corp:kit@^1', 'lodash-x': '^1' }
+  // an earlier version locked kit's peer to corp
+  const locked = new Graph({
+    projectRoot: t.testdirName,
+    ...options,
+    mainManifest: { name: 'app', version: '1.0.0' },
+  })
+  const kit = locked.addNode(
+    joinDepIDTuple(['registry', 'corp', 'kit@1.0.0']),
+    undefined,
+    undefined,
+    'kit',
+    '1.0.0',
+  )
+  locked.addEdge(
+    'peer',
+    Spec.parse('lodash-x', '^1', options),
+    kit,
+    locked.addNode(
+      joinDepIDTuple(['registry', 'corp', 'lodash-x@1.0.0']),
+      undefined,
+      undefined,
+      'lodash-x',
+      '1.0.0',
+    ),
+  )
+  const pins = collectRegistryPins(locked)
+
+  await t.rejects(
+    appendRoot(t, options, dependencies, packageInfo, pins),
+    {
+      message:
+        /^lodash-x@\^1 is locked to corp but now resolves from npm\.\n/,
+      cause: { code: 'ERESOLVE', found: 'npm', wanted: 'corp' },
+    },
+  )
+  const graph = await appendRoot(
+    t,
+    options,
+    dependencies,
+    packageInfo,
+    new Map(),
+  )
+  t.strictSame(
+    idsOf(graph, 'lodash-x'),
+    [joinDepIDTuple(['registry', 'npm', 'lodash-x@1.0.0'])],
+    'no pin, no stop',
+  )
+})
 
 t.test('a 404 under a registry parent names it', async t => {
   const partner = 'https://partner.example.com/'

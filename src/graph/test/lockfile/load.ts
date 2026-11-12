@@ -6,6 +6,7 @@ import { unload } from '@vltpkg/vlt-json'
 import {
   defaultGitHostArchives,
   defaultGitHosts,
+  getOptions,
   Spec,
 } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
@@ -2056,6 +2057,43 @@ t.test('diffLockfileOptions', async t => {
     ),
     [],
     'a stored default entry w/o config is not reported',
+  )
+
+  const jsr = { jsr: 'https://jsr.example.com/' }
+  const jsrProxy = getOptions({
+    ...baseOptions,
+    'jsr-registries': jsr,
+  })
+  t.strictSame(
+    diff(jsrProxy, { 'jsr-registries': jsr }),
+    [],
+    'the @jsr scope that follows a JSR proxy is no entry',
+  )
+  t.strictSame(
+    diff(jsrProxy, {
+      'jsr-registries': jsr,
+      'scoped-registries': { '@jsr': jsr.jsr },
+    }),
+    [],
+    'nor is it once stored',
+  )
+  t.strictSame(
+    diff(
+      getOptions({
+        ...jsrProxy,
+        'scoped-registries': { '@jsr': 'https://other.example.com/' },
+      }),
+      { 'jsr-registries': jsr },
+    ),
+    [
+      {
+        section: 'scoped-registries',
+        key: '@jsr',
+        from: undefined,
+        to: 'https://other.example.com/',
+      },
+    ],
+    'a @jsr entry of the user is',
   )
 
   t.test('modifiers and the optionsChanged parity', async t => {

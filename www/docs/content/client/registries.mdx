@@ -530,12 +530,14 @@ registry:
    `@mycompany/foo` depending on `@mycompany/bar`, a single
    `scoped-registries` entry sends every `@mycompany/*` package to
    your registry at any depth, while their public dependencies come
-   from your default registry:
+   from your default registry (in `vlt.json`):
 
    ```json
    {
-     "scoped-registries": {
-       "@mycompany": "https://registry.foo.com/"
+     "config": {
+       "scoped-registries": {
+         "@mycompany": "https://registry.foo.com/"
+       }
      }
    }
    ```

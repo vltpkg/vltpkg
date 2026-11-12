@@ -1001,6 +1001,16 @@ const processPlacementTasks = async (
       nextPeerDeps.set(name, { ...dep, spec: active.modifier.spec })
     }
 
+    // a pinned peer stops before it is linked to another registry's
+    // copy, as a pinned dependency does before its fetch
+    if (graph.registryPins) {
+      /* c8 ignore next - appendNodes always passes scurry */
+      const from = scurry?.resolve(node.location) ?? node.location
+      for (const { spec } of nextPeerDeps.values()) {
+        assertNoRegistryDrift(graph, node, spec, from)
+      }
+    }
+
     // finish peer placement for this node, resolving satisfied peers
     // to seen nodes from the peer context and adding unsatisfied peers
     // to `nextDeps` so they get processed along regular dependencies

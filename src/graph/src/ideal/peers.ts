@@ -9,6 +9,7 @@ import {
   shorten,
   shouldInstallDepType,
 } from '../dependencies.ts'
+import { pinnedRegistry } from './registry-drift.ts'
 import { compareByType, getOrderedDependencies } from './sorting.ts'
 import type {
   ProcessPlacementResultEntry,
@@ -388,6 +389,10 @@ export const checkPeerEdgesCompatible = (
       }
       continue
     }
+
+    // an earlier version locked this peer to its parent's registry:
+    // keep it as locked, a rebuild stops on it instead
+    if (pinnedRegistry(existingEdge) !== undefined) continue
 
     const peerSpec = Spec.parse(peerName, peerBareSpec, parseOpts)
 

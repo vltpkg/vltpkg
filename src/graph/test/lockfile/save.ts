@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
-import { Spec } from '@vltpkg/spec'
+import { getOptions, Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { existsSync, readFileSync } from 'node:fs'
@@ -292,6 +292,34 @@ t.test('jsr-registries', async t => {
   )
   const lockfile = lockfileData({ ...specOptions, graph })
   t.matchSnapshot(JSON.stringify(lockfile, null, 2))
+})
+
+t.test('the @jsr scope that follows a JSR proxy', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const jsr = 'https://jsr.example.com/'
+  const graph = new Graph({
+    projectRoot,
+    mainManifest: { name: 'my-project', version: '1.0.0' },
+  })
+  const proxied = getOptions({ 'jsr-registries': { jsr } })
+  t.strictSame(
+    lockfileData({ ...proxied, graph }).options,
+    { 'jsr-registries': { jsr } },
+    'is not stored',
+  )
+  t.strictSame(
+    lockfileData({
+      ...getOptions({
+        ...proxied,
+        'scoped-registries': { '@jsr': 'https://other.example.com/' },
+      }),
+      graph,
+    }).options['scoped-registries'],
+    { '@jsr': 'https://other.example.com/' },
+    'a @jsr entry of the user is',
+  )
 })
 
 t.test('overrides default registries', async t => {

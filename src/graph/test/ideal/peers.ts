@@ -1313,6 +1313,62 @@ t.test('checkPeerEdgesCompatible', async t => {
       t.equal(result.forkEntry?.target, lx110)
     },
   )
+
+  t.test(
+    'a peer edge locked to its parent registry is kept',
+    async t => {
+      const options = {
+        ...configData,
+        registries: {
+          ...configData.registries,
+          corp: 'https://corp.example.com/',
+        },
+      } satisfies SpecOptions
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...options,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const kit = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('kit', 'corp:kit@^1.0.0', options),
+        {
+          name: 'kit',
+          version: '1.0.0',
+          peerDependencies: { 'lodash-x': '^1.0.0' },
+        },
+      )!
+      // the app's own copy
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('lodash-x', '^1.0.0', options),
+        { name: 'lodash-x', version: '1.0.0' },
+      )
+      // what an earlier version locked: the peer from kit's registry
+      const corpCopy = graph.addNode(
+        joinDepIDTuple(['registry', 'corp', 'lodash-x@1.0.0']),
+        { name: 'lodash-x', version: '1.0.0' },
+      )
+      graph.addEdge(
+        'peer',
+        Spec.parse('lodash-x', '^1.0.0', options),
+        kit,
+        corpCopy,
+      )
+
+      t.strictSame(
+        checkPeerEdgesCompatible(
+          kit,
+          graph.mainImporter,
+          new Map(),
+          graph,
+        ),
+        { compatible: true },
+      )
+    },
+  )
 })
 
 t.test('retrievePeerContextHash', async t => {

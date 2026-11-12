@@ -4,6 +4,7 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { getOptions, Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
@@ -892,8 +893,13 @@ t.test('a re-pin path-safety error is never kept', async t => {
 t.test('a lockfile written with registry inheritance', async t => {
   const npm = 'https://registry.npmjs.org/'
   const corp = 'https://corp.example.com/'
-  const registries = { npm, corp }
-  const options = getOptions({ registries })
+  const corpproxy = 'https://corpproxy.example.com/'
+  const registries = { npm, corp, corpproxy }
+  const kitManifest: Manifest = {
+    name: '@acme/kit',
+    version: '1.0.0',
+    peerDependencies: { 'lodash-x': '^1' },
+  }
   const served: Record<string, Record<string, Manifest>> = {
     [corp]: {
       'internal-lib': {
@@ -903,6 +909,10 @@ t.test('a lockfile written with registry inheritance', async t => {
       },
       // unrelated to the public utils
       utils: { name: 'utils', version: '1.2.0' },
+    },
+    [corpproxy]: {
+      '@acme/kit': kitManifest,
+      'lodash-x': { name: 'lodash-x', version: '1.0.0' },
     },
     [npm]: {
       utils: { name: 'utils', version: '1.9.0' },
@@ -935,6 +945,7 @@ t.test('a lockfile written with registry inheritance', async t => {
   ])
   const lockfile = (
     lockOptions: Record<string, unknown> = { registries },
+    depName = 'internal-lib',
   ) =>
     JSON.stringify({
       lockfileVersion: LOCKFILE_VERSION,
@@ -944,7 +955,7 @@ t.test('a lockfile written with registry inheritance', async t => {
         [corpUtils]: [0, 'utils'],
       },
       edges: {
-        [edgeKey(['file', '.'], 'internal-lib')]:
+        [edgeKey(['file', '.'], depName)]:
           `prod corp:internal-lib@^1 ${internalLib}`,
         [`${internalLib} utils`]: `prod ^1 ${corpUtils}`,
       },
@@ -953,19 +964,23 @@ t.test('a lockfile written with registry inheritance', async t => {
     t: Test,
     {
       add = [],
+      dependencies = { 'internal-lib': 'corp:internal-lib@^1' },
       modifiers,
       vltLock = lockfile(),
+      options = getOptions({ registries }),
     }: {
       add?: string[]
+      dependencies?: Record<string, string>
       modifiers?: Record<string, string>
       vltLock?: string
+      options?: SpecOptions
     } = {},
   ) => {
     const projectRoot = t.testdir({
       'package.json': JSON.stringify({
         name: 'app',
         version: '1.0.0',
-        dependencies: { 'internal-lib': 'corp:internal-lib@^1' },
+        dependencies,
       }),
       'vlt.json': JSON.stringify(modifiers ? { modifiers } : {}),
       'vlt-lock.json': vltLock,
@@ -1064,5 +1079,125 @@ t.test('a lockfile written with registry inheritance', async t => {
       }),
     })
     t.equal(utilsOf(graph)?.version, '1.9.0', 're-resolved')
+  })
+
+  t.test('a JSR proxy is no options change', async t => {
+    const jsrRegistries = { jsr: 'https://jsr.example.com/' }
+    const graph = await run(t, {
+      options: getOptions({
+        registries,
+        'jsr-registries': jsrRegistries,
+      }),
+      vltLock: lockfile({
+        registries,
+        'jsr-registries': jsrRegistries,
+      }),
+    })
+    t.equal(graph.optionsChanged, false)
+    t.equal(utilsOf(graph)?.id, corpUtils)
+    t.strictSame(fetched, [], 'nothing fetched')
+  })
+
+  t.test('an aliased parent', async t => {
+    const aliased = {
+      add: ['lodash-x'],
+      dependencies: { internal: 'corp:internal-lib@^1' },
+      vltLock: lockfile(undefined, 'internal'),
+    }
+    await t.rejects(run(t, aliased), {
+      message:
+        /To keep corp, add "#internal > #utils": "corp:utils@\^1"/,
+    })
+    const graph = await run(t, {
+      ...aliased,
+      modifiers: { '#internal > #utils': 'corp:utils@^1' },
+    })
+    const utils = utilsOf(graph)
+    t.equal(utils && splitDepID(utils.id)[1], 'corp', 'advice works')
+  })
+
+  t.test('a peer locked to its parent registry', async t => {
+    const kit = joinDepIDTuple([
+      'registry',
+      'corpproxy',
+      '@acme/kit@1.0.0',
+      'peer.1',
+    ])
+    const proxyLodash = joinDepIDTuple([
+      'registry',
+      'corpproxy',
+      'lodash-x@1.0.0',
+    ])
+    const npmLodash = joinDepIDTuple([
+      'registry',
+      'npm',
+      'lodash-x@1.0.0',
+    ])
+    const withKit = {
+      dependencies: {
+        '@acme/kit': 'corpproxy:@acme/kit@^1',
+        'lodash-x': '^1',
+      },
+      // the kit manifest lets the peer checks run, as node_modules does
+      vltLock: JSON.stringify({
+        lockfileVersion: LOCKFILE_VERSION,
+        options: { registries },
+        nodes: {
+          [kit]: [0, '@acme/kit', null, null, null, kitManifest],
+          [proxyLodash]: [0, 'lodash-x'],
+          [npmLodash]: [0, 'lodash-x'],
+        },
+        edges: {
+          [edgeKey(['file', '.'], '@acme/kit')]:
+            `prod corpproxy:@acme/kit@^1 ${kit}`,
+          [edgeKey(['file', '.'], 'lodash-x')]:
+            `prod ^1 ${npmLodash}`,
+          [`${kit} lodash-x`]: `peer ^1 ${proxyLodash}`,
+        },
+      }),
+    }
+    const peerOf = (graph: Graph) => {
+      const [node] = graph.nodesByName.get('@acme/kit') ?? []
+      return node?.edgesOut.get('lodash-x')?.to
+    }
+
+    t.test('an unchanged graph keeps it', async t => {
+      const graph = await run(t, withKit)
+      t.equal(peerOf(graph)?.id, proxyLodash)
+      t.strictSame(fetched, [], 'nothing fetched')
+    })
+
+    t.test('a graph change stops', async t => {
+      await t.rejects(run(t, { ...withKit, add: ['utils'] }), {
+        message:
+          'lodash-x@^1 is locked to corpproxy but now resolves from ' +
+          'npm.\n' +
+          '@acme/kit@1.0.0 declares it with no registry prefix, and ' +
+          "unprefixed dependencies no longer use their parent's " +
+          'registry.\n' +
+          'To keep corpproxy, add "#@acme/kit > #lodash-x": ' +
+          '"corpproxy:lodash-x@^1" to "modifiers" in vlt.json.\n' +
+          'To use npm, add "#@acme/kit > #lodash-x": ' +
+          '"npm:lodash-x@^1" instead, or delete vlt-lock.json and ' +
+          'node_modules and run vlt install.',
+        cause: {
+          code: 'ERESOLVE',
+          found: 'npm',
+          wanted: 'corpproxy',
+        },
+      })
+    })
+
+    t.test('a modifier keeps it', async t => {
+      const graph = await run(t, {
+        ...withKit,
+        add: ['utils'],
+        modifiers: {
+          '#@acme/kit > #lodash-x': 'corpproxy:lodash-x@^1',
+        },
+      })
+      const peer = peerOf(graph)
+      t.equal(peer && splitDepID(peer.id)[1], 'corpproxy')
+    })
   })
 })
