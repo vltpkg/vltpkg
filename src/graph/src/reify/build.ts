@@ -95,7 +95,8 @@ export const build = async (
       const deps: Node[] = []
       for (const { to } of node.edgesOut.values()) {
         /* c8 ignore next - vanishingly unlikely in practice */
-        if (to && (!importersOnly || to.importer)) deps.push(to)
+        if (!to) continue
+        if (!importersOnly || to.importer) deps.push(to)
       }
       return deps
     },
