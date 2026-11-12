@@ -52,9 +52,10 @@ export type BuildIdealOptions = LoadActualOptions & {
    */
   packageInfo: PackageInfoClient
   /**
-   * The graph `vlt-lock.json` loads into with these options and no
-   * actual graph, already loaded by the caller: the starting graph,
-   * instead of loading the lockfile again.
+   * A graph already loaded from `vlt-lock.json` with these options and
+   * no `actual` graph (e.g. by the frozen-lockfile check), used as the
+   * starting graph instead of loading the lockfile again. Not for use
+   * with `actual`.
    */
   lockfileGraph?: Graph
 }
