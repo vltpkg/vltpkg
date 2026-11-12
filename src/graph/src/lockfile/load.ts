@@ -393,7 +393,6 @@ export const loadObject = (
     registry,
     registries,
     'default-registry-alias': defaultRegistryAlias,
-    'jsr-registries': jsrRegistries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
     /* c8 ignore next */
@@ -456,14 +455,6 @@ export const loadObject = (
     options.registries,
     registries,
   )
-  // what was not stored was at its default when the lockfile was written
-  graph.lockfileRouting = {
-    registry,
-    'default-registry-alias': defaultRegistryAlias,
-    'scoped-registries': scopeRegistries,
-    'jsr-registries': jsrRegistries,
-    registries: mergedOptions.registries,
-  }
   loadNodes(
     graph,
     lockfileData.nodes,

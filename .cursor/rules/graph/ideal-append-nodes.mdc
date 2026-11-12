@@ -58,7 +58,7 @@ if (existingEdge?.to && !existingEdge.to.detached && satisfiesFinal(existingEdge
 
 `graph.unlockedEdges` (`vlt update <pkg>`): a detached candidate for a listed `baseDepID(from)\0name` is dropped → fresh fetch.
 
-`graph.registryPins` (set for one rebuild, see `registries-and-auth.mdc`): `assertNoRegistryDrift()` runs on every entry after the modifier swap, before any lookup or fetch, and on every peer of a placed node before `endPeerPlacement()`. Child specs parse with `options` as given (no parent registry). A rejected manifest fetch goes through `withParentRegistryHint()` before it is rethrown.
+Child specs parse with `options` as given (no parent registry, see `registries-and-auth.mdc`). A rejected manifest fetch goes through `withParentRegistryHint()` (`ideal/parent-registry-hint.ts`) before it is rethrown.
 
 ## Locked Version Hydration (no `node_modules`)
 

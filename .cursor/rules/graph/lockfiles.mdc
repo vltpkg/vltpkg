@@ -37,8 +37,6 @@ Options stored: `modifiers`, `catalog`, `catalogs`, `scoped-registries`, `jsr-re
 
 Defaults are never stored or diffed: a `scoped-registries['@jsr']` equal to the effective `jsr-registries.jsr` (what spec `getOptions()` derives) is one (`scopeRegistryDefaults()` in `lockfile/types.ts`, used by `save.ts`, `buildCurrentOptions()` and the stored side of `diffLockfileOptions()`).
 
-`loadObject()` keeps the lockfile's own routing on `graph.lockfileRouting` (stored `registry`, `default-registry-alias`, `scoped-registries`, `jsr-registries`; unstored = built-in default; merged `registries`). `pinnedRegistry()` judges locked edges by it, not by the merged options their specs parse with.
-
 ## Integration
 
 - `ideal/build.ts`: loads lockfile first (prefer Virtual), falls back to Actual

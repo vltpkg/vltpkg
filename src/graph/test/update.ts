@@ -1,6 +1,5 @@
 import t from 'tap'
 import type { Test } from 'tap'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import type { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
@@ -53,7 +52,6 @@ t.test('update', async t => {
     '../src/actual/load.ts': {
       load: () => {
         log += 'actual.load\n'
-        return { edges: new Set() }
       },
     },
     '../src/reify/index.ts': {
@@ -76,11 +74,9 @@ t.test('update', async t => {
 
   await update(options)
 
-  // no lockfile: the locked graph is the installed one
   const expected =
     [
       'GraphModifier.maybeLoad',
-      'actual.load',
       'build-ideal-from-starting-graph',
       'actual.load',
       'reify',
@@ -775,92 +771,3 @@ t.test('update target moves one git pin', async t => {
     'only the selected pin moves',
   )
 })
-
-t.test(
-  'update stops when a locked registry would change',
-  async t => {
-    const npm = 'https://registry.npmjs.org/'
-    const corp = 'https://corp.example.com/'
-    const registries = { npm, corp }
-    const served: Record<string, Record<string, unknown>> = {
-      [corp]: {
-        'internal-lib': {
-          name: 'internal-lib',
-          version: '1.0.0',
-          dependencies: { utils: '^1' },
-        },
-        utils: { name: 'utils', version: '1.2.0' },
-      },
-      [npm]: { utils: { name: 'utils', version: '1.9.0' } },
-    }
-    const packageInfo = {
-      async manifest({ final: { registry = '', name } }: Spec) {
-        return served[registry]?.[name]
-      },
-      prefetchResolve: () => () => {},
-    } as unknown as PackageInfoClient
-    const internalLib = joinDepIDTuple([
-      'registry',
-      'corp',
-      'internal-lib@1.0.0',
-    ])
-    const corpUtils = joinDepIDTuple([
-      'registry',
-      'corp',
-      'utils@1.2.0',
-    ])
-    const dir = t.testdir({
-      'package.json': JSON.stringify({
-        name: 'app',
-        version: '1.0.0',
-        dependencies: { 'internal-lib': 'corp:internal-lib@^1' },
-      }),
-      'vlt.json': '{}',
-      // written while unprefixed deps used their parent registry
-      'vlt-lock.json': JSON.stringify({
-        lockfileVersion: 1,
-        options: { registries },
-        nodes: {
-          [internalLib]: [0, 'internal-lib'],
-          [corpUtils]: [0, 'utils'],
-        },
-        edges: {
-          [`${joinDepIDTuple(['file', '.'])} internal-lib`]: `prod corp:internal-lib@^1 ${internalLib}`,
-          [`${internalLib} utils`]: `prod ^1 ${corpUtils}`,
-        },
-      }),
-    })
-    t.chdir(dir)
-    unload('project')
-    t.teardown(() => unload('project'))
-    const opts = (target?: string) =>
-      ({
-        projectRoot: dir,
-        scurry: new PathScurry(dir),
-        packageJson: new PackageJson(),
-        packageInfo,
-        registries,
-        allowScripts: ':not(*)',
-        ...(target && { target }),
-      }) as unknown as UpdateOptions
-    const { update } = await t.mockImport<
-      typeof import('../src/update.ts')
-    >('../src/update.ts', {
-      '../src/reify/index.ts': {
-        reify: async () => ({ buildQueue: [], diff: {} }),
-      },
-    })
-    const drift = {
-      message:
-        /^utils@\^1 is locked to corp but now resolves from npm\./,
-      cause: { code: 'ERESOLVE' },
-    }
-    await t.rejects(update(opts()), drift, 'full update')
-    await t.rejects(update(opts('#utils')), drift, 'that dep')
-    await t.rejects(
-      update(opts('#internal-lib')),
-      drift,
-      'its parent',
-    )
-  },
-)

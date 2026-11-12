@@ -26,7 +26,6 @@ import { copyPackageMetadata, Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import { resolveSaveType } from './resolve-save-type.ts'
 import type { PeerContext } from './ideal/types.ts'
-import type { RegistryPins } from './ideal/registry-drift.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -209,22 +208,6 @@ export class Graph implements GraphLike {
    * Used by the ideal builder to reuse locked resolutions across a rebuild.
    */
   lockedResolutions?: Map<string, DepID>
-
-  /**
-   * The registry routing of the lockfile this graph was loaded from:
-   * its stored `registry`, `default-registry-alias`, `scoped-registries`
-   * and `jsr-registries` (unstored = the built-in default), with the
-   * merged `registries`. Locked edges are judged by it for registry
-   * pins, so a config change since then is no pin.
-   */
-  lockfileRouting?: SpecOptions
-
-  /**
-   * Locked unprefixed edges whose target is not from the registry their
-   * spec resolves to, taken before a rebuild: re-resolving one from that
-   * registry stops.
-   */
-  registryPins?: RegistryPins
 
   /**
    * `baseDepID(fromId)\0name` keys of edges `vlt update <pkg>`

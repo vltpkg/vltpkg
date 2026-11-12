@@ -553,46 +553,29 @@ registry:
 
 When a dependency without a prefix is not found on your default
 registry and the package that declares it came from another one, the
-error names that registry and shows how to install the dependency from
-it: map its scope in `scoped-registries`, or give that edge an
-explicit prefix with a [graph modifier](/client/graph-modifiers).
+error names both registries. To install the dependency from its
+parent's registry, map its scope in `scoped-registries`, or give that
+edge an explicit prefix with a
+[graph modifier](/client/graph-modifiers) in `vlt.json`:
+
+```json
+{
+  "modifiers": {
+    "#foo > #bar": "foo:bar@1.x"
+  }
+}
+```
 
 #### Lockfiles from earlier versions
 
 Earlier versions of vlt resolved the unprefixed dependencies of a
 package installed through an alias or a scope mapping from that
-package's registry. A plain `vlt install`,
-`vlt install --frozen-lockfile` or `vlt ci` keeps the packages your
-`vlt-lock.json` already has. The next change to the graph (adding or
-removing a dependency, editing `package.json`, changing the registry
-configuration, or `vlt update`) resolves them again with the current
-rule, and if a locked package would move to another registry, vlt
-stops and names both:
-
-```
-Resolve Error: utils@^1 is locked to corp but now resolves from npm.
-internal-lib@1.0.0 declares it with no registry prefix, and unprefixed dependencies no longer use their parent's registry.
-To keep corp, add "#internal-lib > #utils": "corp:utils@^1" to "modifiers" in vlt.json.
-To use npm, add "#internal-lib > #utils": "npm:utils@^1" instead, or delete vlt-lock.json and node_modules and run vlt install.
-```
-
-To keep the locked package, give that edge the prefix of its registry
-with a graph modifier in `vlt.json` (for a scoped package, mapping its
-scope in `scoped-registries` works too):
-
-```json
-{
-  "modifiers": {
-    "#internal-lib > #utils": "corp:utils@^1"
-  }
-}
-```
-
-To take the package from the new registry instead, use that registry's
-prefix, `"npm:utils@^1"` here. The rest of the lockfile is kept either
-way, and an accepting modifier can be removed once an install with it
-has run. Deleting `vlt-lock.json` and `node_modules` and running
-`vlt install` also works, but resolves every dependency again.
+package's registry. A lockfile written that way is not migrated: the
+next time those dependencies are resolved (after adding or removing a
+dependency, editing `package.json`, changing the registry
+configuration, or `vlt update`) they follow the current rule and come
+from your configuration. To keep one on its previous registry, use a
+`scoped-registries` entry or a graph modifier as shown above.
 
 ### Caution: Registry Aliases Are Not For Published Packages
 

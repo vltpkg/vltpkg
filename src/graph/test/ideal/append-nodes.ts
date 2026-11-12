@@ -20,8 +20,6 @@ import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { appendNodes } from '../../src/ideal/append-nodes.ts'
 import { peerSpecKey } from '../../src/ideal/peers.ts'
-import { collectRegistryPins } from '../../src/ideal/registry-drift.ts'
-import type { RegistryPins } from '../../src/ideal/registry-drift.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { Node } from '../../src/node.ts'
 import { GraphModifier } from '../../src/modifiers.ts'
@@ -645,14 +643,12 @@ const appendRoot = async (
   options: SpecOptions,
   dependencies: Record<string, string>,
   packageInfo: PackageInfoClient,
-  registryPins?: RegistryPins,
 ) => {
   const graph = new Graph({
     projectRoot: t.testdirName,
     ...options,
     mainManifest: { name: 'app', version: '1.0.0', dependencies },
   })
-  graph.registryPins = registryPins
   const deps = Object.entries(dependencies).map(([name, bareSpec]) =>
     asDependency({
       type: 'prod',
@@ -783,68 +779,6 @@ t.test(
   },
 )
 
-t.test('a pinned peer stops before it is linked', async t => {
-  const options = { registries: { npm, corp } } satisfies SpecOptions
-  const packageInfo = registryPackageInfo({
-    [corp]: {
-      kit: {
-        name: 'kit',
-        version: '1.0.0',
-        peerDependencies: { 'lodash-x': '^1' },
-      },
-    },
-    [npm]: { 'lodash-x': { name: 'lodash-x', version: '1.0.0' } },
-  })
-  const dependencies = { kit: 'corp:kit@^1', 'lodash-x': '^1' }
-  // an earlier version locked kit's peer to corp
-  const locked = new Graph({
-    projectRoot: t.testdirName,
-    ...options,
-    mainManifest: { name: 'app', version: '1.0.0' },
-  })
-  const kit = locked.addNode(
-    joinDepIDTuple(['registry', 'corp', 'kit@1.0.0']),
-    undefined,
-    undefined,
-    'kit',
-    '1.0.0',
-  )
-  locked.addEdge(
-    'peer',
-    Spec.parse('lodash-x', '^1', options),
-    kit,
-    locked.addNode(
-      joinDepIDTuple(['registry', 'corp', 'lodash-x@1.0.0']),
-      undefined,
-      undefined,
-      'lodash-x',
-      '1.0.0',
-    ),
-  )
-  const pins = collectRegistryPins(locked)
-
-  await t.rejects(
-    appendRoot(t, options, dependencies, packageInfo, pins),
-    {
-      message:
-        /^lodash-x@\^1 is locked to corp but now resolves from npm\.\n/,
-      cause: { code: 'ERESOLVE', found: 'npm', wanted: 'corp' },
-    },
-  )
-  const graph = await appendRoot(
-    t,
-    options,
-    dependencies,
-    packageInfo,
-    new Map(),
-  )
-  t.strictSame(
-    idsOf(graph, 'lodash-x'),
-    [joinDepIDTuple(['registry', 'npm', 'lodash-x@1.0.0'])],
-    'no pin, no stop',
-  )
-})
-
 t.test('a 404 under a registry parent names it', async t => {
   const partner = 'https://partner.example.com/'
   const options = {
@@ -861,7 +795,6 @@ t.test('a 404 under a registry parent names it', async t => {
       [partner]: {
         widget: widget(dependencies),
         gear: { name: 'gear', version: '1.0.0' },
-        '@p/gear': { name: '@p/gear', version: '1.0.0' },
       },
     })
 
@@ -876,34 +809,15 @@ t.test('a 404 under a registry parent names it', async t => {
       message:
         'failed to fetch packument: 404 Not Found\n' +
         'gear has no registry prefix, so it was requested from npm, ' +
-        'but its parent widget@1.0.0 came from partner. To install it ' +
-        'from partner, add "#widget > #gear": "partner:gear@^1" to ' +
-        '"modifiers" in vlt.json.',
+        'but its parent widget came from partner. To install it from ' +
+        'partner, give it a registry prefix with a graph modifier in ' +
+        'vlt.json, or map its scope in scoped-registries.',
       cause: {
         code: 'ERESOLVE',
         url: `${npm}gear`,
         response: { statusCode: 404 },
       },
     },
-    'unscoped',
-  )
-
-  await t.rejects(
-    appendRoot(
-      t,
-      options,
-      { widget: 'partner:widget@^1' },
-      served({ '@p/gear': '^1' }),
-    ),
-    {
-      message: new RegExp(
-        'To install it from partner, map @p to ' +
-          'https://partner\\.example\\.com/ in scoped-registries, or ' +
-          'add "#widget > #@p/gear": "partner:@p/gear@\\^1" to ' +
-          '"modifiers" in vlt\\.json\\.$',
-      ),
-    },
-    'scoped',
   )
 
   await t.rejects(
