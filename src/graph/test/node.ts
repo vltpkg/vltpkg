@@ -13,7 +13,12 @@ import {
   Node,
 } from '../src/node.ts'
 import type { Dist, GraphLike } from '@vltpkg/types'
-import { PathScurry } from 'path-scurry'
+import {
+  PathScurry,
+  PathScurryDarwin,
+  PathScurryPosix,
+  PathScurryWin32,
+} from 'path-scurry'
 
 t.cleanSnapshot = s =>
   s
@@ -666,18 +671,16 @@ t.test('resolvedLocation memo', async t => {
   const expect = (loc: string, s = scurry) =>
     s.cwd.resolve(loc).fullpath()
   const def = expect(node.location)
-  const calls = t.capture(scurry.cwd, 'resolve', scurry.cwd.resolve)
   t.equal(node.resolvedLocation(scurry), def)
   t.equal(node.resolvedLocation(scurry), def, 'memoized')
+
+  const otherLoc = expect('./node_modules/other')
+  node.location = './node_modules/other'
+  const calls = t.capture(scurry.cwd, 'resolve', scurry.cwd.resolve)
+  t.equal(node.resolvedLocation(scurry), otherLoc, 'location setter')
+  t.equal(node.resolvedLocation(scurry), otherLoc, 'memoized')
   t.equal(calls().length, 1, 'resolved once')
   calls.restore()
-
-  node.location = './node_modules/other'
-  t.equal(
-    node.resolvedLocation(scurry),
-    expect('./node_modules/other'),
-    'location setter',
-  )
   node.setDefaultLocation()
   t.equal(node.resolvedLocation(scurry), def, 'setDefaultLocation')
 
@@ -716,6 +719,115 @@ t.test('resolvedLocation memo', async t => {
     scurry.resolve(root, 'node_modules'),
     'nodeModules at fs root',
   )
+})
+
+t.test('resolvedLocation builds store locations as strings', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const flavours = [
+    () => new PathScurryPosix('/proj'),
+    () => new PathScurryPosix('/'),
+    () => new PathScurryWin32('C:\\proj', { nocase: false }),
+    () => new PathScurryWin32('C:\\', { nocase: false }),
+    () =>
+      new PathScurryWin32('\\\\server\\share\\proj', {
+        nocase: false,
+      }),
+    () => new PathScurryDarwin('/Users/x/proj', { nocase: false }),
+  ]
+  const node = (spec: string, name: string, extra?: string) =>
+    new Node(opts, joinDepIDTuple(['registry', '', spec, extra]), {
+      name,
+      version: '1.2.3',
+    })
+  const nodes = [
+    node('foo@1.2.3', 'foo'),
+    node('@bar/bloo@1.2.3', '@bar/bloo'),
+    node('foo@1.2.3', 'foo', 'peer.aaaaaaaaaaaaaaaa'),
+    node('JSONStream@1.2.3', 'JSONStream'),
+  ]
+  for (const flavour of flavours) {
+    const scurry = flavour()
+    const calls = t.capture(scurry.cwd, 'resolve', scurry.cwd.resolve)
+    for (const n of nodes) {
+      t.equal(
+        n.resolvedLocation(scurry),
+        flavour().cwd.resolve(n.location).fullpath(),
+        `${scurry.cwd.fullpath()} ${n.id}`,
+      )
+    }
+    t.equal(calls().length, 0, 'no path-scurry resolve')
+    calls.restore()
+  }
+  t.end()
+})
+
+t.test('resolvedLocation falls back to path-scurry', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const check = (
+    mk: () => PathScurry,
+    n: Node,
+    msg: string,
+    loc = n.location,
+  ) => {
+    n.location = loc
+    const expect = mk().cwd.resolve(loc).fullpath()
+    const scurry = mk()
+    const calls = t.capture(scurry.cwd, 'resolve', scurry.cwd.resolve)
+    t.equal(n.resolvedLocation(scurry), expect, msg)
+    t.equal(calls().length, 1, `${msg}: path-scurry`)
+    calls.restore()
+  }
+  const id = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
+  const foo = () =>
+    new Node(opts, id, { name: 'foo', version: '1.2.3' })
+  check(() => new PathScurryDarwin('/proj'), foo(), 'nocase darwin')
+  check(() => new PathScurryWin32('C:\\proj'), foo(), 'nocase win32')
+  const posix = () => new PathScurryPosix('/proj')
+  for (const loc of [
+    './node_modules/other',
+    '.',
+    './ws',
+    `node_modules/.vlt/${id}/node_modules/foo`,
+  ]) {
+    check(posix, foo(), loc, loc)
+  }
+  const unsafe = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', '@x/..@1.2.3']),
+    { name: '@x/..', version: '1.2.3' },
+  )
+  check(posix, unsafe, 'not a path-safe name')
+  const cafe = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'caf\u00e9@1.2.3']),
+    { name: 'caf\u00e9', version: '1.2.3' },
+  )
+  check(posix, cafe, 'non-ASCII name')
+
+  // a case-insensitive scurry keeps the first spelling it saw
+  const darwin = new PathScurryDarwin('/proj')
+  const fresh = new PathScurryDarwin('/proj')
+  for (const name of ['Foo', 'foo']) {
+    const n = new Node(
+      opts,
+      joinDepIDTuple(['registry', '', `${name}@1.2.3`]),
+      { name, version: '1.2.3' },
+    )
+    t.equal(
+      n.resolvedLocation(darwin),
+      fresh.cwd.resolve(n.location).fullpath(),
+      `nocase ${name}`,
+    )
+  }
+  t.end()
 })
 
 t.test('optional flag is contagious', t => {

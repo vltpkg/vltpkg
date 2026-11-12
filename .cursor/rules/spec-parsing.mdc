@@ -86,6 +86,12 @@ built-in alias (`npm`, `gh`, `jsr`) is user/service-overridable within its own
 map. cli-sdk rejects cross-map or built-in-protocol names at config load
 (`builtinProtocols` is exported for that).
 
+`getOptions` is memoized per options object: the same object returns the
+same filled object, refilled only when one of the fields it reads
+(`registry`, `registries`, `scoped-registries`, ...) is reassigned. Writes
+into a nested record are not seen, so reassign instead of mutating, and
+treat the result (and `spec.options`) as read-only.
+
 ## Undefined protocols
 
 A `<scheme>:` prefix that is neither built-in nor configured throws
