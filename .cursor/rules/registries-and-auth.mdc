@@ -71,7 +71,11 @@ config drift (`graph.optionsChanged`). Persisting these is additive —
 `LOCKFILE_VERSION` is unchanged. Built-in defaults (incl. the `npm`
 mirror) are not recorded, and a lockfile that left `npm` at the
 built-in does not treat a configured `registries.npm` as drift
-(`diffLockfileOptions`).
+(`diffLockfileOptions`). Saving keeps it unpinned: `loadObject`
+(`lockfile/load.ts`) sets `graph.unpinnedNpmRegistry`, and
+`lockfileData` (`lockfile/save.ts`, `registryDefaults`) leaves that
+`registries.npm` out until a node resolves under its URL. Change both
+sides together, or frozen / no-op installs stop round-tripping.
 
 ## Registry Consistency
 

@@ -189,7 +189,7 @@ const gatherCandidates = (
 }
 
 /**
- * Whether the current config provides a registry a `needsRegistry`
+ * Whether the config provides a registry a `needsRegistry: 'write'`
  * command could act against without prompting for setup. True when an
  * explicit `--registry` URL is set or the user has configured at least
  * one non-default registry alias. Kept consistent with

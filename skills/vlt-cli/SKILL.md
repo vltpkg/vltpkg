@@ -104,9 +104,11 @@ until a registry is configured.
   specs fetch from that alias; `scoped-registries` maps an `@scope` to
   a URL instead.
 - `vlt login --registry=<url>`: authenticate against a registry and
-  save it as the fallback `registry` (project vlt.json, or
-  `--config=user`) for auth and account commands. To publish, set
-  `publishConfig.registry` in package.json, pass `--registry`, or run
+  save it as the `registry` scalar (project vlt.json, or
+  `--config=user`). Publish, auth and account commands then use it,
+  and so do bare-spec installs (`npm:` alias specs keep using
+  `registries.npm`). Without a login, publish with
+  `publishConfig.registry` in package.json, `--registry`, or
   `vlt setup`.
 - One run only: `vlt install --registries npm=<url>`; add
   `--save-config` (`install`, `update`) to persist it to vlt.json.
