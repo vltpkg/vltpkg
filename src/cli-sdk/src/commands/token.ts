@@ -41,7 +41,7 @@ export type TokenListResult = {
   registries: RegistryTokens[]
 }
 
-export const needsRegistry = true
+export const needsRegistry = 'write'
 
 export const usage: CommandUsage = () =>
   commandUsage({

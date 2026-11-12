@@ -11,9 +11,9 @@ export const usage: CommandUsage = () =>
     description: `Authenticate against a registry, and store the token in
                   the appropriate config file for later use.
 
-                  There is no default registry, so a registry must either
-                  already be configured or be provided with
-                  \`--registry=<url>\`. On success the registry is written to
+                  vlt's built-in \`npm\` registry is a read-only public
+                  mirror, so a registry must either already be configured
+                  or be provided with \`--registry=<url>\`. On success the registry is written to
                   the project's \`vlt.json\`, so that it applies to this
                   project only. Pass \`--config=user\` to configure it for
                   every project instead.`,

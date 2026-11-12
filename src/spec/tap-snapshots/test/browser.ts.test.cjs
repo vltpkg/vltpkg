@@ -7814,6 +7814,7 @@ Object {
   },
   "registries": Object {
     "gh": "https://npm.pkg.github.com/",
+    "npm": "https://registry.vlt.io/upstream/npm/",
   },
   "git-host-archives": Object {
     "github": "https://codeload.github.com/$1/$2/legacy.tar.gz/$committish",
@@ -9658,6 +9659,7 @@ exports[`test/browser.ts > TAP > parse args > no options > no options 1`] = `
   spec: 'foo@^1.0.0',
   name: 'foo',
   bareSpec: '^1.0.0',
+  registry: 'https://registry.vlt.io/upstream/npm/',
   registrySpec: '^1.0.0',
   semver: '^1.0.0',
   range: Range {

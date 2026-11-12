@@ -33,7 +33,7 @@ export type UninstallResult = {
 export type UninstallCommandResult =
   UninstallResult | { self: SelfRefused }
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>

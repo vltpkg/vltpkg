@@ -2097,6 +2097,118 @@ t.test('diffLockfileOptions', async t => {
   })
 })
 
+t.test('the built-in npm mirror and registries.npm', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
+  const npmjs = 'https://registry.npmjs.org/'
+  const acct = 'https://registry.vlt.io/acme/npm/'
+  // written out, not from getOptions(), so these fail without the
+  // built-in `npm` mirror
+  const builtins = { gh: 'https://npm.pkg.github.com/', npm: mirror }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const npmId = joinDepIDTuple(['registry', 'npm', 'abbrev@2.0.0'])
+  const lockfileData = (options: LockfileData['options']) =>
+    ({
+      lockfileVersion: 1,
+      options,
+      nodes: { [npmId]: [0, 'abbrev', 'sha512-abc=='] },
+      edges: {
+        [edgeKey(['file', '.'], 'abbrev')]: `prod ^2.0.0 ${npmId}`,
+      },
+    }) as unknown as LockfileData
+  const current = (registries: Record<string, string>) => ({
+    registries,
+    mainManifest,
+    projectRoot,
+  })
+
+  t.strictSame(
+    diffLockfileOptions(current(builtins), {}),
+    [],
+    'made on the default, loaded on the default',
+  )
+  const onAccount = current({ ...builtins, npm: acct })
+  t.strictSame(
+    diffLockfileOptions(onAccount, {}),
+    [],
+    'made on the default, loaded with an account registries.npm',
+  )
+  t.equal(
+    loadObject(onAccount, lockfileData({})).optionsChanged,
+    false,
+    'so the frozen check passes',
+  )
+  t.strictSame(
+    diffLockfileOptions(
+      current({ ...builtins, npm: acct, custom: 'http://c/' }),
+      { registries: { custom: 'http://c/' } },
+    ),
+    [],
+    'other stored registries do not pin npm',
+  )
+
+  const pinned = { registries: { npm: npmjs } }
+  t.strictSame(
+    diffLockfileOptions(onAccount, pinned),
+    [{ section: 'registries', key: 'npm', from: npmjs, to: acct }],
+    'a pinned registries.npm still changes',
+  )
+  t.strictSame(
+    diffLockfileOptions(current(builtins), pinned),
+    [
+      {
+        section: 'registries',
+        key: 'npm',
+        from: npmjs,
+        to: undefined,
+      },
+    ],
+    'a pinned registries.npm vs the built-in is a change',
+  )
+  t.strictSame(
+    diffLockfileOptions(current(builtins), {
+      registries: { npm: acct },
+    }),
+    [
+      {
+        section: 'registries',
+        key: 'npm',
+        from: acct,
+        to: undefined,
+      },
+    ],
+    'an account registries.npm vs the built-in is a change',
+  )
+  t.strictSame(
+    diffLockfileOptions(
+      current({ ...builtins, gh: 'https://ghe.example.com/' }),
+      {},
+    ),
+    [
+      {
+        section: 'registries',
+        key: 'gh',
+        from: undefined,
+        to: 'https://ghe.example.com/',
+      },
+    ],
+    'only npm is left unpinned',
+  )
+
+  const loaded = loadObject(current(builtins), lockfileData(pinned))
+  t.equal(
+    loaded.mainImporter.options.registries?.npm,
+    npmjs,
+    'a lockfile saved with registries.npm keeps that URL',
+  )
+  t.equal(
+    loaded.nodes.get(npmId)?.options.registries?.npm,
+    npmjs,
+    'its nodes too',
+  )
+})
+
 t.test('loadEdges skips malformed edge records', async t => {
   const graph = new Graph({
     mainManifest: { name: 'my-project', version: '1.0.0' },

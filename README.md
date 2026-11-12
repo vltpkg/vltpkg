@@ -46,8 +46,8 @@ vlr --recursive prepare
 
 `vlt setup` is not required for this repository. That command connects
 the CLI to a vlt.io account; this repository's checked-in
-[`vlt.json`](./vlt.json) already configures the registry used to
-bootstrap its dependencies.
+[`vlt.json`](./vlt.json) pins the registry its dependencies install
+from.
 
 See the [contributing guide](./CONTRIBUTING.md) for development
 commands and workspace-specific guidance.

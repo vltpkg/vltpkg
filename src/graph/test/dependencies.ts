@@ -752,9 +752,12 @@ t.test('getDependencies', async t => {
         'uses the configured registry',
       )
 
-      // and with neither, the spec simply has no registry
+      // and with neither, the built-in npm mirror
       const none = getDependencies(node, {})
-      t.strictSame(none.get('lodash')?.spec.registry, undefined)
+      t.strictSame(
+        none.get('lodash')?.spec.registry,
+        'https://registry.vlt.io/upstream/npm/',
+      )
     },
   )
 

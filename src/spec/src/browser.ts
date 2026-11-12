@@ -20,6 +20,7 @@ export const defaultRegistryName = 'npm'
 
 export const defaultRegistries = {
   gh: 'https://npm.pkg.github.com/',
+  npm: 'https://registry.vlt.io/upstream/npm/',
 }
 
 export const defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }

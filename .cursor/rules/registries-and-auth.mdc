@@ -7,15 +7,16 @@ alwaysApply: false
 
 ## Registry Types
 
-1. **Default registry**: `--registry=<url>` — **no default value**; there
-   is no built-in registry URL (see bare-spec resolution below)
+1. **Default registry**: `--registry=<url>` — **no default value**; bare
+   specs fall back to the built-in `npm` alias (see bare-spec resolution
+   below)
 2. **Named aliases**: `--registries=<name>=<url>` → use as `name:pkg@ver` in dependencies
 3. **Scope registries**: `--scoped-registries=@scope=<url>` → `@scope/*` auto-routes
-4. **Built-in aliases**: `jsr:` (jsr.io), `gh:` (GitHub packages). All are
-   user/service-overridable, only in their own map; cross-map or
-   built-in-protocol names → `ECONFIG` at config load (cli-sdk
-   `config/spec-aliases.ts`). `npm:` is **not** built-in — it has no baked
-   URL and must be configured (see below).
+4. **Built-in aliases**: `npm:` (vlt's public, read-only npm mirror,
+   `https://registry.vlt.io/upstream/npm/`), `jsr:` (jsr.io), `gh:`
+   (GitHub packages). All are user/service-overridable, only in their own
+   map; cross-map or built-in-protocol names → `ECONFIG` at config load
+   (cli-sdk `config/spec-aliases.ts`).
 
 ## Bare specs & `--default-registry-alias`
 
@@ -25,11 +26,19 @@ explicit registry protocol resolves through, in order:
 `registries[<default-registry-alias>]`. `--default-registry-alias`
 defaults to `npm`.
 
-Because `npm` has no built-in URL, a **fresh/unconfigured** install
-(`vlt install`/`vlx`) does **not** "just work" — it errors with an
-actionable message pointing to https://www.vlt.io and `vlt setup`. This
-is the intended trade-off; a per-account vlt mirror URL isn't known ahead
-of time.
+With no config, `npm` is vlt's public npm mirror, so `vlt install`, `vlx`
+and the other read commands work out of the box. The mirror is
+read-only with usage limits: a one-time notice (`mirror-notice.ts`)
+suggests `vlt setup`, and a 429 from it prints advice (`mirror-limit.ts`
+via `print-err.ts`).
+
+Pre-command gates in `outputCommand()`: `needsRegistry: 'read'` accepts
+the built-in mirror (`hasReadableRegistry`); `needsRegistry: 'write'`
+(publish/auth/account commands) needs a user-configured registry
+(`hasConfiguredRegistry` excludes built-ins). `resolveRegistry` /
+`requireRegistry` never return the built-in mirror (`isBuiltinMirror`),
+not even as the `default-registry-alias` fallback or for
+`vlt registry npm <cmd>`.
 
 ## `vlt setup`
 
@@ -59,7 +68,10 @@ Lockfiles persist the resolved `registries` map (incl. `npm`/`main`) and
 a non-default `default-registry-alias` in `options`, so a lockfile is
 self-contained. `vlt install --frozen-lockfile` / `vlt ci` error on
 config drift (`graph.optionsChanged`). Persisting these is additive —
-`LOCKFILE_VERSION` is unchanged.
+`LOCKFILE_VERSION` is unchanged. Built-in defaults (incl. the `npm`
+mirror) are not recorded, and a lockfile that left `npm` at the
+built-in does not treat a configured `registries.npm` as drift
+(`diffLockfileOptions`).
 
 ## Registry Consistency
 

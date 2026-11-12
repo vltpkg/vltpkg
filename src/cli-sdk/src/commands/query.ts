@@ -30,7 +30,7 @@ import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 import type { LoadedConfig } from '../config/index.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () =>
   commandUsage({

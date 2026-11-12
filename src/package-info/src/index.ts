@@ -249,8 +249,9 @@ export type PackageInfoClientExtractOptions =
 const manifestCacheMaxAge = 5 * 60 * 1000
 
 /**
- * There is no default registry. Anything that needs to build a registry
- * URL fails with a `ECONFIG` error when none has been configured.
+ * Anything that needs to build a registry URL fails with a `ECONFIG`
+ * error when the spec has no registry (e.g. `default-registry-alias`
+ * names an alias with no URL).
  */
 const noRegistryError = (spec: Spec) =>
   error(

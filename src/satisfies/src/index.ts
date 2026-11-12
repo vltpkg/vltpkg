@@ -64,7 +64,7 @@ export const satisfiesTuple = (
         }
         /* c8 ignore stop */
       } else if (
-        // With no configured registry, a plain registry spec has no
+        // When the default alias has no URL, a plain registry spec has no
         // registry of its own, but getTuple() still stamps its DepID with
         // the `npm` name. Treating that as a mismatch would make
         // satisfies() contradict getId(), so let it through and fall to

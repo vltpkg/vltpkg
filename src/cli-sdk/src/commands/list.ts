@@ -27,7 +27,7 @@ import { MermaidImageView } from '../mermaid-image-view.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () =>
   commandUsage({

@@ -10,7 +10,7 @@ import { styleTextStdout } from '../output.ts'
 import { prettyPath } from '../shell.ts'
 export { views } from '../exec-command.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () =>
   commandUsage({

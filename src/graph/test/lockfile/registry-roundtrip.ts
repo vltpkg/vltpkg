@@ -247,3 +247,69 @@ t.test('no configured registry', async t => {
     'second save is byte-identical',
   )
 })
+
+t.test('built-in npm mirror round-trips', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
+  // the built-in aliases, written out so this fails without the
+  // built-in `npm` mirror
+  const specOptions: SpecOptions = {
+    registries: { gh: 'https://npm.pkg.github.com/', npm: mirror },
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = new Graph({
+    ...specOptions,
+    projectRoot,
+    mainManifest,
+  })
+  graph
+    .placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', specOptions),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity: 'sha512-deadbeef==',
+          tarball: `${mirror}foo/-/foo-1.0.0.tgz`,
+        },
+      },
+    )
+    ?.setResolved()
+  save({ ...specOptions, graph })
+  const first = readFileSync(
+    resolve(projectRoot, 'vlt-lock.json'),
+    'utf8',
+  )
+  const data = JSON.parse(first) as {
+    options: Record<string, unknown>
+    nodes: Record<string, unknown[]>
+  }
+  t.strictSame(data.options, {}, 'the built-in is not recorded')
+  t.equal(
+    data.nodes['~npm~foo@1.0.0']?.[3],
+    `${mirror}foo/-/foo-1.0.0.tgz`,
+    'resolved at the mirror',
+  )
+
+  const reloaded = loadVirtual({
+    ...specOptions,
+    projectRoot,
+    mainManifest,
+  })
+  t.strictSame(reloaded.optionsChanges, [], 'no options change')
+  save({ ...specOptions, graph: reloaded })
+  t.equal(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    first,
+    'second save is byte-identical',
+  )
+})

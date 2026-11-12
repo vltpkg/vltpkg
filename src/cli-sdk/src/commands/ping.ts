@@ -1,11 +1,14 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
-import { requireRegistry } from '../require-registry.ts'
+import {
+  isBuiltinMirror,
+  requireRegistry,
+} from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'write'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -133,8 +136,11 @@ export const command: CommandFn<CommandResult> = async conf => {
 
     // Then ping all configured registry aliases
     for (const [alias, registry] of Object.entries(registries)) {
-      // Skip if it's the same as the default registry
-      if (registry !== defaultRegistry) {
+      // Skip the default registry and the read-only built-in mirror
+      if (
+        registry !== defaultRegistry &&
+        !isBuiltinMirror(alias, registry)
+      ) {
         results.push(await pingRegistry(rc, registry, alias))
       }
     }

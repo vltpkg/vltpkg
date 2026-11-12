@@ -14,13 +14,17 @@ $ vlt setup --skills`}
   lang="bash"
 />
 
-Configure the registry aliases for your vlt.io account so that
-`vlt install` and `vlx` work out of the box.
+Connect vlt to your vlt.io account. vlt installs public packages
+without it, through vlt's public npm mirror; setup points the `npm`
+alias at your account's npm mirror (no usage limits) and adds your
+private `main` registry.
 
-The `npm` registry alias has no built-in URL, so a fresh project can't
-resolve bare specifiers (like `vlt install express`) until a registry
-is configured. `vlt setup` is the guided way to do that: sign up or
-log in at [https://www.vlt.io](https://www.vlt.io) first, then run the
+`vlt setup` is optional: with no config, bare specifiers (like
+`vlt install express`) resolve through the built-in `npm` alias,
+[vlt's public npm mirror](/registry/public-mirror), a shared service
+with usage limits. It is recommended for an account mirror with no
+usage limits, private packages, tokens, and publishing. Sign up or log
+in at [https://www.vlt.io](https://www.vlt.io) first, then run the
 wizard.
 
 ## What it does

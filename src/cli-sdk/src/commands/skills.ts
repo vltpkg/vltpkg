@@ -48,7 +48,7 @@ export type SkillsResult =
 
 // init only writes files
 export const needsRegistry = ({ positionals }: LoadedConfig) =>
-  positionals[0] !== 'init'
+  positionals[0] !== 'init' ? 'read' : undefined
 
 export const usage: CommandUsage = () =>
   commandUsage({

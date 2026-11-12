@@ -362,10 +362,11 @@ t.test('non-interactive with account + extras', async t => {
       {
         yes: true,
         positionals: ['acme'],
-        // gh matches the built-in default -> skipped; loc is custom;
-        // slashless url gets normalized.
+        // gh and npm match the built-in defaults -> skipped (the account
+        // npm mirror wins); loc is custom; slashless url gets normalized.
         registries: {
           gh: defaultRegistries.gh,
+          npm: 'https://registry.vlt.io/upstream/npm/',
           loc: 'http://reg.local',
           slashed: 'http://slash.local/',
         },
@@ -918,7 +919,7 @@ t.test('wizard views', async t => {
   const head =
     'Configured 2 registry aliases for "acme" in user config:\n  npm -> u\n  main -> m'
   const tail =
-    '\n\nYou can now install packages, e.g.:\n  vlt install <pkg>'
+    "\n\nInstalls now use your account's npm mirror (no usage limits), e.g.:\n  vlt install <pkg>"
   const r = {
     dir: '/b',
     shell: 'zsh' as const,
@@ -1993,7 +1994,7 @@ t.test('--skills', async t => {
   t.test('no registry', async t => {
     const none = await run({ conf: { registries: {} } })
     await t.rejects(none.res, {
-      message: /^Missing registry configuration/,
+      message: /^Missing npm registry configuration/,
       cause: { code: 'ECONFIG' },
     })
     const main = await run({
@@ -2003,6 +2004,19 @@ t.test('--skills', async t => {
       message: /^Missing npm registry configuration/,
     })
     t.strictSame([...none.installs, ...main.installs], [])
+  })
+
+  t.test('the built-in npm mirror is enough', async t => {
+    const { res, installs } = await run({
+      conf: {
+        registries: {
+          gh: 'https://npm.pkg.github.com/',
+          npm: 'https://registry.vlt.io/upstream/npm/',
+        },
+      },
+    })
+    t.match(await res, { skills: { status: 'installed' } })
+    t.equal(installs.length, 1, 'installed')
   })
 })
 
@@ -2042,7 +2056,7 @@ t.test('skills views', async t => {
   const head =
     'Configured 1 registry alias for "acme" in project config:\n  npm -> u'
   const tail =
-    '\n\nYou can now install packages, e.g.:\n  vlt install <pkg>'
+    "\n\nInstalls now use your account's npm mirror (no usage limits), e.g.:\n  vlt install <pkg>"
   const wizard = {
     account: 'acme',
     which: 'project',

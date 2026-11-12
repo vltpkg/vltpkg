@@ -18,23 +18,29 @@ export type Command<T> = {
   usage: CommandUsage
   views: Views<T>
   /**
-   * Set to `true` by commands that hit a registry or resolve registry
-   * specs. There is no default registry, so `outputCommand()` fails
-   * early with an `ECONFIG` error when one of these runs unconfigured.
-   * `publish`/`unpublish` check in-command instead, since
-   * `publishConfig.registry` may suffice. A function decides per
-   * invocation, e.g. when only some subcommands need one.
+   * Set by commands that hit a registry or resolve registry specs.
+   * `'read'` commands only fetch, so the built-in `npm` alias (vlt's
+   * public, read-only npm mirror) is enough. `'write'` commands publish
+   * or authenticate, so `outputCommand()` fails early with an `ECONFIG`
+   * error unless the user configured a registry. `publish`/`unpublish`
+   * check in-command instead, since `publishConfig.registry` may
+   * suffice. A function decides per invocation, e.g. when only some
+   * subcommands need one.
    */
-  needsRegistry?: boolean | ((conf: LoadedConfig) => boolean)
+  needsRegistry?:
+    RegistryNeed | ((conf: LoadedConfig) => RegistryNeed | undefined)
   /**
    * Set to `true` by commands that install packages (`install`,
    * `update`, `uninstall`, `ci`, `exec`/`vlx`). `outputCommand()`
    * fails early with an `ECONFIG` error when the alias bare specs
-   * resolve through (`registries.npm`, or the alias named by
-   * `default-registry-alias`) is not configured.
+   * resolve through (`registries.npm`, built in, or the alias named by
+   * `default-registry-alias`) has no URL.
    */
   needsNpmRegistry?: boolean
 }
+
+/** What a command needs from the registry config, see `needsRegistry`. */
+type RegistryNeed = 'read' | 'write'
 
 export const loadCommand = async <T>(
   command: Commands[keyof Commands] | undefined,

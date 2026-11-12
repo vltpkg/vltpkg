@@ -80,14 +80,41 @@ t.test(
   },
 )
 
-t.test('no registry configured', async t => {
-  const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
+t.test(
+  'no registry configured installs through the public mirror',
+  async t => {
+    const mirror = 'https://registry.vlt.io/upstream/npm/'
+    const { status } = await runMultiple(t, ['i', 'abbrev@1.1.1'], {
+      match: ['status'],
+      // drop the registry env that run.ts sets by default
+      env: { VLT_REGISTRY: undefined, VLT_REGISTRIES: undefined },
+      test: async ({ t, dirs }) => {
+        const lock = JSON.parse(
+          readFileSync(join(dirs.project, 'vlt-lock.json'), 'utf-8'),
+        )
+        t.notOk(
+          lock.options.registries,
+          'the built-in npm alias is not recorded',
+        )
+        t.match(
+          lock.nodes['~npm~abbrev@1.1.1'][3],
+          new RegExp(`^${mirror.replaceAll('.', '\\.')}`),
+          'resolved through the public mirror',
+        )
+      },
+    })
+    t.equal(status, 0)
+  },
+)
+
+t.test('no registry configured, whoami still needs one', async t => {
+  const { status, output } = await runMultiple(t, ['whoami'], {
     match: ['status'],
-    // unset the registry that run.ts configures by default
-    env: { VLT_REGISTRY: '', VLT_REGISTRIES: '' },
+    env: { VLT_REGISTRY: undefined, VLT_REGISTRIES: undefined },
   })
   t.not(status, 0, 'exits non-zero')
   t.match(output, 'Missing registry configuration')
+  t.match(output, 'publishConfig.registry')
   t.match(output, 'https://docs.vlt.sh/cli')
 })
 
@@ -105,15 +132,13 @@ t.test('no registry configured, --help still works', async t => {
 })
 
 t.test('no registries.npm configured', async t => {
-  const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
+  const { status } = await runMultiple(t, ['i', 'abbrev'], {
     match: ['status'],
-    // scalar --registry still set via the fixture default; only the
-    // npm alias is missing
+    // scalar --registry still set via the fixture default; the npm
+    // alias falls back to the built-in, and bare specs use the scalar
     env: { VLT_REGISTRIES: '' },
   })
-  t.not(status, 0, 'exits non-zero')
-  t.match(output, 'Missing npm registry configuration')
-  t.match(output, 'registries.npm')
+  t.equal(status, 0)
 })
 
 t.test(

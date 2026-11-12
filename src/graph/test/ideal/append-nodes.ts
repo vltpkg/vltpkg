@@ -102,11 +102,11 @@ t.test('append a new node to a graph from a registry', async t => {
     mainManifest,
   })
   const depFoo = asDependency({
-    spec: Spec.parse('foo@^1.0.0'),
+    spec: Spec.parse('foo@^1.0.0', configData),
     type: 'prod',
   })
   const depBar = asDependency({
-    spec: Spec.parse('bar@'),
+    spec: Spec.parse('bar@', configData),
     type: 'prod',
   })
   const depNamelessGit = asDependency({
@@ -114,7 +114,7 @@ t.test('append a new node to a graph from a registry', async t => {
     type: 'prod',
   })
   const depBorked = asDependency({
-    spec: Spec.parse('borked'),
+    spec: Spec.parse('borked', configData),
     type: 'prod',
   })
   const add = new Map([
@@ -277,15 +277,15 @@ t.test('append different type of dependencies', async t => {
     },
   } as PackageInfoClient
   const depFoo = asDependency({
-    spec: Spec.parse('foo', '^1.0.0'),
+    spec: Spec.parse('foo', '^1.0.0', configData),
     type: 'dev',
   })
   const depBar = asDependency({
-    spec: Spec.parse('bar', '^1.0.0'),
+    spec: Spec.parse('bar', '^1.0.0', configData),
     type: 'optional',
   })
   const depMissing = asDependency({
-    spec: Spec.parse('missing', '^1.0.0'),
+    spec: Spec.parse('missing', '^1.0.0', configData),
     type: 'prod',
   })
   const add = new Map([
@@ -4355,7 +4355,7 @@ t.test(
       mainManifest,
     })
     const depParent = asDependency({
-      spec: Spec.parse('parent-pkg@^1.0.0'),
+      spec: Spec.parse('parent-pkg@^1.0.0', configData),
       type: 'prod',
     })
     const packageInfo = {
@@ -4470,7 +4470,7 @@ t.test(
       mainManifest,
     })
     const depTop = asDependency({
-      spec: Spec.parse('top-pkg@^1.0.0'),
+      spec: Spec.parse('top-pkg@^1.0.0', configData),
       type: 'dev',
     })
     const packageInfo = {

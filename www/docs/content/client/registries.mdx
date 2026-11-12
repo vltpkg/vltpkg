@@ -13,34 +13,53 @@ of ways.
 
 ## Setting the Registry
 
-**vlt has no default registry.** Before running any command that
-resolves or fetches packages, you have to say which registry to use.
-Commands that need one and do not have one fail with a config error:
+**With no configuration, vlt installs through vlt's public npm
+mirror**, `https://registry.vlt.io/upstream/npm/`, the built-in URL of
+the [`npm` alias](#npm). Package metadata and tarball requests for
+bare specs like `vlt install foo` go to `registry.vlt.io` instead of
+`registry.npmjs.org`, so `vlt install`, `vlx`, `vlt view` and the
+other read commands work right after installing vlt. See
+[Public npm Mirror](/registry/public-mirror) for details.
+
+The public mirror is a shared, free service with usage limits. For an
+account mirror with no usage limits, private packages and access
+control, run [`vlt setup`](#getting-started-with-vlt-setup)
+(recommended). To use the public npm registry, or any other registry,
+instead:
+
+```bash
+vlt config set registries.npm=https://registry.npmjs.org/ --config=user
+```
+
+The public mirror is read-only. Commands that publish or authenticate
+(`vlt publish`, `vlt login`, `vlt whoami`, `vlt token`,
+`vlt dist-tag`, ...) need a registry you configure, and fail with a
+config error without one:
 
 ```
 Config Error: Missing registry configuration.
 
-vlt has no default registry. Run `vlt setup` to get configured.
+vlt's built-in `npm` registry is a read-only public mirror, so this
+command needs a registry you configure. Run `vlt setup` to use your
+vlt.io account, pass `--registry=<url>`, or, to publish, set
+`publishConfig.registry` in package.json.
 
 See https://docs.vlt.sh/cli for other ways to set a registry.
 ```
 
-The guided path is [`vlt setup`](#getting-started-with-vlt-setup),
-which configures your account's registry aliases so that
-`vlt install <pkg>` and `vlx` work out of the box.
-
 Commands that install packages (`vlt install`, `vlt update`,
-`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) additionally require the
-`registries.npm` alias — or, when `default-registry-alias` is set to
-something else, the alias it names. A scalar `--registry` /
-`VLT_REGISTRY` is not enough. When that alias is missing they fail
-with:
+`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) resolve bare specs
+through the `registries.npm` alias — or, when `default-registry-alias`
+is set to something else, the alias it names. When
+`default-registry-alias` names an alias with no URL, they fail with:
 
 ```
-Config Error: Missing npm registry configuration.
+Config Error: Missing main registry configuration.
 
-Install commands require the `registries.npm` alias.
-Run `vlt setup` to get configured.
+Bare specs resolve through the `registries.main` alias
+(`default-registry-alias`), which has no URL. Set it with
+`vlt config set registries.main=<url>`, or point
+`default-registry-alias` at a configured alias.
 
 See https://docs.vlt.sh/cli for other ways to set a registry.
 ```
@@ -175,12 +194,11 @@ internal registry is used for all fetches, it effectively must serve
 _all_ packages, meaning it has to be a caching proxy, as well as the
 repository for any of your organization's internal code.
 
-Note that the built-in registry aliases (`gh:`, `jsr:`) and the `@jsr`
-scope mapping still have built-in URLs. The `npm:` alias, however, is
-**no longer built-in** — it has no baked-in URL and must be configured
-(see [The `npm:` alias](#npm) below). All built-in aliases are
-overridable within their own map (`registries.gh`,
-`jsr-registries.jsr`, `git-hosts.github`, ...).
+Note that the built-in registry aliases (`npm:`, `gh:`, `jsr:`) and
+the `@jsr` scope mapping have built-in URLs; `npm:` is vlt's public
+npm mirror (see [The `npm:` alias](#npm) below). All built-in aliases
+are overridable within their own map (`registries.npm`,
+`registries.gh`, `jsr-registries.jsr`, `git-hosts.github`, ...).
 
 ## Bare specs and `--default-registry-alias`
 
@@ -194,7 +212,8 @@ registry in the following order of precedence:
 3. `registries[<default-registry-alias>]`
 
 `--default-registry-alias` defaults to `npm`, so by default a bare
-`foo` resolves through your configured `registries.npm`. Change it to
+`foo` resolves through `registries.npm`: vlt's public npm mirror, or
+the URL you configured (for example with `vlt setup`). Change it to
 route bare specs (including transitive deps without an explicit
 registry) through a different alias:
 
@@ -202,9 +221,10 @@ registry) through a different alias:
 vlt config set default-registry-alias=main
 ```
 
-Because the `npm` alias has no built-in URL, a fresh, unconfigured
-project cannot resolve bare specs until you configure one — the guided
-way to do that is `vlt setup`.
+With no config, the `npm` alias is vlt's public npm mirror, so a fresh
+project resolves bare specs with no setup. An alias named by
+`default-registry-alias` that has no URL has to be configured before
+bare specs can resolve.
 
 Note that a project which sets `registries` without also setting
 `default-registry-alias` gets the default `npm` back, even if your
@@ -213,8 +233,12 @@ to route that project's bare specs through a different alias.
 
 ## Getting started with `vlt setup`
 
-`vlt setup` is the onboarding wizard for a vlt.io account. Sign up or
-log in at [https://www.vlt.io](https://www.vlt.io) first, then run:
+`vlt setup` is the onboarding wizard for a vlt.io account. It is
+optional, since vlt installs public packages through the public mirror
+without it, but recommended: your account's npm mirror has no usage
+limits, and the account adds private `@<account>/…` packages, tokens
+and access control. Sign up or log in at
+[https://www.vlt.io](https://www.vlt.io) first, then run:
 
 ```bash
 vlt setup
@@ -233,7 +257,8 @@ registry aliases into your user `vlt.json`:
 ```
 
 - `npm` is the default bare-spec alias, so `vlt install <pkg>` and
-  `vlx` work immediately.
+  `vlx` now go through your account's npm mirror instead of the public
+  one.
 - `main` is your account's primary private registry (named `main:` to
   match the service).
 
@@ -284,7 +309,9 @@ on an interactive terminal, and otherwise falls back to
 A `--registry=<url>` on the command line always takes precedence,
 except that `publish` (and `unpublish` of the package in the current
 directory) use the package's `publishConfig.registry` when set, with
-no other registry config needed.
+no other registry config needed. The built-in `npm` mirror is
+read-only, so these commands never select it, and
+`vlt registry npm <command>` needs a configured `registries.npm`.
 
 ## Named Scope Registries (npm Compatibility)
 
@@ -382,24 +409,26 @@ config).
 #### `npm:`
 
 The `npm:` alias is the default bare-spec alias (see
-[`--default-registry-alias`](#bare-specs-and---default-registry-alias)),
-but it has **no built-in URL** — you must configure it. This is
-because real traffic is expected to flow through a per-account vlt
-mirror whose URL isn't known ahead of time.
+[`--default-registry-alias`](#bare-specs-and---default-registry-alias)).
+Its built-in URL is vlt's public, read-only npm mirror,
+`https://registry.vlt.io/upstream/npm/`, so bare specs like
+`foo@1.2.3` and aliases like `foo@npm:bar@1.2.3` resolve with no
+configuration. The mirror is a shared service with usage limits, and
+it only serves reads.
 
-The easiest way to configure it is
+The easiest way to change it is
 [`vlt setup`](#getting-started-with-vlt-setup), which points
-`registries.npm` at your account's mirror. You can also set it
-directly, for example to the public npm registry or an internal
-caching proxy:
+`registries.npm` at your account's mirror (no usage limits). You can
+also set it directly, for example to the public npm registry or an
+internal caching proxy:
 
 ```bash
-vlt config set registries=npm=https://registry.npmjs.org/
+vlt config set registries.npm=https://registry.npmjs.org/
 ```
 
-Until `npm` is configured, bare specs like `foo@1.2.3` and
-`foo@npm:bar@1.2.3` have no registry to resolve against and will fail
-with the missing-registry error.
+> Caution: since the built-in mirror is read-only, `vlt publish` and
+> the account commands never use it. Configure their registry with
+> `publishConfig.registry`, `--registry` or `vlt setup`.
 
 #### `jsr:`
 

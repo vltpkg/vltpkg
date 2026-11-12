@@ -35,10 +35,8 @@ import { commandUsage } from '../config/usage.ts'
 import { installOptions } from '../install-options.ts'
 import { reloadConfig } from '../reload-config.ts'
 import {
-  hasConfiguredRegistry,
   hasNpmRegistry,
   missingNpmRegistryError,
-  missingRegistryError,
   normalizeRegistryURL,
 } from '../require-registry.ts'
 import { stdout } from '../output.ts'
@@ -308,7 +306,7 @@ export const views = {
     if (skills) lines.push('', skills)
     lines.push(
       '',
-      'You can now install packages, e.g.:',
+      "Installs now use your account's npm mirror (no usage limits), e.g.:",
       '  vlt install <pkg>',
     )
     if (result.skillsHint) {
@@ -337,8 +335,11 @@ export const usage: CommandUsage = () =>
       '--path [--yes] [--global-bin-dir=<path>]',
       '--skills',
     ],
-    description: `Configure the registry aliases for your vlt.io account so
-                  that \`vlt install\` and \`vlx\` work out of the box.
+    description: `Connect vlt to your vlt.io account. vlt installs public
+                  packages without it, through vlt's public npm mirror;
+                  setup points the \`npm\` alias at your account's npm
+                  mirror (no usage limits) and adds your private \`main\`
+                  registry.
 
                   Sign up or log in at ${VLT_SIGNUP_URL} first. The wizard
                   authenticates against your account, stores the token
@@ -694,7 +695,6 @@ const setupSkills = async (
       { code: 'ECONFIG', found: conf.projectRoot },
     )
   }
-  if (!hasConfiguredRegistry(conf)) throw missingRegistryError()
   if (!hasNpmRegistry(conf)) {
     throw missingNpmRegistryError(
       conf.options['default-registry-alias'],

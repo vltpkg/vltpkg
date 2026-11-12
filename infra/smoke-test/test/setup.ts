@@ -176,7 +176,7 @@ t.test(
   },
 )
 
-// no registry yet
+// only the built-in npm mirror
 const fresh = { VLT_REGISTRY: '', VLT_REGISTRIES: '' }
 
 // answers each wizard prompt once, as it appears

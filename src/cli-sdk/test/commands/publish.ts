@@ -2036,7 +2036,8 @@ t.test('publishConfig.registry alone is enough', async t => {
   t.test('missing registry fails before publishing any', async t => {
     const config = monorepoDir(t, custom('a'), {})
     await t.rejects(command(config), {
-      message: /Missing registry configuration/,
+      message:
+        /Missing registry configuration[\s\S]*publishConfig\.registry/,
       cause: { code: 'ECONFIG' },
     })
     t.strictSame(requests, [])

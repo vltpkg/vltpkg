@@ -300,17 +300,27 @@ t.test('outputCommand', async t => {
   })
 
   t.test('needsRegistry', async t => {
+    // the built-in aliases, written out so these fail without the
+    // built-in `npm` mirror
+    const builtins = {
+      gh: 'https://npm.pkg.github.com/',
+      npm: 'https://registry.vlt.io/upstream/npm/',
+    }
     const registryCommand: Command<true> = {
       async command() {
         return true
       },
       usage: () => ({ usage: () => 'usage' }) as Jack,
       views: { json: x => x },
-      needsRegistry: true,
+      needsRegistry: 'write',
+    }
+    const readCommand: Command<true> = {
+      ...registryCommand,
+      needsRegistry: 'read',
     }
 
     t.test(
-      'ECONFIG when only built-in defaults are configured',
+      'write: ECONFIG when only built-in defaults are configured',
       async t => {
         errsPrinted.length = 0
         aborted.length = 0
@@ -319,21 +329,84 @@ t.test('outputCommand', async t => {
         t.teardown(() => {
           if (t.passing()) process.exitCode = exitCode
         })
-        // a built-in default (gh) left at its default URL does not
-        // count as the user having configured a registry
+        // built-in defaults (gh, the read-only npm mirror) left at
+        // their default URLs do not count as the user having
+        // configured a registry
         await outputCommand(registryCommand, {
           explicit: {},
           values: { view: 'json' },
           options: {
-            registries: { gh: 'https://npm.pkg.github.com/' },
+            'default-registry-alias': 'npm',
+            registries: builtins,
           },
           abort,
         } as unknown as LoadedConfig)
         t.strictSame(exits(), [], 'no forced exit')
         t.strictSame(aborted, [1], 'aborted after printing')
         t.equal(process.exitCode, 1)
-        t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
+        t.match(errsPrinted[0], {
+          message: /^Missing registry configuration/,
+          cause: { code: 'ECONFIG' },
+        })
+        t.match(String(errsPrinted[0]), /read-only public mirror/)
+        t.match(String(errsPrinted[0]), /publishConfig\.registry/)
         t.match(String(errsPrinted[0]), /docs\.vlt\.sh\/cli/)
+      },
+    )
+
+    t.test('read: runs with only the built-in defaults', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(readCommand, {
+        explicit: {},
+        values: { view: 'json' },
+        options: {
+          'default-registry-alias': 'npm',
+          registries: builtins,
+        },
+      } as unknown as LoadedConfig)
+      t.strictSame(logs(), [['true']])
+    })
+
+    t.test('read: runs with a registry scalar', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(readCommand, {
+        explicit: {},
+        values: { view: 'json' },
+        options: {
+          registry: 'https://registry.npmjs.org/',
+          'default-registry-alias': 'nope',
+          registries: builtins,
+        },
+      } as unknown as LoadedConfig)
+      t.strictSame(logs(), [['true']])
+    })
+
+    t.test(
+      'read: ECONFIG naming an unconfigured default-registry-alias',
+      async t => {
+        errsPrinted.length = 0
+        aborted.length = 0
+        const { exitCode = 0 } = process
+        const logs = t.capture(console, 'log').args
+        t.teardown(() => {
+          if (t.passing()) process.exitCode = exitCode
+        })
+        await outputCommand(readCommand, {
+          explicit: {},
+          values: { view: 'json' },
+          options: {
+            'default-registry-alias': 'nope',
+            registries: builtins,
+          },
+          abort,
+        } as unknown as LoadedConfig)
+        t.strictSame(logs(), [], 'not run')
+        t.equal(process.exitCode, 1)
+        t.match(errsPrinted[0], {
+          message: /^Missing nope registry configuration/,
+          cause: { code: 'ECONFIG' },
+        })
+        t.match(String(errsPrinted[0]), /registries\.nope/)
       },
     )
 
@@ -393,7 +466,9 @@ t.test('outputCommand', async t => {
 
     t.test('function form: decided per invocation', async t => {
       const seen: LoadedConfig[] = []
-      const fnCommand = (needs: boolean): Command<true> => ({
+      const fnCommand = (
+        needs: 'read' | 'write' | undefined,
+      ): Command<true> => ({
         ...registryCommand,
         needsRegistry: conf => {
           seen.push(conf)
@@ -403,13 +478,18 @@ t.test('outputCommand', async t => {
       const conf = {
         explicit: {},
         values: { view: 'json' },
-        options: { registries: {} },
+        options: {
+          'default-registry-alias': 'npm',
+          registries: builtins,
+        },
         abort,
       } as unknown as LoadedConfig
       const logs = t.capture(console, 'log').args
-      await outputCommand(fnCommand(false), conf)
-      t.strictSame(logs(), [['true']], 'runs with no registry')
+      await outputCommand(fnCommand(undefined), conf)
+      t.strictSame(logs(), [['true']], 'runs with no need')
       t.equal(seen[0], conf, 'gets the config')
+      await outputCommand(fnCommand('read'), conf)
+      t.strictSame(logs(), [['true']], 'read runs on the built-ins')
 
       errsPrinted.length = 0
       aborted.length = 0
@@ -417,8 +497,8 @@ t.test('outputCommand', async t => {
       t.teardown(() => {
         if (t.passing()) process.exitCode = exitCode
       })
-      await outputCommand(fnCommand(true), conf)
-      t.strictSame(logs(), [], 'not run')
+      await outputCommand(fnCommand('write'), conf)
+      t.strictSame(logs(), [], 'write not run')
       t.equal(process.exitCode, 1)
       t.match(errsPrinted[0], { cause: { code: 'ECONFIG' } })
     })
@@ -447,7 +527,23 @@ t.test('outputCommand', async t => {
       needsNpmRegistry: true,
     }
 
-    t.test('ECONFIG when registries.npm is missing', async t => {
+    t.test('runs on the built-in npm mirror', async t => {
+      const logs = t.capture(console, 'log').args
+      await outputCommand(npmRegistryCommand, {
+        explicit: {},
+        values: { view: 'json' },
+        options: {
+          registries: {
+            gh: 'https://npm.pkg.github.com/',
+            npm: 'https://registry.vlt.io/upstream/npm/',
+          },
+          'default-registry-alias': 'npm',
+        },
+      } as unknown as LoadedConfig)
+      t.strictSame(logs(), [['true']])
+    })
+
+    t.test('ECONFIG when registries.npm has no URL', async t => {
       errsPrinted.length = 0
       aborted.length = 0
       const { exitCode = 0 } = process
@@ -462,7 +558,7 @@ t.test('outputCommand', async t => {
         values: { view: 'json' },
         options: {
           registry: 'https://registry.npmjs.org/',
-          registries: {},
+          registries: { npm: '' },
           'default-registry-alias': 'npm',
         },
         abort,

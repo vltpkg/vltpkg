@@ -41,9 +41,10 @@ Find all packages served from the public npm registry:
 />
 
 Note that registry nodes are matched against the resolved registry
-URL. Since vlt has no [default registry](/client/registries), a node
-whose spec carries no registry has no hostname to compare and will not
-match.
+URL. Packages from vlt's built-in `npm` alias (its
+[public npm mirror](/registry/public-mirror)) match
+`:hostname(registry.vlt.io)`. A registry alias with no URL leaves its
+nodes with no hostname to compare, so they will not match.
 
 Find packages from GitHub's package registry:
 

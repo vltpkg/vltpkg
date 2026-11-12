@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
 import type { CommandUsage } from './index.ts'
+import { mirrorLimitAdvice } from './mirror-limit.ts'
 
 export const formatOptions = {
   depth: Infinity,
@@ -107,6 +108,8 @@ export const printErr = (
 
   const err = parseError(e)
   const knownError = printCode(err, usage, stderr, format)
+  const limit = mirrorLimitAdvice(e)
+  if (limit) stderr(`⚠️ ${limit}`)
   const fileWritten =
     !knownError || knownError.file ? writeErrorLog(e, format) : null
 

@@ -11,7 +11,9 @@ one with [`vlt registry <alias> <command>`](/client/commands/registry)
 (for example `vlt registry main whoami`). See
 [Targeting a specific registry](/client/registries#targeting-a-specific-registry).
 
-If you're setting up a vlt.io account for the first time, start with
+Installing public packages needs no login: with no config, vlt uses
+its public, read-only npm mirror. If you're setting up a vlt.io
+account for the first time, start with
 [`vlt setup`](/client/registries#getting-started-with-vlt-setup) — it
 authenticates and configures your account's registry aliases in one
 step. The commands below cover logging into individual registries
@@ -58,8 +60,8 @@ a redirect changes origin.
 A token for the default registry can be provided in the `VLT_TOKEN`
 environment variable. The default registry is the `registry` option
 (or `VLT_REGISTRY`) if set, else the `registries` alias named by
-`default-registry-alias` (`npm` by default; `vlt setup` writes
-`registries.npm`).
+`default-registry-alias` (`npm` by default: vlt's public npm mirror
+unless you configure `registries.npm`, e.g. with `vlt setup`).
 
 For example:
 

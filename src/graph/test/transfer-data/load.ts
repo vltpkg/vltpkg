@@ -354,6 +354,38 @@ t.test(
   },
 )
 
+t.test(
+  'archive validation covers nodes from the built-in npm mirror',
+  async t => {
+    const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+    const barId = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+    // a lockfile made on the default records no registries.npm
+    t.notOk(transferData.lockfile.options.registries?.npm)
+    const missing = load({
+      ...transferData,
+      securityArchive: { [fooId]: report('foo') },
+    })
+    t.equal(
+      missing.graph.nodes.get('~~foo@1.0.0')?.options.registries?.npm,
+      'https://registry.vlt.io/upstream/npm/',
+      'nodes get the built-in npm mirror',
+    )
+    t.equal(
+      missing.securityArchive?.ok,
+      false,
+      'missing report for a mirror node is detected',
+    )
+    const complete = load({
+      ...transferData,
+      securityArchive: {
+        [fooId]: report('foo'),
+        [barId]: report('bar'),
+      },
+    })
+    t.equal(complete.securityArchive?.ok, true)
+  },
+)
+
 t.test('load graph with multiple importers', async () => {
   const multiImporterData: TransferData = {
     ...transferData,

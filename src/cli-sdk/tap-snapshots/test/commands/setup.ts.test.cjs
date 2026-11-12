@@ -14,7 +14,7 @@ vlt setup --path [--yes] [--global-bin-dir=<path>]
 vlt setup --skills
 \`\`\`
 
-Configure the registry aliases for your vlt.io account so that \`vlt install\` and \`vlx\` work out of the box.
+Connect vlt to your vlt.io account. vlt installs public packages without it, through vlt's public npm mirror; setup points the \`npm\` alias at your account's npm mirror (no usage limits) and adds your private \`main\` registry.
 
 Sign up or log in at https://www.vlt.io first. The wizard authenticates against your account, stores the token for both the \`npm\` and \`main\` registries, and writes those aliases (and any additional aliases you add) to your user \`vlt.json\`.
 

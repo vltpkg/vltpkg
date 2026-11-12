@@ -30,6 +30,7 @@ export const run = async (
     config: {} as LoadedConfig,
     error: null as unknown,
     notifications: [] as string[],
+    steps: [] as string[],
   }
   t.chdir(cwd)
   const index = await t.mockImport<typeof import('../src/index.ts')>(
@@ -39,11 +40,19 @@ export const run = async (
         notifyUpdate: (_: LoadedConfig, version: string) =>
           state.notifications.push(version),
       },
+      '../src/mirror-notice.ts': {
+        watchMirrorNotice: () => {
+          state.steps.push('watch mirror')
+          return () => state.steps.push('mirror notice')
+        },
+      },
       '../src/output.ts': {
         stdout: (v: string) => state.logs.push(v),
         stderr: (v: string) => state.logs.push(v),
-        outputCommand: (_: unknown, conf: LoadedConfig) =>
-          (state.config = conf),
+        outputCommand: (_: unknown, conf: LoadedConfig) => {
+          state.steps.push('command')
+          state.config = conf
+        },
         flushAndExit: (code?: number) => process.exit(code),
       },
     },
@@ -67,9 +76,14 @@ t.test('infer workspace', async t => {
     },
   })
   t.chdir(join(dir, 'src/foo'))
-  const { config, notifications } = await run(t)
+  const { config, notifications, steps } = await run(t)
   t.strictSame(config.get('workspace'), ['src/foo'])
   t.matchOnly(notifications, [/^\d+\./])
+  t.strictSame(
+    steps,
+    ['watch mirror', 'command', 'mirror notice'],
+    'mirror notice watches the command, then prints',
+  )
 })
 
 t.test('infer workspace from package.json workspaces', async t => {

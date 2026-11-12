@@ -251,6 +251,23 @@ const diffRecords = (
 }
 
 /**
+ * A lockfile that left `registries.npm` at the built-in default (vlt's
+ * public npm mirror) did not pin it, so the current `registries.npm`
+ * (e.g. an account mirror set by `vlt setup`) is not an options change.
+ */
+const withoutUnpinnedNpm = (
+  to: Record<string, string> | undefined,
+  stored: Record<string, string> | undefined,
+) =>
+  to && stored?.[defaultRegistryName] === undefined ?
+    Object.fromEntries(
+      Object.entries(to).filter(
+        ([key]) => key !== defaultRegistryName,
+      ),
+    )
+  : to
+
+/**
  * Compares the current config against the `options` block of a lockfile
  * and returns the entries that differ. The comparison is per entry, so
  * reordering keys in `vlt.json` is not a change.
@@ -289,12 +306,19 @@ export const diffLockfileOptions = (
       }
     } else {
       const defaults = sectionDefaults[section]
-      diffRecords(
-        section,
+      const storedRecord =
         defaults && isRecordStringString(from) ?
           removeDefaultItems(defaults, from)
-        : (from as Record<string, string>),
-        to as Record<string, string>,
+        : (from as Record<string, string> | undefined)
+      diffRecords(
+        section,
+        storedRecord,
+        section === 'registries' ?
+          withoutUnpinnedNpm(
+            to as Record<string, string> | undefined,
+            storedRecord,
+          )
+        : (to as Record<string, string>),
         changes,
       )
     }

@@ -44,9 +44,9 @@ const s = Spec.parse('react', '^18.0.0', specOptions)
 
 ```typescript
 type SpecOptions = {
-  registry?: string              // NO default — must be configured
-  registries?: Record<string, string>  // named registries (gh; npm is
-                                        // NOT built-in, must be configured)
+  registry?: string              // NO default scalar
+  registries?: Record<string, string>  // named registries (built-in gh,
+                                        // and npm = vlt's public mirror)
   'default-registry-alias'?: string     // default: 'npm' — the alias key
                                         // in `registries` that bare specs
                                         // resolve through
@@ -61,7 +61,7 @@ type SpecOptions = {
 
 ## Bare-spec resolution & the `npm` alias
 
-There is **no built-in default registry URL**. A bare spec (`foo`,
+There is **no default `registry` scalar**. A bare spec (`foo`,
 `foo@latest`) or a transitive dep with no explicit registry protocol
 resolves its registry via, in precedence order:
 
@@ -69,18 +69,20 @@ resolves its registry via, in precedence order:
 2. `registry` (the `--registry` scalar)
 3. `registries[<default-registry-alias>]` (default alias is `npm`)
 
-If none is configured, `spec.registry === undefined` and anything that
+The `npm` alias is built in as vlt's public, read-only npm mirror
+(`https://registry.vlt.io/upstream/npm/`), so with no config bare specs
+and `npm:` aliases resolve there. `vlt setup` points it at the account
+mirror (writes `registries.npm` + `registries.main`); `vlt.json`,
+`VLT_REGISTRIES` or `--registries` override it too. Only when the
+default alias has no URL (e.g. `default-registry-alias` names an
+unconfigured alias) is `spec.registry` undefined, and anything that
 needs to build a registry URL fails with a missing-registry error.
-
-The `npm` alias has **no baked-in URL** — real traffic goes through a
-per-account vlt mirror whose URL isn't known ahead of time. Configure it
-via `vlt setup` (writes `registries.npm` + `registries.main`),
-`vlt login --registry=<url>`, `vlt.json`, or `--registry`. In tests,
-pass `registries: { npm: 'https://registry.npmjs.org/' }` so `npm:`
-aliases and bare specs resolve.
+Tests that assert URLs or hit a mock registry pass
+`registries: { npm: 'https://registry.npmjs.org/' }` (or the mock URL)
+so they never depend on the mirror.
 
 `getOptions` merges user config **over** built-in defaults, so every
-built-in alias (`gh`, `jsr`) is user/service-overridable within its own
+built-in alias (`npm`, `gh`, `jsr`) is user/service-overridable within its own
 map. cli-sdk rejects cross-map or built-in-protocol names at config load
 (`builtinProtocols` is exported for that).
 
@@ -107,9 +109,12 @@ aliases (`custom:`, `vlt:`) throw.
 ## Defaults
 
 ```typescript
-defaultRegistryName = 'npm'   // DepID canonicalization constant only;
-                              // NOT a URL and NOT pre-registered
-defaultRegistries = { gh: 'https://npm.pkg.github.com/' }  // no `npm`
+defaultRegistryName = 'npm'   // the default alias name, also used for
+                              // DepID canonicalization
+defaultRegistries = {
+  gh: 'https://npm.pkg.github.com/',
+  npm: 'https://registry.vlt.io/upstream/npm/',  // public, read-only mirror
+}
 defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }
 defaultScopeRegistries = { '@jsr': 'https://npm.jsr.io/' }
 ```

@@ -303,15 +303,16 @@ and not linked, and [`vlt skills link`](/client/commands/skills)
 removes their links.
 
 Packages are eligible when their origin is the public npm registry
-(`https://registry.npmjs.org/`) or whatever URL is configured as
-`registries.npm` (for example a vlt.io npm mirror from
+(`https://registry.npmjs.org/`) or the `registries.npm` URL: vlt's
+public npm mirror by default, or whatever URL is configured (for
+example a vlt.io npm mirror from
 [`vlt setup`](/client/commands/setup)). Packages from other registries
 have no security data.
 
 `vlt login --registry=<url>` writes only the scalar `registry` option.
-If that URL is not `https://registry.npmjs.org/` and `registries.npm`
-is unset, those packages are not scanned. Use `vlt setup` or
-`vlt config set registries=npm=<url>` instead.
+If that URL is neither `https://registry.npmjs.org/` nor the
+`registries.npm` URL, those packages are not scanned. Use `vlt setup`
+or `vlt config set registries.npm=<url>` instead.
 
 For more detailed information about specific security selectors, see
 the [Dependency Selector Syntax](/client/selectors/security-insights)

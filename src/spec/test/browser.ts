@@ -11,10 +11,9 @@ import {
   currentDefaultRegistryName,
 } from '../src/browser.ts'
 
-// there is no default registry any more; most of these cases predate
-// that change, so keep exercising them against the npm registry. The
-// `npm` alias is also no longer built in, so configure it explicitly for
-// the many cases that rely on `npm:` specs.
+// the built-in `npm` alias is vlt's public npm mirror; most of these
+// cases predate that, so keep exercising them against the npm registry
+// by configuring both the scalar registry and the `npm` alias.
 const defaultOptions = {
   registry: 'https://registry.npmjs.org/',
   registries: { npm: 'https://registry.npmjs.org/' },
@@ -494,11 +493,12 @@ t.test('getOptions', t => {
   t.end()
 })
 
-t.test('no default registry', t => {
+t.test('built-in npm registry', t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
   t.equal(
     getOptions({}).registry,
     undefined,
-    'getOptions does not fill in a registry',
+    'getOptions does not fill in a scalar registry',
   )
   t.equal(
     getOptions({ registry: 'https://a.com/' }).registry,
@@ -509,30 +509,26 @@ t.test('no default registry', t => {
     getOptions({}).registries,
     {
       gh: 'https://npm.pkg.github.com/',
+      npm: mirror,
     },
-    'only built-in aliases (gh) are kept; npm is not pre-registered',
+    'built-in aliases: gh and the public npm mirror',
   )
 
   const s = Spec.parse('foo@latest', {})
   t.equal(s.type, 'registry')
-  t.equal(
-    s.registry,
-    undefined,
-    'registry-type spec with no registry',
-  )
-  t.equal(s.conventionalRegistryTarball, undefined)
+  t.equal(s.registry, mirror, 'bare specs use the public mirror')
 
   const single = Spec.parse('foo@1.2.3', {})
   t.equal(
     single.conventionalRegistryTarball,
-    undefined,
-    'cannot guess a tarball url with no registry',
+    `${mirror}foo/-/foo-1.2.3.tgz`,
+    'tarball url guessed at the public mirror',
   )
 
   t.equal(
     Spec.parse('foo@npm:foo@1.2.3', {}).final.registry,
-    undefined,
-    'the npm: alias no longer resolves without configuration',
+    mirror,
+    'the npm: alias resolves with no configuration',
   )
 
   t.equal(
@@ -540,7 +536,21 @@ t.test('no default registry', t => {
       registries: { npm: 'https://registry.npmjs.org/' },
     }).final.registry,
     'https://registry.npmjs.org/',
-    'the npm: alias resolves once configured',
+    'a configured npm alias overrides the built-in',
+  )
+
+  t.equal(
+    Spec.parse('foo@1.2.3', {
+      registries: { npm: 'https://registry.npmjs.org/' },
+    }).registry,
+    'https://registry.npmjs.org/',
+    'bare specs follow a configured npm alias',
+  )
+
+  t.equal(
+    Spec.parse('foo@1.2.3', { registry: 'https://a.com/' }).registry,
+    'https://a.com/',
+    'a scalar registry still wins for bare specs',
   )
 
   t.equal(
@@ -550,25 +560,29 @@ t.test('no default registry', t => {
     'https://acme.example.com/',
     'scoped registries still win',
   )
+
+  const unset = Spec.parse('foo@latest', { registries: { npm: '' } })
+  t.equal(unset.registry, '', 'an emptied npm alias has no registry')
+  t.equal(unset.conventionalRegistryTarball, undefined)
   t.end()
 })
 
 t.test(
   'setting default registry does not configure the npm: alias',
   async t => {
-    // with only --registry set, `npm:` is not a configured alias, so it
-    // is not recognized as a named-registry spec (no subspec/namedRegistry).
+    // with only --registry set, `npm:` still resolves through the
+    // built-in public mirror, not the scalar registry.
     const s = Spec.parse('a@npm:a@1', { registry: 'https://a.com/' })
     t.matchStrict(s, {
       type: 'registry',
       spec: 'a@npm:a@1',
       name: 'a',
       bareSpec: 'npm:a@1',
-      namedRegistry: undefined,
-      subspec: undefined,
+      namedRegistry: 'npm',
+      registry: 'https://registry.vlt.io/upstream/npm/',
     })
 
-    // configuring the alias explicitly makes it resolve.
+    // configuring the alias explicitly makes it resolve there.
     const configured = Spec.parse('a@npm:a@1', {
       registry: 'https://a.com/',
       registries: { npm: 'https://registry.npmjs.org/' },
@@ -921,10 +935,13 @@ t.test('git path selector must be relative', async t => {
   }
 })
 
-t.test('spec with registry:undefined has no registry', async t => {
-  const s = Spec.parse('foo@1.x', { registry: undefined })
-  t.equal(s.registry, undefined)
-})
+t.test(
+  'spec with registry:undefined uses the built-in npm',
+  async t => {
+    const s = Spec.parse('foo@1.x', { registry: undefined })
+    t.equal(s.registry, 'https://registry.vlt.io/upstream/npm/')
+  },
+)
 
 t.test('gh: registry support (basic functionality)', async t => {
   // Test that gh: registry is properly configured

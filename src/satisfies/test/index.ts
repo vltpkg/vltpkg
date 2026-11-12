@@ -30,6 +30,11 @@ t.test('ids that satisfy the spec', t => {
       Spec.parse('foo@1.x'),
       joinDepIDTuple(['registry', '', 'foo@1.2.3']),
     ],
+    // the default alias has no URL, so the spec has no registry
+    [
+      Spec.parse('foo@1.x', { 'default-registry-alias': 'nope' }),
+      joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    ],
     [
       Spec.parse('@scope/foo@1.x'),
       joinDepIDTuple(['registry', 'npm', '@scope/foo@1.2.3']),

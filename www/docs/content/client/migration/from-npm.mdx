@@ -11,9 +11,9 @@ sidebar:
   code={`# Install vlt globally
 $ npm install -g vlt
 
-# Configure the npm registry alias -- vlt has no default
+# Optional: keep npm's registry -- vlt installs through its public npm mirror by default
 
-$ vlt config set registries=npm=https://registry.npmjs.org/
+$ vlt config set registries.npm=https://registry.npmjs.org/
 
 # In your existing project, run:
 
@@ -23,38 +23,37 @@ That's it for basic usage. vlt reads your existing `package.json` and
 resolves dependencies. Below are the details on what's different and
 how to handle specific scenarios.
 
-### First: configure your registry
+### First: your default registry
 
-Unlike npm, **vlt has no default registry**. Commands that resolve or
-fetch packages fail with a config error until one is set:
+Unlike npm, **vlt's default registry is vlt's public npm mirror**,
+`https://registry.vlt.io/upstream/npm/`, not `registry.npmjs.org`.
+With no config, package metadata and tarballs for bare specs (like
+`vlt install express`) come from `registry.vlt.io`. The mirror is
+read-only and has usage limits; see
+[Public npm Mirror](/registry/public-mirror).
 
-```
-Config Error: Missing registry configuration.
-
-vlt has no default registry. Run `vlt setup` to get configured.
-
-See https://docs.vlt.sh/cli for other ways to set a registry.
-```
-
-If you have a vlt.io account, the guided path is
-[`vlt setup`](/client/registries#getting-started-with-vlt-setup),
-which configures your account's registry aliases for you.
+If you have a vlt.io account, run
+[`vlt setup`](/client/registries#getting-started-with-vlt-setup) to
+use your account's npm mirror instead (no usage limits, private
+packages).
 
 To instead keep npm's behavior, point the `npm` alias at the public
 npm registry:
 
 <Code
-  code={`$ vlt config set registries=npm=https://registry.npmjs.org/`}
+  code={`$ vlt config set registries.npm=https://registry.npmjs.org/`}
   title="Terminal"
   lang="bash"
 />
 
 Commands that install packages (`vlt install`, `vlt update`,
-`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) require that alias
-specifically (or the one named by `default-registry-alias`, if you
-changed it). A scalar `--registry` / `VLT_REGISTRY` is enough for
-other registry-hitting commands (for example `vlt ping`), but not for
-install.
+`vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) resolve bare specs
+through that alias (or the one named by `default-registry-alias`, if
+you changed it); a scalar `--registry` / `VLT_REGISTRY` takes
+precedence for bare specs. Publishing and account commands
+(`vlt publish`, `vlt login`, `vlt whoami`, ...) never use the
+read-only mirror: configure their registry with `vlt setup`,
+`--registry` or `publishConfig.registry`.
 
 Or set it in `vlt.json`, pass `--registries npm=<url>` per command, or
 export `VLT_REGISTRIES`. See [Registries](/client/registries).

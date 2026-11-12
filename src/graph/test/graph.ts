@@ -131,10 +131,14 @@ t.test('Graph', async t => {
       'foo@1.x│registry│https://registry.npmjs.org/│',
     ]),
   )
-  // a registry spec with no configured registry still gets a distinct
-  // registry segment, so it can't collide with a configured one
+  // a registry spec with no registry (the default alias has no URL)
+  // still gets a distinct registry segment, so it can't collide with a
+  // configured one
   t.equal(
-    graph.findResolution(Spec.parse('foo@1.x'), graph.mainImporter),
+    graph.findResolution(
+      Spec.parse('foo@1.x', { 'default-registry-alias': 'nope' }),
+      graph.mainImporter,
+    ),
     newNode,
     'registry-less spec resolves through satisfies()',
   )
