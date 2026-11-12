@@ -89,7 +89,7 @@ export function install(
   add?: AddImportersDependenciesMap,
 ): Promise<CheckedInstallResult>
 export function install(
-  options: InstallOptions,
+  options: InstallOptions & { upToDateCheck?: false },
   add?: AddImportersDependenciesMap,
 ): Promise<InstallResult>
 export async function install(

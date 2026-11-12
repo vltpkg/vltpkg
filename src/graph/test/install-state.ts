@@ -732,22 +732,17 @@ t.test('what is never recorded', async t => {
         root,
         'prod',
         Spec.parse('local', 'file:./local'),
-        { name: 'local', dependencies: { c: '1' } },
+        {
+          name: 'local',
+          dependencies: { c: '1' },
+          // never installed for a dependency
+          devDependencies: { e: '1' },
+        },
         localId,
       )
       if (!local) throw new Error('no file node')
       local.location = './local'
       symlinkSync('../local', path('node_modules/local'), 'junction')
-      // a file dep that is no directory is not read again
-      const tgz = graph.placePackage(
-        local,
-        'prod',
-        Spec.parse('tgz', 'file:./x.tgz'),
-        { name: 'tgz', dependencies: { d: '1' } },
-        joinDepIDTuple(['file', 'x.tgz']),
-      )
-      if (!tgz) throw new Error('no file node')
-      tgz.location = './x.tgz'
       const c = joinDepIDTuple(['registry', '', 'c@1.0.0'])
       const locked = {
         [`${root.id} a`]: `prod 1 ${a}`,
@@ -783,9 +778,9 @@ t.test('what is never recorded', async t => {
         recorded({ ...locked, [`${root.id} b`]: `prod 1 ${b}` }),
         'another type',
       )
-      t.notOk(
+      t.ok(
         recorded(without(`${localId} c`)),
-        'a directory dep manifest is read again',
+        'a directory dep is not placed again: its deps are not resolved',
       )
     },
   )

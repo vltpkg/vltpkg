@@ -3361,6 +3361,40 @@ t.test('a deleted dependency link is restored', async t => {
   )
 })
 
+// installs a project as `vlt install` does, each run as if in a new
+// process after the fixture was made
+const checkedInstall = async (
+  t: Test,
+  projectRoot: string,
+  packageInfo: PackageInfoClient,
+) => {
+  t.chdir(projectRoot)
+  unload('project')
+  t.teardown(() => unload('project'))
+  t.intercept(performance, 'timeOrigin', {
+    get: () => Date.now() + 1000,
+  })
+  const { install } = await import('../src/install.ts')
+  return {
+    run: () =>
+      install(
+        {
+          projectRoot,
+          scurry: new PathScurry(projectRoot),
+          packageJson: new PackageJson(),
+          packageInfo,
+          allowScripts: ':not(*)',
+          registries: { npm: 'https://registry.npmjs.org/' },
+          upToDateCheck: true,
+        } as unknown as InstallOptions & { upToDateCheck: true },
+        Object.assign(new Map(), {
+          modifiedDependencies: false,
+        }) as AddImportersDependenciesMap,
+      ),
+    state: resolve(projectRoot, 'node_modules/.vlt/state.json'),
+  }
+}
+
 t.test('an unresolved optional dep is never recorded', async t => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({
@@ -3370,13 +3404,6 @@ t.test('an unresolved optional dep is never recorded', async t => {
       optionalDependencies: { flaky: '^1.0.0' },
     }),
     'vlt.json': '{}',
-  })
-  t.chdir(projectRoot)
-  unload('project')
-  t.teardown(() => unload('project'))
-  // as if each install ran in a new process, after the fixture was made
-  t.intercept(performance, 'timeOrigin', {
-    get: () => Date.now() + 1000,
   })
   const manifests: Record<string, Record<string, unknown>> = {
     abbrev: { name: 'abbrev', version: '2.0.0' },
@@ -3403,41 +3430,97 @@ t.test('an unresolved optional dep is never recorded', async t => {
     async warmTarPool() {},
     async closeTarPool() {},
   } as unknown as PackageInfoClient
-  const checked = () =>
-    ({
-      projectRoot,
-      scurry: new PathScurry(projectRoot),
-      packageJson: new PackageJson(),
-      packageInfo,
-      allowScripts: ':not(*)',
-      registries: { npm: 'https://registry.npmjs.org/' },
-      upToDateCheck: true,
-    }) as unknown as InstallOptions & { upToDateCheck: true }
-  // as `vlt install` calls it
-  const noAdd = () =>
-    Object.assign(new Map(), {
-      modifiedDependencies: false,
-    }) as AddImportersDependenciesMap
-  const state = resolve(projectRoot, 'node_modules/.vlt/state.json')
-  const { install } = await import('../src/install.ts')
+  const { run, state } = await checkedInstall(
+    t,
+    projectRoot,
+    packageInfo,
+  )
 
-  await install(checked(), noAdd())
+  await run()
   t.notOk(existsSync(state), 'not recorded by the reifying install')
   asked.length = 0
-  t.notOk((await install(checked(), noAdd())).upToDate, 'full path')
+  t.notOk((await run()).upToDate, 'full path')
   t.ok(asked.includes('flaky'), 'asked for again')
   t.notOk(existsSync(state), 'not recorded by a no-op')
 
   down = false
-  await install(checked(), noAdd())
+  await run()
   t.ok(
     lstatSync(
       resolve(projectRoot, 'node_modules/flaky'),
     ).isSymbolicLink(),
     'installed once it resolves',
   )
-  t.ok((await install(checked(), noAdd())).upToDate, 'then recorded')
+  t.ok((await run()).upToDate, 'then recorded')
 })
+
+t.test(
+  'a directory dep dev dep does not stop the record',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        dependencies: { local: 'file:./local' },
+      }),
+      'vlt.json': '{}',
+      local: {
+        'package.json': JSON.stringify({
+          name: 'local',
+          version: '1.0.0',
+          dependencies: { abbrev: '^2.0.0' },
+          devDependencies: { ms: '^2.1.0' },
+        }),
+      },
+    })
+    const manifests: Record<string, Record<string, unknown>> = {
+      abbrev: { name: 'abbrev', version: '2.0.0' },
+      ms: { name: 'ms', version: '2.1.3' },
+    }
+    const asked: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        asked.push(spec.name)
+        return spec.type === 'file' ?
+            JSON.parse(
+              readFileSync(
+                resolve(
+                  projectRoot,
+                  String(spec.file),
+                  'package.json',
+                ),
+                'utf8',
+              ),
+            )
+          : manifests[spec.name]
+      },
+      async extract(spec: Spec, target: string) {
+        mkdirSync(target, { recursive: true })
+        writeFileSync(
+          resolve(target, 'package.json'),
+          JSON.stringify(manifests[spec.name]),
+        )
+        return { resolved: '', spec }
+      },
+      async warmTarPool() {},
+      async closeTarPool() {},
+    } as unknown as PackageInfoClient
+    const { run, state } = await checkedInstall(
+      t,
+      projectRoot,
+      packageInfo,
+    )
+
+    await run()
+    t.ok(existsSync(state), 'recorded by the reifying install')
+    t.ok((await run()).upToDate, 'then a hit')
+    t.notOk(asked.includes('ms'), 'the dev dep is never asked for')
+    t.notOk(
+      existsSync(resolve(projectRoot, 'local/node_modules/ms')),
+      'nor installed',
+    )
+  },
+)
 
 t.test('a project with modifiers stays in sync', async t => {
   const projectRoot = t.testdir({
