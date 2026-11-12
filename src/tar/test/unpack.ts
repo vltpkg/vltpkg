@@ -10,6 +10,12 @@ import type { Test } from 'tap'
 import { Pax } from 'tar'
 import type { HeaderData } from 'tar'
 import { brotliCompressSync, gzipSync } from 'node:zlib'
+import type {
+  BrotliOptions,
+  CompressCallback,
+  InputType,
+  ZlibOptions,
+} from 'node:zlib'
 import {
   checkFs,
   unpack as unpackAsync,
@@ -140,6 +146,62 @@ const makeFilesTar = (files: Record<string, string>) => {
     )
   }
   return makeTar(chunks)
+}
+
+// deterministic incompressible bytes (xorshift32)
+const noise = (n: number) => {
+  const b = Buffer.alloc(n)
+  let x = 1
+  for (let i = 0; i < n; i++) {
+    x ^= x << 13
+    x ^= x >>> 17
+    x ^= x << 5
+    b[i] = x & 0xff
+  }
+  return b
+}
+
+// the unpack module, recording the chunkSize of each inflate
+const withChunkSizes = async (t: Test) => {
+  const zlib = await import('node:zlib')
+  const chunks: (number | undefined)[] = []
+  const mod = await t.mockImport<UnpackModule>('../src/unpack.ts', {
+    'node:zlib': t.createMock(zlib, {
+      unzip: (
+        buf: InputType,
+        opts: ZlibOptions,
+        cb: CompressCallback,
+      ) => {
+        chunks.push(opts.chunkSize)
+        zlib.unzip(buf, opts, cb)
+      },
+      unzipSync: (buf: InputType, opts: ZlibOptions) => {
+        chunks.push(opts.chunkSize)
+        return zlib.unzipSync(buf, opts)
+      },
+      brotliDecompress: (
+        buf: InputType,
+        opts: BrotliOptions,
+        cb: CompressCallback,
+      ) => {
+        chunks.push(opts.chunkSize)
+        zlib.brotliDecompress(buf, opts, cb)
+      },
+      brotliDecompressSync: (buf: InputType, opts: BrotliOptions) => {
+        chunks.push(opts.chunkSize)
+        return zlib.brotliDecompressSync(buf, opts)
+      },
+    }),
+  })
+  return { mod, chunks }
+}
+
+// a gzip member followed by zero-led padding, which zlib skips: the
+// last four bytes then read as the given trailer size.
+const padTrailer = (gz: Buffer, isize: number) => {
+  const pad = Buffer.alloc(isize ? 5 : 4)
+  if (isize) pad.writeUInt32LE(isize, 1)
+  return Buffer.concat([gz, pad])
 }
 
 for (const [writer, get] of writers) {
@@ -659,9 +721,118 @@ for (const [writer, get] of writers) {
         message: 'unknown compression method',
       })
     })
+
+    t.test('gzip chunk sized from the trailer', async t => {
+      const { mod, chunks } = await withChunkSizes(t)
+      const unpack = get(mod)
+      const body = noise(100 * 1024)
+      const big = makeTar([
+        { path: 'package/big', size: body.length },
+        body,
+      ])
+      const small = makeTar([...pjEntry])
+      const dir = t.testdir()
+      await unpack(gzipSync(big), dir + '/big')
+      t.ok(readFileSync(dir + '/big/big').equals(body), 'same bytes')
+      await unpack(gzipSync(small), dir + '/small')
+      t.equal(readFileSync(dir + '/small/package.json', 'utf8'), pj)
+      t.strictSame(chunks, [big.length + 1, 64 * 1024])
+    })
+
+    t.test('brotli chunk sized from the input', async t => {
+      const { mod, chunks } = await withChunkSizes(t)
+      const unpack = get(mod)
+      const body = noise(32 * 1024)
+      const big = brotliCompressSync(
+        makeTar([{ path: 'package/big', size: body.length }, body]),
+      )
+      const small = brotliCompressSync(makeTar([...pjEntry]))
+      const dir = t.testdir()
+      await unpack(big, dir + '/big', 'brotli')
+      t.ok(readFileSync(dir + '/big/big').equals(body), 'same bytes')
+      await unpack(small, dir + '/small', 'brotli')
+      t.equal(readFileSync(dir + '/small/package.json', 'utf8'), pj)
+      t.strictSame(chunks, [big.length * 8, 64 * 1024])
+    })
+
+    t.test(
+      '0xffffffff trailer: chunk within the ratio cap',
+      async t => {
+        const { mod, chunks } = await withChunkSizes(t)
+        const unpack = get(mod)
+        const input = padTrailer(
+          gzipSync(makeTar([...pjEntry])),
+          0xffffffff,
+        )
+        t.ok(input.length * 1000 + 1 > 64 * 1024, 'above the floor')
+        const dir = t.testdirName
+        await unpack(input, dir)
+        t.equal(readFileSync(dir + '/package.json', 'utf8'), pj)
+        t.strictSame(chunks, [input.length * 1000 + 1])
+      },
+    )
+
+    t.test('0 trailer still inflates', async t => {
+      const { mod, chunks } = await withChunkSizes(t)
+      const unpack = get(mod)
+      const body = noise(100 * 1024)
+      const tar = makeTar([
+        { path: 'package/big', size: body.length },
+        body,
+      ])
+      const dir = t.testdirName
+      await unpack(padTrailer(gzipSync(tar), 0), dir)
+      t.ok(readFileSync(dir + '/big').equals(body), 'same bytes')
+      t.strictSame(chunks, [64 * 1024])
+    })
+
+    t.test(
+      'multi-member gzip sizes from the last member',
+      async t => {
+        const { mod, chunks } = await withChunkSizes(t)
+        const unpack = get(mod)
+        const body = noise(200 * 1024)
+        const tar = makeTar([
+          { path: 'package/big', size: body.length },
+          body,
+        ])
+        const k = 100 * 1024
+        const input = Buffer.concat([
+          gzipSync(tar.subarray(0, k)),
+          gzipSync(tar.subarray(k)),
+        ])
+        const dir = t.testdirName
+        await unpack(input, dir)
+        t.ok(readFileSync(dir + '/big').equals(body), 'same bytes')
+        t.strictSame(chunks, [tar.length - k + 1])
+      },
+    )
+
+    t.test('gzip shorter than a trailer', async t => {
+      await t.rejects(
+        () => unpack(Buffer.from([0x1f, 0x8b]), t.testdir()),
+        { code: 'Z_BUF_ERROR' },
+      )
+    })
     t.end()
   })
 }
+
+t.test('the chunk is capped at 256 MiB', async t => {
+  const { mod, chunks } = await withChunkSizes(t)
+  const body = noise(300 * 1024)
+  const input = padTrailer(
+    gzipSync(
+      makeTar([{ path: 'package/big', size: body.length }, body]),
+    ),
+    0xffffffff,
+  )
+  t.ok(input.length * 1000 + 1 > 256 * 1024 * 1024, 'above the cap')
+  const dir = t.testdirName
+  mod.unpackSync(input, dir)
+  t.ok(readFileSync(dir + '/big').equals(body), 'same bytes')
+  t.strictSame(chunks, [256 * 1024 * 1024])
+})
 
 t.test('errors do not leave garbage lying around', async t => {
   const dir = t.testdir({ still: 'here' })

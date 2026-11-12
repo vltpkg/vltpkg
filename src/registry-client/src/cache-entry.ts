@@ -48,6 +48,24 @@ const parseMaxUnpackedBytes = (raw: string | undefined): number => {
 const maxUnpackedBytes = parseMaxUnpackedBytes(
   process.env.VLT_TAR_MAX_UNPACKED_BYTES,
 )
+// same chunk sizing as @vltpkg/tar unpack: one output chunk, sized from
+// the gzip trailer, within `max` and a cap (zlib reserves it up front)
+const minChunk = 64 * 1024
+const maxChunk = 256 * 1024 * 1024
+const gzipChunkSize = (body: Uint8Array, max: number) => {
+  const n = body.byteLength
+  const isize =
+    n < 4 ? 0 : (
+      new DataView(body.buffer, body.byteOffset, n).getUint32(
+        n - 4,
+        true,
+      )
+    )
+  return Math.min(
+    maxChunk,
+    Math.max(minChunk, Math.min(isize + 1, max + 1)),
+  )
+}
 
 const readSize = (buf: Uint8Array, offset: number) => {
   const a = buf[offset]
@@ -646,25 +664,29 @@ export class CacheEntry {
 
   // the body un-gzipped, for a body known to be gzipped
   #gunzip(): Buffer {
+    // without a content-length, every _body read is a fresh concat
+    const body = this._body
     // we know that if we know it's gzip, that the body has been
     // flattened to a single buffer, so save the extra call.
     /* c8 ignore start */
-    if (this._body.length === 0)
-      throw error('Invalid buffer, cant unzip')
+    if (body.length === 0) throw error('Invalid buffer, cant unzip')
     /* c8 ignore stop */
     const max = Math.min(
       maxUnpackedBytes,
-      this._body.length * MAX_DECOMPRESSION_RATIO,
+      body.length * MAX_DECOMPRESSION_RATIO,
     )
     try {
-      return gunzipSync(this._body, { maxOutputLength: max })
+      return gunzipSync(body, {
+        maxOutputLength: max,
+        chunkSize: gzipChunkSize(body, max),
+      })
     } catch (er) {
       throw (
           (er as NodeJS.ErrnoException).code ===
             'ERR_BUFFER_TOO_LARGE'
         ) ?
           error('cache entry exceeds maximum unpacked size', {
-            found: this._body.length,
+            found: body.length,
             max,
             cause: er,
           })
