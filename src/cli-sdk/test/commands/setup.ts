@@ -919,7 +919,7 @@ t.test('wizard views', async t => {
   const head =
     'Configured 2 registry aliases for "acme" in user config:\n  npm -> u\n  main -> m'
   const tail =
-    "\n\nInstalls now use your account's npm mirror (no usage limits), e.g.:\n  vlt install <pkg>"
+    "\n\nInstalls now use your account's npm mirror, e.g.:\n  vlt install <pkg>"
   const r = {
     dir: '/b',
     shell: 'zsh' as const,
@@ -2055,7 +2055,7 @@ t.test('skills views', async t => {
   const head =
     'Configured 1 registry alias for "acme" in project config:\n  npm -> u'
   const tail =
-    "\n\nInstalls now use your account's npm mirror (no usage limits), e.g.:\n  vlt install <pkg>"
+    "\n\nInstalls now use your account's npm mirror, e.g.:\n  vlt install <pkg>"
   const wizard = {
     account: 'acme',
     which: 'project',
