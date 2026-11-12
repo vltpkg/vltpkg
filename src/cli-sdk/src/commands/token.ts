@@ -10,7 +10,10 @@ import {
 } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
 import { readPassword } from '../read-password.ts'
-import { requireRegistry } from '../require-registry.ts'
+import {
+  isBuiltinMirror,
+  requireRegistry,
+} from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
@@ -211,11 +214,13 @@ export const command: CommandFn<
         await listTokens(rc, defaultReg, identity, 'default'),
       )
 
-      // Then query all configured registry aliases
+      // Then query all configured registry aliases, except the
+      // read-only built-in mirror
       const configuredRegistries = conf.options.registries
       for (const [alias, registry] of Object.entries(
         configuredRegistries,
       )) {
+        if (isBuiltinMirror(alias, registry)) continue
         const key = normalizeRegistryKey(registry)
         if (!seen.has(key)) {
           seen.add(key)

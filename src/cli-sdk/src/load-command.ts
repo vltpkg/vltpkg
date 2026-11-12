@@ -28,7 +28,9 @@ export type Command<T> = {
    * subcommands need one.
    */
   needsRegistry?:
-    RegistryNeed | ((conf: LoadedConfig) => RegistryNeed | undefined)
+    | 'read'
+    | 'write'
+    | ((conf: LoadedConfig) => 'read' | 'write' | undefined)
   /**
    * Set to `true` by commands that install packages (`install`,
    * `update`, `uninstall`, `ci`, `exec`/`vlx`). `outputCommand()`
@@ -38,9 +40,6 @@ export type Command<T> = {
    */
   needsNpmRegistry?: boolean
 }
-
-/** What a command needs from the registry config, see `needsRegistry`. */
-type RegistryNeed = 'read' | 'write'
 
 export const loadCommand = async <T>(
   command: Commands[keyof Commands] | undefined,

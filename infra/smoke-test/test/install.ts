@@ -132,11 +132,31 @@ t.test('no registry configured, --help still works', async t => {
 })
 
 t.test('no registries.npm configured', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
   const { status } = await runMultiple(t, ['i', 'abbrev'], {
     match: ['status'],
     // scalar --registry still set via the fixture default; the npm
     // alias falls back to the built-in, and bare specs use the scalar
     env: { VLT_REGISTRIES: '' },
+    test: async ({ t, dirs }) => {
+      const lock = JSON.parse(
+        readFileSync(join(dirs.project, 'vlt-lock.json'), 'utf-8'),
+      ) as {
+        options: { registry?: string }
+        nodes: Record<string, unknown[]>
+      }
+      t.equal(
+        lock.options.registry,
+        'https://registry.npmjs.org/',
+        'bare specs resolve through the scalar',
+      )
+      t.notOk(
+        Object.values(lock.nodes).some(
+          n => typeof n[3] === 'string' && n[3].startsWith(mirror),
+        ),
+        'nothing resolved through the public mirror',
+      )
+    },
   })
   t.equal(status, 0)
 })

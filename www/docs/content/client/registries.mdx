@@ -103,6 +103,17 @@ order of precedence:
    vlt install --registry=https://registry.npmjs.org/
    ```
 
+The `registry` scalar only covers bare specs. `npm:` alias specs,
+which are common in dependency trees (for example
+`"string-width-cjs": "npm:string-width@^4.2.0"`), resolve through
+`registries.npm`, which is vlt's public npm mirror unless you
+configure it. To keep every install off the public mirror, set
+`registries.npm`, not only `registry`:
+
+```bash
+vlt config set registries.npm=https://registry.npmjs.org/ --config=user
+```
+
 ### Project vs. user registry configuration
 
 A project's registry configuration always wins over the user-level
@@ -415,6 +426,12 @@ Its built-in URL is vlt's public, read-only npm mirror,
 `foo@1.2.3` and aliases like `foo@npm:bar@1.2.3` resolve with no
 configuration. The mirror is a shared service with usage limits, and
 it only serves reads.
+
+The `registry` scalar (`--registry`, `VLT_REGISTRY`) does not change
+this alias: it covers bare specs only. `npm:` alias specs, including
+the ones in your dependencies, keep resolving through
+`registries.npm`, so with only `registry` set they still go to the
+public mirror.
 
 The easiest way to change it is
 [`vlt setup`](#getting-started-with-vlt-setup), which points

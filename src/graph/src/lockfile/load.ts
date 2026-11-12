@@ -268,6 +268,22 @@ const withoutUnpinnedNpm = (
   : to
 
 /**
+ * The configured `registries.npm` when the stored lockfile left it at
+ * the built-in default, else undefined.
+ */
+const unpinnedNpm = (
+  current: Record<string, string> | undefined,
+  stored: Record<string, string> | undefined,
+) => {
+  const url = current?.[defaultRegistryName]
+  if (!url || url === defaultRegistries.npm) return undefined
+  const pinned = stored?.[defaultRegistryName]
+  return pinned === undefined || pinned === defaultRegistries.npm ?
+      url
+    : undefined
+}
+
+/**
  * Compares the current config against the `options` block of a lockfile
  * and returns the entries that differ. The comparison is per entry, so
  * reordering keys in `vlt.json` is not a change.
@@ -424,6 +440,10 @@ export const loadObject = (
   })
   graph.optionsChanges = optionsChanges
   graph.optionsChanged = optionsChanges.length > 0
+  graph.unpinnedNpmRegistry = unpinnedNpm(
+    options.registries,
+    registries,
+  )
   loadNodes(
     graph,
     lockfileData.nodes,

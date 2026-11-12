@@ -106,7 +106,7 @@ t.test('ids that satisfy the spec', t => {
     ],
     [Spec.parse('a@file:a'), joinDepIDTuple(['file', './a'])],
     [
-      // the `npm` alias is no longer a built-in default; configure it so
+      // pin the `npm` alias to npmjs, not the built-in public mirror, so
       // the default-registry DepID resolves to the npm registry URL
       Spec.parse('a@registry:https://registry.npmjs.org/#a@1.x', {
         registries: { npm: 'https://registry.npmjs.org/' },

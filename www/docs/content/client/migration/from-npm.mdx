@@ -50,7 +50,11 @@ Commands that install packages (`vlt install`, `vlt update`,
 `vlt uninstall`, `vlt ci`, `vlx`/`vlt exec`) resolve bare specs
 through that alias (or the one named by `default-registry-alias`, if
 you changed it); a scalar `--registry` / `VLT_REGISTRY` takes
-precedence for bare specs. Publishing and account commands
+precedence for bare specs. The scalar covers bare specs only: `npm:`
+alias specs, which are common in dependency trees (for example
+`"string-width-cjs": "npm:string-width@^4.2.0"`), resolve through
+`registries.npm`. To keep every install off the public mirror, set
+`registries.npm`, not only `registry`. Publishing and account commands
 (`vlt publish`, `vlt login`, `vlt whoami`, ...) never use the
 read-only mirror: configure their registry with `vlt setup`,
 `--registry` or `publishConfig.registry`.

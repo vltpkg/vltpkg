@@ -31,9 +31,9 @@ import { basename, resolve } from 'node:path'
 import { extract } from 'tar'
 import { clientCache } from './client-cache.ts'
 
-// the `npm` alias is no longer a built-in default, so it must be
-// configured explicitly for `npm:` aliased specs to collapse to their
-// resolved target (which is how the fixture maps are keyed).
+// pin the `npm` alias to npmjs, not the built-in public mirror, so
+// `npm:` aliased specs collapse to the npmjs targets the fixture maps
+// are keyed by.
 const specOptions = {
   registries: { npm: 'https://registry.npmjs.org/' },
 }

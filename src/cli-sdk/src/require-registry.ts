@@ -200,10 +200,11 @@ export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
   !!conf.options.registry || gatherCandidates(conf).length > 0
 
 /**
- * Whether the alias bare specs resolve through is configured:
- * `registries.npm` by default, or whatever `default-registry-alias`
- * points at. A scalar `--registry` or some unrelated alias is not
- * enough: install-related commands need the default alias itself.
+ * Whether the alias bare specs resolve through has a URL (the built-in
+ * `npm` mirror counts): `registries.npm` by default, or whatever
+ * `default-registry-alias` points at. A scalar `--registry` or some
+ * unrelated alias is not enough: install-related commands need the
+ * default alias itself.
  * Kept next to {@link hasConfiguredRegistry} so both pre-command
  * gates share the same config surface.
  */

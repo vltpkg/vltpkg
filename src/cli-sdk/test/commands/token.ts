@@ -334,6 +334,52 @@ t.test('list tokens from multiple registries', async t => {
   t.equal(result?.registries[1]?.tokens[0]?.key, 'custom-key-1')
 })
 
+t.test('list skips the built-in npm mirror', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
+  const scrolled: string[] = []
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      async getToken(): Promise<Token | undefined> {
+        return 'Bearer npm_mock'
+      },
+      RegistryClient: class MockRegistryClient {
+        async scroll<T>(url: URL): Promise<T[]> {
+          scrolled.push(String(url))
+          return [] as T[]
+        }
+      },
+    },
+  })
+
+  const result = await cmd({
+    options: {
+      registries: {
+        gh: 'https://npm.pkg.github.com/',
+        npm: mirror,
+        main: 'https://registry.npmjs.org/',
+      },
+      'default-registry-alias': 'npm',
+      identity: '',
+    },
+    positionals: ['list'],
+  } as unknown as LoadedConfig)
+
+  t.strictSame(
+    result?.registries.map(r => [r.alias, r.registry]),
+    [
+      ['default', 'https://registry.npmjs.org/'],
+      ['gh', 'https://npm.pkg.github.com/'],
+    ],
+  )
+  t.notOk(
+    scrolled.some(url => url.startsWith(mirror)),
+    'the mirror token API is not queried',
+  )
+})
+
 t.test('list includes keychain-only registries', async t => {
   const { command: cmd } = await t.mockImport<
     typeof import('../../src/commands/token.ts')

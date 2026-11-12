@@ -550,8 +550,8 @@ t.test('hoisting with aliased dependencies', async t => {
     scurry,
     packageJson,
     monorepo: Monorepo.load(projectRoot),
-    // the `npm` alias is no longer built in; configure it so the
-    // `npm:bar` aliased deps resolve
+    // pin the `npm` alias to npmjs, not the built-in public mirror, for
+    // the `npm:bar` aliased deps
     registries: { npm: 'https://registry.npmjs.org/' },
   })
 

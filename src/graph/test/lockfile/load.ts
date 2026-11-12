@@ -1135,9 +1135,8 @@ t.test('optionsChanged detection', async t => {
       const matchingLockfile: LockfileData = {
         ...baseLockfileData,
         options: {
-          // the configured registry is always recorded now that there
-          // is no default to elide it against; the `npm` alias is also
-          // persisted now that it is no longer a built-in default
+          // the configured registry scalar is always recorded, and so is
+          // an `npm` alias other than the built-in public mirror
           registry: 'https://registry.npmjs.org/',
           registries: {
             npm: 'https://registry.npmjs.org/',
@@ -2138,6 +2137,33 @@ t.test('the built-in npm mirror and registries.npm', async t => {
     loadObject(onAccount, lockfileData({})).optionsChanged,
     false,
     'so the frozen check passes',
+  )
+  t.equal(
+    loadObject(onAccount, lockfileData({})).unpinnedNpmRegistry,
+    acct,
+    'the account registries.npm is left unpinned',
+  )
+  t.equal(
+    loadObject(
+      onAccount,
+      lockfileData({ registries: { npm: mirror } }),
+    ).unpinnedNpmRegistry,
+    acct,
+    'so is one stored at the built-in mirror',
+  )
+  t.equal(
+    loadObject(current(builtins), lockfileData({}))
+      .unpinnedNpmRegistry,
+    undefined,
+    'nothing to leave unpinned on the default',
+  )
+  t.equal(
+    loadObject(
+      onAccount,
+      lockfileData({ registries: { npm: npmjs } }),
+    ).unpinnedNpmRegistry,
+    undefined,
+    'a pinned registries.npm is not unpinned',
   )
   t.strictSame(
     diffLockfileOptions(

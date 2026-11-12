@@ -958,9 +958,8 @@ t.test('wizard views', async t => {
     }),
     head +
       "\n\nNote: this project's vlt.json configures its own registries, and\nproject config takes precedence. Re-run with `--config=project`\nto configure this project instead." +
-      '\n\n✅ Added /b to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"' +
-      tail,
-    'note, then PATH lines',
+      '\n\n✅ Added /b to your PATH in /h/.zshrc\n   Open a new terminal, or run: source "/g/env"',
+    'note, then PATH lines, no account mirror line',
   )
   t.equal(
     view({ ...r, status: 'cancelled' }),

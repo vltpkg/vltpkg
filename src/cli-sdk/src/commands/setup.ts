@@ -304,11 +304,14 @@ export const views = {
     if (path) lines.push('', path)
     const skills = result.skills && skillsView(result.skills, true)
     if (skills) lines.push('', skills)
-    lines.push(
-      '',
-      "Installs now use your account's npm mirror (no usage limits), e.g.:",
-      '  vlt install <pkg>',
-    )
+    // in a shadowing project, installs keep using its registries
+    if (!result.shadowedByProject) {
+      lines.push(
+        '',
+        "Installs now use your account's npm mirror (no usage limits), e.g.:",
+        '  vlt install <pkg>',
+      )
+    }
     if (result.skillsHint) {
       lines.push(
         '',
