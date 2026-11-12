@@ -450,6 +450,55 @@ t.test(
   },
 )
 
+t.test(
+  'an importer waits for the importer it depends on',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'project',
+        version: '1.2.3',
+        scripts: { prepare: 'true' },
+      }),
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      src: {
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.2.3',
+            scripts: { prepare: 'true' },
+          }),
+        },
+      },
+    })
+    const walked: string[] = []
+    const build = await walkingBuild(t, walked)
+    // project -> b, both importers
+    const graph = loadProject(projectRoot)
+    const b = graph.nodes.get(joinDepIDTuple(['workspace', 'src/b']))
+    if (!b) throw new Error('no b workspace??')
+    graph.addEdge(
+      'prod',
+      Spec.parse('b', 'workspace:*'),
+      graph.mainImporter,
+      b,
+    )
+
+    const result = await build(
+      new Diff(loadProject(projectRoot), graph),
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set(),
+    )
+    t.strictSame([...walked].sort(), ['b', 'project'])
+    t.strictSame(
+      runs.map(r => basename(r.cwd)),
+      ['b', basename(projectRoot)],
+      'b is prepared before the project',
+    )
+    t.strictSame(result, { success: [], failure: [] })
+  },
+)
+
 t.test('should handle missing bin files gracefully', async t => {
   const runs: RunOptions[] = []
   const chmods: string[] = []

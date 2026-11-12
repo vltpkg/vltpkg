@@ -2539,7 +2539,7 @@ t.test(
     loaded.length = 0
     const { graph } = await install(ci())
     t.equal(loaded.length, 1, 'the lockfile is loaded once')
-    t.equal(graph, loaded[0], 'the ideal graph is the checked one')
+    t.ok(graph === loaded[0], 'the ideal graph is the checked one')
     t.strictSame(outputs(), expected, 'same lockfiles')
 
     // node_modules is there: the ideal build hydrates from it

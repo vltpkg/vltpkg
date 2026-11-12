@@ -131,7 +131,7 @@ t.test('a lockfileGraph is the starting graph', async t => {
     JSON.parse(lockfile) as LockfileData,
   )
   const graph = await build({ ...opts(), lockfileGraph })
-  t.equal(graph, lockfileGraph, 'built on the given graph')
+  t.ok(graph === lockfileGraph, 'built on the given graph')
 
   writeFileSync(resolve(projectRoot, 'vlt-lock.json'), lockfile)
   t.strictSame(
