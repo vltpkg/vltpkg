@@ -10,7 +10,12 @@ import {
   defaultRegistryName,
   defaultScopeRegistries,
 } from '@vltpkg/spec'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import {
   getFlagNumFromNode,
@@ -288,9 +293,14 @@ export const saveData = (
     saveManifests ?
       JSON.stringify(data)
     : extraFormat(JSON.stringify(data, null, 2))
-  try {
-    if (readFileSync(fileName, 'utf8') === content) return false
-  } catch {}
+  // most changes change the size: no need to read the file then
+  if (
+    statSync(fileName, { throwIfNoEntry: false })?.size ===
+      Buffer.byteLength(content) &&
+    readFileSync(fileName, 'utf8') === content
+  ) {
+    return false
+  }
   writeFileSync(fileName, content)
   return true
 }

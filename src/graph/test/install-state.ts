@@ -15,6 +15,7 @@ import {
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
+import { asDependency } from '../src/dependencies.ts'
 import type { AddImportersDependenciesMap } from '../src/dependencies.ts'
 import type { Diff } from '../src/diff.ts'
 import { Graph } from '../src/graph.ts'
@@ -430,6 +431,8 @@ t.test('the tree', async t => {
     t.notOk(res.hit)
     t.strictSame(res.links, [])
     t.notOk(existsSync(path(stateFile)), 'state removed')
+    record()
+    t.notOk(existsSync(path(stateFile)), 'never recorded')
   })
 
   await t.test('a lost link is never recorded', async t => {
@@ -708,17 +711,110 @@ t.test('what is never recorded', async t => {
     mkdirSync(path(stateFile))
     t.doesNotThrow(() => record())
   })
+
+  await t.test(
+    'a dependency the next install resolves again',
+    async t => {
+      const { record, graph, path, age } = setup(t, {
+        local: { 'package.json': '{"name":"local"}' },
+      })
+      age()
+      const root = graph.mainImporter
+      root.manifest = {
+        name: 'root',
+        version: '1.0.0',
+        dependencies: { a: '1' },
+        devDependencies: { b: '1' },
+        // only constrains a
+        peerDependencies: { a: '>=1' },
+      }
+      const local = graph.placePackage(
+        root,
+        'prod',
+        Spec.parse('local', 'file:./local'),
+        { name: 'local', dependencies: { c: '1' } },
+        localId,
+      )
+      if (!local) throw new Error('no file node')
+      local.location = './local'
+      symlinkSync('../local', path('node_modules/local'), 'junction')
+      // a file dep that is no directory is not read again
+      const tgz = graph.placePackage(
+        local,
+        'prod',
+        Spec.parse('tgz', 'file:./x.tgz'),
+        { name: 'tgz', dependencies: { d: '1' } },
+        joinDepIDTuple(['file', 'x.tgz']),
+      )
+      if (!tgz) throw new Error('no file node')
+      tgz.location = './x.tgz'
+      const c = joinDepIDTuple(['registry', '', 'c@1.0.0'])
+      const locked = {
+        [`${root.id} a`]: `prod 1 ${a}`,
+        [`${root.id} b`]: `dev 1 ${b}`,
+        [`${localId} c`]: `prod 1 ${c}`,
+      }
+      const recorded = (edges: Record<string, string>) => {
+        rmSync(path(stateFile), { force: true })
+        record(undefined, undefined, {
+          ...lockfile({ [a]: [0, 'a'], [b]: [0, 'b'] }),
+          edges,
+        } as LockfileData)
+        return existsSync(path(stateFile))
+      }
+      const without = (key: string) =>
+        Object.fromEntries(
+          Object.entries(locked).filter(([k]) => k !== key),
+        )
+      t.ok(recorded(locked), 'locked as declared')
+      t.notOk(
+        recorded(without(`${root.id} a`)),
+        'never placed, eg a failed optional',
+      )
+      t.notOk(
+        recorded({ ...locked, [`${root.id} a`]: 'prod 1 MISSING' }),
+        'a dangling edge',
+      )
+      t.notOk(
+        recorded({ ...locked, [`${root.id} a`]: `prod 2 ${a}` }),
+        'another spec',
+      )
+      t.notOk(
+        recorded({ ...locked, [`${root.id} b`]: `prod 1 ${b}` }),
+        'another type',
+      )
+      t.notOk(
+        recorded(without(`${localId} c`)),
+        'a directory dep manifest is read again',
+      )
+    },
+  )
 })
+
+// what `vlt install c` hands over
+const addC = () =>
+  Object.assign(
+    new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map([
+          [
+            'c',
+            asDependency({
+              spec: Spec.parse('c', '1'),
+              type: 'prod',
+            }),
+          ],
+        ]),
+      ],
+    ]),
+    { modifiedDependencies: true },
+  ) as AddImportersDependenciesMap
 
 t.test('the lockfiles an install writes are recorded', async t => {
   const { record, start, path, state, options, age, graph } = setup(t)
   age()
-  const st = startInstallState({
-    ...options,
-    add: Object.assign(new Map(), {
-      modifiedDependencies: true,
-    }) as AddImportersDependenciesMap,
-  }).state
+  const st = startInstallState({ ...options, add: addC() }).state
   // edited during the install
   writeFileSync(path('vlt.json'), '{"y":2}')
   // written by it
@@ -739,6 +835,55 @@ t.test('the lockfiles an install writes are recorded', async t => {
   utimesSync(path('vlt.json'), old, old)
   record()
   t.ok(start().hit)
+})
+
+t.test('only the manifests an add saves are re-read', async t => {
+  const { projectRoot, graph, path, age } = setup(t, {
+    'vlt.json': JSON.stringify({ workspaces: 'packages/*' }),
+    packages: {
+      w: { 'package.json': '{"name":"w","version":"1.0.0"}' },
+    },
+  })
+  age()
+  utimesSync(path('packages/w/package.json'), old, old)
+  const loadMonorepo = () =>
+    Monorepo.load(projectRoot, {
+      config: { packages: ['packages/*'] },
+      load: {},
+    })
+  const o = {
+    projectRoot,
+    upToDateCheck: true,
+    monorepo: loadMonorepo(),
+    fullMonorepo: loadMonorepo(),
+  }
+  const install = (during: () => void) => {
+    const st = startInstallState({ ...o, add: addC() }).state
+    during()
+    st?.setReplay(
+      graph,
+      lockfile({ [a]: [0, 'a'], [b]: [0, 'b'] }),
+      lockfile({ [a]: [0, 'a'], [b]: [0, 'b'] }),
+      false,
+    )
+    st?.save(graph)
+  }
+  const saveC = (spec: string) =>
+    writeFileSync(
+      path('package.json'),
+      JSON.stringify({ name: 'root', dependencies: { c: spec } }),
+    )
+  install(() => saveC('1'))
+  t.ok(startInstallState(o).hit, 'what the add saved')
+  install(() => {
+    saveC('2')
+    // edited by another process while the add runs
+    writeFileSync(
+      path('packages/w/package.json'),
+      '{"name":"w","dependencies":{"x":"1"}}',
+    )
+  })
+  t.notOk(startInstallState(o).hit, 'a workspace it did not save')
 })
 
 t.test('a no-op reify', async t => {
@@ -791,4 +936,28 @@ t.test('a no-op reify', async t => {
     { buildQueue: undefined, upToDate: { nodes: 3, add: [] } },
     'nothing to build',
   )
+})
+
+t.test('a no-op reify w/ a dependency to resolve again', async t => {
+  const { path, options, graph, age } = setup(t)
+  age()
+  const root = graph.mainImporter
+  const noop = () => {
+    rmSync(path(stateFile), { force: true })
+    startInstallState(options).state?.saveNoop(
+      { to: graph, nodes: { add: new Set() } } as unknown as Diff,
+      [],
+    )
+    return existsSync(path(stateFile))
+  }
+  root.manifest = {
+    name: 'root',
+    version: '1.0.0',
+    dependencies: { a: '1', b: '1' },
+  }
+  t.ok(noop(), 'locked as declared')
+  root.manifest.optionalDependencies = { c: '1' }
+  t.notOk(noop(), 'never placed')
+  graph.placePackage(root, 'optional', Spec.parse('c', '1'))
+  t.notOk(noop(), 'a dangling edge')
 })

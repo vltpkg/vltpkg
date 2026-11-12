@@ -195,6 +195,15 @@ t.test('save', async t => {
       'changed bytes',
     )
     t.not(statSync(file).mtimeMs, 0, 'written')
+    const bytes = readFileSync(file, 'utf8')
+    writeFileSync(file, bytes.replace('{', '['))
+    utimesSync(file, 0, 0)
+    t.equal(
+      saveData({ ...data, nodes: {} }, file, false),
+      true,
+      'other bytes of the same size',
+    )
+    t.equal(readFileSync(file, 'utf8'), bytes)
 
     const hidden = resolve(projectRoot, 'node_modules/.vlt-lock.json')
     utimesSync(hidden, 0, 0)
