@@ -15,6 +15,16 @@ import type { GraphLike } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import { gitPinMoved } from '../git-pin.ts'
 
+/**
+ * The version a registry DepID's `name@version` part names, which is
+ * what a node loaded without a manifest gets. Scoped names start with
+ * '@', so the separator is looked for past the first character.
+ */
+export const registrySpecVersion = (registrySpec: string) =>
+  registrySpec.indexOf('@', 1) > 0 ?
+    registrySpec.split('@').slice(-1)[0] || undefined
+  : undefined
+
 export const loadNodes = (
   graph: GraphLike,
   nodes: LockfileData['nodes'],
@@ -78,27 +88,21 @@ export const loadNodes = (
 
     // Optimize registry version extraction with caching for large graphs
     let version: string | undefined
-    // scoped names start with '@', so look for the version separator
-    // past the first character
-    if (
-      type === 'registry' &&
-      registrySpec &&
-      registrySpec.indexOf('@', 1) > 0
-    ) {
+    if (type === 'registry' && registrySpec) {
       if (registryVersionCache) {
         const seenVersion = registryVersionCache.get(registrySpec)
         /* c8 ignore start */
         if (seenVersion) {
           version = seenVersion
         } else {
-          version = registrySpec.split('@').slice(-1)[0] || undefined
+          version = registrySpecVersion(registrySpec)
           /* c8 ignore stop */
           if (version) {
             registryVersionCache.set(registrySpec, version)
           }
         }
       } else {
-        version = registrySpec.split('@').slice(-1)[0] || undefined
+        version = registrySpecVersion(registrySpec)
       }
     }
 

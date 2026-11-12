@@ -9,7 +9,7 @@ import {
   defaultRegistries,
   defaultRegistryName,
 } from '@vltpkg/spec'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import {
   getFlagNumFromNode,
@@ -31,6 +31,7 @@ import type {
 } from './types.ts'
 import type { GraphModifier } from '../modifiers.ts'
 import { error } from '@vltpkg/error-cause'
+import { removeInstallState } from '../install-state.ts'
 
 export type SaveOptions = SpecOptions & {
   /**
@@ -290,14 +291,22 @@ const extraFormat = (jsonString: string) => {
   return res.join('  "nodes": {')
 }
 
+/**
+ * Write the lockfile data, unless the file already holds these bytes.
+ * Returns whether it was written.
+ */
 export const saveData = (
   data: LockfileData,
   fileName: string,
   saveManifests = false,
-): void => {
+): boolean => {
   const json = JSON.stringify(data, null, 2)
   const content = saveManifests ? json : extraFormat(json)
+  try {
+    if (readFileSync(fileName, 'utf8') === content) return false
+  } catch {}
   writeFileSync(fileName, content)
+  return true
 }
 
 export const save = (
@@ -309,9 +318,13 @@ export const save = (
   saveData(data, fileName, false)
 }
 
+/**
+ * Save the hidden lockfile. Returns the data, or `undefined` when a
+ * manifest is missing and nothing was saved.
+ */
 export const saveHidden = (
   options: Omit<SaveOptions, 'saveManifests' | 'saveBuildData'>,
-): void => {
+): LockfileData | undefined => {
   const { graph } = options
   let data: LockfileData | undefined
 
@@ -331,5 +344,9 @@ export const saveHidden = (
     'node_modules/.vlt-lock.json',
   )
   mkdirSync(dirname(fileName), { recursive: true })
-  saveData(data, fileName, true)
+  // the tree the install state recorded is not this one any more
+  if (saveData(data, fileName, true)) {
+    removeInstallState(graph.projectRoot)
+  }
+  return data
 }
