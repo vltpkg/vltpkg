@@ -547,7 +547,13 @@ registry:
 3. **Use `npm:` inside published packages that must be unambiguous.**
    A dependency written as `npm:bar@1.x` always resolves through the
    consumer's `npm` alias.
-4. **For a registry that hosts everything your project installs**,
+4. **Use a `registry:` URL when every consumer installs with vlt.** A
+   dependency written as `registry:https://registry.foo.com/#bar@1.x`
+   always resolves from that URL, with no alias or scope mapping on
+   the consumer's side. Other package managers reject this specifier,
+   so keep it to packages that only vlt users install (see
+   [Registry URL Specifiers](#registry-url-specifiers)).
+5. **For a registry that hosts everything your project installs**,
    make it your default registry (`default-registry-alias`, or
    `registries.npm`), or scope its packages as above.
 
