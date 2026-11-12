@@ -388,6 +388,62 @@ t.test('a shared subtree is expanded once', async t => {
   }
 })
 
+t.test('BFS parents resolve without path-scurry', async t => {
+  const froms = new Map<string, string | undefined>()
+  const packageInfo = {
+    async manifest(
+      spec: Spec,
+      opts: PackageInfoClientRequestOptions,
+    ) {
+      froms.set(spec.name, opts.from)
+      return {
+        name: spec.name,
+        version: '1.0.0',
+        dependencies: spec.name === 'foo' ? { bar: '^1' } : {},
+      }
+    },
+  } as unknown as PackageInfoClient
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: asNormalizedManifest({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: '^1' },
+    }),
+  })
+  const scurry = new PathScurry(t.testdirName)
+  const resolves = t.capture(scurry, 'resolve', scurry.resolve)
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [
+      asDependency({
+        spec: Spec.parse('foo', '^1', configData),
+        type: 'prod',
+      }),
+    ],
+    scurry,
+    configData,
+    new Set<DepID>(),
+  )
+  t.strictSame(
+    resolves().filter(({ args }) =>
+      args.some(a => /node_modules[\\/]\.vlt[\\/]/.test(a)),
+    ),
+    [],
+    'no store location resolved through path-scurry',
+  )
+  const foo = [...(graph.nodesByName.get('foo') ?? [])][0]
+  t.ok(foo)
+  t.equal(
+    froms.get('bar'),
+    foo && new PathScurry(t.testdirName).resolve(foo.location),
+    'from is what path-scurry resolves',
+  )
+})
+
 t.test('append file type of nodes', async t => {
   const fooManifest = {
     name: 'foo',

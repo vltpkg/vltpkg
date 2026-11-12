@@ -406,7 +406,7 @@ const fetchManifestsForDeps = async (
   const reuseTasks: ReuseTask[] = []
   const forkRequests: PeerContextEntryInput[] = []
 
-  const from = scurry.resolve(fromNode.location)
+  const from = fromNode.resolvedLocation(scurry)
 
   // resolve the spec each dep is placed with before any lookup
   const entries: DepEntry[] = []

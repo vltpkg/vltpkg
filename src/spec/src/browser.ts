@@ -60,9 +60,7 @@ export const defaultScopeRegistries = {
   '@jsr': 'https://npm.jsr.io/',
 }
 
-export const getOptions = (
-  options?: SpecOptions,
-): SpecOptionsFilled => ({
+const fillOptions = (options?: SpecOptions): SpecOptionsFilled => ({
   catalogs: {},
   ...options,
   // after spread: explicit `catalog: undefined` gets default too
@@ -102,6 +100,73 @@ export const getOptions = (
       }
     : defaultGitHostArchives,
 })
+
+// every field fillOptions reads: a reassigned one refills the memo entry
+const filledFrom = [
+  'registry',
+  'registries',
+  'scoped-registries',
+  'jsr-registries',
+  'git-hosts',
+  'git-host-archives',
+  'default-registry-alias',
+  'catalog',
+  'catalogs',
+] as const satisfies readonly (keyof SpecOptions)[]
+
+const filled = new WeakMap<
+  SpecOptions,
+  { from: unknown[]; options: SpecOptionsFilled }
+>()
+
+const sameFields = (options: SpecOptions, from: unknown[]) => {
+  let i = 0
+  for (const k of filledFrom) {
+    if (options[k] !== from[i++]) return false
+  }
+  return true
+}
+
+/**
+ * Fill in the defaults for a set of spec options.
+ *
+ * Memoized per options object: the same object comes back until one of
+ * the fields read here is reassigned. The result is shared, so treat it
+ * (and `spec.options`) as read-only.
+ */
+export const getOptions = (
+  options?: SpecOptions,
+): SpecOptionsFilled => {
+  if (!options) return fillOptions(options)
+  const hit = filled.get(options)
+  if (hit && sameFields(options, hit.from)) return hit.options
+  const res = fillOptions(options)
+  filled.set(options, {
+    from: filledFrom.map(k => options[k]),
+    options: res,
+  })
+  return res
+}
+
+const registryOptions = new WeakMap<
+  SpecOptionsFilled,
+  Map<string, SpecOptions>
+>()
+
+/** `{ ...options, registry }`, one object per options object and url */
+const withRegistry = (
+  options: SpecOptionsFilled,
+  registry: string,
+): SpecOptions => {
+  let byUrl = registryOptions.get(options)
+  if (!byUrl) {
+    byUrl = new Map<string, SpecOptions>()
+    registryOptions.set(options, byUrl)
+  }
+  let res = byUrl.get(registry)
+  if (!res) byUrl.set(registry, (res = { ...options, registry }))
+  return res
+}
 
 // RFC3986 scheme chars minus `.`, min 2 chars. Excludes windows drive
 // letters (`C:/x`) and hostnames (`notgithub.com:user/repo`).
@@ -589,13 +654,16 @@ export class Spec implements SpecLike<Spec> {
       let url = reg.substring(0, h)
       if (!url.endsWith('/')) url += '/'
       const regSpec = reg.substring(h + 1)
+      // filled options are shared: normalize into a copy
+      let registries: Record<string, string> | undefined
       for (let [name, u] of regs) {
         if (!u.endsWith('/')) {
           u += '/'
-          this.options.registries[name] = u
+          ;(registries ??= { ...this.options.registries })[name] = u
         }
         if (u === url) this.namedRegistry = name
       }
+      if (registries) this.options = { ...this.options, registries }
       this.#parseRegistrySpec(regSpec, url)
       this.#guessRegistryTarball()
       return
@@ -826,10 +894,10 @@ export class Spec implements SpecLike<Spec> {
   #parseRegistrySpec(s: string, url: string) {
     // note: this takes priority over the scoped registry, if set
     this.registry = url
-    this.subspec = this.constructor.parse(s, {
-      ...this.options,
-      registry: url,
-    })
+    this.subspec = this.constructor.parse(
+      s,
+      withRegistry(this.options, url),
+    )
     return this.subspec
   }
 

@@ -35,7 +35,7 @@ alwaysApply: false
 
 **Identity**: `id: DepID`, `manifest?`, `name`, `version`, `integrity`, `resolved`, `modifier`
 
-**Location**: `location` (default: `./node_modules/.vlt/<DepID>/node_modules/<name>`), `inVltStore()` (memoized), `resolvedLocation(scurry)` (memoized per location + scurry cwd), `nodeModules(scurry)`, `setDefaultLocation()`
+**Location**: `location` (default: `./node_modules/.vlt/<DepID>/node_modules/<name>`), `inVltStore()` (memoized), `resolvedLocation(scurry)` (memoized per location + scurry cwd; the default store location is joined as a string on case-sensitive scurries when the name is path-safe and the id and name are ASCII, path-scurry otherwise), `nodeModules(scurry)`, `setDefaultLocation()`
 
 **Flags**: `dev`, `optional` (cascade-clear to children), `detached`, `extracted`, `buildState: 'none'|'needed'|'built'|'failed'`
 
