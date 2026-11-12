@@ -2,7 +2,12 @@ import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { PackageJson } from '@vltpkg/package-json'
 import { unload } from '@vltpkg/vlt-json'
-import { existsSync, readFileSync, rmSync } from 'node:fs'
+import {
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -247,3 +252,178 @@ t.test('no configured registry', async t => {
     'second save is byte-identical',
   )
 })
+
+t.test('built-in npm mirror round-trips', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
+  // the built-in aliases, written out so this fails without the
+  // built-in `npm` mirror
+  const specOptions: SpecOptions = {
+    registries: { gh: 'https://npm.pkg.github.com/', npm: mirror },
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = new Graph({
+    ...specOptions,
+    projectRoot,
+    mainManifest,
+  })
+  graph
+    .placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', specOptions),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: {
+          integrity: 'sha512-deadbeef==',
+          tarball: `${mirror}foo/-/foo-1.0.0.tgz`,
+        },
+      },
+    )
+    ?.setResolved()
+  save({ ...specOptions, graph })
+  const first = readFileSync(
+    resolve(projectRoot, 'vlt-lock.json'),
+    'utf8',
+  )
+  const data = JSON.parse(first) as {
+    options: Record<string, unknown>
+    nodes: Record<string, unknown[]>
+  }
+  t.strictSame(data.options, {}, 'the built-in is not recorded')
+  t.equal(
+    data.nodes['~npm~foo@1.0.0']?.[3],
+    `${mirror}foo/-/foo-1.0.0.tgz`,
+    'resolved at the mirror',
+  )
+
+  const reloaded = loadVirtual({
+    ...specOptions,
+    projectRoot,
+    mainManifest,
+  })
+  t.strictSame(reloaded.optionsChanges, [], 'no options change')
+  save({ ...specOptions, graph: reloaded })
+  t.equal(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    first,
+    'second save is byte-identical',
+  )
+})
+
+t.test(
+  'a lockfile made on the built-in npm mirror, installed with an account registries.npm',
+  async t => {
+    const mirror = 'https://registry.vlt.io/upstream/npm/'
+    const acct = 'https://registry.vlt.io/acme/npm/'
+    const gh = 'https://npm.pkg.github.com/'
+    // tarballs live on the registry the spec resolves through
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const { name, registry } = spec.final
+        return {
+          name,
+          version: '1.0.0',
+          dist: {
+            integrity: 'sha512-deadbeef==',
+            tarball: `${registry}${name}/-/${name}-1.0.0.tgz`,
+          },
+        }
+      },
+      async extract(spec: Spec) {
+        return { resolved: '', spec }
+      },
+      prefetchResolve: () => () => {},
+    } as unknown as PackageInfoClient
+
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { foo: '^1.0.0' },
+      }),
+      'vlt.json': '{}',
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const lockfile = resolve(projectRoot, 'vlt-lock.json')
+    const { install } = await import('../../src/install.ts')
+    const run = (npm: string, extra: Partial<InstallOptions> = {}) =>
+      install(
+        {
+          projectRoot,
+          scurry: new PathScurry(projectRoot),
+          packageJson: new PackageJson(),
+          packageInfo,
+          allowScripts: ':not(*)',
+          // the built-in aliases, written out so this fails without
+          // the built-in `npm` mirror
+          registries: { gh, npm },
+          lockfileOnly: true,
+          ...extra,
+        },
+        new Map() as AddImportersDependenciesMap,
+      )
+
+    // made on the default
+    await run(mirror)
+    const first = readFileSync(lockfile, 'utf8')
+    t.strictSame(
+      (JSON.parse(first) as { options: unknown }).options,
+      {},
+      'the built-in is not recorded',
+    )
+
+    await run(acct, { frozenLockfile: true })
+    t.equal(
+      readFileSync(lockfile, 'utf8'),
+      first,
+      'a frozen install leaves it unchanged',
+    )
+
+    await run(acct)
+    t.equal(
+      readFileSync(lockfile, 'utf8'),
+      first,
+      'an install that resolves nothing new leaves it unchanged',
+    )
+
+    // a new dependency resolves through the account registries.npm
+    writeFileSync(
+      resolve(projectRoot, 'package.json'),
+      JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { foo: '^1.0.0', bar: '^1.0.0' },
+      }),
+    )
+    await run(acct)
+    const data = JSON.parse(readFileSync(lockfile, 'utf8')) as {
+      options: unknown
+      nodes: Record<string, unknown[]>
+    }
+    t.strictSame(
+      data.options,
+      { registries: { npm: acct } },
+      'pinned once a node resolves through it',
+    )
+    t.equal(
+      data.nodes['~npm~bar@1.0.0']?.[3],
+      `${acct}bar/-/bar-1.0.0.tgz`,
+      'the new node is at the account registry',
+    )
+    t.equal(
+      data.nodes['~npm~foo@1.0.0']?.[3],
+      `${mirror}foo/-/foo-1.0.0.tgz`,
+      'the locked node is still at the mirror',
+    )
+  },
+)

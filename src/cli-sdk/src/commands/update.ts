@@ -11,7 +11,7 @@ import { lazyView } from '../view.ts'
 import type { Views } from '../view.ts'
 import type { InstallResult } from './install.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>

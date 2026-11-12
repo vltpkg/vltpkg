@@ -20,7 +20,7 @@ import {
 import { hydrate as browserHydrate } from '../src/browser.ts'
 import type { DepID } from '../src/index.ts'
 
-// there is no default registry any more; these cases still want one
+// there is no default scalar registry; these cases still want one
 const defaultRegistry = 'https://registry.npmjs.org/'
 
 const mani: Manifest = { name: 'manifest-name', version: '1.2.3' }
@@ -196,25 +196,20 @@ t.test('hydrate from memoized entry', t => {
 })
 
 t.test('hydrate with no configured registry', t => {
-  // there is no default registry, so a `~npm~` id is hydrated through
-  // the `npm:` alias. When the `npm` alias is not configured, the spec
-  // keeps the literal `npm:` form but cannot resolve to a URL.
+  // there is no scalar registry, so a `~npm~` id is hydrated through
+  // the `npm:` alias, built in as vlt's public npm mirror.
   resetCaches()
   const options = getOptions({})
   t.equal(options.registry, undefined, 'no registry filled in')
   const id = `${delimiter}${delimiter}x@1.2.3` as DepID
   const spec = hydrate(id, 'x', options)
   t.equal(String(spec), 'x@npm:x@1.2.3')
-  t.equal(
-    spec.namedRegistry,
-    undefined,
-    'npm alias is not recognized when unconfigured',
-  )
-  t.notOk(spec.subspec, 'no subspec without a configured npm alias')
+  t.equal(spec.namedRegistry, 'npm', 'built-in npm alias')
+  t.ok(spec.subspec, 'resolved through the built-in npm alias')
   t.equal(
     spec.final.registry,
-    undefined,
-    'cannot resolve to a URL without a configured npm alias',
+    'https://registry.vlt.io/upstream/npm/',
+    'resolves to the public npm mirror',
   )
   // round-trips back to the equivalent id via the `npm:` prefix
   t.equal(
@@ -223,6 +218,17 @@ t.test('hydrate with no configured registry', t => {
   )
   // and is no longer flagged as a confused package name
   t.equal(isPackageNameConfused(spec, 'x'), false)
+
+  // when the `npm` alias has no URL, the spec keeps the literal `npm:`
+  // form but cannot resolve to a URL.
+  resetCaches()
+  const unset = hydrate(
+    id,
+    'x',
+    getOptions({ registries: { npm: '' } }),
+  )
+  t.equal(String(unset), 'x@npm:x@1.2.3')
+  t.notOk(unset.final.registry, 'cannot resolve to a URL')
 
   // with the npm alias configured, it resolves through the mirror URL
   resetCaches()

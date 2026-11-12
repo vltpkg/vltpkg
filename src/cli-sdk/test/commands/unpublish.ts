@@ -1119,7 +1119,8 @@ t.test('local publishConfig.registry', async t => {
         ),
       ),
       {
-        message: /Missing registry configuration/,
+        message:
+          /Missing registry configuration[\s\S]*publishConfig\.registry/,
         cause: { code: 'ECONFIG' },
       },
     )

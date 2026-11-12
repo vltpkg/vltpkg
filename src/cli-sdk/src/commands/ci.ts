@@ -11,7 +11,7 @@ export type CIResult = Pick<
   'buildQueue' | 'graph' | 'skills'
 >
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>

@@ -87,6 +87,34 @@ t.test('ping all registries when no alias provided', async t => {
   t.equal(acmeResult?.status, 'ok')
 })
 
+t.test(
+  'ping all skips the read-only built-in npm mirror',
+  async t => {
+    mockResponse = { statusCode: 200, json: () => ({}) }
+    mockError = null
+    const result = await Command.command({
+      options: {
+        'default-registry-alias': 'npm',
+        registries: {
+          gh: 'https://npm.pkg.github.com/',
+          npm: 'https://registry.vlt.io/upstream/npm/',
+          main: 'https://registry.example.com/',
+        },
+      },
+      positionals: [],
+    } as unknown as LoadedConfig)
+    t.ok(Array.isArray(result), 'result should be an array')
+    if (!Array.isArray(result)) return
+    t.strictSame(
+      result.map(r => [r.alias, r.registry]),
+      [
+        ['default', 'https://registry.example.com/'],
+        ['gh', 'https://npm.pkg.github.com/'],
+      ],
+    )
+  },
+)
+
 t.test('ping specific registry with alias', async t => {
   mockResponse = {
     statusCode: 200,

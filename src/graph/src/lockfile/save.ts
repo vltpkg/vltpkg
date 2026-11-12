@@ -176,6 +176,20 @@ const removeDefaultItems = (
   return res
 }
 
+/**
+ * The built-in registries, plus the configured `registries.npm` when the
+ * lockfile the graph was loaded from left it at the built-in default and
+ * no node resolves through it: saving keeps it unpinned, as it was.
+ */
+const registryDefaults = (graph: Graph): Record<string, string> => {
+  const npm = graph.unpinnedNpmRegistry
+  if (!npm) return defaultRegistries
+  for (const node of graph.nodes.values()) {
+    if (node.resolved?.startsWith(npm)) return defaultRegistries
+  }
+  return { ...defaultRegistries, [defaultRegistryName]: npm }
+}
+
 export const lockfileData = ({
   graph,
   catalog,
@@ -206,7 +220,7 @@ export const lockfileData = ({
     : undefined
   const cleanRegistries =
     isRecordStringString(registries) ?
-      removeDefaultItems(defaultRegistries, registries)
+      removeDefaultItems(registryDefaults(graph), registries)
     : undefined
   const cleanScopeRegistries =
     isRecordStringString(scopeRegistries) ?

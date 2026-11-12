@@ -52,6 +52,17 @@ t.test('missingRegistryError / ambiguousRegistryError', async t => {
     String(mod.missingNpmRegistryError('custom')),
     /registries\.custom/,
   )
+  const missing = String(mod.missingRegistryError())
+  t.match(missing, /read-only public mirror/)
+  t.match(missing, /`vlt setup`/)
+  t.match(missing, /`--registry=<url>`/)
+  t.match(missing, /`publishConfig\.registry`/)
+  t.match(missing, /https:\/\/docs\.vlt\.sh\/cli/)
+  t.notMatch(missing, /no default registry/)
+  const npmMissing = String(mod.missingNpmRegistryError('custom'))
+  t.match(npmMissing, /`default-registry-alias`/)
+  t.match(npmMissing, /`vlt config set registries\.custom=<url>`/)
+  t.notMatch(npmMissing, /vlt setup/)
   t.match(
     mod.ambiguousRegistryError([
       { alias: 'npm', url: 'https://n/' },
@@ -198,6 +209,10 @@ t.test('resolveRegistry (interactive prompt)', async t => {
 })
 
 const ghDefaultURL = 'https://npm.pkg.github.com/'
+const mirrorURL = 'https://registry.vlt.io/upstream/npm/'
+// written out, not from getOptions(), so these fail without the
+// built-in `npm` mirror
+const builtins = { gh: ghDefaultURL, npm: mirrorURL }
 
 t.test('built-in defaults are not candidates', async t => {
   const mod = await load()
@@ -213,6 +228,20 @@ t.test('built-in defaults are not candidates', async t => {
     ),
     { message: /Missing registry configuration/ },
     'only built-in gh -> missing',
+  )
+
+  // nor does the read-only built-in npm mirror
+  await t.rejects(
+    mod.resolveRegistry(mkConf({ registries: builtins }), {
+      interactive: false,
+    }),
+    { message: /Missing registry configuration/ },
+    'only built-ins -> missing',
+  )
+  t.throws(
+    () => mod.requireRegistry(mkConf({ registries: builtins })),
+    { message: /Missing registry configuration/ },
+    'only built-ins -> missing (sync)',
   )
 
   // a single user-configured alias resolves even when the built-in gh
@@ -237,6 +266,125 @@ t.test('built-in defaults are not candidates', async t => {
     ),
     'https://custom/',
     'overridden gh counts as configured',
+  )
+})
+
+t.test('built-in npm mirror is read-only', async t => {
+  const mod = await load()
+
+  t.ok(mod.isBuiltinMirror('npm', mirrorURL), 'built-in npm')
+  t.notOk(mod.isBuiltinMirror('npm', 'https://n/'), 'overridden npm')
+  t.notOk(mod.isBuiltinMirror('gh', mirrorURL), 'other alias')
+
+  // explicit alias: the mirror is never a write/auth target
+  t.throws(
+    () =>
+      mod.requireRegistry(mkConf({ registries: builtins }), 'npm'),
+    {
+      message: /Missing registry configuration/,
+      cause: { code: 'ECONFIG' },
+    },
+    'requireRegistry: explicit built-in npm alias',
+  )
+  await t.rejects(
+    mod.resolveRegistry(mkConf({ registries: builtins }), {
+      alias: 'npm',
+    }),
+    { message: /Missing registry configuration/ },
+    'resolveRegistry: explicit built-in npm alias',
+  )
+  t.equal(
+    await mod.resolveRegistry(
+      mkConf({ registries: { ...builtins, npm: 'https://n/' } }),
+      { alias: 'npm' },
+    ),
+    'https://n/',
+    'explicit overridden npm alias',
+  )
+  t.equal(
+    mod.requireRegistry(mkConf({ registries: builtins }), 'gh'),
+    ghDefaultURL,
+    'explicit built-in gh alias still resolves',
+  )
+
+  // non-interactive fallback to default-registry-alias skips the mirror
+  const two = { ...builtins, main: 'https://m/', corp: 'https://c/' }
+  t.throws(
+    () => mod.requireRegistry(mkConf({ registries: two })),
+    {
+      message: /Multiple registries are configured/,
+      cause: { validOptions: ['main', 'corp'] },
+    },
+    'requireRegistry: fallback never picks the mirror',
+  )
+  await t.rejects(
+    mod.resolveRegistry(mkConf({ registries: two }), {
+      interactive: false,
+    }),
+    {
+      message: /Multiple registries are configured/,
+      cause: { validOptions: ['main', 'corp'] },
+    },
+    'resolveRegistry: fallback never picks the mirror',
+  )
+  const toGh = { registries: two, 'default-registry-alias': 'gh' }
+  t.equal(
+    mod.requireRegistry(mkConf(toGh)),
+    ghDefaultURL,
+    'requireRegistry: fallback to built-in gh unchanged',
+  )
+  t.equal(
+    await mod.resolveRegistry(mkConf(toGh), { interactive: false }),
+    ghDefaultURL,
+    'resolveRegistry: fallback to built-in gh unchanged',
+  )
+  const ownNpm = { registries: { ...two, npm: 'https://n/' } }
+  t.equal(
+    mod.requireRegistry(mkConf(ownNpm)),
+    'https://n/',
+    'requireRegistry: fallback to an overridden npm',
+  )
+  t.equal(
+    await mod.resolveRegistry(mkConf(ownNpm), { interactive: false }),
+    'https://n/',
+    'resolveRegistry: fallback to an overridden npm',
+  )
+})
+
+t.test('hasReadableRegistry', async t => {
+  const mod = await load()
+
+  t.ok(
+    mod.hasReadableRegistry(mkConf({ registries: builtins })),
+    'built-in npm mirror -> true',
+  )
+  t.notOk(
+    mod.hasConfiguredRegistry(mkConf({ registries: builtins })),
+    'but not a configured registry',
+  )
+  t.ok(
+    mod.hasNpmRegistry(mkConf({ registries: builtins })),
+    'and it satisfies the npm gate',
+  )
+  t.notOk(mod.hasReadableRegistry(mkConf({})), 'nothing -> false')
+  t.notOk(
+    mod.hasReadableRegistry(
+      mkConf({
+        registries: builtins,
+        'default-registry-alias': 'nope',
+      }),
+    ),
+    'default-registry-alias at a missing alias -> false',
+  )
+  t.ok(
+    mod.hasReadableRegistry(mkConf({ registry: 'https://scalar/' })),
+    'registry scalar -> true',
+  )
+  t.ok(
+    mod.hasReadableRegistry(
+      mkConf({ registries: { main: 'https://m/' } }),
+    ),
+    'a configured alias -> true',
   )
 })
 

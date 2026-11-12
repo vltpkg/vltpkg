@@ -116,7 +116,8 @@ exports[`test/ideal/refresh-ideal-graph.ts > TAP > refreshIdealGraph with worksp
     edgesOut: [
       Edge spec(baz@^1.0.0) -prod-> to: Node {
         id: '~npm~baz@1.0.0',
-        location: './node_modules/.vlt/~npm~baz@1.0.0/node_modules/baz'
+        location: './node_modules/.vlt/~npm~baz@1.0.0/node_modules/baz',
+        resolved: 'https://registry.vlt.io/upstream/npm/baz/-/baz-1.0.0.tgz'
       }
     ]
   },

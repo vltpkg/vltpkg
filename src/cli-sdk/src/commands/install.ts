@@ -100,7 +100,7 @@ export type InstallResult = {
 export type InstallCommandResult =
   InstallResult | { self: SelfUpdate }
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>

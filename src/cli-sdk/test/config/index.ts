@@ -1470,6 +1470,33 @@ t.test('config layers', async t => {
   }
 
   await t.test(
+    'no registry config: the built-in npm mirror',
+    async t => {
+      const { conf } = await layered(t, {}, {})
+      t.equal(conf.options.registry, undefined)
+      t.equal(
+        conf.options.registries.npm,
+        'https://registry.vlt.io/upstream/npm/',
+      )
+      t.strictSame(conf.getRecord('registries'), {}, 'nothing set')
+      const {
+        hasConfiguredRegistry,
+        hasNpmRegistry,
+        hasReadableRegistry,
+      } = await t.mockImport<
+        typeof import('../../src/require-registry.ts')
+      >('../../src/require-registry.ts')
+      t.equal(hasNpmRegistry(conf), true, 'installs work')
+      t.equal(hasReadableRegistry(conf), true, 'reads work')
+      t.equal(
+        hasConfiguredRegistry(conf),
+        false,
+        'write/auth commands still need a registry',
+      )
+    },
+  )
+
+  await t.test(
     'a project registries alias beats a user registry',
     async t => {
       const { conf } = await layered(
@@ -1556,8 +1583,10 @@ t.test('config layers', async t => {
       },
       { registries: { npm: null } },
     )
+    // the removed user `npm` alias falls back to the built-in mirror
     t.strictSame(conf.options.registries, {
       gh: 'https://npm.pkg.github.com/',
+      npm: 'https://registry.vlt.io/upstream/npm/',
       main: 'https://user-main/',
     })
   })

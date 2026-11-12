@@ -15,7 +15,8 @@ exports[`test/install.ts > TAP > install > should call build adding new dependen
       Edge spec(abbrev@^2.0.0) -dev-> to: Node {
         id: '~npm~abbrev@2.0.0',
         location: './node_modules/.vlt/~npm~abbrev@2.0.0/node_modules/abbrev',
-        dev: true
+        dev: true,
+        resolved: 'https://registry.vlt.io/upstream/npm/abbrev/-/abbrev-2.0.0.tgz'
       }
     ]
   }

@@ -128,16 +128,15 @@ explicitly set on a specifier.
 For example, `express@latest` will be resolved by looking up the
 metadata from this registry.
 
-There is **no default**. A registry must be configured in `vlt.json`,
-with this flag, or via the `VLT_REGISTRY` environment variable.
-Commands that need a registry fail with a config error when none is
-set; [`vlt setup`](/client/registries#getting-started-with-vlt-setup)
-or [`vlt login`](/client/commands/login) will configure one for you.
-See [Registries](/client/registries).
-
-Bare specifiers (like `express@latest`) resolve through the
-`--default-registry-alias` (default `npm`) when this scalar is not
-set.
+There is **no default**. Bare specifiers (like `express@latest`)
+resolve through the `--default-registry-alias` (default `npm`, vlt's
+public, read-only npm mirror unless configured) when this scalar is
+not set. Publishing and account commands need a registry you
+configure, in `vlt.json`, with this flag, or via the `VLT_REGISTRY`
+environment variable;
+[`vlt setup`](/client/registries#getting-started-with-vlt-setup) or
+[`vlt login`](/client/commands/login) will configure one for you. See
+[Registries](/client/registries).
 
 ### `--default-registry-alias=<name>`
 
@@ -147,10 +146,12 @@ resolve through, when neither a `scoped-registries` entry nor the
 `--registry` scalar applies. Precedence is `scoped-registries` >
 `--registry` > `registries[<default-registry-alias>]`.
 
-Defaults to `npm`. The `npm` alias itself has **no built-in URL** — it
-must be configured (for example via
-[`vlt setup`](/client/registries#getting-started-with-vlt-setup)),
-otherwise bare specs cannot resolve. See
+Defaults to `npm`. The built-in `npm` alias is vlt's public, read-only
+npm mirror (`https://registry.vlt.io/upstream/npm/`), which has usage
+limits.
+[`vlt setup`](/client/registries#getting-started-with-vlt-setup)
+points it at your vlt.io account's npm mirror, or set `registries.npm`
+to use another registry (e.g. `https://registry.npmjs.org/`). See
 [Registries](/client/registries).
 
 ### `--registries=<name=url>`
@@ -167,12 +168,10 @@ Prefixes can be used as a package alias. For example:
   lang="bash"
 />
 
-The `npm:` prefix is **not** pre-registered to any URL — configure it
-(for example with `vlt setup`) before bare specs or `npm:` aliases can
-resolve. The built-in `gh:` prefix is pre-registered but remains
-overridable here. A name used by `--jsr-registries` or `--git-hosts`
-(e.g. `jsr`, `github`), or a built-in protocol (e.g. `file`), is an
-error.
+The `npm:` (vlt's public npm mirror) and `gh:` (GitHub Packages)
+prefixes are built in and can be overridden here. A name used by
+`--jsr-registries` or `--git-hosts` (e.g. `jsr`, `github`), or a
+built-in protocol (e.g. `file`), is an error.
 
 Aliases given on the command line or in `VLT_REGISTRIES` merge with
 the configured ones, later sources winning per key. Pass

@@ -6,7 +6,7 @@ import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'write'
 
 export const usage: CommandUsage = () =>
   commandUsage({

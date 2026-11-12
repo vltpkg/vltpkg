@@ -51,16 +51,22 @@ environment, or options specified on the command line.
 ### The `registry` option has no default
 
 `conf.options.registry` is `string | undefined`. There is no implicit
-`https://registry.npmjs.org/`, so a registry must come from a
-`vlt.json` file, `VLT_REGISTRY`, or `--registry`. Command modules that
-resolve or fetch packages export `needsRegistry = true`, and
-`outputCommand()` throws an `ECONFIG` error before invoking them when
-nothing is configured (neither `--registry` nor the
-`--default-registry-alias` alias). `--help` is still answered first,
-so usage is readable with nothing set up. Export a `(conf) => boolean`
-instead when only some subcommands need one (`vlt skills init`
-doesn't). Inside a command, use the `requireRegistry(conf)` helper
-rather than a non-null assertion.
+`https://registry.npmjs.org/`: when it is unset, bare specs resolve
+through the `--default-registry-alias` alias, `npm` by default, whose
+built-in URL is vlt's public, read-only npm mirror
+(`https://registry.vlt.io/upstream/npm/`). Command modules that hit a
+registry export `needsRegistry = 'read'` (they only fetch, so the
+built-in mirror is enough) or `needsRegistry = 'write'` (they publish
+or authenticate, so the user must configure a registry: `--registry`,
+`VLT_REGISTRY`, a `vlt.json` file, `vlt setup`, or a non-built-in
+alias). `outputCommand()` throws an `ECONFIG` error before invoking
+them when that need is not met. `--help` is still answered first, so
+usage is readable with nothing set up. Export a
+`(conf) => 'read' | 'write' | undefined` instead when only some
+subcommands need one (`vlt skills init` doesn't). Inside a command,
+use the `requireRegistry(conf)` / `resolveRegistry(conf)` helpers
+rather than a non-null assertion; they never resolve to the built-in
+mirror.
 
 `publish` and `unpublish` skip that gate: a package's
 `publishConfig.registry` alone is enough, so they resolve the registry
@@ -71,19 +77,21 @@ before running scripts or uploading anything.
 Commands that install packages (`install`, `update`, `uninstall`,
 `ci`, `exec`/`vlx`) also export `needsNpmRegistry = true`. That gate
 lives next to `needsRegistry` in `outputCommand()` and throws when the
-alias bare specs resolve through is unset -- `registries.npm` by
-default, or the alias named by `default-registry-alias`. A scalar
-`--registry` or some unrelated alias is not enough.
+alias bare specs resolve through has no URL -- `registries.npm` (built
+in) by default, or the alias named by `default-registry-alias`. A
+scalar `--registry` or some unrelated alias is not enough.
 
-### The `npm` alias is no longer built in
+### The built-in `npm` alias
 
 Bare specifiers (`foo`, `foo@latest`) and transitive dependencies
 without an explicit registry protocol resolve through the registry
 alias named by `--default-registry-alias` (`npm` by default). The
-`npm` alias itself has **no** built-in URL -- run `vlt setup` (which
-points it at your vlt.io account registry) or configure
-`registries.npm` yourself. Only the `gh:` and `jsr:` aliases (and the
-`@jsr` scope mapping) keep built-in URLs; all aliases are
+`npm` alias is built in as vlt's public, read-only npm mirror
+(`https://registry.vlt.io/upstream/npm/`, which has usage limits).
+`vlt setup` points it at your vlt.io account's npm mirror, or
+configure `registries.npm` yourself (e.g.
+`https://registry.npmjs.org/`). The `gh:` and `jsr:` aliases (and the
+`@jsr` scope mapping) are built in too; all aliases are
 user-overridable within their own map. A name in more than one of
 `registries` / `jsr-registries` / `git-hosts`, or a built-in protocol
 name, is an `ECONFIG` error at load (`vlt config` exempt).

@@ -23,7 +23,7 @@ import { buildPackFilter } from '../pack-tarball.ts'
 import { reloadConfig } from '../reload-config.ts'
 import type { Views } from '../view.ts'
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 export const needsNpmRegistry = true
 
 export const usage: CommandUsage = () =>

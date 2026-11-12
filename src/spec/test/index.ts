@@ -18,10 +18,9 @@ const { Spec } = await t.mockImport<typeof import('../src/index.ts')>(
   },
 )
 
-// there is no default registry any more; most of these cases predate
-// that change, so keep exercising them against the npm registry. The
-// `npm` alias is also no longer built in, so configure it explicitly for
-// the many cases that rely on `npm:` specs.
+// the built-in `npm` alias is vlt's public npm mirror; most of these
+// cases predate that, so keep exercising them against the npm registry
+// by configuring both the scalar registry and the `npm` alias.
 const defaultOptions = {
   registry: 'https://registry.npmjs.org/',
   registries: { npm: 'https://registry.npmjs.org/' },
@@ -640,10 +639,13 @@ t.test('git path selector must be relative', async t => {
   }
 })
 
-t.test('spec with registry:undefined has no registry', async t => {
-  const s = Spec.parse('foo@1.x', { registry: undefined })
-  t.equal(s.registry, undefined)
-})
+t.test(
+  'spec with registry:undefined uses the built-in npm',
+  async t => {
+    const s = Spec.parse('foo@1.x', { registry: undefined })
+    t.equal(s.registry, 'https://registry.vlt.io/upstream/npm/')
+  },
+)
 
 t.test('undefined protocols', t => {
   const protocolError = (proto: string, spec: string) => ({

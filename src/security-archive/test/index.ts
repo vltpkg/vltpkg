@@ -3,6 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 import t from 'tap'
 import { joinDepIDTuple, baseDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { getOptions } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { NodeLike } from '@vltpkg/types'
 import { SecurityArchive, usesNpmRegistry } from '../src/index.ts'
@@ -129,6 +130,45 @@ const nodeWith = (id: DepID, options: SpecOptions = {}): NodeLike =>
     id,
     options,
   }) as NodeLike
+
+t.test('usesNpmRegistry with the built-in npm mirror', async t => {
+  // what a node gets with no registry configured
+  const options = getOptions({})
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple(['registry', 'npm', 'foo@1.0.0']),
+        options,
+      ),
+    ),
+    true,
+    'the built-in npm alias is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple([
+          'registry',
+          'https://registry.vlt.io/upstream/npm/',
+          'foo@1.0.0',
+        ]),
+        options,
+      ),
+    ),
+    true,
+    'URL-form DepID for the built-in mirror is eligible',
+  )
+  t.equal(
+    usesNpmRegistry(
+      nodeWith(
+        joinDepIDTuple(['registry', 'gh', 'foo@1.0.0']),
+        options,
+      ),
+    ),
+    false,
+    'the built-in gh alias is ineligible',
+  )
+})
 
 t.test('usesNpmRegistry', async t => {
   t.equal(

@@ -17,8 +17,8 @@ import { reload } from '@vltpkg/vlt-json'
 const specOptions = {
   registry: 'https://registry.npmjs.org',
   registries: {
-    // the `npm` alias is no longer built in; configure it so `npm:`
-    // aliased specs resolve
+    // pin the `npm` alias to npmjs, not the built-in public mirror, for
+    // `npm:` aliased specs
     npm: 'https://registry.npmjs.org/',
     custom: 'http://example.com',
   },

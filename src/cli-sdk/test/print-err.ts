@@ -567,3 +567,55 @@ t.test('continues when reading CI error log fails', async t => {
   t.notMatch(output, /Full details:/)
   t.notMatch(output, /ci-log-failed-read-marker/)
 })
+
+t.test('advice when the public npm mirror rate limits', async t => {
+  const dir = t.testdir()
+  const { CI: _, ...envWithoutCI } = process.env
+  t.intercept(process, 'env', {
+    value: { ...envWithoutCI, XDG_DATA_HOME: dir },
+  })
+  const { printErr } = await t.mockImport<
+    typeof import('../src/print-err.ts')
+  >('../src/print-err.ts')
+  // the shape registry-client throws once undici's retries give up
+  const requestFailed = (url: string) =>
+    error('Request failed', {
+      code: 'EREQUEST',
+      url: new URL(url),
+      method: 'GET',
+      cause: Object.assign(new Error('Request failed'), {
+        name: 'RequestRetryError',
+        code: 'UND_ERR_REQ_RETRY',
+        statusCode: 429,
+      }),
+    })
+  const print = (e: unknown) => {
+    const lines: string[] = []
+    printErr(
+      e,
+      (() => ({ usage: () => 'usage' })) as CommandUsage,
+      (...a: string[]) => void lines.push(...a.join(' ').split('\n')),
+      { colors: false },
+    )
+    return lines
+  }
+  const mirror = print(
+    requestFailed('https://registry.vlt.io/upstream/npm/abbrev'),
+  )
+  t.ok(
+    mirror.includes(
+      "⚠️ vlt's public npm mirror is a shared service with usage " +
+        'limits, and this request went over them. Run `vlt setup` to ' +
+        "use your vlt.io account's npm mirror (no usage limits), or set " +
+        'another registry with `vlt config set registries.npm=<url>`.',
+    ),
+    'advice printed',
+  )
+  const other = print(
+    requestFailed('https://registry.npmjs.org/abbrev'),
+  )
+  t.notOk(
+    other.some(l => l.startsWith('⚠️')),
+    'no advice for other registries',
+  )
+})

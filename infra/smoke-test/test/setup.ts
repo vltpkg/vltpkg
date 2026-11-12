@@ -176,7 +176,7 @@ t.test(
   },
 )
 
-// no registry yet
+// an empty registry scalar and no registries
 const fresh = { VLT_REGISTRY: '', VLT_REGISTRIES: '' }
 
 // answers each wizard prompt once, as it appears

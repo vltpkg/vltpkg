@@ -45,8 +45,10 @@ Each account has two registries:
 No private packages and no account wanted (e.g. an open-source repo)?
 Point the default registry at the shared
 `https://registry.vlt.io/upstream/npm/` instead: read-only, no token,
-and any token sent is ignored. Usage limits apply: it suits
-open-source and low-volume installs; for unlimited usage, use an
+and any token sent is ignored. It is the vlt CLI's zero-config default
+(its built-in `registries.npm`), so vlt itself needs no registry
+config for it. Usage limits apply: it suits open-source and low-volume
+installs; for unlimited usage and private packages, recommend an
 account's `npm` mirror. Skip the account slug in step 1 and the scope
 routing in step 2, but still set the default registry. Skip the auth
 setup in steps 4 and 5; see
@@ -71,12 +73,12 @@ publish).
 
 Commit the routing (auth is step 4):
 
-| Tool            | File          | Default → mirror              | `@acme` → `main`                   |
-| --------------- | ------------- | ----------------------------- | ---------------------------------- |
-| npm, pnpm, deno | `.npmrc`      | `registry=`                   | `@acme:registry=`                  |
-| yarn 2+         | `.yarnrc.yml` | `npmRegistryServer`           | `npmScopes.acme.npmRegistryServer` |
-| bun             | `bunfig.toml` | `[install] registry`          | `[install.scopes] acme`            |
-| vlt             | `vlt.json`    | `registry` + `registries.npm` | `scoped-registries` `"@acme"`      |
+| Tool            | File          | Default → mirror                                        | `@acme` → `main`                   |
+| --------------- | ------------- | ------------------------------------------------------- | ---------------------------------- |
+| npm, pnpm, deno | `.npmrc`      | `registry=`                                             | `@acme:registry=`                  |
+| yarn 2+         | `.yarnrc.yml` | `npmRegistryServer`                                     | `npmScopes.acme.npmRegistryServer` |
+| bun             | `bunfig.toml` | `[install] registry`                                    | `[install.scopes] acme`            |
+| vlt             | `vlt.json`    | `registry` + `registries.npm` (built in: public mirror) | `scoped-registries` `"@acme"`      |
 
 Full config:
 [vlt](https://docs.vlt.io/registry/publishing/vlt.md#manual-configuration),
@@ -103,7 +105,11 @@ Full config:
 - pnpm: keep `pnpm-lock.yaml` (no tarball URLs); `pnpm install`.
 - vlt: a kept `vlt-lock.json` still fetches from the old registry
   ([#1579](https://github.com/vltpkg/vltpkg/issues/1579)):
-  `rm -rf vlt-lock.json node_modules && vlt install`.
+  `rm -rf vlt-lock.json node_modules && vlt install`. A lockfile made
+  on the built-in default (the public mirror) records no
+  `registries.npm`, so it passes `vlt ci` with the account mirror
+  configured but keeps fetching tarballs from the public mirror until
+  regenerated.
 - yarn, bun, deno: regenerate `yarn.lock` / `bun.lock` / `deno.lock`
   per their guide.
 

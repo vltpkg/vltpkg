@@ -23,7 +23,10 @@ exports[`test/config/index.ts > TAP > load both configs, layers merge with proje
   registry: undefined,
   'default-registry-alias': 'npm',
   'scoped-registries': {},
-  registries: { gh: 'https://npm.pkg.github.com/' },
+  registries: {
+    gh: 'https://npm.pkg.github.com/',
+    npm: 'https://registry.vlt.io/upstream/npm/'
+  },
   'git-host-archives': {
     github: 'https://codeload.github.com/$1/$2/legacy.tar.gz/$committish',
     bitbucket: 'https://bitbucket.org/$1/$2/get/$committish.tar.gz',

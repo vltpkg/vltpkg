@@ -320,6 +320,58 @@ t.test('overrides default registries', async t => {
   t.matchSnapshot(JSON.stringify(lockfile, null, 2))
 })
 
+t.test('keeps registries.npm unpinned as it was loaded', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
+  const acct = 'https://registry.vlt.io/acme/npm/'
+  const specOptions = {
+    registries: { gh: 'https://npm.pkg.github.com/', npm: acct },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0', bar: '^1.0.0' },
+    },
+  })
+  const place = (name: string, registry: string) =>
+    graph
+      .placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse(name, '^1.0.0', specOptions),
+        {
+          name,
+          version: '1.0.0',
+          dist: { tarball: `${registry}${name}/-/${name}-1.0.0.tgz` },
+        },
+      )
+      ?.setResolved()
+  place('foo', mirror)
+
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options,
+    { registries: { npm: acct } },
+    'pinned when the graph was not loaded from an unpinned lockfile',
+  )
+  graph.unpinnedNpmRegistry = acct
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options,
+    {},
+    'unpinned while no node resolves through it',
+  )
+  place('bar', acct)
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options,
+    { registries: { npm: acct } },
+    'pinned once a node resolves through it',
+  )
+})
+
 t.test('persists a non-default default-registry-alias', async t => {
   const mainManifest = {
     name: 'my-project',

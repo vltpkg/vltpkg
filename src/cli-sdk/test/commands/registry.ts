@@ -73,6 +73,28 @@ t.test('alias + subcommand dispatch', async t => {
   t.equal(conf.values.registry, 'https://m/')
 })
 
+t.test(
+  'the built-in npm mirror is not an account target',
+  async t => {
+    const mod = await load()
+    const conf = mkConf(['npm', 'whoami'], {
+      registries: {
+        gh: 'https://npm.pkg.github.com/',
+        npm: 'https://registry.vlt.io/upstream/npm/',
+      },
+    })
+    await t.rejects(
+      mod.dispatchRegistry(conf, { interactive: false }),
+      {
+        message: /^Missing registry configuration/,
+        cause: { code: 'ECONFIG' },
+      },
+    )
+    t.equal(conf.command, undefined, 'not dispatched')
+    t.equal(conf.options.registry, undefined, 'no registry injected')
+  },
+)
+
 t.test('subcommand without alias resolves default', async t => {
   const mod = await load()
   const conf = mkConf(['whoami'], {

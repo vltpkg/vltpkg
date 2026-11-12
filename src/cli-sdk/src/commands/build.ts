@@ -102,7 +102,7 @@ export const views = {
   },
 } as const satisfies Views<BuildCommandResult>
 
-export const needsRegistry = true
+export const needsRegistry = 'read'
 
 export const usage: CommandUsage = () =>
   commandUsage({

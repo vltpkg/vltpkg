@@ -3,8 +3,9 @@ name: vlt-cli
 description:
   Map of the vlt CLI for coding agents. Covers how to install, add,
   remove and update dependencies, run scripts and package bins,
-  configure a registry (vlt has no default registry), work with
-  vlt.json and vlt-lock.json, and pass Dependency Selector Syntax
+  configure registries (installs work with no config through vlt's
+  public npm mirror, publishing needs a configured registry), work
+  with vlt.json and vlt-lock.json, and pass Dependency Selector Syntax
   (DSS) queries to commands. Use when the user wants to use vlt in a
   project, add or update a dependency with vlt, fix "Missing registry
   configuration" (ECONFIG), set up registries or tokens for vlt, work
@@ -83,23 +84,32 @@ A map of the CLI, one line per command. For anything deeper, defer to
 
 ## Registry setup
 
-vlt has **no default registry**: until one is configured, commands
-fail with `Missing registry configuration` (`ECONFIG`). Installs need
-the `registries.npm` alias; a scalar `registry` is not enough.
+With no config, installs and other reads work out of the box: the
+built-in `npm` alias is vlt's public npm mirror
+(`https://registry.vlt.io/upstream/npm/`), read-only and with usage
+limits, so bare specs fetch from `registry.vlt.io`. Publish and
+account commands (`publish`, `login`, `whoami`, `token`, ...) never
+use it and fail with `Missing registry configuration` (`ECONFIG`)
+until a registry is configured.
 
-- `vlt setup [<account>]`: vlt.io accounts. Authenticates and writes
-  the account's `npm` (mirror) and `main` (private) aliases to the
-  user vlt.json (`--config=project`: the project one, then it offers
-  vlt's agent skills, see below).
+- `vlt setup [<account>]`: vlt.io accounts, recommended (account npm
+  mirror with no usage limits, private packages, tokens).
+  Authenticates and writes the account's `npm` (mirror) and `main`
+  (private) aliases to the user vlt.json (`--config=project`: the
+  project one, then it offers vlt's agent skills, see below).
 - `vlt config set registries.npm=https://registry.npmjs.org/`: plain
-  npm, no login. Writes the project vlt.json; add `--config=user` for
-  every project. Any `registries.<alias>=<url>` works the same, and
-  `<alias>:pkg@range` specs fetch from that alias; `scoped-registries`
-  maps an `@scope` to a URL instead.
+  npm instead of the public mirror, no login. Writes the project
+  vlt.json; add `--config=user` for every project. Any
+  `registries.<alias>=<url>` works the same, and `<alias>:pkg@range`
+  specs fetch from that alias; `scoped-registries` maps an `@scope` to
+  a URL instead.
 - `vlt login --registry=<url>`: authenticate against a registry and
-  save it as the fallback `registry` (project vlt.json, or
-  `--config=user`) for auth and account commands; installs still need
-  `registries.npm`.
+  save it as the `registry` scalar (project vlt.json, or
+  `--config=user`). Publish, auth and account commands then use it,
+  and so do bare-spec installs (`npm:` alias specs keep using
+  `registries.npm`). Without a login, publish with
+  `publishConfig.registry` in package.json, `--registry`, or
+  `vlt setup`.
 - One run only: `vlt install --registries npm=<url>`; add
   `--save-config` (`install`, `update`) to persist it to vlt.json.
 - Env and CI: every option is `VLT_<OPTION>`, lists newline-delimited

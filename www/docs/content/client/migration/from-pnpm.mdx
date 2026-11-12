@@ -11,20 +11,21 @@ sidebar:
   code={`# Install vlt globally
 $ npm install -g vlt
 
-# Configure a registry -- vlt has no default
+# Optional: keep npm's registry -- vlt installs through its public npm mirror by default
 
-$ vlt config set registry=https://registry.npmjs.org/
+$ vlt config set registries.npm=https://registry.npmjs.org/
 
 # In your existing project, run:
 
 $ vlt install $ vlt build`} title="Terminal" lang="bash" />
 
-Unlike pnpm, **vlt has no default registry** — commands that resolve
-or fetch packages fail with a config error until one is set. The
-snippet above points it at the public npm registry; if you have a
-vlt.io account, run
+Unlike pnpm, **vlt's default registry is vlt's public npm mirror**
+(`https://registry.vlt.io/upstream/npm/`, read-only, with usage
+limits), so package metadata and tarballs come from `registry.vlt.io`
+with no config. The optional snippet above switches back to the public
+npm registry; if you have a vlt.io account, run
 [`vlt setup`](/client/registries#getting-started-with-vlt-setup)
-instead to configure your account's registry aliases. See
+instead to use your account's npm mirror (no usage limits). See
 [Registries](/client/registries).
 
 vlt reads your existing `package.json` files and resolves
