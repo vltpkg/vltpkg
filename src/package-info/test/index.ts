@@ -6295,12 +6295,19 @@ t.test('prefetchResolve', async t => {
   t.test(
     'a cache that cannot be written still answers from the stream',
     async t => {
+      // writes to the manifest cache dir, set once the client can name it
+      const tried = { dir: '', n: 0 }
       const { PackageInfoClient: PIC } = await t.mockImport<
         typeof import('../src/index.ts')
       >('../src/index.ts', {
         'node:fs/promises': {
           ...(await import('node:fs/promises')),
-          writeFile: async () => {
+          writeFile: async (path: unknown) => {
+            if (
+              typeof path === 'string' &&
+              dirname(path) === tried.dir
+            )
+              tried.n++
             throw new Error('write failed')
           },
         },
@@ -6309,6 +6316,12 @@ t.test('prefetchResolve', async t => {
       t.teardown(() => pi.drain())
       const cache = t.testdir()
       const pi = new PIC({ registry: defaultRegistry, cache })
+      tried.dir = dirname(
+        pi._manifestCachePath(
+          Spec.parse('abbrev@^2.0.0', { registry: defaultRegistry }),
+          {},
+        )!,
+      )
       pi.prefetchResolve(defaultRegistry, { roots })
       t.strictSame(await pi.manifest('abbrev@^2.0.0'), {
         name: 'abbrev',
@@ -6319,6 +6332,7 @@ t.test('prefetchResolve', async t => {
         version: '2.0.0',
       })
       await pi.drain()
+      t.equal(tried.n, 2, 'both cache files were tried')
       t.strictSame(
         await readdir(pathResolve(cache, 'package-info')).catch(
           () => [],
