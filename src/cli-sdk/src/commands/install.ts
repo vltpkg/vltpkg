@@ -39,6 +39,7 @@ import type {
   Diff,
   Graph,
   LinkSkillsResult,
+  UpToDate,
 } from '@vltpkg/graph'
 import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
@@ -61,6 +62,11 @@ export type InstallResult = {
    * The diff between the actual and ideal graphs, if available.
    */
   diff?: Diff
+  /**
+   * What a full no-op install reports, when the tree was up to date and
+   * no graph was built.
+   */
+  upToDate?: UpToDate
   /**
    * Spec config from the cli / env that was saved to a config file.
    */
@@ -96,9 +102,13 @@ export type InstallResult = {
   self?: SelfUpdate
 }
 
-/** self-update handed off or nothing to do */
+/**
+ * `graph` is undefined when the tree was up to date. Self-update handed
+ * off or nothing to do: `{ self }`.
+ */
 export type InstallCommandResult =
-  InstallResult | { self: SelfUpdate }
+  | (Omit<InstallResult, 'graph'> & { graph: Graph | undefined })
+  | { self: SelfUpdate }
 
 export const needsRegistry = true
 export const needsNpmRegistry = true
@@ -213,7 +223,9 @@ export const views = {
       })
     }
 
-    const add: { name: string; version?: string }[] = []
+    const add: { name: string; version?: string }[] =
+      i.upToDate?.add.map(([name, version]) => ({ name, version })) ??
+      []
     const change: {
       name: string
       from?: string
@@ -302,15 +314,16 @@ export const command: CommandFn<
   const workspaceSpecs =
     conf.globalRoot ? [] : findWorkspaceSpecs(conf)
   const installStart = Date.now()
-  const { buildQueue, graph, diff, skills, specs } = await runInstall(
-    conf,
-    globalAdd?.add,
-    keep,
-    workspaceSpecs,
-  ).catch(async (er: unknown) => {
-    if (globalAdd) await removeGlobalWorkspaces(globalAdd.created)
-    throw asUnknownSpecPrefix(er)
-  })
+  const { buildQueue, graph, diff, skills, specs, upToDate } =
+    await runInstall(
+      conf,
+      globalAdd?.add,
+      keep,
+      workspaceSpecs,
+    ).catch(async (er: unknown) => {
+      if (globalAdd) await removeGlobalWorkspaces(globalAdd.created)
+      throw asUnknownSpecPrefix(er)
+    })
   const migrated =
     (
       conf.options['frozen-lockfile'] ||
@@ -318,11 +331,13 @@ export const command: CommandFn<
     ) ?
       undefined
     : migrateWorkspaces(conf)
-  if (conf.globalRoot)
+  // a global install never skips the graph
+  if (conf.globalRoot && graph)
     await deferSelfRemove(conf.globalRoot, graph, keep)
   const global =
     globalAdd &&
     binDir &&
+    graph &&
     (await linkGlobalBins(
       graph,
       {
@@ -350,7 +365,7 @@ export const command: CommandFn<
   try {
     trackInstall(
       {
-        dependency_count: graph.nodes.size,
+        dependency_count: graph?.nodes.size ?? upToDate?.nodes ?? 0,
         duration_ms: Date.now() - installStart,
       },
       conf.values.telemetry,
@@ -360,6 +375,7 @@ export const command: CommandFn<
     buildQueue,
     graph,
     diff,
+    ...(upToDate ? { upToDate } : null),
     ...(persist ? { persistedConfig: persist } : null),
     ...(migrated || specs.length ?
       {
@@ -394,6 +410,8 @@ const runInstall = async (
   const result = await install(
     {
       ...installOptions(conf),
+      // global bins are linked from the graph
+      upToDateCheck: !conf.globalRoot,
       allowSkills: conf.get('allow-skills'),
       ...(keep ? { keepNodes: new Set([keep]) } : null),
     },

@@ -40,6 +40,7 @@ import type {
   LockfileNode,
 } from '../../src/index.ts'
 import { actual, ideal, reify } from '../../src/index.ts'
+import type { InstallState } from '../../src/install-state.ts'
 import { loadObject } from '../../src/lockfile/load.ts'
 import {
   fixtureManifest,
@@ -1314,6 +1315,97 @@ t.test('keepNodes reach deleteNodes', async t => {
     keepNodes,
   })
   t.equal(kept, keepNodes)
+})
+
+t.test('the install state is written last', async t => {
+  const dir = t.testdir({
+    project: {
+      'vlt.json': JSON.stringify({ monorepo: { packages: [] } }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { lodash: '4' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const options = {
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  }
+  const graph = await ideal.build({
+    ...options,
+    remover: new RollbackRemove(),
+  })
+  const order: string[] = []
+  const save = await import('../../src/lockfile/save.ts')
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    '../../src/reify/delete-nodes.ts': {
+      deleteNodes: () => {
+        order.push('deleteNodes')
+        return []
+      },
+    },
+    '../../src/lockfile/save.ts': {
+      ...save,
+      saveHidden: (o: Parameters<typeof save.saveHidden>[0]) => {
+        order.push('saveHidden')
+        return save.saveHidden(o)
+      },
+    },
+    '../../src/install-state.ts': {
+      removeInstallState: () => order.push('remove state'),
+    },
+  })
+  const installState = {
+    setReplay: (...args: unknown[]) =>
+      order.push(`replay ${args[3]}`),
+    save: () => order.push('save'),
+    saveNoop: (...args: unknown[]) =>
+      order.push(`save noop ${JSON.stringify(args[1])}`),
+  } as unknown as InstallState
+  class Remover extends RollbackRemove {
+    confirm() {
+      order.push('confirm')
+      super.confirm()
+    }
+  }
+  await reify({
+    ...options,
+    graph,
+    allowScripts: ':not(*)',
+    remover: new Remover(),
+    installState,
+  })
+  t.strictSame(order, [
+    'remove state',
+    'deleteNodes',
+    'saveHidden',
+    'replay true',
+    'confirm',
+    'save',
+  ])
+
+  order.length = 0
+  await reify({
+    ...options,
+    graph,
+    allowScripts: ':not(*)',
+    remover: new Remover(),
+    installState,
+  })
+  t.strictSame(
+    order,
+    // a stale graph's lockfiles are written first
+    ['saveHidden', 'save noop []'],
+    'nothing to reify',
+  )
 })
 
 t.test(

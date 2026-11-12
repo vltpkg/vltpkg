@@ -4,14 +4,22 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
-import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import t from 'tap'
 import { Edge } from '../../src/edge.ts'
 import { Graph } from '../../src/graph.ts'
 import {
   lockfileData,
   save,
+  saveData,
   saveHidden,
 } from '../../src/lockfile/save.ts'
 import { load, loadHidden } from '../../src/lockfile/load.ts'
@@ -172,6 +180,41 @@ t.test('save', async t => {
         }),
       ),
     )
+  })
+
+  await t.test('only changed bytes are written', async t => {
+    const file = resolve(projectRoot, 'vlt-lock.json')
+    const data = lockfileData({ ...configData, graph })
+    saveData(data, file, false)
+    utimesSync(file, 0, 0)
+    t.equal(saveData(data, file, false), false, 'same bytes')
+    t.equal(statSync(file).mtimeMs, 0, 'left alone')
+    t.equal(
+      saveData({ ...data, nodes: {} }, file, false),
+      true,
+      'changed bytes',
+    )
+    t.not(statSync(file).mtimeMs, 0, 'written')
+
+    const hidden = resolve(projectRoot, 'node_modules/.vlt-lock.json')
+    utimesSync(hidden, 0, 0)
+    const hiddenData = saveHidden({ ...configData, graph })
+    t.equal(statSync(hidden).mtimeMs, 0, 'hidden left alone')
+    t.strictSame(
+      hiddenData,
+      JSON.parse(readFileSync(hidden, 'utf8')),
+      'the data it saved',
+    )
+
+    // the tree an install recorded is gone once the hidden one changes
+    const state = resolve(projectRoot, 'node_modules/.vlt/state.json')
+    mkdirSync(dirname(state), { recursive: true })
+    writeFileSync(state, '{}')
+    saveHidden({ ...configData, graph })
+    t.ok(existsSync(state), 'same bytes: state kept')
+    writeFileSync(hidden, '{}')
+    saveHidden({ ...configData, graph })
+    t.notOk(existsSync(state), 'rewritten: state removed')
   })
 })
 
@@ -1160,7 +1203,7 @@ t.test('saveHidden skips when graph has no manifest', async t => {
   foo.manifest = undefined
 
   // Call saveHidden - should not create file due to missing manifest
-  saveHidden({ ...configData, graph })
+  t.equal(saveHidden({ ...configData, graph }), undefined)
 
   const hiddenLockfilePath = resolve(
     projectRoot,
