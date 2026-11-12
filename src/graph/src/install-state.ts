@@ -9,14 +9,20 @@ import {
 import { join, resolve } from 'node:path'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
-import { assertRecordStringString } from '@vltpkg/types'
+import {
+  assertRecordStringString,
+  longDependencyTypes,
+} from '@vltpkg/types'
+import type { DependencyTypeLong } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type { Monorepo } from '@vltpkg/workspaces'
 import pkg from '@vltpkg/graph/package.json' with { type: 'json' }
+import { shorten } from './dependencies.ts'
 import type { AddImportersDependenciesMap } from './dependencies.ts'
 import type { Diff } from './diff.ts'
 import { gitPinned } from './git-pin.ts'
 import type { Graph } from './graph.ts'
+import type { Node } from './node.ts'
 import { registrySpecVersion } from './lockfile/load-nodes.ts'
 import {
   BuildStateNeeded,
@@ -68,10 +74,17 @@ export type UpToDate = {
   add: ([string] | [string, string])[]
 }
 
+/** `[type, bareSpec, placed]` of an edge, as the next install loads it */
+type Locked = (
+  from: Node,
+  name: string,
+) => [string, string, boolean] | undefined
+
 type Replay = UpToDate & {
   buildQueue: DepID[]
   /** the ids in `add` */
   missing: Set<DepID>
+  locked: Locked
   noop?: boolean
 }
 
@@ -187,6 +200,78 @@ const configHash = (options: InstallStateOptions) =>
 
 const workspaces = (monorepo?: Monorepo) =>
   [...(monorepo?.values() ?? [])].map(ws => ws.path).sort()
+
+const lockedIn =
+  (data: LockfileData): Locked =>
+  (from, name) => {
+    const edge = data.edges[`${from.id} ${name}`]
+    if (!edge) return
+    const t = edge.indexOf(' ')
+    const s = edge.lastIndexOf(' ')
+    return [
+      edge.slice(0, t),
+      edge.slice(t + 1, s),
+      edge.slice(s + 1) !== 'MISSING',
+    ]
+  }
+
+const lockedInGraph: Locked = (from, name) => {
+  const edge = from.edgesOut.get(name)
+  return edge && [edge.type, edge.spec.bareSpec, !!edge.to]
+}
+
+// a dependency the next install would resolve again, see
+// getImporterSpecs(): declared, but not locked as declared to a node
+const requeued = (root: string, graph: Graph, locked: Locked) => {
+  const differs = (
+    from: Node,
+    name: string,
+    spec: string,
+    type?: string,
+  ) => {
+    const edge = locked(from, name)
+    return (
+      !edge?.[2] || edge[1] !== spec || (!!type && edge[0] !== type)
+    )
+  }
+  for (const importer of graph.importers) {
+    const { manifest } = importer
+    // a peer entry for a name listed elsewhere is no dependency
+    const declared = new Map<string, [DependencyTypeLong, string]>()
+    for (const depType of longDependencyTypes) {
+      for (const [name, spec] of Object.entries(
+        manifest?.[depType] ?? {},
+      )) {
+        if (depType === 'peerDependencies' && declared.has(name)) {
+          continue
+        }
+        declared.set(name, [depType, spec])
+      }
+    }
+    for (const [name, [depType, spec]] of declared) {
+      const type = shorten(depType, name, manifest)
+      if (differs(importer, name, spec, type)) return true
+    }
+  }
+  // directory deps: their manifests are read on every install
+  for (const node of graph.nodes.values()) {
+    if (
+      graph.importers.has(node) ||
+      !node.id.startsWith('file') ||
+      !isDir(resolve(root, node.location))
+    ) {
+      continue
+    }
+    for (const depType of longDependencyTypes) {
+      for (const [name, spec] of Object.entries(
+        node.manifest?.[depType] ?? {},
+      )) {
+        if (differs(node, name, spec)) return true
+      }
+    }
+  }
+  return false
+}
 
 /**
  * Remove the recorded state, before anything changes the tree.
@@ -349,9 +434,14 @@ export class InstallState {
     this.#tainted = this.#inputs.some(
       ([, st]) => !!st && BigInt(st[2]) >= origin,
     )
-    // rewritten by the install itself
+    // the manifests the install saves what it adds to
     if (options.add?.modifiedDependencies) {
-      for (const p of manifests) this.#written.add(p)
+      for (const [id, deps] of options.add) {
+        const [type, path] = splitDepID(id)
+        if (deps.size && type === 'file') {
+          this.#written.add(join(path, 'package.json'))
+        }
+      }
     }
   }
 
@@ -371,6 +461,7 @@ export class InstallState {
       buildQueue: [],
       add: [],
       missing: new Set(),
+      locked: lockedIn(data),
       nodes: graph.importers.size + Object.keys(data.nodes).length,
     }
     const nodes = Object.entries(data.nodes) as [
@@ -408,6 +499,7 @@ export class InstallState {
       buildQueue,
       add: [],
       missing: new Set(),
+      locked: lockedInGraph,
       nodes: diff.to.nodes.size,
       noop: true,
     }
@@ -437,7 +529,12 @@ export class InstallState {
     const root = this.#root
     const replay = this.#replay
     if (!replay || this.#tainted) return
-    if (!isDir(resolve(root, 'node_modules/.vlt'))) return
+    if (
+      !isDir(resolve(root, 'node_modules')) ||
+      !isDir(resolve(root, 'node_modules/.vlt'))
+    ) {
+      return
+    }
     // every rewrite of it removes the state, see saveHidden()
     const hidden = stamp(resolve(root, hiddenFile))
     if (!hidden) return
@@ -468,6 +565,7 @@ export class InstallState {
         tree.push([importer.location, spec.name])
       }
     }
+    if (requeued(root, graph, replay.locked)) return
     const now = ns(Date.now())
     const inputs = this.#inputs.map(input =>
       this.#written.has(input[0]) ?
