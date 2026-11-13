@@ -401,6 +401,9 @@ export class PackageInfoClient {
   // `${registry}${name}@${range}` for every spec that chose a version and
   // `${registry}${name}@${version}` for the version itself.
   #resolvedManifests = new Map<string, Manifest>()
+  // what each of those is cached as, taken when manifest() first hands it
+  // out: callers change the object after that
+  #resolvedJson = new WeakMap<Manifest, string>()
   /**
    * The resolve requests in flight against each registry, with when the
    * registry last delivered a record: the grace a lookup gives the stream
@@ -1241,6 +1244,34 @@ export class PackageInfoClient {
     }
   }
 
+  /**
+   * Cache a manifest the resolve stream delivered, as fromPackument caches
+   * a picked one, unless the file on disk is still fresh.
+   */
+  #cacheResolved(
+    cachePath: string | undefined,
+    mani: Manifest,
+  ): void {
+    let json = this.#resolvedJson.get(mani)
+    if (json === undefined) {
+      // a resolve record is a vlt manifest
+      json = JSON.stringify({ ...mani, __VLT_PACKUMENT: true })
+      this.#resolvedJson.set(mani, json)
+    }
+    if (!cachePath || this.#manifestWritePaths.has(cachePath)) return
+    this.#manifestWritePaths.add(cachePath)
+    const write = () => this.#writeManifestCache(cachePath, json)
+    this.#inBackground(
+      stat(cachePath).then(
+        st =>
+          st.mtimeMs < this.#manifestCacheMinAge ?
+            write()
+          : undefined,
+        write,
+      ),
+    )
+  }
+
   async tarball(
     spec: Spec | string,
     options: PackageInfoClientExtractOptions = {},
@@ -1585,7 +1616,8 @@ export class PackageInfoClient {
 
   /**
    * The manifest for `key` from an in-flight resolve, or from `fetch` when
-   * the resolve is not carrying it. Undefined when nothing is in flight.
+   * the resolve is not carrying it. Undefined when the key has not arrived
+   * and nothing is in flight.
    *
    * A stream that is delivering gets a short grace to carry the key, since
    * its records come in the order the build asks for them; one that has
@@ -1600,6 +1632,10 @@ export class PackageInfoClient {
     key: string,
     fetch: () => Promise<Manifest>,
   ): Promise<Manifest | undefined> {
+    // a record that landed since manifest() looked, on a stream that may
+    // have settled since
+    const landed = this.#resolvedManifests.get(key)
+    if (landed) return landed
     const inflight = this.#resolveInflight.get(registry)
     if (!inflight?.requests.size) return undefined
 
@@ -1689,7 +1725,13 @@ export class PackageInfoClient {
         const resolveKey = `${f.registry ?? ''}${f.name}@${f.bareSpec}`
         if (!selecting) {
           const resolved = this.#resolvedManifests.get(resolveKey)
-          if (resolved) return resolved
+          if (resolved) {
+            this.#cacheResolved(
+              this._manifestCachePath(spec, options),
+              resolved,
+            )
+            return resolved
+          }
         }
 
         // Check if manifest is cached, if so just return it earlier
@@ -1767,7 +1809,12 @@ export class PackageInfoClient {
             resolveKey,
             fromPackument,
           )
-          if (resolved) return resolved
+          if (resolved) {
+            // the stream's answer; fromPackument caches its own
+            if (resolved === this.#resolvedManifests.get(resolveKey))
+              this.#cacheResolved(cachePath, resolved)
+            return resolved
+          }
         }
         return fromPackument()
       }
