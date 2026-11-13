@@ -6,8 +6,10 @@ import {
   chmodSync,
   cpSync,
   existsSync,
+  lstatSync,
   readFileSync,
   realpathSync,
+  rmSync,
   symlinkSync,
   writeFileSync,
 } from 'node:fs'
@@ -32,6 +34,39 @@ t.test('install a package', async t => {
       t.ok(
         lock.edges['file~_d eslint'],
         'eslint should be in the lockfile',
+      )
+    },
+  })
+  t.equal(status, 0)
+})
+
+t.test('a repeated install is up to date', async t => {
+  const { status } = await runMultiple(t, ['i', 'abbrev'], {
+    match: ['status'],
+    test: async ({ t, dirs, run }) => {
+      const file = (f: string) => join(dirs.project, f)
+      const lockfiles = () =>
+        ['vlt-lock.json', 'node_modules/.vlt-lock.json'].map(f =>
+          readFileSync(file(f), 'utf8'),
+        )
+      // package.json was created by that run: nothing recorded yet
+      const full = await run(['install', '--view=json'])
+      t.ok(
+        existsSync(file('node_modules/.vlt/state.json')),
+        'recorded by the no-op',
+      )
+      const before = lockfiles()
+      const hit = await run(['install', '--view=json'])
+      t.equal(hit.status, 0)
+      t.equal(hit.stdout, full.stdout, 'reports what a no-op does')
+      t.strictSame(lockfiles(), before, 'lockfiles unchanged')
+      // a lost link is made again
+      rmSync(file('node_modules/abbrev'), { recursive: true })
+      const repaired = await run(['install'])
+      t.equal(repaired.status, 0)
+      t.ok(
+        lstatSync(file('node_modules/abbrev')).isSymbolicLink(),
+        'linked again',
       )
     },
   })

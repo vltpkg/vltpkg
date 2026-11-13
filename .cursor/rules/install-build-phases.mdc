@@ -17,8 +17,9 @@ Flow:
 1. Validates options (frozen-lockfile vs clean-install conflicts)
 2. Reads/creates `package.json` (runs `vlt init` if missing)
 3. Loads unfiltered monorepo for full workspace coverage
-4. Loads actual graph → builds ideal graph → reifies changes
-5. Supports `--lockfile-only` mode (skip node_modules)
+4. Up-to-date check (`upToDateCheck`, set by `vlt install` except `-g`; `install-state.ts`): when `node_modules/.vlt/state.json` matches the inputs (stamps of `package.json`, workspace manifests, `vlt.json`, `vlt-lock.json`, `pnpm-workspace.yaml`, `file:` dir dep manifests; a drifted stamp is re-checked by content), the hidden lockfile stamp, tree-affecting config, the workspace set and every importer link, it replays the full no-op's steps and result (`upToDate`, `buildQueue`, no `graph`/`diff`). Never checked with adds, `--frozen-lockfile`, `--expect-lockfile` or `ci`, nor checked or recorded with `--lockfile-only`, modifiers, `--allow-skills` or a workspace filter. Every other install removes the state first and records it after reify. Only lost importer links: detached from the actual graph, so the diff relinks them
+5. Loads actual graph → builds ideal graph → reifies changes
+6. Supports `--lockfile-only` mode (skip node_modules)
 
 ### Key Options
 

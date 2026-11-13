@@ -341,6 +341,56 @@ t.strictSame(
   'json view with empty buildQueue should not include buildQueue or message',
 )
 
+t.test('an up-to-date tree', async t => {
+  const seen: { upToDateCheck?: boolean }[] = []
+  const Command = await t.mockImport<
+    typeof import('../../src/commands/install.ts')
+  >('../../src/commands/install.ts', {
+    '@vltpkg/graph': {
+      GraphModifier,
+      assertQuery: async () => {},
+      async install(o: { upToDateCheck?: boolean }) {
+        seen.push(o)
+        return {
+          buildQueue: ['~~built@1.0.0'],
+          upToDate: {
+            nodes: 4,
+            add: [['gone', '1.0.0'], ['git-opt']],
+          },
+        }
+      },
+    },
+    '../../src/parse-add-remove-args.ts': {
+      parseAddArgs: () => ({ add: new Map() }),
+    },
+    '../../src/save-types.ts': { addTypesDeps: async () => {} },
+  })
+  const result = await Command.command({
+    positionals: [],
+    values: {},
+    options,
+    explicit: {},
+    get: () => undefined,
+  } as unknown as LoadedConfig)
+  t.equal(seen[0]?.upToDateCheck, true, 'vlt install checks')
+  t.ok('graph' in result, 'an install result')
+  t.equal(
+    JSON.stringify(Command.views.json(result)),
+    JSON.stringify({
+      add: [{ name: 'gone', version: '1.0.0' }, { name: 'git-opt' }],
+      added: 2,
+      change: [],
+      changed: 0,
+      remove: [],
+      removed: 0,
+      buildQueue: ['~~built@1.0.0'],
+      message:
+        '1 packages that will need to be built, run "vlt build" to complete the install.',
+    }),
+    'what a full no-op prints',
+  )
+})
+
 t.test('frozen-lockfile flag', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({
@@ -882,9 +932,14 @@ t.test('--global', async t => {
     '@vltpkg/graph': {
       GraphModifier,
       assertQuery: async () => {},
-      async install(o: { keepNodes?: Set<string> }, a: unknown) {
+      async install(
+        o: { keepNodes?: Set<string>; upToDateCheck?: boolean },
+        a: unknown,
+      ) {
         const k = o.keepNodes ? ` ${[...o.keepNodes].join()}` : ''
-        glog += `install ${a === add}${k}\n`
+        // global bins are linked from the graph
+        const c = o.upToDateCheck ? ' checked' : ''
+        glog += `install ${a === add}${k}${c}\n`
         if (fail) throw new Error('nope')
         return { graph: { nodes: new Map() } }
       },
@@ -988,7 +1043,7 @@ t.test('--global', async t => {
   t.equal(local.global, undefined)
   t.equal(
     glog,
-    'persist\nself\nparse\ninstall false\n',
+    'persist\nself\nparse\ninstall false checked\n',
     'no global helpers',
   )
 
@@ -1002,7 +1057,10 @@ t.test('--global', async t => {
   )
   glog = ''
   await Command.command(conf(undefined, types))
-  t.equal(glog, 'persist\nself\nparse\ntypes\ninstall false\n')
+  t.equal(
+    glog,
+    'persist\nself\nparse\ntypes\ninstall false checked\n',
+  )
 
   glog = ''
   keep = 'running'
@@ -1075,7 +1133,7 @@ t.test('--global', async t => {
 
   glog = ''
   await t.rejects(Command.command(conf()), { message: 'nope' })
-  t.equal(glog, 'persist\nself\nparse\ninstall false\n')
+  t.equal(glog, 'persist\nself\nparse\ninstall false checked\n')
 
   t.match(
     Command.views.json({
