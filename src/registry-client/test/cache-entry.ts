@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto'
 import { inspect } from 'node:util'
 import { gzipSync } from 'node:zlib'
+import type { InputType, ZlibOptions } from 'node:zlib'
 import t from 'tap'
+import type { Test } from 'tap'
 import type { Integrity } from '@vltpkg/types'
 import { CacheEntry } from '../src/cache-entry.ts'
 import { toRawHeaders } from './fixtures/to-raw-headers.ts'
@@ -1014,6 +1016,134 @@ t.test('VLT_TAR_MAX_UNPACKED_BYTES caps unzip', async t => {
   t.throws(() => c.unzip(), {
     message: 'cache entry exceeds maximum unpacked size',
   })
+})
+
+// a JSON body that does not repeat, so its gzip ratio stays low
+const noiseJSON = (n: number) => {
+  const b = Buffer.alloc(n)
+  let x = 1
+  for (let i = 0; i < n; i++) {
+    x ^= x << 13
+    x ^= x >>> 17
+    x ^= x << 5
+    b[i] = x & 0xff
+  }
+  return Buffer.from(JSON.stringify({ data: b.toString('base64') }))
+}
+
+const gzipEntry = (
+  CE: typeof CacheEntry,
+  body: Uint8Array,
+): CacheEntry => {
+  const c = new CE(200, toRawHeaders({ 'content-encoding': 'gzip' }))
+  c.addBody(body)
+  return c
+}
+
+// the module, recording the chunkSize of each gunzipSync
+const withChunkSizes = async (t: Test) => {
+  const zlib = await import('node:zlib')
+  const chunks: (number | undefined)[] = []
+  const { CacheEntry } = await t.mockImport<
+    typeof import('../src/cache-entry.ts')
+  >('../src/cache-entry.ts', {
+    'node:zlib': t.createMock(zlib, {
+      gunzipSync: (buf: InputType, opts: ZlibOptions) => {
+        chunks.push(opts.chunkSize)
+        return zlib.gunzipSync(buf, opts)
+      },
+    }),
+  })
+  return { CacheEntry, chunks }
+}
+
+t.test('gunzip chunk sized from the trailer', async t => {
+  const { CacheEntry, chunks } = await withChunkSizes(t)
+  const big = noiseJSON(80 * 1024)
+  const small = noiseJSON(16)
+  t.strictSame(
+    gzipEntry(CacheEntry, gzipSync(big)).json(),
+    JSON.parse(big.toString()) as unknown,
+  )
+  t.strictSame(
+    gzipEntry(CacheEntry, gzipSync(small)).json(),
+    JSON.parse(small.toString()) as unknown,
+  )
+  t.strictSame(chunks, [big.length + 1, 64 * 1024])
+})
+
+t.test('gunzip reads the body once', t => {
+  class Counting extends CacheEntry {
+    reads = 0
+    override get _body() {
+      this.reads++
+      return super._body
+    }
+  }
+  const gz = gzipSync(noiseJSON(1024))
+  const c = new Counting(
+    200,
+    toRawHeaders({ 'content-encoding': 'gzip' }),
+  )
+  c.addBody(gz.subarray(0, 100))
+  c.addBody(gz.subarray(100))
+  t.equal(c.isGzip, true)
+  c.reads = 0
+  t.equal(c.unzip(), true)
+  t.equal(c.reads, 1)
+  t.end()
+})
+
+t.test('multi-member and 0 / 0xffffffff trailers', async t => {
+  const { CacheEntry, chunks } = await withChunkSizes(t)
+  const json = noiseJSON(100 * 1024)
+  const k = 50 * 1024
+  const multi = Buffer.concat([
+    gzipSync(json.subarray(0, k)),
+    gzipSync(json.subarray(k)),
+  ])
+  // zlib skips zero-led padding after the last member, so the last
+  // four bytes read as the trailer size
+  const zero = Buffer.concat([gzipSync(json), Buffer.alloc(4)])
+  const small = noiseJSON(256)
+  const ff = Buffer.concat([
+    gzipSync(small),
+    Buffer.from([0, 0xff, 0xff, 0xff, 0xff]),
+  ])
+  t.ok(ff.length * 1000 + 1 > 64 * 1024, 'above the floor')
+  const expect = JSON.parse(json.toString()) as unknown
+  t.strictSame(gzipEntry(CacheEntry, multi).json(), expect)
+  t.strictSame(gzipEntry(CacheEntry, zero).json(), expect)
+  t.strictSame(
+    gzipEntry(CacheEntry, ff).json(),
+    JSON.parse(small.toString()) as unknown,
+  )
+  t.strictSame(chunks, [
+    json.length - k + 1,
+    64 * 1024,
+    ff.length * 1000 + 1,
+  ])
+})
+
+t.test('the gunzip chunk is capped at 256 MiB', async t => {
+  const { CacheEntry, chunks } = await withChunkSizes(t)
+  const json = noiseJSON(300 * 1024)
+  const body = Buffer.concat([
+    gzipSync(json),
+    Buffer.from([0, 0xff, 0xff, 0xff, 0xff]),
+  ])
+  t.ok(body.length * 1000 + 1 > 256 * 1024 * 1024, 'above the cap')
+  t.strictSame(
+    gzipEntry(CacheEntry, body).json(),
+    JSON.parse(json.toString()) as unknown,
+  )
+  t.strictSame(chunks, [256 * 1024 * 1024])
+})
+
+t.test('gzip body shorter than a trailer', t => {
+  const c = gzipEntry(CacheEntry, Buffer.from([0x1f, 0x8b]))
+  t.throws(() => c.unzip(), { code: 'Z_BUF_ERROR' })
+  t.end()
 })
 
 t.test('decodeHead / encodeHead', t => {

@@ -65,6 +65,26 @@ const maxUnpackedBytes = parseMaxUnpackedBytes(
 const unzipMax = (len: number) =>
   Math.min(maxUnpackedBytes, len * MAX_DECOMPRESSION_RATIO)
 
+// Inflate in one output chunk: zlib's default 16 KiB chunks each cost a
+// threadpool round trip (async) or a loop pass (sync), plus a concat.
+// The size is a guess, so a wrong one only costs extra chunks. zlib
+// reserves the whole chunk up front, so it stays within `max` and a cap.
+const minChunk = 64 * 1024
+const maxChunk = 256 * 1024 * 1024
+const chunkSize = (want: number, max: number) =>
+  Math.min(maxChunk, Math.max(minChunk, Math.min(want, max + 1)))
+
+// the gzip trailer holds the inflated size (of the last member, mod
+// 2^32); + 1 because zlib takes another pass when the chunk fills up
+const gzipChunkSize = (input: Buffer, max: number) =>
+  chunkSize(
+    (input.length < 4 ? 0 : input.readUInt32LE(input.length - 4)) + 1,
+    max,
+  )
+
+const brotliChunkSize = (input: Buffer, max: number) =>
+  chunkSize(input.length * 8, max)
+
 const unzipError = (er: unknown, found: number, max: number) =>
   (er as NodeJS.ErrnoException).code === 'ERR_BUFFER_TOO_LARGE' ?
     error('tarball exceeds maximum unpacked size', {
@@ -77,8 +97,14 @@ const unzipError = (er: unknown, found: number, max: number) =>
 const unzip = async (input: Buffer) => {
   const max = unzipMax(input.length)
   return new Promise<Buffer>((res, rej) =>
-    unzipCB(input, { maxOutputLength: max }, (er, result) =>
-      er ? rej(unzipError(er, input.length, max)) : res(result),
+    unzipCB(
+      input,
+      {
+        maxOutputLength: max,
+        chunkSize: gzipChunkSize(input, max),
+      },
+      (er, result) =>
+        er ? rej(unzipError(er, input.length, max)) : res(result),
     ),
   )
 }
@@ -86,7 +112,10 @@ const unzip = async (input: Buffer) => {
 const unzipSync = (input: Buffer): Buffer => {
   const max = unzipMax(input.length)
   try {
-    return unzipSyncCB(input, { maxOutputLength: max })
+    return unzipSyncCB(input, {
+      maxOutputLength: max,
+      chunkSize: gzipChunkSize(input, max),
+    })
   } catch (er) {
     throw unzipError(er, input.length, max)
   }
@@ -97,8 +126,14 @@ const isGzip = (b: Buffer) => b[0] === 0x1f && b[1] === 0x8b
 const brotli = async (input: Buffer) => {
   const max = unzipMax(input.length)
   return new Promise<Buffer>((res, rej) =>
-    brotliCB(input, { maxOutputLength: max }, (er, result) =>
-      er ? rej(unzipError(er, input.length, max)) : res(result),
+    brotliCB(
+      input,
+      {
+        maxOutputLength: max,
+        chunkSize: brotliChunkSize(input, max),
+      },
+      (er, result) =>
+        er ? rej(unzipError(er, input.length, max)) : res(result),
     ),
   )
 }
@@ -106,7 +141,10 @@ const brotli = async (input: Buffer) => {
 const brotliSync = (input: Buffer): Buffer => {
   const max = unzipMax(input.length)
   try {
-    return brotliSyncCB(input, { maxOutputLength: max })
+    return brotliSyncCB(input, {
+      maxOutputLength: max,
+      chunkSize: brotliChunkSize(input, max),
+    })
   } catch (er) {
     throw unzipError(er, input.length, max)
   }
