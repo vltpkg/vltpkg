@@ -21,7 +21,8 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { resolve } from 'node:path'
+import type { symlink } from 'node:fs'
+import { basename, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -41,6 +42,7 @@ import type {
 } from '../../src/index.ts'
 import { actual, ideal, reify } from '../../src/index.ts'
 import { loadObject } from '../../src/lockfile/load.ts'
+import { symlinkSyncMkdirp } from '../../src/reify/symlink-sync.ts'
 import {
   fixtureManifest,
   mockPackageInfo as mockPackageInfoBase,
@@ -891,12 +893,14 @@ t.test('unsupported optional subtree is never placed', async t => {
   const remover = new RollbackRemove()
   const rm = remover.rm.bind(remover)
   const existing: string[] = []
+  const calls: string[] = []
   remover.rm = async (path: string) => {
+    calls.push(path)
     if (lstatSync(path, { throwIfNoEntry: false }))
       existing.push(path)
     return rm(path)
   }
-  await reify({
+  const res = await reify({
     ...opts,
     packageInfo: createMockPackageInfo({
       async extract(
@@ -946,6 +950,15 @@ t.test('unsupported optional subtree is never placed', async t => {
   t.strictSame(links, ['minipass'], 'only the shared dep hoisted')
   t.ok(statSync(resolve(hoisted, 'minipass')), 'hoist link resolves')
   t.strictSame(existing, [], 'nothing on disk moved away')
+  t.strictSame(
+    calls,
+    [],
+    'no removal attempted for never placed nodes',
+  )
+  t.ok(
+    [...res.diff.nodes.delete].some(n => n.id === glob.id),
+    'glob still reported as deleted',
+  )
 
   const lockfile = JSON.parse(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
@@ -965,6 +978,61 @@ t.test('unsupported optional subtree is never placed', async t => {
   t.notOk(
     hidden.edges[`${glob.id} path-scurry`],
     'hidden lockfile drops glob edges',
+  )
+})
+
+t.test('scoped links need no mkdir fallback', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { glob: '11' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const opts = () => ({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    remover: new RollbackRemove(),
+  })
+  const links: string[] = []
+  const noParent: string[] = []
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    '../../src/reify/symlink-sync.ts': {
+      symlinkSyncMkdirp: (
+        target: string,
+        link: string,
+        type?: symlink.Type,
+      ) => {
+        links.push(link)
+        if (!existsSync(dirname(link))) noParent.push(link)
+        symlinkSyncMkdirp(target, link, type)
+      },
+    },
+  })
+  const graph = await ideal.build(opts())
+  await reify({ ...opts(), graph, allowScripts: ':not(*)' })
+  const scoped = (l: string) => basename(dirname(l)).startsWith('@')
+  t.ok(
+    links.some(l => l.endsWith(join('@isaacs', 'cliui'))),
+    'scoped deps linked',
+  )
+  t.strictSame(
+    noParent.filter(scoped),
+    [],
+    'scope dirs made before linking',
   )
 })
 

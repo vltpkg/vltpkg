@@ -17,11 +17,11 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 4. **Extract nodes**: `pruneUnsupportedOptional()` first (after lockfile data captured) drops optional adds failing platform/deprecated check + `gc()`, so they're never extracted/linked. Then `addNodes()` → fetch/extract into `.vlt` store (existing targets moved away first). Optional deps use `optionalFail()` to prune subgraphs instead of failing
 5. **Delete edges**: `deleteEdges()` → remove outdated links + bins
 6. Run extraction+deletion via `callLimit(actions, { limit })` where `limit = Math.max(availableParallelism()-1, 1) * 8`
-7. **Add edges**: `addEdges()` → create symlinks + bin links (Windows: `@vltpkg/cmd-shim`)
-8. **Hoist**: `internalHoist()` → `node_modules/.vlt/node_modules/<name>` symlinks. Preference: importer deps > registry > highest version > lexicographic DepID
+7. **Add edges**: `addEdges()` → create symlinks + bin links (Windows: `@vltpkg/cmd-shim`). Makes the `@scope` dirs new store packages' deps link into first (one `mkdir` per dir)
+8. **Hoist**: `internalHoist()` → `node_modules/.vlt/node_modules/<name>` symlinks. Preference: importer deps > registry > highest version > lexicographic DepID. Missing `@scope` dirs made once before linking
 9. **Build**: `build()` → lifecycle scripts (preinstall/install/postinstall/prepare), chmod bins. Store-linked packages get private copies (`unshare()`) before their scripts run
 10. **Lockfiles**: save main `vlt-lock.json` (`saveData()`), hidden `node_modules/.vlt-lock.json` (`saveHidden()`)
-11. **Cleanup**: gc if optional failures, delete removed nodes, update importer `package.json` if `add/remove` changed deps, confirm rollback
+11. **Cleanup**: gc if optional failures, delete removed nodes (skips store nodes never extracted and not in Actual, e.g. pruned optionals), update importer `package.json` if `add/remove` changed deps, confirm rollback
 
 ## Module Responsibilities
 
@@ -30,7 +30,7 @@ Makes on-disk install (Actual) match desired state (Ideal) via minimal filesyste
 - `add-edge.ts`/`add-edges.ts` — symlinks + bin links
 - `delete-edge.ts`/`delete-edges.ts` — remove links + `.bin` entries
 - `internal-hoist.ts` — preferred candidate selection + symlinks
-- `symlink-sync.ts` — `symlinkSync`, mkdir parent on ENOENT + retry
+- `symlink-sync.ts` — `symlinkSync`, mkdir parent on ENOENT + retry (fallback for dirs not made up front)
 - `build.ts` — lifecycle scripts, chmod bins
 - `unshare.ts` — replace hardlinked files by private copies before a script runs
 - `optional-fail.ts` — `removeOptionalSubgraph`, flags `diff.hadOptionalFailures`; `pruneUnsupportedOptional` pre-extract platform pass

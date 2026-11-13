@@ -2,6 +2,7 @@ import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Version } from '@vltpkg/semver'
+import { mkdirSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import { dirname, relative } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
@@ -126,10 +127,12 @@ export const internalHoist = async (
   await mkdir(hoistDir.fullpath(), { recursive: true })
 
   const removes: Promise<void>[] = []
+  const scopes = new Set<string>()
   for (const entry of await hoistDir.readdir()) {
     const name = entry.name
     // scoped package namespace
     if (name.startsWith('@')) {
+      scopes.add(name)
       for (const pkg of await entry.readdir()) {
         await checkExisting(
           `${name}/${pkg.name}`,
@@ -161,6 +164,13 @@ export const internalHoist = async (
     const target =
       vlt + sep + id + sep + 'node_modules' + sep + native(nodeName)
     const path = hoistPath + sep + native(name)
+    const i = name.indexOf('/')
+    const scope = name.substring(0, i)
+    if (i > 0 && !scopes.has(scope)) {
+      // one mkdir per missing scope, not a failed link each
+      scopes.add(scope)
+      mkdirSync(hoistPath + sep + scope, { recursive: true })
+    }
     symlinkSyncMkdirp(relative(dirname(path), target), path, 'dir')
   }
 }
