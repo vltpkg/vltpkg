@@ -295,7 +295,6 @@ export const install = async (
     )
     if (existsSync(nodeModulesPath)) {
       await remover.rm(nodeModulesPath)
-      remover.confirm()
     }
   }
 
@@ -372,11 +371,15 @@ export const install = async (
       remove,
       remover,
     })
+    // reify confirms what it parked, but not when it had nothing to do
+    if (options.cleanInstall) remover.confirm()
 
     result = { buildQueue, graph, diff }
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
+    // what ci could not put back is deleted, never left parked
+    if (options.cleanInstall) remover.confirm()
     // Remove hidden lockfile on failure
     try {
       const hiddenLockfile = resolve(
