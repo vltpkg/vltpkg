@@ -6,13 +6,17 @@ import { getOptions, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
+import { writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Test } from 'tap'
 import { asDependency } from '../../src/dependencies.ts'
 import type { Graph } from '../../src/graph.ts'
 import { build } from '../../src/ideal/build.ts'
+import { loadObject } from '../../src/lockfile/load.ts'
 import { LOCKFILE_VERSION } from '../../src/lockfile/types.ts'
+import type { LockfileData } from '../../src/lockfile/types.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import type { DepIDTuple } from '@vltpkg/dep-id'
 import type { Manifest } from '@vltpkg/types'
@@ -88,6 +92,56 @@ t.test('build from lockfile', async t => {
   t.matchSnapshot(
     objectLikeOutput(graph),
     'should build an ideal tree starting from a virtual graph',
+  )
+})
+
+t.test('a lockfileGraph is the starting graph', async t => {
+  const fooId = joinDepIDTuple(['registry', '', 'foo@1.0.0'])
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '^1.0.0' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+  })
+  const lockfile = JSON.stringify({
+    lockfileVersion: LOCKFILE_VERSION,
+    options: {},
+    nodes: {
+      [fooId]: [
+        0,
+        'foo',
+        'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ==',
+      ],
+    },
+    edges: {
+      [edgeKey(['file', '.'], 'foo')]: `prod ^1.0.0 ${fooId}`,
+    },
+  })
+  const opts = () => ({
+    ...specOptions,
+    scurry: new PathScurry(projectRoot),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo,
+    projectRoot,
+    remover: new RollbackRemove(),
+  })
+
+  // no vlt-lock.json on disk: nothing else to start from
+  const lockfileGraph = loadObject(
+    { ...opts(), mainManifest },
+    JSON.parse(lockfile) as LockfileData,
+  )
+  const graph = await build({ ...opts(), lockfileGraph })
+  t.ok(graph === lockfileGraph, 'built on the given graph')
+
+  writeFileSync(resolve(projectRoot, 'vlt-lock.json'), lockfile)
+  t.strictSame(
+    objectLikeOutput(graph),
+    objectLikeOutput(await build(opts())),
+    'same as a build from the lockfile',
   )
 })
 

@@ -6,36 +6,7 @@
  */
 'use strict'
 exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile with confused manifest 1`] = `
-{
-  "lockfileVersion": 1,
-  "options": {
-    "registry": "https://registry.npmjs.org/",
-    "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
-    }
-  },
-  "nodes": {
-    "~npm~foo@1.0.0": [
-      0,
-      "foo",
-      null,
-      null,
-      "node_modules/.pnpm/foo@1.0.0/node_modules/foo",
-      {
-        "name": "foo",
-        "version": "1.0.0"
-      },
-      {
-        "name": "test",
-        "version": "1.0.0"
-      }
-    ]
-  },
-  "edges": {
-    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
-  }
-}
+{"lockfileVersion":1,"options":{"registry":"https://registry.npmjs.org/","registries":{"npm":"https://registry.npmjs.org/","custom":"http://example.com"}},"nodes":{"~npm~foo@1.0.0":[0,"foo",null,null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo",{"name":"foo","version":"1.0.0"},{"name":"test","version":"1.0.0"}]},"edges":{"file~_d foo":"prod ^1.0.0 ~npm~foo@1.0.0"}}
 `
 
 exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must match snapshot 1`] = `
@@ -176,79 +147,7 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 `
 
 exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must match snapshot 1`] = `
-{
-  "lockfileVersion": 1,
-  "options": {
-    "registry": "https://registry.npmjs.org/",
-    "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
-    }
-  },
-  "nodes": {
-    "~custom~baz@1.0.0": [
-      1,
-      "baz",
-      null,
-      "http://example.com/baz.tgz",
-      null,
-      {
-        "name": "baz",
-        "version": "1.0.0",
-        "dist": {
-          "tarball": "http://example.com/baz.tgz"
-        }
-      }
-    ],
-    "~npm~@types+foo@1.0.0": [
-      2,
-      "@types/foo",
-      null,
-      null,
-      null,
-      {
-        "name": "@types/foo",
-        "version": "1.0.0"
-      },
-      null,
-      null,
-      null,
-      null,
-      "foo"
-    ],
-    "~npm~bar@1.0.0": [
-      3,
-      "bar",
-      null,
-      null,
-      null,
-      {
-        "name": "bar",
-        "version": "1.0.0"
-      }
-    ],
-    "~npm~foo@1.0.0": [
-      2,
-      "foo",
-      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
-      null,
-      "node_modules/.pnpm/foo@1.0.0/node_modules/foo",
-      {
-        "name": "foo",
-        "version": "1.0.0",
-        "dist": {
-          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
-        }
-      }
-    ]
-  },
-  "edges": {
-    "file~_d @types/foo": "dev ^1.0.0 ~npm~@types+foo@1.0.0",
-    "file~_d baz": "prod custom:baz@^1.0.0 ~custom~baz@1.0.0",
-    "file~_d foo": "prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0",
-    "~npm~foo@1.0.0 bar": "prod ^1.0.0 ~npm~bar@1.0.0"
-  }
-}
+{"lockfileVersion":1,"options":{"registry":"https://registry.npmjs.org/","registries":{"npm":"https://registry.npmjs.org/","custom":"http://example.com"}},"nodes":{"~custom~baz@1.0.0":[1,"baz",null,"http://example.com/baz.tgz",null,{"name":"baz","version":"1.0.0","dist":{"tarball":"http://example.com/baz.tgz"}}],"~npm~@types+foo@1.0.0":[2,"@types/foo",null,null,null,{"name":"@types/foo","version":"1.0.0"},null,null,null,null,"foo"],"~npm~bar@1.0.0":[3,"bar",null,null,null,{"name":"bar","version":"1.0.0"}],"~npm~foo@1.0.0":[2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo",{"name":"foo","version":"1.0.0","dist":{"integrity":"sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="}}]},"edges":{"file~_d @types/foo":"dev ^1.0.0 ~npm~@types+foo@1.0.0","file~_d baz":"prod custom:baz@^1.0.0 ~custom~baz@1.0.0","file~_d foo":"prod ^1.0.0 || 1.2.3 || 2 ~npm~foo@1.0.0","~npm~foo@1.0.0 bar":"prod ^1.0.0 ~npm~bar@1.0.0"}}
 `
 
 exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must match snapshot 1`] = `
@@ -590,55 +489,7 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
 `
 
 exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and contributors > should save hidden lockfile with normalized manifest containing author and contributors 1`] = `
-{
-  "lockfileVersion": 1,
-  "options": {
-    "registry": "https://registry.npmjs.org/",
-    "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
-    }
-  },
-  "nodes": {
-    "~npm~foo@1.0.0": [
-      0,
-      "foo",
-      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
-      null,
-      null,
-      {
-        "name": "foo",
-        "version": "1.0.0",
-        "author": {
-          "name": "John Doe",
-          "email": "john@example.com",
-          "writeAccess": false,
-          "isPublisher": false
-        },
-        "contributors": [
-          {
-            "name": "Jane Smith",
-            "email": "jane@example.com",
-            "writeAccess": false,
-            "isPublisher": false
-          },
-          {
-            "name": "Bob Wilson",
-            "email": "bob@example.com",
-            "writeAccess": false,
-            "isPublisher": false
-          }
-        ],
-        "dist": {
-          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
-        }
-      }
-    ]
-  },
-  "edges": {
-    "file~_d foo": "prod ^1.0.0 ~npm~foo@1.0.0"
-  }
-}
+{"lockfileVersion":1,"options":{"registry":"https://registry.npmjs.org/","registries":{"npm":"https://registry.npmjs.org/","custom":"http://example.com"}},"nodes":{"~npm~foo@1.0.0":[0,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,null,{"name":"foo","version":"1.0.0","author":{"name":"John Doe","email":"john@example.com","writeAccess":false,"isPublisher":false},"contributors":[{"name":"Jane Smith","email":"jane@example.com","writeAccess":false,"isPublisher":false},{"name":"Bob Wilson","email":"bob@example.com","writeAccess":false,"isPublisher":false}],"dist":{"integrity":"sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="}}]},"edges":{"file~_d foo":"prod ^1.0.0 ~npm~foo@1.0.0"}}
 `
 
 exports[`test/lockfile/save.ts > TAP > store modifiers > with empty modifiers config > should save lockfile without modifiers when config is empty 1`] = `

@@ -295,8 +295,11 @@ export const saveData = (
   fileName: string,
   saveManifests = false,
 ): void => {
-  const json = JSON.stringify(data, null, 2)
-  const content = saveManifests ? json : extraFormat(json)
+  // the hidden lockfile is only ever parsed, never read by people
+  const content =
+    saveManifests ?
+      JSON.stringify(data)
+    : extraFormat(JSON.stringify(data, null, 2))
   writeFileSync(fileName, content)
 }
 
