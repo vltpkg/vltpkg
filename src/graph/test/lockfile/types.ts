@@ -1,5 +1,6 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { defaultScopeRegistries } from '@vltpkg/spec'
 import type {
   LockfileData,
   LockfileNode,
@@ -23,6 +24,7 @@ import {
   BuildStateBuilt,
   BuildStateFailed,
   LOCKFILE_VERSION,
+  scopeRegistryDefaults,
 } from '../../src/lockfile/types.ts'
 
 t.test('lockfile type checks', t => {
@@ -477,4 +479,20 @@ t.test('lockfile type constraints', t => {
 
 t.test('LOCKFILE_VERSION constant', async t => {
   t.equal(typeof LOCKFILE_VERSION, 'number', 'is a number')
+})
+
+t.test('scopeRegistryDefaults', async t => {
+  t.strictSame(
+    scopeRegistryDefaults(undefined),
+    defaultScopeRegistries,
+  )
+  t.strictSame(
+    scopeRegistryDefaults({ other: 'https://jsr.example.com/' }),
+    defaultScopeRegistries,
+  )
+  t.strictSame(
+    scopeRegistryDefaults({ jsr: 'https://jsr.example.com/' }),
+    { '@jsr': 'https://jsr.example.com/' },
+    '@jsr follows the jsr alias',
+  )
 })

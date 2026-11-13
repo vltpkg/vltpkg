@@ -3,10 +3,14 @@ import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { getOptions, Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { asDependency } from '../../src/dependencies.ts'
+import type { Graph } from '../../src/graph.ts'
 import { build } from '../../src/ideal/build.ts'
 import { LOCKFILE_VERSION } from '../../src/lockfile/types.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
@@ -882,4 +886,131 @@ t.test('a re-pin path-safety error is never kept', async t => {
     }),
     { message: 'bad name' },
   )
+})
+
+t.test('a lockfile written with registry inheritance', async t => {
+  const npm = 'https://registry.npmjs.org/'
+  const corp = 'https://corp.example.com/'
+  const registries = { npm, corp }
+  const served: Record<string, Record<string, Manifest>> = {
+    [corp]: {
+      'internal-lib': {
+        name: 'internal-lib',
+        version: '1.0.0',
+        dependencies: { utils: '^1' },
+      },
+      // unrelated to the public utils
+      utils: { name: 'utils', version: '1.2.0' },
+    },
+    [npm]: {
+      utils: { name: 'utils', version: '1.9.0' },
+      'lodash-x': { name: 'lodash-x', version: '1.0.0' },
+    },
+  }
+  const fetched: string[] = []
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      const { registry = '', name } = spec.final
+      fetched.push(`${registry}${name}`)
+      return served[registry]?.[name]
+    },
+  } as unknown as PackageInfoClient
+  const internalLib = joinDepIDTuple([
+    'registry',
+    'corp',
+    'internal-lib@1.0.0',
+  ])
+  const corpUtils = joinDepIDTuple([
+    'registry',
+    'corp',
+    'utils@1.2.0',
+  ])
+  // utils was locked to the registry of the package declaring it
+  const lockfile = (options: SpecOptions) =>
+    JSON.stringify({
+      lockfileVersion: LOCKFILE_VERSION,
+      options,
+      nodes: {
+        [internalLib]: [0, 'internal-lib'],
+        [corpUtils]: [0, 'utils'],
+      },
+      edges: {
+        [edgeKey(['file', '.'], 'internal-lib')]:
+          `prod corp:internal-lib@^1 ${internalLib}`,
+        [`${internalLib} utils`]: `prod ^1 ${corpUtils}`,
+      },
+    })
+  const run = async (
+    t: Test,
+    add: string[] = [],
+    config: SpecOptions = { registries },
+  ) => {
+    const options = getOptions(config)
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'app',
+        version: '1.0.0',
+        dependencies: { 'internal-lib': 'corp:internal-lib@^1' },
+      }),
+      'vlt.json': '{}',
+      'vlt-lock.json': lockfile(config),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    fetched.length = 0
+    const deps = new Map(
+      add.map(name => [
+        name,
+        asDependency({
+          type: 'prod',
+          spec: Spec.parse(name, '^1', options),
+        }),
+      ]),
+    )
+    return build({
+      ...options,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      packageInfo,
+      projectRoot,
+      add: Object.assign(
+        new Map([[joinDepIDTuple(['file', '.']), deps]]),
+        { modifiedDependencies: add.length > 0 },
+      ),
+      remove: Object.assign(new Map(), {
+        modifiedDependencies: false,
+      }) as RemoveImportersDependenciesMap,
+      remover: new RollbackRemove(),
+    })
+  }
+  const utilsOf = (graph: Graph) => {
+    const [lib] = graph.nodesByName.get('internal-lib') ?? []
+    return lib?.edgesOut.get('utils')?.to?.id
+  }
+
+  t.test('an unchanged graph keeps the lockfile', async t => {
+    const graph = await run(t)
+    t.equal(utilsOf(graph), corpUtils)
+    t.strictSame(fetched, [], 'nothing fetched')
+  })
+
+  t.test('a graph change resolves it again', async t => {
+    const graph = await run(t, ['lodash-x'])
+    t.equal(
+      utilsOf(graph),
+      joinDepIDTuple(['registry', 'npm', 'utils@1.9.0']),
+      'from the root configuration',
+    )
+  })
+
+  t.test('a JSR proxy is no options change', async t => {
+    const graph = await run(t, [], {
+      registries,
+      'jsr-registries': { jsr: 'https://jsr.example.com/' },
+    })
+    t.equal(graph.optionsChanged, false)
+    t.equal(utilsOf(graph), corpUtils)
+    t.strictSame(fetched, [], 'nothing fetched')
+  })
 })

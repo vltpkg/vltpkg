@@ -79,7 +79,11 @@ sides together, or frozen / no-op installs stop round-tripping.
 
 ## Registry Consistency
 
-Child deps inherit parent's registry by default. If `foo` comes from registry X, its dep `bar@1.x` also resolves from X — prevents accidental cross-registry resolution.
+No registry inheritance: an unprefixed dep resolves from the root config at every depth (scope mapping → `registry` → `registries[default-registry-alias]`), never from its parent's registry. Every `Spec.parse` of a child spec (`ideal/append-nodes.ts`, `ideal/peers.ts`, `dependencies.ts`, `actual/load.ts`, `lockfile/load-edges.ts`) uses the options as given; there is no `node.registry`.
+
+A lockfile written with inheritance is not migrated or guarded: an unchanged graph keeps its locked targets, and the next rebuild resolves them by the rule above.
+
+`withParentRegistryHint()` (`src/graph/src/ideal/parent-registry-hint.ts`): a 404 for an unprefixed dep that took the default route (no `scoped-registries` hit) under a registry parent from another (non-JSR) registry gets a hint naming both registries.
 
 ## Config (`vlt.json`)
 

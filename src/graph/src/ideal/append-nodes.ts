@@ -44,6 +44,7 @@ import {
   postPlacementPeerCheck,
   startPeerPlacement,
 } from './peers.ts'
+import { withParentRegistryHint } from './parent-registry-hint.ts'
 import { compareByHasPeerDeps } from './sorting.ts'
 import type {
   ExplicitAddMap,
@@ -640,7 +641,7 @@ const fetchManifestsForDeps = async (
             if (!isExplicit && (edgeOptional || fromNode.optional)) {
               return undefined
             }
-            throw er
+            throw withParentRegistryHint(er, spec, fromNode)
           })
 
     // awaited below; a throw before that must not leave it unhandled
@@ -908,12 +909,7 @@ const processPlacementTasks = async (
           const type = shorten(depTypeName, name, manifest)
           let depSpec: Spec
           try {
-            depSpec = Spec.parse(name, bareSpec, {
-              ...options,
-              // git/file/remote parents have no spec.registry, so fall
-              // back to the configured one. see vltpkg/vltpkg#1580.
-              registry: spec.registry ?? options.registry,
-            })
+            depSpec = Spec.parse(name, bareSpec, options)
           } catch (er) {
             throw asDependencySpecError(er, node, type)
           }

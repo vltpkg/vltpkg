@@ -158,11 +158,8 @@ export const loadEdges = (
     }
 
     // Use the merged options directly — they already carry the
-    // correct registry from the lockfile's `options` + caller config.
-    // `fromNode.registry` is not populated yet at this point (the
-    // post-load hydration loop in load.ts sets it *after* edges are
-    // loaded), so overriding here would always inject `undefined`
-    // and silently revert to the default npm registry.
+    // correct registry from the lockfile's `options` + caller config,
+    // and an edge never takes the registry of the package declaring it.
     // See vltpkg/vltpkg#1580.
     let spec: Spec
     try {

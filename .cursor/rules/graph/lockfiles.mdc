@@ -35,11 +35,12 @@ Flags: 0=prod, 1=optional, 2=dev, 3=devOptional
 
 Options stored: `modifiers`, `catalog`, `catalogs`, `scoped-registries`, `jsr-registries`, `registry`, `registries`, `git-hosts`, `git-host-archives`
 
+Defaults are never stored or diffed: a `scoped-registries['@jsr']` equal to the effective `jsr-registries.jsr` (what spec `getOptions()` derives) is one (`scopeRegistryDefaults()` in `lockfile/types.ts`, used by `save.ts`, `buildCurrentOptions()` and the stored side of `diffLockfileOptions()`).
+
 ## Integration
 
 - `ideal/build.ts`: loads lockfile first (prefer Virtual), falls back to Actual
 - `actual/load.ts`: uses hidden lockfile for fast path
-- After loading: hydrates missing node registry data from first incoming edge
 
 ## Performance (>50 nodes)
 

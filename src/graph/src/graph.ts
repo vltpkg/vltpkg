@@ -658,7 +658,6 @@ export class Graph implements GraphLike {
       }
     }
     const toNode = this.addNode(depId, manifest, spec)
-    toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
     if (samePackage) copyPackageMetadata(toNode, samePackage)
