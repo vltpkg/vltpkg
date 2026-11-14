@@ -17,5 +17,9 @@ export const reloadConfig = async (
 
   const { Config } = await import('./config/index.ts')
   // host contexts never switch to the global project
-  return Config.load(folder, process.argv, true, false)
+  const conf = await Config.load(folder, process.argv, true, false)
+  // the graphs loaded for host contexts resolve through
+  // conf.options.packageInfo, whatever command is running
+  await conf.loadPackageInfo()
+  return conf
 }
