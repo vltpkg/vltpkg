@@ -19,7 +19,7 @@ with a [service token](/registry/publishing/ci#publishing-from-ci).
 
 You need:
 
-- npm 11.5.1 or later, or vlt.
+- npm 11.5.2 or later, or vlt.
 - An owner or admin of the account, with two-factor authentication set
   up, to add the trusted publisher.
 - A package on your account's `main` registry. It doesn't have to be
@@ -96,9 +96,12 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.vlt.io/acme/main/
-          scope: '@acme'
       - run: npm publish
 ```
+
+Leave out setup-node's `scope`: npm sends the exchange with the
+default registry's credentials, so `registry-url` has to be the
+default.
 
 The workflow file name must match the trusted publisher's, and if you
 set an environment, the job must run in it (`environment: <name>`).
