@@ -309,6 +309,18 @@ export class GraphModifier {
   }
 
   /**
+   * Whether any `-` modifier targets an edge named `name`, anywhere in
+   * the graph.
+   */
+  removesEdge(name: string): boolean {
+    for (const mod of this.#edgeModifiers) {
+      if (mod.value === '-' && mod.breadcrumb.last.name === name)
+        return true
+    }
+    return false
+  }
+
+  /**
    * Loads the modifiers defined in `vlt.json` into memory.
    */
   load(options: SpecOptions) {

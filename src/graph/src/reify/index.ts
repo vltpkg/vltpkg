@@ -245,7 +245,12 @@ const reify_ = async (
 
   // looks up all nodes setting buildState = 'needed'
   // on nodes that require building
-  checkNeededBuild({ diff, scurry, packageJson })
+  checkNeededBuild({
+    diff,
+    scurry,
+    packageJson,
+    modifiers: options.modifiers,
+  })
 
   // Filter nodes allowed to run scripts if allowScripts query is provided
   const allowScriptsNodes = await filterNodesByQuery(
