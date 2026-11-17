@@ -88,17 +88,18 @@ redirects, see above).
 For the same registry, `VLT_TOKEN` beats `VLT_TOKEN_{...}`, and both
 beat keychain tokens.
 
-## OIDC (OpenID Connect)
+## Trusted publishing
 
-If your CI provider supports OpenID Connect, vlt can authenticate with
-the registry automatically — no static tokens needed. vlt detects the
-CI environment, requests an OIDC ID token from the provider, and
+With [trusted publishing](https://docs.npmjs.com/trusted-publishers),
+vlt can publish from CI without static tokens. vlt detects the CI
+environment, requests an OIDC ID token from the provider, and
 exchanges it with the registry for a short-lived publish token.
 Everything happens behind the scenes.
 
-Note that this requires a registry that supports OIDC trusted
-publishing. The vlt.io registry currently does not — use a
-[service token](/registry/publishing/ci) there.
+The registry must support trusted publishing. The vlt.io registry
+supports it from GitHub Actions; see
+[Trusted publishing](/registry/publishing/trusted-publishing) to set
+it up.
 
 ### Supported Providers
 
@@ -142,10 +143,10 @@ tokens are stored, and nothing persists after the job finishes.
 
 ### Fallback Behavior
 
-If OIDC isn't available — for example, the registry doesn't support
-it, or the required permissions aren't configured — vlt silently falls
-back to `VLT_TOKEN` or keychain-based auth. No errors, no
-interruptions.
+If trusted publishing isn't available — for example, the registry
+doesn't support it, or the required permissions aren't configured —
+vlt silently falls back to `VLT_TOKEN` or keychain-based auth. No
+errors, no interruptions.
 
 ## OTP
 

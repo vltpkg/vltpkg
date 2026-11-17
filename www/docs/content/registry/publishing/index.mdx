@@ -113,15 +113,11 @@ asks for it, your client opens a browser where you confirm the write
 with the second factor enrolled on your vlt.io account. You'll need
 one enrolled before your first publish.
 
-Service tokens are not subject to the OTP prompt, which is what makes
-unattended publishes from CI possible — see
-[CI & automation](/registry/publishing/ci). Account owners and admins
-can adjust the two-factor requirement under **Settings → General**.
-
-<Aside type="note">
-  The vlt registry does not currently support OIDC trusted publishing.
-  Use a service token in CI.
-</Aside>
+Service tokens are not subject to the OTP prompt, so CI can publish
+with one — see [CI & automation](/registry/publishing/ci). From GitHub
+Actions, [trusted publishing](/registry/publishing/trusted-publishing)
+publishes without a token. Account owners and admins can adjust the
+two-factor requirement under **Settings → General**.
 
 ## Deprecating and unpublishing
 

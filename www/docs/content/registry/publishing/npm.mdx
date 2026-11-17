@@ -134,11 +134,13 @@ Open the URL, approve, and re-run `npm publish`. This is expected —
 the registry requires an interactive confirmation for writes made with
 a personal token.
 
-A **service token** skips the prompt, which is how you publish from
-CI. Create one at [vlt.io → Tokens](https://www.vlt.io) by choosing
-_This is a service token_, with the `package:write` scope. Nothing
-else in this guide changes — it is a drop-in replacement for
-`VLT_TOKEN`. See [CI & automation](/registry/publishing/ci).
+A **service token** skips the prompt, so CI can publish with one.
+Create one at [vlt.io → Tokens](https://www.vlt.io) by choosing _This
+is a service token_, with the `package:write` scope. Nothing else in
+this guide changes — it is a drop-in replacement for `VLT_TOKEN`. See
+[CI & automation](/registry/publishing/ci). From GitHub Actions,
+[trusted publishing](/registry/publishing/trusted-publishing) needs no
+token.
 
 ## Log in instead of using a token
 

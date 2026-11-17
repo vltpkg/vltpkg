@@ -46,7 +46,10 @@ There are two kinds of tokens:
 - **Personal tokens** are bound to your user. Writes made with a
   personal token are subject to the account's two-factor (OTP)
   requirement. Logging in from the CLI mints a personal token scoped
-  to `package:read` and `package:write`.
+  to `package:read`, `package:publish` and `package:write`, plus
+  `package:trust` for owners and admins, which
+  [`npm trust`](/registry/publishing/trusted-publishing#with-npm-trust)
+  needs.
 - **Service tokens** belong to the account rather than a person. They
   are meant for CI and automation, and they are not subject to OTP
   prompts. Creating service tokens requires an owner or admin role.
