@@ -48,6 +48,11 @@ export const build = async (
   /* c8 ignore next - all graphs have at least one importer */
   if (!nodes) return res
 
+  // when no added dependency may run scripts, only the importers have
+  // anything to do: walk them alone, unless a dependency depends on an
+  // importer, as the importers above it would no longer wait for it
+  const importersOnly = !needsFullWalk(diff, allowScriptsNodes, nodes)
+
   await graphRun<Node, unknown>({
     graph: nodes,
     visit: async (node: Node, signal, path) => {
@@ -90,13 +95,31 @@ export const build = async (
       const deps: Node[] = []
       for (const { to } of node.edgesOut.values()) {
         /* c8 ignore next - vanishingly unlikely in practice */
-        if (to) deps.push(to)
+        if (to && (!importersOnly || to.importer)) deps.push(to)
       }
       return deps
     },
   })
 
   return res
+}
+
+const needsFullWalk = (
+  diff: Diff,
+  allowScriptsNodes: Set<DepID>,
+  importers: Node[],
+): boolean => {
+  for (const id of allowScriptsNodes) {
+    const node = diff.to.nodes.get(id)
+    if (node && !node.importer && diff.nodes.add.has(node))
+      return true
+  }
+  for (const importer of importers) {
+    for (const { from } of importer.edgesIn) {
+      if (!from.importer) return true
+    }
+  }
+  return false
 }
 
 const visit = async (

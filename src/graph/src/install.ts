@@ -133,6 +133,7 @@ export const install = async (
   // which dependency specs the modifiers govern
   const modifiers = GraphModifier.maybeLoad(options)
 
+  let frozenGraph: Graph | undefined
   if (options.frozenLockfile) {
     // validates no add/remove operations are requested
     if (add?.modifiedDependencies) {
@@ -261,6 +262,7 @@ export const install = async (
         },
       )
     }
+    frozenGraph = lockfileGraph
   }
 
   // an explicit add of a dep a `-` modifier removes fails before
@@ -335,6 +337,8 @@ export const install = async (
       monorepo: fullMonorepo,
       specCache,
       lockfileData,
+      // with no actual graph, the ideal build would load the same one
+      lockfileGraph: act ? undefined : frozenGraph,
     })
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
