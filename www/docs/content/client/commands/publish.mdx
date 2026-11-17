@@ -88,7 +88,8 @@ an error.
 
 ### Service token
 
-For the vlt.io registry, publish from CI with a **service token**. A
+For the vlt.io registry, publish from CI with a **service token**, or
+from GitHub Actions with [trusted publishing](#trusted-publishing). A
 personal token answers every publish with a one-time-password
 challenge and fails unattended with `EOTP`. Set it as `VLT_TOKEN`:
 
@@ -105,19 +106,21 @@ and
 [Authentication — CI](/client/auth#ci-and-other-headless-environments)
 for how token environment variables are named.
 
-### OIDC
+### Trusted publishing
 
-If your CI provider supports OpenID Connect, vlt can publish without
-any stored tokens. On GitHub Actions, add `id-token: write` to your
-job's permissions and vlt handles authentication automatically.
+With trusted publishing, vlt can publish without any stored tokens. On
+GitHub Actions, add `id-token: write` to your job's permissions and
+vlt handles authentication automatically.
 
 <Aside type="note">
-  This requires a registry that supports OIDC trusted publishing. The
-  vlt.io registry currently does not — use a service token there.
+  This requires a registry that supports trusted publishing. On the
+  vlt.io registry, first add a trusted publisher for the package; see
+  [Trusted publishing](/registry/publishing/trusted-publishing).
 </Aside>
 
-See [Authentication — OIDC](/client/auth#oidc-openid-connect) for full
-details on supported providers and configuration.
+See
+[Authentication — Trusted publishing](/client/auth#trusted-publishing)
+for full details on supported providers and configuration.
 
 <Code
   code={`jobs:

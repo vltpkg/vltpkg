@@ -193,9 +193,11 @@ CI runner:
 
 ## Publishing from CI
 
-**Use a service token.** When you create the token at
-[vlt.io → Tokens](https://www.vlt.io), choose _This is a service
-token_ rather than _This token is for myself_, and give it
+From GitHub Actions,
+[trusted publishing](/registry/publishing/trusted-publishing) needs no
+token. Everywhere else, **use a service token.** When you create the
+token at [vlt.io → Tokens](https://www.vlt.io), choose _This is a
+service token_ rather than _This token is for myself_, and give it
 `package:read` and `package:write`.
 
 That choice is what makes unattended publishing work. A **personal**

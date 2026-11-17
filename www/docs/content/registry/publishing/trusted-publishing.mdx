@@ -1,0 +1,135 @@
+---
+title: Trusted publishing
+description:
+  Publish to your main registry from GitHub Actions without a token.
+sidebar:
+  label: Trusted Publishing
+  order: 8
+---
+
+The vlt registry supports
+[trusted publishing](https://docs.npmjs.com/trusted-publishers) from
+GitHub Actions. It follows npm's design, so `npm publish` works
+unchanged: the job exchanges its GitHub Actions
+[OIDC token](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+for a short-lived registry token, and you store no token secret.
+
+GitHub Actions is the only supported CI provider. Elsewhere, publish
+with a [service token](/registry/publishing/ci#publishing-from-ci).
+
+You need:
+
+- npm 11.5.1 or later, or vlt.
+- An owner or admin of the account, with two-factor authentication set
+  up, to add the trusted publisher.
+- A package on your account's `main` registry. It doesn't have to be
+  published yet; see [`npm trust`](#with-npm-trust).
+
+## 1. Connect GitHub
+
+In the [dashboard](https://www.vlt.io), open **Settings →
+Connections** and choose **Connect GitHub**. Install the vlt GitHub
+App on the GitHub user or organization that owns the repository, and
+grant it the repository. Owners and admins can connect GitHub.
+
+## 2. Add a trusted publisher
+
+On the package's **Settings** page, choose **Add** on the **Trusted
+Publishers** card and fill in:
+
+- **Repository**: one of the repositories the connection grants.
+- **Workflow file**: the file name under `.github/workflows` that
+  publishes, such as `release.yml`.
+- **Environment** (optional): the
+  [GitHub environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
+  the job must run in. Leave it empty to accept any environment or
+  none.
+
+Only owners and admins can add or remove trusted publishers, signed in
+as themselves, not with a service token. Each change asks for your
+second factor.
+
+### With `npm trust`
+
+[`npm trust`](https://docs.npmjs.com/cli/commands/npm-trust) (npm
+11.15.0 or later) manages trusted publishers from the command line.
+Use it to add one before the package's first publish; the first
+trusted publish then creates the package. Log in with
+[`npm login`](/registry/tokens#log-in-from-the-cli) as an owner or
+admin, and pass your `main` registry:
+
+```sh
+npm trust github @acme/utils --repo=acme/utils --file=release.yml \
+  --allow-publish --registry=https://registry.vlt.io/acme/main/
+```
+
+Add `--env=<name>` to require a GitHub environment. `--allow-publish`
+is the only permission the registry accepts. Each change opens your
+browser to confirm with your second factor.
+
+```sh
+npm trust list @acme/utils --registry=https://registry.vlt.io/acme/main/
+npm trust revoke @acme/utils --id=<id> --registry=https://registry.vlt.io/acme/main/
+```
+
+## 3. Publish from the workflow
+
+Give the job `id-token: write` and point npm at your `main` registry.
+No token secret is needed:
+
+```yaml
+# .github/workflows/release.yml
+name: release
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.vlt.io/acme/main/
+          scope: '@acme'
+      - run: npm publish
+```
+
+The workflow file name must match the trusted publisher's, and if you
+set an environment, the job must run in it (`environment: <name>`).
+
+With vlt, run `vlt publish` in the same job instead:
+
+```yaml
+- uses: vltpkg/setup-vlt@v1
+- run: vlt publish --registry=https://registry.vlt.io/acme/main/
+```
+
+If the job also installs packages from your registries, it still needs
+a token for that; see [CI & automation](/registry/publishing/ci).
+
+## What the workflow can do
+
+- The registry token lasts 15 minutes and works only for that package
+  on that registry.
+- It publishes new versions. A first publish can set
+  `--access public`. Changing dist-tags, deprecating, unpublishing and
+  changing an existing package's visibility need a regular token.
+- Removing the trusted publisher stops its tokens at once, including
+  ones already issued.
+- A trusted publisher is removed when its repository is no longer
+  granted to the vlt GitHub App: the repository is removed from the
+  installation or transferred, the App is uninstalled, or the
+  connection is removed. Deleting the package removes its trusted
+  publishers.
+- Versions published this way list GitHub Actions as their publisher,
+  and the packument carries npm's `_npmUser.trustedPublisher`.
+- The registry doesn't store provenance attestations.
+
+If the exchange fails, npm falls back to any other credentials it has.
+Run `npm publish --loglevel=verbose` to see the `oidc` log lines.
