@@ -721,6 +721,69 @@ t.test('a failed ci restores node_modules', async t => {
 })
 
 t.test(
+  'an interrupted ci deletes the parked node_modules',
+  async t => {
+    const s = await ciSetup(t, {
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        dependencies: { abbrev: '2.0.0' },
+      }),
+    })
+    await s.install(s.opts())
+    s.spawned.length = 0
+    // signal-exit, with the handlers it would run on SIGINT
+    const handlers = new Set<() => void>()
+    let registered = 0
+    const signalExit = {
+      onExit: (fn: () => void) => {
+        registered++
+        handlers.add(fn)
+        return () => handlers.delete(fn)
+      },
+    }
+    const real = await import('../src/reify/index.ts')
+    let interrupted = false
+    const install = await s.mockInstall({
+      'signal-exit': signalExit,
+      '../src/reify/index.ts': {
+        ...real,
+        reify: async (opts: Parameters<typeof real.reify>[0]) => {
+          t.equal(handlers.size, 1, 'exit handler set while reifying')
+          // SIGINT mid-reify
+          for (const fn of handlers) fn()
+          interrupted = true
+          t.equal(s.spawned.length, 1, 'one child')
+          t.ok(
+            s.spawned[0]?.some(s.isRootPark),
+            'handed the parked node_modules',
+          )
+          return real.reify(opts)
+        },
+      },
+    })
+    await install(s.opts(s.ci))
+    t.ok(interrupted)
+    t.equal(handlers.size, 0, 'exit handler removed after ci')
+    t.equal(s.spawned.length, 1, 'nothing is handed twice')
+
+    t.test('only when node_modules was parked', async t => {
+      const install = await s.mockInstall({
+        'signal-exit': signalExit,
+      })
+      rmSync(resolve(s.projectRoot, 'node_modules'), {
+        recursive: true,
+        force: true,
+      })
+      registered = 0
+      await install(s.opts(s.ci))
+      await install(s.opts())
+      t.equal(registered, 0, 'no exit handler set')
+    })
+  },
+)
+
+t.test(
   'install with expectLockfile but missing lockfile',
   async t => {
     const dir = t.testdir({

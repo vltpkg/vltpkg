@@ -20,6 +20,7 @@
     "promise-call-limit": "^3.0.2",
     "rimraf": "^6.1.2",
     "semver": "^7.7.3",
+    "signal-exit": "^4.1.0",
     "ssri": "^13.0.0",
     "tap": "^21.8.0",
     "tar": "^7.5.2",

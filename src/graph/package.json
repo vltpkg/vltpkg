@@ -30,7 +30,8 @@
     "@vltpkg/vlt-json": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
     "path-scurry": "catalog:",
-    "promise-call-limit": "catalog:"
+    "promise-call-limit": "catalog:",
+    "signal-exit": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
