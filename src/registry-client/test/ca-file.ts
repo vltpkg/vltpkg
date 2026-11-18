@@ -57,7 +57,7 @@ const createOrigin = async (t: Test): Promise<string> => {
         server.close(() => res())
       }),
   )
-  return `https://localhost:${(server.address() as AddressInfo).port}/`
+  return `https://127.0.0.1:${(server.address() as AddressInfo).port}/`
 }
 
 // The module remembers which file it applied, so each test loads its
@@ -111,8 +111,8 @@ t.test('the CA file replaces the defaults', async t => {
   const url = await createOrigin(t)
   t.equal(await get(t, url), 'origin')
   t.strictSame(
-    getCACertificates('default'),
-    [cert],
+    trusted(),
+    fingerprints([cert]),
     'only the certificate from the file is trusted',
   )
 })

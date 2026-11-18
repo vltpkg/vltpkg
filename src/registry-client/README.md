@@ -97,11 +97,18 @@ bundled and system certificate authorities are not. The file may hold
 any number of concatenated certificates. A file that cannot be read,
 or that holds no certificates, is an error.
 
-The file is applied when a registry client is created, and changes the
-default for every TLS connection made afterwards on that thread.
-Connections that are already open are not affected. It needs node
-22.19 or newer on the 22 line, or 24.5 or newer; on other versions
-setting the variable is an error.
+The file is read each time a registry client builds a connection pool:
+when the client is created, and again the first time a request uses a
+new `connectTimeout`. It changes the default for TLS connections made
+afterwards on that thread. Connections that pass their own `ca`, and
+connections or TLS sessions that already exist, are not affected.
+
+Because the defaults are replaced, a CA added with
+`NODE_EXTRA_CA_CERTS` is no longer trusted either. If a proxy that
+terminates TLS needs its own CA, include it in the file.
+
+The variable needs node 22.19 or newer on the 22 line, or 24.5 or
+newer. On other versions setting it is an error.
 
 To add a certificate authority while keeping the defaults, use
 `NODE_EXTRA_CA_CERTS` instead.

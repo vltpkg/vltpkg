@@ -15,11 +15,12 @@ const proxyKeys = [
   'HTTPS_PROXY',
   'no_proxy',
   'NO_PROXY',
+  'NPM_CONFIG_CAFILE',
 ]
 
-// Swap in a copy of the environment with every proxy variable removed,
-// so an ambient proxy on the machine running the tests can't change the
-// result.
+// Swap in a copy of the environment with every proxy variable and the
+// CA file variable removed, so the machine running the tests can't
+// change the result.
 const setProxyEnv = (
   t: Test,
   env: Record<string, string> = {},
