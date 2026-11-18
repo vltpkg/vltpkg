@@ -88,6 +88,18 @@ A proxy that terminates TLS needs its certificate authority to be
 trusted. Point `NODE_EXTRA_CA_CERTS` at the CA file and node will
 trust it for the tunneled connection.
 
+## Certificate Authorities
+
+By default node trusts the certificate authorities it bundles. Set
+`NPM_CONFIG_CAFILE` to the path of a PEM file to replace them. This is
+an override: only the certificates in that file are trusted, and the
+bundled and system certificate authorities are not. The file may hold
+any number of concatenated certificates. A file that cannot be read,
+or that holds no certificates, is an error.
+
+To add a certificate authority while keeping the defaults, use
+`NODE_EXTRA_CA_CERTS` instead.
+
 ## Integrity Options
 
 An `integrity` option may be specified in a `fetchOptions.context`

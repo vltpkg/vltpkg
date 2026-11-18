@@ -1,6 +1,7 @@
 import proc from 'node:process'
 import type { Dispatcher } from 'undici'
 import { Agent, EnvHttpProxyAgent } from 'undici'
+import { applyCAFile } from './ca-file.ts'
 
 // Matches how undici's EnvHttpProxyAgent reads these: lowercase wins
 // over uppercase, and an empty string counts as unset.
@@ -18,6 +19,13 @@ const hasProxyEnv = () =>
  * `CONNECT`, still dials `no_proxy` origins directly, and receives the
  * identical options, so timeouts, keepalive, and pooling are the same
  * either way.
+ *
+ * If `NPM_CONFIG_CAFILE` is set, the certificates in that file replace
+ * node's default certificate authorities before the dispatcher is built.
  */
-export const getDispatcher = (options: Agent.Options): Dispatcher =>
-  hasProxyEnv() ? new EnvHttpProxyAgent(options) : new Agent(options)
+export const getDispatcher = (options: Agent.Options): Dispatcher => {
+  applyCAFile()
+  return hasProxyEnv() ?
+      new EnvHttpProxyAgent(options)
+    : new Agent(options)
+}
