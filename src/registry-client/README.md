@@ -97,6 +97,12 @@ bundled and system certificate authorities are not. The file may hold
 any number of concatenated certificates. A file that cannot be read,
 or that holds no certificates, is an error.
 
+The file is applied when a registry client is created, and changes the
+default for every TLS connection made afterwards on that thread.
+Connections that are already open are not affected. It needs node
+22.19 or newer on the 22 line, or 24.5 or newer; on other versions
+setting the variable is an error.
+
 To add a certificate authority while keeping the defaults, use
 `NODE_EXTRA_CA_CERTS` instead.
 

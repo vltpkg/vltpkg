@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs'
+import { X509Certificate } from 'node:crypto'
+import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:https'
 import type { AddressInfo } from 'node:net'
 import { resolve } from 'node:path'
@@ -35,6 +36,13 @@ const restoreDefaults = (t: Test): void => {
   t.teardown(() => setDefaultCACertificates(defaults))
 }
 
+// The PEM text node hands back can be wrapped differently from what
+// was put in, so certificates are compared by fingerprint.
+const fingerprints = (certs: string[]): string[] =>
+  certs.map(c => new X509Certificate(c).fingerprint256)
+const trusted = (): string[] =>
+  fingerprints(getCACertificates('default'))
+
 // An https server whose self-signed certificate is the fixture.
 const createOrigin = async (t: Test): Promise<string> => {
   const server = createServer({ key, cert }, (_req, res) => {
@@ -65,7 +73,11 @@ const load = async (t: Test) => ({
 
 const get = async (t: Test, url: string): Promise<string> => {
   const { getDispatcher } = await load(t)
-  const dispatcher = getDispatcher({})
+  // Verify certificates even if the environment running the tests has
+  // NODE_TLS_REJECT_UNAUTHORIZED=0.
+  const dispatcher = getDispatcher({
+    connect: { rejectUnauthorized: true },
+  })
   t.teardown(() => dispatcher.close())
   const res = await request(url, { dispatcher })
   return await res.body.text()
@@ -115,6 +127,47 @@ t.test('a bundle of several certificates is split', async t => {
   setEnv(t, { NPM_CONFIG_CAFILE: resolve(dir, 'bundle.pem') })
   applyCAFile()
   t.equal(getCACertificates('default').length, 4)
+})
+
+t.test('a replaced file is applied again', async t => {
+  restoreDefaults(t)
+  const { applyCAFile } = await load(t)
+  const [first = '', second = ''] = getCACertificates('bundled')
+  const dir = t.testdir({ 'bundle.pem': first })
+  const file = resolve(dir, 'bundle.pem')
+  setEnv(t, { NPM_CONFIG_CAFILE: file })
+  applyCAFile()
+  t.strictSame(trusted(), fingerprints([first]))
+  applyCAFile()
+  t.strictSame(trusted(), fingerprints([first]))
+
+  writeFileSync(file, second)
+  applyCAFile()
+  t.strictSame(trusted(), fingerprints([second]))
+
+  rmSync(file)
+  t.throws(() => applyCAFile(), {
+    message: 'Could not read the CA file in NPM_CONFIG_CAFILE',
+  })
+})
+
+t.test('a node without the setter is an error', async t => {
+  const before = getCACertificates('default')
+  const { applyCAFile } = await t.mockImport<
+    typeof import('../src/ca-file.ts')
+  >('../src/ca-file.ts', { 'node:tls': {} })
+  setEnv(t)
+  t.equal(
+    applyCAFile(),
+    undefined,
+    'fine while the variable is unset',
+  )
+  setEnv(t, { NPM_CONFIG_CAFILE: certFile })
+  t.throws(() => applyCAFile(), {
+    message: 'NPM_CONFIG_CAFILE is not supported by this node',
+    cause: { found: process.version, wanted: '^22.19.0 || >=24.5.0' },
+  })
+  t.strictSame(getCACertificates('default'), before)
 })
 
 t.test('unusable files are errors', async t => {

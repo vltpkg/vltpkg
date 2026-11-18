@@ -1,13 +1,15 @@
 import { error } from '@vltpkg/error-cause'
 import { readFileSync } from 'node:fs'
 import proc from 'node:process'
-import { setDefaultCACertificates } from 'node:tls'
+import * as tls from 'node:tls'
 
 const pemCertificate =
   /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g
 
-// The file that was last applied on this thread, so that building
-// several clients only reads and parses the bundle once.
+// The contents of the file that was last applied on this thread, so
+// that building several clients only parses the bundle once. The file
+// is still read every time, so a bundle replaced at the same path is
+// picked up and a removed one is an error.
 let applied: string | undefined
 
 // The name is the one other package managers read for their `cafile`
@@ -30,7 +32,7 @@ const caFileEnv = () => proc.env.NPM_CONFIG_CAFILE || undefined
  */
 export const applyCAFile = (): string | undefined => {
   const path = caFileEnv()
-  if (!path || path === applied) return path
+  if (!path) return undefined
 
   let pem: string
   try {
@@ -42,6 +44,8 @@ export const applyCAFile = (): string | undefined => {
     })
   }
 
+  if (pem === applied) return path
+
   const certs = pem.match(pemCertificate)
   if (!certs) {
     throw error(
@@ -50,7 +54,18 @@ export const applyCAFile = (): string | undefined => {
     )
   }
 
+  // The setter is missing from some node versions that vlt supports. It
+  // is looked up here and not imported by name, so that those versions
+  // only fail when the variable is actually set.
+  const { setDefaultCACertificates } = tls as Partial<typeof tls>
+  if (!setDefaultCACertificates) {
+    throw error('NPM_CONFIG_CAFILE is not supported by this node', {
+      found: proc.version,
+      wanted: '^22.19.0 || >=24.5.0',
+    })
+  }
+
   setDefaultCACertificates(certs)
-  applied = path
+  applied = pem
   return path
 }
