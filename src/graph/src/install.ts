@@ -17,6 +17,7 @@ import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { existsSync, rmSync } from 'node:fs'
+import { onExit } from 'signal-exit'
 import { resolve } from 'node:path'
 import { load as loadVirtual, loadData } from './lockfile/load.ts'
 import { formatOptionsChange } from './lockfile/format-options-change.ts'
@@ -288,6 +289,8 @@ export const install = async (
   }
 
   const remover = new RollbackRemove()
+  // removes the exit handler that deletes the parked node_modules
+  let offExit: (() => void) | undefined
   if (options.cleanInstall) {
     const nodeModulesPath = resolve(
       options.projectRoot,
@@ -295,7 +298,9 @@ export const install = async (
     )
     if (existsSync(nodeModulesPath)) {
       await remover.rm(nodeModulesPath)
-      remover.confirm()
+      // an interrupted ci (SIGINT, SIGTERM, process.exit) still hands
+      // the parked node_modules to the child that deletes it
+      offExit = onExit(() => remover.confirm())
     }
   }
 
@@ -372,11 +377,15 @@ export const install = async (
       remove,
       remover,
     })
+    // reify confirms what it parked, but not when it had nothing to do
+    if (options.cleanInstall) remover.confirm()
 
     result = { buildQueue, graph, diff }
   } catch (err) {
     /* c8 ignore next */
     await remover.rollback().catch(() => {})
+    // what ci could not put back is deleted, never left parked
+    if (options.cleanInstall) remover.confirm()
     // Remove hidden lockfile on failure
     try {
       const hiddenLockfile = resolve(
@@ -388,6 +397,8 @@ export const install = async (
       }
     } catch {}
     throw err
+  } finally {
+    offExit?.()
   }
 
   // after the try: a link failure must not roll back the install
