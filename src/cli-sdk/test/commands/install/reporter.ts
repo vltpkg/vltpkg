@@ -13,7 +13,15 @@ import type { OfferOptions } from '../../../src/shell-setup/index.ts'
 
 let out = ''
 const stdout = Object.assign(new PassThrough(), { columns: 200 })
-stdout.on('data', (c: Buffer) => (out = c.toString()))
+// ink in CI writes a bare newline on unmount
+stdout.on('data', (c: Buffer) => {
+  if (String(c) !== '\n') out = String(c)
+})
+const debugOpts: ink.RenderOptions = {
+  debug: true,
+  patchConsole: false,
+}
+let renderOpts = debugOpts
 
 const offers: [unknown, OfferOptions][] = []
 let onOffer = (_o: OfferOptions) => {}
@@ -35,8 +43,7 @@ const { InstallReporter } = await t.mockImport<
     render: (el: Parameters<typeof ink.render>[0]) =>
       ink.render(el, {
         stdout: stdout as unknown as NodeJS.WriteStream,
-        debug: true,
-        patchConsole: false,
+        ...renderOpts,
       }),
   },
 })
@@ -101,6 +108,31 @@ t.test('steps, requests and trailer', async t => {
   )
   r.error(new Error('x'))
 })
+
+t.test(
+  'console output after done() is not routed through ink',
+  async t => {
+    let routed = ''
+    const stderr = new PassThrough()
+    stderr.on('data', (c: Buffer) => (routed += String(c)))
+    const printed: unknown[][] = []
+    const { error } = console
+    console.error = (...a: unknown[]) => printed.push(a)
+    renderOpts = { stderr: stderr as unknown as NodeJS.WriteStream }
+    const r = reporter()
+    t.teardown(() => {
+      r.error(new Error('x'))
+      console.error = error
+      renderOpts = debugOpts
+    })
+    r.start()
+    await r.done({}, { time: 1 })
+    console.error('Update available')
+    await setTimeout(50)
+    t.equal(routed, '')
+    t.strictSame(printed, [['Update available']])
+  },
+)
 
 t.test('skills', async t => {
   type Row = { id: string; skill: string; dir: string }
