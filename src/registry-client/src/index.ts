@@ -21,7 +21,7 @@ import { pipeline } from 'node:stream'
 import type { Readable } from 'node:stream'
 import { setTimeout } from 'node:timers/promises'
 import { createGunzip } from 'node:zlib'
-import type { Agent, Dispatcher, RetryHandler } from 'undici'
+import type { Dispatcher, RetryHandler } from 'undici'
 import { RetryAgent } from 'undici'
 import { userAgent } from '@vltpkg/user-agent'
 import { addHeader } from './add-header.ts'
@@ -49,6 +49,7 @@ import { getHeader } from './get-header.ts'
 import { handleCacheHitResponse } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { getDispatcher } from './proxy.ts'
+import type { DispatcherOptions } from './proxy.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import {
   assertOk,
@@ -326,7 +327,7 @@ const connectOptions = {
   keepAliveInitialDelay: 30_000,
   sessionTimeout: 600,
 }
-const agentOptions: Agent.Options = {
+const agentOptions: DispatcherOptions = {
   bodyTimeout: 600_000,
   headersTimeout: 600_000,
   keepAliveMaxTimeout: 1_200_000,
