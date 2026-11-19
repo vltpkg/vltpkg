@@ -3,6 +3,7 @@ import type { Test } from 'tap'
 import * as fs from 'node:fs'
 import { join } from 'node:path'
 import { EventEmitter } from 'node:events'
+import { expandHome } from '../src/config/index.ts'
 import type { LoadedConfig } from '../src/config/index.ts'
 import { isSelfUpdateArgs } from '../src/self-update.ts'
 import {
@@ -68,7 +69,9 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
     'node:fs': t.createMock(fs, {
       realpathSync: (path: fs.PathLike) => {
         if (!path) throw new Error('no executable')
-        return runtime.executable
+        return path === process.argv[1] ?
+            runtime.executable
+          : fs.realpathSync(path)
       },
       ...overrides,
     }),
@@ -84,6 +87,7 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
         cache = (path = '') => join(dir, this.name, 'cache', path)
       },
     },
+    '../src/config/index.ts': { expandHome },
     '../src/output.ts': {
       isCI: () => runtime.ci,
       stderr: (line: string) => messages.push(line),
@@ -94,12 +98,15 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
     '../src/update-state.ts': { readUpdateState, writeUpdateState },
     '../src/self-update.ts': { isSelfUpdateArgs },
   })
+  const globalDir = join(dir, 'global')
+  fs.mkdirSync(globalDir)
   const conf = {
     command: 'install',
     values: {
       view: 'human',
       'update-notifier': true,
       'update-check-interval': 86_400,
+      'global-dir': globalDir,
     },
   } as LoadedConfig
   return {
@@ -107,6 +114,7 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
     version,
     conf,
     dir,
+    globalDir,
     file,
     messages,
     spawned,
@@ -172,7 +180,7 @@ t.test(
     fs.utimesSync(`${s.file}.lock`, expired, expired)
     s.notifyUpdate(s.conf, version)
     t.strictSame(s.messages, [
-      'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt',
+      'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt@2.0.0',
     ])
     s.notifyUpdate(s.conf, version)
     t.equal(s.messages.length, 1)
@@ -256,6 +264,23 @@ t.test(
           s.dir,
           'vlt/vlx-local/cache/123/vlt.js',
         )
+      },
+      project: s => {
+        s.runtime.executable =
+          '/home/user/project/node_modules/vlt/vlt.js'
+      },
+      'project-pnpm': s => {
+        s.runtime.executable =
+          '/home/user/project/node_modules/.pnpm/vlt@1.0.0/node_modules/vlt/vlt.js'
+      },
+      'project-win32': s => {
+        s.runtime.executable =
+          'C:\\project\\node_modules\\vlt\\vlt.js'
+      },
+      'project-no-global-dir': s => {
+        s.runtime.executable =
+          '/home/user/project/node_modules/vlt/vlt.js'
+        s.conf.values['global-dir'] = join(s.dir, 'missing')
       },
     }
     for (const [key, value] of [
@@ -347,14 +372,20 @@ t.test(
 )
 
 t.test(
-  'upgrade hint is the same for every install location',
+  'upgrade hint names the latest version for global installs',
   async t => {
     const s = await setup(t)
+    fs.mkdirSync(join(s.dir, 'npm'))
+    fs.writeFileSync(join(s.dir, 'npm/vlt.cmd'), '')
     for (const path of [
       '/opt/homebrew/Cellar/vlt/1/bin/vlt',
       '/home/user/.volta/tools/image/packages/vlt/bin/vlt',
       '/usr/lib/node_modules/vlt/bin/vlt',
-      'C:\\Users\\name\\AppData\\Roaming\\npm\\node_modules\\vlt\\vlt.js',
+      join(s.dir, 'npm/node_modules/vlt/vlt.js'),
+      join(
+        fs.realpathSync(s.globalDir),
+        'node_modules/.vlt/··vlt@1.0.0/node_modules/vlt/vlt.js',
+      ),
       '/usr/bin/vlt',
     ]) {
       s.runtime.executable = path
@@ -367,7 +398,8 @@ t.test(
       s.notifyUpdate(s.conf, version)
       t.equal(
         s.messages.pop(),
-        'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt',
+        'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt@2.0.0',
+        path,
       )
     }
   },

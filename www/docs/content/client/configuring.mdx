@@ -627,9 +627,10 @@ environment variables.
 
 Checks are skipped in CI, with non-TTY stderr, with any view other
 than `human`, while `vlt install -g vlt` updates vlt, for commands run
-from a package script, and for development builds and ephemeral
-installs through `vlx` or `npx`. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`,
-and `npm_config_offline=true` also suppress checks. This does not put
+from a package script, for a vlt installed in a project's
+`node_modules`, and for development builds and ephemeral installs
+through `vlx` or `npx`. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
+`npm_config_offline=true` also suppress checks. This does not put
 other vlt commands into an offline mode.
 
 The check asks vlt's [public npm mirror](/registry/public-mirror),
