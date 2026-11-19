@@ -115,6 +115,12 @@ t.test('removeNode', async t => {
 t.test('removeQuotes', async t => {
   t.equal(removeQuotes('""'), '', 'should remove quotes')
   t.equal(removeQuotes('"a"'), 'a', 'should remove quotes')
+  t.equal(removeQuotes("'a'"), 'a', 'should remove single quotes')
+  t.equal(
+    removeQuotes('\'a"'),
+    '\'a"',
+    'should not remove mismatched quotes',
+  )
   t.equal(removeQuotes('a'), 'a', 'should not remove quotes')
   t.equal(removeQuotes('1234'), '1234', 'should not remove quotes')
 })

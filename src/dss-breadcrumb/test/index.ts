@@ -380,6 +380,19 @@ t.test('Breadcrumb', async t => {
         'should not match 1.0.0 for >=2 range',
       )
 
+      // Single-quoted parameter behaves like the double-quoted one
+      const singleQuoted = parseBreadcrumb("#foo:v('^1')").last
+      t.equal(
+        singleQuoted.comparator({ semver: '1.2.6' }),
+        true,
+        'should match 1.2.6 for single-quoted ^1 range',
+      )
+      t.equal(
+        singleQuoted.comparator({ semver: '2.0.0' }),
+        false,
+        'should not match 2.0.0 for single-quoted ^1 range',
+      )
+
       // Test case 3: #bar:v(1) > #baz > #lorem:semver("~2.0.0")
       const breadcrumb3 = parseBreadcrumb(
         '#bar:v(1) > #baz > #lorem:semver("~2.0.0")',
@@ -1238,6 +1251,23 @@ t.test('Helper Functions', async t => {
       removeQuotes('""'),
       '',
       'should handle empty quoted string',
+    )
+
+    // Test removing single quotes
+    t.equal(
+      removeQuotes("'hello'"),
+      'hello',
+      'should remove single quotes',
+    )
+    t.equal(
+      removeQuotes("''"),
+      '',
+      'should handle empty single-quoted string',
+    )
+    t.equal(
+      removeQuotes('\'hello"'),
+      '\'hello"',
+      'should not remove mismatched quotes',
     )
   })
 
