@@ -16,6 +16,14 @@ export const deleteNodes = (
   for (const node of diff.nodes.delete) {
     // do not delete workspaces or link targets
     if (!node.inVltStore()) continue
+    // pruned before extraction, and not there from an earlier
+    // install: nothing on disk, nothing linked to it
+    if (
+      !node.extracted &&
+      !diff.from.nodes.get(node.id)?.inVltStore()
+    ) {
+      continue
+    }
     if (!keep?.has(node.id)) {
       rmActions.push(remover.rm(store + sep + node.id))
     }
