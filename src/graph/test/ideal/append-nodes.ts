@@ -2432,7 +2432,8 @@ t.test('a dual declaration is placed once', async t => {
       /* c8 ignore next */
       return manifests[spec.name] ?? null
     },
-  } as PackageInfoClient
+    prefetchResolve: () => () => {},
+  } as unknown as PackageInfoClient
 
   for (const [dep, expected] of [
     ['d', 'prod'],
@@ -2694,7 +2695,8 @@ t.test('skip peerOptional dependencies', async t => {
           throw new Error('404 - ' + spec.name, { cause: { spec } })
       }
     },
-  } as PackageInfoClient
+    prefetchResolve: () => () => {},
+  } as unknown as PackageInfoClient
 
   t.test('skip peerOptional dependencies in ideal graph', async t => {
     const projectRoot = t.testdir({

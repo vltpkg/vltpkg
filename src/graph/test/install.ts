@@ -3131,6 +3131,7 @@ const upToDateSetup = async (t: Test) => {
     },
     async warmTarPool() {},
     async closeTarPool() {},
+    prefetchResolve: () => () => {},
   } as unknown as PackageInfoClient
   const projectRoot = t.testdir({
     'package.json': JSON.stringify({
@@ -3492,6 +3493,7 @@ t.test('an unresolved optional dep is never recorded', async t => {
     },
     async warmTarPool() {},
     async closeTarPool() {},
+    prefetchResolve: () => () => {},
   } as unknown as PackageInfoClient
   const { run, state } = await checkedInstall(
     t,
@@ -4304,6 +4306,7 @@ const stubRegistry = (versions: Record<string, string>) =>
     },
     async warmTarPool() {},
     async closeTarPool() {},
+    prefetchResolve: () => () => {},
   }) as unknown as PackageInfoClient
 
 const stubSetup = async (

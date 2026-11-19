@@ -4921,6 +4921,7 @@ t.test('integration tests', async t => {
           resolved: 'https://example.com/remote-pkg-1.0.0.tgz',
         }
       },
+      prefetchResolve: () => () => {},
     } as unknown as PackageInfoClient
   }
 
