@@ -153,27 +153,38 @@ const replaceWorkspaceAndCatalogSpecs = (
   return manifest
 }
 
+// npm's default ignore rules (the entries that ignore case) apply at any
+// depth, like npm; `^` entries match the package root only
 const alwaysExcludePatterns = [
-  /^\.?\/?\.git(\/|$)/,
+  /(^|\/)(\.git|\.svn|\.hg|CVS)(\/|$)/i,
   /^\.?\/?node_modules(\/|$)/,
   /^\.?\/?\.nyc_output(\/|$)/,
   /^\.?\/?coverage(\/|$)/,
   /^\.?\/?\.vscode(\/|$)/,
   /^\.?\/?\.idea(\/|$)/,
-  /^\.?\/?\.DS_Store$/,
-  /^\.?\/?\.npmrc$/,
-  /^\.?\/?\.gitignore$/,
-  /^\.?\/?\.npmignore$/,
+  /(^|\/)\.DS_Store(\/|$)/i,
+  /(^|\/)\.npmrc(\/|$)/i,
+  /(^|\/)\.gitignore(\/|$)/i,
+  /(^|\/)\.npmignore(\/|$)/i,
+  /(^|\/)npm-debug\.log(\/|$)/i,
+  /(^|\/)\._/i,
+  /(^|\/)\.lock-wscript(\/|$)/i,
+  /(^|\/)\.wafpickle-/i,
+  /(^|\/)build\/config\.gypi(\/|$)/i,
+  /(^|\/)archived-packages(\/|$)/i,
+  /\.orig(\/|$)/i,
   /^\.?\/?\.editorconfig$/,
   /^\.?\/?package-lock\.json$/,
+  /^\.?\/?npm-shrinkwrap\.json$/,
   /^\.?\/?yarn\.lock$/,
   /^\.?\/?pnpm-lock\.yaml$/,
   /^\.?\/?bun\.lockb$/,
   /^\.?\/?bun\.lock$/,
   /^\.?\/?vlt-lock\.json$/,
   /^\.?\/?vlt\.json$/,
+  /^\.?\/?\.npm-extension\.[cm]js$/,
   /~$/,
-  /\.swp$/,
+  /\.swp$/i,
   /\.tgz$/,
 ]
 

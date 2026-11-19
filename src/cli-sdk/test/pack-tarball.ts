@@ -1801,3 +1801,56 @@ t.test('unreadable dir partially matching a files glob', async t => {
     'no entry for the unreadable dir',
   )
 })
+
+t.test('default excludes apply at any depth, like npm', async t => {
+  const dir = t.testdir({
+    'npm-shrinkwrap.json': '{}',
+    '.npm-extension.mjs': 'x',
+    dist: {
+      'index.js': 'x',
+      '.npmrc': 'x',
+      '.gitignore': 'x',
+      '.npmignore': 'x',
+      '.DS_Store': 'x',
+      '.git': { config: 'x' },
+      '.svn': { x: 'x' },
+      '.hg': { x: 'x' },
+      CVS: { x: 'x' },
+      '._index.js': 'x',
+      'npm-debug.log': 'x',
+      'index.js.orig': 'x',
+      '.lock-wscript': 'x',
+      '.wafpickle-1': 'x',
+      build: { 'config.gypi': 'x', 'other.gypi': 'x' },
+      'archived-packages': { 'a.txt': 'x' },
+      // own dir, so no name clash on file systems that ignore case
+      upper: { '.NPMRC': 'x', 'NPM-DEBUG.LOG': 'x', '.X.SWP': 'x' },
+      a: {
+        b: { '.npmrc': 'x', '.DS_Store': { x: 'x' }, 'c.js': 'x' },
+      },
+      // root-only excludes are packed when nested
+      node_modules: { dep: { 'index.js': 'x' } },
+      'package-lock.json': '{}',
+      coverage: { 'x.txt': 'x' },
+    },
+  })
+  const manifest = {
+    name: 'defaults-pkg',
+    version: '1.0.0',
+    files: ['dist', 'npm-shrinkwrap.json', '.npm-extension.mjs'],
+  }
+  const result = await packTarball(
+    manifest,
+    dir,
+    createMockConfig(dir),
+  )
+  t.strictSame(result.files.sort(), [
+    'dist/a/b/c.js',
+    'dist/build/other.gypi',
+    'dist/coverage/x.txt',
+    'dist/index.js',
+    'dist/node_modules/dep/index.js',
+    'dist/package-lock.json',
+    'package.json',
+  ])
+})
