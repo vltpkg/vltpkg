@@ -16,6 +16,8 @@ import { __CODE_SPLIT_SCRIPT_NAME } from './update-check.ts'
 import { readUpdateState, writeUpdateState } from './update-state.ts'
 import type { UpdateState } from './update-state.ts'
 
+const registry = 'https://registry.vlt.io/upstream/npm/'
+
 export const notifyUpdate = (conf: LoadedConfig, version: string) => {
   try {
     if (
@@ -37,10 +39,7 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
     )
       return
     const current = parse(version)
-    const registry =
-      conf.options.registry ??
-      conf.options.registries[conf.options['default-registry-alias']]
-    if (!current || !registry) return
+    if (!current) return
     const executable = realpathSync(process.argv[1] ?? '')
     const normalized = executable.replaceAll('\\', '/')
     if (
@@ -54,24 +53,16 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
     )
       return
 
-    const url = new URL(registry)
-    if (
-      !['http:', 'https:'].includes(url.protocol) ||
-      url.username ||
-      url.password
-    )
-      return
-    url.pathname = url.pathname.replace(/\/?$/, '/')
     const file = new XDG('vlt').state('update-check.json')
     const interval = conf.values['update-check-interval'] * 1000
     const now = Date.now()
     const readState = (): UpdateState => {
       const saved = readUpdateState(file)
       return (
-          saved?.registry === url.href && saved.version === version
+          saved?.registry === registry && saved.version === version
         ) ?
           saved
-        : { registry: url.href, version, lastCheck: 0 }
+        : { registry, version, lastCheck: 0 }
     }
     const hasNotice = (state: UpdateState) => {
       const latest = state.latest && parse(state.latest)

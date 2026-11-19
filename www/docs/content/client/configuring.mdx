@@ -631,9 +631,11 @@ through `vlx` or `npx`. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
 `npm_config_offline=true` also suppress checks. This does not put
 other vlt commands into an offline mode.
 
-The check uses the configured registry. Registries requiring
-authentication may decline the request; failures stay silent. State is
-stored in `update-check.json` under vlt's XDG state directory.
+The check asks vlt's [public npm mirror](/registry/public-mirror),
+`https://registry.vlt.io/upstream/npm/`, whatever registry is
+configured. Each check is one anonymous request to registry.vlt.io;
+failures stay silent. State is stored in `update-check.json` under
+vlt's XDG state directory.
 
 ### `--update-check-interval`
 

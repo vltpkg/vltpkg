@@ -12,7 +12,7 @@ const { __CODE_SPLIT_SCRIPT_NAME, checkForUpdate } =
   )
 
 const state = {
-  registry: 'https://registry.npmjs.org/',
+  registry: 'https://registry.vlt.io/upstream/npm/',
   version: '1.0.0',
   lastCheck: 123,
 }
@@ -27,7 +27,7 @@ t.test(
       value: async (url: URL, init: RequestInit) => {
         t.equal(
           String(url),
-          'https://registry.npmjs.org/-/package/vlt/dist-tags',
+          'https://registry.vlt.io/upstream/npm/-/package/vlt/dist-tags',
         )
         t.equal(init.redirect, 'error')
         t.ok(init.signal)
