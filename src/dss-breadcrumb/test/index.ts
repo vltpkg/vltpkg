@@ -26,6 +26,14 @@ t.test('Breadcrumb', async t => {
       'test comment',
       'should extract full comment with delimiters',
     )
+
+    const commentBeforeCombinator = parseBreadcrumb('#a/* c */ > #b')
+    t.strictSame(
+      [...commentBeforeCombinator].map(i => i.value),
+      ['#a', '#b'],
+      'should accept a comment between an item and a combinator',
+    )
+    t.equal(commentBeforeCombinator.comment, 'c')
   })
 
   await t.test('error cases', async t => {
@@ -84,13 +92,6 @@ t.test('Breadcrumb', async t => {
       /Invalid query/,
       'should throw on a trailing combinator followed by a comment',
     )
-    const commentBeforeCombinator = parseBreadcrumb('#a/* c */ > #b')
-    t.strictSame(
-      [...commentBeforeCombinator].map(i => i.value),
-      ['#a', '#b'],
-      'should accept a comment between an item and a combinator',
-    )
-    t.equal(commentBeforeCombinator.comment, 'c')
 
     const semverBreadcrumb = parseBreadcrumb(':semver(1)')
     t.equal(
