@@ -136,6 +136,55 @@ t.test('load', async t => {
   t.matchSnapshot(objectLikeOutput(graph))
 })
 
+t.test('local tarballs load into the store', async t => {
+  const dir = joinDepIDTuple(['file', 'linked'])
+  const tgz = joinDepIDTuple(['file', 'tp-1.0.0.tgz'])
+  const lockfileData: LockfileData = {
+    lockfileVersion: 1,
+    options: {},
+    nodes: {
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      [dir]: [0, 'linked'],
+      [tgz]: [0, 'tp'],
+    } as Record<DepID, LockfileNode>,
+    edges: {
+      [edgeKey(['file', '.'], 'linked')]: 'prod file:./linked ' + dir,
+      [edgeKey(['file', '.'], 'tp')]:
+        'prod file:./tp-1.0.0.tgz ' + tgz,
+    } as LockfileEdges,
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
+    linked: {
+      'package.json': JSON.stringify({
+        name: 'linked',
+        version: '1.0.0',
+      }),
+    },
+    'tp-1.0.0.tgz': 'tarball',
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = load({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  t.equal(
+    graph.nodes.get(dir)?.location,
+    'linked',
+    'a directory is linked in place',
+  )
+  t.equal(
+    graph.nodes.get(tgz)?.location,
+    `./node_modules/.vlt/${tgz}/node_modules/tp`,
+    'a tarball is extracted into the store',
+  )
+  t.equal(graph.nodes.get(tgz)?.inVltStore(), true)
+})
+
 t.test('loadHidden', async t => {
   // split these out to verify TS will complain about them.
   // otherwise it stops at the first '': '' type error in the object.

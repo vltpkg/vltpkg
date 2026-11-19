@@ -1,3 +1,4 @@
+import { splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import {
@@ -9,7 +10,7 @@ import {
 } from '@vltpkg/spec'
 import { isRecordStringString } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
@@ -462,6 +463,19 @@ export const loadObject = (
     options.actual,
     options.throwOnMissingManifest,
   )
+  // a `file:` tarball is extracted into the store, only a directory is
+  // linked in place. the lockfile does not say which one a node is.
+  for (const node of graph.nodes.values()) {
+    if (!node.id.startsWith('file')) continue
+    const [, path] = splitDepID(node.id)
+    if (
+      statSync(resolve(options.projectRoot, path), {
+        throwIfNoEntry: false,
+      })?.isFile()
+    ) {
+      node.location = `./node_modules/.vlt/${node.id}/node_modules/${node.name}`
+    }
+  }
   // Skip interning when modifiers are active — they mutate Spec.overridden
   const specCache =
     options.modifiers || !options.specCache ?
