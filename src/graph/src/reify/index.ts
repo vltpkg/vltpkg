@@ -36,6 +36,8 @@ import { updatePackageJson } from './update-importers-package-json.ts'
 import { copyFileSync } from 'node:fs'
 import { binChmodAll } from './bin-chmod.ts'
 import { filterNodesByQuery } from '../filter-nodes-by-query.ts'
+import { removeInstallState } from '../install-state.ts'
+import type { InstallState } from '../install-state.ts'
 
 // How many extractions reify has in flight at once. An extraction is a
 // download followed by an unpack, so this also bounds the downloaded
@@ -62,6 +64,8 @@ export type ReifyOptions = LoadOptions & {
   savePrefix?: string
   /** store dirs of these nodes are never removed, eg the running vlt */
   keepNodes?: ReadonlySet<DepID>
+  /** records the tree for the next install's up-to-date check */
+  installState?: InstallState
 }
 
 export type ReifyResult = {
@@ -160,6 +164,7 @@ export const reify = async (
     if (pending.length) {
       res.buildQueue = pending
     }
+    options.installState?.saveNoop(diff, pending)
 
     done()
     return res
@@ -176,6 +181,7 @@ export const reify = async (
     remover.confirm()
     success = true
     res.buildQueue = buildQueue
+    options.installState?.save(graph)
   } finally {
     // Free the placement worker threads now that placement is done. A
     // failure here must not hide the install's own error or skip the
@@ -201,6 +207,9 @@ const reify_ = async (
 ): Promise<Omit<ReifyResult, 'diff'>> => {
   const res: Omit<ReifyResult, 'diff'> = {}
   const { packageInfo, packageJson, scurry, allowScripts } = options
+
+  // the tree is about to change
+  removeInstallState(options.projectRoot)
 
   // before anything else happens, grab the ideal tree as it was resolved
   // so that we can store it in the lockfile. We do this here so that
@@ -278,10 +287,9 @@ const reify_ = async (
     }
   }
   /* c8 ignore stop */
-  mark('reify:lockfile')
-  saveHidden(options)
 
-  // delete garbage from the store.
+  // delete garbage from the store, before the hidden lockfile says the
+  // tree is in place
   const rmActions: Promise<unknown>[] = deleteNodes(
     diff,
     remover,
@@ -290,6 +298,9 @@ const reify_ = async (
   )
   mark('reify:delete', { jobs: rmActions.length })
   if (rmActions.length) await Promise.all(rmActions)
+
+  mark('reify:lockfile')
+  const hidden = saveHidden(options)
 
   // updates package.json files if anything was added / removed
   saveImportersPackageJson?.()
@@ -306,7 +317,17 @@ const reify_ = async (
   }
 
   // write the ideal graph data to the lockfile
-  saveData(lfData, scurry.resolve('vlt-lock.json'), false)
+  const written = saveData(
+    lfData,
+    scurry.resolve('vlt-lock.json'),
+    false,
+  )
+  options.installState?.setReplay(
+    options.graph,
+    lfData,
+    hidden,
+    written,
+  )
 
   // update the store config reference if a config file was used
   if (scurry.lstatSync('vlt.json')) {
