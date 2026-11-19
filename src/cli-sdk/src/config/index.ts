@@ -381,8 +381,7 @@ export class Config {
         options as unknown as SpecOptions,
       ) as unknown as SpecOptions,
     )
-    // like npm, `registry` always has a value: default it to the URL
-    // bare specs resolve through
+    // like npm, default `registry` to the URL bare specs resolve through
     options.registry ??=
       options.registries[options['default-registry-alias']]
 
