@@ -180,13 +180,9 @@ const listsWorkspace = (file: string, dir: string): boolean => {
     ignore = ignore.filter(i => !posix.matchesGlob(pattern, i))
     patterns.push(pattern)
   }
-  return (
-    patterns.some(p => posix.matchesGlob(rel, p)) &&
-    !ignore.some(
-      i =>
-        posix.matchesGlob(rel, i) || posix.matchesGlob(`${rel}/`, i),
-    )
-  )
+  const matches = (p: string) =>
+    posix.matchesGlob(rel, p) || posix.matchesGlob(`${rel}/`, p)
+  return patterns.some(matches) && !ignore.some(matches)
 }
 
 export const find = (

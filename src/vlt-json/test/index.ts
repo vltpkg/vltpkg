@@ -347,6 +347,7 @@ t.test(
         workspaces: {
           packages: ['!packages/c', 'packages/*', '!packages/d/**'],
           apps: './apps/*',
+          tools: 'tools/*/',
         },
       }),
       packages: {
@@ -356,6 +357,7 @@ t.test(
         g: { '.git': {}, 'vlt.json': '{}' },
       },
       apps: { x: { 'vlt.json': '{}' } },
+      tools: { t: { 'vlt.json': '{}', src: {} } },
       other: {
         'vlt.json': JSON.stringify({ workspaces: 'w/*' }),
         w: { x: { 'vlt.json': '{}' } },
@@ -370,6 +372,7 @@ t.test(
     const cases: [from: string, project: string][] = [
       ['packages/a/src', '.'],
       ['apps/x', '.'],
+      ['tools/t/src', '.'],
       // excluded
       ['packages/c', 'packages/c'],
       ['packages/d', 'packages/d'],
