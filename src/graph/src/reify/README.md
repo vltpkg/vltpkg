@@ -35,8 +35,8 @@ const { diff, buildQueue } = await reify({
 
 1. Computes `Diff(actual, ideal)` — returns early if no changes
 2. Extracts new nodes to `.vlt` store (parallel), skipping optional
-   ones that are deprecated or can't install on this platform (and
-   deps only they need; `vlt-lock.json` keeps them)
+   ones that can't install on this platform (and deps only they need;
+   `vlt-lock.json` keeps them)
 3. Deletes outdated edges and their bin links
 4. Creates symlinks for new edges + bin links, then relinks bins that
    deleted edges removed but a remaining dependency declares

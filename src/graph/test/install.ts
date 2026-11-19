@@ -3096,8 +3096,8 @@ t.test('an options-only change is written', async t => {
 })
 
 // a project with a workspace, a dev dep, a file: dep, a dep left to
-// build, a supported optional dep and one pruned as deprecated, which
-// only the main lockfile keeps
+// build, a supported optional dep and one pruned for another cpu,
+// which only the main lockfile keeps
 const upToDateSetup = async (t: Test) => {
   const manifests: Record<string, Record<string, unknown>> = {
     abbrev: { name: 'abbrev', version: '2.0.0' },
@@ -3108,7 +3108,7 @@ const upToDateSetup = async (t: Test) => {
       scripts: { install: 'exit 1' },
     },
     opt: { name: 'opt', version: '1.0.0' },
-    gone: { name: 'gone', version: '1.0.0', deprecated: 'gone' },
+    gone: { name: 'gone', version: '1.0.0', cpu: ['wasm32'] },
   }
   const packageInfo = {
     async manifest(spec: Spec) {

@@ -126,6 +126,8 @@ t.test('isUnsupported', async t => {
     '1.0.0',
   )
   t.equal(isUnsupported(node), false, 'no manifest or platform data')
+  node.manifest = { name: 'bare', version: '1.0.0', deprecated: 'no' }
+  t.equal(isUnsupported(node), false, 'deprecated manifest')
   node.platform = { cpu: ['wasm32'] }
   t.equal(isUnsupported(node), true, 'lockfile platform data')
 })
@@ -181,12 +183,6 @@ t.test('pruneUnsupportedOptional', async t => {
     )
   })
 
-  t.test('deprecated', async t => {
-    const { diff, dep } = setup({ deprecated: 'no' })
-    pruneUnsupportedOptional(diff)
-    t.ok(diff.nodes.delete.has(dep))
-  })
-
   const kept: [
     string,
     Parameters<typeof setup>,
@@ -200,6 +196,7 @@ t.test('pruneUnsupportedOptional', async t => {
     ],
     ['extracted', [{ cpu: ['wasm32'] }], n => (n.extracted = true)],
     ['supported', [{}], () => {}],
+    ['deprecated', [{ deprecated: 'no' }], () => {}],
   ]
   for (const [name, args, mod] of kept) {
     t.test(`kept: ${name}`, async t => {

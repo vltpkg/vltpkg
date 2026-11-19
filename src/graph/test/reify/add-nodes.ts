@@ -125,31 +125,6 @@ const diff = {
         isOptional: isOptionalTrue,
         edgesIn: new Set(),
       }),
-      // this one is deprecated and it's optional, so skip it
-      node({
-        id: joinDepIDTuple([
-          'registry',
-          '',
-          'optional-deprecated@1.2.3',
-        ]),
-        inVltStore: inVltStoreTrue,
-        location:
-          './node_modules/.vlt/' +
-          joinDepIDTuple([
-            'registry',
-            '',
-            'optional-deprecated@1.2.3',
-          ]) +
-          '/node_modules/optional-deprecated',
-        name: 'optional-deprecated',
-        manifest: {
-          name: 'optional-deprecated',
-          version: '1.2.3',
-          deprecated: 'do not use this',
-        },
-        isOptional: isOptionalTrue,
-        edgesIn: new Set(),
-      }),
       // this one is already extracted, so skip it
       node({
         id: joinDepIDTuple([
