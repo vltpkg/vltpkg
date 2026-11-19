@@ -409,6 +409,11 @@ jobs:
       - pre-check
       - publish
     if: needs.publish.result == 'success' && needs.pre-check.outputs.dry-run != 'true'
+    permissions:
+      contents: read
+      # trusted publishing: vlt publish exchanges the job's OIDC token for a
+      # short-lived publish token, per package
+      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -480,9 +485,9 @@ jobs:
             exit 1
           fi
         env:
-          # VLT_REGISTRY sets the publish target and VLT_TOKEN is used for
-          # auth when VLT_REGISTRY matches the request origin (see auth.ts)
-          VLT_TOKEN: ${{ secrets.VLTPKG_REGISTRY_PUBLISH_TOKEN }}
+          # VLT_REGISTRY sets the publish target. Auth is trusted publishing:
+          # each @vltpkg/* package on the vlt registry trusts this workflow
+          # file (release.yml) in vltpkg/vltpkg, so no token secret is needed.
           VLT_REGISTRY: https://registry.vlt.io/vltpkg/main/
 
   on-publish-vlt-registry:
