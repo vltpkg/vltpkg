@@ -1608,6 +1608,7 @@ t.test('file-type directory deps placement leaves out', async t => {
         dependencies: {
           added: '^1.0.0',
           bundled: '^1.0.0',
+          empty: '',
           modified: '^1.0.0',
           ipsum: '^1.0.0',
           removed: '^1.0.0',
@@ -1624,7 +1625,8 @@ t.test('file-type directory deps placement leaves out', async t => {
   t.teardown(() => unload('project'))
 
   // the edges placement left: a modifier set `modified`, the optional
-  // peer `foo` has no provider, `ipsum` is the regular dependency
+  // peer `foo` has no provider, `ipsum` is the regular dependency,
+  // `empty` keeps its empty spec as an actual graph loads it
   const graph = new Graph({ projectRoot, mainManifest })
   const nestedSpec = Spec.parse('nested', 'file:./nested')
   const nested = graph.addNode(
@@ -1637,6 +1639,7 @@ t.test('file-type directory deps placement leaves out', async t => {
   for (const [name, bareSpec] of [
     ['modified', '2.0.0'],
     ['ipsum', '^1.0.0'],
+    ['empty', ''],
   ] as const) {
     const spec = Spec.parse(name, bareSpec)
     const node = graph.addNode(

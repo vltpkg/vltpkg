@@ -2863,12 +2863,13 @@ t.test(
       baz: bazManifest,
       ipsum: ipsumManifest,
       missing: missingManifest,
+      ms: { name: 'ms', version: '1.0.0' },
     }
     const packageInfo = {
       async manifest(spec: Spec) {
         if (spec.final.type === 'file') {
           return JSON.parse(
-            readFileSync('linked/package.json', 'utf8'),
+            readFileSync(`${spec.final.name}/package.json`, 'utf8'),
           ) as Manifest
         }
         return manifests[spec.final.name]
@@ -2890,6 +2891,12 @@ t.test(
           ...linked,
         }),
       },
+      other: {
+        'package.json': JSON.stringify({
+          name: 'other',
+          version: '1.0.0',
+        }),
+      },
     })
     const deps = { dependencies: { baz: '^1.0.0' } }
     const root = t.testdir({
@@ -2903,6 +2910,8 @@ t.test(
             bundled: '^1.0.0',
             ipsum: '^1.0.0',
             missing: '^1.0.0',
+            ms: '',
+            other: '../other',
           },
           devDependencies: { dev: '^1.0.0' },
           peerDependencies: { foo: '^1.0.0', ipsum: '1' },
@@ -2997,6 +3006,8 @@ t.test(
           `baz 1.0.0 ${joinDepIDTuple(['registry', '', 'baz@1.0.0', '#baz'])}`,
           'foo ^1.0.0 MISSING',
           `ipsum ^1.0.0 ${joinDepIDTuple(['registry', '', 'ipsum@1.0.0'])}`,
+          `ms * ${joinDepIDTuple(['registry', '', 'ms@1.0.0'])}`,
+          `other file:../other ${joinDepIDTuple(['file', 'other'])}`,
         ],
         'the edges placement left',
       )

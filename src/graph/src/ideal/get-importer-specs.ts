@@ -213,25 +213,25 @@ export const getImporterSpecs = (
       // add the dependencies that are missing from the graph
       for (const [depName, [depType, depSpec]] of declared) {
         const edge = node.edgesOut.get(depName)
-
-        // skip if the edge exists and already uses the same spec, or a
-        // spec a modifier set. dangling targets still need to be queued
-        // for the ideal rebuild, except an optional peer nothing provides
-        if (
-          edge &&
-          (edge.to?.modifier ||
-            (edge.spec.bareSpec === depSpec &&
-              (edge.to || edge.type === 'peerOptional')))
-        ) {
-          continue
-        }
-
         const type = shorten(depType, depName, manifest)
         let spec: Spec
         try {
           spec = Spec.parse(depName, depSpec, options)
         } catch (er) {
           throw asDependencySpecError(er, node, type)
+        }
+
+        // skip if the edge exists and already uses the same parsed spec
+        // (the lockfile saves an empty one as `*`), or a spec a modifier
+        // set. dangling targets still need to be queued for the ideal
+        // rebuild, except an optional peer nothing provides
+        if (
+          edge &&
+          (edge.to?.modifier ||
+            ((edge.spec.bareSpec || '*') === (spec.bareSpec || '*') &&
+              (edge.to || edge.type === 'peerOptional')))
+        ) {
+          continue
         }
 
         // a lone `#name` modifier of `-` keeps it out of the graph
