@@ -691,6 +691,17 @@ export const addEntriesToPeerContext = (
           const edge = dep.edgesOut.get(name)
           if (!edge?.to || edge.to === target) continue
           if (satisfiesEntrySpecs(edge.to, entry, dep)) continue
+          // never onto a target the edge's own spec rejects (modifiers)
+          if (
+            !satisfies(
+              target.id,
+              edge.spec,
+              dep.location,
+              dep.projectRoot,
+              monorepo,
+            )
+          )
+            continue
           dep.graph.mutations++
           edge.to.edgesIn.delete(edge)
           edge.to = target
