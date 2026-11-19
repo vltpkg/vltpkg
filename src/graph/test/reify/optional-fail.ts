@@ -194,6 +194,11 @@ t.test('pruneUnsupportedOptional', async t => {
     const { graph, dep, only, shared } = setup({ deprecated: 'no' })
     const data = lockfileData({ graph })
     t.strictSame(data.nodes[dep.id]?.[7], { deprecated: 'no' })
+    t.strictSame(
+      lockfileData({ graph, saveManifests: true }).nodes[dep.id]?.[7],
+      { deprecated: 'no' },
+      'hidden lockfile too',
+    )
     const options = {
       projectRoot: graph.projectRoot,
       mainManifest: { name: 'project', version: '1.0.0' },
