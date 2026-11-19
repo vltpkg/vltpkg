@@ -16,7 +16,7 @@ Auto-generated on install. Ensures reproducible installs, readable diffs, perfor
 
 **Entry points:**
 - `load.ts`: `load()` (from `vlt-lock.json`), `loadHidden()` (from hidden, sets `throwOnMissingManifest`), `loadObject()` (in-memory, merges lockfile options)
-- `save.ts`: `save()` (minimal), `saveHidden()` (with manifests+build data), `lockfileData()` (Graph→data)
+- `save.ts`: `save()` (minimal), `saveHidden()` (with manifests+build data; returns the data, removes `node_modules/.vlt/state.json` when it rewrites the file), `lockfileData()` (Graph→data), `saveData()` (writes only changed bytes, returns whether it wrote)
 
 **Support:** `types.ts` (formats, flag helpers), `load-nodes.ts`, `load-edges.ts`
 

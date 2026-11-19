@@ -2,6 +2,7 @@ import t from 'tap'
 import type { Test } from 'tap'
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -21,6 +22,7 @@ import type {
   AddImportersDependenciesMap,
   Dependency,
 } from '../src/dependencies.ts'
+import type { Graph } from '../src/graph.ts'
 import type { InstallOptions } from '../src/install.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
@@ -29,6 +31,7 @@ import { error } from '@vltpkg/error-cause'
 import { unload } from '@vltpkg/vlt-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo, workspaceCache } from '@vltpkg/workspaces'
+import * as output from '@vltpkg/output'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -2520,6 +2523,98 @@ t.test('install with frozenLockfile and changed options', async t => {
   )
 })
 
+t.test(
+  'a frozen install builds from the frozen check graph',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { 'strip-ansi': '^7.0.1' },
+      }),
+    })
+    t.chdir(projectRoot)
+    unload('project')
+    const realLoad = await import('../src/lockfile/load.ts')
+    const realIdeal = await import('../src/ideal/build.ts')
+    const loaded: Graph[] = []
+    // a clean install hands the old node_modules to a detached rm
+    // process, which holds the fixture on windows (EBUSY); keep it
+    // aside for tap to sweep
+    const RollbackRemoveMock = class extends RollbackRemove {
+      confirm() {}
+    }
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: RollbackRemoveMock,
+      },
+      '../src/lockfile/load.ts': {
+        ...realLoad,
+        load: (o: Parameters<typeof realLoad.load>[0]) => {
+          const graph = realLoad.load(o)
+          loaded.push(graph)
+          return graph
+        },
+      },
+    })
+    // the ideal build loads the lockfile itself
+    const { install: installReloading } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '@vltpkg/rollback-remove': {
+        RollbackRemove: RollbackRemoveMock,
+      },
+      '../src/ideal/build.ts': {
+        ...realIdeal,
+        build: (o: Parameters<typeof realIdeal.build>[0]) =>
+          realIdeal.build({ ...o, lockfileGraph: undefined }),
+      },
+    })
+    const opts = (extra?: Record<string, unknown>) =>
+      ({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        packageInfo: mockPackageInfo,
+        allowScripts: ':not(*)',
+        registries: { npm: 'https://registry.npmjs.org/' },
+        ...extra,
+      }) as unknown as InstallOptions
+    const ci = () =>
+      opts({
+        expectLockfile: true,
+        frozenLockfile: true,
+        cleanInstall: true,
+      })
+    const read = (f: string) =>
+      readFileSync(resolve(projectRoot, f), 'utf8')
+    const outputs = () => ({
+      lockfile: read('vlt-lock.json'),
+      hidden: JSON.parse(
+        read('node_modules/.vlt-lock.json'),
+      ) as unknown,
+    })
+
+    await install(opts())
+    await installReloading(ci())
+    const expected = outputs()
+
+    loaded.length = 0
+    const { graph } = await install(ci())
+    t.equal(loaded.length, 1, 'the lockfile is loaded once')
+    t.ok(graph === loaded[0], 'the ideal graph is the checked one')
+    t.strictSame(outputs(), expected, 'same lockfiles')
+
+    // node_modules is there: the ideal build hydrates from it
+    loaded.length = 0
+    await install(opts({ frozenLockfile: true }))
+    t.equal(loaded.length, 2, 'loaded again with an actual graph')
+    t.strictSame(outputs(), expected, 'lockfiles unchanged')
+  },
+)
+
 t.test('a legacy importer edge heals its type', async t => {
   const packageInfo = createMockPackageInfo()
   const projectRoot = t.testdir({
@@ -2847,6 +2942,10 @@ t.test('a bare workspace name saves workspace:*', async t => {
   const read = (f: string) =>
     readFileSync(resolve(projectRoot, f), 'utf8')
   const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  const edge = (f: string, key: string) =>
+    (JSON.parse(read(f)) as { edges: Record<string, string> }).edges[
+      key
+    ]
   const { install } = await import('../src/install.ts')
 
   await install(opts(), addB(joinDepIDTuple(['file', '.'])))
@@ -2854,9 +2953,9 @@ t.test('a bare workspace name saves workspace:*', async t => {
     dependencies: { b: 'workspace:*' },
   })
   for (const f of lockfiles) {
-    t.match(
-      read(f),
-      '"file~_d b": "prod workspace:* workspace~packages+b"',
+    t.equal(
+      edge(f, 'file~_d b'),
+      'prod workspace:* workspace~packages+b',
     )
   }
   await install(opts({ frozenLockfile: true }))
@@ -2869,9 +2968,9 @@ t.test('a bare workspace name saves workspace:*', async t => {
     dependencies: { b: 'workspace:*' },
   })
   for (const f of lockfiles) {
-    t.match(
-      read(f),
-      '"workspace~packages+c b": "prod workspace:* workspace~packages+b"',
+    t.equal(
+      edge(f, 'workspace~packages+c b'),
+      'prod workspace:* workspace~packages+b',
     )
   }
   await install(opts({ frozenLockfile: true }))
@@ -2995,6 +3094,496 @@ t.test('an options-only change is written', async t => {
     'frozen install passes right after',
   )
 })
+
+// a project with a workspace, a dev dep, a file: dep, a dep left to
+// build, a supported optional dep and one pruned as deprecated, which
+// only the main lockfile keeps
+const upToDateSetup = async (t: Test) => {
+  const manifests: Record<string, Record<string, unknown>> = {
+    abbrev: { name: 'abbrev', version: '2.0.0' },
+    ms: { name: 'ms', version: '2.1.3' },
+    built: {
+      name: 'built',
+      version: '1.0.0',
+      scripts: { install: 'exit 1' },
+    },
+    opt: { name: 'opt', version: '1.0.0' },
+    gone: { name: 'gone', version: '1.0.0', deprecated: 'gone' },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return spec.type === 'file' ?
+          JSON.parse(
+            readFileSync(
+              resolve(projectRoot, String(spec.file), 'package.json'),
+              'utf8',
+            ),
+          )
+        : manifests[spec.name]
+    },
+    async extract(spec: Spec, target: string) {
+      mkdirSync(target, { recursive: true })
+      writeFileSync(
+        resolve(target, 'package.json'),
+        JSON.stringify(manifests[spec.name]),
+      )
+      return { resolved: '', spec }
+    },
+    async warmTarPool() {},
+    async closeTarPool() {},
+  } as unknown as PackageInfoClient
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      dependencies: {
+        abbrev: '^2.0.0',
+        built: '^1.0.0',
+        local: 'file:./local',
+      },
+      devDependencies: { ms: '^2.1.0' },
+      optionalDependencies: { opt: '^1.0.0', gone: '^1.0.0' },
+    }),
+    'vlt.json': JSON.stringify({ workspaces: 'packages/*' }),
+    local: {
+      'package.json': JSON.stringify({
+        name: 'local',
+        version: '1.0.0',
+      }),
+    },
+    packages: {
+      w: {
+        'package.json': JSON.stringify({
+          name: 'w',
+          version: '1.0.0',
+          dependencies: { ms: '^2.1.0' },
+        }),
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  t.teardown(() => unload('project'))
+  // as if each install ran in a new process, after the fixture was made
+  t.intercept(performance, 'timeOrigin', {
+    get: () => Date.now() + 1000,
+  })
+  const opts = () => {
+    const packageJson = new PackageJson()
+    const scurry = new PathScurry(projectRoot)
+    return {
+      projectRoot,
+      scurry,
+      packageJson,
+      packageInfo,
+      allowScripts: ':not(*)',
+      registries: { npm: 'https://registry.npmjs.org/' },
+      monorepo: Monorepo.maybeLoad(projectRoot, {
+        packageJson,
+        scurry,
+      }),
+    } as unknown as InstallOptions
+  }
+  const checked = () => ({ ...opts(), upToDateCheck: true })
+  const file = (f: string) => resolve(projectRoot, f)
+  const lockfiles = ['vlt-lock.json', 'node_modules/.vlt-lock.json']
+  // build state of a node in the hidden lockfile
+  const hiddenBuildState = (name: string) =>
+    Object.entries(
+      (
+        JSON.parse(
+          readFileSync(file('node_modules/.vlt-lock.json'), 'utf8'),
+        ) as { nodes: Record<string, unknown[]> }
+      ).nodes,
+    ).find(([id]) => id.includes(`${name}@`))?.[1][9]
+  const calls = { actual: 0, build: 0, reify: 0 }
+  let failBuild = false
+  const actualLoad = await import('../src/actual/load.ts')
+  const idealBuild = await import('../src/ideal/build.ts')
+  const reify = await import('../src/reify/index.ts')
+  const { install } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '../src/actual/load.ts': {
+      ...actualLoad,
+      load: (o: Parameters<typeof actualLoad.load>[0]) => {
+        calls.actual++
+        return actualLoad.load(o)
+      },
+    },
+    '../src/ideal/build.ts': {
+      build: async (o: Parameters<typeof idealBuild.build>[0]) => {
+        calls.build++
+        if (failBuild) throw new Error('build failed')
+        return idealBuild.build(o)
+      },
+    },
+    '../src/reify/index.ts': {
+      reify: (o: Parameters<typeof reify.reify>[0]) => {
+        calls.reify++
+        return reify.reify(o)
+      },
+    },
+    // the instance the steps are listened to on
+    '@vltpkg/output': output,
+    // removed store dirs go to a detached process, which holds the
+    // fixture cwd on windows (EBUSY); let tap sweep them instead
+    '@vltpkg/rollback-remove': {
+      RollbackRemove: class extends RollbackRemove {
+        confirm() {}
+      },
+    },
+  })
+  const resetCalls = () => {
+    calls.actual = calls.build = calls.reify = 0
+  }
+  const setFailBuild = (fail: boolean) => {
+    failBuild = fail
+  }
+  return {
+    projectRoot,
+    install,
+    opts,
+    checked,
+    file,
+    lockfiles,
+    calls,
+    resetCalls,
+    setFailBuild,
+    hiddenBuildState,
+  }
+}
+
+t.test('an up-to-date install builds no graph', async t => {
+  const {
+    install,
+    opts,
+    checked,
+    file,
+    lockfiles,
+    calls,
+    resetCalls,
+  } = await upToDateSetup(t)
+  const first = await install(checked())
+  t.ok(first.graph, 'the first install builds the graph')
+  t.notOk(first.upToDate)
+  t.ok(existsSync(file('node_modules/.vlt/state.json')), 'state')
+  t.strictSame(calls, { actual: 1, build: 1, reify: 1 })
+
+  const mtimes = () => lockfiles.map(f => statSync(file(f)).mtimeMs)
+  const before = mtimes()
+  resetCalls()
+  const steps: string[] = []
+  const onStep = ({ step, state }: { step: string; state: string }) =>
+    steps.push(`${step} ${state}`)
+  output.emitter.on('graphStep', onStep)
+  t.teardown(() => output.emitter.off('graphStep', onStep))
+  const second = await install(checked())
+  t.strictSame(calls, { actual: 0, build: 0, reify: 0 }, 'no graph')
+  t.notOk(second.graph)
+  t.notOk(second.diff)
+  t.ok(second.upToDate)
+  t.strictSame(mtimes(), before, 'lockfiles left alone')
+  const hitSteps = steps.splice(0)
+  await install(opts())
+  t.strictSame(hitSteps, steps, 'the steps a full no-op reports')
+  t.equal(steps.length, 6)
+})
+
+t.test(
+  'an up-to-date install reports what a full no-op reports',
+  async t => {
+    const {
+      install,
+      opts,
+      checked,
+      file,
+      lockfiles,
+      calls,
+      resetCalls,
+    } = await upToDateSetup(t)
+    await install(checked())
+    const lock = readFileSync(file('vlt-lock.json'), 'utf8')
+    t.match(lock, 'gone@1.0.0', 'the pruned optional is locked')
+    t.notMatch(
+      readFileSync(file('node_modules/.vlt-lock.json'), 'utf8'),
+      'gone@1.0.0',
+      'but not installed',
+    )
+
+    const hit = await install(checked())
+    t.ok(hit.upToDate, 'recorded by the reifying install')
+
+    // a full no-op of the same tree
+    for (const f of lockfiles) utimesSync(file(f), 0, 0)
+    const full = await install(opts())
+    for (const f of lockfiles) {
+      t.equal(
+        statSync(file(f)).mtimeMs,
+        0,
+        `the full no-op left ${f}`,
+      )
+    }
+    t.equal(full.diff?.hasChanges(), true, 'an optional-only diff')
+    const replay = (r: typeof full) => ({
+      buildQueue: r.buildQueue,
+      upToDate: {
+        nodes: r.graph.nodes.size,
+        add: [...(r.diff?.nodes.add ?? [])]
+          .filter(n => !n.importer)
+          .map(n => (n.version ? [n.name, n.version] : [n.name])),
+      },
+    })
+    t.strictSame(
+      { buildQueue: hit.buildQueue, upToDate: hit.upToDate },
+      replay(full),
+    )
+    t.equal(hit.buildQueue?.length, 1, 'built is left to build')
+    t.strictSame(hit.upToDate?.add, [['gone', '1.0.0']])
+
+    // the full install removed the state; a no-op records it again
+    t.notOk(existsSync(file('node_modules/.vlt/state.json')))
+    resetCalls()
+    const noop = await install(checked())
+    t.ok(noop.graph, 'no state: the full path')
+    t.ok(existsSync(file('node_modules/.vlt/state.json')))
+    const again = await install(checked())
+    t.strictSame(calls, { actual: 1, build: 1, reify: 1 })
+    t.strictSame(
+      { buildQueue: again.buildQueue, upToDate: again.upToDate },
+      replay(full),
+      'recorded by the no-op',
+    )
+  },
+)
+
+t.test('changed inputs take the full path', async t => {
+  const { install, checked, file, calls, resetCalls, setFailBuild } =
+    await upToDateSetup(t)
+  await install(checked())
+
+  // rewritten as is, eg by `npm pkg delete packageManager`
+  writeFileSync(
+    file('package.json'),
+    readFileSync(file('package.json')),
+  )
+  t.ok((await install(checked())).upToDate, 'same bytes')
+
+  const pj = JSON.parse(
+    readFileSync(file('package.json'), 'utf8'),
+  ) as {
+    dependencies: Record<string, string>
+  }
+  delete pj.dependencies.abbrev
+  writeFileSync(file('package.json'), JSON.stringify(pj))
+  resetCalls()
+  const changed = await install(checked())
+  t.notOk(changed.upToDate)
+  t.strictSame(calls, { actual: 1, build: 1, reify: 1 })
+  t.notOk(existsSync(file('node_modules/abbrev')), 'removed')
+  t.ok((await install(checked())).upToDate, 'recorded again')
+
+  // a failed install leaves no state behind
+  writeFileSync(file('local/package.json'), '{"name":"local"}')
+  setFailBuild(true)
+  await t.rejects(install(checked()), { message: 'build failed' })
+  t.notOk(existsSync(file('node_modules/.vlt/state.json')))
+  setFailBuild(false)
+  t.notOk((await install(checked())).upToDate, 'no state to check')
+  t.ok((await install(checked())).upToDate)
+})
+
+t.test('a deleted dependency link is restored', async t => {
+  const { install, checked, file, hiddenBuildState } =
+    await upToDateSetup(t)
+  const first = await install(checked())
+  t.equal(hiddenBuildState('built'), 1, 'left to build')
+
+  rmSync(file('node_modules/abbrev'))
+  const repaired = await install(checked())
+  t.notOk(repaired.upToDate, 'not up to date')
+  t.ok(
+    lstatSync(file('node_modules/abbrev')).isSymbolicLink(),
+    'linked again',
+  )
+  t.strictSame(
+    repaired.buildQueue,
+    first.buildQueue,
+    'still to build',
+  )
+  t.equal(hiddenBuildState('built'), 1, 'still left to build')
+  t.ok((await install(checked())).upToDate, 'up to date again')
+
+  // an optional dep's link is not restored, as without a state
+  rmSync(file('node_modules/opt'))
+  t.notOk((await install(checked())).upToDate)
+  t.notOk(existsSync(file('node_modules/opt')), 'still missing')
+  t.notOk(
+    existsSync(file('node_modules/.vlt/state.json')),
+    'not recorded',
+  )
+})
+
+// installs a project as `vlt install` does, each run as if in a new
+// process after the fixture was made
+const checkedInstall = async (
+  t: Test,
+  projectRoot: string,
+  packageInfo: PackageInfoClient,
+) => {
+  t.chdir(projectRoot)
+  unload('project')
+  t.teardown(() => unload('project'))
+  t.intercept(performance, 'timeOrigin', {
+    get: () => Date.now() + 1000,
+  })
+  const { install } = await import('../src/install.ts')
+  return {
+    run: () =>
+      install(
+        {
+          projectRoot,
+          scurry: new PathScurry(projectRoot),
+          packageJson: new PackageJson(),
+          packageInfo,
+          allowScripts: ':not(*)',
+          registries: { npm: 'https://registry.npmjs.org/' },
+          upToDateCheck: true,
+        } as unknown as InstallOptions & { upToDateCheck: true },
+        Object.assign(new Map(), {
+          modifiedDependencies: false,
+        }) as AddImportersDependenciesMap,
+      ),
+    state: resolve(projectRoot, 'node_modules/.vlt/state.json'),
+  }
+}
+
+t.test('an unresolved optional dep is never recorded', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      dependencies: { abbrev: '^2.0.0' },
+      optionalDependencies: { flaky: '^1.0.0' },
+    }),
+    'vlt.json': '{}',
+  })
+  const manifests: Record<string, Record<string, unknown>> = {
+    abbrev: { name: 'abbrev', version: '2.0.0' },
+    flaky: { name: 'flaky', version: '1.0.0' },
+  }
+  let down = true
+  const asked: string[] = []
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      asked.push(spec.name)
+      if (spec.name === 'flaky' && down) {
+        throw error('503 Service Unavailable', { spec })
+      }
+      return manifests[spec.name]
+    },
+    async extract(spec: Spec, target: string) {
+      mkdirSync(target, { recursive: true })
+      writeFileSync(
+        resolve(target, 'package.json'),
+        JSON.stringify(manifests[spec.name]),
+      )
+      return { resolved: '', spec }
+    },
+    async warmTarPool() {},
+    async closeTarPool() {},
+  } as unknown as PackageInfoClient
+  const { run, state } = await checkedInstall(
+    t,
+    projectRoot,
+    packageInfo,
+  )
+
+  await run()
+  t.notOk(existsSync(state), 'not recorded by the reifying install')
+  asked.length = 0
+  t.notOk((await run()).upToDate, 'full path')
+  t.ok(asked.includes('flaky'), 'asked for again')
+  t.notOk(existsSync(state), 'not recorded by a no-op')
+
+  down = false
+  await run()
+  t.ok(
+    lstatSync(
+      resolve(projectRoot, 'node_modules/flaky'),
+    ).isSymbolicLink(),
+    'installed once it resolves',
+  )
+  t.ok((await run()).upToDate, 'then recorded')
+})
+
+t.test(
+  'a directory dep dev dep does not stop the record',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        dependencies: { local: 'file:./local' },
+      }),
+      'vlt.json': '{}',
+      local: {
+        'package.json': JSON.stringify({
+          name: 'local',
+          version: '1.0.0',
+          dependencies: { abbrev: '^2.0.0' },
+          devDependencies: { ms: '^2.1.0' },
+        }),
+      },
+    })
+    const manifests: Record<string, Record<string, unknown>> = {
+      abbrev: { name: 'abbrev', version: '2.0.0' },
+      ms: { name: 'ms', version: '2.1.3' },
+    }
+    const asked: string[] = []
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        asked.push(spec.name)
+        return spec.type === 'file' ?
+            JSON.parse(
+              readFileSync(
+                resolve(
+                  projectRoot,
+                  String(spec.file),
+                  'package.json',
+                ),
+                'utf8',
+              ),
+            )
+          : manifests[spec.name]
+      },
+      async extract(spec: Spec, target: string) {
+        mkdirSync(target, { recursive: true })
+        writeFileSync(
+          resolve(target, 'package.json'),
+          JSON.stringify(manifests[spec.name]),
+        )
+        return { resolved: '', spec }
+      },
+      async warmTarPool() {},
+      async closeTarPool() {},
+    } as unknown as PackageInfoClient
+    const { run, state } = await checkedInstall(
+      t,
+      projectRoot,
+      packageInfo,
+    )
+
+    await run()
+    t.ok(existsSync(state), 'recorded by the reifying install')
+    t.ok((await run()).upToDate, 'then a hit')
+    t.notOk(asked.includes('ms'), 'the dev dep is never asked for')
+    t.notOk(
+      existsSync(resolve(projectRoot, 'local/node_modules/ms')),
+      'nor installed',
+    )
+  },
+)
 
 t.test('a project with modifiers stays in sync', async t => {
   const projectRoot = t.testdir({

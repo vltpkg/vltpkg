@@ -1,7 +1,10 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { graphRun } from '@vltpkg/graph-run'
+import type { RunnerOptions } from '@vltpkg/graph-run'
 import { PackageJson } from '@vltpkg/package-json'
 import type { RunOptions } from '@vltpkg/run'
+import { Spec } from '@vltpkg/spec'
 import { normalizeManifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import * as FSP from 'node:fs/promises'
@@ -9,8 +12,10 @@ import * as FS from 'node:fs'
 import { basename, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import type { Test } from 'tap'
 import { Diff } from '../../src/diff.ts'
 import { actual } from '../../src/index.ts'
+import type { Node } from '../../src/node.ts'
 
 const runs: RunOptions[] = []
 t.beforeEach(() => (runs.length = 0))
@@ -255,6 +260,252 @@ t.test(
         ),
       ]),
     )
+  },
+)
+
+// build() with getDeps recording every node it walks
+const walkingBuild = async (t: Test, walked: string[]) =>
+  (
+    await t.mockImport<typeof import('../../src/reify/build.ts')>(
+      '../../src/reify/build.ts',
+      {
+        '@vltpkg/run': { run: mockRun },
+        'node:fs/promises': mockFSP,
+        '@vltpkg/graph-run': {
+          graphRun: (o: RunnerOptions<Node, unknown>) =>
+            graphRun({
+              ...o,
+              getDeps: (n: Node) => {
+                walked.push(n.name)
+                return o.getDeps(n)
+              },
+            }),
+        },
+      },
+    )
+  ).build
+
+const loadProject = (projectRoot: string) =>
+  actual.load({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    packageJson: new PackageJson(),
+    scurry: new PathScurry(projectRoot),
+    loadManifests: true,
+  })
+
+t.test('walks only the importers when no script may run', async t => {
+  const aid = joinDepIDTuple(['registry', '', 'a@1.2.3'])
+  const yid = joinDepIDTuple(['registry', '', 'y@1.2.3'])
+  const projectRoot = t.testdir({
+    src: {
+      app: {
+        'package.json': JSON.stringify({
+          name: 'app',
+          version: '1.2.3',
+          dependencies: { y: '' },
+          scripts: { postprepare: 'true' },
+        }),
+        node_modules: {
+          y: t.fixture(
+            'symlink',
+            '../../../node_modules/.vlt/' + yid + '/node_modules/y',
+          ),
+        },
+      },
+    },
+    'package.json': JSON.stringify({
+      name: 'project',
+      version: '1.2.3',
+      dependencies: { a: '' },
+    }),
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+    node_modules: {
+      a: t.fixture('symlink', './.vlt/' + aid + '/node_modules/a'),
+      '.vlt': {
+        [aid]: {
+          node_modules: {
+            a: {
+              'package.json': JSON.stringify({
+                name: 'a',
+                version: '1.2.3',
+                scripts: { install: 'true' },
+              }),
+            },
+          },
+        },
+        [yid]: {
+          node_modules: {
+            y: {
+              'package.json': JSON.stringify({
+                name: 'y',
+                version: '1.2.3',
+                scripts: { install: 'true' },
+              }),
+            },
+          },
+        },
+      },
+    },
+  })
+  const walked: string[] = []
+  const build = await walkingBuild(t, walked)
+  // y was added, a was already there
+  const before = loadProject(projectRoot)
+  const by = before.nodes.get(yid)
+  if (!by) throw new Error('no y node in before??')
+  before.removeNode(by)
+  const diff = new Diff(before, loadProject(projectRoot))
+
+  const buildWith = async (allow: DepID[]) => {
+    walked.length = 0
+    runs.length = 0
+    const result = await build(
+      diff,
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set(allow),
+    )
+    return {
+      walked: [...walked].sort(),
+      runs: runs.map(r => `${r.arg0} ${basename(r.cwd)}`).sort(),
+      success: result.success.map(n => n.name),
+      failure: result.failure.map(n => n.name),
+    }
+  }
+
+  const importersOnly = {
+    walked: ['app', 'project'],
+    runs: ['prepare app'],
+    success: [],
+    failure: [],
+  }
+  t.strictSame(await buildWith([]), importersOnly, 'nothing allowed')
+  t.strictSame(
+    await buildWith([aid]),
+    importersOnly,
+    'only a dependency that was not added is allowed',
+  )
+  t.strictSame(
+    await buildWith([yid]),
+    {
+      walked: ['a', 'app', 'project', 'y'],
+      runs: ['install y', 'prepare app'],
+      success: ['y'],
+      failure: [],
+    },
+    'an added dependency is allowed: full walk',
+  )
+  const app = diff.to.nodes.get(
+    joinDepIDTuple(['workspace', 'src/app']),
+  )
+  if (!app) throw new Error('no app workspace??')
+  diff.nodes.add.add(app)
+  t.strictSame(
+    await buildWith([app.id]),
+    importersOnly,
+    'an added importer is allowed',
+  )
+})
+
+t.test(
+  'an importer reached through a dependency waits for it',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'project',
+        version: '1.2.3',
+        scripts: { prepare: 'true' },
+      }),
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      src: {
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.2.3',
+            scripts: { prepare: 'true' },
+          }),
+        },
+      },
+    })
+    const walked: string[] = []
+    const build = await walkingBuild(t, walked)
+    // project -> tools (a nested folder, not an importer) -> b
+    const graph = loadProject(projectRoot)
+    const b = graph.nodes.get(joinDepIDTuple(['workspace', 'src/b']))
+    if (!b) throw new Error('no b workspace??')
+    const tools = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('tools', 'file:./tools'),
+      { name: 'tools', version: '1.2.3' },
+      joinDepIDTuple(['file', 'tools']),
+    )
+    if (!tools) throw new Error('no tools node??')
+    graph.addEdge('prod', Spec.parse('b', 'workspace:*'), tools, b)
+
+    const result = await build(
+      new Diff(loadProject(projectRoot), graph),
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set(),
+    )
+    t.strictSame([...walked].sort(), ['b', 'project', 'tools'])
+    t.strictSame(
+      runs.map(r => basename(r.cwd)),
+      ['b', basename(projectRoot)],
+      'b is prepared before the project',
+    )
+    t.strictSame(result, { success: [], failure: [] })
+  },
+)
+
+t.test(
+  'an importer waits for the importer it depends on',
+  async t => {
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'project',
+        version: '1.2.3',
+        scripts: { prepare: 'true' },
+      }),
+      'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
+      src: {
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.2.3',
+            scripts: { prepare: 'true' },
+          }),
+        },
+      },
+    })
+    const walked: string[] = []
+    const build = await walkingBuild(t, walked)
+    // project -> b, both importers
+    const graph = loadProject(projectRoot)
+    const b = graph.nodes.get(joinDepIDTuple(['workspace', 'src/b']))
+    if (!b) throw new Error('no b workspace??')
+    graph.addEdge(
+      'prod',
+      Spec.parse('b', 'workspace:*'),
+      graph.mainImporter,
+      b,
+    )
+
+    const result = await build(
+      new Diff(loadProject(projectRoot), graph),
+      new PackageJson(),
+      new PathScurry(projectRoot),
+      new Set(),
+    )
+    t.strictSame([...walked].sort(), ['b', 'project'])
+    t.strictSame(
+      runs.map(r => basename(r.cwd)),
+      ['b', basename(projectRoot)],
+      'b is prepared before the project',
+    )
+    t.strictSame(result, { success: [], failure: [] })
   },
 )
 

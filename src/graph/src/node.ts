@@ -7,6 +7,7 @@ import {
 } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
+import { isPathSafeName } from '@vltpkg/spec'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import {
   brotliTarballName,
@@ -324,9 +325,36 @@ export class Node implements NodeLike {
     const { cwd } = scurry
     const m = this.#resolvedLoc
     if (m?.loc === loc && m.cwd === cwd) return m.path
-    const path = cwd.resolve(loc).fullpath()
+    const path =
+      this.#storePath(loc, cwd) ?? cwd.resolve(loc).fullpath()
     this.#resolvedLoc = { loc, cwd, path }
     return path
+  }
+
+  /**
+   * The default store location joined as a string, skipping path-scurry's
+   * linear scan of every entry in `node_modules/.vlt`. Only where that is
+   * the exact path scurry would return: a case-sensitive scurry (a nocase
+   * one keeps the first spelling it saw) and a path-safe ASCII id + name
+   * (scurry matches names by their NFKD form).
+   */
+  #storePath(loc: string, cwd: PathBase): string | undefined {
+    const { id, name } = this
+    if (
+      cwd.nocase ||
+      loc !== `./node_modules/.vlt/${id}/node_modules/${name}` ||
+      !isPathSafeName(name) ||
+      /[\u0080-\uffff]/.test(id + name)
+    ) {
+      return undefined
+    }
+    const { sep } = cwd
+    const dir = cwd.parent ? cwd.fullpath() + sep : cwd.fullpath()
+    return (
+      dir +
+      `node_modules${sep}.vlt${sep}${id}${sep}node_modules${sep}` +
+      name.replace('/', sep)
+    )
   }
 
   /**

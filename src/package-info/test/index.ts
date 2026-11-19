@@ -4241,6 +4241,34 @@ t.test('cache manifests', async t => {
     )
   })
 
+  await t.test('different cache keys for libc', async t => {
+    // clean up current cache directory
+    await rm(pathResolve(xdgDir, 'package-info'), {
+      recursive: true,
+      force: true,
+    })
+
+    const pi = new PackageInfoClient(opts)
+
+    // same spec, lookups differ only in libc
+    const mani1 = await pi.manifest('abbrev@2.0.0', { libc: 'glibc' })
+    const mani2 = await pi.manifest('abbrev@2.0.0', { libc: 'musl' })
+    t.strictSame(
+      mani1,
+      pakuAbbrev.versions['2.0.0'],
+      'glibc manifest',
+    )
+    t.strictSame(mani2, pakuAbbrev.versions['2.0.0'], 'musl manifest')
+
+    // cache writes are not awaited in the implementation so here
+    // we need to wait a bit to make sure the files were written
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const filesAfter = await readdir(
+      pathResolve(xdgDir, 'package-info'),
+    ).catch(() => [])
+    t.equal(filesAfter.length, 2, 'one cache file per libc')
+  })
+
   await t.test('cache only applies to registry specs', async t => {
     // clean up current cache directory
     await rm(pathResolve(xdgDir, 'package-info'), {

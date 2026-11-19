@@ -153,27 +153,38 @@ const replaceWorkspaceAndCatalogSpecs = (
   return manifest
 }
 
+// npm's default ignore rules (the entries that ignore case) apply at any
+// depth, like npm; `^` entries match the package root only
 const alwaysExcludePatterns = [
-  /^\.?\/?\.git(\/|$)/,
+  /(^|\/)(\.git|\.svn|\.hg|CVS)(\/|$)/i,
   /^\.?\/?node_modules(\/|$)/,
   /^\.?\/?\.nyc_output(\/|$)/,
   /^\.?\/?coverage(\/|$)/,
   /^\.?\/?\.vscode(\/|$)/,
   /^\.?\/?\.idea(\/|$)/,
-  /^\.?\/?\.DS_Store$/,
-  /^\.?\/?\.npmrc$/,
-  /^\.?\/?\.gitignore$/,
-  /^\.?\/?\.npmignore$/,
+  /(^|\/)\.DS_Store(\/|$)/i,
+  /(^|\/)\.npmrc(\/|$)/i,
+  /(^|\/)\.gitignore(\/|$)/i,
+  /(^|\/)\.npmignore(\/|$)/i,
+  /(^|\/)npm-debug\.log(\/|$)/i,
+  /(^|\/)\._/i,
+  /(^|\/)\.lock-wscript(\/|$)/i,
+  /(^|\/)\.wafpickle-/i,
+  /(^|\/)build\/config\.gypi(\/|$)/i,
+  /(^|\/)archived-packages(\/|$)/i,
+  /\.orig(\/|$)/i,
   /^\.?\/?\.editorconfig$/,
   /^\.?\/?package-lock\.json$/,
+  /^\.?\/?npm-shrinkwrap\.json$/,
   /^\.?\/?yarn\.lock$/,
   /^\.?\/?pnpm-lock\.yaml$/,
   /^\.?\/?bun\.lockb$/,
   /^\.?\/?bun\.lock$/,
   /^\.?\/?vlt-lock\.json$/,
   /^\.?\/?vlt\.json$/,
+  /^\.?\/?\.npm-extension\.[cm]js$/,
   /~$/,
-  /\.swp$/,
+  /\.swp$/i,
   /\.tgz$/,
 ]
 
@@ -238,11 +249,18 @@ export const buildPackFilter = (
     }
   }
 
-  // `files` entries are normalized like npm does: a leading `./` or `/`
-  // and trailing slashes are dropped, empty entries are skipped
+  // `files` entries are normalized like npm does: a leading `!` marks an
+  // exclude, a leading `./` or `/` and trailing slashes are dropped,
+  // empty entries are skipped
   const files = (manifestWithFiles.files ?? [])
-    .map(pattern => pattern.replace(/^\.?\//, '').replace(/\/+$/, ''))
-    .filter(Boolean)
+    .map(entry => ({
+      negate: entry.startsWith('!'),
+      pattern: entry
+        .replace(/^!+/, '')
+        .replace(/^\.?\//, '')
+        .replace(/\/+$/, ''),
+    }))
+    .filter(({ pattern }) => pattern)
 
   // dirs that only partially match a `files` glob (e.g. `dist/nested` for
   // `dist/**/*.js`) are descended, unless unreadable: npm's glob expansion
@@ -289,22 +307,30 @@ export const buildPackFilter = (
     }
 
     if (hasFilesField) {
+      // the last matching entry wins, like npm does; a dir is still
+      // descended when a later positive entry partially matches it
       const isDir = 'isDirectory' in entry && entry.isDirectory()
-      return (
-        files.some(
-          pattern =>
-            minimatch(normalizedPath, pattern, { dot: true }) ||
-            minimatch(normalizedPath, `${pattern}/**`, { dot: true }),
-        ) ||
-        (isDir &&
-          files.some(pattern =>
-            minimatch(normalizedPath, pattern, {
-              dot: true,
-              partial: true,
-            }),
-          ) &&
-          isReadableDir(normalizedPath))
-      )
+      let included = false
+      let descend = false
+      for (const { negate, pattern } of files) {
+        if (
+          minimatch(normalizedPath, pattern, { dot: true }) ||
+          minimatch(normalizedPath, `${pattern}/**`, { dot: true })
+        ) {
+          included = !negate
+          descend = false
+        } else if (
+          isDir &&
+          !negate &&
+          minimatch(normalizedPath, pattern, {
+            dot: true,
+            partial: true,
+          })
+        ) {
+          descend = true
+        }
+      }
+      return included || (descend && isReadableDir(normalizedPath))
     }
 
     // Ignore-file mode: apply .npmignore or .gitignore deny patterns

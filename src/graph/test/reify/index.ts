@@ -21,7 +21,8 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs'
-import { resolve } from 'node:path'
+import type { symlink } from 'node:fs'
+import { basename, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -40,7 +41,9 @@ import type {
   LockfileNode,
 } from '../../src/index.ts'
 import { actual, ideal, reify } from '../../src/index.ts'
+import type { InstallState } from '../../src/install-state.ts'
 import { loadObject } from '../../src/lockfile/load.ts'
+import { symlinkSyncMkdirp } from '../../src/reify/symlink-sync.ts'
 import {
   fixtureManifest,
   mockPackageInfo as mockPackageInfoBase,
@@ -891,12 +894,14 @@ t.test('unsupported optional subtree is never placed', async t => {
   const remover = new RollbackRemove()
   const rm = remover.rm.bind(remover)
   const existing: string[] = []
+  const calls: string[] = []
   remover.rm = async (path: string) => {
+    calls.push(path)
     if (lstatSync(path, { throwIfNoEntry: false }))
       existing.push(path)
     return rm(path)
   }
-  await reify({
+  const res = await reify({
     ...opts,
     packageInfo: createMockPackageInfo({
       async extract(
@@ -946,6 +951,15 @@ t.test('unsupported optional subtree is never placed', async t => {
   t.strictSame(links, ['minipass'], 'only the shared dep hoisted')
   t.ok(statSync(resolve(hoisted, 'minipass')), 'hoist link resolves')
   t.strictSame(existing, [], 'nothing on disk moved away')
+  t.strictSame(
+    calls,
+    [],
+    'no removal attempted for never placed nodes',
+  )
+  t.ok(
+    [...res.diff.nodes.delete].some(n => n.id === glob.id),
+    'glob still reported as deleted',
+  )
 
   const lockfile = JSON.parse(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
@@ -965,6 +979,61 @@ t.test('unsupported optional subtree is never placed', async t => {
   t.notOk(
     hidden.edges[`${glob.id} path-scurry`],
     'hidden lockfile drops glob edges',
+  )
+})
+
+t.test('scoped links need no mkdir fallback', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { glob: '11' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const opts = () => ({
+    projectRoot,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+    remover: new RollbackRemove(),
+  })
+  const links: string[] = []
+  const noParent: string[] = []
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    '../../src/reify/symlink-sync.ts': {
+      symlinkSyncMkdirp: (
+        target: string,
+        link: string,
+        type?: symlink.Type,
+      ) => {
+        links.push(link)
+        if (!existsSync(dirname(link))) noParent.push(link)
+        symlinkSyncMkdirp(target, link, type)
+      },
+    },
+  })
+  const graph = await ideal.build(opts())
+  await reify({ ...opts(), graph, allowScripts: ':not(*)' })
+  const scoped = (l: string) => basename(dirname(l)).startsWith('@')
+  t.ok(
+    links.some(l => l.endsWith(join('@isaacs', 'cliui'))),
+    'scoped deps linked',
+  )
+  t.strictSame(
+    noParent.filter(scoped),
+    [],
+    'scope dirs made before linking',
   )
 })
 
@@ -1315,6 +1384,97 @@ t.test('keepNodes reach deleteNodes', async t => {
     keepNodes,
   })
   t.equal(kept, keepNodes)
+})
+
+t.test('the install state is written last', async t => {
+  const dir = t.testdir({
+    project: {
+      'vlt.json': JSON.stringify({ monorepo: { packages: [] } }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        dependencies: { lodash: '4' },
+      }),
+    },
+  })
+  const projectRoot = resolve(dir, 'project')
+  const options = {
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  }
+  const graph = await ideal.build({
+    ...options,
+    remover: new RollbackRemove(),
+  })
+  const order: string[] = []
+  const save = await import('../../src/lockfile/save.ts')
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
+    '../../src/reify/delete-nodes.ts': {
+      deleteNodes: () => {
+        order.push('deleteNodes')
+        return []
+      },
+    },
+    '../../src/lockfile/save.ts': {
+      ...save,
+      saveHidden: (o: Parameters<typeof save.saveHidden>[0]) => {
+        order.push('saveHidden')
+        return save.saveHidden(o)
+      },
+    },
+    '../../src/install-state.ts': {
+      removeInstallState: () => order.push('remove state'),
+    },
+  })
+  const installState = {
+    setReplay: (...args: unknown[]) =>
+      order.push(`replay ${args[3]}`),
+    save: () => order.push('save'),
+    saveNoop: (...args: unknown[]) =>
+      order.push(`save noop ${JSON.stringify(args[1])}`),
+  } as unknown as InstallState
+  class Remover extends RollbackRemove {
+    confirm() {
+      order.push('confirm')
+      super.confirm()
+    }
+  }
+  await reify({
+    ...options,
+    graph,
+    allowScripts: ':not(*)',
+    remover: new Remover(),
+    installState,
+  })
+  t.strictSame(order, [
+    'remove state',
+    'deleteNodes',
+    'saveHidden',
+    'replay true',
+    'confirm',
+    'save',
+  ])
+
+  order.length = 0
+  await reify({
+    ...options,
+    graph,
+    allowScripts: ':not(*)',
+    remover: new Remover(),
+    installState,
+  })
+  t.strictSame(
+    order,
+    // a stale graph's lockfiles are written first
+    ['saveHidden', 'save noop []'],
+    'nothing to reify',
+  )
 })
 
 t.test(
@@ -2286,4 +2446,64 @@ t.test('a moved git pin is re-extracted in place', async t => {
   t.notOk(existsSync(resolve(store, 'b')), 'old package dir removed')
   t.ok(existsSync(resolve(store, 'dep-link')), 'store dir kept')
   t.ok(existsSync(resolve(nm, '.bin/bc')), 'renamed: bin linked')
+})
+
+t.test('a dependency missing from the lockfile fails', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'x',
+      version: '1.0.0',
+      dependencies: { a: '1' },
+    }),
+  })
+  const id = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+  const packageInfo = createMockPackageInfo({
+    async extract(
+      spec: Spec | string,
+      target: string,
+    ): Promise<Resolution> {
+      mkdirSync(target, { recursive: true })
+      writeFileSync(
+        resolve(target, 'package.json'),
+        JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+          dependencies: { b: '1' },
+        }),
+      )
+      return { resolved: 'a.tgz', spec: spec as Spec }
+    },
+  })
+  const opts = {
+    projectRoot: dir,
+    packageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(dir),
+    scurry: new PathScurry(dir),
+    packageJson: new PackageJson(),
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  }
+  // `a` has no edge for its dependency `b`
+  const graph = loadObject(
+    { ...opts, mainManifest: { name: 'x', version: '1.0.0' } },
+    {
+      lockfileVersion: 1,
+      options: {},
+      nodes: {
+        [id]: [0, 'a', 'sha512-a=='],
+      } as Record<DepID, LockfileNode>,
+      edges: {
+        [`${joinDepIDTuple(['file', '.'])} a`]: `prod 1 ${id}`,
+      } as LockfileEdges,
+    },
+  )
+  await t.rejects(reify({ ...opts, graph }), {
+    message:
+      /depends on b, which is missing from vlt-lock\.json\. Run `vlt update a` to repair it\.$/,
+  })
+  t.notOk(
+    existsSync(resolve(dir, 'vlt-lock.json')),
+    'lockfile not written',
+  )
 })

@@ -396,6 +396,9 @@ t.test('intersects', t => {
     ['1.2.3-alpha', '1.2.3-beta', false],
     ['^1.2.3-alpha', '1.2.3-alpha.1', true, true], // With prerelease flag
     ['^1.2.3-alpha', '1.2.3-alpha.1', true, false], // Without prerelease flag - should still intersect as both have prereleases
+    ['15.5.0-alpha.0', '^15.0.0', false], // prerelease pin outside a release range
+    ['1.5.0-rc.1', '1.x', false],
+    ['1.5.0-rc.1', '*', true], // `*` shortcut kept: npm accepts a bare `*` first
   ]
 
   for (const [r1, r2, expected, includePrerelease] of cases) {
@@ -662,13 +665,13 @@ t.test('intersects', t => {
     // Edge cases with very low versions
     t.equal(
       intersects('<0.0.0', '<0.1.0'),
-      true,
-      'Both less than - they intersect since <0.0.0 is subset of <0.1.0',
+      false,
+      '<0.0.0 matches no version',
     )
     t.equal(
       intersects('<0.1.0', '<0.0.0'),
-      true,
-      'Both less than - they intersect since <0.0.0 is subset of <0.1.0',
+      false,
+      '<0.0.0 matches no version',
     )
 
     // Boundary conditions that might trigger special logic
@@ -994,6 +997,16 @@ t.test('subset', t => {
     subset('>=1.0.0', 'invalid'),
     false,
     'invalid second range returns false',
+  )
+  t.equal(
+    subset('15.5.0-alpha.0', '^15.0.0'),
+    false,
+    'prerelease pin is not a subset of a release range',
+  )
+  t.equal(
+    subset('^18.0.0-rc.0', '>=16.8.0'),
+    false,
+    'prerelease range is not a subset of a release range',
   )
   t.equal(
     subset('1.0.0', '1.0.0'),

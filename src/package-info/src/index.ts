@@ -1188,6 +1188,9 @@ export class PackageInfoClient {
     if (options.arch) {
       extra += `${delimiter}arch:${options.arch}`
     }
+    if (options.libc) {
+      extra += `${delimiter}libc:${options.libc}`
+    }
     return encodeURIComponent(
       `${spec.registry ?? ''}${delimiter}${spec}${extra}`,
     )

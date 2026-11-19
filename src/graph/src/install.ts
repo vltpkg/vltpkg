@@ -4,6 +4,7 @@ import { reify } from './reify/index.ts'
 import { GraphModifier } from './modifiers.ts'
 import { init } from '@vltpkg/init'
 import { error } from '@vltpkg/error-cause'
+import { graphStep } from '@vltpkg/output'
 import type { NormalizedManifest } from '@vltpkg/types'
 import { asError } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
@@ -31,6 +32,10 @@ import type { Diff } from './diff.ts'
 import { assertSkillsDirs } from './skills/dirs.ts'
 import { assertQuery } from './filter-nodes-by-query.ts'
 import type { LinkSkillsResult } from './skills/index.ts'
+import { detachLinks, startInstallState } from './install-state.ts'
+import type { UpToDate } from './install-state.ts'
+
+export type { UpToDate }
 
 export type InstallOptions = LoadOptions & {
   packageInfo: PackageInfoClient
@@ -64,10 +69,34 @@ export type InstallResult = {
   skills?: LinkSkillsResult
 }
 
-export const install = async (
-  options: InstallOptions,
+/**
+ * Result of {@link install} with `upToDateCheck`: no graph when the
+ * tree was up to date.
+ */
+export type CheckedInstallResult = Omit<InstallResult, 'graph'> & {
+  graph?: Graph
+  /** set when the tree was up to date and no graph was built */
+  upToDate?: UpToDate
+}
+
+/**
+ * With `upToDateCheck`, an install whose inputs and tree are as the
+ * last one left them returns what a full no-op reports, without loading
+ * or building any graph, and every other install records the tree for
+ * the next one. `vlt install` sets it.
+ */
+export function install(
+  options: InstallOptions & { upToDateCheck: boolean },
   add?: AddImportersDependenciesMap,
-): Promise<InstallResult> => {
+): Promise<CheckedInstallResult>
+export function install(
+  options: InstallOptions & { upToDateCheck?: false },
+  add?: AddImportersDependenciesMap,
+): Promise<InstallResult>
+export async function install(
+  options: InstallOptions & { upToDateCheck?: boolean },
+  add?: AddImportersDependenciesMap,
+): Promise<CheckedInstallResult> {
   // Validate incompatible options
   if (options.lockfileOnly && options.cleanInstall) {
     throw error(
@@ -125,6 +154,20 @@ export const install = async (
     scurry: options.scurry,
   })
 
+  const state = startInstallState({
+    ...options,
+    fullMonorepo,
+    add,
+    allowSkills,
+  })
+  if (state.hit) {
+    // the steps a full no-op goes through
+    for (const step of ['actual', 'build', 'reify'] as const) {
+      graphStep(step)()
+    }
+    return state.hit
+  }
+
   const specCache: SpecCache = new Map()
   const lockfileData =
     options.frozenLockfile ? loadData(options.projectRoot) : undefined
@@ -133,6 +176,7 @@ export const install = async (
   // which dependency specs the modifiers govern
   const modifiers = GraphModifier.maybeLoad(options)
 
+  let frozenGraph: Graph | undefined
   if (options.frozenLockfile) {
     // validates no add/remove operations are requested
     if (add?.modifiedDependencies) {
@@ -261,6 +305,7 @@ export const install = async (
         },
       )
     }
+    frozenGraph = lockfileGraph
   }
 
   // an explicit add of a dep a `-` modifier removes fails before
@@ -317,6 +362,8 @@ export const install = async (
       monorepo: fullMonorepo,
       specCache,
     })
+    // links the last install made but the tree lost are made again
+    detachLinks(act, state.links)
     // if the actual graph has no dependencies, it's simpler to ignore it
     // this allows us to check for its availability later on for properly
     // handling situations like resetting edges for refreshing the ideal graph
@@ -335,6 +382,8 @@ export const install = async (
       monorepo: fullMonorepo,
       specCache,
       lockfileData,
+      // with no actual graph, the ideal build would load the same one
+      lockfileGraph: act ? undefined : frozenGraph,
     })
 
     // If lockfileOnly is enabled, skip reify and only save the lockfile
@@ -369,6 +418,7 @@ export const install = async (
 
     const { diff, buildQueue } = await reify({
       ...options,
+      installState: state.state,
       add,
       actual: act,
       graph,
