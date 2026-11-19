@@ -650,8 +650,9 @@ other vlt commands into an offline mode.
 The check asks vlt's [public npm mirror](/registry/public-mirror),
 `https://registry.vlt.io/upstream/npm/`, whatever registry is
 configured. Each check is one anonymous request to registry.vlt.io;
-failures stay silent. State is stored in `update-check.json` under
-vlt's XDG state directory.
+failures stay silent, and a failed check is retried after an hour (or
+after the check interval, if shorter). State is stored in
+`update-check.json` under vlt's XDG state directory.
 
 ### `--update-check-interval`
 

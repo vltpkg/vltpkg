@@ -96,7 +96,11 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
         )
       }
       if (now - state.lastCheck < interval) return
-      writeUpdateState(file, { ...state, lastCheck: now })
+      // count the attempt as failed (retry in an hour); success resets it.
+      writeUpdateState(file, {
+        ...state,
+        lastCheck: now - Math.max(interval - 3_600_000, 0),
+      })
       const env = { ...process.env }
       const cache = getCompileCacheDir()
       if (cache) env.NODE_COMPILE_CACHE ??= cache
