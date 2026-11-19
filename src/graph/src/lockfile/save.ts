@@ -20,6 +20,7 @@ import {
   getFlagNumFromNode,
   getBuildStateFromNode,
   LOCKFILE_VERSION,
+  lockfileRegistry,
   scopeRegistryDefaults,
 } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
@@ -239,6 +240,11 @@ export const lockfileData = ({
     isRecordStringString(jsrRegistries) ?
       removeDefaultItems(defaultJsrRegistries, jsrRegistries)
     : undefined
+  const cleanRegistry = lockfileRegistry({
+    registry,
+    registries,
+    'default-registry-alias': defaultRegistryAlias,
+  })
   const hasItems = (clean: Record<string, unknown> | undefined) =>
     clean && Object.keys(clean).length
   return {
@@ -255,7 +261,9 @@ export const lockfileData = ({
       ...(hasItems(cleanJsrRegistries) ?
         { 'jsr-registries': cleanJsrRegistries }
       : undefined),
-      ...(registry !== undefined ? { registry } : undefined),
+      ...(cleanRegistry !== undefined ?
+        { registry: cleanRegistry }
+      : undefined),
       ...((
         defaultRegistryAlias !== undefined &&
         defaultRegistryAlias !== defaultRegistryName
@@ -276,7 +284,7 @@ export const lockfileData = ({
       graph.nodes.values(),
       saveManifests,
       saveBuildData,
-      registry,
+      cleanRegistry,
       throwOnMissingManifest,
     ),
     edges: formatEdges(graph.edges),

@@ -56,7 +56,11 @@ interface TestConfig {
 const makeTestConfig = (config: TestConfig): LoadedConfig =>
   ({
     ...config,
-    get: (key: string) => config.values?.[key],
+    // options.registry stands for the user's own `registry`
+    get: (key: string) =>
+      key === 'registry' ?
+        config.options.registry
+      : config.values?.[key],
   }) as LoadedConfig
 
 const mockResponses = new Map<string, MockResponse>()
@@ -1120,6 +1124,7 @@ t.test('publish command with scope', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'scope') return ':workspace'
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1200,6 +1205,7 @@ t.test('publish command with scope', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'scope') return ':workspace#nonexistent'
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1273,6 +1279,7 @@ t.test('publish command with workspace paths', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'workspace') return ['packages/a']
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1358,6 +1365,7 @@ t.test('publish command workspace filtering modes', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'workspace') return ['@test/a']
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1392,6 +1400,7 @@ t.test('publish command workspace filtering modes', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'workspace') return [fullpath]
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1425,6 +1434,7 @@ t.test('publish command workspace filtering modes', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'workspace') return ['./packages/a']
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1458,6 +1468,7 @@ t.test('publish command workspace filtering modes', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'workspace') return ['packages/*']
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1536,6 +1547,7 @@ t.test('publish command with workspace-group', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'workspace-group') return ['packages']
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1625,6 +1637,7 @@ t.test('publish command with recursive', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'recursive') return true
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1679,6 +1692,7 @@ t.test('publish command with recursive', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'recursive') return true
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 
@@ -1726,6 +1740,7 @@ t.test('publish command with recursive', async t => {
     })
     config.get = ((key: unknown) => {
       if (key === 'recursive') return true
+      if (key === 'registry') return config.options.registry
       return undefined
     }) as LoadedConfig['get']
 

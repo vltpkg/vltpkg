@@ -411,7 +411,7 @@ t.test('invalid workspace-group', async t => {
 // outputCommand, which is mocked out here. these cover the config
 // plumbing that feeds them.
 t.test('registry config resolution', async t => {
-  t.test('undefined when nothing is configured', async t => {
+  t.test('the npm alias when nothing is configured', async t => {
     const cwd = t.testdir({
       'vlt.json': '{}',
       'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
@@ -421,7 +421,10 @@ t.test('registry config resolution', async t => {
       cwd,
     })
     t.equal(error, null)
-    t.equal(config.options.registry, undefined)
+    t.equal(
+      config.options.registry,
+      'https://registry.vlt.io/upstream/npm/',
+    )
   })
 
   t.test('--registry', async t => {

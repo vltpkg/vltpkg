@@ -197,7 +197,7 @@ const gatherCandidates = (
  * the resolver would otherwise accept or prompt for.
  */
 export const hasConfiguredRegistry = (conf: LoadedConfig): boolean =>
-  !!conf.options.registry || gatherCandidates(conf).length > 0
+  !!conf.get('registry') || gatherCandidates(conf).length > 0
 
 /**
  * Whether the alias bare specs resolve through has a URL (the built-in
@@ -230,7 +230,7 @@ export const requireRegistry = (
   alias?: string,
 ): string => {
   if (alias !== undefined) return resolveWriteAlias(conf, alias)
-  const { registry } = conf.options
+  const registry = conf.get('registry')
   if (registry) return registry
   const candidates = gatherCandidates(conf)
   const [first, second] = candidates
@@ -264,7 +264,7 @@ export const resolveRegistry = async (
   } = {},
 ): Promise<string> => {
   if (alias !== undefined) return resolveWriteAlias(conf, alias)
-  const { registry } = conf.options
+  const registry = conf.get('registry')
   if (registry) return registry
   const candidates = gatherCandidates(conf)
   const [first, second] = candidates

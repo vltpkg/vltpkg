@@ -12,10 +12,7 @@ exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = 
 exports[`test/graph.ts > TAP > using placePackage > should add a type=git package 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
-  options: {
-    registry: 'https://registry.npmjs.org/',
-    registries: { npm: 'https://registry.npmjs.org/' }
-  },
+  options: { registries: { npm: 'https://registry.npmjs.org/' } },
   nodes: {
     '~npm~bar@1.0.0': [
       0,
@@ -46,10 +43,7 @@ exports[`test/graph.ts > TAP > using placePackage > should add a type=git packag
 exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
-  options: {
-    registry: 'https://registry.npmjs.org/',
-    registries: { npm: 'https://registry.npmjs.org/' }
-  },
+  options: { registries: { npm: 'https://registry.npmjs.org/' } },
   nodes: {
     '~npm~bar@1.0.0': [
       0,
@@ -79,10 +73,7 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
-  options: {
-    registry: 'https://registry.npmjs.org/',
-    registries: { npm: 'https://registry.npmjs.org/' }
-  },
+  options: { registries: { npm: 'https://registry.npmjs.org/' } },
   nodes: {
     '~npm~bar@1.0.0': [
       0,
@@ -110,10 +101,7 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
   lockfileVersion: 1,
-  options: {
-    registry: 'https://registry.npmjs.org/',
-    registries: { npm: 'https://registry.npmjs.org/' }
-  },
+  options: { registries: { npm: 'https://registry.npmjs.org/' } },
   nodes: {
     '~npm~bar@1.0.0': [
       0,

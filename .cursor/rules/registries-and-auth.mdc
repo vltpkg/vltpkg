@@ -7,9 +7,10 @@ alwaysApply: false
 
 ## Registry Types
 
-1. **Default registry**: `--registry=<url>` — **no default value**; bare
-   specs fall back to the built-in `npm` alias (see bare-spec resolution
-   below)
+1. **Default registry**: `--registry=<url>` — cli-sdk defaults it to
+   `registries[<default-registry-alias>]` after the config layers merge
+   (`conf.options` only; `conf.get('registry')` is the user's value, and
+   lockfiles leave the default out)
 2. **Named aliases**: `--registries=<name>=<url>` → use as `name:pkg@ver` in dependencies
 3. **Scope registries**: `--scoped-registries=@scope=<url>` → `@scope/*` auto-routes
 4. **Built-in aliases**: `npm:` (vlt's public, read-only npm mirror,

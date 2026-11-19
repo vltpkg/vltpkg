@@ -14,7 +14,11 @@ import { resolve } from 'node:path'
 import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
 import { Graph } from '../graph.ts'
-import { LOCKFILE_VERSION, scopeRegistryDefaults } from './types.ts'
+import {
+  LOCKFILE_VERSION,
+  lockfileRegistry,
+  scopeRegistryDefaults,
+} from './types.ts'
 import type { PathScurry } from 'path-scurry'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -169,6 +173,8 @@ const buildCurrentOptions = (
       )
     : undefined
 
+  const registry = lockfileRegistry(options)
+
   return {
     ...(hasItems(cleanModifiers) ?
       { modifiers: cleanModifiers }
@@ -185,9 +191,7 @@ const buildCurrentOptions = (
     ...(hasItems(cleanJsrRegistries) ?
       { 'jsr-registries': cleanJsrRegistries }
     : undefined),
-    ...(options.registry !== undefined ?
-      { registry: options.registry }
-    : undefined),
+    ...(registry !== undefined ? { registry } : undefined),
     ...((
       options['default-registry-alias'] !== undefined &&
       options['default-registry-alias'] !== defaultRegistryName
@@ -301,7 +305,11 @@ export const diffLockfileOptions = (
   lockfileOptions: LockfileData['options'] = {},
 ): OptionsChange[] => {
   const current = asRecord(buildCurrentOptions(options))
-  const stored = asRecord(lockfileOptions)
+  // older lockfiles may record the default alias URL as `registry`
+  const stored = asRecord({
+    ...lockfileOptions,
+    registry: lockfileRegistry(lockfileOptions),
+  })
   const changes: OptionsChange[] = []
   for (const section of unionKeys(stored, current)) {
     const from = stored[section]
@@ -428,7 +436,7 @@ export const loadObject = (
       scopeRegistries ?
         { ...options['scoped-registries'], ...scopeRegistries }
       : options['scoped-registries'],
-    registry: registry ?? options.registry,
+    registry: registry ?? lockfileRegistry(options),
     'default-registry-alias':
       defaultRegistryAlias ?? options['default-registry-alias'],
     registries:

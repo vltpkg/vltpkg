@@ -198,8 +198,8 @@ t.test('super basic reification', async t => {
 
   const expectLockfileData: LockfileData = {
     lockfileVersion: 1,
+    // `registry` is the npm alias URL, so it is not recorded
     options: {
-      registry: 'https://registry.npmjs.org/',
       registries: { npm: 'https://registry.npmjs.org/' },
     },
     nodes: {
@@ -207,6 +207,7 @@ t.test('super basic reification', async t => {
         0,
         'lodash',
         'sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==',
+        'https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz',
       ],
     } as Record<DepID, LockfileNode>,
     edges: {

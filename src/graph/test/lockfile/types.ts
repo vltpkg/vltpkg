@@ -24,6 +24,7 @@ import {
   BuildStateBuilt,
   BuildStateFailed,
   LOCKFILE_VERSION,
+  lockfileRegistry,
   scopeRegistryDefaults,
 } from '../../src/lockfile/types.ts'
 
@@ -494,5 +495,37 @@ t.test('scopeRegistryDefaults', async t => {
     scopeRegistryDefaults({ jsr: 'https://jsr.example.com/' }),
     { '@jsr': 'https://jsr.example.com/' },
     '@jsr follows the jsr alias',
+  )
+})
+
+t.test('lockfileRegistry', async t => {
+  const x = 'https://x/'
+  t.equal(lockfileRegistry({}), undefined, 'nothing set')
+  t.equal(
+    lockfileRegistry({
+      registry: 'https://registry.vlt.io/upstream/npm/',
+    }),
+    undefined,
+    'the built-in npm URL',
+  )
+  t.equal(
+    lockfileRegistry({ registry: x, registries: { npm: x } }),
+    undefined,
+    'the configured npm URL',
+  )
+  t.equal(
+    lockfileRegistry({
+      registry: x,
+      registries: { main: x },
+      'default-registry-alias': 'main',
+    }),
+    undefined,
+    'the default-registry-alias URL',
+  )
+  t.equal(lockfileRegistry({ registry: x }), x, 'another registry')
+  t.equal(
+    lockfileRegistry({ registry: x, registries: {} }),
+    x,
+    'registries without the alias',
   )
 })

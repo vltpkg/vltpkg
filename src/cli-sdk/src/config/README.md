@@ -48,13 +48,14 @@ in the XDG config home `vlt/vlt.json` file.
 These are further overridden by any matching `VLT_*` fields in the
 environment, or options specified on the command line.
 
-### The `registry` option has no default
+### The `registry` option defaults to the npm alias
 
-`conf.options.registry` is `string | undefined`. There is no implicit
-`https://registry.npmjs.org/`: when it is unset, bare specs resolve
-through the `--default-registry-alias` alias, `npm` by default, whose
+When the user sets no `registry`, `conf.options.registry` is the URL
+of the `--default-registry-alias` alias, `npm` by default, whose
 built-in URL is vlt's public, read-only npm mirror
-(`https://registry.vlt.io/upstream/npm/`). Command modules that hit a
+(`https://registry.vlt.io/upstream/npm/`). It is derived after the
+config layers merge, so it follows the user's `registries`, while
+`conf.get('registry')` is the user's value. Command modules that hit a
 registry export `needsRegistry = 'read'` (they only fetch, so the
 built-in mirror is enough) or `needsRegistry = 'write'` (they publish
 or authenticate, so the user must configure a registry: `--registry`,
@@ -65,8 +66,8 @@ usage is readable with nothing set up. Export a
 `(conf) => 'read' | 'write' | undefined` instead when only some
 subcommands need one (`vlt skills init` doesn't). Inside a command,
 use the `requireRegistry(conf)` / `resolveRegistry(conf)` helpers
-rather than a non-null assertion; they never resolve to the built-in
-mirror.
+rather than `conf.options.registry`; they never resolve to the
+built-in mirror.
 
 `publish` and `unpublish` skip that gate: a package's
 `publishConfig.registry` alone is enough, so they resolve the registry

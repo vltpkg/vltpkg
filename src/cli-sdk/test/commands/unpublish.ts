@@ -46,7 +46,11 @@ const makeTestConfig = (config: TestConfig): LoadedConfig =>
   ({
     ...config,
     options: { packageJson: noPackageJson, ...config.options },
-    get: (key: string) => config.values?.[key],
+    // options.registry stands for the user's own `registry`
+    get: (key: string) =>
+      key === 'registry' ?
+        config.options.registry
+      : config.values?.[key],
   }) as LoadedConfig
 
 const mockResponses = new Map<string, MockResponse>()
