@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import {
+  existsSync,
   mkdirSync,
   realpathSync,
   rmSync,
@@ -10,7 +11,9 @@ import { dirname } from 'node:path'
 import { getCompileCacheDir } from 'node:module'
 import { parse } from '@vltpkg/semver'
 import { XDG } from '@vltpkg/xdg'
+import { expandHome } from './config/index.ts'
 import type { LoadedConfig } from './config/index.ts'
+import { isInside } from './global-project.ts'
 import { isCI, stderr } from './output.ts'
 import { isSelfUpdateArgs } from './self-update.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-check.ts'
@@ -45,6 +48,8 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
     if (!current) return
     const executable = realpathSync(process.argv[1] ?? '')
     const normalized = executable.replaceAll('\\', '/')
+    const nm = normalized.lastIndexOf('/node_modules/')
+    const prefix = normalized.slice(0, nm)
     if (
       normalized.includes('/_npx/') ||
       normalized.startsWith(
@@ -52,7 +57,16 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
       ) ||
       normalized.startsWith(
         new XDG('vlt/vlx-local').cache().replaceAll('\\', '/') + '/',
-      )
+      ) ||
+      // a project's node_modules: not npm's -g prefix (as in
+      // self-update.ts) or the global project
+      (nm !== -1 &&
+        !prefix.endsWith('/lib') &&
+        !existsSync(`${prefix}/vlt.cmd`) &&
+        !isInside(
+          realpathSync(expandHome(conf.values['global-dir'])),
+          executable,
+        ))
     )
       return
 
@@ -95,7 +109,7 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
         state.notifiedAt = now
         writeUpdateState(file, state)
         stderr(
-          `Update available: vlt ${version} -> ${state.latest}\nvlt install -g vlt`,
+          `Update available: vlt ${version} -> ${state.latest}\nvlt install -g vlt@${state.latest}`,
         )
       }
       if (now - state.lastCheck < interval) return

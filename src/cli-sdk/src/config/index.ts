@@ -196,7 +196,7 @@ const envKey = (k: string) =>
   `VLT_${k.replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase()}`
 
 // `~` and `~/x` (shells leave `--opt=~/x` alone)
-const expandHome = (p: string) =>
+export const expandHome = (p: string) =>
   p.replace(/^~(?=$|[\\/])/, homedir())
 
 // `parse()` writes every resolved value to `VLT_*`, so a nested vlt
