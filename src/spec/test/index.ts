@@ -412,6 +412,8 @@ t.test('mixing scopes and names', t => {
   }
   for (const [scope, reg] of scopeRegs) {
     scopeRegistries[scope] = reg
+    // filled options are memoized per object: reassign, not mutate
+    options['scoped-registries'] = { ...scopeRegistries }
     t.matchSnapshot(
       Spec.parse(spec, options)[kCustomInspect](),
       `scopes: ${Object.keys(scopeRegistries).join(', ')}`,

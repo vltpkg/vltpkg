@@ -493,6 +493,53 @@ t.test('getOptions', t => {
   t.end()
 })
 
+t.test('getOptions memoized per options object', t => {
+  const o: SpecOptions = { registries: { x: 'https://x/' } }
+  t.equal(getOptions(o), getOptions(o), 'same filled object')
+  t.equal(
+    Spec.parse('a@1', o).options,
+    Spec.parse('b@2', o).options,
+    'specs share the filled options',
+  )
+  t.not(getOptions({}), getOptions({}), 'keyed by identity')
+  t.strictSame(getOptions({}), getOptions({}))
+  t.strictSame(getOptions(), getOptions({}), 'no options')
+  t.not(getOptions(), getOptions(), 'no options: filled fresh')
+  t.end()
+})
+
+t.test('getOptions refills a reassigned field', t => {
+  const o: SpecOptions = {}
+  let prev = getOptions(o)
+  const fields: Required<SpecOptions> = {
+    registry: 'https://r/',
+    registries: { x: 'https://x/' },
+    'scoped-registries': { '@s': 'https://s/' },
+    'jsr-registries': { j: 'https://j/' },
+    'git-hosts': { h: 'git+ssh://git@h.com:$1/$2.git' },
+    'git-host-archives': { h: 'https://h.com/$1/$2/$committish' },
+    'default-registry-alias': 'x',
+    catalog: { a: '1' },
+    catalogs: { c: { a: '2' } },
+  }
+  for (const [k, v] of Object.entries(fields)) {
+    Object.assign(o, { [k]: v })
+    const next = getOptions(o)
+    t.not(next, prev, `refilled after ${k}`)
+    t.match(next, { [k]: v }, `reflects ${k}`)
+    t.equal(getOptions(o), next, `memoized again after ${k}`)
+    prev = next
+  }
+
+  const r: SpecOptions = { registry: 'https://a/' }
+  t.equal(Spec.parse('foo@1', r).registry, 'https://a/')
+  r.registry = 'https://b/'
+  t.equal(Spec.parse('foo@1', r).registry, 'https://b/')
+  r.registry = 'https://a/'
+  t.equal(Spec.parse('foo@1', r).registry, 'https://a/')
+  t.end()
+})
+
 t.test('built-in npm registry', t => {
   const mirror = 'https://registry.vlt.io/upstream/npm/'
   t.equal(
@@ -705,6 +752,8 @@ t.test('mixing scopes and names', t => {
   }
   for (const [scope, reg] of scopeRegs) {
     scopeRegistries[scope] = reg
+    // filled options are memoized per object: reassign, not mutate
+    options['scoped-registries'] = { ...scopeRegistries }
     t.matchSnapshot(
       Spec.parse(spec, options)[kCustomInspect](),
       `scopes: ${Object.keys(scopeRegistries).join(', ')}`,
@@ -798,6 +847,30 @@ t.test('reverse-lookup registry: specifiers if named', t => {
     t.equal(spec.options.registries.vlt, 'http://vlt.sh/')
   }
   t.matchSnapshot(found.map(s => String(s)))
+  t.end()
+})
+
+t.test('registry: lookup leaves shared options alone', t => {
+  const o: SpecOptions = { registries: { vlt: 'http://vlt.sh' } }
+  const spec = Spec.parse('x@registry:http://vlt.sh#x@latest', o)
+  t.equal(spec.namedRegistry, 'vlt')
+  t.equal(spec.options.registries.vlt, 'http://vlt.sh/')
+  t.equal(Spec.parse('y@vlt:y@1', o).registry, 'http://vlt.sh')
+  t.equal(getOptions(o).registries.vlt, 'http://vlt.sh')
+  t.end()
+})
+
+t.test('alias subspecs share options', t => {
+  const o: SpecOptions = {
+    registries: { npm: 'https://registry.npmjs.org/' },
+  }
+  const a = Spec.parse('a@npm:b@1', o)
+  const c = Spec.parse('c@npm:d@2', o)
+  t.equal(a.subspec?.options, c.subspec?.options)
+  t.equal(a.subspec?.registry, 'https://registry.npmjs.org/')
+  const gh = Spec.parse('e@gh:@x/y@1', o)
+  t.equal(gh.subspec?.options.registry, 'https://npm.pkg.github.com/')
+  t.not(gh.subspec?.options, a.subspec?.options)
   t.end()
 })
 
