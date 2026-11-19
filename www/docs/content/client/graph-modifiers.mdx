@@ -62,7 +62,9 @@ it:
 ```
 
 The keys are selectors that identify which dependency to override, and
-the values specify the versions to enforce.
+the values specify the versions to enforce. A `file:` value is
+resolved from the project root, where `vlt.json` lives, not from the
+package that depends on it.
 
 ### Universal Selector
 
