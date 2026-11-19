@@ -22,7 +22,7 @@
  */
 
 import { error } from '@vltpkg/error-cause'
-import { PackageInfoClient } from '@vltpkg/package-info'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { storeRoot } from '@vltpkg/registry-client/store-root'
 import { cloneAvailable } from '@vltpkg/tar/clonefile'
@@ -382,8 +382,7 @@ export class Config {
       ) as unknown as SpecOptions,
     )
 
-    this.#options = Object.assign(options, {
-      packageInfo: new PackageInfoClient(options),
+    Object.assign(options, {
       [kCustomInspect]() {
         return Object.fromEntries(
           Object.entries(options).filter(
@@ -397,8 +396,52 @@ export class Config {
         )
       },
     })
+
+    // The package-info module (and the registry client, tar and git
+    // modules it brings along) is a large part of what the CLI loads
+    // before running any command. It is only imported for commands that
+    // need it, so the client is created on first access instead of here.
+    let packageInfo: PackageInfoClient | undefined
+    const loadedClient = () => this.#PackageInfoClient
+    Object.defineProperty(options, 'packageInfo', {
+      enumerable: true,
+      configurable: true,
+      get(): PackageInfoClient {
+        if (packageInfo) return packageInfo
+        const Client = loadedClient()
+        if (!Client) {
+          throw error(
+            'package-info was not loaded before it was used. ' +
+              'Call conf.loadPackageInfo() first, or remove the command ' +
+              'from commandsWithoutPackageInfo.',
+            { code: 'EUNKNOWN' },
+          )
+        }
+        packageInfo = new Client(options)
+        return packageInfo
+      },
+      set(value: PackageInfoClient) {
+        packageInfo = value
+      },
+    })
+
+    this.#options = options as ConfigOptions
     return this.#options
   }
+
+  /**
+   * Import the package-info module so that {@link ConfigOptions#packageInfo}
+   * can be created. {@link Config.load} calls this for every command
+   * except those in {@link commandsWithoutPackageInfo}. Code paths of
+   * those commands that do end up needing it must call this themselves.
+   */
+  async loadPackageInfo(): Promise<void> {
+    this.#PackageInfoClient ??= (
+      await import('@vltpkg/package-info')
+    ).PackageInfoClient
+  }
+
+  #PackageInfoClient?: typeof PackageInfoClient
 
   /**
    * Reset the options value, optionally setting a new project root
@@ -1131,10 +1174,48 @@ export class Config {
     if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)
     const b = await a.loadConfigFile(allowGlobal ? argv : undefined)
-    this.#loaded = b.parse(argv)
+    const c = b.parse(argv)
+    if (
+      !c.values.version &&
+      !commandsWithoutPackageInfo.has(c.command)
+    ) {
+      await c.loadPackageInfo()
+    }
+    this.#loaded = c
     return this.#loaded
   }
 }
+
+/**
+ * Commands that never touch `conf.options.packageInfo`, directly or
+ * through the graph or vlx packages. {@link Config.load} skips importing
+ * `@vltpkg/package-info` for them, which also leaves out the registry
+ * client, tar and git modules it depends on. That is a large share of
+ * what the CLI would otherwise load before running a small command.
+ *
+ * A command is only listed here once it is known not to need the
+ * client. Everything else loads it, so a new command is safe by default.
+ * Paths of these commands that do need it, like `--scope` selection in
+ * `run`, call `conf.loadPackageInfo()` before using it.
+ */
+export const commandsWithoutPackageInfo = new Set<
+  Commands[keyof Commands]
+>([
+  'access',
+  'config',
+  'dist-tag',
+  'exec-local',
+  'help',
+  'login',
+  'logout',
+  'ping',
+  'profile',
+  'run',
+  'run-exec',
+  'setup',
+  'token',
+  'whoami',
+])
 
 const isParsed = (c: Config): c is ParsedConfig =>
   !!(c.values && c.positionals && c.command)

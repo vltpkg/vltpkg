@@ -19,20 +19,23 @@ import type {
   RunOptions,
   RunResult,
 } from '@vltpkg/run'
-import { Query } from '@vltpkg/query'
 import { createDiffFilesProvider } from './query-diff-files.ts'
-import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
 import { Monorepo } from '@vltpkg/workspaces'
-import { ansiToAnsi } from 'ansi-to-pre'
 import type { LoadedConfig } from './config/index.ts'
 import { stderr, stdout, styleTextStdout } from './output.ts'
 import type { Views } from './view.ts'
 import type { SpawnResultStdioStrings } from '@vltpkg/promise-spawn'
 import assert from 'node:assert'
 import { resolve } from 'node:path'
-import { createHostContextsMap } from './query-host-contexts.ts'
 import { sortScopeLocations } from './sort-scope-locations.ts'
+
+// The graph, query and ansi-to-pre modules are only needed when running
+// across several workspaces or with --scope. They are a large share of
+// what a plain `vlt run` would otherwise load, so they are imported on
+// demand instead of at the top of this module. ansiToAnsi is assigned
+// before the multi-workspace loop, the only caller of printResult().
+let ansiToAnsi: (s: string) => string
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -156,6 +159,15 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const mainManifest = conf.options.packageJson.maybeRead(
         this.projectRoot,
       )
+      // host contexts in queries resolve through conf.options.packageInfo,
+      // which `run` and friends otherwise leave unloaded
+      const [{ actual }, { Query }, { createHostContextsMap }] =
+        await Promise.all([
+          import('@vltpkg/graph'),
+          import('@vltpkg/query'),
+          import('./query-host-contexts.ts'),
+          conf.loadPackageInfo(),
+        ])
       let graph
       let monorepo: Monorepo | undefined
       if (mainManifest) {
@@ -230,6 +242,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     const targets = this.getTargets()
     this.#labelWidth = Math.max(...targets.map(t => t.label.length))
     const totalStart = performance.now()
+    ;({ ansiToAnsi } = await import('ansi-to-pre'))
 
     // run across workspaces
     let failed = false as boolean
