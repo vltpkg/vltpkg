@@ -101,17 +101,19 @@ export type ModifierActiveEntry = {
 }
 
 /**
- * Does this breadcrumb item select the given importer?
+ * Does this breadcrumb item select the given importer? A named item,
+ * e.g. `#core:workspace`, selects only the importer of that name.
  */
 const matchesImporter = (
   item: ModifierBreadcrumbItem,
-  importer: Pick<Node, 'importer' | 'mainImporter'>,
+  importer: Pick<Node, 'importer' | 'mainImporter'> & {
+    name?: string
+  },
 ): boolean =>
   item.importer &&
   importer.importer &&
-  (item.value === ':project' ||
-    item.value === ':workspace' ||
-    (item.value === ':root' && importer.mainImporter))
+  (!item.name || item.name === importer.name) &&
+  (!item.value.includes(':root') || importer.mainImporter)
 
 /**
  * Is this a trailing `:workspace` item right after a plain importer
@@ -379,8 +381,8 @@ export class GraphModifier {
     this.#modifiers.add(mod)
     // if the breadcrumb starts with an id, then add it to the
     // map of initial entries, so that we can use it to match
-    const { name } = mod.breadcrumb.first
-    if (name) {
+    const { name, importer } = mod.breadcrumb.first
+    if (name && !importer) {
       const initialSet = this.#initialEntries.get(name) ?? new Set()
       initialSet.add(mod)
       this.#initialEntries.set(name, initialSet)

@@ -416,6 +416,7 @@ t.test('GraphModifier', async t => {
           '#lodash': '4.0.0',
           ':root > #unused > #deep': '1.0.0',
           ':workspace > #ws-only': '1.0.0',
+          '#core:workspace > #ws-only': '2.0.0',
           ':root > #qualified:semver(^1.0.0)': '1.1.1',
           '#lone:v(^1.0.0)': '1.1.1',
           ':root > #lodash': '4.1.0',
@@ -429,6 +430,11 @@ t.test('GraphModifier', async t => {
     const modifier = new GraphModifier({ ...mockSpecOptions })
     const root = { mainImporter: true, importer: true } as Node
     const ws = { mainImporter: false, importer: true } as Node
+    const core = {
+      mainImporter: false,
+      importer: true,
+      name: 'core',
+    } as Node
     // a nested folder dep the user adds to, never an importer
     const folder = { mainImporter: false, importer: false } as Node
     const spec = (name: string, bareSpec = '*') =>
@@ -514,6 +520,16 @@ t.test('GraphModifier', async t => {
       'the lone selector governs a workspace edge',
     )
     t.equal(
+      modifier.importerEdgeModifier(core, spec('ws-only'))?.query,
+      '#core:workspace > #ws-only',
+      'a named workspace selector wins in that workspace',
+    )
+    t.equal(
+      modifier.importerEdgeModifier(ws, spec('ws-only'))?.query,
+      ':workspace > #ws-only',
+      'a named workspace selector skips other workspaces',
+    )
+    t.equal(
       modifier.importerEdgeModifier(root, spec('foo')),
       undefined,
       'no governing modifier',
@@ -536,6 +552,8 @@ t.test('GraphModifier', async t => {
           '#tie:semver(^1.0.0)': '-',
           ':root > #tie': '1.0.0',
           ':workspace > #wsdep': '-',
+          '#core:workspace > #wsdep': '1.0.0',
+          ':workspace#core > #named': '-',
         },
       }),
     })
@@ -545,6 +563,11 @@ t.test('GraphModifier', async t => {
     const modifier = new GraphModifier({ ...mockSpecOptions })
     const root = { mainImporter: true, importer: true } as Node
     const ws = { mainImporter: false, importer: true } as Node
+    const core = {
+      mainImporter: false,
+      importer: true,
+      name: 'core',
+    } as Node
     const spec = (name: string, bareSpec = '*') =>
       Spec.parse(name, bareSpec, mockSpecOptions)
     // the `-` selector the traversal itself applies (see appendNodes)
@@ -582,6 +605,19 @@ t.test('GraphModifier', async t => {
         'importer-anchored entry wins a specificity tie',
       ],
       [ws, spec('wsdep'), ':workspace > #wsdep', ':workspace'],
+      [
+        core,
+        spec('wsdep'),
+        undefined,
+        'named workspace swap wins over :workspace removal',
+      ],
+      [
+        core,
+        spec('named'),
+        ':workspace#core > #named',
+        'named workspace removal',
+      ],
+      [ws, spec('named'), undefined, 'another workspace'],
       [root, spec('swap'), undefined, 'non-removal value'],
       [root, spec('unrelated'), undefined, 'unrelated name'],
     ]
@@ -1438,6 +1474,57 @@ t.test('GraphModifier', async t => {
       modifier.activeModifiers.size,
       0,
       'should have no leftover active entries after rollback',
+    )
+  })
+
+  await t.test('named workspace modifiers', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':workspace > #d': '2.0.0',
+          '#b:workspace > #d': '3.0.0',
+          ':workspace#a > #f': '4.0.0',
+        },
+      }),
+    })
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    const graph = getMultiWorkspaceGraph()
+    const importer = (name: string) =>
+      [...graph.importers].find(n => n.name === name) as Node
+    const spec = (name: string) =>
+      Spec.parse(name, '^1.0.0', mockSpecOptions)
+    // build order: each importer, then its dependencies
+    const pick = (from: Node, name: string) => {
+      modifier.tryImporter(from)
+      return modifier.tryNewDependency(from, spec(name))?.modifier
+        .query
+    }
+    t.equal(
+      pick(importer('b'), 'd'),
+      '#b:workspace > #d',
+      'the named workspace selector wins in b',
+    )
+    t.equal(
+      pick(importer('c'), 'd'),
+      ':workspace > #d',
+      'other workspaces get the :workspace selector',
+    )
+    t.equal(
+      pick(importer('a'), 'f'),
+      ':workspace#a > #f',
+      'pseudo-first spelling selects a',
+    )
+    t.equal(pick(importer('b'), 'f'), undefined, 'b is not a')
+    t.equal(
+      modifier.tryNewDependency(
+        graph.mainImporter as Node,
+        spec('b'),
+      ),
+      undefined,
+      'does not start at a dependency named after the workspace',
     )
   })
 
