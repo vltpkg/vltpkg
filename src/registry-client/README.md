@@ -90,30 +90,19 @@ trust it for the tunneled connection.
 
 ## Certificate Authorities
 
-By default node trusts the certificate authorities it bundles. Set
-`npm_config_cafile` to the path of a PEM file to replace them for
-registry connections, as npm does with its `cafile` setting. This is
-an override: only the certificates in that file are trusted, and the
-bundled and system certificate authorities are not. The file may hold
-any number of concatenated certificates. A file that cannot be read,
-or that holds no certificates, is a config error.
+Set `npm_config_cafile` (or `NPM_CONFIG_CAFILE`) to the path of a PEM
+file to make registry connections trust only the certificates in that
+file. This is the same variable npm uses for its `cafile` setting.
 
-The uppercase `NPM_CONFIG_CAFILE` is read too. When both are set, the
-lowercase one wins, and an empty value counts as unset.
+Node's bundled certificate authorities, the system store, and
+`NODE_EXTRA_CA_CERTS` are all ignored for registry connections once
+this is set. If a proxy needs its own CA, put it in the file too.
+Other TLS connections in the process are not affected.
 
-The file covers registry connections made directly and through a
-proxy, including the connection to an https proxy itself. It is read
-each time a registry client builds a connection pool: when the client
-is created, and again the first time a request uses a new
-`connectTimeout`. Other TLS connections in the process keep node's
-defaults.
+A file that cannot be read, or that holds no certificates, is a config
+error.
 
-Because the defaults are replaced, a CA added with
-`NODE_EXTRA_CA_CERTS` is not trusted on registry connections either.
-If a proxy that terminates TLS needs its own CA, include it in the
-file.
-
-To add a certificate authority while keeping the defaults, use
+To add a certificate authority and keep the defaults, use
 `NODE_EXTRA_CA_CERTS` instead.
 
 ## Integrity Options
