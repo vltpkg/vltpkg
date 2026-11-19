@@ -47,13 +47,13 @@ const loadVlt = async (cwd: string, argv: string[]) => {
       : code === 'ECONFIG' ? 'Config Error'
       : 'Invalid Option Flag'
     const validOptions =
-      wanted || code === 'ECONFIG' ? undefined
+      wanted || name || code === 'ECONFIG' ? undefined
       : isConfigFile ? getSortedKeys()
       : getSortedCliOptions()
     stderr(msg)
     stderr(err.message)
     if (name) stderr(indent(`Field: ${format(name)}`))
-    if (found) {
+    if (found !== undefined) {
       stderr(
         indent(
           `Found: ${isConfigFile ? JSON.stringify(found) : format(found)}`,

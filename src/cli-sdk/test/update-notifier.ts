@@ -331,6 +331,28 @@ t.test('a failed check is retried after an hour', async t => {
   }
 })
 
+t.test('an invalid check interval uses the default', async t => {
+  for (const interval of [0, -1, NaN]) {
+    await t.test(String(interval), async t => {
+      const s = await setup(t)
+      const state = {
+        registry,
+        version,
+        lastCheck: now - 86_399_999,
+        latest: '2.0.0',
+        notifiedVersion: '2.0.0',
+        notifiedAt: now - 86_399_999,
+      }
+      writeUpdateState(s.file, state)
+      s.conf.values['update-check-interval'] = interval
+      s.notifyUpdate(s.conf, version)
+      t.strictSame(s.spawned, [])
+      t.strictSame(s.messages, [])
+      t.strictSame(readUpdateState(s.file), state)
+    })
+  }
+})
+
 t.test('always checks the public npm mirror', async t => {
   const s = await setup(t)
   for (const options of [
