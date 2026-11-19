@@ -379,8 +379,8 @@ export class GraphModifier {
    */
   #register(mod: ModifierEntry) {
     this.#modifiers.add(mod)
-    // if the breadcrumb starts with an id, then add it to the
-    // map of initial entries, so that we can use it to match
+    // if the breadcrumb starts with a non-importer id, then add it
+    // to the map of initial entries, so that we can use it to match
     const { name, importer } = mod.breadcrumb.first
     if (name && !importer) {
       const initialSet = this.#initialEntries.get(name) ?? new Set()
