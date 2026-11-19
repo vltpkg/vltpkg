@@ -2094,7 +2094,7 @@ t.test('addEntriesToPeerContext', async t => {
         Spec.parse('bar', '^1.0.0', configData),
         { name: 'bar', version: '1.0.0' },
       )!
-      // a modifier swapped the edge's spec after the entry recorded 1.0.0
+      // the edge carries a modifier spec the entry never recorded
       const modified = graph.placePackage(
         dependent,
         'prod',
