@@ -2074,6 +2074,68 @@ t.test('addEntriesToPeerContext', async t => {
   )
 
   t.test(
+    'keeps a dependent whose own spec rejects the new target',
+    async t => {
+      const peerContext: PeerContext = new Map()
+      const spec = Spec.parse('foo', '1.0.0', configData)
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+      }
+      const graph = new Graph({
+        projectRoot: t.testdirName,
+        ...configData,
+        mainManifest,
+      })
+
+      const dependent = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parse('bar', '^1.0.0', configData),
+        { name: 'bar', version: '1.0.0' },
+      )!
+      // a modifier swapped the edge's spec after the entry recorded 1.0.0
+      const modified = graph.placePackage(
+        dependent,
+        'prod',
+        Spec.parse('foo', '2.0.0', configData),
+        { name: 'foo', version: '2.0.0' },
+      )!
+      const edge = dependent.edgesOut.get('foo')!
+
+      addEntriesToPeerContext(
+        peerContext,
+        [{ spec, type: 'prod', dependent }],
+        dependent,
+      )
+
+      const target = graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        spec,
+        { name: 'foo', version: '1.0.0' },
+      )!
+      const mutations = graph.mutations
+      const needsFork = addEntriesToPeerContext(
+        peerContext,
+        [{ spec, target, type: 'prod' }],
+        dependent,
+      )
+
+      t.equal(needsFork, false, 'should not need fork')
+      t.equal(
+        peerContext.get('foo')?.target?.id,
+        target.id,
+        'should update target',
+      )
+      t.equal(edge.to, modified, 'edge stays on its own spec target')
+      t.ok(modified.edgesIn.has(edge), 'modified node keeps the edge')
+      t.notOk(target.edgesIn.has(edge), 'new target does not gain it')
+      t.equal(graph.mutations, mutations, 'no structural write')
+    },
+  )
+
+  t.test(
     'rewires a dependent that fails the incoming spec',
     async t => {
       const peerContext: PeerContext = new Map()
