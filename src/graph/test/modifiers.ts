@@ -1348,6 +1348,29 @@ t.test('GraphModifier', async t => {
     )
   })
 
+  await t.test('empty values are ignored', async t => {
+    const modifiers = {
+      '#d': '',
+      ':project > :workspace': '',
+      '#e': '1.0.0',
+    }
+    t.chdir(t.testdir({ 'vlt.json': JSON.stringify({ modifiers }) }))
+    reload('modifiers', 'project')
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    const root = getMultiWorkspaceGraph().mainImporter as Node
+    modifier.tryImporter(root)
+    const spec = (name: string) =>
+      Spec.parse(name, '^1.0.0', mockSpecOptions)
+    t.equal(modifier.tryNewDependency(root, spec('d')), undefined)
+    t.equal(
+      modifier.tryNewDependency(root, spec('a')),
+      undefined,
+      'no workspace entry',
+    )
+    t.ok(modifier.tryNewDependency(root, spec('e')), 'others load')
+    t.same(modifier.config, modifiers, 'recorded as written')
+  })
+
   await t.test('workspaces modifiers', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({
