@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import { X509Certificate } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import proc from 'node:process'
 import { createSecureContext } from 'node:tls'
@@ -63,6 +64,19 @@ export const caSecureContext = (): SecureContext | undefined => {
         found: path,
       },
     )
+  }
+
+  // Node skips a certificate it cannot parse without saying so, which
+  // would leave a context that trusts less than the file says.
+  for (const cert of certs) {
+    try {
+      new X509Certificate(cert)
+    } catch (cause) {
+      throw error(
+        `The CA file in ${name} contains an invalid certificate`,
+        { code: 'ECONFIG', found: path, cause },
+      )
+    }
   }
 
   const context = createSecureContext({ ca: certs })

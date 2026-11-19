@@ -74,7 +74,11 @@ t.test('the file is read on every call', async t => {
 })
 
 t.test('unusable files are config errors', async t => {
-  const dir = t.testdir({ 'empty.pem': 'not a certificate\n' })
+  const dir = t.testdir({
+    'empty.pem': 'not a certificate\n',
+    'invalid.pem':
+      '-----BEGIN CERTIFICATE-----\ninvalid\n-----END CERTIFICATE-----\n',
+  })
 
   const missing = resolve(dir, 'missing.pem')
   setEnv(t, { NPM_CONFIG_CAFILE: missing })
@@ -93,5 +97,13 @@ t.test('unusable files are config errors', async t => {
     message:
       'The CA file in npm_config_cafile contains no PEM certificates',
     cause: { code: 'ECONFIG', found: empty },
+  })
+
+  const invalid = resolve(dir, 'invalid.pem')
+  setEnv(t, { npm_config_cafile: invalid })
+  t.throws(() => caSecureContext(), {
+    message:
+      'The CA file in npm_config_cafile contains an invalid certificate',
+    cause: { code: 'ECONFIG', found: invalid },
   })
 })

@@ -42,13 +42,14 @@ const certFile = resolve(fixtures, 'localhost-cert.pem')
 const cert = readFileSync(certFile, 'utf8')
 const key = readFileSync(resolve(fixtures, 'localhost-key.pem'))
 
+// A `null` host listens on every address, IPv4 and IPv6.
 const listen = async (
   t: Test,
   server: Server,
-  host: string | undefined = '127.0.0.1',
+  host: string | null = '127.0.0.1',
 ): Promise<number> => {
   await new Promise<void>(res => {
-    server.listen(0, host, res)
+    server.listen({ port: 0, host: host ?? undefined }, res)
   })
   t.teardown(
     () =>
@@ -114,7 +115,10 @@ const createProxy = async (t: Test, { tls = false } = {}) => {
     clientSocket.on('error', () => originSocket.destroy())
   })
   if (tls) {
-    const port = await listen(t, server, undefined)
+    // undici sends the proxy's host as the TLS server name, which can't
+    // be an IP address, so this one is reached as `localhost`. That
+    // name may resolve to either loopback address.
+    const port = await listen(t, server, null)
     return { port, url: `https://localhost:${port}`, tunneled }
   }
   const port = await listen(t, server)
