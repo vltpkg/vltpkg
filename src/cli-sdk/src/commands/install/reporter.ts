@@ -223,6 +223,9 @@ export class InstallReporter extends ViewClass {
         },
       })
     }
+    // later output (update notice) must land below, not above the view
+    this.#instance?.unmount()
+    this.#instance = null
     return undefined
   }
 
