@@ -326,6 +326,8 @@ export class GraphModifier {
   load(options: SpecOptions) {
     this.#options = options
     for (const [key, value] of Object.entries(this.config)) {
+      // an empty value is no modifier, same as an empty npm override
+      if (value === '') continue
       this.modifierNames.add(key)
       const breadcrumb = parseBreadcrumb(key)
       if (!breadcrumb.last.name) {
