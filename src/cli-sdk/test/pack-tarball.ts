@@ -1703,6 +1703,42 @@ t.test('files globs include nested matches', async t => {
     [['./dist/'], distFiles, []],
     [['./'], [], ['package/dist/']],
     [['//dist'], [], ['package/dist/']],
+    // `!` entries exclude what earlier entries matched, the last match
+    // wins, like npm does
+    [
+      ['dist', '!dist/nested'],
+      ['dist/assets/a.css', 'dist/top.js'],
+      ['package/dist/nested/'],
+    ],
+    [
+      ['**/*.js', '!src'],
+      [
+        '.hidden/h.js',
+        'dist/nested/index.js',
+        'dist/top.js',
+        'lib/a/x.js',
+        'lib/b/c/x.js',
+        'lib/top.js',
+      ],
+      ['package/src/'],
+    ],
+    [['!dist/nested', 'dist'], distFiles, []],
+    [
+      ['dist', '!dist/nested', 'dist/nested/index.js'],
+      ['dist/assets/a.css', 'dist/nested/index.js', 'dist/top.js'],
+      [],
+    ],
+    [
+      ['dist', '!**/*.css'],
+      ['dist/nested/a.txt', 'dist/nested/index.js', 'dist/top.js'],
+      [],
+    ],
+    [
+      ['./dist/', '!./dist/nested/'],
+      ['dist/assets/a.css', 'dist/top.js'],
+      [],
+    ],
+    [['!dist'], [], ['package/dist/']],
   ]
   for (const [files, expected, absentDirs] of cases) {
     const manifest = { name: 'glob-pkg', version: '1.0.0', files }
