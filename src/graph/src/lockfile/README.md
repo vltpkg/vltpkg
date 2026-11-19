@@ -66,6 +66,10 @@ stays set when the target is removed and does not create a dependency
 edge. For older lockfiles, the loader infers it from the `@types/*`
 name.
 
+Node tuple index 7 stores `platform` data (`engines`, `os`, `cpu`,
+`libc`, `deprecated`) for optional nodes only, so an install from the
+lockfile skips the same unsupported or deprecated optional deps.
+
 ```ts
 type LockfileData = {
   lockfileVersion: number

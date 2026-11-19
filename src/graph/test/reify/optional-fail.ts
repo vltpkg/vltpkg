@@ -4,6 +4,7 @@ import t from 'tap'
 import { Diff } from '../../src/diff.ts'
 import { Edge } from '../../src/edge.ts'
 import { Graph } from '../../src/graph.ts'
+import { loadObject } from '../../src/lockfile/load.ts'
 import { lockfileData } from '../../src/lockfile/save.ts'
 import { Node } from '../../src/node.ts'
 import {
@@ -128,6 +129,8 @@ t.test('isUnsupported', async t => {
   t.equal(isUnsupported(node), false, 'no manifest or platform data')
   node.platform = { cpu: ['wasm32'] }
   t.equal(isUnsupported(node), true, 'lockfile platform data')
+  node.platform = { deprecated: 'no' }
+  t.equal(isUnsupported(node), true, 'lockfile deprecation')
 })
 
 t.test('pruneUnsupportedOptional', async t => {
@@ -185,6 +188,31 @@ t.test('pruneUnsupportedOptional', async t => {
     const { diff, dep } = setup({ deprecated: 'no' })
     pruneUnsupportedOptional(diff)
     t.ok(diff.nodes.delete.has(dep))
+  })
+
+  t.test('deprecated, loaded from the lockfile', async t => {
+    const { graph, dep, only, shared } = setup({ deprecated: 'no' })
+    const data = lockfileData({ graph })
+    t.strictSame(data.nodes[dep.id]?.[7], { deprecated: 'no' })
+    const options = {
+      projectRoot: graph.projectRoot,
+      mainManifest: { name: 'project', version: '1.0.0' },
+    }
+    const diff = new Diff(
+      new Graph(options),
+      loadObject(options, data),
+    )
+    pruneUnsupportedOptional(diff)
+    t.strictSame(
+      new Set([...diff.nodes.delete].map(n => n.id)),
+      new Set([dep.id, only.id]),
+      'dep + deps only it needs moved to delete',
+    )
+    t.strictSame(
+      [...diff.nodes.add].map(n => n.id),
+      [shared.id],
+      'shared kept',
+    )
   })
 
   const kept: [

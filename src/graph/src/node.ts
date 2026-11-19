@@ -244,15 +244,16 @@ export class Node implements NodeLike {
   resolved?: string
 
   /**
-   * Platform requirements (engines, os, cpu) extracted from manifest.
-   * Stored separately for optional dependencies to enable platform checks
-   * when manifest is not loaded.
+   * Platform requirements (engines, os, cpu, libc) and deprecation
+   * extracted from manifest. Stored separately for optional dependencies
+   * to enable platform checks when manifest is not loaded.
    */
   platform?: {
     engines?: Record<string, string>
     os?: string[] | string
     cpu?: string[] | string
     libc?: string[] | string
+    deprecated?: string
   }
 
   /**

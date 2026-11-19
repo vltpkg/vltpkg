@@ -42,10 +42,11 @@ const del = (diff: Diff, node: Node & { optional: true }) => {
 
 /**
  * True if the node is deprecated or can't run on this platform.
- * Uses lockfile platform data when present, else the manifest.
+ * Uses lockfile platform data (incl. deprecation) when present, else
+ * the manifest.
  */
 export const isUnsupported = (node: Node): boolean =>
-  !!node.manifest?.deprecated ||
+  !!(node.manifest?.deprecated || node.platform?.deprecated) ||
   !platformCheck(
     node.platform ?? node.manifest ?? {},
     process.version,
