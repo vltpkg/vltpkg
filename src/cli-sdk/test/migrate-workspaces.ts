@@ -83,6 +83,7 @@ const setup = async (
     errs,
     migrate: () => mod.migrateWorkspaces(conf),
     warn: () => mod.warnIgnoredWorkspaces(conf),
+    warnMods: () => mod.warnWorkspaceModifiers(conf),
     find: () => mod.findWorkspaceSpecs(conf),
     addSpecs: (
       add: AddImportersDependenciesMap,
@@ -211,6 +212,48 @@ t.test('warnIgnoredWorkspaces', async t => {
       }),
     })
     s.warn()
+    t.strictSame(s.errs, [])
+  })
+})
+
+t.test('warnWorkspaceModifiers', async t => {
+  const wsRoot = {
+    '.git': {},
+    'package.json': pkg('root'),
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    packages: {
+      a: {
+        'package.json': pkg('a'),
+        'vlt.json': JSON.stringify({ modifiers: { '#b': '1.0.0' } }),
+      },
+      b: { 'package.json': pkg('b'), 'vlt.json': '{' },
+      c: { 'package.json': pkg('c') },
+      d: { 'package.json': pkg('d'), 'vlt.json': '{}' },
+    },
+  }
+
+  t.test('warns about each workspace vlt.json modifiers', async t => {
+    const s = await setup(t, wsRoot)
+    s.warnMods()
+    t.strictSame(s.errs, [
+      'Warning: modifiers in packages/a/vlt.json have no effect; move them to the root vlt.json.',
+    ])
+  })
+
+  for (const loglevel of ['silent', 'error']) {
+    t.test(`quiet with loglevel=${loglevel}`, async t => {
+      const s = await setup(t, wsRoot, { loglevel })
+      s.warnMods()
+      t.strictSame(s.errs, [])
+    })
+  }
+
+  t.test('no workspaces', async t => {
+    const s = await setup(t, {
+      '.git': {},
+      'package.json': pkg('root'),
+    })
+    s.warnMods()
     t.strictSame(s.errs, [])
   })
 })
