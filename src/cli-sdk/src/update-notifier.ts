@@ -35,6 +35,7 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
       process.env.VLT_OFFLINE === 'true' ||
       process.env.npm_config_offline === 'true' ||
       process.env.npm_command === 'exec' ||
+      process.env.npm_lifecycle_event ||
       conf.command === 'ci' ||
       conf.command === 'exec' ||
       isSelfUpdateArgs(conf)
