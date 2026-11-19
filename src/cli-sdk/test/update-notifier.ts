@@ -4,6 +4,7 @@ import * as fs from 'node:fs'
 import { join } from 'node:path'
 import { EventEmitter } from 'node:events'
 import type { LoadedConfig } from '../src/config/index.ts'
+import { isSelfUpdateArgs } from '../src/self-update.ts'
 import {
   readUpdateState,
   writeUpdateState,
@@ -91,6 +92,7 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
       __CODE_SPLIT_SCRIPT_NAME: '/worker.js',
     },
     '../src/update-state.ts': { readUpdateState, writeUpdateState },
+    '../src/self-update.ts': { isSelfUpdateArgs },
   })
   const conf = {
     command: 'install',
@@ -234,6 +236,10 @@ t.test(
       },
       'exec-command': s => {
         s.conf.command = 'exec'
+      },
+      'install -g vlt': s => {
+        s.conf.globalRoot = '/global'
+        s.conf.positionals = ['vlt']
       },
       'invalid-version': s => {
         s.version = 'dev'

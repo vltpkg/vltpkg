@@ -12,6 +12,7 @@ import { parse } from '@vltpkg/semver'
 import { XDG } from '@vltpkg/xdg'
 import type { LoadedConfig } from './config/index.ts'
 import { isCI, stderr } from './output.ts'
+import { isSelfUpdateArgs } from './self-update.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-check.ts'
 import { readUpdateState, writeUpdateState } from './update-state.ts'
 import type { UpdateState } from './update-state.ts'
@@ -35,7 +36,8 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
       process.env.npm_config_offline === 'true' ||
       process.env.npm_command === 'exec' ||
       conf.command === 'ci' ||
-      conf.command === 'exec'
+      conf.command === 'exec' ||
+      isSelfUpdateArgs(conf)
     )
       return
     const current = parse(version)
