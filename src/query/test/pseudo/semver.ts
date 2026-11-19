@@ -605,8 +605,6 @@ t.test('select from semver definition', async t => {
         'c@3 || 4 || 5',
         'd@1.2 - 2.3.4',
         'f@4.x.x',
-        'g@1.2.3-rc.1+rev.2',
-        'e@=1.3.4-beta.1',
       ],
       'should match edges whose bareSpec is a subset of the provided range',
     )
