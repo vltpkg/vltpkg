@@ -64,7 +64,9 @@ it:
 The keys are selectors that identify which dependency to override, and
 the values specify the versions to enforce. A `file:` value is
 resolved from the project root, where `vlt.json` lives, not from the
-package that depends on it.
+package that depends on it. An explicit `vlt install express@<spec>`
+with a spec other than the modifier's value fails with a config error
+and leaves `package.json` as is.
 
 ### Universal Selector
 

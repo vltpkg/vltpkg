@@ -4166,6 +4166,29 @@ t.test('a governed edge keeps its value with an add map', async t => {
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
     'prod 2.0.0',
   )
+
+  // an explicit add of another version is refused, nothing is saved
+  const read = (f: string) =>
+    readFileSync(resolve(projectRoot, f), 'utf8')
+  const pj = read('package.json')
+  const lock = read('vlt-lock.json')
+  const spec = Spec.parse('abbrev@1.1.1')
+  const add = Object.assign(
+    new Map([
+      [
+        joinDepIDTuple(['file', '.']),
+        new Map([[spec.name, asDependency({ spec, type: 'prod' })]]),
+      ],
+    ]),
+    { modifiedDependencies: true },
+  ) as AddImportersDependenciesMap
+  await t.rejects(install(options, add), {
+    message:
+      'Cannot add abbrev@1.1.1: a graph modifier sets abbrev to 2.0.0',
+    cause: { code: 'ECONFIG', found: ':root > #abbrev' },
+  })
+  t.equal(read('package.json'), pj, 'package.json untouched')
+  t.equal(read('vlt-lock.json'), lock, 'vlt-lock.json untouched')
 })
 
 t.test('implicit workspace references', async t => {
