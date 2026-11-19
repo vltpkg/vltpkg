@@ -4,6 +4,7 @@ import {
   shorten,
   asDependency,
   asDependencySpecError,
+  shouldInstallDepType,
 } from '../dependencies.ts'
 import type {
   AddImportersDependenciesMap,
@@ -186,27 +187,61 @@ export const getImporterSpecs = (
         }
       }
 
-      // iterate over manifest dependencies to add them if
-      // they're missing from the graph
+      // the deps placement installs for this node: no devDependencies
+      // or bundled names, and a peer entry for a name declared elsewhere
+      // only constrains that dependency
+      const bundled = new Set(
+        Array.isArray(manifest.bundleDependencies) ?
+          manifest.bundleDependencies
+        : [],
+      )
+      const declared = new Map<string, [DependencyTypeLong, string]>()
       for (const depType of longDependencyTypes) {
+        if (!shouldInstallDepType(node, depType)) continue
         const deps = Object.entries(manifest[depType] ?? {})
         for (const [depName, depSpec] of deps) {
-          const edge = node.edgesOut.get(depName)
-
-          // skip if the edge exists and already uses the same spec.
-          // dangling targets still need to be queued for the ideal rebuild.
-          if (edge?.to && edge.spec.bareSpec === depSpec) continue
-
-          // add the dependency to the addDeps map
-          const type = shorten(depType, depName, manifest)
-          let spec: Spec
-          try {
-            spec = Spec.parse(depName, depSpec, options)
-          } catch (er) {
-            throw asDependencySpecError(er, node, type)
+          if (
+            bundled.has(depName) ||
+            (depType === 'peerDependencies' && declared.has(depName))
+          ) {
+            continue
           }
-          addDeps.set(depName, asDependency({ spec, type }))
+          declared.set(depName, [depType, depSpec])
         }
+      }
+
+      // add the dependencies that are missing from the graph
+      for (const [depName, [depType, depSpec]] of declared) {
+        const edge = node.edgesOut.get(depName)
+
+        // skip if the edge exists and already uses the same spec, or a
+        // spec a modifier set. dangling targets still need to be queued
+        // for the ideal rebuild, except an optional peer nothing provides
+        if (
+          edge &&
+          (edge.to?.modifier ||
+            (edge.spec.bareSpec === depSpec &&
+              (edge.to || edge.type === 'peerOptional')))
+        ) {
+          continue
+        }
+
+        const type = shorten(depType, depName, manifest)
+        let spec: Spec
+        try {
+          spec = Spec.parse(depName, depSpec, options)
+        } catch (er) {
+          throw asDependencySpecError(er, node, type)
+        }
+
+        // a lone `#name` modifier of `-` keeps it out of the graph
+        if (
+          !edge &&
+          options.modifiers?.removesImporterEdge(node, spec)
+        ) {
+          continue
+        }
+        addDeps.set(depName, asDependency({ spec, type }))
       }
 
       // store in transientAdd if there are any dependencies
