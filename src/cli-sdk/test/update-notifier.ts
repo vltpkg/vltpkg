@@ -121,7 +121,7 @@ t.test(
     t.strictSame(readUpdateState(s.file), {
       registry,
       version,
-      lastCheck: now,
+      lastCheck: now - 82_800_000,
     })
     t.equal(s.spawned.length, 1)
     t.match(s.spawned[0], {
@@ -276,6 +276,28 @@ t.test(
     }
   },
 )
+
+t.test('a failed check is retried after an hour', async t => {
+  for (const [interval, backoff] of [
+    [86_400, 3_600_000],
+    [1_800, 1_800_000],
+  ] as const) {
+    await t.test(`interval ${interval}s`, async t => {
+      const s = await setup(t)
+      let time = now
+      t.intercept(Date, 'now', { value: () => time })
+      s.conf.values['update-check-interval'] = interval
+      s.notifyUpdate(s.conf, version)
+      fs.rmSync(`${s.file}.lock`)
+      time = now + backoff - 1
+      s.notifyUpdate(s.conf, version)
+      t.equal(s.spawned.length, 1)
+      time = now + backoff
+      s.notifyUpdate(s.conf, version)
+      t.equal(s.spawned.length, 2)
+    })
+  }
+})
 
 t.test('always checks the public npm mirror', async t => {
   const s = await setup(t)
