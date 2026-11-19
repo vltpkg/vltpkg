@@ -64,13 +64,13 @@ export const extractNode = async (
   )
   const { integrity, resolved } = node
 
-  // skip optional nodes that are deprecated or can't run here
+  // skip optional nodes that can't run here
   if (removeOptionalFailedNode && isUnsupported(node)) {
     removeOptionalFailedNode()
     return {
       success: false,
       node,
-      error: new Error('Platform check failed or package deprecated'),
+      error: new Error('Platform check failed'),
     }
   }
 

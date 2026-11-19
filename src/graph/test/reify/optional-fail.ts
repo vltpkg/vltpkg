@@ -181,12 +181,6 @@ t.test('pruneUnsupportedOptional', async t => {
     )
   })
 
-  t.test('deprecated', async t => {
-    const { diff, dep } = setup({ deprecated: 'no' })
-    pruneUnsupportedOptional(diff)
-    t.ok(diff.nodes.delete.has(dep))
-  })
-
   const kept: [
     string,
     Parameters<typeof setup>,
@@ -200,6 +194,8 @@ t.test('pruneUnsupportedOptional', async t => {
     ],
     ['extracted', [{ cpu: ['wasm32'] }], n => (n.extracted = true)],
     ['supported', [{}], () => {}],
+    // unknown on an install from the lockfile, so never a reason to skip
+    ['deprecated', [{ deprecated: 'no' }], () => {}],
   ]
   for (const [name, args, mod] of kept) {
     t.test(`kept: ${name}`, async t => {

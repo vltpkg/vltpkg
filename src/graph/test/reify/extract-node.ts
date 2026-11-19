@@ -252,7 +252,7 @@ t.test('handle extraction failure for optional node', async t => {
   )
 })
 
-t.test('skip deprecated optional package', async t => {
+t.test('extract deprecated optional package', async t => {
   const node = mockNode({
     id: joinDepIDTuple(['registry', '', 'deprecated@1.2.3']),
     location:
@@ -279,21 +279,16 @@ t.test('skip deprecated optional package', async t => {
     mockDiff,
   )
 
-  t.equal(result.success, false, 'extraction skipped')
-  if (!result.success) {
-    t.match(
-      result.error,
-      /Platform check failed or package deprecated/,
-      'correct error message',
-    )
-  }
-  t.equal(extracted.length, 0, 'no extraction attempted')
-  t.match(
+  // the lockfile does not record deprecation, so an install from it
+  // extracts this node too
+  t.equal(result.success, true, 'extraction succeeded')
+  t.equal(extracted.length, 1, 'extraction attempted')
+  t.notMatch(
     mockDiff.nodes.delete,
     new Set([
       { id: joinDepIDTuple(['registry', '', 'deprecated@1.2.3']) },
     ]),
-    'deprecated node scheduled for deletion',
+    'deprecated node not scheduled for deletion',
   )
 })
 
@@ -328,7 +323,7 @@ t.test('skip incompatible platform for optional package', async t => {
   if (!result.success) {
     t.match(
       result.error,
-      /Platform check failed or package deprecated/,
+      /Platform check failed/,
       'correct error message',
     )
   }
@@ -523,50 +518,6 @@ t.test('extract node without diff object', async t => {
     },
   )
 
-  t.test('skip deprecated optional package without diff', async t => {
-    const mockGraph = {
-      nodes: new Map(),
-      removeNode: () => {},
-    }
-
-    const node = mockNode({
-      id: joinDepIDTuple(['registry', '', 'deprecated@1.2.3']),
-      location:
-        './node_modules/.vlt/' +
-        joinDepIDTuple(['registry', '', 'deprecated@1.2.3']) +
-        '/node_modules/deprecated',
-      name: 'deprecated',
-      manifest: {
-        name: 'deprecated',
-        version: '1.2.3',
-        deprecated: 'do not use this',
-      },
-      edgesIn: new Set(),
-      optional: true,
-      graph: mockGraph,
-    })
-
-    const scurry = new PathScurry(t.testdirName)
-    const result = await extractNode(
-      node,
-      scurry,
-      mockRemover,
-      {},
-      mockPackageInfo,
-      undefined, // No diff provided
-    )
-
-    t.equal(result.success, false, 'extraction skipped')
-    if (!result.success) {
-      t.match(
-        result.error,
-        /Platform check failed or package deprecated/,
-        'correct error message',
-      )
-    }
-    t.equal(extracted.length, 0, 'no extraction attempted')
-  })
-
   t.test(
     'skip incompatible platform for optional package without diff',
     async t => {
@@ -606,7 +557,7 @@ t.test('extract node without diff object', async t => {
       if (!result.success) {
         t.match(
           result.error,
-          /Platform check failed or package deprecated/,
+          /Platform check failed/,
           'correct error message',
         )
       }

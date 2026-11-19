@@ -160,7 +160,7 @@ t.test('deprecated packages with platform data', async t => {
     nodes: {
       delete: new Set<any>([]),
       add: new Set([
-        // deprecated optional package should be filtered regardless of platform
+        // deprecated optional package is installed like any other
         node({
           name: 'deprecated-pkg',
           id: joinDepIDTuple([
@@ -208,16 +208,8 @@ t.test('deprecated packages with platform data', async t => {
   )
   await Promise.all(actions.map(a => a()))
 
-  t.notOk(
-    extracted.find(([spec]) => spec.name === 'deprecated-pkg'),
-    'deprecated package was not extracted',
-  )
   t.ok(
-    [...diff.nodes.delete].some(
-      n =>
-        n.id ===
-        joinDepIDTuple(['registry', '', 'deprecated-pkg@1.0.0']),
-    ),
-    'deprecated package was removed from diff',
+    extracted.find(([spec]) => spec.name === 'deprecated-pkg'),
+    'deprecated package was extracted',
   )
 })
