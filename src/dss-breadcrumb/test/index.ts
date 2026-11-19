@@ -63,6 +63,35 @@ t.test('Breadcrumb', async t => {
       'should throw on chained pseudo selectors during consolidation',
     )
 
+    // a combinator needs an item on both sides
+    t.throws(
+      () => parseBreadcrumb('#mkdirp >'),
+      { message: 'Invalid query', cause: { found: '#mkdirp >' } },
+      'should throw on a trailing combinator',
+    )
+    t.throws(
+      () => parseBreadcrumb('> #minimist'),
+      /Invalid query/,
+      'should throw on a leading combinator',
+    )
+    t.throws(
+      () => parseBreadcrumb('#a > > #b'),
+      /Invalid query/,
+      'should throw on consecutive combinators',
+    )
+    t.throws(
+      () => parseBreadcrumb('#a > /* c */'),
+      /Invalid query/,
+      'should throw on a trailing combinator followed by a comment',
+    )
+    const commentBeforeCombinator = parseBreadcrumb('#a/* c */ > #b')
+    t.strictSame(
+      [...commentBeforeCombinator].map(i => i.value),
+      ['#a', '#b'],
+      'should accept a comment between an item and a combinator',
+    )
+    t.equal(commentBeforeCombinator.comment, 'c')
+
     const semverBreadcrumb = parseBreadcrumb(':semver(1)')
     t.equal(
       semverBreadcrumb.first.value,
