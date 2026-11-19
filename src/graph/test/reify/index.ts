@@ -2447,3 +2447,63 @@ t.test('a moved git pin is re-extracted in place', async t => {
   t.ok(existsSync(resolve(store, 'dep-link')), 'store dir kept')
   t.ok(existsSync(resolve(nm, '.bin/bc')), 'renamed: bin linked')
 })
+
+t.test('a dependency missing from the lockfile fails', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'x',
+      version: '1.0.0',
+      dependencies: { a: '1' },
+    }),
+  })
+  const id = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+  const packageInfo = createMockPackageInfo({
+    async extract(
+      spec: Spec | string,
+      target: string,
+    ): Promise<Resolution> {
+      mkdirSync(target, { recursive: true })
+      writeFileSync(
+        resolve(target, 'package.json'),
+        JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+          dependencies: { b: '1' },
+        }),
+      )
+      return { resolved: 'a.tgz', spec: spec as Spec }
+    },
+  })
+  const opts = {
+    projectRoot: dir,
+    packageInfo,
+    registries,
+    monorepo: Monorepo.maybeLoad(dir),
+    scurry: new PathScurry(dir),
+    packageJson: new PackageJson(),
+    allowScripts: ':not(*)',
+    remover: new RollbackRemove(),
+  }
+  // `a` has no edge for its dependency `b`
+  const graph = loadObject(
+    { ...opts, mainManifest: { name: 'x', version: '1.0.0' } },
+    {
+      lockfileVersion: 1,
+      options: {},
+      nodes: {
+        [id]: [0, 'a', 'sha512-a=='],
+      } as Record<DepID, LockfileNode>,
+      edges: {
+        [`${joinDepIDTuple(['file', '.'])} a`]: `prod 1 ${id}`,
+      } as LockfileEdges,
+    },
+  )
+  await t.rejects(reify({ ...opts, graph }), {
+    message:
+      /depends on b, which is missing from vlt-lock\.json\. Run `vlt update a` to repair it\.$/,
+  })
+  t.notOk(
+    existsSync(resolve(dir, 'vlt-lock.json')),
+    'lockfile not written',
+  )
+})

@@ -1,6 +1,8 @@
+import { error } from '@vltpkg/error-cause'
 import type { PathScurry } from 'path-scurry'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { Diff } from '../diff.ts'
+import type { GraphModifier } from '../modifiers.ts'
 import type { Node } from '../node.ts'
 import type { NormalizedManifest } from '@vltpkg/types'
 import { hasBindingGyp } from './binding-gyp.ts'
@@ -29,6 +31,46 @@ export type CheckNeededBuildOptions = {
    * PackageJson instance for reading manifests from disk
    */
   packageJson: PackageJson
+  /**
+   * Graph modifiers, whose `-` entries remove dependencies on purpose
+   */
+  modifiers?: GraphModifier
+}
+
+/**
+ * Fail when an extracted package lists a dependency that has no edge
+ * in the lockfile, the way `npm ci` refuses a lockfile missing one.
+ */
+const assertDepsLocked = (
+  node: Node,
+  manifest: NormalizedManifest,
+  modifiers?: GraphModifier,
+) => {
+  if (!node.inVltStore()) return
+  // publish normalizes these on the registry only, not in the tarball
+  const { bundleDependencies, bundledDependencies } = manifest as {
+    bundleDependencies?: unknown
+    bundledDependencies?: unknown
+  }
+  const bundled = bundleDependencies ?? bundledDependencies
+  for (const name of Object.keys(manifest.dependencies ?? {})) {
+    if (
+      node.edgesOut.get(name)?.to ||
+      bundled === true ||
+      (Array.isArray(bundled) && bundled.includes(name)) ||
+      manifest.optionalDependencies?.[name] !== undefined ||
+      modifiers?.removesEdge(name)
+    )
+      continue
+    const names =
+      [...new Set([...node.edgesIn].map(e => e.name))].join(' ') ||
+      node.name
+    throw error(
+      `${node} depends on ${name}, which is missing from vlt-lock.json. ` +
+        `Run \`vlt update ${names}\` to repair it.`,
+      { found: node.id },
+    )
+  }
 }
 
 /**
@@ -42,6 +84,7 @@ const nodeNeedsBuild = (
   node: Node,
   scurry: PathScurry,
   packageJson: PackageJson,
+  modifiers?: GraphModifier,
 ): boolean => {
   // If the node has already been built during reify, no need to build again
   if (node.built) return false
@@ -51,16 +94,20 @@ const nodeNeedsBuild = (
   // and there's no actual graph available to hydrate the manifest data from.
   // An abbreviated registry manifest carries `hasInstallScript` in place
   // of `scripts` and is likewise resolved from disk.
+  let pkg: NormalizedManifest
   let manifest: NormalizedManifest
   try {
     const dir = node.resolvedLocation(scurry)
-    node.manifest ??= packageJson.read(dir)
-    manifest = scriptsManifest(node.manifest, dir, packageJson)
+    pkg = node.manifest ??= packageJson.read(dir)
+    manifest = scriptsManifest(pkg, dir, packageJson)
   } catch {
     // If the manifest cannot be read (missing/corrupted), treat as
     // "no build needed" to avoid failing the entire reification.
     return false
   }
+
+  // the edges were built from the node's manifest, not the scripts one
+  assertDepsLocked(node, pkg, modifiers)
 
   const { scripts = {} } = manifest
 
@@ -105,11 +152,11 @@ const nodeNeedsBuild = (
 export const checkNeededBuild = (
   options: CheckNeededBuildOptions,
 ): BuildData => {
-  const { diff, scurry, packageJson } = options
+  const { diff, scurry, packageJson, modifiers } = options
 
   // Filter nodes to only include those that actually need to be built
   const nodesToBuild = [...diff.nodes.add].filter(node =>
-    nodeNeedsBuild(node, scurry, packageJson),
+    nodeNeedsBuild(node, scurry, packageJson, modifiers),
   )
 
   // Set buildState = 'needed' on all nodes that require building

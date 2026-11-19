@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { Diff } from '../../src/diff.ts'
+import type { GraphModifier } from '../../src/modifiers.ts'
 import type { Node } from '../../src/node.ts'
 import {
   carryBuildState,
@@ -29,13 +30,20 @@ const node = (
     manifest?: NormalizedManifest
     bindingGyp?: boolean
     built?: boolean
+    edgesOut?: Map<string, { to?: object }>
+    edgesIn?: Set<{ name: string }>
+    inVltStore?: () => boolean
   } = {},
 ) =>
   ({
     id: `··${name}@1.0.0`,
+    name,
     built: false,
     importer: false,
+    edgesOut: new Map(),
+    edgesIn: new Set(),
     inVltStore: () => true,
+    toString: () => `${name}@1.0.0`,
     resolvedLocation: () => resolve(dir, name),
     ...props,
   }) as unknown as Node
@@ -47,11 +55,16 @@ class NoRead extends PackageJson {
   }
 }
 
-const check = (n: Node, packageJson: PackageJson = new NoRead()) =>
+const check = (
+  n: Node,
+  packageJson: PackageJson = new NoRead(),
+  modifiers?: GraphModifier,
+) =>
   checkNeededBuild({
     diff: { nodes: { add: new Set([n]) } } as unknown as Diff,
     scurry: new PathScurry(dir),
     packageJson,
+    modifiers,
   }).needsBuildNodes.includes(n)
 
 const manifest = { name: 'x', version: '1.0.0' }
@@ -89,6 +102,75 @@ t.test('built, or install script', async t => {
       }),
     ),
     true,
+  )
+})
+
+t.test('dependency missing from the lockfile', async t => {
+  const dep = (
+    extra: Record<string, unknown> = {},
+    props: Parameters<typeof node>[1] = {},
+  ) =>
+    node('plain', {
+      manifest: {
+        ...manifest,
+        dependencies: { b: '1' },
+        ...extra,
+      },
+      bindingGyp: false,
+      ...props,
+    })
+  const message =
+    'plain@1.0.0 depends on b, which is missing from vlt-lock.json.'
+  const removes = (name: string) =>
+    ({
+      removesEdge: (n: string) => n === name,
+    }) as unknown as GraphModifier
+  t.equal(
+    check(dep({}, { edgesOut: new Map([['b', { to: {} }]]) })),
+    false,
+    'locked',
+  )
+  t.throws(
+    () =>
+      check(
+        dep(
+          {},
+          {
+            edgesOut: new Map([['b', {}]]),
+            edgesIn: new Set([
+              { name: 'a' },
+              { name: 'a' },
+              { name: 'alias' },
+            ]),
+          },
+        ),
+      ),
+    {
+      message: `${message} Run \`vlt update a alias\` to repair it.`,
+      cause: { found: '··plain@1.0.0' },
+    },
+    'edge with no target, dependents by edge name',
+  )
+  t.throws(() => check(dep()), {
+    message: `${message} Run \`vlt update plain\` to repair it.`,
+  })
+  t.throws(() => check(dep({ bundleDependencies: ['c'] })), {
+    message,
+  })
+  t.throws(() => check(dep(), undefined, removes('c')), { message })
+  for (const extra of [
+    { bundleDependencies: ['b'] },
+    { bundledDependencies: ['b'] },
+    { bundleDependencies: true },
+    { optionalDependencies: { b: '1' } },
+  ]) {
+    t.equal(check(dep(extra)), false, JSON.stringify(extra))
+  }
+  t.equal(check(dep(), undefined, removes('b')), false, 'modifier')
+  t.equal(
+    check(dep({}, { inVltStore: () => false })),
+    false,
+    'not in the store',
   )
 })
 

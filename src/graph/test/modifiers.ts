@@ -599,6 +599,24 @@ t.test('GraphModifier', async t => {
     }
   })
 
+  await t.test('removesEdge', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #a > #b': '-',
+          '#c': '1.0.0',
+        },
+      }),
+    })
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier({ ...mockSpecOptions })
+    t.equal(modifier.removesEdge('b'), true, 'removed anywhere')
+    t.equal(modifier.removesEdge('c'), false, 'not a removal')
+    t.equal(modifier.removesEdge('d'), false, 'unknown name')
+  })
+
   await t.test('config getter', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({ modifiers: validStringConfig }),
