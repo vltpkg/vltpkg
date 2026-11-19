@@ -96,7 +96,7 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
         )
       }
       if (now - state.lastCheck < interval) return
-      // count the attempt as failed (retry in an hour); success resets it.
+      // count the attempt as failed (retry within an hour); success resets it.
       writeUpdateState(file, {
         ...state,
         lastCheck: now - Math.max(interval - 3_600_000, 0),

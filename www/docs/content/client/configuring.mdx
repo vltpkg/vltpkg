@@ -615,9 +615,9 @@ set multiple times. Each dir must be inside the project, not in
 ### `--update-notifier`
 
 On by default. Checks for newer vlt versions in a detached process, at
-most once every 24 hours. A later command prints a cached update
-notice to stderr after its output. The same notice is shown at most
-once per check interval.
+most once per check interval (24 hours by default). A later command
+prints a cached update notice to stderr after its output. The same
+notice is shown at most once per check interval.
 
 Disable with `--no-update-notifier`,
 `"config": { "update-notifier": false }` in `vlt.json`,
