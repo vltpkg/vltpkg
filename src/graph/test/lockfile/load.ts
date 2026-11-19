@@ -2298,6 +2298,13 @@ t.test('the built-in npm mirror and registries.npm', async t => {
     [],
     'nor is a stored one equal to registries.npm',
   )
+  t.strictSame(
+    diffLockfileOptions(cli({ ...builtins, npm: npmjs }), {
+      registry: npmjs,
+    }),
+    [],
+    'nor is a stored one equal to an unpinned registries.npm',
+  )
   const fromCli = loadObject(cli(builtins), lockfileData(pinned))
   t.equal(
     [...fromCli.edges][0]?.spec.final.registry,

@@ -305,10 +305,17 @@ export const diffLockfileOptions = (
   lockfileOptions: LockfileData['options'] = {},
 ): OptionsChange[] => {
   const current = asRecord(buildCurrentOptions(options))
-  // older lockfiles may record the default alias URL as `registry`
+  // older lockfiles may record the default alias URL as `registry`;
+  // resolve it against the registries the loaded graph uses
   const stored = asRecord({
     ...lockfileOptions,
-    registry: lockfileRegistry(lockfileOptions),
+    registry: lockfileRegistry({
+      ...lockfileOptions,
+      registries: {
+        ...options.registries,
+        ...lockfileOptions.registries,
+      },
+    }),
   })
   const changes: OptionsChange[] = []
   for (const section of unionKeys(stored, current)) {
