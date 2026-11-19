@@ -25,14 +25,19 @@ import type {
   LockfileNode,
 } from '../src/lockfile/types.ts'
 
-let modifiers: Record<string, string> | undefined
+let modifiers: unknown
 const fsReads: string[] = []
 const fs = await import('node:fs')
 const { detachLinks, removeInstallState, startInstallState } =
   await t.mockImport<typeof import('../src/install-state.ts')>(
     '../src/install-state.ts',
     {
-      '@vltpkg/vlt-json': { load: () => modifiers },
+      '@vltpkg/vlt-json': {
+        load: (_: string, validate: (x: unknown) => void) => {
+          if (modifiers !== undefined) validate(modifiers)
+          return modifiers
+        },
+      },
       'node:fs': {
         ...fs,
         readFileSync: (path: string, enc?: BufferEncoding) => {
@@ -562,6 +567,15 @@ t.test('what an install may skip or record', async t => {
     const res = start()
     t.notOk(res.hit)
     t.notOk(res.state)
+  })
+
+  await t.test('invalid modifiers', async t => {
+    const { start } = setup(t)
+    modifiers = { '#a': { version: '2' } }
+    t.throws(() => start(), {
+      message: 'Invalid graph modifier in vlt.json',
+      cause: { code: 'ECONFIG', found: '{"#a":{"version":"2"}}' },
+    })
   })
 
   await t.test('a workspace filter', async t => {

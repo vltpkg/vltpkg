@@ -9,13 +9,19 @@ import {
 } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { trace } from '@vltpkg/output/trace'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { satisfies } from '@vltpkg/satisfies'
 import { parse as parseVersion } from '@vltpkg/semver'
-import { longDependencyTypes, normalizeManifest } from '@vltpkg/types'
+import {
+  isErrorWithCause,
+  isObject,
+  longDependencyTypes,
+  normalizeManifest,
+} from '@vltpkg/types'
 import type { DependencySaveType, Manifest } from '@vltpkg/types'
 import type { PathScurry } from 'path-scurry'
 import { fixupAddedNames } from '../fixup-added-names.ts'
@@ -370,6 +376,31 @@ const hydrateLockedNode = (
 }
 
 /**
+ * Name the graph modifier a failed spec came from, if any.
+ */
+const withModifierHint = (
+  er: unknown,
+  spec: Spec,
+  active?: ModifierActiveEntry,
+): unknown => {
+  const mod = active?.modifier
+  if (
+    !isErrorWithCause(er) ||
+    !isObject(er.cause) ||
+    mod?.type !== 'edge' ||
+    mod.spec !== spec
+  ) {
+    return er
+  }
+  return error(
+    `${er.message}\n${spec} comes from the graph modifier ` +
+      `${JSON.stringify(mod.query)} in vlt.json`,
+    { ...(er.cause as ErrorCauseOptions), cause: er },
+    withModifierHint,
+  )
+}
+
+/**
  * Fetch manifests for dependencies and create placement tasks.
  *
  * This is Phase 1 of the breadth-first graph building process. For each
@@ -641,7 +672,11 @@ const fetchManifestsForDeps = async (
             if (!isExplicit && (edgeOptional || fromNode.optional)) {
               return undefined
             }
-            throw withParentRegistryHint(er, spec, fromNode)
+            throw withModifierHint(
+              withParentRegistryHint(er, spec, fromNode),
+              spec,
+              activeModifier,
+            )
           })
 
     // awaited below; a throw before that must not leave it unhandled
