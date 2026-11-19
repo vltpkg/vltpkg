@@ -635,19 +635,32 @@ most once per check interval (24 hours by default). A later command
 prints a cached update notice to stderr after its output. The same
 notice is shown at most once per check interval.
 
+<Code
+  code={`Update available: vlt 1.8.0 -> 1.8.1
+vlt install -g vlt@1.8.1`}
+  title="Terminal"
+  lang="text"
+/>
+
+The second line is the command that updates vlt to that version, see
+[Updating vlt](/client/commands/install#updating-vlt).
+
 Disable with `--no-update-notifier`,
 `"config": { "update-notifier": false }` in `vlt.json`,
 `VLT_UPDATE_NOTIFIER=0`, or any non-empty `VLT_NO_UPDATE_NOTIFIER` or
 `NO_UPDATE_NOTIFIER` value (including `0`). `VLT_UPDATE_NOTIFIER=1`
 turns it on; any other value, including `true`, turns it off.
 
-Checks are skipped in CI, with non-TTY stderr, with any view other
-than `human`, while `vlt install -g vlt` updates vlt, for commands run
-from a package script, for a vlt installed in a project's
+Checks and notices are skipped in CI, with non-TTY stderr, with any
+view other than `human` (the default view is `json` when stdout is
+piped or redirected), while `vlt install -g vlt` updates vlt, for
+commands run from a package script, for a vlt installed in a project's
 `node_modules`, and for development builds and ephemeral installs
-through `vlx` or `npx`. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
-`npm_config_offline=true` also suppress checks. This does not put
-other vlt commands into an offline mode.
+through `vlx` or `npx`. They are also skipped for `--help`,
+`--version`, failing commands, `vlt ci`, and `vlt exec` (`vlx`),
+whatever it runs. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
+`npm_config_offline=true` also suppress them. This does not put other
+vlt commands into an offline mode.
 
 The check asks vlt's [public npm mirror](/registry/public-mirror),
 `https://registry.vlt.io/upstream/npm/`, whatever registry is
