@@ -16,6 +16,8 @@ import {
   resolveWSConfig,
 } from '@vltpkg/workspaces'
 import type { WorkspaceConfigSource } from '@vltpkg/workspaces'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { LoadedConfig } from './config/index.ts'
 import { stderr } from './output.ts'
 
@@ -222,4 +224,29 @@ export const warnIgnoredWorkspaces = (conf: LoadedConfig): void => {
   stderr(
     `Warning: vlt ci reads workspaces from vlt.json only; ignoring ${migrated.source}, its workspaces are not installed. Run \`vlt install\` to save them to vlt.json, or add them there.`,
   )
+}
+
+/**
+ * Warn about `modifiers` in a workspace's `vlt.json`, which only the
+ * root `vlt.json` can set.
+ */
+export const warnWorkspaceModifiers = (conf: LoadedConfig): void => {
+  const { loglevel } = conf.values
+  if (loglevel === 'silent' || loglevel === 'error') return
+  for (const ws of conf.options.monorepo?.values() ?? []) {
+    let data: unknown
+    try {
+      data = JSON.parse(
+        readFileSync(resolve(ws.fullpath, 'vlt.json'), 'utf8'),
+      )
+    } catch {
+      // no vlt.json, or one that cannot be parsed
+      continue
+    }
+    if (data && typeof data === 'object' && 'modifiers' in data) {
+      stderr(
+        `Warning: modifiers in ${ws.path}/vlt.json have no effect; move them to the root vlt.json.`,
+      )
+    }
+  }
 }

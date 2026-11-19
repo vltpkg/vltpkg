@@ -35,7 +35,7 @@ CLI args → project `vlt.json` → user `vlt.json` (XDG config dir) → default
 **Types**: `WhichConfig = 'user' | 'project'`, `Validator<T> = (x: unknown, file: string) => asserts x is T`
 
 **Functions:**
-- `find(which?, cwd?)` — walks up from cwd looking for `vlt.json`; user config from XDG
+- `find(which?, cwd?)` — walks up from cwd looking for `vlt.json`, skipping one whose folder the next `vlt.json` up lists in `workspaces`; user config from XDG
 - `load<T>(field, validator, which?)` — reads field, validates, caches
 - `save(field, value, which?)` — writes field, checks mtime for concurrent modifications
 - `unload(which?)` — clears all caches (`datas`, `mtimes`, `paths`, `lstatCache`)

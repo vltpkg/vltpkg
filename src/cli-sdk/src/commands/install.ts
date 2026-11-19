@@ -26,6 +26,7 @@ import {
   addWorkspaceSpecs,
   findWorkspaceSpecs,
   migrateWorkspaces,
+  warnWorkspaceModifiers,
 } from '../migrate-workspaces.ts'
 import type {
   MigratedSpec,
@@ -313,6 +314,7 @@ export const command: CommandFn<
   // saved by the install itself
   const workspaceSpecs =
     conf.globalRoot ? [] : findWorkspaceSpecs(conf)
+  if (!conf.globalRoot) warnWorkspaceModifiers(conf)
   const installStart = Date.now()
   const { buildQueue, graph, diff, skills, specs, upToDate } =
     await runInstall(
