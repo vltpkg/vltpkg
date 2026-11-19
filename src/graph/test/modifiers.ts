@@ -4,7 +4,7 @@ import { GraphModifier } from '../src/modifiers.ts'
 import type { ModifierActiveEntry } from '../src/modifiers.ts'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import { reload } from '@vltpkg/vlt-json'
+import { reload, unload } from '@vltpkg/vlt-json'
 import type { Node } from '../src/node.ts'
 import { Edge } from '../src/edge.ts'
 import type {
@@ -1371,6 +1371,69 @@ t.test('GraphModifier', async t => {
     t.same(modifier.config, modifiers, 'recorded as written')
   })
 
+  await t.test('invalid entries name their key', async t => {
+    const cases: [string, unknown, string, string][] = [
+      ['key', { '#a #b': '1' }, '"#a #b"', 'Invalid query'],
+      ['empty key', { '': '1' }, '""', 'Failed to parse query'],
+      [
+        'pseudo',
+        { ':not(#b)': '1' },
+        '":not(#b)"',
+        'Invalid pseudo selector',
+      ],
+      [
+        'value',
+        { '#b': 'foo:bar@1' },
+        '{"#b":"foo:bar@1"}',
+        'Protocol foo: is not defined',
+      ],
+      [
+        'record',
+        { '#b': { version: '1' } },
+        '{"#b":{"version":"1"}}',
+        'Invalid record',
+      ],
+      ['array', ['#b'], '["#b"]', 'Invalid record'],
+    ]
+    for (const [name, modifiers, found, message] of cases) {
+      await t.test(name, async t => {
+        t.chdir(
+          t.testdir({ 'vlt.json': JSON.stringify({ modifiers }) }),
+        )
+        unload('project')
+        const wanted = {
+          message: 'Invalid graph modifier in vlt.json',
+          cause: {
+            code: 'ECONFIG',
+            found,
+            wanted: String,
+            cause: { message },
+          },
+        }
+        t.throws(
+          () => new GraphModifier({ ...mockSpecOptions }),
+          wanted,
+        )
+        t.throws(
+          () => GraphModifier.maybeLoad(mockSpecOptions),
+          wanted,
+        )
+      })
+    }
+    await t.test('workspace value', async t => {
+      const modifiers = { ':project > :workspace': 'foo:bar@1' }
+      t.chdir(
+        t.testdir({ 'vlt.json': JSON.stringify({ modifiers }) }),
+      )
+      unload('project')
+      const modifier = new GraphModifier({ ...mockSpecOptions })
+      t.throws(() => modifier.expandWorkspaceNames(['a']), {
+        message: 'Invalid graph modifier in vlt.json',
+        cause: { code: 'ECONFIG', found: JSON.stringify(modifiers) },
+      })
+    })
+  })
+
   await t.test('workspaces modifiers', async t => {
     const testdir = t.testdir({
       'vlt.json': JSON.stringify({
@@ -1954,8 +2017,8 @@ t.test('trailing :workspace', async t => {
         )
         reload('modifiers', 'project')
         t.throws(() => new GraphModifier({ ...mockSpecOptions }), {
-          message: 'Invalid modifier selector',
-          cause: { found: key },
+          message: 'Invalid graph modifier in vlt.json',
+          cause: { code: 'ECONFIG', found: JSON.stringify(key) },
         })
       })
     }

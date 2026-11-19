@@ -28,7 +28,7 @@ Overrides/resolutions and package extensions via DSS selectors in `vlt.json`.
 
 Importer selectors: `:root` (main), `:workspace` (any workspace), `:project` (any importer)
 
-Trailing `<importer> > :workspace` (e.g. `":project > :workspace": "workspace:*"`) expands lazily, per graph, into one `<importer> > #<name>` entry per named workspace. Other nameless last items throw `Invalid modifier selector`.
+Trailing `<importer> > :workspace` (e.g. `":project > :workspace": "workspace:*"`) expands lazily, per graph, into one `<importer> > #<name>` entry per named workspace. Other nameless last items, and keys or values that fail to parse, throw `ECONFIG` `Invalid graph modifier in vlt.json` (`found` = the key, or the entry for a bad value, as JSON).
 
 ## Key Modules
 

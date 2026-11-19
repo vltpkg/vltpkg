@@ -58,7 +58,7 @@ if (existingEdge?.to && !existingEdge.to.detached && satisfiesFinal(existingEdge
 
 `graph.unlockedEdges` (`vlt update <pkg>`): a detached candidate for a listed `baseDepID(from)\0name` is dropped → fresh fetch.
 
-Child specs parse with `options` as given (no parent registry, see `registries-and-auth.mdc`). A rejected manifest fetch goes through `withParentRegistryHint()` (`ideal/parent-registry-hint.ts`) before it is rethrown.
+Child specs parse with `options` as given (no parent registry, see `registries-and-auth.mdc`). A rejected manifest fetch goes through `withParentRegistryHint()` (`ideal/parent-registry-hint.ts`), then `withModifierHint()`, which names the modifier key when the spec came from one, before it is rethrown.
 
 ## Locked Version Hydration (no `node_modules`)
 

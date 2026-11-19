@@ -7,6 +7,7 @@ import { Spec } from '@vltpkg/spec'
 import {
   asNormalizedManifest,
   assertRecordStringString,
+  isObject,
   normalizeManifest,
 } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
@@ -142,6 +143,60 @@ const isComplete = (active: ModifierActiveEntry): boolean =>
   active.interactiveBreadcrumb.current ===
   active.modifier.breadcrumb.last
 
+const KEY_WANTED =
+  '#<name>, :root, :project, :workspace, :semver() or :v() selectors joined by >, e.g. "#express > #qs"'
+const VALUE_WANTED =
+  'a version, range, dist-tag or spec, e.g. "6.10.0" or "npm:qs@6", or "-"'
+
+/**
+ * An entry of `modifiers` in vlt.json that cannot be used. `found` is
+ * JSON, so that an empty key still shows.
+ */
+const modifierError = (
+  found: string,
+  wanted: string,
+  cause?: unknown,
+) =>
+  error('Invalid graph modifier in vlt.json', {
+    code: 'ECONFIG',
+    found,
+    wanted,
+    cause,
+  })
+
+const orThrow = <T>(
+  fn: () => T,
+  found: string,
+  wanted: string,
+): T => {
+  try {
+    return fn()
+  } catch (cause) {
+    throw modifierError(found, wanted, cause)
+  }
+}
+
+/**
+ * Validates the `modifiers` field of vlt.json.
+ */
+export const assertModifiers: (
+  x: unknown,
+) => asserts x is GraphModifierConfigObject = x => {
+  try {
+    assertRecordStringString(x)
+  } catch (cause) {
+    const entry =
+      isObject(x) ?
+        Object.entries(x).find(([, v]) => typeof v !== 'string')
+      : undefined
+    throw modifierError(
+      JSON.stringify(entry ? { [entry[0]]: entry[1] } : x),
+      'an object with string values, e.g. {"#qs":"6.10.0"}',
+      cause,
+    )
+  }
+}
+
 /**
  * Class representing loaded modifiers configuration for a project.
  *
@@ -235,8 +290,7 @@ export class GraphModifier {
    */
   get config(): GraphModifierConfigObject {
     if (this.#config) return this.#config
-    return (this.#config =
-      load('modifiers', assertRecordStringString) ?? {})
+    return (this.#config = load('modifiers', assertModifiers) ?? {})
   }
 
   /**
@@ -329,19 +383,23 @@ export class GraphModifier {
       // an empty value is no modifier, same as an empty npm override
       if (value === '') continue
       this.modifierNames.add(key)
-      const breadcrumb = parseBreadcrumb(key)
-      if (!breadcrumb.last.name) {
+      const breadcrumb = orThrow(
+        () => parseBreadcrumb(key),
+        JSON.stringify(key),
+        KEY_WANTED,
+      )
+      const name = breadcrumb.last.name
+      if (!name) {
         // `<importer> > :workspace` names no package up front, it is
         // expanded into one entry per workspace once a graph is known
         if (isWorkspaceTarget(breadcrumb.last)) {
           this.#workspaceTargets.push({ query: key, value })
           continue
         }
-        throw error('Invalid modifier selector', {
-          found: key,
-          wanted:
-            'a selector ending in #<name>, or :root, :project or :workspace followed by > :workspace',
-        })
+        throw modifierError(
+          JSON.stringify(key),
+          'a selector ending in #<name>, or :root, :project or :workspace followed by > :workspace',
+        )
       }
       let mod: ModifierEntry
       if (typeof value === 'string') {
@@ -349,7 +407,11 @@ export class GraphModifier {
           breadcrumb,
           query: key,
           refs: new Set(),
-          spec: Spec.parse(breadcrumb.last.name, value, options),
+          spec: orThrow(
+            () => Spec.parse(name, value, options),
+            JSON.stringify({ [key]: value }),
+            VALUE_WANTED,
+          ),
           type: 'edge',
           value,
         } satisfies EdgeModifierEntry
@@ -427,7 +489,11 @@ export class GraphModifier {
         breadcrumb,
         query,
         refs: new Set(),
-        spec: Spec.parse(name, value, this.#options),
+        spec: orThrow(
+          () => Spec.parse(name, value, this.#options),
+          JSON.stringify({ [query]: value }),
+          VALUE_WANTED,
+        ),
         type: 'edge',
         value,
       }
@@ -669,7 +735,7 @@ export class GraphModifier {
    * otherwise returns the loaded Modifiers instance.
    */
   static maybeLoad(options: SpecOptions) {
-    const config = load('modifiers', assertRecordStringString)
+    const config = load('modifiers', assertModifiers)
     if (!config) return
     return new GraphModifier(options)
   }

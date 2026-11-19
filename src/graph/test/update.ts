@@ -61,6 +61,7 @@ t.test('update', async t => {
       },
     },
     '../src/modifiers.ts': {
+      assertModifiers: () => {},
       GraphModifier: {
         maybeLoad() {
           log += 'GraphModifier.maybeLoad\n'

@@ -9,10 +9,7 @@ import {
 import { join, resolve } from 'node:path'
 import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
-import {
-  assertRecordStringString,
-  longDependencyTypes,
-} from '@vltpkg/types'
+import { longDependencyTypes } from '@vltpkg/types'
 import type { DependencyTypeLong } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type { Monorepo } from '@vltpkg/workspaces'
@@ -24,6 +21,7 @@ import { gitPinned } from './git-pin.ts'
 import type { Graph } from './graph.ts'
 import type { Node } from './node.ts'
 import { registrySpecVersion } from './lockfile/load-nodes.ts'
+import { assertModifiers } from './modifiers.ts'
 import {
   BuildStateNeeded,
   getBooleanFlagsFromNum,
@@ -330,7 +328,7 @@ export const startInstallState = (
     !options.lockfileOnly &&
     !options.allowSkills &&
     (monorepo?.size ?? 0) === (fullMonorepo?.size ?? 0) &&
-    !load('modifiers', assertRecordStringString)
+    !load('modifiers', assertModifiers)
   const gate =
     record &&
     !options.cleanInstall &&
