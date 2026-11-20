@@ -81,6 +81,14 @@ t.test(
   },
 )
 
+t.test('a defaulted registry still prints', async t => {
+  const { run, messages, mirrorNotice } = await setup(t, {
+    registry: mirror,
+  })
+  run()
+  t.strictSame(messages, [mirrorNotice])
+})
+
 t.test('no notice', async t => {
   const cases: [string, Setup, (string | URL)[]?][] = [
     [
@@ -94,7 +102,7 @@ t.test('no notice', async t => {
     ['CI', { ci: true }],
     [
       'a scalar registry',
-      { registry: 'https://registry.npmjs.org/' },
+      { values: { registry: 'https://registry.npmjs.org/' } },
     ],
     [
       'a user registries.npm, even the mirror',

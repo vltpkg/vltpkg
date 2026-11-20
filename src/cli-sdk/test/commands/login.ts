@@ -19,10 +19,14 @@ t.matchSnapshot(usage().usageMarkdown())
 const makeConf = (
   config: string,
   added: [string, Record<string, unknown>][],
+  userSet = true,
 ) =>
   ({
     options: { registry: 'registry' },
-    get: (k: string) => (k === 'config' ? config : undefined),
+    get: (k: string) =>
+      k === 'config' ? config
+      : k === 'registry' && userSet ? 'registry'
+      : undefined,
     addConfigToFile: async (
       which: string,
       values: Record<string, unknown>,
@@ -53,7 +57,12 @@ t.test('--config=user writes the user config', async t => {
 })
 
 t.test('throws when no registry is configured', async t => {
-  await t.rejects(command({ options: {} } as LoadedConfig), {
+  loginCalled = ''
+  const added: [string, Record<string, unknown>][] = []
+  // options.registry is only the default npm alias URL
+  await t.rejects(command(makeConf('all', added, false)), {
     cause: { code: 'ECONFIG' },
   })
+  t.equal(loginCalled, '', 'did not log in')
+  t.strictSame(added, [], 'wrote nothing')
 })

@@ -335,6 +335,7 @@ t.test('outputCommand', async t => {
         await outputCommand(registryCommand, {
           explicit: {},
           values: { view: 'json' },
+          get: () => undefined,
           options: {
             'default-registry-alias': 'npm',
             registries: builtins,
@@ -359,6 +360,7 @@ t.test('outputCommand', async t => {
       await outputCommand(readCommand, {
         explicit: {},
         values: { view: 'json' },
+        get: () => undefined,
         options: {
           'default-registry-alias': 'npm',
           registries: builtins,
@@ -372,6 +374,10 @@ t.test('outputCommand', async t => {
       await outputCommand(readCommand, {
         explicit: {},
         values: { view: 'json' },
+        get: (k: string) =>
+          k === 'registry' ?
+            'https://registry.npmjs.org/'
+          : undefined,
         options: {
           registry: 'https://registry.npmjs.org/',
           'default-registry-alias': 'nope',
@@ -394,6 +400,7 @@ t.test('outputCommand', async t => {
         await outputCommand(readCommand, {
           explicit: {},
           values: { view: 'json' },
+          get: () => undefined,
           options: {
             'default-registry-alias': 'nope',
             registries: builtins,
@@ -425,6 +432,10 @@ t.test('outputCommand', async t => {
       await outputCommand(registryCommand, {
         explicit: {},
         values: { view: 'json' },
+        get: (k: string) =>
+          k === 'registry' ?
+            'https://registry.npmjs.org/'
+          : undefined,
         options: { registry: 'https://registry.npmjs.org/' },
       } as LoadedConfig)
       t.strictSame(logs(), [['true']])
@@ -437,6 +448,7 @@ t.test('outputCommand', async t => {
         await outputCommand(registryCommand, {
           explicit: {},
           values: { view: 'json' },
+          get: () => undefined,
           options: {
             'default-registry-alias': 'npm',
             registries: { npm: 'https://registry.npmjs.org/' },
@@ -455,6 +467,7 @@ t.test('outputCommand', async t => {
         await outputCommand(registryCommand, {
           explicit: {},
           values: { view: 'json' },
+          get: () => undefined,
           options: {
             'default-registry-alias': 'npm',
             registries: { main: 'https://example.com/' },
@@ -478,6 +491,7 @@ t.test('outputCommand', async t => {
       const conf = {
         explicit: {},
         values: { view: 'json' },
+        get: () => undefined,
         options: {
           'default-registry-alias': 'npm',
           registries: builtins,
@@ -509,6 +523,7 @@ t.test('outputCommand', async t => {
       await outputCommand(registryCommand, {
         explicit: {},
         values: { view: 'json' },
+        get: () => undefined,
         options: {
           registries: { gh: 'https://custom.example.com/' },
         },

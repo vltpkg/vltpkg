@@ -452,6 +452,46 @@ t.test('keeps registries.npm unpinned as it was loaded', async t => {
   )
 })
 
+t.test('does not record a defaulted registry', async t => {
+  const mirror = 'https://registry.vlt.io/upstream/npm/'
+  // the CLI defaults `registry` to the npm alias URL
+  const specOptions = {
+    registry: mirror,
+    registries: { gh: 'https://npm.pkg.github.com/', npm: mirror },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: '^1.0.0' },
+    },
+  })
+  graph
+    .placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('foo', '^1.0.0', specOptions),
+      {
+        name: 'foo',
+        version: '1.0.0',
+        dist: { tarball: `${mirror}foo/-/foo-1.0.0.tgz` },
+      },
+    )
+    ?.setResolved()
+  const { options, nodes } = lockfileData({ ...specOptions, graph })
+  t.strictSame(options, {}, 'no registry option')
+  t.equal(
+    nodes[joinDepIDTuple(['registry', 'npm', 'foo@1.0.0'])]?.[3],
+    `${mirror}foo/-/foo-1.0.0.tgz`,
+    'resolved is kept',
+  )
+})
+
 t.test('persists a non-default default-registry-alias', async t => {
   const mainManifest = {
     name: 'my-project',
@@ -1383,8 +1423,10 @@ t.test('brotli round trip', async t => {
   t.chdir(projectRoot)
   unload('project')
 
+  // a registry the lockfile records, so resolved urls on it are elided
+  const opts = { registry: 'https://registry.npmjs.org/' }
   const graph = new Graph({
-    ...configData,
+    ...opts,
     projectRoot,
     mainManifest,
   })
@@ -1394,7 +1436,7 @@ t.test('brotli round trip', async t => {
   const foo = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('foo@^1.0.0'),
+    Spec.parse('foo@^1.0.0', opts),
     { name: 'foo', version: '1.0.0' },
   )
   if (!foo) throw new Error('Missing foo package')
@@ -1404,13 +1446,13 @@ t.test('brotli round trip', async t => {
   const bar = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('bar@^1.0.0'),
+    Spec.parse('bar@^1.0.0', opts),
     { name: 'bar', version: '1.0.0' },
   )
   if (!bar) throw new Error('Missing bar package')
   bar.setResolved()
 
-  save({ ...configData, graph })
+  save({ ...opts, graph })
   const nodes = (
     JSON.parse(
       readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
@@ -1428,7 +1470,7 @@ t.test('brotli round trip', async t => {
   )
 
   // and back: the url is rebuilt from the bit alone
-  const loaded = load({ ...configData, projectRoot, mainManifest })
+  const loaded = load({ ...opts, projectRoot, mainManifest })
   const fooOut = [...loaded.nodes.values()].find(
     n => n.name === 'foo',
   )

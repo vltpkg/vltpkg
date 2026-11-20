@@ -85,7 +85,7 @@ Spec {
       "gh": "https://npm.pkg.github.com/",
       "npm": "https://registry.npmjs.org/",
     },
-    "registry": "https://registry.npmjs.org/",
+    "registry": undefined,
     "scoped-registries": Object {
       "@jsr": "https://npm.jsr.io/",
     },
@@ -168,7 +168,7 @@ Spec {
       "gh": "https://npm.pkg.github.com/",
       "npm": "https://registry.npmjs.org/",
     },
-    "registry": "https://registry.npmjs.org/",
+    "registry": undefined,
     "scoped-registries": Object {
       "@jsr": "https://npm.jsr.io/",
       "@myscope": "http://example.com",

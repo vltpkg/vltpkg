@@ -38,7 +38,7 @@ export const usage: CommandUsage = () =>
   })
 
 export const command: CommandFn<void> = async conf => {
-  const { registry } = conf.options
+  const registry = conf.get('registry')
   // login is exempt from the needsRegistry pre-check, since it is the
   // guided way out of it -- but it still needs a target.
   if (!registry) throw missingRegistryError()

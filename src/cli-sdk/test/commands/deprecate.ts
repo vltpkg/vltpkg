@@ -81,12 +81,17 @@ const Command = await t.mockImport<
 
 t.matchSnapshot(Command.usage().usageMarkdown())
 
+// the registry the user configured
+const get = (k: string) =>
+  k === 'registry' ? 'https://registry.npmjs.org/' : undefined
+
 const makeConfig = (positionals: string[]): LoadedConfig =>
   ({
     options: {
       registry: 'https://registry.npmjs.org/',
       otp: undefined,
     },
+    get,
     positionals,
   }) as unknown as LoadedConfig
 
@@ -319,6 +324,7 @@ t.test('otp is passed through', async t => {
       registry: 'https://registry.npmjs.org/',
       otp: '123456',
     },
+    get,
     positionals: ['my-package', 'deprecated'],
   } as unknown as LoadedConfig)
   t.equal(result.name, 'my-package')

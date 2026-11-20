@@ -26,7 +26,7 @@ export const watchMirrorNotice = (
     isCI() ||
     conf.values.view !== 'human' ||
     conf.values.help ||
-    conf.options.registry ||
+    conf.values.registry ||
     conf.getRecord('registries').npm !== undefined ||
     conf.options.registries.npm !== defaultRegistries.npm
   ) {

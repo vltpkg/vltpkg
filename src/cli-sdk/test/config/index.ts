@@ -1473,7 +1473,12 @@ t.test('config layers', async t => {
     'no registry config: the built-in npm mirror',
     async t => {
       const { conf } = await layered(t, {}, {})
-      t.equal(conf.options.registry, undefined)
+      t.equal(
+        conf.options.registry,
+        'https://registry.vlt.io/upstream/npm/',
+        'registry defaults to the npm alias',
+      )
+      t.equal(conf.get('registry'), undefined, 'but is not set')
       t.equal(
         conf.options.registries.npm,
         'https://registry.vlt.io/upstream/npm/',
@@ -1483,6 +1488,7 @@ t.test('config layers', async t => {
         hasConfiguredRegistry,
         hasNpmRegistry,
         hasReadableRegistry,
+        resolveRegistry,
       } = await t.mockImport<
         typeof import('../../src/require-registry.ts')
       >('../../src/require-registry.ts')
@@ -1492,6 +1498,11 @@ t.test('config layers', async t => {
         hasConfiguredRegistry(conf),
         false,
         'write/auth commands still need a registry',
+      )
+      await t.rejects(
+        resolveRegistry(conf, { interactive: false }),
+        { cause: { code: 'ECONFIG' } },
+        'publish does not target the mirror',
       )
     },
   )
@@ -1504,7 +1515,12 @@ t.test('config layers', async t => {
         { registry: 'https://user/' },
         { registries: { npm: 'https://project/' } },
       )
-      t.equal(conf.options.registry, undefined)
+      t.equal(conf.get('registry'), undefined)
+      t.equal(
+        conf.options.registry,
+        'https://project/',
+        'registry follows registries.npm',
+      )
       const { requireRegistry } = await t.mockImport<
         typeof import('../../src/require-registry.ts')
       >('../../src/require-registry.ts')
@@ -1524,6 +1540,7 @@ t.test('config layers', async t => {
         { registries: { npm: 'https://project/' } },
       )
       t.equal(conf.options['default-registry-alias'], 'npm')
+      t.equal(conf.options.registry, 'https://project/')
       const { hasNpmRegistry } = await t.mockImport<
         typeof import('../../src/require-registry.ts')
       >('../../src/require-registry.ts')
@@ -1539,6 +1556,19 @@ t.test('config layers', async t => {
       )
     },
   )
+
+  await t.test('registry follows default-registry-alias', async t => {
+    const { conf } = await layered(
+      t,
+      {},
+      {
+        'default-registry-alias': 'main',
+        registries: { main: 'https://main/' },
+      },
+    )
+    t.equal(conf.options.registry, 'https://main/')
+    t.equal(conf.get('registry'), undefined)
+  })
 
   await t.test(
     'a project alias adds to the user aliases',
@@ -1568,7 +1598,7 @@ t.test('config layers', async t => {
       { registry: 'https://user/', tag: 'beta' },
       { registry: null },
     )
-    t.equal(conf.options.registry, undefined)
+    t.equal(conf.get('registry'), undefined)
     t.equal(conf.get('tag'), 'beta', 'unrelated fields are untouched')
   })
 
@@ -1622,7 +1652,7 @@ t.test('config layers', async t => {
     await conf.addConfigToFile('user', { tag: 'beta' })
     await conf.deleteConfigKeys('user', ['tag'])
     t.equal(
-      conf.options.registry,
+      conf.get('registry'),
       undefined,
       'the user layer did not get stacked back on top',
     )

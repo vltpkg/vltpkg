@@ -219,8 +219,7 @@ export const definition = j
                     For example, \`express@latest\` will be resolved by looking
                     up the metadata from this registry.
 
-                    There is **no default**. When unset, bare specifiers
-                    resolve through the registry alias named by
+                    Defaults to the URL of the registry alias named by
                     \`--default-registry-alias\` (\`npm\` by default: vlt's
                     public, read-only npm mirror,
                     \`https://registry.vlt.io/upstream/npm/\`, unless

@@ -75,6 +75,8 @@ const makeConfig = (
     },
     get: (key: string) => {
       if (key === 'access') return overrides.access
+      if (key === 'registry')
+        return overrides.registry ?? 'https://registry.npmjs.org/'
       return undefined
     },
   }) as unknown as LoadedConfig

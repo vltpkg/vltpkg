@@ -1,5 +1,9 @@
 import type { DepID } from '@vltpkg/dep-id'
-import { defaultScopeRegistries } from '@vltpkg/spec'
+import {
+  defaultRegistries,
+  defaultRegistryName,
+  defaultScopeRegistries,
+} from '@vltpkg/spec'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type {
   Integrity,
@@ -76,6 +80,23 @@ export const scopeRegistryDefaults = (
   ...defaultScopeRegistries,
   ...(jsrRegistries?.jsr ? { '@jsr': jsrRegistries.jsr } : {}),
 })
+
+/**
+ * The `registry` a lockfile records: none when it is the URL of the
+ * default registry alias, which is what `registry` defaults to.
+ */
+export const lockfileRegistry = ({
+  registry,
+  registries,
+  'default-registry-alias': alias = defaultRegistryName,
+}: SpecOptions): string | undefined =>
+  (
+    registry ===
+    (registries?.[alias] ??
+      (defaultRegistries as Record<string, string>)[alias])
+  ) ?
+    undefined
+  : registry
 
 export const getFlagNumFromNode = (node: {
   optional?: boolean

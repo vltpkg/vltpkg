@@ -28,6 +28,10 @@ const Command = await t.mockImport<
 
 t.matchSnapshot(Command.usage().usageMarkdown())
 
+// the registry the user configured
+const get = (k: string) =>
+  k === 'registry' ? 'https://registry.npmjs.org/' : undefined
+
 const config = {
   options: {
     registry: 'https://registry.npmjs.org/',
@@ -37,12 +41,14 @@ const config = {
       acme: 'https://registry.acme.internal/',
     },
   },
+  get,
   positionals: [],
 } as unknown as LoadedConfig
 
 const makeConfig = (positionals: string[]): LoadedConfig =>
   ({
     options: config.options,
+    get,
     positionals,
   }) as unknown as LoadedConfig
 
@@ -101,6 +107,7 @@ t.test(
           main: 'https://registry.example.com/',
         },
       },
+      get: () => undefined,
       positionals: [],
     } as unknown as LoadedConfig)
     t.ok(Array.isArray(result), 'result should be an array')

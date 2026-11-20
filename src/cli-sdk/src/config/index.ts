@@ -381,6 +381,9 @@ export class Config {
         options as unknown as SpecOptions,
       ) as unknown as SpecOptions,
     )
+    // like npm, default `registry` to the URL bare specs resolve through
+    options.registry ??=
+      options.registries[options['default-registry-alias']]
 
     this.#options = Object.assign(options, {
       packageInfo: new PackageInfoClient(options),

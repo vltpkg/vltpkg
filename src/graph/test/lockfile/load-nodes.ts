@@ -1163,7 +1163,8 @@ t.test(
       4,
       'saved with the brotli bit',
     )
-    t.strictSame(nodes[id('beta')], [4, 'beta'], 'saved as locked')
+    t.equal(nodes[id('beta')]![0], 4, 'saved as locked')
+    t.equal(nodes[id('beta')]![2], undefined, 'without a hash')
     t.equal(nodes[id('gamma')]![0] & 4, 0, 'saved without it')
     t.equal(nodes[id('gamma')]![2], undefined, 'and no hash')
     t.equal(nodes[id('delta')]![0] & 4, 4)

@@ -1129,7 +1129,7 @@ t.test(
       lockOnly.calls.sort(),
       [
         'cfoo@custom:foo@1.0.0',
-        'foo@1.0.0',
+        'foo@npm:foo@1.0.0',
         'newpkg@^1.0.0',
         'react@18.0.0',
         'ui@1.0.0',

@@ -30,7 +30,9 @@ const config = {
   options: {
     registry: 'https://registry',
   },
-} as LoadedConfig
+  get: (k: string) =>
+    k === 'registry' ? 'https://registry' : undefined,
+} as unknown as LoadedConfig
 
 t.strictSame(await Command.command(config), { username: 'username' })
 
@@ -45,6 +47,7 @@ t.test('the built-in npm mirror is not a whoami target', async t => {
           npm: 'https://registry.vlt.io/upstream/npm/',
         },
       },
+      get: () => undefined,
     } as unknown as LoadedConfig),
     {
       message: /^Missing registry configuration/,
