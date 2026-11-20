@@ -33,6 +33,8 @@ type LockfileData = {
 
 Flags: 0=prod, 1=optional, 2=dev, 3=devOptional
 
+`file` nodes store no location. On load a directory is linked in place (location = its path); a path that is a regular file, a `file:` tarball, gets the store location so reify extracts it (`loadObject()`, not `load-nodes.ts`, which the browser build shares).
+
 Options stored: `modifiers`, `catalog`, `catalogs`, `scoped-registries`, `jsr-registries`, `registry`, `registries`, `git-hosts`, `git-host-archives`
 
 Defaults are never stored or diffed: a `scoped-registries['@jsr']` equal to the effective `jsr-registries.jsr` (what spec `getOptions()` derives) is one (`scopeRegistryDefaults()` in `lockfile/types.ts`, used by `save.ts`, `buildCurrentOptions()` and the stored side of `diffLockfileOptions()`).
