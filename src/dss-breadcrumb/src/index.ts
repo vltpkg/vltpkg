@@ -180,6 +180,15 @@ export class Breadcrumb implements ModifierBreadcrumb {
     this.specificity = { idCounter: 0, commonCounter: 0 }
     const ast = parse(query, { loose: true })
 
+    if (ast.nodes.length > 1) {
+      throw error(
+        'Selector lists are not supported in graph modifiers',
+        {
+          found: query,
+        },
+      )
+    }
+
     // Track whether we encountered a combinator since the last item
     let afterCombinator = true
 

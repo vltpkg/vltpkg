@@ -38,6 +38,16 @@ t.test('Breadcrumb', async t => {
     )
 
     t.throws(
+      () => parseBreadcrumb('#a > #b, #c > #d'),
+      {
+        message:
+          'Selector lists are not supported in graph modifiers',
+        cause: { found: '#a > #b, #c > #d' },
+      },
+      'should throw on a selector list',
+    )
+
+    t.throws(
       () => parseBreadcrumb(':root:prod'),
       /Invalid pseudo selector/,
       'should throw on chained pseudo selectors',
