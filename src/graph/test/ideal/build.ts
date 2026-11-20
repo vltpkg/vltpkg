@@ -47,7 +47,8 @@ const packageInfo = {
         throw new Error('404 - ' + spec.name, { cause: { spec } })
     }
   },
-} as PackageInfoClient
+  prefetchResolve: () => () => {},
+} as unknown as PackageInfoClient
 
 t.test('build from lockfile', async t => {
   const projectRoot = t.testdir({
@@ -307,7 +308,8 @@ t.test(
             })
         }
       },
-    } as PackageInfoClient
+      prefetchResolve: () => () => {},
+    } as unknown as PackageInfoClient
 
     const graph = await build({
       ...specOptions,

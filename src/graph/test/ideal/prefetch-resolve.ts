@@ -3,6 +3,7 @@ import type {
   PackageInfoClient,
   ResolveRequest,
 } from '@vltpkg/package-info'
+import { defaultRegistries } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { prefetchResolve } from '../../src/ideal/prefetch-resolve.ts'
 import type { Graph } from '../../src/graph.ts'
@@ -271,13 +272,47 @@ t.test('prefetchResolve', async t => {
     t.strictSame(seen, [])
   })
 
+  t.test(
+    'sends to the registry a bare spec resolves through',
+    async t => {
+      const graph = graphOf([
+        importer({ dependencies: { a: '^1.0.0' } }),
+      ])
+      const sentTo = (opts: SpecOptions) => {
+        const seen: [string, ResolveRequest][] = []
+        prefetchResolve(graph, packageInfo(seen), opts)
+        return seen.map(([registry]) => registry)
+      }
+      t.strictSame(
+        sentTo({
+          registries: { npm: 'https://registry.npmjs.org/' },
+        }),
+        ['https://registry.npmjs.org/'],
+        'registries.npm without registry',
+      )
+      t.strictSame(
+        sentTo({}),
+        [defaultRegistries.npm],
+        'the built-in default',
+      )
+      t.strictSame(
+        sentTo({
+          'default-registry-alias': 'corp',
+          registries: { corp: 'https://corp.example/' },
+        }),
+        ['https://corp.example/'],
+        'another default-registry-alias',
+      )
+    },
+  )
+
   t.test('skips without a default registry', async t => {
     const seen: [string, ResolveRequest][] = []
     const graph = graphOf([
       importer({ dependencies: { a: '^1.0.0' } }),
     ])
     prefetchResolve(graph, packageInfo(seen), {
-      registries: {},
+      'default-registry-alias': 'none',
     })
     t.strictSame(seen, [])
   })

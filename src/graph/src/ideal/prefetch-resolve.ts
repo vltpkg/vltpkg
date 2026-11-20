@@ -3,6 +3,7 @@ import type {
   PackageInfoClient,
   ResolveRequest,
 } from '@vltpkg/package-info'
+import { getOptions } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import type { Graph } from '../graph.ts'
 
@@ -31,8 +32,13 @@ export const prefetchResolve = (
   // closure off the client's real one; those installs resolve locally
   if (options.modifiers) return nothing
 
-  const registry = options.registry
-  if (!registry) return nothing
+  const {
+    registry,
+    registries,
+    'default-registry-alias': alias,
+  } = getOptions(options)
+  const url = registry ?? registries[alias]
+  if (!url) return nothing
 
   const scopes = Object.keys(options['scoped-registries'] ?? {})
   // a name under a scoped registry is that registry's; it is not sent to
@@ -81,7 +87,7 @@ export const prefetchResolve = (
     }
   }
 
-  return packageInfo.prefetchResolve(registry, {
+  return packageInfo.prefetchResolve(url, {
     roots,
     have,
     ...(scopes.length ? { stop: { scopes } } : {}),
