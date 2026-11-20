@@ -112,6 +112,22 @@ rules.
 For information about catalog configuration and the `catalog:`
 protocol, see the [Catalogs documentation](/client/catalogs).
 
+### Certificate authorities
+
+By default vlt trusts the certificate authorities bundled with Node.
+These environment variables change that, for example behind a proxy
+that intercepts TLS:
+
+- `NODE_EXTRA_CA_CERTS=<file>` adds the certificates in a PEM file and
+  keeps the bundled ones. Use this to add a corporate root.
+- `NODE_USE_SYSTEM_CA=1` also trusts the operating system's
+  certificate store. Use this when the root is installed there.
+- `npm_config_cafile=<file>` (or `NPM_CONFIG_CAFILE`) trusts only the
+  certificates in a PEM file for registry connections, as npm's
+  `cafile` does. The bundled roots are dropped, so every registry host
+  needs its certificate authority in the file. A file that cannot be
+  read or holds no certificates is an error.
+
 ### `-c --color`
 
 Use colors (Default for TTY)
