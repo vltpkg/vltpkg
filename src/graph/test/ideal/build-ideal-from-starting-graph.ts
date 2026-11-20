@@ -2855,3 +2855,165 @@ t.test('canonicalization only runs after a write', async t => {
     t.ok(graph.lockfileStale, 'but the lockfile is stale')
   })
 })
+
+t.test(
+  'a file: directory dep is placed again when its deps change',
+  async t => {
+    const manifests: Record<string, Manifest> = {
+      baz: bazManifest,
+      ipsum: ipsumManifest,
+      missing: missingManifest,
+      ms: { name: 'ms', version: '1.0.0' },
+    }
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.final.type === 'file') {
+          return JSON.parse(
+            readFileSync(`${spec.final.name}/package.json`, 'utf8'),
+          ) as Manifest
+        }
+        return manifests[spec.final.name]
+      },
+    } as unknown as PackageInfoClient
+    const linkedId = joinDepIDTuple(['file', 'linked'])
+
+    const project = (linked: Manifest, vltJson = {}) => ({
+      'package.json': JSON.stringify({
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: { linked: 'file:./linked' },
+      }),
+      'vlt.json': JSON.stringify(vltJson),
+      linked: {
+        'package.json': JSON.stringify({
+          name: 'linked',
+          version: '1.0.0',
+          ...linked,
+        }),
+      },
+      other: {
+        'package.json': JSON.stringify({
+          name: 'other',
+          version: '1.0.0',
+        }),
+      },
+    })
+    const deps = { dependencies: { baz: '^1.0.0' } }
+    const root = t.testdir({
+      add: project(deps),
+      remove: project(deps),
+      // what placement skips or a modifier sets is no change
+      unchanged: project(
+        {
+          dependencies: {
+            baz: '^1.0.0',
+            bundled: '^1.0.0',
+            ipsum: '^1.0.0',
+            missing: '^1.0.0',
+            ms: '',
+            other: '../other',
+          },
+          devDependencies: { dev: '^1.0.0' },
+          peerDependencies: { foo: '^1.0.0', ipsum: '1' },
+          peerDependenciesMeta: { foo: { optional: true } },
+          bundleDependencies: ['bundled'],
+        },
+        { modifiers: { '#baz': '1.0.0', '#missing': '-' } },
+      ),
+    })
+    t.teardown(() => unload('project'))
+
+    // installs once, saves the lockfile, then loads it back
+    const seed = async (dir: string, linked?: Manifest) => {
+      const projectRoot = `${root}/${dir}`
+      t.chdir(projectRoot)
+      unload('project')
+      const mainManifest = JSON.parse(
+        readFileSync('package.json', 'utf8'),
+      ) as NormalizedManifest
+      const modifiers = GraphModifier.maybeLoad(configData)
+      const build = (graph: Graph) =>
+        buildIdealFromStartingGraph({
+          ...configData,
+          packageInfo,
+          packageJson: new PackageJson(),
+          scurry: new PathScurry(projectRoot),
+          graph,
+          modifiers,
+          add: new Map() as AddImportersDependenciesMap,
+          remove: new Map() as RemoveImportersDependenciesMap,
+          remover: new RollbackRemove(),
+        })
+      const graph = await build(
+        new Graph({ projectRoot, mainManifest, ...configData }),
+      )
+      writeFileSync(
+        'vlt-lock.json',
+        JSON.stringify(
+          lockfileData({ ...configData, graph, modifiers }),
+        ),
+      )
+      if (linked) {
+        writeFileSync(
+          'linked/package.json',
+          JSON.stringify({
+            name: 'linked',
+            version: '1.0.0',
+            ...linked,
+          }),
+        )
+      }
+      const virtual = loadVirtual({
+        ...configData,
+        projectRoot,
+        mainManifest,
+        modifiers,
+      })
+      return { build, virtual }
+    }
+
+    await t.test('an added dependency is placed', async t => {
+      const { build, virtual } = await seed('add', {
+        dependencies: { baz: '^1.0.0', missing: '^1.0.0' },
+      })
+      const graph = await build(virtual)
+      const linked = graph.nodes.get(linkedId)
+      t.equal(linked?.edgesOut.get('missing')?.to?.name, 'missing')
+      t.equal(linked?.edgesOut.get('baz')?.to?.name, 'baz')
+    })
+
+    await t.test('a removed dependency is dropped', async t => {
+      const { build, virtual } = await seed('remove', {})
+      const graph = await build(virtual)
+      t.notOk(graph.nodes.get(linkedId)?.edgesOut.has('baz'))
+      t.notOk(
+        [...graph.nodes.values()].some(n => n.name === 'baz'),
+        'baz is gone',
+      )
+    })
+
+    await t.test('placement leftovers change nothing', async t => {
+      const { build, virtual } = await seed('unchanged')
+      const linked = virtual.nodes.get(linkedId)
+      t.strictSame(
+        [...(linked?.edgesOut.values() ?? [])]
+          .map(
+            e =>
+              `${e.name} ${e.spec.bareSpec} ${e.to?.id ?? 'MISSING'}`,
+          )
+          .sort(),
+        [
+          `baz 1.0.0 ${joinDepIDTuple(['registry', '', 'baz@1.0.0', '#baz'])}`,
+          'foo ^1.0.0 MISSING',
+          `ipsum ^1.0.0 ${joinDepIDTuple(['registry', '', 'ipsum@1.0.0'])}`,
+          `ms * ${joinDepIDTuple(['registry', '', 'ms@1.0.0'])}`,
+          `other file:../other ${joinDepIDTuple(['file', 'other'])}`,
+        ],
+        'the edges placement left',
+      )
+      const mutations = virtual.mutations
+      const graph = await build(virtual)
+      t.equal(graph.mutations, mutations, 'nothing was rebuilt')
+    })
+  },
+)

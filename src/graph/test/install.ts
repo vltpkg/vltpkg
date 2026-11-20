@@ -867,6 +867,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -982,6 +984,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
@@ -1063,6 +1067,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -1104,6 +1110,90 @@ t.test(
   },
 )
 
+t.test(
+  'install with frozenLockfile and a file: directory dep out of sync',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: 'test',
+        version: '1.0.0',
+        dependencies: { linked: 'file:./linked' },
+      }),
+      'vlt-lock.json': JSON.stringify({
+        lockfileVersion: 1,
+        options: {},
+        nodes: {},
+        edges: {},
+      }),
+    })
+
+    const options = {
+      projectRoot: dir,
+      scurry: new PathScurry(dir),
+      packageJson: new PackageJson(),
+      packageInfo: mockPackageInfo,
+      frozenLockfile: true,
+      allowScripts: ':not(*)',
+    } as unknown as InstallOptions
+
+    const linkedId = joinDepIDTuple(['file', 'linked'])
+    const { install } = await t.mockImport<
+      typeof import('../src/install.ts')
+    >('../src/install.ts', {
+      '../src/reify/index.ts': {
+        reify: async () => ({ buildQueue: {}, diff: {} }),
+      },
+      '../src/ideal/get-importer-specs.ts': {
+        getImporterSpecs: () => ({
+          removedEdges: new Set(),
+          staleSpecs: new Map(),
+          add: Object.assign(new Map(), {
+            modifiedDependencies: false,
+          }),
+          remove: Object.assign(new Map(), {
+            modifiedDependencies: false,
+          }),
+          transientAdd: new Map([
+            [linkedId, new Map([['ms', { spec: {}, type: 'prod' }]])],
+          ]),
+          transientRemove: new Map([[linkedId, new Set(['abbrev'])]]),
+        }),
+      },
+      '../src/lockfile/load.ts': {
+        load: () => ({
+          nodes: new Map([[linkedId, { location: './linked' }]]),
+          importers: [],
+          gc: () => {},
+        }),
+        loadHidden: () => ({
+          nodes: new Map(),
+          importers: [],
+        }),
+        loadData: () => ({
+          lockfileVersion: 1,
+          options: {},
+          nodes: {},
+          edges: {},
+        }),
+      },
+      '@vltpkg/workspaces': {
+        Monorepo: {
+          maybeLoad: () => undefined,
+        },
+      },
+    })
+
+    await t.rejects(
+      install(options, new Map() as AddImportersDependenciesMap),
+      {
+        message:
+          /Lockfile is out of sync with package\.json.*\n {2}\.\/linked: 1 dependency to add \(ms\)\n {2}\.\/linked: 1 dependency to remove \(abbrev\)/s,
+      },
+      'should throw error when a directory dep changed',
+    )
+  },
+)
+
 t.test('install with frozenLockfile and spec changes', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({
@@ -1139,6 +1229,8 @@ t.test('install with frozenLockfile and spec changes', async t => {
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
         removedEdges: new Set(),
+        transientAdd: new Map(),
+        transientRemove: new Map(),
         add: Object.assign(new Map(), {
           modifiedDependencies: false,
         }),
@@ -1307,6 +1399,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
@@ -1399,6 +1493,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(new Map(), {
@@ -1488,6 +1584,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(new Map(), {
             modifiedDependencies: false,
@@ -1639,6 +1737,8 @@ t.test(
       '../src/ideal/get-importer-specs.ts': {
         getImporterSpecs: () => ({
           removedEdges: new Set(),
+          transientAdd: new Map(),
+          transientRemove: new Map(),
           staleSpecs: new Map(),
           add: Object.assign(addMap, { modifiedDependencies: true }),
           remove: Object.assign(removeMap, {
@@ -2480,6 +2580,8 @@ t.test('install with frozenLockfile and changed options', async t => {
     '../src/ideal/get-importer-specs.ts': {
       getImporterSpecs: () => ({
         removedEdges: new Set(),
+        transientAdd: new Map(),
+        transientRemove: new Map(),
         add: Object.assign(new Map(), {
           modifiedDependencies: false,
         }),

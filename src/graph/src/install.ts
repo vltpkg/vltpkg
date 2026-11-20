@@ -243,6 +243,8 @@ export async function install(
       importerSpecs.add.modifiedDependencies ||
       importerSpecs.remove.modifiedDependencies ||
       importerSpecs.removedEdges.size > 0 ||
+      importerSpecs.transientAdd.size > 0 ||
+      importerSpecs.transientRemove.size > 0 ||
       specChanges.length > 0 ||
       lockfileGraph.optionsChanged
     ) {
@@ -259,7 +261,10 @@ export async function install(
         details.push(...specChanges)
       }
 
-      for (const [importerId, deps] of importerSpecs.add) {
+      for (const [importerId, deps] of [
+        ...importerSpecs.add,
+        ...importerSpecs.transientAdd,
+      ]) {
         if (deps.size > 0) {
           const node = lockfileGraph.nodes.get(importerId)
           const location = node?.location || importerId
@@ -272,7 +277,10 @@ export async function install(
         }
       }
 
-      for (const [importerId, deps] of importerSpecs.remove) {
+      for (const [importerId, deps] of [
+        ...importerSpecs.remove,
+        ...importerSpecs.transientRemove,
+      ]) {
         if (deps.size > 0) {
           const node = lockfileGraph.nodes.get(importerId)
           const location = node?.location || importerId
