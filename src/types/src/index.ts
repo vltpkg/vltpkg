@@ -1751,6 +1751,7 @@ export type NodeLike = {
     os?: string[] | string
     cpu?: string[] | string
     libc?: string[] | string
+    deprecated?: string
   }
   bins?: Record<string, string>
   buildState?: 'none' | 'needed' | 'built' | 'failed'
