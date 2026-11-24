@@ -11,8 +11,8 @@ sidebar:
 Staged publishing splits a publish in two. First the version is
 staged: the registry stores it but doesn't serve it. Then a person
 approves it, which publishes it, or rejects it, which deletes it.
-Staging never asks for a second factor and deciding always does, so CI
-can stage and a maintainer confirms each release.
+Staging never asks for a second factor and deciding always needs one,
+so CI can stage and a maintainer confirms each release.
 
 The registry follows npm's design, so `npm stage` (npm 12 or later)
 works unchanged, and so does [`vlt stage`](/client/commands/stage).
