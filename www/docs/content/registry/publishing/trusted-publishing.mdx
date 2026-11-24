@@ -63,9 +63,10 @@ npm trust github @acme/utils --repo=acme/utils --file=release.yml \
   --allow-publish --registry=https://registry.vlt.io/acme/main/
 ```
 
-Add `--env=<name>` to require a GitHub environment. `--allow-publish`
-is the only permission the registry accepts. Each change opens your
-browser to confirm with your second factor.
+Add `--env=<name>` to require a GitHub environment. Pass
+`--allow-publish` to let the workflow publish, `--allow-stage-publish`
+to let it stage versions with `npm stage publish`, or both. Each
+change opens your browser to confirm with your second factor.
 
 ```sh
 npm trust list @acme/utils --registry=https://registry.vlt.io/acme/main/
@@ -120,9 +121,11 @@ a token for that; see [CI & automation](/registry/publishing/ci).
 
 - The registry token lasts 15 minutes and works only for that package
   on that registry.
-- It publishes new versions. A first publish can set
-  `--access public`. Changing dist-tags, deprecating, unpublishing and
-  changing an existing package's visibility need a regular token.
+- It publishes or stages new versions, whichever the trusted publisher
+  allows; a staged version waits for a person to approve it. A first
+  publish can set `--access public`. Changing dist-tags, deprecating,
+  unpublishing and changing an existing package's visibility need a
+  regular token.
 - Removing the trusted publisher stops its tokens at once, including
   ones already issued.
 - A trusted publisher is removed when its repository is no longer
