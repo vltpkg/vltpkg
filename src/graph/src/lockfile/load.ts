@@ -435,22 +435,11 @@ export const loadObject = (
       }
     )['scope-registries']
 
-  // Detect whether the current config options differ from those
-  // stored in the lockfile.  When they do the ideal builder must
-  // reset edges and rebuild the graph.
+  // the current config options are diffed against these once the
+  // edges are loaded; when they differ the ideal builder must reset
+  // edges and rebuild the graph.
   /* c8 ignore next */
   const lockfileOptions = lockfileData.options ?? {}
-  const optionsChanges = diffLockfileOptions(
-    options,
-    lockfileOptions,
-    // a `catalog:` edge resolves through the current catalogs when
-    // they are set and the stored ones otherwise (see mergedOptions)
-    lockfileRegistryAliases(
-      Object.keys(lockfileData.nodes),
-      Object.entries(lockfileData.edges),
-      [options, lockfileOptions],
-    ),
-  )
 
   // Optimize options merging - only create new objects when needed
   const mergedOptions = {
@@ -488,8 +477,6 @@ export const loadObject = (
     mainManifest,
     monorepo,
   })
-  graph.optionsChanges = optionsChanges
-  graph.optionsChanged = optionsChanges.length > 0
   graph.unpinnedNpmRegistry = unpinnedNpm(
     options.registries,
     registries,
@@ -514,6 +501,19 @@ export const loadObject = (
         ]),
       }
   loadEdges(graph, lockfileData.edges, mergedOptions, specCache)
+
+  // compared after the edges load: the aliases in use come from their
+  // parsed specs, which resolve catalogs and nested registry specs
+  const optionsChanges = diffLockfileOptions(
+    options,
+    lockfileOptions,
+    lockfileRegistryAliases(
+      Object.keys(lockfileData.nodes),
+      [...graph.edges].map(edge => edge.spec),
+    ),
+  )
+  graph.optionsChanges = optionsChanges
+  graph.optionsChanged = optionsChanges.length > 0
 
   graph.sortNodes()
   return graph

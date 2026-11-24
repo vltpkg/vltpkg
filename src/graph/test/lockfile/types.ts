@@ -1,6 +1,6 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { defaultScopeRegistries } from '@vltpkg/spec'
+import { defaultScopeRegistries, Spec } from '@vltpkg/spec'
 import type {
   LockfileData,
   LockfileNode,
@@ -503,80 +503,53 @@ t.test('lockfileRegistryAliases', async t => {
   const acme = joinDepIDTuple(['registry', 'acme', 'foo@1.0.0'])
   const npm = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
   const file = joinDepIDTuple(['file', './x'])
-  const root = joinDepIDTuple(['file', '.'])
+  const options = {
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      acme: 'https://acme.example.com/',
+      other: 'https://other.example.com/',
+      deep: 'https://deep.example.com/',
+    },
+    catalog: { a: 'npm:a@deep:a@^1.0.0' },
+    catalogs: {
+      'team stable': { b: 'acme:b@^1.0.0' },
+      team: { c: 'other:c@^1.0.0' },
+    },
+  }
+  const spec = (name: string, bareSpec: string) =>
+    Spec.parse(name, bareSpec, options)
+
   t.strictSame(
     lockfileRegistryAliases(
       [acme, npm, file],
-      [
-        [`${root} foo`, `prod acme:foo@^1.0.0 ${acme}`],
-        [`${root} baz`, 'optional other:baz@^1.0.0 MISSING'],
-        [`${root} bar`, `prod >=1.0.0 <2.0.0 ${npm}`],
-        [`${root} x`, `prod file:./x ${file}`],
-      ],
+      [spec('bar', '>=1.0.0 <2.0.0'), spec('x', 'file:./x')],
     ),
-    new Set(['acme', 'npm', 'other', 'file']),
-    'node registries and edge spec prefixes, not ranges or file ids',
-  )
-  t.strictSame(
-    lockfileRegistryAliases(
-      [acme],
-      [[`${root} foo`, `prod ^1.0.0 ${acme}`]],
-    ),
-    new Set(['acme']),
-    'an alias only a node id names, as a scoped registry mints it',
+    new Set(['acme', 'npm']),
+    'node ids name their registry, ranges and file specs nothing',
   )
   t.strictSame(lockfileRegistryAliases([], []), new Set())
-
-  const catalogEdges: [string, string][] = [
-    [`${root} a`, 'optional catalog: MISSING'],
-    [`${root} b`, 'optional catalog:named MISSING'],
-    [`${root} c`, 'optional catalog:gone MISSING'],
-    [`${root} d`, 'optional catalog: MISSING'],
-    [`${root} e`, 'optional catalog: MISSING'],
-  ]
-  t.strictSame(
-    lockfileRegistryAliases([], catalogEdges),
-    new Set(['catalog']),
-    'a catalog: edge without catalogs only names its own prefix',
-  )
-  t.strictSame(
-    lockfileRegistryAliases([], catalogEdges, [
-      { catalog: { a: 'acme:a@^1.0.0', d: '^1.0.0' } },
-      { catalogs: { named: { b: 'other:b@^1.0.0' } } },
-      {},
-    ]),
-    new Set(['catalog', 'acme', 'other']),
-    'a catalog: edge names the prefix of its entry in any source, ' +
-      'skipping missing catalogs, missing entries and plain ranges',
-  )
   t.strictSame(
     lockfileRegistryAliases(
       [],
       [
-        [`${root} a`, 'optional npm:a@acme:b@1.0.0 MISSING'],
-        [`${root} c`, 'optional npm:@s/c@other:@t/d@^1.0.0 MISSING'],
-        [`${root} e`, 'optional gh:e MISSING'],
+        spec('foo', 'npm:foo@acme:bar@1.0.0'),
+        spec('@s/c', 'npm:@s/c@other:@t/d@^1.0.0'),
       ],
     ),
-    new Set(['npm', 'acme', 'other', 'gh']),
+    new Set(['npm', 'acme', 'other']),
     'every alias in a registry spec chain, scoped or not',
   )
   t.strictSame(
     lockfileRegistryAliases(
       [],
       [
-        [`${root} a`, 'optional catalog:team stable MISSING'],
-        [`${root} b`, 'optional catalog: MISSING'],
-      ],
-      [
-        {
-          catalog: { b: 'npm:b@deep:b@^1.0.0' },
-          catalogs: { 'team stable': { a: 'acme:a@^1.0.0' } },
-        },
+        spec('a', 'catalog:'),
+        spec('b', 'catalog:team stable'),
+        spec('d', 'npm:c@catalog:team'),
       ],
     ),
-    new Set(['catalog', 'acme', 'npm', 'deep']),
-    'a catalog name with spaces, and a chain in a catalog entry',
+    new Set(['npm', 'deep', 'acme', 'other']),
+    'catalog entries, a catalog name with spaces, a catalog in a chain',
   )
 })
 

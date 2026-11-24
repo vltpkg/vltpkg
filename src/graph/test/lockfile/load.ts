@@ -2132,16 +2132,15 @@ t.test('diffLockfileOptions', async t => {
     ] as [SpecOptions, LockfileData['options']][]) {
       const loadOptions = { ...options, mainManifest, projectRoot }
       const lockfileData = { ...baseLockfileData, options: stored }
+      const graph = loadObject(loadOptions, lockfileData)
       const changes = diffLockfileOptions(
         loadOptions,
         stored,
         lockfileRegistryAliases(
           Object.keys(lockfileData.nodes),
-          Object.entries(lockfileData.edges),
-          [loadOptions, stored],
+          [...graph.edges].map(edge => edge.spec),
         ),
       )
-      const graph = loadObject(loadOptions, lockfileData)
       t.strictSame(graph.optionsChanges, changes, 'same list')
       t.equal(
         graph.optionsChanged,
