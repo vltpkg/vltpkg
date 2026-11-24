@@ -2570,3 +2570,55 @@ t.test('deps of an aliased package use the root config', async t => {
     'parsed from the manifest, missing dep included',
   )
 })
+
+t.test('a range linked to a sibling workspace', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': JSON.stringify({ workspaces: ['packages/*'] }),
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+          peerDependencies: { a: '^1.0.0' },
+        }),
+        // left by an earlier install, after the root node_modules is gone
+        node_modules: { a: t.fixture('symlink', '../../a') },
+      },
+    },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const wsA = joinDepIDTuple(['workspace', 'packages/a'])
+  const wsB = joinDepIDTuple(['workspace', 'packages/b'])
+  for (const loadManifests of [true, false]) {
+    const graph = load({
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      projectRoot,
+      loadManifests,
+      skipHiddenLockfile: true,
+      ...configData,
+    })
+    t.equal(
+      graph.nodes.get(wsB)?.edgesOut.get('a')?.to?.id,
+      wsA,
+      `links the workspace node, loadManifests=${loadManifests}`,
+    )
+    t.strictSame(
+      [...graph.nodes.keys()].sort(),
+      [joinDepIDTuple(['file', '.']), wsA, wsB].sort(),
+      `no registry node for the workspace, loadManifests=${loadManifests}`,
+    )
+  }
+})
