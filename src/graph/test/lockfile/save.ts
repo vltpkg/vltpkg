@@ -452,6 +452,66 @@ t.test('keeps registries.npm unpinned as it was loaded', async t => {
   )
 })
 
+t.test('leaves out registries no node or edge uses', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  const optional = 'https://optional.example.com/'
+  const internal = 'https://internal.example.com/'
+  const specOptions = {
+    registries: {
+      npm: npmjs,
+      acme,
+      optional,
+      internal,
+      // a user config alias the project never uses, vltpkg/vltpkg#2208
+      main: 'https://registry.vlt.io/vltpkg/main/',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: 'acme:foo@^1.0.0' },
+      optionalDependencies: { bar: 'optional:bar@^1.0.0' },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo', 'acme:foo@^1.0.0', specOptions),
+    { name: 'foo', version: '1.0.0' },
+  )
+  // an optional dependency that failed to install has no node
+  graph.addEdge(
+    'optional',
+    Spec.parse('bar', 'optional:bar@^1.0.0', specOptions),
+    graph.mainImporter,
+  )
+
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options,
+    { registries: { npm: npmjs, acme, optional } },
+    'keeps npm, the alias of a node and the alias of a MISSING edge',
+  )
+  t.strictSame(
+    lockfileData({
+      ...specOptions,
+      'default-registry-alias': 'internal',
+      graph,
+    }).options,
+    {
+      'default-registry-alias': 'internal',
+      registries: { npm: npmjs, acme, optional, internal },
+    },
+    'keeps the default-registry-alias entry',
+  )
+})
+
 t.test('persists a non-default default-registry-alias', async t => {
   const mainManifest = {
     name: 'my-project',

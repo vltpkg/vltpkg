@@ -24,7 +24,9 @@ import {
   BuildStateBuilt,
   BuildStateFailed,
   LOCKFILE_VERSION,
+  lockfileRegistryAliases,
   scopeRegistryDefaults,
+  usedRegistries,
 } from '../../src/lockfile/types.ts'
 
 t.test('lockfile type checks', t => {
@@ -494,5 +496,44 @@ t.test('scopeRegistryDefaults', async t => {
     scopeRegistryDefaults({ jsr: 'https://jsr.example.com/' }),
     { '@jsr': 'https://jsr.example.com/' },
     '@jsr follows the jsr alias',
+  )
+})
+
+t.test('lockfileRegistryAliases', async t => {
+  const acme = joinDepIDTuple(['registry', 'acme', 'foo@1.0.0'])
+  const npm = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+  const file = joinDepIDTuple(['file', './x'])
+  t.strictSame(
+    lockfileRegistryAliases(
+      [acme, npm, file],
+      [
+        `prod acme:foo@^1.0.0 ${acme}`,
+        'optional other:baz@^1.0.0 MISSING',
+        `prod >=1.0.0 <2.0.0 ${npm}`,
+        `prod file:./x ${file}`,
+      ],
+    ),
+    new Set(['acme', 'npm', 'other', 'file']),
+    'node registries and edge spec prefixes, not ranges or file ids',
+  )
+  t.strictSame(lockfileRegistryAliases([], []), new Set())
+})
+
+t.test('usedRegistries', async t => {
+  const registries = {
+    npm: 'https://registry.npmjs.org/',
+    acme: 'https://acme.example.com/',
+    internal: 'https://internal.example.com/',
+    main: 'https://registry.vlt.io/vltpkg/main/',
+  }
+  t.strictSame(
+    usedRegistries(registries, new Set(['acme'])),
+    { npm: registries.npm, acme: registries.acme },
+    'npm and the used aliases',
+  )
+  t.strictSame(
+    usedRegistries(registries, new Set(), 'internal'),
+    { npm: registries.npm, internal: registries.internal },
+    'and the default-registry-alias entry',
   )
 })

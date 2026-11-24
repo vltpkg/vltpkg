@@ -11,8 +11,7 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -283,8 +282,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save with saveBuil
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -345,8 +343,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save without saveB
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -386,8 +383,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -448,8 +444,7 @@ exports[`test/lockfile/save.ts > TAP > save buildState data > save() and saveHid
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -537,8 +532,7 @@ exports[`test/lockfile/save.ts > TAP > save platform data for optional dependenc
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -595,8 +589,7 @@ exports[`test/lockfile/save.ts > TAP > saveManifests with normalized author and 
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -656,7 +649,6 @@ Object {
   },
   "options": Object {
     "registries": Object {
-      "custom": "http://example.com",
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
@@ -679,7 +671,6 @@ Object {
   },
   "options": Object {
     "registries": Object {
-      "custom": "http://example.com",
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
@@ -702,7 +693,6 @@ Object {
   },
   "options": Object {
     "registries": Object {
-      "custom": "http://example.com",
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
@@ -725,7 +715,6 @@ Object {
   },
   "options": Object {
     "registries": Object {
-      "custom": "http://example.com",
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
@@ -742,8 +731,7 @@ exports[`test/lockfile/save.ts > TAP > store modifiers > with valid modifiers > 
     },
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -762,8 +750,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {
@@ -782,8 +769,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
   "options": {
     "registry": "https://registry.npmjs.org/",
     "registries": {
-      "npm": "https://registry.npmjs.org/",
-      "custom": "http://example.com"
+      "npm": "https://registry.npmjs.org/"
     }
   },
   "nodes": {

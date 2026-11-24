@@ -1,5 +1,9 @@
+import { splitDepID } from '@vltpkg/dep-id/browser'
 import type { DepID } from '@vltpkg/dep-id'
-import { defaultScopeRegistries } from '@vltpkg/spec'
+import {
+  defaultRegistryName,
+  defaultScopeRegistries,
+} from '@vltpkg/spec'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
 import type {
   Integrity,
@@ -76,6 +80,56 @@ export const scopeRegistryDefaults = (
   ...defaultScopeRegistries,
   ...(jsrRegistries?.jsr ? { '@jsr': jsrRegistries.jsr } : {}),
 })
+
+// the `alias:` prefix of an edge value's spec, i.e. what follows the
+// `${type} ` part; a range like `>=1 <2` has a space before any colon
+const edgeSpecPrefix = /^[^ ]+ ([^:\s]+):/
+
+/**
+ * The `registries` aliases that the given lockfile nodes and edges name:
+ * the registry part of a registry DepID and the `alias:` prefix of an
+ * edge spec (which covers an edge whose target is `MISSING`). Any other
+ * alias routes nothing in the graph, so it is config of the machine that
+ * ran the install, not state of the project.
+ *
+ * The result can hold names that are not registry aliases (e.g. the
+ * `https` of a remote URL spec); callers only test aliases against it.
+ */
+export const lockfileRegistryAliases = (
+  nodeIds: Iterable<string>,
+  edgeValues: Iterable<string>,
+): Set<string> => {
+  const aliases = new Set<string>()
+  for (const id of nodeIds) {
+    const [type, registry] = splitDepID(id)
+    if (type === 'registry') aliases.add(registry)
+  }
+  for (const value of edgeValues) {
+    const prefix = edgeSpecPrefix.exec(value)?.[1]
+    if (prefix) aliases.add(prefix)
+  }
+  return aliases
+}
+
+/**
+ * Removes the `registries` entries that the lockfile graph does not use,
+ * per {@link lockfileRegistryAliases}. `npm` is kept for the unpinned npm
+ * logic of the lockfile save and load, as is the `default-registry-alias`
+ * entry, which installs route through when nothing names it yet.
+ */
+export const usedRegistries = (
+  registries: Record<string, string>,
+  aliases: Set<string>,
+  defaultRegistryAlias?: string,
+): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(registries).filter(
+      ([alias]) =>
+        alias === defaultRegistryName ||
+        alias === defaultRegistryAlias ||
+        aliases.has(alias),
+    ),
+  )
 
 export const getFlagNumFromNode = (node: {
   optional?: boolean
