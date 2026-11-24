@@ -59,7 +59,7 @@ COMMANDS
 
                  setup        [<account>]      Configure your vlt.io account registries
                  skills       [list|link|init] Manage agent skills
-                 stage        [publish]        Stage a package for a person to approve and publish
+                 stage        [publish|list... Stage a package for a person to approve and publish
 
                  token        [add|rm]         Manage authentication tokens
 

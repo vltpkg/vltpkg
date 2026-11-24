@@ -6,10 +6,8 @@ import {
   requestError,
 } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
-import { dirname } from 'node:path'
 import { commandUsage } from '../config/usage.ts'
-import type { LoadedConfig } from '../config/index.ts'
-import { getPublishConfig } from '../publish-config.ts'
+import { localPublishRegistry } from '../publish-config.ts'
 import { resolveRegistry } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import type { Views } from '../view.ts'
@@ -71,19 +69,6 @@ export const views = {
   },
   json: (r: CommandResult) => r,
 } as const satisfies Views<CommandResult>
-
-/** `publishConfig.registry` of the local package, if it is `name` */
-const localPublishRegistry = (
-  conf: LoadedConfig,
-  name: string,
-): string | undefined => {
-  const path = conf.options.packageJson.find(process.cwd())
-  if (!path) return undefined
-  const manifest = conf.options.packageJson.read(dirname(path))
-  return manifest.name === name ?
-      getPublishConfig(manifest)?.registry
-    : undefined
-}
 
 export const command: CommandFn<CommandResult> = async conf => {
   const specArg = conf.positionals[0]
