@@ -85,8 +85,27 @@ export const scopeRegistryDefaults = (
 // before any colon
 const specPrefix = /^([^:\s]+):/
 
-// the `catalog:` or `catalog:<name>` spec of an edge value
-const edgeCatalogSpec = /^[^ ]+ catalog:(\S*) /
+/**
+ * Adds every `alias:` prefix of a spec chain to `aliases`: a registry
+ * spec `alias:name@spec` parses its inner `spec` again, so
+ * `npm:foo@acme:bar@1` names both `npm` and `acme`.
+ */
+const addSpecAliases = (spec: string, aliases: Set<string>) => {
+  let rest: string | undefined = spec
+  while (rest) {
+    const prefix = specPrefix.exec(rest)?.[1]
+    if (!prefix) return
+    aliases.add(prefix)
+    rest = rest.substring(prefix.length + 1)
+    // skip `name@`, where a scoped name starts with its own `@`
+    const at = rest.indexOf('@', rest.startsWith('@') ? 1 : 0)
+    rest = at === -1 ? undefined : rest.substring(at + 1)
+  }
+}
+
+/** The spec of an edge value `${type} ${spec} ${to}` (a spec can hold spaces) */
+const edgeSpec = (value: string) =>
+  value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' '))
 
 /** The catalogs a `catalog:` edge spec can resolve through. */
 export type CatalogSource = {
@@ -96,9 +115,9 @@ export type CatalogSource = {
 
 /**
  * The `registries` aliases that the given lockfile nodes and edges name:
- * the registry part of a registry DepID and the `alias:` prefix of an
- * edge spec (which covers an edge whose target is `MISSING`). A
- * `catalog:` edge spec names the prefix of its entry in any of the
+ * the registry part of a registry DepID and every `alias:` prefix in the
+ * chain of an edge spec (which covers an edge whose target is `MISSING`).
+ * A `catalog:` edge spec names the prefixes of its entry in any of the
  * given catalog sources, as `Spec.parse` resolves it on load. Any other
  * alias routes nothing in the graph, so it is config of the machine that
  * ran the install, not state of the project.
@@ -112,18 +131,16 @@ export const lockfileRegistryAliases = (
   catalogSources: CatalogSource[] = [],
 ): Set<string> => {
   const aliases = new Set<string>()
-  const addPrefix = (spec: string | undefined) => {
-    const prefix = spec && specPrefix.exec(spec)?.[1]
-    if (prefix) aliases.add(prefix)
-  }
   for (const id of nodeIds) {
     const [type, registry] = splitDepID(id)
     if (type === 'registry') aliases.add(registry)
   }
   for (const [key, value] of edges) {
-    addPrefix(value.substring(value.indexOf(' ') + 1))
-    const catalogName = edgeCatalogSpec.exec(value)?.[1]
-    if (catalogName === undefined) continue
+    const spec = edgeSpec(value)
+    addSpecAliases(spec, aliases)
+    if (!spec.startsWith('catalog:')) continue
+    // a catalog name can hold spaces, as `Spec` reads all of it
+    const catalogName = spec.substring('catalog:'.length)
     const name = key.substring(key.indexOf(' ') + 1)
     for (const { catalog, catalogs } of catalogSources) {
       const entries =
@@ -132,9 +149,11 @@ export const lockfileRegistryAliases = (
             catalogs[catalogName]
           : undefined
         : catalog
-      if (entries && Object.hasOwn(entries, name)) {
-        addPrefix(entries[name])
-      }
+      const entry =
+        entries && Object.hasOwn(entries, name) ?
+          entries[name]
+        : undefined
+      if (entry) addSpecAliases(entry, aliases)
     }
   }
   return aliases

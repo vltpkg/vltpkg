@@ -549,6 +549,35 @@ t.test('lockfileRegistryAliases', async t => {
     'a catalog: edge names the prefix of its entry in any source, ' +
       'skipping missing catalogs, missing entries and plain ranges',
   )
+  t.strictSame(
+    lockfileRegistryAliases(
+      [],
+      [
+        [`${root} a`, 'optional npm:a@acme:b@1.0.0 MISSING'],
+        [`${root} c`, 'optional npm:@s/c@other:@t/d@^1.0.0 MISSING'],
+        [`${root} e`, 'optional gh:e MISSING'],
+      ],
+    ),
+    new Set(['npm', 'acme', 'other', 'gh']),
+    'every alias in a registry spec chain, scoped or not',
+  )
+  t.strictSame(
+    lockfileRegistryAliases(
+      [],
+      [
+        [`${root} a`, 'optional catalog:team stable MISSING'],
+        [`${root} b`, 'optional catalog: MISSING'],
+      ],
+      [
+        {
+          catalog: { b: 'npm:b@deep:b@^1.0.0' },
+          catalogs: { 'team stable': { a: 'acme:a@^1.0.0' } },
+        },
+      ],
+    ),
+    new Set(['catalog', 'acme', 'npm', 'deep']),
+    'a catalog name with spaces, and a chain in a catalog entry',
+  )
 })
 
 t.test('usedRegistries', async t => {

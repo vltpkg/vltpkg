@@ -542,6 +542,34 @@ t.test('keeps the alias of a catalog: edge with no node', async t => {
   t.strictSame(data.options.registries, { npm: npmjs, acme })
 })
 
+t.test('keeps every alias of a spec chain with no node', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  const specOptions = { registries: { npm: npmjs, acme } }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      optionalDependencies: { foo: 'npm:foo@acme:bar@1.0.0' },
+    },
+  })
+  // the inner `acme:` spec is parsed again on load
+  graph.addEdge(
+    'optional',
+    Spec.parse('foo', 'npm:foo@acme:bar@1.0.0', specOptions),
+    graph.mainImporter,
+  )
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options.registries,
+    { npm: npmjs, acme },
+  )
+})
+
 t.test('keeps an alias that only a node id names', async t => {
   const npmjs = 'https://registry.npmjs.org/'
   const acme = 'https://acme.example.com/'
