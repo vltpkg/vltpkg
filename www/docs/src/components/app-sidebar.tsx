@@ -168,11 +168,19 @@ const Section = ({
   ...props
 }: Omit<EntryProps, 'node' | 'sub'> & { folder: Folder }) => {
   const pathname = usePathname()
-  const open =
-    containsUrl(folder, pathname) ||
-    (!!props.returnTo && folder.children.includes(props.returnTo))
+  const [open, setOpen] = useState(
+    () =>
+      containsUrl(folder, pathname) ||
+      (!!props.returnTo && folder.children.includes(props.returnTo)),
+  )
+  // drilling in mounts the view before router.push lands, so open once the page turns out to be inside
+  const [lastPathname, setLastPathname] = useState(pathname)
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
+    if (containsUrl(folder, pathname)) setOpen(true)
+  }
   return (
-    <Collapsible asChild defaultOpen={open}>
+    <Collapsible asChild open={open} onOpenChange={setOpen}>
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
