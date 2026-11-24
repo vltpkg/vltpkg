@@ -443,9 +443,12 @@ export const loadObject = (
   const optionsChanges = diffLockfileOptions(
     options,
     lockfileOptions,
+    // a `catalog:` edge resolves through the current catalogs when
+    // they are set and the stored ones otherwise (see mergedOptions)
     lockfileRegistryAliases(
       Object.keys(lockfileData.nodes),
-      Object.values(lockfileData.edges),
+      Object.entries(lockfileData.edges),
+      [options, lockfileOptions],
     ),
   )
 

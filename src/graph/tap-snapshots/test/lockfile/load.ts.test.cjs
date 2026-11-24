@@ -285,8 +285,19 @@ exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
 exports[`test/lockfile/load.ts > TAP > missing options object > should be able to parse lockfile without options object 1`] = `
 {
   "lockfileVersion": 1,
-  "options": {},
-  "nodes": {},
+  "options": {
+    "registries": {
+      "example": "http://foo"
+    }
+  },
+  "nodes": {
+    "~example~baz@1.0.0": [
+      0,
+      "baz",
+      null,
+      "http://foo/baz/-/baz-1.0.0.tgz"
+    ]
+  },
   "edges": {}
 }
 `
@@ -295,9 +306,26 @@ exports[`test/lockfile/load.ts > TAP > option-defined values should overwrite lo
 {
   "lockfileVersion": 1,
   "options": {
-    "registry": "http://example.com"
+    "registry": "http://example.com",
+    "registries": {
+      "example": "http://bar",
+      "lorem": "http://lorem"
+    }
   },
-  "nodes": {},
+  "nodes": {
+    "~example~foo@1.0.0": [
+      0,
+      "foo",
+      null,
+      "http://bar/foo/-/foo-1.0.0.tgz"
+    ],
+    "~lorem~bar@1.0.0": [
+      0,
+      "bar",
+      null,
+      "http://lorem/bar/-/bar-1.0.0.tgz"
+    ]
+  },
   "edges": {}
 }
 `

@@ -2837,7 +2837,18 @@ t.test('canonicalization only runs after a write', async t => {
         custom: 'http://example.com',
       },
     })
-    t.ok(graph.optionsChanges.length, 'options differ')
+    t.strictSame(
+      graph.optionsChanges,
+      [
+        {
+          section: 'registries',
+          key: 'npm',
+          from: 'https://registry.npmjs.org/',
+          to: 'https://registry.example.com/',
+        },
+      ],
+      'only the used alias differs',
+    )
     t.equal(calls, 1, 'the pass ran')
   })
 

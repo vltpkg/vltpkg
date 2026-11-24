@@ -242,7 +242,8 @@ export const lockfileData = ({
         removeDefaultItems(registryDefaults(graph), registries),
         lockfileRegistryAliases(
           Object.keys(nodes),
-          Object.values(edges),
+          Object.entries(edges),
+          [{ catalog, catalogs }],
         ),
         defaultRegistryAlias,
       )

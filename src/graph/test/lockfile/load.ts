@@ -540,7 +540,17 @@ t.test(
           lorem: 'http://lorem',
         },
       },
-      nodes: {},
+      // nodes that use the aliases, so they are saved back
+      nodes: {
+        [joinDepIDTuple(['registry', 'example', 'foo@1.0.0'])]: [
+          0,
+          'foo',
+        ] satisfies LockfileNode,
+        [joinDepIDTuple(['registry', 'lorem', 'bar@1.0.0'])]: [
+          0,
+          'bar',
+        ] satisfies LockfileNode,
+      },
       edges: {},
     }
     t.matchSnapshot(
@@ -565,7 +575,13 @@ t.test('missing options object', async t => {
   const lockfileData = {
     lockfileVersion: 1,
     options: {},
-    nodes: {},
+    // a node that uses the alias, so it is saved back
+    nodes: {
+      [joinDepIDTuple(['registry', 'example', 'baz@1.0.0'])]: [
+        0,
+        'baz',
+      ],
+    },
     edges: {},
   } as LockfileData
   t.matchSnapshot(
@@ -2121,7 +2137,8 @@ t.test('diffLockfileOptions', async t => {
         stored,
         lockfileRegistryAliases(
           Object.keys(lockfileData.nodes),
-          Object.values(lockfileData.edges),
+          Object.entries(lockfileData.edges),
+          [loadOptions, stored],
         ),
       )
       const graph = loadObject(loadOptions, lockfileData)
@@ -2390,6 +2407,42 @@ t.test('registries the lockfile does not use', async t => {
       },
     ],
     'without the lockfile aliases, every entry is compared',
+  )
+
+  // an optional catalog: dep that failed to install stores no alias in
+  // its edge, only the catalog entry names it
+  const catalog = { bar: 'acme:bar@^1.0.0' }
+  const catalogLockfile = (options: LockfileData['options']) =>
+    ({
+      lockfileVersion: 1,
+      options,
+      nodes: {},
+      edges: {
+        [edgeKey(['file', '.'], 'bar')]: 'optional catalog: MISSING',
+      },
+    }) as unknown as LockfileData
+  t.strictSame(
+    loadObject(
+      { ...current({ npm: npmjs }), catalog },
+      catalogLockfile({ catalog, registries: { npm: npmjs, acme } }),
+    ).optionsChanges,
+    [
+      {
+        section: 'registries',
+        key: 'acme',
+        from: acme,
+        to: undefined,
+      },
+    ],
+    'the alias of a catalog: edge is used, so its removal is a change',
+  )
+  t.equal(
+    loadObject(
+      { ...current({ npm: npmjs, acme }), catalog },
+      catalogLockfile({ registries: { npm: npmjs, acme } }),
+    ).optionsChanges.find(c => c.section === 'registries'),
+    undefined,
+    'it is also used through the current catalog',
   )
 })
 

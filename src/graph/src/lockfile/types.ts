@@ -81,14 +81,25 @@ export const scopeRegistryDefaults = (
   ...(jsrRegistries?.jsr ? { '@jsr': jsrRegistries.jsr } : {}),
 })
 
-// the `alias:` prefix of an edge value's spec, i.e. what follows the
-// `${type} ` part; a range like `>=1 <2` has a space before any colon
-const edgeSpecPrefix = /^[^ ]+ ([^:\s]+):/
+// the `alias:` prefix of a spec; a range like `>=1 <2` has a space
+// before any colon
+const specPrefix = /^([^:\s]+):/
+
+// the `catalog:` or `catalog:<name>` spec of an edge value
+const edgeCatalogSpec = /^[^ ]+ catalog:(\S*) /
+
+/** The catalogs a `catalog:` edge spec can resolve through. */
+export type CatalogSource = {
+  catalog?: Record<string, string>
+  catalogs?: Record<string, Record<string, string>>
+}
 
 /**
  * The `registries` aliases that the given lockfile nodes and edges name:
  * the registry part of a registry DepID and the `alias:` prefix of an
- * edge spec (which covers an edge whose target is `MISSING`). Any other
+ * edge spec (which covers an edge whose target is `MISSING`). A
+ * `catalog:` edge spec names the prefix of its entry in any of the
+ * given catalog sources, as `Spec.parse` resolves it on load. Any other
  * alias routes nothing in the graph, so it is config of the machine that
  * ran the install, not state of the project.
  *
@@ -97,16 +108,34 @@ const edgeSpecPrefix = /^[^ ]+ ([^:\s]+):/
  */
 export const lockfileRegistryAliases = (
   nodeIds: Iterable<string>,
-  edgeValues: Iterable<string>,
+  edges: Iterable<[key: string, value: string]>,
+  catalogSources: CatalogSource[] = [],
 ): Set<string> => {
   const aliases = new Set<string>()
+  const addPrefix = (spec: string | undefined) => {
+    const prefix = spec && specPrefix.exec(spec)?.[1]
+    if (prefix) aliases.add(prefix)
+  }
   for (const id of nodeIds) {
     const [type, registry] = splitDepID(id)
     if (type === 'registry') aliases.add(registry)
   }
-  for (const value of edgeValues) {
-    const prefix = edgeSpecPrefix.exec(value)?.[1]
-    if (prefix) aliases.add(prefix)
+  for (const [key, value] of edges) {
+    addPrefix(value.substring(value.indexOf(' ') + 1))
+    const catalogName = edgeCatalogSpec.exec(value)?.[1]
+    if (catalogName === undefined) continue
+    const name = key.substring(key.indexOf(' ') + 1)
+    for (const { catalog, catalogs } of catalogSources) {
+      const entries =
+        catalogName ?
+          catalogs && Object.hasOwn(catalogs, catalogName) ?
+            catalogs[catalogName]
+          : undefined
+        : catalog
+      if (entries && Object.hasOwn(entries, name)) {
+        addPrefix(entries[name])
+      }
+    }
   }
   return aliases
 }

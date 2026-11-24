@@ -503,20 +503,52 @@ t.test('lockfileRegistryAliases', async t => {
   const acme = joinDepIDTuple(['registry', 'acme', 'foo@1.0.0'])
   const npm = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
   const file = joinDepIDTuple(['file', './x'])
+  const root = joinDepIDTuple(['file', '.'])
   t.strictSame(
     lockfileRegistryAliases(
       [acme, npm, file],
       [
-        `prod acme:foo@^1.0.0 ${acme}`,
-        'optional other:baz@^1.0.0 MISSING',
-        `prod >=1.0.0 <2.0.0 ${npm}`,
-        `prod file:./x ${file}`,
+        [`${root} foo`, `prod acme:foo@^1.0.0 ${acme}`],
+        [`${root} baz`, 'optional other:baz@^1.0.0 MISSING'],
+        [`${root} bar`, `prod >=1.0.0 <2.0.0 ${npm}`],
+        [`${root} x`, `prod file:./x ${file}`],
       ],
     ),
     new Set(['acme', 'npm', 'other', 'file']),
     'node registries and edge spec prefixes, not ranges or file ids',
   )
+  t.strictSame(
+    lockfileRegistryAliases(
+      [acme],
+      [[`${root} foo`, `prod ^1.0.0 ${acme}`]],
+    ),
+    new Set(['acme']),
+    'an alias only a node id names, as a scoped registry mints it',
+  )
   t.strictSame(lockfileRegistryAliases([], []), new Set())
+
+  const catalogEdges: [string, string][] = [
+    [`${root} a`, 'optional catalog: MISSING'],
+    [`${root} b`, 'optional catalog:named MISSING'],
+    [`${root} c`, 'optional catalog:gone MISSING'],
+    [`${root} d`, 'optional catalog: MISSING'],
+    [`${root} e`, 'optional catalog: MISSING'],
+  ]
+  t.strictSame(
+    lockfileRegistryAliases([], catalogEdges),
+    new Set(['catalog']),
+    'a catalog: edge without catalogs only names its own prefix',
+  )
+  t.strictSame(
+    lockfileRegistryAliases([], catalogEdges, [
+      { catalog: { a: 'acme:a@^1.0.0', d: '^1.0.0' } },
+      { catalogs: { named: { b: 'other:b@^1.0.0' } } },
+      {},
+    ]),
+    new Set(['catalog', 'acme', 'other']),
+    'a catalog: edge names the prefix of its entry in any source, ' +
+      'skipping missing catalogs, missing entries and plain ranges',
+  )
 })
 
 t.test('usedRegistries', async t => {

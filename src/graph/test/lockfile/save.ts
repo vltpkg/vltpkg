@@ -512,6 +512,68 @@ t.test('leaves out registries no node or edge uses', async t => {
   )
 })
 
+t.test('keeps the alias of a catalog: edge with no node', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  const specOptions = {
+    catalog: { bar: 'acme:bar@^1.0.0' },
+    registries: { npm: npmjs, acme },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      optionalDependencies: { bar: 'catalog:' },
+    },
+  })
+  // the edge stores `catalog:`, so only the catalog entry names `acme`
+  graph.addEdge(
+    'optional',
+    Spec.parse('bar', 'catalog:', specOptions),
+    graph.mainImporter,
+  )
+  const data = lockfileData({ ...specOptions, graph })
+  t.match(Object.values(data.edges), ['optional catalog: MISSING'])
+  t.strictSame(data.options.registries, { npm: npmjs, acme })
+})
+
+t.test('keeps an alias that only a node id names', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  // a scoped registry whose URL matches an alias mints `~acme~` ids
+  const specOptions = {
+    registries: { npm: npmjs, acme },
+    'scoped-registries': { '@acme': acme },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { '@acme/foo': '^1.0.0' },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('@acme/foo', '^1.0.0', specOptions),
+    { name: '@acme/foo', version: '1.0.0' },
+  )
+  const data = lockfileData({ ...specOptions, graph })
+  t.match(Object.keys(data.nodes), [/^~acme~/], 'the id names acme')
+  t.match(Object.values(data.edges), [/^prod \^1\.0\.0 /])
+  t.strictSame(data.options.registries, { npm: npmjs, acme })
+})
+
 t.test('persists a non-default default-registry-alias', async t => {
   const mainManifest = {
     name: 'my-project',
