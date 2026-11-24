@@ -14,6 +14,7 @@ import {
   LayoutDashboardIcon,
   NetworkIcon,
   PackageIcon,
+  PlugIcon,
   ShieldCheckIcon,
   SlidersHorizontalIcon,
   SquareTerminalIcon,
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
-const docs = 'https://docs.vlt.sh'
+const docs = 'https://docs.vlt.io'
 
 // who publishes vlt and what it is, for agents and search engines (schema.org JSON-LD).
 // sameAs mirrors the sidebar's social links; the client is free and BSD-2-Clause-Patent licensed
@@ -93,9 +94,10 @@ const jsonLd = {
 
 const prompt = `Help me use vlt in this project. Start by reading ${docs}/llms.txt, which lists every page of the vlt docs. Any page is available as Markdown by adding .md to its URL (for example ${docs}/client/auth.md), and ${docs}/llms-full.txt has the whole site in one file.
 
-1. Install the vlt CLI with \`curl -fsSL https://install.vlt.sh | bash\` (it requires Node.js 22.22 or later), then run \`vlt install\`. If you support Agent Skills, the vlt-cli skill at ${docs}${vltCliSkill.url} is a short map of the CLI: install management, registry setup, and where queries go.
-2. \`vlt install\` works with no config through vlt's public npm mirror, which has usage limits. To use vlt.io account registries (no usage limits, private packages), run \`vlt setup\`. It authenticates and configures the account's registry aliases in one step. To move an existing repository (and its CI) onto a vlt.io registry, follow ${docs}${registryMigrationSkill.url}.
-3. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${docs}${dssQuerySkill.url} covers it.
+1. Ask me whether I already have a vlt.io registry account. If I do, connect the vlt.io MCP server so you can work with my account: follow ${docs}/registry/agent-resources/mcp.md for the client you're running in, then tell me in a sentence or two how to sign in (the first connection opens vlt.io in my browser, where I approve one account). If I don't, skip this step.
+2. Install the vlt CLI with \`curl -fsSL https://install.vlt.sh | bash\` (it requires Node.js 22.22 or later), then run \`vlt install\`. If you support Agent Skills, the vlt-cli skill at ${docs}${vltCliSkill.url} is a short map of the CLI: install management, registry setup, and where queries go.
+3. \`vlt install\` works with no config through vlt's public npm mirror, which has usage limits. To use vlt.io account registries (no usage limits, private packages), run \`vlt setup\`. It authenticates and configures the account's registry aliases in one step. To move an existing repository (and its CI) onto a vlt.io registry, follow ${docs}${registryMigrationSkill.url}.
+4. To answer questions about dependencies, write Dependency Selector Syntax queries and run them with \`vlt query '<selector>'\`. The syntax is documented at ${docs}/client/selectors.md. If you support Agent Skills, the dss-query skill at ${docs}${dssQuerySkill.url} covers it.
 
 Only use commands and flags that appear in the docs.`
 
@@ -113,6 +115,13 @@ const cards: Card[] = [
     description:
       "Add .md to any page's URL for a plain Markdown copy, or read the whole site in one file.",
     href: '/llms-full.txt',
+  },
+  {
+    icon: PlugIcon,
+    title: 'vlt.io MCP server',
+    description:
+      'Connect your agent to your vlt.io account to search packages, approve staged versions, and manage projects.',
+    href: '/registry/agent-resources/mcp',
   },
   {
     icon: SquareTerminalIcon,
