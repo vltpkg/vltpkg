@@ -1,0 +1,110 @@
+---
+title: Account & User
+description:
+  Change an account's profile and settings, and your own name.
+sidebar:
+  label: Account & User
+---
+
+An account's `$id` is `/account/<account>`, its settings are at
+`/account/<account>/settings`, and a user is at `/user/<id>`. The home
+document's `account` link leads to the account you signed in to, and
+`current-principal` to you.
+
+```json title="Example call"
+{
+  "name": "account.update",
+  "arguments": {
+    "target": "/account/acme",
+    "input": { "supportEmail": "support@acme.dev" }
+  }
+}
+```
+
+## `account.update`
+
+Change the name, the description, the support email or the profile
+links.
+
+- **Target:** an Account
+- **Privilege:** `account:write`
+- **Hints:** none
+
+### Parameters
+
+At least one `input` field is required.
+
+| Parameter            | Type           | Required | Description                                                                                                                                                                      |
+| -------------------- | -------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `target`             | string         | Yes      | The `$id` of the account.                                                                                                                                                        |
+| `input.name`         | string         | No       | The display name of the account. 1–255 characters.                                                                                                                               |
+| `input.supportEmail` | string \| null | No       | Public contact address for the account. An email address, up to 255 characters. `null` clears it.                                                                                |
+| `input.description`  | string \| null | No       | Short plain-text bio for the account page. 1–500 characters. `null` clears it.                                                                                                   |
+| `input.me`           | array          | No       | The account's profile links, replaced as a whole set. Array order is the display order; an empty array clears them. Up to 25 items. They come back as `links.me` on the account. |
+| `input.me[].$ref`    | string         | Yes      | The link target. Must start with `http://` or `https://`. Up to 2048 characters.                                                                                                 |
+| `input.me[].title`   | string         | Yes      | The label shown for the link. 1–128 characters.                                                                                                                                  |
+
+## `accountSettings.update`
+
+Make the account private or public, or require staging for new
+versions.
+
+- **Target:** an AccountSettings
+- **Privilege:** `security:write`
+- **Hints:** <Badge text="Step-up" /> when the call changes
+  `requiresStaging`
+
+Changing `requiresStaging` asks for a second factor from the last 10
+minutes. See
+[Step-up verification](/registry/agent-resources/mcp/overview#step-up-verification).
+
+### Parameters
+
+At least one `input` field is required.
+
+| Parameter               | Type    | Required | Description                                                                                         |
+| ----------------------- | ------- | -------- | --------------------------------------------------------------------------------------------------- |
+| `target`                | string  | Yes      | The `$id` of the account's settings.                                                                |
+| `input.isPrivate`       | boolean | No       | When `true`, the account is hidden from public listings and has no anonymous surface at all.        |
+| `input.requiresStaging` | boolean | No       | When `true`, new versions must be staged with `npm stage publish` and approved before they publish. |
+
+## `accountSettings.setTwoFaRequirement`
+
+Turn the browser approval of package writes on or off, on behalf of a
+member.
+
+- **Target:** an AccountSettings
+- **Privilege:** `security:write`, checked on the member the request
+  names
+- **Hints:** none
+
+<Aside type="note">
+  This tool appears in `tools/list`, but account settings only offer
+  it to vlt.io's own dashboard. Calls from an MCP client report that
+  the action isn't offered. Change the requirement in the
+  [dashboard](https://www.vlt.io) instead.
+</Aside>
+
+### Parameters
+
+| Parameter                             | Type    | Required | Description                                        |
+| ------------------------------------- | ------- | -------- | -------------------------------------------------- |
+| `target`                              | string  | Yes      | The `$id` of the account's settings.               |
+| `input.clerkUserId`                   | string  | Yes      | The id of the member who completed reverification. |
+| `input.requiresTwoFaForPackageWrites` | boolean | Yes      | The new value for the account-wide requirement.    |
+
+## `user.update`
+
+Change the first and last name.
+
+- **Target:** a User. Offered only on yourself.
+- **Privilege:** none
+- **Hints:** none
+
+### Parameters
+
+| Parameter         | Type   | Required | Description                              |
+| ----------------- | ------ | -------- | ---------------------------------------- |
+| `target`          | string | Yes      | The `$id` of the user.                   |
+| `input.firstName` | string | Yes      | The user's given name. 1–50 characters.  |
+| `input.lastName`  | string | Yes      | The user's family name. 1–50 characters. |

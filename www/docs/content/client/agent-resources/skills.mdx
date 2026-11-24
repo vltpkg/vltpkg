@@ -1,0 +1,61 @@
+---
+title: Agent Skills
+description:
+  Skills that teach coding agents to use the vlt CLI, query
+  dependencies and move a repository onto a vlt.io registry.
+sidebar:
+  label: Skills
+---
+
+vlt ships [agent skills](https://agentskills.io): short instruction
+files a coding agent loads when a task calls for them. They live in
+the
+[vlt repository](https://github.com/vltpkg/vltpkg/tree/main/skills),
+are published as the `@vltpkg/skills` package, and are served on this
+site, so an agent can also read one directly by its URL.
+
+## Installing skills
+
+Install the package and link every skill into your project's agent
+directories:
+
+```sh title="Terminal"
+vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills"
+```
+
+Or run `vlt setup --skills`, which also stores the `allow-skills`
+setting so a fresh clone and `vlt ci` link the skills too; see
+[`vlt setup`](/client/commands/setup#install-vlts-agent-skills).
+
+To link one skill, end the selector with `:skill(<name>)`:
+
+```sh title="Terminal"
+vlt install -D @vltpkg/skills --allow-skills="#@vltpkg/skills:skill(vlt-cli)"
+```
+
+To add a skill without a dependency, use the
+[skills CLI](https://skills.sh/docs/cli) on the repository:
+
+```sh title="Terminal"
+vlx skills add vltpkg/vltpkg -- --skill vlt-cli
+```
+
+## Skills
+
+| Skill                                                             | What it does                                                                                                                                                                                              | Install                                                          |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [vlt-cli](/skills/vlt-cli/SKILL.md)                               | A map of the vlt CLI: installing and updating dependencies, running scripts and bins, configuring registries, `vlt.json` and `vlt-lock.json`, and passing Dependency Selector Syntax queries to commands. | `vlx skills add vltpkg/vltpkg -- --skill vlt-cli`                |
+| [dss-query](/skills/dss-query/SKILL.md)                           | Explains and composes [Dependency Selector Syntax](/client/selectors) queries, including Socket-powered security audits.                                                                                  | `vlx skills add vltpkg/vltpkg -- --skill dss-query`              |
+| [vlt-registry-migration](/skills/vlt-registry-migration/SKILL.md) | Moves a repository, single package or monorepo, onto a vlt.io registry, and sets up auth for npm, pnpm, yarn, bun, deno and vlt on laptops, CI, Vercel and agent sandboxes.                               | `vlx skills add vltpkg/vltpkg -- --skill vlt-registry-migration` |
+
+## Skills from your dependencies
+
+Any package can ship skills. vlt links them only from the packages you
+allow, with the `allow-skills` selector. See
+[`vlt skills`](/client/commands/skills) for how linking works and
+where the links go, and the
+[`:skill`](/client/selectors/pseudo-classes/skill) selector for
+finding packages that ship skills.
+
+For working with a vlt.io account, also connect the
+[MCP server](/registry/agent-resources/mcp).

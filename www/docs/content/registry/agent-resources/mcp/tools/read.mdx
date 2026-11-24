@@ -1,0 +1,95 @@
+---
+title: Read
+description: Read any resource of the vlt.io API and follow its links.
+sidebar:
+  label: Read
+---
+
+`read` is the one tool that isn't an action. It fetches a resource,
+and everything else is reached from what it returns: `links` lead to
+other resources, and `actions` name the other tools you may call on
+this one. Start at the home document, `/`.
+
+```json title="Example call"
+{ "name": "read", "arguments": { "url": "/" } }
+```
+
+The home document links to the API's catalogs and, under `account`, to
+the account you signed in to:
+
+```json title="Response (trimmed)"
+{
+  "$id": "/",
+  "name": "vlt.io API",
+  "links": {
+    "action-definition-collection": { "$ref": "/action" },
+    "current-principal": { "$ref": "/current-principal" },
+    "privilege": { "$ref": "/privilege" },
+    "schema-collection": { "$ref": "/schema" },
+    "account": [{ "$ref": "/account/acme", "title": "Acme" }]
+  }
+}
+```
+
+A resource lists the actions you may take on it, keyed by tool name.
+Here, a package on the account's `main` registry:
+
+```json title="Response (trimmed)"
+{
+  "$id": "/account/acme/registry/main/package/%40acme%2Futils",
+  "name": "@acme/utils",
+  "links": {
+    "version-collection": {
+      "$ref": "/account/acme/registry/main/package/%40acme%2Futils/v"
+    },
+    "dist-tag-collection": {
+      "$ref": "/account/acme/registry/main/package/%40acme%2Futils/dist-tag"
+    }
+  },
+  "actions": {
+    "package.deprecate": {
+      "$ref": "/account/acme/registry/main/package/%40acme%2Futils/deprecate",
+      "method": "POST",
+      "title": "Deprecate package",
+      "description": "Mark every version of the package as deprecated.",
+      "inputSchema": { "$ref": "/schema/deprecate-request" }
+    }
+  }
+}
+```
+
+## `read`
+
+GET a resource of the vlt.io API and return it. Resources link to each
+other through `links`: read the `$ref` of a link to follow it. The
+`actions` of a resource are what you may do there: call the tool with
+the name of the action, with the `$id` of the resource as `target`.
+Start at the home document, `/`.
+
+- **Target:** none. `read` takes a URL instead.
+- **Privilege:** none of its own. Resources in your signed-in account
+  are read with its access. Other accounts are read without a token,
+  so only their public data comes back.
+- **Hints:** <Badge text="Read-only" />
+
+Redirects within the API are followed. URLs outside the API are
+refused.
+
+### Parameters
+
+| Parameter | Type   | Required | Description                                            |
+| --------- | ------ | -------- | ------------------------------------------------------ |
+| `url`     | string | Yes      | The URL of the resource: `/`, or the `$ref` of a link. |
+
+### Home document links
+
+| Link                           | Leads to                                                     |
+| ------------------------------ | ------------------------------------------------------------ |
+| `account`                      | The account you signed in to. An array with one entry.       |
+| `current-principal`            | Redirects to the signed-in user.                             |
+| `action-definition-collection` | Every action a resource may list: the source of these tools. |
+| `privilege`                    | The catalog of privileges.                                   |
+| `schema-collection`            | The JSON Schemas of the API.                                 |
+| `license-collection`           | The SPDX license catalog.                                    |
+| `malware`                      | Every npm package version flagged as malware by OSV.         |
+| `register`                     | Creating a new account and user.                             |

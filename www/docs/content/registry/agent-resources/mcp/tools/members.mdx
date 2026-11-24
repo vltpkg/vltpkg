@@ -1,0 +1,102 @@
+---
+title: Members & Invitations
+description:
+  Invite people to an account, change their roles, transfer ownership
+  and remove members.
+sidebar:
+  label: Members & Invitations
+---
+
+An account's invitations live at `/account/<account>/invitation`, each
+one at `…/invitation/<id>`, and each member at
+`/account/<account>/member/<id>`.
+
+```json title="Example call"
+{
+  "name": "member.invite",
+  "arguments": {
+    "target": "/account/acme/invitation",
+    "input": {
+      "invitations": [{ "email": "sam@acme.dev", "role": "member" }]
+    }
+  }
+}
+```
+
+## `member.invite`
+
+Email each address an invitation to join the account.
+
+- **Target:** an InvitationCollection. Offered only to a person, not a
+  service token.
+- **Privilege:** `invitation:create`
+- **Hints:** none
+
+### Parameters
+
+| Parameter                   | Type   | Required | Description                                              |
+| --------------------------- | ------ | -------- | -------------------------------------------------------- |
+| `target`                    | string | Yes      | The `$id` of the account's invitation collection.        |
+| `input.invitations`         | array  | Yes      | The invitations to create. 1–50 items.                   |
+| `input.invitations[].email` | string | Yes      | Email address of the invitee. 5–255 characters.          |
+| `input.invitations[].role`  | string | Yes      | Role the invitee gets on accepting: `admin` or `member`. |
+
+## `invitation.delete`
+
+Cancel the invitation. Its link stops working.
+
+- **Target:** a pending Invitation
+- **Privilege:** `invitation:delete`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                  |
+| --------- | ------ | -------- | ---------------------------- |
+| `target`  | string | Yes      | The `$id` of the invitation. |
+
+## `member.update`
+
+Change the role to admin or member.
+
+- **Target:** a Membership whose role you may change
+- **Privilege:** `member:write`
+- **Hints:** none
+
+### Parameters
+
+| Parameter    | Type   | Required | Description                                       |
+| ------------ | ------ | -------- | ------------------------------------------------- |
+| `target`     | string | Yes      | The `$id` of the membership.                      |
+| `input.role` | string | Yes      | The new role for the member: `admin` or `member`. |
+
+## `member.transferOwnership`
+
+Make the member the owner of the account. The current owner becomes an
+admin.
+
+- **Target:** a Membership. Offered only to the account's owner.
+- **Privilege:** `member:write`
+- **Hints:** <Badge text="Destructive" />
+
+### Parameters
+
+| Parameter    | Type   | Required | Description                                |
+| ------------ | ------ | -------- | ------------------------------------------ |
+| `target`     | string | Yes      | The `$id` of the membership.               |
+| `input.role` | string | Yes      | Always `owner`. The role the member takes. |
+
+## `member.delete`
+
+Remove the member from the account. Their tokens for the account are
+revoked.
+
+- **Target:** a Membership. Not offered on the owner.
+- **Privilege:** `member:delete`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                  |
+| --------- | ------ | -------- | ---------------------------- |
+| `target`  | string | Yes      | The `$id` of the membership. |

@@ -1,0 +1,116 @@
+---
+title: Packages
+description:
+  Search a registry, resolve versions, and deprecate, unpublish or
+  change the visibility of a package.
+sidebar:
+  label: Packages
+---
+
+A package's `$id` looks like
+`/account/<account>/registry/<registry>/package/<name>`, with the name
+percent-encoded (`@acme/utils` is `%40acme%2Futils`). Read it from a
+registry's links or from `package.search` results, don't build it.
+
+```json title="Example call"
+{
+  "name": "package.deprecate",
+  "arguments": {
+    "target": "/account/acme/registry/main/package/%40acme%2Futils",
+    "input": { "message": "Use @acme/utils2 instead." }
+  }
+}
+```
+
+## `package.search`
+
+Search the registry's packages by name, description and keywords.
+
+- **Target:** a Registry
+- **Privilege:** none. Offered to anyone who can read the registry.
+- **Hints:** <Badge text="Read-only" />
+  <Badge text="Untrusted content" />
+
+### Parameters
+
+| Parameter     | Type   | Required | Description                                                                                                            |
+| ------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `target`      | string | Yes      | The `$id` of the registry.                                                                                             |
+| `input.q`     | string | Yes      | What to search for, in natural language, such as `date formatting`. 1–1024 characters.                                 |
+| `input.order` | string | No       | The order of the packages: `name asc`, `updatedAt desc`, `downloads desc` or `relevance desc`. Defaults to `name asc`. |
+
+## `package.resolve`
+
+Resolve a semver range to the highest version of the package that
+matches it.
+
+- **Target:** a Package
+- **Privilege:** `package:read`. Offered to anyone who can read the
+  package.
+- **Hints:** <Badge text="Read-only" />
+  <Badge text="Untrusted content" />
+
+### Parameters
+
+| Parameter     | Type   | Required | Description                         |
+| ------------- | ------ | -------- | ----------------------------------- |
+| `target`      | string | Yes      | The `$id` of the package.           |
+| `input.range` | string | Yes      | A semver range or an exact version. |
+
+## `package.update`
+
+Change whether the package is public.
+
+- **Target:** a Package. Not offered on public upstream mirrors.
+- **Privilege:** `package:visibility`
+- **Hints:** <Badge text="Untrusted content" />
+
+### Parameters
+
+| Parameter        | Type    | Required | Description                                                                     |
+| ---------------- | ------- | -------- | ------------------------------------------------------------------------------- |
+| `target`         | string  | Yes      | The `$id` of the package.                                                       |
+| `input.isPublic` | boolean | Yes      | Whether anyone may read the package, including anonymous users and non-members. |
+
+## `package.deprecate`
+
+Mark every version of the package as deprecated.
+
+- **Target:** a Package
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Untrusted content" />
+
+### Parameters
+
+| Parameter       | Type   | Required | Description                                            |
+| --------------- | ------ | -------- | ------------------------------------------------------ |
+| `target`        | string | Yes      | The `$id` of the package.                              |
+| `input.message` | string | Yes      | Deprecation message shown to users. Must not be empty. |
+
+## `package.undeprecate`
+
+Clear the deprecation of every version of the package.
+
+- **Target:** a Package
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `target`  | string | Yes      | The `$id` of the package. |
+
+## `package.unpublish`
+
+Unpublish every version of the package. This cannot be undone.
+
+- **Target:** a Package. Not offered on mirrors.
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `target`  | string | Yes      | The `$id` of the package. |

@@ -1,0 +1,72 @@
+---
+title: Trusted Publishers
+description:
+  Trust a GitHub Actions workflow to publish a package, or stop
+  trusting it.
+sidebar:
+  label: Trusted Publishers
+---
+
+A package's trusted publishers live at
+`/account/<account>/registry/<registry>/package/<name>/trusted-publisher`,
+the package's `trusted-publisher-collection` link, and each one at
+`…/trusted-publisher/<id>`. They exist only on a registry the account
+owns. See
+[Trusted publishing](/registry/publishing/trusted-publishing) for how
+the workflow side works.
+
+Both tools are offered only to a person, not a service token, and each
+asks you to confirm it's you with your second factor. See
+[Step-up verification](/registry/agent-resources/mcp/overview#step-up-verification).
+
+```json title="Example call"
+{
+  "name": "trustedPublisher.create",
+  "arguments": {
+    "target": "/account/acme/registry/main/package/%40acme%2Futils/trusted-publisher",
+    "input": {
+      "type": "github",
+      "repository": "acme/utils",
+      "workflowFile": "release.yml"
+    }
+  }
+}
+```
+
+## `trustedPublisher.create`
+
+Trust a GitHub Actions workflow to publish or stage the package
+without a token.
+
+- **Target:** a TrustedPublisherCollection
+- **Privilege:** `package:trust`
+- **Hints:** <Badge text="Needs confirmation" />
+  <Badge text="Step-up" />
+
+### Parameters
+
+| Parameter            | Type           | Required | Description                                                                                                                                       |
+| -------------------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `target`             | string         | Yes      | The `$id` of the package's trusted publisher collection.                                                                                          |
+| `input.type`         | string         | Yes      | The CI provider. Only `github`, for GitHub Actions.                                                                                               |
+| `input.repository`   | string         | Yes      | The GitHub repository the workflow runs in, as `owner/name`. A GitHub App installation linked to the account must grant it. Up to 255 characters. |
+| `input.workflowFile` | string         | Yes      | The workflow file name under `.github/workflows`, ending in `.yml` or `.yaml`, such as `release.yml`. Up to 255 characters.                       |
+| `input.environment`  | string \| null | No       | The GitHub Actions environment the job must run in. Omitted or `null` accepts any or none.                                                        |
+| `input.allowPublish` | boolean        | No       | Whether the workflow may publish, as `npm trust`'s `--allow-publish`. Defaults to `true`.                                                         |
+| `input.allowStage`   | boolean        | No       | Whether the workflow may stage, as `npm trust`'s `--allow-stage-publish`. Defaults to `false`.                                                    |
+
+## `trustedPublisher.delete`
+
+Stop trusting the workflow. Tokens it already exchanged are refused
+from their next use.
+
+- **Target:** a TrustedPublisher
+- **Privilege:** `package:trust`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+  <Badge text="Needs confirmation" /> <Badge text="Step-up" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                         |
+| --------- | ------ | -------- | ----------------------------------- |
+| `target`  | string | Yes      | The `$id` of the trusted publisher. |

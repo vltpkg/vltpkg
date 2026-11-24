@@ -1,0 +1,76 @@
+---
+title: Projects
+description:
+  Link GitHub repositories as projects, and change or delete them.
+sidebar:
+  label: Projects
+---
+
+An account's projects live at `/account/<account>/project`, and each
+one at `/account/<account>/project/<id>`. A project follows a lockfile
+in a GitHub repository that the account's
+[GitHub connection](/registry/agent-resources/mcp/tools/github)
+grants.
+
+```json title="Example call"
+{
+  "name": "project.create",
+  "arguments": {
+    "target": "/account/acme/project",
+    "input": { "repositoryId": 123456789, "name": "web" }
+  }
+}
+```
+
+## `project.create`
+
+Link a GitHub repository as a project.
+
+- **Target:** a ProjectCollection. When the plan's project limit is
+  reached, the action is listed with `available: false` and a
+  `reason`.
+- **Privilege:** `project:create`
+- **Hints:** none
+
+### Parameters
+
+| Parameter            | Type    | Required | Description                                                                                                                                                              |
+| -------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `target`             | string  | Yes      | The `$id` of the account's project collection.                                                                                                                           |
+| `input.repositoryId` | integer | Yes      | GitHub's repository id. At least 1.                                                                                                                                      |
+| `input.name`         | string  | Yes      | Unique within the account. Lowercase letters, digits, `.`, `-` and `_`, starting and ending with a letter or digit. 1–100 characters. `new` is reserved.                 |
+| `input.branch`       | string  | No       | The branch to follow. Defaults to the repository's default branch. 1–255 characters.                                                                                     |
+| `input.lockfilePath` | string  | No       | Path of the lockfile, relative to the repository root: a `vlt-lock.json`, `package-lock.json`, `pnpm-lock.yaml` or `yarn.lock`. Defaults to `vlt-lock.json` at the root. |
+
+## `project.update`
+
+Change the name, the branch or the lockfile path.
+
+- **Target:** a Project
+- **Privilege:** `project:update`
+- **Hints:** none
+
+### Parameters
+
+At least one `input` field is required. Fields left out are unchanged.
+
+| Parameter            | Type   | Required | Description                                                                                                                     |
+| -------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `target`             | string | Yes      | The `$id` of the project.                                                                                                       |
+| `input.name`         | string | No       | Unique within the account. Same rules as `project.create`.                                                                      |
+| `input.branch`       | string | No       | Must exist on GitHub. 1–255 characters.                                                                                         |
+| `input.lockfilePath` | string | No       | Path of the lockfile, relative to the repository root: a `vlt-lock.json`, `package-lock.json`, `pnpm-lock.yaml` or `yarn.lock`. |
+
+## `project.delete`
+
+Delete the project. The repository on GitHub is untouched.
+
+- **Target:** a Project
+- **Privilege:** `project:delete`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `target`  | string | Yes      | The `$id` of the project. |

@@ -1,0 +1,92 @@
+---
+title: Markdown Negotiation
+description:
+  Read vlt.io pages, including package pages, as Markdown instead of
+  HTML.
+sidebar:
+  label: Markdown Negotiation
+---
+
+Every page on [vlt.io](https://www.vlt.io) is also available as
+Markdown, generated from the same content the browser renders. Agents
+get the page's text, links and metadata without parsing HTML.
+
+## Requesting Markdown
+
+Ask for `text/markdown` in the `Accept` header:
+
+```sh title="Terminal"
+curl -H 'Accept: text/markdown' https://www.vlt.io/pricing
+```
+
+Or add `.md` to the path:
+
+```sh title="Terminal"
+curl https://www.vlt.io/pricing.md
+```
+
+Both return `Content-Type: text/markdown`. Links in the response point
+at the `.md` versions of other pages, so an agent can keep following
+them.
+
+## What a response contains
+
+Each response starts with frontmatter, then the page's content:
+
+```text
+---
+title: "Pricing | vlt /vōlt/"
+description: "Choose the plan that fits your needs."
+url: "https://www.vlt.io/pricing"
+image: "https://www.vlt.io/api/og/page?data=…"
+lang: "en"
+---
+```
+
+| Field         | Value                           |
+| ------------- | ------------------------------- |
+| `title`       | The page title                  |
+| `description` | The page summary                |
+| `url`         | The canonical URL of the page   |
+| `image`       | The page's social preview image |
+| `lang`        | The page language               |
+
+## Package pages
+
+Package pages follow this pattern:
+
+```text
+https://www.vlt.io/registry/<account>/<registry>/package/<name>/version/<version>.md
+```
+
+`<version>` can be `latest`, which redirects to the current version,
+so follow redirects (`curl -L`). Public npm packages are under
+`/registry/upstream/npm`:
+
+```sh title="Terminal"
+curl -L https://www.vlt.io/registry/upstream/npm/package/semver/version/latest.md
+```
+
+The response includes the version, visibility, dependency count,
+publisher, and links to the readme, versions and contributors.
+
+## Signed-in pages
+
+Markdown requests go through the same sign-in checks as the page.
+Without a session, account pages such as the dashboard redirect to the
+sign-in page, and private packages aren't visible.
+
+For your account's data, give your agent the
+[MCP server](/registry/agent-resources/mcp) instead. It signs in with
+OAuth and acts only within the account and role you approve.
+
+## llms.txt
+
+[`https://www.vlt.io/llms.txt`](https://www.vlt.io/llms.txt) lists the
+site's pages, blog posts and comparisons with a one-line description
+of each, linked to their Markdown versions. Package pages aren't
+listed; use the pattern above.
+
+For the docs site, see
+[Markdown Negotiation](/client/agent-resources/markdown) in the client
+docs.
