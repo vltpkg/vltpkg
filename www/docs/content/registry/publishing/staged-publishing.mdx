@@ -1,0 +1,113 @@
+---
+title: Staged publishing
+description:
+  Upload a version for a person to approve before the registry serves
+  it.
+sidebar:
+  label: Staged Publishing
+  order: 9
+---
+
+Staged publishing splits a publish in two. First the version is
+staged: the registry stores it but doesn't serve it. Then a person
+approves it, which publishes it, or rejects it, which deletes it.
+Staging never asks for a second factor and deciding always does, so CI
+can stage and a maintainer confirms each release.
+
+The registry follows npm's design, so `npm stage` (npm 12 or later)
+works unchanged, and so does [`vlt stage`](/client/commands/stage).
+
+## Stage a version
+
+<Tabs syncKey="pkg-manager">
+
+<TabItem label="vlt">
+
+```sh
+vlt stage publish
+```
+
+</TabItem>
+
+<TabItem label="npm">
+
+```sh
+npm stage publish
+```
+
+</TabItem>
+
+</Tabs>
+
+Staging takes the same options as a publish (`--tag`, `--access`,
+`--registry`) and goes to the same registry, such as the package's
+`publishConfig.registry`. It prints a stage id for the commands below.
+
+Until it's approved or rejected, the staged version isn't in the
+packument, so nothing can install it, and it keeps its version number:
+staging or publishing that version again fails with a `409`.
+
+## Review, approve or reject
+
+<Tabs syncKey="pkg-manager">
+
+<TabItem label="vlt">
+
+```sh
+vlt stage list                  # or one package: vlt stage list @acme/utils
+vlt stage view <stage-id>
+vlt stage download <stage-id>   # saves the tarball in the current directory
+vlt stage approve <stage-id>
+vlt stage reject <stage-id>
+```
+
+vlt sends these to the `publishConfig.registry` of the package in the
+current directory if it sets one, else to `--registry` or your
+configured registry.
+
+</TabItem>
+
+<TabItem label="npm">
+
+```sh
+npm stage list                  # or one package: npm stage list @acme/utils
+npm stage view <stage-id>
+npm stage download <stage-id>   # saves the tarball in the current directory
+npm stage approve <stage-id>
+npm stage reject <stage-id>
+```
+
+npm sends these to your default `registry`: add
+`--registry=https://registry.vlt.io/acme/main/` to each.
+
+</TabItem>
+
+</Tabs>
+
+Approving publishes the version under the tag it was staged with.
+Rejecting deletes it and frees its version number. Either one needs:
+
+- a person, signed in with a personal token that has `package:write`.
+  Service tokens and workflows can't decide.
+- a second factor from the last 5 minutes, whatever the account's
+  two-factor setting. The first decision asks you to confirm in the
+  browser; another within 5 minutes doesn't ask again.
+
+If the version was staged with `--access` (or `publishConfig.access`),
+approving applies it.
+
+## From GitHub Actions
+
+A [trusted publisher](/registry/publishing/trusted-publishing) can be
+allowed to stage, to publish, or both. Add `--allow-stage-publish`
+when you add it with `npm trust` (npm 12 or later), and
+`--allow-publish` too if the workflow should also publish directly:
+
+```sh
+npm trust github @acme/utils --repo=acme/utils --file=release.yml \
+  --allow-stage-publish --registry=https://registry.vlt.io/acme/main/
+```
+
+The workflow then runs `vlt stage publish` or `npm stage publish` in
+place of the publish step, with no token secret. Its token can stage,
+but it can't list, view, download, approve or reject staged versions.
