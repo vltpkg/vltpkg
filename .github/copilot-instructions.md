@@ -94,7 +94,7 @@ example to work on the `@vltpkg/semver` workspace navigate to the
 `src/semver` folder and then run the command:
 
 ```bash
-vlr test -Rtap
+vlr test -- -Rtap
 ```
 
 By using the `-Rtap` option you'll get TAP output which is a very
