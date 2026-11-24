@@ -7,9 +7,9 @@ sidebar:
 ---
 
 The vlt.io MCP server gives your agent the same access to your account
-that you have in the dashboard: search and inspect packages, approve
-staged versions, deprecate releases, manage projects, trusted
-publishers and members. It's a remote server at:
+that your role gives you: search and inspect packages, approve staged
+versions, deprecate releases, manage projects, trusted publishers and
+members. It's a remote server at:
 
 ```text
 https://mcp.vlt.io
@@ -191,8 +191,8 @@ and asks you to approve it:
 
 - **Choose one account.** The connection acts only in that account. To
   use another account, connect again and choose it.
-- **Abilities follow your role.** The page lists what the app may do,
-  and it can only ever do what your role in that account allows.
+- **Abilities follow your role.** The app can only ever do what your
+  role in that account allows.
 
 In other accounts, the agent sees only public data. The approval lasts
 90 days, then your client asks you to sign in again. Your client
@@ -204,9 +204,9 @@ publisher, ask you to confirm it's you with your second factor; see
 
 ## Revoking access
 
-In the [dashboard](https://www.vlt.io), open **Tokens → Connected
-Apps** and choose **Revoke** next to the app. It loses access right
-away. An agent can also revoke its own access with
+You can revoke an app's access from your vlt.io account at any time,
+and it loses access right away. An agent can also revoke its own
+access with
 [`oauthGrant.revoke`](/registry/agent-resources/mcp/tools/connected-apps).
 
 ## Troubleshooting
