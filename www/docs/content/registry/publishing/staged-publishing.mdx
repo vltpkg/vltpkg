@@ -14,8 +14,9 @@ approves it, which publishes it, or rejects it, which deletes it.
 Staging never asks for a second factor and deciding always needs one,
 so CI can stage and a maintainer confirms each release.
 
-The registry follows npm's design, so `npm stage` (npm 12 or later)
-works unchanged, and so does [`vlt stage`](/client/commands/stage).
+The registry follows npm's design, so `npm stage` (npm 11.15.0 or
+later) works unchanged, and so does
+[`vlt stage`](/client/commands/stage).
 
 ## Stage a version
 
@@ -100,7 +101,7 @@ approving applies it.
 
 A [trusted publisher](/registry/publishing/trusted-publishing) can be
 allowed to stage, to publish, or both. Add `--allow-stage-publish`
-when you add it with `npm trust` (npm 12 or later), and
+when you add it with `npm trust` (npm 11.15.0 or later), and
 `--allow-publish` too if the workflow should also publish directly:
 
 ```sh
