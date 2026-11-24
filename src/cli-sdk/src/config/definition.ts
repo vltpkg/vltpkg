@@ -52,6 +52,7 @@ const canonicalCommands = {
   run: 'run',
   setup: 'setup',
   skills: 'skills',
+  stage: 'stage',
   token: 'token',
   uninstall: 'uninstall',
   unpublish: 'unpublish',

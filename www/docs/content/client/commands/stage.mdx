@@ -1,0 +1,55 @@
+---
+title: vlt stage
+sidebar:
+  label: stage
+---
+
+Usage:
+
+<Code code="$ vlt stage publish" title="Terminal" lang="bash" />
+
+Stage a package version for a person to approve.
+
+A staged version is uploaded to the registry but not served until a
+person approves it with a second factor. Staging never asks for one,
+so a CI workflow can stage and a maintainer approves. A maintainer
+then approves the version, which publishes it, or rejects it, which
+deletes it.
+
+The registry must support staged publishing; others answer `404` or
+`405`. To stage to a specific configured registry by alias, use
+[`vlt registry <alias> stage publish`](/client/commands/registry).
+
+## Subcommands
+
+### publish
+
+Pack the package and stage it. `vlt stage publish` picks the packages,
+the registry and the lifecycle scripts the same way
+[`vlt publish`](/client/commands/publish) does, and takes the same
+options: `--tag`, `--access`, `--otp`, `--publish-directory`,
+`--dry-run`, and `--recursive`, `--workspace`, `--workspace-group` or
+`--scope` to stage workspaces.
+
+<Code code="$ vlt stage publish" title="Terminal" lang="bash" />
+
+[Trusted publishing](/client/commands/publish#trusted-publishing)
+works the same way, as long as the trusted publisher allows staging.
+
+The registry refuses a version that is already staged or published.
+With the workspace flags, such a version shows up as
+`skipped (already published)` and the run goes on.
+
+## Output
+
+The output of `vlt publish`, plus a line with the id the registry gave
+the staged version:
+
+<Code
+  code="🚦 Staged with id 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b"
+  title="Terminal"
+  lang="text"
+/>
+
+With `--view=json`, the result also has `"staged": true` and the
+`"stageId"`.

@@ -99,6 +99,9 @@ export type CommandResultSingle = {
   access?: string
   unpackedSize: number
   files: string[]
+  /** set by `vlt stage publish` */
+  staged?: true
+  stageId?: string
 }
 
 export type CommandResultSkipped = {
@@ -127,6 +130,11 @@ export const views = {
       ]
       if (r.shasum) lines.push(`🔒 Shasum: ${r.shasum}`)
       if (r.integrity) lines.push(`🔐 Integrity: ${r.integrity}`)
+      if (r.staged) {
+        lines.push(
+          r.stageId ? `🚦 Staged with id ${r.stageId}` : '🚦 Staged',
+        )
+      }
       return lines.join('\n')
     }
     return Array.isArray(results) ?
@@ -136,7 +144,16 @@ export const views = {
   json: r => r,
 } as const satisfies Views<CommandResult>
 
-export const command: CommandFn<CommandResult> = async conf => {
+export const command: CommandFn<CommandResult> = conf => publish(conf)
+
+/**
+ * `vlt publish`, or with `stage` `vlt stage publish`: the same package
+ * sent to the registry's staging route instead.
+ */
+export const publish = async (
+  conf: LoadedConfig,
+  { stage = false }: { stage?: boolean } = {},
+): Promise<CommandResult> => {
   const { options, projectRoot } = conf
   const queryString = conf.get('scope')
   const paths = conf.get('workspace')
@@ -203,7 +220,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   if (single) {
     const [target] = await resolveTargets([single], conf)
     assert(target)
-    return commandSingle(target, conf)
+    return commandSingle(target, conf, stage)
   }
 
   assert(
@@ -227,7 +244,7 @@ export const command: CommandFn<CommandResult> = async conf => {
       continue
     }
     try {
-      results.push(await commandSingle(target, conf))
+      results.push(await commandSingle(target, conf, stage))
     } catch (err) {
       if (!refusedAsExisting(err)) throw err
       results.push(skipped(target, 'already published'))
@@ -361,6 +378,7 @@ const readPublishReadme = (
 const commandSingle = async (
   { manifestDir, manifest, registryUrl }: Target,
   conf: LoadedConfig,
+  stage: boolean,
 ): Promise<CommandResultSingle> => {
   assert(
     !manifest.private,
@@ -471,7 +489,16 @@ const commandSingle = async (
     registry: registryUrl.href,
   })
 
-  const publishUrl = packumentUrl(name, registryUrl)
+  const method = stage ? 'POST' : 'PUT'
+  const publishUrl =
+    stage ?
+      new URL(
+        `-/stage/package/${name.replace('/', '%2F')}`,
+        registryUrl,
+      )
+    : packumentUrl(name, registryUrl)
+  const message = `Failed to ${stage ? 'stage' : 'publish'} package`
+  let stageId: string | undefined
 
   if (!dry) {
     // the same guidance whether the registry refused the request or the
@@ -484,27 +511,32 @@ const commandSingle = async (
       : statusCode === 401 ?
         `Not logged in to ${registryUrl.origin}. Run \`vlt login\` and try again.`
       : statusCode === 403 ?
-        `${name} cannot be published by this account. Run \`vlt whoami\` to see who you are logged in as, and \`vlt login\` to switch accounts. A name already taken by someone else cannot be reused.`
+        [
+          `${name} cannot be published by this account. Run \`vlt whoami\` to see who you are logged in as, and \`vlt login\` to switch accounts. A name already taken by someone else cannot be reused.`,
+          stage ? undefined : (
+            'If the account, token or trusted publisher only allows staged publishing, run `vlt stage publish` instead.'
+          ),
+        ]
       : undefined
 
     let response: CacheEntry
     try {
       response = await rc.request(publishUrl, {
-        method: 'PUT',
+        method,
         headers: {
           'content-type': 'application/json',
           // These control what type of OTP auth flow is used
           'npm-auth-type': 'web',
-          'npm-command': 'publish',
+          'npm-command': stage ? 'stage' : 'publish',
         },
         body: JSON.stringify(publishMetadata),
         otp,
       })
     } catch (err) {
       throw requestError(err, {
-        message: 'Failed to publish package',
+        message,
         url: publishUrl,
-        method: 'PUT',
+        method,
         advice: publishAdvice,
       })
     }
@@ -517,11 +549,22 @@ const commandSingle = async (
     // registry that is simply broken (EREQUEST): the former is the
     // user's to fix, not a bug to report.
     assertOk(response, {
-      message: 'Failed to publish package',
+      message,
       url: publishUrl,
-      method: 'PUT',
+      method,
       advice: publishAdvice,
     })
+
+    if (stage) {
+      try {
+        const { stageId: id } = response.json() as {
+          stageId?: unknown
+        }
+        if (typeof id === 'string') stageId = id
+      } catch {
+        // staged all the same, the registry just sent no `{ stageId }`
+      }
+    }
 
     // On deferred publishes the registry explains the delay in an
     // npm-notice header, e.g. "Your package is being processed and may
@@ -547,5 +590,7 @@ const commandSingle = async (
     size: tarballData.length,
     unpackedSize,
     files,
+    ...(stage ? { staged: true as const } : {}),
+    ...(stageId ? { stageId } : {}),
   }
 }
