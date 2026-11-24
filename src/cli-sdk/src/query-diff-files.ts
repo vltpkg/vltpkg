@@ -47,8 +47,12 @@ export const createDiffFilesProvider = (
 
     const safeCommitish = validateCommitish(commitish)
     try {
+      // --relative: paths from the project root, which can be below
+      // the root of the git repo. --no-renames: a move changes both
+      // packages. -z: do not quote non-ASCII or special names.
+      // --: never read the commitish as a file name.
       const stdout = execSync(
-        `git diff --name-only ${safeCommitish}`,
+        `git diff --name-only --relative --no-renames -z ${safeCommitish} --`,
         {
           cwd: projectRoot,
           encoding: 'utf8',
@@ -56,13 +60,7 @@ export const createDiffFilesProvider = (
           timeout: 30_000,
         },
       )
-      const files = new Set<string>()
-      for (const line of stdout.split('\n')) {
-        const trimmed = line.trim()
-        if (trimmed) {
-          files.add(trimmed)
-        }
-      }
+      const files = new Set(stdout.split('\0').filter(Boolean))
       cache.set(commitish, files)
       return files
     } catch (err) {
