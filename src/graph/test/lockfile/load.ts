@@ -1904,7 +1904,6 @@ t.test('diffLockfileOptions', async t => {
   } as unknown as LockfileData
   // what buildCurrentOptions() makes of configData
   const baseOptions = {
-    registry: 'https://registry.npmjs.org/',
     registries: {
       npm: 'https://registry.npmjs.org/',
       custom: 'http://example.com',
@@ -2011,11 +2010,11 @@ t.test('diffLockfileOptions', async t => {
   )
 
   t.strictSame(
-    diff({ registry: 'http://other/' }),
+    diff({ registry: 'http://other/' }, { registry: 'http://old/' }),
     [
       {
         section: 'registry',
-        from: 'https://registry.npmjs.org/',
+        from: 'http://old/',
         to: 'http://other/',
       },
     ],
@@ -2279,6 +2278,38 @@ t.test('the built-in npm mirror and registries.npm', async t => {
     loaded.nodes.get(npmId)?.options.registries?.npm,
     npmjs,
     'its nodes too',
+  )
+
+  // the CLI defaults `registry` to the npm alias URL
+  const cli = (registries: Record<string, string>) => ({
+    ...current(registries),
+    registry: registries.npm,
+  })
+  t.strictSame(
+    diffLockfileOptions(cli({ ...builtins, npm: npmjs }), pinned),
+    [],
+    'a defaulted registry is not a change',
+  )
+  t.strictSame(
+    diffLockfileOptions(current({ ...builtins, npm: npmjs }), {
+      ...pinned,
+      registry: npmjs,
+    }),
+    [],
+    'nor is a stored one equal to registries.npm',
+  )
+  t.strictSame(
+    diffLockfileOptions(cli({ ...builtins, npm: npmjs }), {
+      registry: npmjs,
+    }),
+    [],
+    'nor is a stored one equal to an unpinned registries.npm',
+  )
+  const fromCli = loadObject(cli(builtins), lockfileData(pinned))
+  t.equal(
+    [...fromCli.edges][0]?.spec.final.registry,
+    npmjs,
+    'a defaulted registry does not outrank the stored registries.npm',
   )
 })
 

@@ -17,5 +17,6 @@ const { usage, command } = await t.mockImport<
 t.matchSnapshot(usage().usageMarkdown())
 await command({
   options: { registry: 'registry' },
-} as LoadedConfig)
+  get: (k: string) => (k === 'registry' ? 'registry' : undefined),
+} as unknown as LoadedConfig)
 t.equal(logoutCalled, 'registry')

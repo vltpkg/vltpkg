@@ -144,10 +144,10 @@ explicitly set on a specifier.
 For example, `express@latest` will be resolved by looking up the
 metadata from this registry.
 
-There is **no default**. Bare specifiers (like `express@latest`)
-resolve through the `--default-registry-alias` (default `npm`, vlt's
-public, read-only npm mirror unless configured) when this scalar is
-not set. Publishing and account commands need a registry you
+Defaults to the URL of the `--default-registry-alias` (default `npm`,
+vlt's public, read-only npm mirror unless configured), so bare
+specifiers (like `express@latest`) resolve through that alias when
+this is not set. Publishing and account commands need a registry you
 configure, in `vlt.json`, with this flag, or via the `VLT_REGISTRY`
 environment variable;
 [`vlt setup`](/client/registries#getting-started-with-vlt-setup) or

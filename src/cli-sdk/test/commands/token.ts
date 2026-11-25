@@ -56,15 +56,21 @@ const { usage, command, views } = await t.mockImport<
 
 t.matchSnapshot(usage().usageMarkdown())
 
-await command({
-  options: { registry: 'https://registry.vlt.javascript/' },
-  positionals: ['add'],
-} as LoadedConfig)
+// `get` reads the user's own `registry`
+const userRegistry = (url?: string) => (k: string) =>
+  k === 'registry' ? url : undefined
 
 await command({
+  get: userRegistry('https://registry.vlt.javascript/'),
+  options: { registry: 'https://registry.vlt.javascript/' },
+  positionals: ['add'],
+} as unknown as LoadedConfig)
+
+await command({
+  get: userRegistry('https://registry.vlt.javascript/'),
   options: { registry: 'https://registry.vlt.javascript/' },
   positionals: ['rm'],
-} as LoadedConfig)
+} as unknown as LoadedConfig)
 
 t.strictSame(log, [
   ['readPassword', 'Paste bearer token: '],
@@ -93,13 +99,15 @@ t.test('preserves path for path-scoped registry', async t => {
     },
   })
   await cmd({
+    get: userRegistry('https://registry.vlt.io/luke/'),
     options: { registry: 'https://registry.vlt.io/luke/' },
     positionals: ['add'],
-  } as LoadedConfig)
+  } as unknown as LoadedConfig)
   await cmd({
+    get: userRegistry('https://registry.vlt.io/luke/'),
     options: { registry: 'https://registry.vlt.io/luke/' },
     positionals: ['rm'],
-  } as LoadedConfig)
+  } as unknown as LoadedConfig)
   t.strictSame(pathLog, [
     ['add', 'https://registry.vlt.io/luke', 'Bearer tok123'],
     ['delete', 'https://registry.vlt.io/luke'],
@@ -124,6 +132,7 @@ t.test('alias: ls works like list', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},
@@ -150,9 +159,10 @@ t.test('alias: remove works like rm', async t => {
   })
 
   await cmd({
+    get: userRegistry('https://registry.vlt.javascript/'),
     options: { registry: 'https://registry.vlt.javascript/' },
     positionals: ['remove'],
-  } as LoadedConfig)
+  } as unknown as LoadedConfig)
 
   t.strictSame(removeLog, [
     ['delete', 'https://registry.vlt.javascript'],
@@ -162,9 +172,10 @@ t.test('alias: remove works like rm', async t => {
 t.test('invalid token sub command', async t => {
   await t.rejects(
     command({
+      get: userRegistry('https://registry.vlt.javascript/'),
       options: { registry: 'https://registry.vlt.javascript/' },
       positionals: ['wat'],
-    } as LoadedConfig),
+    } as unknown as LoadedConfig),
     { cause: { code: 'EUSAGE' } },
   )
 })
@@ -203,6 +214,7 @@ t.test('list tokens from default registry', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},
@@ -254,6 +266,7 @@ t.test('list skips remote query when no local token', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},
@@ -306,6 +319,7 @@ t.test('list tokens from multiple registries', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {
@@ -355,6 +369,7 @@ t.test('list skips the built-in npm mirror', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry(),
     options: {
       registries: {
         gh: 'https://npm.pkg.github.com/',
@@ -418,6 +433,7 @@ t.test('list includes keychain-only registries', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},
@@ -469,6 +485,7 @@ t.test('list uses VLT_TOKEN default registry key', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://r.io/acme/npm/'),
     options: {
       registry: 'https://r.io/acme/npm/',
       registries: { main: 'https://r.io/acme/main/' },
@@ -499,6 +516,7 @@ t.test('list with named identity', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},
@@ -530,6 +548,7 @@ t.test('list handles registry errors gracefully', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},
@@ -563,6 +582,7 @@ t.test('list handles non-Error thrown gracefully', async t => {
   })
 
   const result = await cmd({
+    get: userRegistry('https://registry.npmjs.org/'),
     options: {
       registry: 'https://registry.npmjs.org/',
       registries: {},

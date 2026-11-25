@@ -103,6 +103,10 @@ order of precedence:
    vlt install --registry=https://registry.npmjs.org/
    ```
 
+When you don't set it, `registry` defaults to the URL of
+`registries.npm` (or of the alias `default-registry-alias` names), so
+it follows your `registries` configuration.
+
 The `registry` scalar only covers bare specs. `npm:` alias specs,
 which are common in dependency trees (for example
 `"string-width-cjs": "npm:string-width@^4.2.0"`), resolve through

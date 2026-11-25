@@ -317,6 +317,27 @@ t.test('built-in npm mirror round-trips', async t => {
     first,
     'second save is byte-identical',
   )
+
+  // the CLI defaults `registry` to the npm alias URL
+  const cliOptions = { ...specOptions, registry: mirror }
+  save({ ...cliOptions, graph })
+  t.equal(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    first,
+    'the defaulted registry is not recorded',
+  )
+  const fromCli = loadVirtual({
+    ...cliOptions,
+    projectRoot,
+    mainManifest,
+  })
+  t.strictSame(fromCli.optionsChanges, [], 'nor is it a change')
+  save({ ...cliOptions, graph: fromCli })
+  t.equal(
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
+    first,
+    'and a CLI round-trip is byte-identical',
+  )
 })
 
 t.test(
@@ -382,11 +403,26 @@ t.test(
       'the built-in is not recorded',
     )
 
+    // the CLI defaults `registry` to the npm alias URL
+    await run(mirror, { registry: mirror })
+    t.equal(
+      readFileSync(lockfile, 'utf8'),
+      first,
+      'the defaulted registry is not recorded',
+    )
+
     await run(acct, { frozenLockfile: true })
     t.equal(
       readFileSync(lockfile, 'utf8'),
       first,
       'a frozen install leaves it unchanged',
+    )
+
+    await run(acct, { frozenLockfile: true, registry: acct })
+    t.equal(
+      readFileSync(lockfile, 'utf8'),
+      first,
+      'so does one with the defaulted registry',
     )
 
     await run(acct)

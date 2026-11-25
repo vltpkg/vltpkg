@@ -14,7 +14,17 @@ const mkConf = (options: Opts): LoadedConfig =>
       'default-registry-alias': 'npm',
       ...options,
     },
+    get: (k: string) =>
+      k === 'registry' ? options.registry : undefined,
   }) as unknown as LoadedConfig
+
+// `registry` defaulted from the npm alias, not set by the user
+const mkDefaulted = (options: Opts): LoadedConfig => {
+  const conf = mkConf(options)
+  conf.options.registry =
+    conf.options.registries[conf.options['default-registry-alias']]
+  return conf
+}
 
 // Load require-registry with a mocked readline so the interactive
 // branch of resolveRegistry is deterministic.
@@ -348,6 +358,31 @@ t.test('built-in npm mirror is read-only', async t => {
     await mod.resolveRegistry(mkConf(ownNpm), { interactive: false }),
     'https://n/',
     'resolveRegistry: fallback to an overridden npm',
+  )
+})
+
+t.test('a defaulted registry is not a configured one', async t => {
+  const mirrorOnly = mkDefaulted({ registries: builtins })
+  t.equal(mirrorOnly.options.registry, mirrorURL)
+  const mod = await load(['2'])
+  t.notOk(mod.hasConfiguredRegistry(mirrorOnly))
+  t.throws(() => mod.requireRegistry(mirrorOnly), {
+    message: /Missing registry configuration/,
+    cause: { code: 'ECONFIG' },
+  })
+  await t.rejects(
+    mod.resolveRegistry(mirrorOnly, { interactive: false }),
+    { cause: { code: 'ECONFIG' } },
+  )
+  t.equal(
+    await mod.resolveRegistry(
+      mkDefaulted({
+        registries: { npm: 'https://n/', main: 'https://m/' },
+      }),
+      { interactive: true, output: { write: () => true } as never },
+    ),
+    'https://m/',
+    'two aliases still prompt',
   )
 })
 

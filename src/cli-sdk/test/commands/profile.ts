@@ -35,10 +35,15 @@ const Command = await t.mockImport<
 
 t.matchSnapshot(Command.usage().usageMarkdown())
 
+// the registry the user configured
+const get = (k: string) =>
+  k === 'registry' ? 'https://registry' : undefined
+
 t.test('get all profile data', async t => {
   requestLog.length = 0
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['get'],
   } as LoadedConfig
 
@@ -53,6 +58,7 @@ t.test('get single property', async t => {
   requestLog.length = 0
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['get', 'name'],
   } as LoadedConfig
 
@@ -63,6 +69,7 @@ t.test('get single property', async t => {
 t.test('get unknown property', async t => {
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['get', 'nonexistent'],
   } as LoadedConfig
 
@@ -100,6 +107,7 @@ t.test('set property', async t => {
 
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['set', 'email', 'new@example.com'],
   } as LoadedConfig
 
@@ -144,6 +152,7 @@ t.test('set with multiple words in value', async t => {
 
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['set', 'fullname', 'Test', 'User', 'Name'],
   } as LoadedConfig
 
@@ -161,6 +170,7 @@ t.test('set with multiple words in value', async t => {
 t.test('set missing property', async t => {
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['set'],
   } as LoadedConfig
 
@@ -172,6 +182,7 @@ t.test('set missing property', async t => {
 t.test('set missing value', async t => {
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['set', 'email'],
   } as LoadedConfig
 
@@ -183,6 +194,7 @@ t.test('set missing value', async t => {
 t.test('invalid subcommand', async t => {
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['invalid'],
   } as LoadedConfig
 
@@ -198,6 +210,7 @@ t.test('invalid subcommand', async t => {
 t.test('no subcommand', async t => {
   const config = {
     options: { registry: 'https://registry' },
+    get,
     positionals: ['x'],
   } as unknown as LoadedConfig
   config.positionals = []
@@ -291,6 +304,7 @@ t.test('a 401 reports auth, not a bogus usage error', async t => {
     await t.rejects(
       Failing.command({
         options: { registry: 'https://registry' },
+        get,
         positionals,
       } as LoadedConfig),
       {
@@ -320,6 +334,7 @@ t.test('a server error carries no login advice', async t => {
     await t.rejects(
       Failing.command({
         options: { registry: 'https://registry' },
+        get,
         positionals,
       } as LoadedConfig),
       {

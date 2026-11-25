@@ -77,6 +77,8 @@ const makeConfig = (
         },
       },
     },
+    get: (k: string) =>
+      k === 'registry' ? 'https://registry.npmjs.org/' : undefined,
     positionals,
     projectRoot: '/some/project',
     ...overrides,
