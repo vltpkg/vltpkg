@@ -311,6 +311,100 @@ t.test('should sort dependencies by name when saving', async t => {
   )
 })
 
+t.test(
+  'write keeps the fields the caller did not change',
+  async t => {
+    t.test('person, list and bin fields', async t => {
+      const pkg = {
+        name: '@acme/manifest-roundtrip',
+        version: '1.0.0',
+        description: 'fixture',
+        keywords: 'one, two',
+        homepage: 'https://example.com',
+        bugs: {
+          url: 'https://github.com/acme/manifest-roundtrip/issues',
+          email: 'bugs@example.com',
+        },
+        author: {
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          url: 'https://jane.example.com',
+          twitter: 'janedoe',
+        },
+        contributors: [
+          'John Roe <john@example.com> (https://john.example.com)',
+          { name: 'Ann Poe', github: 'annpoe' },
+        ],
+        maintainers: [{ name: 'Max Moe', email: 'max@example.com' }],
+        funding: 'https://github.com/sponsors/acme',
+        bin: './cli.js',
+        os: 'linux',
+        cpu: 'x64',
+        engines: { node: '>=22' },
+        files: ['cli.js'],
+        dependencies: {},
+      }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(pkg, null, 2) + '\n',
+      })
+      const pj = new PackageJson()
+      const mani = pj.read(dir)
+      mani.description = 'changed'
+      mani.dependencies = { zed: '^1.0.0', abbrev: '^4.0.0' }
+      pj.write(dir, mani)
+      mani.version = '1.0.1'
+      delete mani.homepage
+      pj.save(mani)
+      const { homepage: _, ...rest } = pkg
+      const expected = {
+        ...rest,
+        version: '1.0.1',
+        description: 'changed',
+        dependencies: { abbrev: '^4.0.0', zed: '^1.0.0' },
+      }
+      t.equal(
+        readFileSync(join(dir, 'package.json'), 'utf8'),
+        JSON.stringify(expected, null, 2) + '\n',
+      )
+      t.match(pj.read(dir, { reload: true }).bugs, [
+        { type: 'link' },
+        { type: 'email' },
+      ])
+    })
+
+    t.test('version, string and invalid fields', async t => {
+      const pkg = {
+        name: 'edge',
+        version: 'v1.2.3',
+        author:
+          'Jane Doe <jane@example.com> (https://jane.example.com)',
+        bugs: 'https://github.com/acme/edge/issues',
+        contributors: { twitter: 'onlytwitter' },
+        funding: {
+          type: 'custom',
+          url: 'https://github.com/sponsors/acme',
+          note: 'x',
+        },
+        engines: ['node >=4'],
+        bin: { edge: './bin/edge.js' },
+        keywords: ['a', 1],
+      }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(pkg, null, 2) + '\n',
+      })
+      const pj = new PackageJson()
+      const mani = pj.read(dir)
+      mani.description = 'changed'
+      pj.write(dir, mani)
+      t.equal(
+        readFileSync(join(dir, 'package.json'), 'utf8'),
+        JSON.stringify({ ...pkg, description: 'changed' }, null, 2) +
+          '\n',
+      )
+    })
+  },
+)
+
 t.test('find method', async t => {
   // Create a deep nested fixture structure that simulates a realistic file system
   const testDir = t.testdir({

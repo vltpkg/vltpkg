@@ -275,6 +275,8 @@ t.test('set', async t => {
     name: 'package-name',
     version: '1.0.0',
     description: 'This is the desc',
+    bugs: { url: 'https://example.com/issues' },
+    author: { name: 'Jane', twitter: 'jane' },
   }
 
   const dir = t.testdir({
@@ -297,6 +299,8 @@ t.test('set', async t => {
     name: 'new-package-name',
     version: '1.0.0',
     description: 'This is the desc',
+    bugs: { url: 'https://example.com/issues' },
+    author: { name: 'Jane', twitter: 'jane' },
   })
 
   await t.rejects(
