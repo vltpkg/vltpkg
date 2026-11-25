@@ -11,6 +11,7 @@ import { dirname } from 'node:path'
 import { getCompileCacheDir } from 'node:module'
 import { parse } from '@vltpkg/semver'
 import { XDG } from '@vltpkg/xdg'
+import { defaultValues } from './config/definition.ts'
 import { expandHome } from './config/index.ts'
 import type { LoadedConfig } from './config/index.ts'
 import { isInside } from './global-project.ts'
@@ -71,7 +72,11 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
       return
 
     const file = new XDG('vlt').state('update-check.json')
-    const interval = conf.values['update-check-interval'] * 1000
+    const seconds = conf.values['update-check-interval']
+    const interval =
+      (Number.isFinite(seconds) && seconds > 0 ?
+        seconds
+      : Number(defaultValues['update-check-interval'])) * 1000
     const now = Date.now()
     const readState = (): UpdateState => {
       const saved = readUpdateState(file)
