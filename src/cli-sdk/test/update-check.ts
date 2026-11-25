@@ -43,9 +43,11 @@ t.test(
         })
       },
     })
+    t.intercept(Date, 'now', { value: () => 789 })
     await checkForUpdate(file)
     t.strictSame(readUpdateState(file), {
       ...state,
+      lastCheck: 789,
       latest: '2.0.0',
       notifiedVersion: '1.5.0',
       notifiedAt: 456,
@@ -118,6 +120,8 @@ t.test(
       })
       await checkForUpdate(file)
       t.equal(readUpdateState(file)?.latest, undefined, outcome)
+      if (['http', 'json', 'null', 'network'].includes(outcome))
+        t.equal(readUpdateState(file)?.lastCheck, 123, outcome)
       t.notOk(fs.existsSync(`${file}.lock`))
     }
     fs.rmSync(file, { force: true })

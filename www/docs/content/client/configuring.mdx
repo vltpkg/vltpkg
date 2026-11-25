@@ -631,9 +631,9 @@ set multiple times. Each dir must be inside the project, not in
 ### `--update-notifier`
 
 On by default. Checks for newer vlt versions in a detached process, at
-most once every 24 hours. A later command prints a cached update
-notice to stderr after its output. The same notice is shown at most
-once per check interval.
+most once per check interval (24 hours by default). A later command
+prints a cached update notice to stderr after its output. The same
+notice is shown at most once per check interval.
 
 Disable with `--no-update-notifier`,
 `"config": { "update-notifier": false }` in `vlt.json`,
@@ -650,8 +650,9 @@ other vlt commands into an offline mode.
 The check asks vlt's [public npm mirror](/registry/public-mirror),
 `https://registry.vlt.io/upstream/npm/`, whatever registry is
 configured. Each check is one anonymous request to registry.vlt.io;
-failures stay silent. State is stored in `update-check.json` under
-vlt's XDG state directory.
+failures stay silent, and a failed check is retried after an hour (or
+after the check interval, if shorter). State is stored in
+`update-check.json` under vlt's XDG state directory.
 
 ### `--update-check-interval`
 
