@@ -178,8 +178,7 @@ export const checkNeededBuild = (
  */
 export const carryBuildState = (diff: Diff): void => {
   for (const [id, node] of diff.to.nodes) {
-    // a link: target is never built
-    if (diff.nodes.add.has(node) || node.isLinkTarget()) continue
+    if (diff.nodes.add.has(node)) continue
     const prev = diff.from.nodes.get(id)
     if (prev) node.buildState = prev.buildState
   }

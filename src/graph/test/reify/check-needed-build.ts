@@ -183,24 +183,10 @@ t.test('dependency missing from the lockfile', async t => {
 })
 
 t.test('carryBuildState', async t => {
-  const n = (
-    id: string,
-    buildState: Node['buildState'] = 'none',
-    link = false,
-  ) => ({ id, buildState, isLinkTarget: () => link }) as Node
-  const from = [
-    n('a', 'needed'),
-    n('b', 'built'),
-    n('c', 'built'),
-    n('e', 'needed'),
-  ]
-  const to = [
-    n('a'),
-    n('b'),
-    n('c', 'needed'),
-    n('d'),
-    n('e', 'none', true),
-  ]
+  const n = (id: string, buildState: Node['buildState'] = 'none') =>
+    ({ id, buildState }) as Node
+  const from = [n('a', 'needed'), n('b', 'built'), n('c', 'built')]
+  const to = [n('a'), n('b'), n('c', 'needed'), n('d')]
   const nodes = (list: Node[]) => new Map(list.map(x => [x.id, x]))
   carryBuildState({
     from: { nodes: nodes(from) },
@@ -209,7 +195,7 @@ t.test('carryBuildState', async t => {
   } as unknown as Diff)
   t.strictSame(
     to.map(x => x.buildState),
-    ['needed', 'built', 'needed', 'none', 'none'],
-    'kept nodes carried, added, new and link: target ones untouched',
+    ['needed', 'built', 'needed', 'none'],
+    'kept nodes carried, added and new ones untouched',
   )
 })

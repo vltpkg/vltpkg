@@ -285,6 +285,40 @@ t.test('moved pin of a cloned git dep', async t => {
   )
 })
 
+t.test('directory switched between link: and file:', async t => {
+  const projectRoot = t.testdir()
+  const id = joinDepIDTuple(['file', 'x'])
+  const graph = (spec: string) =>
+    loadObject(
+      {
+        projectRoot,
+        mainManifest: { name: 'root', version: '1.0.0' },
+      },
+      {
+        lockfileVersion: 1,
+        options: {},
+        nodes: {
+          [joinDepIDTuple(['file', '.'])]: [0, 'root'],
+          [id]: [0, 'x', null, 'x'],
+        } as Record<DepID, LockfileNode>,
+        edges: {
+          [edgeKey(['file', '.'], 'x')]: `prod ${spec} ${id}`,
+        } as LockfileEdges,
+      },
+    )
+  for (const [a, b, add] of [
+    ['link:./x', 'file:./x', [id]],
+    ['file:./x', 'link:./x', [id]],
+    ['link:./x', 'link:./x', []],
+  ] as const) {
+    t.strictSame(
+      [...new Diff(graph(a), graph(b)).nodes.add].map(n => n.id),
+      add,
+      `${a} -> ${b}`,
+    )
+  }
+})
+
 t.test('hasChanges method', async t => {
   const projectRoot = t.testdir({
     'vlt.json': JSON.stringify({

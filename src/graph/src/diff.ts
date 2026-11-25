@@ -93,7 +93,12 @@ export class Diff {
     const relink = new Set<Node>()
     for (const [id, node] of this.to.nodes) {
       const from = this.from.nodes.get(id)
-      if (!from?.equals(node)) {
+      // link: <-> managed: same dir, but it now needs (or no longer
+      // needs) its deps and build
+      if (
+        !from?.equals(node) ||
+        from.isLinkTarget() !== node.isLinkTarget()
+      ) {
         this.nodes.add.add(node)
         if (inPlace(node, from)) relink.add(node)
         if (!node.optional) {
