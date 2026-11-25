@@ -10,7 +10,7 @@ import {
 } from '../src/update-state.ts'
 
 const version = '1.0.0'
-const registry = 'https://registry.npmjs.org/'
+const registry = 'https://registry.vlt.io/upstream/npm/'
 const now = 2 * 86_400_000
 const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
   const dir = t.testdir()
@@ -98,11 +98,6 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
       view: 'human',
       'update-notifier': true,
       'update-check-interval': 86_400,
-    },
-    options: {
-      registry,
-      registries: {},
-      'default-registry-alias': 'npm',
     },
   } as LoadedConfig
   return {
@@ -213,9 +208,6 @@ t.test(
       'no-argv': (_, t) => {
         t.intercept(process, 'argv', { value: [] })
       },
-      'invalid-registry': s => {
-        s.conf.options.registry = 'invalid'
-      },
       tty: (_, t) => {
         t.intercept(process.stderr, 'isTTY', { value: false })
       },
@@ -246,9 +238,6 @@ t.test(
       'invalid-version': s => {
         s.version = 'dev'
       },
-      'no-registry': s => {
-        s.conf.options.registry = undefined
-      },
       npx: s => {
         s.runtime.executable =
           '/cache/_npx/123/node_modules/vlt/vlt.js'
@@ -261,15 +250,6 @@ t.test(
           s.dir,
           'vlt/vlx-local/cache/123/vlt.js',
         )
-      },
-      protocol: s => {
-        s.conf.options.registry = 'file:///tmp/'
-      },
-      username: s => {
-        s.conf.options.registry = 'https://user@registry.test/'
-      },
-      password: s => {
-        s.conf.options.registry = 'https://:secret@registry.test/'
       },
     }
     for (const [key, value] of [
@@ -297,27 +277,23 @@ t.test(
   },
 )
 
-t.test(
-  'uses the default registry alias unless a scalar is set',
-  async t => {
-    const s = await setup(t)
-    s.conf.options['default-registry-alias'] = 'mirror'
-    s.conf.options.registries = {
-      npm: registry,
-      mirror: 'https://mirror.test/npm',
-    }
-    for (const scalar of [undefined, registry]) {
-      s.conf.options.registry = scalar
-      s.notifyUpdate(s.conf, version)
-      t.equal(
-        readUpdateState(s.file)?.registry,
-        scalar ?? 'https://mirror.test/npm/',
-      )
-      fs.rmSync(`${s.file}.lock`)
-    }
-    t.equal(s.spawned.length, 2)
-  },
-)
+t.test('always checks the public npm mirror', async t => {
+  const s = await setup(t)
+  for (const options of [
+    { registry: 'https://registry.npmjs.org/' },
+    {
+      registries: { npm: 'https://registry.vlt.io/acme/npm/' },
+      'default-registry-alias': 'npm',
+    },
+    { registries: {}, 'default-registry-alias': 'npm' },
+  ]) {
+    Object.assign(s.conf, { options })
+    s.notifyUpdate(s.conf, version)
+    fs.rmSync(`${s.file}.lock`, { force: true })
+  }
+  t.equal(s.spawned.length, 1)
+  t.equal(readUpdateState(s.file)?.registry, registry)
+})
 
 t.test(
   'registry and installed version changes discard cached notices',
