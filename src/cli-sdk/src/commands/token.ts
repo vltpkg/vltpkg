@@ -209,7 +209,7 @@ export const command: CommandFn<
       const registries: RegistryTokens[] = []
       const seen = new Set<string>()
 
-      // Query an explicit --registry first
+      // Query the registry option first
       const { registry } = conf.options
       if (registry) {
         seen.add(normalizeRegistryKey(registry))
