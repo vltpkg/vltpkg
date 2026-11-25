@@ -3867,6 +3867,26 @@ t.test('file spec must have file', async t => {
   )
 })
 
+t.test('link: spec manifests', async t => {
+  const from = t.testdir({
+    nopkg: {},
+    pkg: {
+      'package.json': JSON.stringify({
+        name: 'pkg',
+        version: '1.0.0',
+      }),
+    },
+  })
+  const o = { ...options, from }
+  t.strictSame(await manifest('x@link:./nopkg', o), { name: 'x' })
+  t.strictSame(await manifest('x@link:./missing', o), { name: 'x' })
+  t.match(await manifest('x@link:./pkg', o), {
+    name: 'pkg',
+    version: '1.0.0',
+  })
+  await t.rejects(manifest('link:./nopkg', o), 'nameless')
+})
+
 t.test('fails on non-200 response', async t => {
   // Reset the global 404 tracker so we only capture URLs from this test,
   // making the snapshot deterministic regardless of test execution order.

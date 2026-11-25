@@ -461,6 +461,18 @@ export class Node implements NodeLike {
   /* c8 ignore next */
   set options(_opts: SpecOptions) {}
 
+  /**
+   * True when every dependent declares this node with a `link:` spec:
+   * a directory that is only symlinked, never managed.
+   */
+  isLinkTarget(): boolean {
+    if (!this.edgesIn.size) return false
+    for (const { spec } of this.edgesIn) {
+      if (!spec.final.bareSpec.startsWith('link:')) return false
+    }
+    return true
+  }
+
   equals(other: Node) {
     return (
       this.id === other.id &&

@@ -876,6 +876,24 @@ t.test('optional flag is contagious', t => {
 
   t.end()
 })
+t.test('isLinkTarget', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  const a = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  const linked = new Node(opts, joinDepIDTuple(['file', 'x']), {})
+  t.equal(linked.isLinkTarget(), false, 'no edges in')
+  root.addEdgesTo('prod', Spec.parse('x@link:./x'), linked)
+  a.addEdgesTo('prod', Spec.parse('y@link:./x'), linked)
+  t.equal(linked.isLinkTarget(), true, 'link: edges only')
+  a.addEdgesTo('prod', Spec.parse('x@file:./x'), linked)
+  t.equal(linked.isLinkTarget(), false, 'also a file: edge')
+  t.end()
+})
+
 t.test('dev flag is contagious', t => {
   const opts = {
     ...options,

@@ -86,8 +86,9 @@ const nodeNeedsBuild = (
   packageJson: PackageJson,
   modifiers?: GraphModifier,
 ): boolean => {
-  // If the node has already been built during reify, no need to build again
-  if (node.built) return false
+  // If the node has already been built during reify, no need to build
+  // again. A link: target is never built.
+  if (node.built || node.isLinkTarget()) return false
 
   // If the manifest is not available on the node, read it from disk.
   // This can happen when the ideal graph is loaded from a lockfile

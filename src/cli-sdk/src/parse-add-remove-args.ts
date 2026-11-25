@@ -119,8 +119,9 @@ const rebaseFileSpec = (
   }
 
   const targetAbs = resolve(process.cwd(), spec.file)
+  const link = spec.bareSpec.startsWith('link:')
 
-  if (monorepo) {
+  if (monorepo && !link) {
     for (const ws of monorepo.values()) {
       if (ws.fullpath === targetAbs) {
         return Spec.parse(ws.name, 'workspace:*', specOptions)
@@ -135,7 +136,9 @@ const rebaseFileSpec = (
 
   if (rebasedPath === spec.file) return spec
 
-  return Spec.parseArgs(rebasedPath, specOptions)
+  return link ?
+      Spec.parse(spec.name, `link:${rebasedPath}`, specOptions)
+    : Spec.parseArgs(rebasedPath, specOptions)
 }
 
 /**

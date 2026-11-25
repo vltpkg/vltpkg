@@ -388,7 +388,13 @@ const parseDir = (
     // edge-cases such as loading a linked node that is not going to have
     // DepID info available in its realpath or extraneous nodes
     if (!node) {
-      const mani = packageJson.read(realpath.fullpath())
+      // a link: target may have no package.json
+      const mani =
+        deps?.bareSpec.startsWith('link:') ?
+          (packageJson.maybeRead(realpath.fullpath()) ?? {
+            name: alias,
+          })
+        : packageJson.read(realpath.fullpath())
       // declares fallback default values for both depType and bareSpec
       // in order to support loadManifests=false fallback for link nodes
       const type = deps?.type || 'dependencies'

@@ -33,6 +33,7 @@ const node = (
     edgesOut?: Map<string, { to?: object }>
     edgesIn?: Set<{ name: string }>
     inVltStore?: () => boolean
+    isLinkTarget?: () => boolean
   } = {},
 ) =>
   ({
@@ -43,6 +44,7 @@ const node = (
     edgesOut: new Map(),
     edgesIn: new Set(),
     inVltStore: () => true,
+    isLinkTarget: () => false,
     toString: () => `${name}@1.0.0`,
     resolvedLocation: () => resolve(dir, name),
     ...props,
@@ -90,18 +92,24 @@ t.test('no manifest: read from disk', async t => {
   t.equal(check(node('plain'), new NoRead()), false, 'unreadable')
 })
 
-t.test('built, or install script', async t => {
+t.test('built, link: target, or install script', async t => {
   t.equal(
     check(node('gyp', { manifest, bindingGyp: true, built: true })),
     false,
   )
+  const scripts = { postinstall: 'x' }
+  t.equal(
+    check(node('plain', { manifest: { ...manifest, scripts } })),
+    true,
+  )
   t.equal(
     check(
       node('plain', {
-        manifest: { ...manifest, scripts: { postinstall: 'x' } },
+        manifest: { ...manifest, scripts },
+        isLinkTarget: () => true,
       }),
     ),
-    true,
+    false,
   )
 })
 

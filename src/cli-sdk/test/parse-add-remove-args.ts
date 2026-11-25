@@ -444,6 +444,29 @@ t.test('parseAddArgs', async t => {
     )
 
     await t.test(
+      'link: spec keeps its prefix when rebased',
+      async t => {
+        t.chdir(dir)
+        unload()
+        const scurry = new PathScurry(dir)
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        // ./foo is a workspace: link: still links the path
+        conf.positionals = ['x@link:./foo', 'y@link:./utils']
+        conf.values = {
+          workspace: ['a'],
+        } as OptionsResults<ConfigDefinitions>
+        const { add } = parseAddArgs(conf, scurry, monorepo)
+        t.strictSame(
+          [...(add.get('workspace~app+a')?.values() ?? [])].map(d =>
+            String(d.spec),
+          ),
+          ['x@link:../../foo', 'y@link:../../utils'],
+        )
+      },
+    )
+
+    await t.test(
       'file spec rebased for multiple workspaces',
       async t => {
         t.chdir(dir)

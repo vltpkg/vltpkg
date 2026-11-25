@@ -1906,6 +1906,16 @@ export class PackageInfoClient {
         if (file === undefined)
           throw this.#resolveError(spec, options, 'no file path')
         const path = pathResolve(from, file)
+        // a link: target may have no package.json, or not exist yet
+        if (
+          f.bareSpec.startsWith('link:') &&
+          spec.name !== '(unknown)' &&
+          !lstatSync(pathResolve(path, 'package.json'), {
+            throwIfNoEntry: false,
+          })
+        ) {
+          return { name: spec.name }
+        }
         const st = await stat(path)
         if (st.isDirectory()) {
           return this.packageJson.read(path)

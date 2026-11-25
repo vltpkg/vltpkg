@@ -535,6 +535,107 @@ t.test('append file type of nodes', async t => {
   )
 })
 
+t.test('link: specs', async t => {
+  const linkedManifest = {
+    name: 'linked',
+    version: '1.0.0',
+    dependencies: { dep: '^1.0.0' },
+    peerDependencies: { peer: '*' },
+  }
+  const manifests: Record<string, Manifest> = {
+    linked: linkedManifest,
+    a: { name: 'a', dependencies: { linked: 'file:../linked' } },
+    b: { name: 'b', dependencies: { linked: 'link:../linked' } },
+    reg: {
+      name: 'reg',
+      version: '1.0.0',
+      dependencies: { x: 'link:../x' },
+    },
+  }
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return (
+        manifests[spec.name] ?? { name: spec.name, version: '1.0.0' }
+      )
+    },
+  } as PackageInfoClient
+  const projectRoot = t.testdir({
+    a: { 'package.json': '{}' },
+    b: { 'package.json': '{}' },
+    linked: { 'package.json': JSON.stringify(linkedManifest) },
+  })
+  const append = (deps: string[]) => {
+    const graph = new Graph({
+      projectRoot,
+      ...configData,
+      mainManifest: { name: 'root', version: '1.0.0' },
+    })
+    return appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      deps.map(d =>
+        asDependency({
+          spec: Spec.parse(d, configData),
+          type: 'prod',
+        }),
+      ),
+      new PathScurry(projectRoot),
+      configData,
+      new Set<DepID>(),
+    ).then(() => graph)
+  }
+  const linkedId = joinDepIDTuple(['file', 'linked'])
+
+  await t.test('only symlinked', async t => {
+    const node = (await append(['linked@link:./linked'])).nodes.get(
+      linkedId,
+    )
+    t.equal(node?.location, 'linked')
+    t.equal(node?.edgesOut.size, 0, 'no deps or peers')
+  })
+
+  await t.test('a missing directory is linked anyway', async t => {
+    const errs = t.capture(console, 'error')
+    const graph = await append(['missing@link:./missing'])
+    t.equal(
+      graph.nodes.get(joinDepIDTuple(['file', 'missing']))?.location,
+      'missing',
+    )
+    t.strictSame(errs.args(), [
+      [
+        'warning: missing@link:./missing: missing does not exist, linking it anyway',
+      ],
+    ])
+  })
+
+  await t.test('a file: dependent manages the directory', async t => {
+    // the link: edge placed before the file: edge (from a), and after (b)
+    for (const deps of [
+      ['a@file:./a', 'linked@link:./linked'],
+      ['b@file:./b', 'linked@file:./linked'],
+    ]) {
+      const node = (await append(deps)).nodes.get(linkedId)
+      t.strictSame([...(node?.edgesOut.keys() ?? [])].sort(), [
+        'dep',
+        'peer',
+      ])
+      t.equal(node?.edgesIn.size, 2)
+    }
+  })
+
+  await t.test('not supported in a registry package', async t => {
+    await t.rejects(append(['reg@1.0.0']), {
+      message:
+        '`link:` dependencies are only supported in local packages',
+      cause: {
+        code: 'ECONFIG',
+        from: /package\.json \(dependencies\)$/,
+      },
+    })
+  })
+})
+
 t.test('resolve against the correct registries', async t => {
   const mainManifest = {
     version: '1.0.0',

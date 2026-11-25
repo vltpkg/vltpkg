@@ -360,6 +360,48 @@ const modifierStaleCase = async (
   )
 }
 
+t.test(
+  'switching between file: and link: is not satisfied',
+  async t => {
+    for (const [from, to] of [
+      ['file:./x', 'link:./x'],
+      ['link:./x', 'file:./x'],
+    ] as const) {
+      const projectRoot = t.testdir({
+        'package.json': JSON.stringify({
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: { x: from },
+        }),
+        x: {
+          'package.json': JSON.stringify({
+            name: 'x',
+            version: '1.0.0',
+          }),
+        },
+        node_modules: { x: t.fixture('symlink', '../x') },
+      })
+      const graph = load({
+        projectRoot,
+        scurry: new PathScurry(projectRoot),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        packageJson: new PackageJson(),
+      })
+      const deps = new Map([
+        [
+          'x',
+          asDependency({ spec: Spec.parse('x', to), type: 'prod' }),
+        ],
+      ])
+      const add = new Map([
+        [joinDepIDTuple(['file', '.']), deps],
+      ]) as AddImportersDependenciesMap
+      t.equal(removeSatisfiedSpecs({ add, graph }).size, 0)
+      t.equal(deps.size, 1, `${from} -> ${to} is kept`)
+    }
+  },
+)
+
 t.test('a modifier-governed edge is not stale', async t =>
   modifierStaleCase(
     t,
