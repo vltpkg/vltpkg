@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../src/config/index.ts'
+import type { Command } from '../src/load-command.ts'
 import { setupEnv } from './fixtures/util.ts'
 
 setupEnv(t)
@@ -28,6 +29,7 @@ export const run = async (
   const state = {
     logs: [] as string[],
     config: {} as LoadedConfig,
+    command: {} as Command<unknown>,
     error: null as unknown,
     notifications: [] as string[],
     steps: [] as string[],
@@ -49,8 +51,12 @@ export const run = async (
       '../src/output.ts': {
         stdout: (v: string) => state.logs.push(v),
         stderr: (v: string) => state.logs.push(v),
-        outputCommand: (_: unknown, conf: LoadedConfig) => {
+        outputCommand: (
+          command: Command<unknown>,
+          conf: LoadedConfig,
+        ) => {
           state.steps.push('command')
+          state.command = command
           state.config = conf
         },
         flushAndExit: (code?: number) => process.exit(code),
@@ -500,4 +506,22 @@ t.test('vlt registry <alias> <cmd> dispatch', async t => {
     'https://npm.example/',
     'injected resolved registry',
   )
+})
+
+t.test('vlt registry dispatch errors are command errors', async t => {
+  const cwd = t.testdir({
+    'vlt.json': '{}',
+    'package.json': JSON.stringify({ name: 'x', version: '1.0.0' }),
+  })
+  const { error, config, command, steps } = await run(t, {
+    argv: ['registry', 'nope', 'whoami'],
+    cwd,
+  })
+  t.equal(error, null)
+  t.equal(config.command, 'registry')
+  t.strictSame(steps, ['watch mirror', 'command', 'mirror notice'])
+  await t.rejects(command.command(config), {
+    message: 'Unknown registry alias: nope',
+    cause: { code: 'ECONFIG' },
+  })
 })

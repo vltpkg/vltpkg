@@ -127,14 +127,27 @@ const run = async () => {
     return flushAndExit(process.exitCode || 1)
   }
 
+  let dispatchError: unknown
   if (vlt.command === 'registry') {
     const { dispatchRegistry } =
       await import('./commands/registry.ts')
-    await dispatchRegistry(vlt)
+    // shown and tracked as an error of the `registry` command
+    await dispatchRegistry(vlt).catch((e: unknown) => {
+      dispatchError = e
+    })
   }
 
   mark('command', { command: vlt.command })
-  const command = await loadCommand(vlt.command)
+  const loaded = await loadCommand(vlt.command)
+  const command =
+    dispatchError === undefined ? loaded : (
+      {
+        ...loaded,
+        command: async () => {
+          throw dispatchError
+        },
+      }
+    )
   const mirrorNotice = watchMirrorNotice(vlt)
   await outputCommand(command, vlt, { start, vltVersion: version })
   mirrorNotice()
