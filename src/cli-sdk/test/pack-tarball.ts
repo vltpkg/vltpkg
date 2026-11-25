@@ -1,4 +1,5 @@
 import t from 'tap'
+import type { Test } from 'tap'
 import * as fs from 'node:fs'
 import { resolve } from 'node:path'
 import { readFile } from 'node:fs/promises'
@@ -35,6 +36,21 @@ const createMockConfig = (
     command: {},
     commandValues: {},
   } as unknown as LoadedConfig
+}
+
+/** The content of one file in a tarball */
+const tarFile = async (data: Buffer, path: string) => {
+  const chunks: Buffer[] = []
+  await new Promise<void>((res, rej) => {
+    tarList({
+      filter: p => p === path,
+      onentry: e => e.on('data', (c: Buffer) => chunks.push(c)),
+    })
+      .on('end', () => res())
+      .on('error', rej)
+      .end(data)
+  })
+  return Buffer.concat(chunks).toString()
 }
 
 t.test('packTarball', async t => {
@@ -1128,6 +1144,15 @@ t.test('publish-directory option', async t => {
       result.files.length >= 1,
       'Should have at least package.json',
     )
+    t.notOk(
+      fs.existsSync(resolve(publishDir, 'package.json')),
+      'nothing written to the publish directory',
+    )
+    t.equal(
+      await tarFile(result.tarballData, 'package/package.json'),
+      fs.readFileSync(resolve(originalDir, 'package.json'), 'utf8'),
+      'packs the package.json as written',
+    )
   })
 
   await t.test(
@@ -1635,6 +1660,10 @@ const tarEntries = async (data: Buffer): Promise<string[]> => {
 
 t.test('files globs include nested matches', async t => {
   const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'glob-pkg',
+      version: '1.0.0',
+    }),
     'README.md': '# readme',
     dist: {
       'top.js': 'x',
@@ -1777,6 +1806,10 @@ t.test('unreadable dir partially matching a files glob', async t => {
     },
   })
   const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'glob-pkg',
+      version: '1.0.0',
+    }),
     dist: { 'top.js': 'x', nested: { 'index.js': 'x' } },
   })
   const manifest = {
@@ -1804,6 +1837,10 @@ t.test('unreadable dir partially matching a files glob', async t => {
 
 t.test('default excludes apply at any depth, like npm', async t => {
   const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'defaults-pkg',
+      version: '1.0.0',
+    }),
     'npm-shrinkwrap.json': '{}',
     '.npm-extension.mjs': 'x',
     dist: {
@@ -1853,4 +1890,97 @@ t.test('default excludes apply at any depth, like npm', async t => {
     'dist/package-lock.json',
     'package.json',
   ])
+})
+
+t.test('leaves package.json alone', async t => {
+  const past = new Date('2020-01-01T00:00:00Z')
+  /** Pack `dir` the way the commands do, from the manifest they read. */
+  const pack = async (t: Test, dir: string, config: LoadedConfig) => {
+    const file = resolve(dir, 'package.json')
+    const text = fs.readFileSync(file, 'utf8')
+    fs.utimesSync(file, past, past)
+    const result = await packTarball(
+      config.options.packageJson.read(dir),
+      dir,
+      config,
+    )
+    t.equal(fs.readFileSync(file, 'utf8'), text, 'file unchanged')
+    t.equal(
+      fs.statSync(file).mtimeMs,
+      past.getTime(),
+      'file not written',
+    )
+    return result
+  }
+
+  t.test('packs the file as written', async t => {
+    const text = `{
+  "name": "@acme/manifest-roundtrip",
+  "version": "1.0.0",
+  "keywords": "one, two",
+  "bugs": {
+    "url": "https://github.com/acme/manifest-roundtrip/issues",
+    "email": "bugs@example.com"
+  },
+  "author": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "twitter": "janedoe"
+  },
+  "contributors": [
+    "John Roe <john@example.com> (https://john.example.com)",
+    { "name": "Ann Poe", "github": "annpoe" }
+  ],
+  "maintainers": [{ "name": "Max Moe", "email": "max@example.com" }],
+  "funding": "https://github.com/sponsors/acme",
+  "bin": "./cli.js",
+  "os": "linux",
+  "cpu": "x64",
+  "files": ["cli.js"],
+  "dependencies": { "zz": "^1.0.0", "abbrev": "^1.0.0" }
+}
+`
+    const dir = t.testdir({
+      'package.json': text,
+      'cli.js': '#!/usr/bin/env node\n',
+    })
+    const result = await pack(t, dir, createMockConfig(dir))
+    t.equal(
+      await tarFile(result.tarballData, 'package/package.json'),
+      text,
+    )
+    t.strictSame(
+      JSON.parse(JSON.stringify(result.resolvedManifest)),
+      JSON.parse(text),
+    )
+  })
+
+  t.test('replaces workspace: specs in the tarball only', async t => {
+    const manifest = {
+      name: 'a',
+      version: '1.0.0',
+      bugs: { url: 'https://example.com/a/issues' },
+      dependencies: { zz: '^1.0.0', b: 'workspace:*' },
+    }
+    const dir = t.testdir({
+      'package.json': JSON.stringify(manifest, null, 2) + '\n',
+    })
+    const config = createMockConfig(dir, {
+      monorepo: new Map([
+        ['b', { manifest: { name: 'b', version: '2.3.4' } }],
+      ]),
+    })
+    const result = await pack(t, dir, config)
+    t.equal(
+      await tarFile(result.tarballData, 'package/package.json'),
+      JSON.stringify(
+        {
+          ...manifest,
+          dependencies: { zz: '^1.0.0', b: '2.3.4' },
+        },
+        null,
+        2,
+      ) + '\n',
+    )
+  })
 })

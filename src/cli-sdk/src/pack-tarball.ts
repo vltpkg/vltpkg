@@ -1,5 +1,6 @@
-import type { NormalizedManifest } from '@vltpkg/types'
-import { create as tarCreate, list as tarList } from 'tar'
+import { asManifest } from '@vltpkg/types'
+import type { Manifest, NormalizedManifest } from '@vltpkg/types'
+import { Header, Pack, ReadEntry, list as tarList } from 'tar'
 import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
 import * as ssri from 'ssri'
@@ -11,7 +12,6 @@ import {
   statSync,
 } from 'node:fs'
 import type { Stats } from 'node:fs'
-import type { ReadEntry } from 'tar'
 import { Spec } from '@vltpkg/spec'
 import type { LoadedConfig } from './config/index.ts'
 import { join } from 'node:path'
@@ -29,25 +29,25 @@ export type PackTarballResult = {
   files: string[]
   integrity?: string
   shasum?: string
-  /** The manifest used for packing (may differ from input when publishConfig.directory is set). */
-  resolvedManifest: NormalizedManifest
+  /** The package.json packed in the tarball (may differ from input when publishConfig.directory is set). */
+  resolvedManifest: Manifest
   /** The directory that was packed (differs from input when publishConfig.directory is set). */
   packDir: string
 }
 
 /**
  * Replace workspace: and catalog: specs with actual versions
- * @param {NormalizedManifest} manifest_ - The manifest to process
+ * @param {Manifest} manifest_ - The manifest to process
  * @param {LoadedConfig} config - The loaded configuration containing project root, monorepo, and catalog data
- * @returns {NormalizedManifest} The manifest with replaced specs
+ * @returns {Manifest} The manifest with replaced specs
  */
 const replaceWorkspaceAndCatalogSpecs = (
-  manifest_: NormalizedManifest,
+  manifest_: Manifest,
   config: LoadedConfig,
-): NormalizedManifest => {
+): Manifest => {
   // Create a json copy of the manifest to avoid modifying the original
   // preserves original formatting symbols from polite-json
-  const manifest = parse(stringify(manifest_)) as NormalizedManifest
+  const manifest = parse(stringify(manifest_)) as Manifest
 
   // Get workspace and catalog configuration from config
   const { monorepo, catalog = {}, catalogs = {} } = config.options
@@ -355,6 +355,7 @@ export const packTarball = async (
   config: LoadedConfig,
 ): Promise<PackTarballResult> => {
   let packDir = dir
+  let manifestFile = join(dir, 'package.json')
 
   // Check if publishDirectory is configured via CLI flag or package.json publishConfig.directory
   const resolvedPublishDir = getPublishDirectory(
@@ -385,6 +386,7 @@ export const packTarball = async (
     )
     if (existsSync(join(resolvedPublishDir, 'package.json'))) {
       manifest = config.options.packageJson.read(resolvedPublishDir)
+      manifestFile = join(resolvedPublishDir, 'package.json')
     }
     packDir = resolvedPublishDir
   }
@@ -394,79 +396,96 @@ export const packTarball = async (
     error('Package must have a name and version'),
   )
 
+  // pack the file as written, apart from the replaced specs, and never
+  // write to it
+  const text = readFileSync(manifestFile, 'utf8')
+  const raw = asManifest(parse(text))
   const processedManifest = replaceWorkspaceAndCatalogSpecs(
-    manifest,
+    raw,
     config,
   )
+  const data = Buffer.from(
+    JSON.stringify(processedManifest) === JSON.stringify(raw) ?
+      text
+    : stringify(processedManifest),
+  )
+  const { mode, mtime } = statSync(manifestFile)
+  const pkgEntry = new ReadEntry(
+    new Header({
+      path: 'package.json',
+      type: 'File',
+      size: data.length,
+      mode,
+      mtime,
+    }),
+  )
+  pkgEntry.end(data)
 
   const filename = `${manifest.name.replace('@', '').replace('/', '-')}-${manifest.version}.tgz`
   const tarballName = `${manifest.name}-${manifest.version}.tgz`
 
-  try {
-    config.options.packageJson.write(packDir, processedManifest)
+  const packFilter = buildPackFilter(manifest, packDir)
 
-    const packFilter = buildPackFilter(manifest, packDir)
+  const tarballData = await new Pack({
+    cwd: packDir,
+    gzip: true,
+    portable: true,
+    prefix: 'package/',
+    // the package.json on disk is replaced by pkgEntry
+    filter: (path, entry) =>
+      (entry === pkgEntry || path !== './package.json') &&
+      packFilter(path, entry),
+  })
+    .add('.')
+    .add(pkgEntry)
+    .end()
+    .concat()
 
-    const tarballData = await tarCreate(
-      {
-        cwd: packDir,
-        gzip: true,
-        portable: true,
-        prefix: 'package/',
-        filter: packFilter,
-      },
-      ['.'],
-    ).concat()
-
-    let unpackedSize = 0
-    const files: string[] = []
-    await new Promise<void>((resolve, reject) => {
-      const stream = tarList({
-        onentry: entry => {
-          if (entry.type === 'File') {
-            unpackedSize += entry.size
-            // Remove the package/ prefix for cleaner file listing
-            const cleanPath = entry.path.replace(/^[^/]+\//, '')
-            if (cleanPath) {
-              // Skip empty paths
-              files.push(cleanPath)
-            }
+  let unpackedSize = 0
+  const files: string[] = []
+  await new Promise<void>((resolve, reject) => {
+    const stream = tarList({
+      onentry: entry => {
+        if (entry.type === 'File') {
+          unpackedSize += entry.size
+          // Remove the package/ prefix for cleaner file listing
+          const cleanPath = entry.path.replace(/^[^/]+\//, '')
+          if (cleanPath) {
+            // Skip empty paths
+            files.push(cleanPath)
           }
-        },
-      })
-      stream
-        .on('end', () => resolve())
-        .on('error', reject)
-        .write(tarballData)
-      stream.end()
+        }
+      },
     })
+    stream
+      .on('end', () => resolve())
+      .on('error', reject)
+      .write(tarballData)
+    stream.end()
+  })
 
-    const integrityMap = ssri.fromData(tarballData, {
-      algorithms: [...new Set(['sha1', 'sha512'])],
-    })
+  const integrityMap = ssri.fromData(tarballData, {
+    algorithms: [...new Set(['sha1', 'sha512'])],
+  })
 
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    const integrity = integrityMap.sha512?.[0]?.toString()
-    // @ts-expect-error -- types from DT are missing hexDigest
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const shasum = integrityMap.sha1?.[0]?.hexDigest() as
-      string | undefined
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  const integrity = integrityMap.sha512?.[0]?.toString()
+  // @ts-expect-error -- types from DT are missing hexDigest
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const shasum = integrityMap.sha1?.[0]?.hexDigest() as
+    string | undefined
 
-    return {
-      name: manifest.name,
-      version: manifest.version,
-      filename,
-      tarballName,
-      tarballData,
-      unpackedSize,
-      files,
-      integrity,
-      shasum,
-      resolvedManifest: processedManifest,
-      packDir,
-    }
-  } finally {
-    // Restore the original package.json to the pack directory
-    config.options.packageJson.write(packDir, manifest)
+  return {
+    name: manifest.name,
+    version: manifest.version,
+    filename,
+    tarballName,
+    tarballData,
+    unpackedSize,
+    files,
+    integrity,
+    shasum,
+    resolvedManifest: processedManifest,
+    packDir,
   }
 }

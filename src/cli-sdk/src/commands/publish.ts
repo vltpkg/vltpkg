@@ -441,6 +441,10 @@ const commandSingle = async (
       [version]: {
         ...resolvedManifest,
         ...readPublishReadme(packDir, files),
+        // the package.json as written, with the version cleaned up;
+        // registries set the maintainers themselves
+        version,
+        maintainers: undefined,
         _id: `${name}@${version}`,
         _nodeVersion: process.versions.node,
         dist: {
