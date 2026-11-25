@@ -1,5 +1,6 @@
 import t from 'tap'
 import type { Test } from 'tap'
+import assert from 'node:assert'
 import { resolve } from 'node:path'
 import { command, views, usage } from '../../src/commands/publish.ts'
 import type {
@@ -11,6 +12,7 @@ import { Monorepo } from '@vltpkg/workspaces'
 import {
   RegistryClient,
   assertOk,
+  getTokenByURL,
   registryBase,
   requestError,
 } from '@vltpkg/registry-client'
@@ -2067,6 +2069,122 @@ t.test('publishConfig.registry alone is enough', async t => {
       await cmd.command(config)
       t.equal(calls, want)
     }
+  })
+})
+
+t.test('VLT_TOKEN_<key> for the publish registry', async t => {
+  const reg = 'https://registry.example.com/acme/'
+  const env = {
+    VLT_TOKEN_https_registry_example_com_acme_main: 'tok',
+    VLT_TOKEN_https_registry_example_com_acme_other: 'other',
+  }
+  Object.assign(process.env, env)
+  t.teardown(() => {
+    for (const k of Object.keys(env)) delete process.env[k]
+  })
+  // what request() would send as the authorization header
+  const sent: [string, string, string | undefined][] = []
+  let client: RegistryClient | undefined
+  t.beforeEach(() => {
+    sent.length = 0
+    const mock = RegistryClient.prototype.request
+    RegistryClient.prototype.request = async function (
+      this: RegistryClient,
+      url,
+      opts,
+    ) {
+      client = this
+      sent.push([
+        opts?.method ?? 'GET',
+        String(url),
+        await getTokenByURL(
+          String(url),
+          this.identity,
+          this.registryKeys,
+          this.defaultRegistryKey,
+        ),
+      ])
+      return mock.call(this, url, opts)
+    }
+  })
+  const publish = async (
+    t: Test,
+    options: Omit<TestConfig['options'], 'packageJson'>,
+    publishConfig?: object,
+  ) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify({
+        name: '@acme/a',
+        version: '1.0.0',
+        publishConfig,
+      }),
+    })
+    t.chdir(dir)
+    await command(
+      makeTestConfig({
+        projectRoot: dir,
+        options: { packageJson: new PackageJson(), ...options },
+        positionals: ['publish'],
+      }),
+    )
+  }
+  const put = [['PUT', `${reg}main/@acme%2Fa`, 'Bearer tok']]
+
+  t.test('publishConfig.registry alone', async t => {
+    await publish(t, { registries: {} }, { registry: `${reg}main/` })
+    t.strictSame(sent, put)
+    assert(client)
+    t.equal(
+      await getTokenByURL(
+        'https://registry-example.com/acme/main/@acme%2Fa',
+        client.identity,
+        client.registryKeys,
+        client.defaultRegistryKey,
+      ),
+      undefined,
+      'not sent to a lookalike host',
+    )
+  })
+
+  t.test('--registry', async t => {
+    await publish(t, { registry: `${reg}main/`, registries: {} })
+    t.strictSame(sent, put)
+  })
+
+  t.test('configured registries', async t => {
+    await publish(
+      t,
+      { registries: { main: `${reg}main/` } },
+      { registry: `${reg}main/` },
+    )
+    t.strictSame(sent, put)
+  })
+
+  t.test('workspace pre-flight check', async t => {
+    await command(
+      makeMonorepo(
+        t,
+        {
+          a: {
+            name: 'a',
+            version: '1.0.0',
+            publishConfig: { registry: `${reg}main/` },
+          },
+          b: {
+            name: 'b',
+            version: '1.0.0',
+            publishConfig: { registry: `${reg}other/` },
+          },
+        },
+        { registries: {} },
+      ),
+    )
+    t.strictSame(sent, [
+      ['GET', `${reg}main/a`, 'Bearer tok'],
+      ['GET', `${reg}other/b`, 'Bearer other'],
+      ['PUT', `${reg}main/a`, 'Bearer tok'],
+      ['PUT', `${reg}other/b`, 'Bearer other'],
+    ])
   })
 })
 

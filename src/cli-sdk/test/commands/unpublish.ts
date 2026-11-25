@@ -7,7 +7,10 @@ import {
 } from '../../src/commands/unpublish.ts'
 import type { CommandResult } from '../../src/commands/unpublish.ts'
 import { PackageJson } from '@vltpkg/package-json'
-import { RegistryClient } from '@vltpkg/registry-client'
+import {
+  RegistryClient,
+  getTokenByURL,
+} from '@vltpkg/registry-client'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 interface MockResponse {
@@ -1050,6 +1053,41 @@ t.test('local publishConfig.registry', async t => {
         ],
       ],
     )
+  })
+
+  t.test('sends its VLT_TOKEN_<key>', async t => {
+    process.env.VLT_TOKEN_https_custom_example_com_reg = 'tok'
+    t.teardown(() => {
+      delete process.env.VLT_TOKEN_https_custom_example_com_reg
+    })
+    const sent: (string | undefined)[] = []
+    const mock = RegistryClient.prototype.request
+    RegistryClient.prototype.request = async function (
+      this: RegistryClient,
+      url,
+      opts,
+    ) {
+      sent.push(
+        await getTokenByURL(
+          String(url),
+          this.identity,
+          this.registryKeys,
+          this.defaultRegistryKey,
+        ),
+      )
+      return mock.call(this, url, opts)
+    }
+    mockResponses.set('https://custom.example.com/reg/my-package', {
+      json: packument('my-package'),
+    })
+    await command(
+      localConfig(
+        t,
+        { name: 'my-package', publishConfig },
+        { registries: {} },
+      ),
+    )
+    t.strictSame(sent, ['Bearer tok', 'Bearer tok'])
   })
 
   t.test('is enough w/o any configured registry', async t => {

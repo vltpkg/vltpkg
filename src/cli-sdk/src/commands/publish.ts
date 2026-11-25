@@ -212,13 +212,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   )
 
   const targets = await resolveTargets(locations, conf)
-  const checker = new RegistryClient({
-    ...conf.options,
-    'fetch-retries': 0,
-  })
-  const checks = targets.map(
-    t => [t, skipReason(t, checker, conf)] as const,
-  )
+  const checks = targets.map(t => [t, skipReason(t, conf)] as const)
   const results: (CommandResultSingle | CommandResultSkipped)[] = []
   for (const [target, check] of checks) {
     const reason = await check
@@ -279,7 +273,6 @@ const packumentUrl = (name: string, registryUrl: URL) =>
 
 const skipReason = async (
   { manifestDir, manifest, registryUrl }: Target,
-  rc: RegistryClient,
   conf: LoadedConfig,
 ): Promise<CommandResultSkipped['skipped'] | undefined> => {
   if (manifest.private) return 'private'
@@ -292,6 +285,11 @@ const skipReason = async (
   ) {
     return undefined
   }
+  const rc = new RegistryClient({
+    ...conf.options,
+    registry: registryUrl.href,
+    'fetch-retries': 0,
+  })
   try {
     const res = await rc.request(packumentUrl(name, registryUrl), {
       useCache: false,
@@ -462,7 +460,10 @@ const commandSingle = async (
     },
   }
 
-  const rc = new RegistryClient(conf.options)
+  const rc = new RegistryClient({
+    ...conf.options,
+    registry: registryUrl.href,
+  })
 
   // Attempt OIDC token exchange for CI environments (GitHub Actions, GitLab, CircleCI).
   // This is always optional — failures are silent and won't affect local publishing.
