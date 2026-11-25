@@ -788,11 +788,9 @@ const processPlacementTasks = async (
     // start peer deps placement process, populating the peer context with
     // dependency data; adding the parent node deps and this manifest's
     // peer deps references to the current peer context set
-    // a link: target is symlinked as is: no peers, deps or build
-    const link = spec.final.bareSpec.startsWith('link:')
     const peerPlacement = startPeerPlacement(
       peerContext,
-      link ? {} : manifest,
+      manifest,
       fromNode,
       options,
     )
@@ -879,7 +877,8 @@ const processPlacementTasks = async (
       node.setResolved()
     }
 
-    if (link) continue
+    // a link: target is symlinked as is, its deps are not installed
+    if (spec.final.bareSpec.startsWith('link:')) continue
 
     // collect child dependencies for processing in the next level
     const nextPeerDeps = new Map<string, Dependency>()

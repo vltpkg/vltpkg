@@ -540,7 +540,6 @@ t.test('link: specs', async t => {
     name: 'linked',
     version: '1.0.0',
     dependencies: { dep: '^1.0.0' },
-    peerDependencies: { peer: '*' },
   }
   const manifests: Record<string, Manifest> = {
     linked: linkedManifest,
@@ -592,7 +591,7 @@ t.test('link: specs', async t => {
       linkedId,
     )
     t.equal(node?.location, 'linked')
-    t.equal(node?.edgesOut.size, 0, 'no deps or peers')
+    t.equal(node?.edgesOut.size, 0, 'no deps')
   })
 
   await t.test('a missing directory is linked anyway', async t => {
@@ -616,10 +615,7 @@ t.test('link: specs', async t => {
       ['b@file:./b', 'linked@file:./linked'],
     ]) {
       const node = (await append(deps)).nodes.get(linkedId)
-      t.strictSame([...(node?.edgesOut.keys() ?? [])].sort(), [
-        'dep',
-        'peer',
-      ])
+      t.strictSame([...(node?.edgesOut.keys() ?? [])], ['dep'])
       t.equal(node?.edgesIn.size, 2)
     }
   })

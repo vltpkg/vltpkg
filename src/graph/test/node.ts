@@ -876,6 +876,7 @@ t.test('optional flag is contagious', t => {
 
   t.end()
 })
+
 t.test('isLinkTarget', t => {
   const opts = {
     ...options,
