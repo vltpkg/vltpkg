@@ -265,6 +265,7 @@ t.test(
       ['VLT_OFFLINE', 'true'],
       ['npm_config_offline', 'true'],
       ['npm_command', 'exec'],
+      ['npm_lifecycle_event', 'build'],
     ] as const) {
       contexts[`${key}=${value}`] = () => {
         process.env[key] = value
