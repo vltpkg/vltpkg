@@ -62,19 +62,29 @@ package. Alias: `ls`. A version or range (`<pkg>@1.0.0`) is refused.
 
 <Code code="$ vlt stage list [<pkg>]" title="Terminal" lang="bash" />
 
-Each staged version prints as a block of `key: value` lines, with a
-blank line between them:
+Each staged version prints as a branch of `key: value` lines, starting
+with its id:
 
 <Code
-  code="id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
-package name: @acme/pkg
-version: 1.2.0
-status: staged
-tag: latest
-date staged: 2026-11-24T10:00:00.000Z
-staged by: alice (user)
-shasum: 0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c
-access: public"
+  code="├─ 📥 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+│    package name: @acme/pkg
+│    version: 1.2.0
+│    status: staged
+│    tag: latest
+│    date staged: 2026-11-24T10:00:00.000Z
+│    staged by: alice (user)
+│    shasum: 0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c
+│    access: public
+│
+└─ 📥 id: 7b4e2f10-5c3d-4a8b-9e6f-0a1b2c3d4e5f
+     package name: @acme/pkg
+     version: 1.1.0
+     status: staged
+     tag: latest
+     date staged: 2026-11-23T09:00:00.000Z
+     staged by: alice (user)
+     shasum: 9a8b7c6d5e4f30211203f4e5d6c7b8a99a8b7c6d
+     access: public"
   title="Terminal"
   lang="text"
 />
@@ -84,7 +94,8 @@ With none staged, it prints `No staged packages found.`
 ### view
 
 Show one staged version, by the id `vlt stage publish` or
-`vlt stage list` printed, as one block like those of `list`.
+`vlt stage list` printed, as the same `key: value` lines without the
+tree.
 
 <Code
   code="$ vlt stage view <stage-id>"

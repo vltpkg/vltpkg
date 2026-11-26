@@ -10,12 +10,13 @@ import { Spec } from '@vltpkg/spec'
 import { storeLayout } from '@vltpkg/tar/unpack'
 import { writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
+import { styleText } from 'node:util'
 import { commandUsage } from '../config/usage.ts'
 import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { localPublishRegistry } from '../publish-config.ts'
 import { resolveRegistry } from '../require-registry.ts'
-import type { Views } from '../view.ts'
+import type { ViewOptions, Views } from '../view.ts'
 import { publish, views as publishViews } from './publish.ts'
 import type { CommandResult as PublishResult } from './publish.ts'
 
@@ -119,21 +120,39 @@ export type CommandResult =
 
 const isItem = (r: object): r is StageItem => 'packageName' in r
 
+type Style = (s: string) => string
+
+// colors as `vlt ls`: the id is highlighted like a selected package
+const styles = ({ colors }: ViewOptions) => {
+  const style =
+    (format: 'bold' | 'reset' | 'yellow'): Style =>
+    s =>
+      colors ? styleText(format, s, { validateStream: false }) : s
+  return {
+    bold: style('bold'),
+    reset: style('reset'),
+    yellow: style('yellow'),
+  }
+}
+
 /** The fields npm prints, in its order, then the others. */
-const itemLines = ({
-  id,
-  packageName,
-  version,
-  status,
-  tag,
-  createdAt,
-  actor,
-  actorType,
-  shasum,
-  ...rest
-}: StageItem) =>
-  Object.entries({
+const itemLines = (
+  {
     id,
+    packageName,
+    version,
+    status,
+    tag,
+    createdAt,
+    actor,
+    actorType,
+    shasum,
+    ...rest
+  }: StageItem,
+  { bold, yellow }: Record<'bold' | 'yellow', Style>,
+): string[] => [
+  `📥 ${bold('id:')} ${yellow(id)}`,
+  ...Object.entries({
     'package name': packageName,
     version,
     status,
@@ -145,23 +164,42 @@ const itemLines = ({
     ...rest,
   })
     .filter(([, v]) => v !== null && v !== undefined)
-    .map(([k, v]) => `${k}: ${String(v)}`)
+    .map(([k, v]) => `${bold(`${k}:`)} ${String(v)}`),
+]
+
+/** One branch per staged version, drawn like `vlt ls`. */
+const itemTree = (items: StageItem[], s: ReturnType<typeof styles>) =>
+  items
+    .flatMap((item, i) => {
+      const last = i === items.length - 1
+      const [first, ...rest] = itemLines(item, s)
+      return [
+        `${last ? '└─' : '├─'} ${first}`,
+        ...rest.map(line => `${last ? ' ' : '│'}    ${line}`),
+        ...(last ? [] : ['│']),
+      ]
+    })
     .join('\n')
 
 export const views = {
-  human: result => {
+  human: (result, options: ViewOptions = {}) => {
+    const s = styles(options)
     if (Array.isArray(result)) {
       const [first] = result
       if (!first) return 'No staged packages found.'
       return isItem(first) ?
-          (result as StageItem[]).map(itemLines).join('\n\n')
+          s.reset(itemTree(result as StageItem[], s))
         : publishViews.human(result as PublishResult)
     }
-    if (isItem(result)) return itemLines(result)
+    if (isItem(result))
+      return s.reset(itemLines(result, s).join('\n'))
     if ('action' in result) {
-      return result.action === 'approved' ?
-          `Staged package ${result.id} approved and published successfully.`
-        : `Staged package ${result.id} has been rejected.`
+      const id = s.yellow(result.id)
+      return s.reset(
+        result.action === 'approved' ?
+          `Staged package ${id} approved and published successfully.`
+        : `Staged package ${id} has been rejected.`,
+      )
     }
     if ('file' in result) return result.file
     return publishViews.human(result)

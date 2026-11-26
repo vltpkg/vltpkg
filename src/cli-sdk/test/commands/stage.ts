@@ -123,7 +123,6 @@ t.test('views', async t => {
   t.equal(human([result]), Publish.views.human([result]))
   t.equal(human([]), 'No staged packages found.')
   const lines = [
-    `id: ${ID}`,
     'package name: @acme/pkg',
     'version: 1.0.0',
     'status: staged',
@@ -131,8 +130,12 @@ t.test('views', async t => {
     'date staged: 2026-11-24T00:00:00.000Z',
     'staged by: alice (user)',
     'shasum: abc',
-  ].join('\n')
-  t.equal(human(item), lines, 'npm order, null dropped')
+  ]
+  t.equal(
+    human(item),
+    [`📥 id: ${ID}`, ...lines].join('\n'),
+    'npm order, null dropped',
+  )
   const other: StageItem = {
     id: ID,
     packageName: 'b',
@@ -142,7 +145,22 @@ t.test('views', async t => {
   }
   t.equal(
     human([item, other]),
-    `${lines}\n\nid: ${ID}\npackage name: b\nversion: 2.0.0\nstaged by: ci\naccess: public`,
+    [
+      `├─ 📥 id: ${ID}`,
+      ...lines.map(l => `│    ${l}`),
+      '│',
+      `└─ 📥 id: ${ID}`,
+      '     package name: b',
+      '     version: 2.0.0',
+      '     staged by: ci',
+      '     access: public',
+    ].join('\n'),
+    'a tree like vlt ls',
+  )
+  t.equal(
+    human([other]),
+    `└─ 📥 id: ${ID}\n     package name: b\n     version: 2.0.0\n     staged by: ci\n     access: public`,
+    'one staged version',
   )
   t.equal(
     human({ id: ID, action: 'approved' }),
@@ -154,6 +172,32 @@ t.test('views', async t => {
   )
   t.equal(human({ id: ID, file: 'a.tgz' }), 'a.tgz')
   t.equal(json(item), item)
+})
+
+t.test('human views use the vlt ls colors', async t => {
+  const { human } = Stage.views
+  const colors = { colors: true }
+  const id = `\x1b[1mid:\x1b[22m \x1b[33m${ID}\x1b[39m`
+  const key = (k: string) => `\x1b[1m${k}:\x1b[22m`
+  t.equal(
+    human(item, colors).split('\n').slice(0, 2).join('\n'),
+    `\x1b[0m📥 ${id}\n${key('package name')} @acme/pkg`,
+    'bold keys, highlighted id, reset like vlt ls',
+  )
+  const tree = human([item, item], colors).split('\n')
+  t.equal(tree[0], `\x1b[0m├─ 📥 ${id}`)
+  t.equal(tree[1], `│    ${key('package name')} @acme/pkg`)
+  t.equal(tree[9], `└─ 📥 ${id}`)
+  t.equal(tree.at(-1), `     ${key('shasum')} abc\x1b[0m`)
+  t.equal(
+    human({ id: ID, action: 'approved' }, colors),
+    `\x1b[0mStaged package \x1b[33m${ID}\x1b[39m approved and published successfully.\x1b[0m`,
+  )
+  t.equal(
+    human({ id: ID, action: 'rejected' }, colors),
+    `\x1b[0mStaged package \x1b[33m${ID}\x1b[39m has been rejected.\x1b[0m`,
+  )
+  t.notMatch(human([item, item]), '\x1b', 'no colors')
 })
 
 t.test('publish stages with the publish command', async t => {
