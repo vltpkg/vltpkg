@@ -53,7 +53,11 @@ export const checkForUpdate = async (file: string) => {
       saved.lastCheck !== state.lastCheck
     )
       return
-    writeUpdateState(file, { ...saved, latest: String(latest) })
+    writeUpdateState(file, {
+      ...saved,
+      latest: String(latest),
+      lastCheck: Date.now(),
+    })
   } catch {
   } finally {
     try {

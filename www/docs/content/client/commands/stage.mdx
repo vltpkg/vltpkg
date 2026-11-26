@@ -1,0 +1,178 @@
+---
+title: vlt stage
+sidebar:
+  label: stage
+---
+
+Usage:
+
+<Code
+  code="$ vlt stage publish
+$ vlt stage list [<pkg>]
+$ vlt stage view <stage-id>
+$ vlt stage approve <stage-id>
+$ vlt stage reject <stage-id>
+$ vlt stage download <stage-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+Stage a package version for a person to approve.
+
+A staged version is uploaded to the registry but not served until a
+person approves it with a second factor. Staging never asks for one,
+so a CI workflow can stage and a maintainer approves. A maintainer
+then approves the version, which publishes it, or rejects it, which
+deletes it.
+
+The registry must support staged publishing; others answer `404` or
+`405`.
+
+Every subcommand uses the same registry: the `publishConfig.registry`
+of the package in the current directory if set, else `--registry`, a
+registry picked by alias with
+[`vlt registry <alias> stage <subcommand>`](/client/commands/registry),
+or the configured registry. So `vlt stage list` in a package finds the
+versions `vlt stage publish` staged there.
+
+## Subcommands
+
+### publish
+
+Pack the package and stage it. `vlt stage publish` picks the packages,
+the registry and the lifecycle scripts the same way
+[`vlt publish`](/client/commands/publish) does, and takes the same
+options: `--tag`, `--access`, `--otp`, `--publish-directory`,
+`--dry-run`, and `--recursive`, `--workspace`, `--workspace-group` or
+`--scope` to stage workspaces.
+
+<Code code="$ vlt stage publish" title="Terminal" lang="bash" />
+
+[Trusted publishing](/client/commands/publish#trusted-publishing)
+works the same way, as long as the trusted publisher allows staging.
+
+The registry refuses a version that is already staged or published.
+With the workspace flags, such a version shows up as
+`skipped (already published)` and the run goes on.
+
+### list
+
+List the staged versions in the registry, or only those of one
+package. Alias: `ls`. A version or range (`<pkg>@1.0.0`) is refused.
+
+<Code code="$ vlt stage list [<pkg>]" title="Terminal" lang="bash" />
+
+Each staged version prints as a branch of `key: value` lines, starting
+with its id:
+
+<Code
+  code="├─ 📥 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+│    package name: @acme/pkg
+│    version: 1.2.0
+│    status: staged
+│    tag: latest
+│    date staged: 2026-11-24T10:00:00.000Z
+│    staged by: alice (user)
+│    shasum: 0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c
+│    access: public
+│
+└─ 📥 id: 7b4e2f10-5c3d-4a8b-9e6f-0a1b2c3d4e5f
+     package name: @acme/pkg
+     version: 1.1.0
+     status: staged
+     tag: latest
+     date staged: 2026-11-23T09:00:00.000Z
+     staged by: alice (user)
+     shasum: 9a8b7c6d5e4f30211203f4e5d6c7b8a99a8b7c6d
+     access: public"
+  title="Terminal"
+  lang="text"
+/>
+
+With none staged, it prints `No staged packages found.`
+
+### view
+
+Show one staged version, by the id `vlt stage publish` or
+`vlt stage list` printed, as the same `key: value` lines without the
+tree.
+
+<Code
+  code="$ vlt stage view <stage-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+### approve
+
+Publish a staged version. The registry asks for a second factor: pass
+`--otp=<code>`, or vlt prompts for one or opens the browser sign-in,
+as it does when a publish needs one.
+
+<Code
+  code="$ vlt stage approve <stage-id> --otp=<code>"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="Staged package 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b approved and published successfully."
+  title="Terminal"
+  lang="text"
+/>
+
+### reject
+
+Delete a staged version and its tarball, freeing the version number.
+Like `approve`, it needs a second factor.
+
+<Code
+  code="$ vlt stage reject <stage-id> --otp=<code>"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="Staged package 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b has been rejected."
+  title="Terminal"
+  lang="text"
+/>
+
+### download
+
+Save the staged tarball in the current directory to inspect it before
+approving. The file is named after the name and version in the
+tarball's own `package.json`, `<name>-<version>-<stage-id>.tgz`, with
+`@` dropped and `/` replaced by `-`, and the name is printed:
+
+<Code
+  code="$ vlt stage download <stage-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="acme-pkg-1.2.0-3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b.tgz"
+  title="Terminal"
+  lang="text"
+/>
+
+## Output
+
+`vlt stage publish` prints the output of `vlt publish`, plus a line
+with the id the registry gave the staged version:
+
+<Code
+  code="🚦 Staged with id 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b"
+  title="Terminal"
+  lang="text"
+/>
+
+With `--view=json`, its result also has `"staged": true` and the
+`"stageId"`.
+
+The other subcommands print what their sections show. With
+`--view=json`, `list` prints the array of staged versions, `view` one
+staged version, `approve` and `reject`
+`{ "id": "<stage-id>", "action": "approved" }` (or `"rejected"`), and
+`download` `{ "id": "<stage-id>", "file": "<file name>" }`.

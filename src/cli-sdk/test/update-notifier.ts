@@ -3,14 +3,16 @@ import type { Test } from 'tap'
 import * as fs from 'node:fs'
 import { join } from 'node:path'
 import { EventEmitter } from 'node:events'
+import { expandHome } from '../src/config/index.ts'
 import type { LoadedConfig } from '../src/config/index.ts'
+import { isSelfUpdateArgs } from '../src/self-update.ts'
 import {
   readUpdateState,
   writeUpdateState,
 } from '../src/update-state.ts'
 
 const version = '1.0.0'
-const registry = 'https://registry.npmjs.org/'
+const registry = 'https://registry.vlt.io/upstream/npm/'
 const now = 2 * 86_400_000
 const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
   const dir = t.testdir()
@@ -67,7 +69,9 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
     'node:fs': t.createMock(fs, {
       realpathSync: (path: fs.PathLike) => {
         if (!path) throw new Error('no executable')
-        return runtime.executable
+        return path === process.argv[1] ?
+            runtime.executable
+          : fs.realpathSync(path)
       },
       ...overrides,
     }),
@@ -83,6 +87,7 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
         cache = (path = '') => join(dir, this.name, 'cache', path)
       },
     },
+    '../src/config/index.ts': { expandHome },
     '../src/output.ts': {
       isCI: () => runtime.ci,
       stderr: (line: string) => messages.push(line),
@@ -91,18 +96,17 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
       __CODE_SPLIT_SCRIPT_NAME: '/worker.js',
     },
     '../src/update-state.ts': { readUpdateState, writeUpdateState },
+    '../src/self-update.ts': { isSelfUpdateArgs },
   })
+  const globalDir = join(dir, 'global')
+  fs.mkdirSync(globalDir)
   const conf = {
     command: 'install',
     values: {
       view: 'human',
       'update-notifier': true,
       'update-check-interval': 86_400,
-    },
-    options: {
-      registry,
-      registries: {},
-      'default-registry-alias': 'npm',
+      'global-dir': globalDir,
     },
   } as LoadedConfig
   return {
@@ -110,6 +114,7 @@ const setup = async (t: Test, overrides: Partial<typeof fs> = {}) => {
     version,
     conf,
     dir,
+    globalDir,
     file,
     messages,
     spawned,
@@ -126,7 +131,7 @@ t.test(
     t.strictSame(readUpdateState(s.file), {
       registry,
       version,
-      lastCheck: now,
+      lastCheck: now - 82_800_000,
     })
     t.equal(s.spawned.length, 1)
     t.match(s.spawned[0], {
@@ -175,7 +180,7 @@ t.test(
     fs.utimesSync(`${s.file}.lock`, expired, expired)
     s.notifyUpdate(s.conf, version)
     t.strictSame(s.messages, [
-      'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt',
+      'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt@2.0.0',
     ])
     s.notifyUpdate(s.conf, version)
     t.equal(s.messages.length, 1)
@@ -213,9 +218,6 @@ t.test(
       'no-argv': (_, t) => {
         t.intercept(process, 'argv', { value: [] })
       },
-      'invalid-registry': s => {
-        s.conf.options.registry = 'invalid'
-      },
       tty: (_, t) => {
         t.intercept(process.stderr, 'isTTY', { value: false })
       },
@@ -243,11 +245,12 @@ t.test(
       'exec-command': s => {
         s.conf.command = 'exec'
       },
+      'install -g vlt': s => {
+        s.conf.globalRoot = '/global'
+        s.conf.positionals = ['vlt']
+      },
       'invalid-version': s => {
         s.version = 'dev'
-      },
-      'no-registry': s => {
-        s.conf.options.registry = undefined
       },
       npx: s => {
         s.runtime.executable =
@@ -262,14 +265,22 @@ t.test(
           'vlt/vlx-local/cache/123/vlt.js',
         )
       },
-      protocol: s => {
-        s.conf.options.registry = 'file:///tmp/'
+      project: s => {
+        s.runtime.executable =
+          '/home/user/project/node_modules/vlt/vlt.js'
       },
-      username: s => {
-        s.conf.options.registry = 'https://user@registry.test/'
+      'project-pnpm': s => {
+        s.runtime.executable =
+          '/home/user/project/node_modules/.pnpm/vlt@1.0.0/node_modules/vlt/vlt.js'
       },
-      password: s => {
-        s.conf.options.registry = 'https://:secret@registry.test/'
+      'project-win32': s => {
+        s.runtime.executable =
+          'C:\\project\\node_modules\\vlt\\vlt.js'
+      },
+      'project-no-global-dir': s => {
+        s.runtime.executable =
+          '/home/user/project/node_modules/vlt/vlt.js'
+        s.conf.values['global-dir'] = join(s.dir, 'missing')
       },
     }
     for (const [key, value] of [
@@ -279,6 +290,7 @@ t.test(
       ['VLT_OFFLINE', 'true'],
       ['npm_config_offline', 'true'],
       ['npm_command', 'exec'],
+      ['npm_lifecycle_event', 'build'],
     ] as const) {
       contexts[`${key}=${value}`] = () => {
         process.env[key] = value
@@ -297,27 +309,67 @@ t.test(
   },
 )
 
-t.test(
-  'uses the default registry alias unless a scalar is set',
-  async t => {
-    const s = await setup(t)
-    s.conf.options['default-registry-alias'] = 'mirror'
-    s.conf.options.registries = {
-      npm: registry,
-      mirror: 'https://mirror.test/npm',
-    }
-    for (const scalar of [undefined, registry]) {
-      s.conf.options.registry = scalar
+t.test('a failed check is retried after an hour', async t => {
+  for (const [interval, backoff] of [
+    [86_400, 3_600_000],
+    [1_800, 1_800_000],
+  ] as const) {
+    await t.test(`interval ${interval}s`, async t => {
+      const s = await setup(t)
+      let time = now
+      t.intercept(Date, 'now', { value: () => time })
+      s.conf.values['update-check-interval'] = interval
       s.notifyUpdate(s.conf, version)
-      t.equal(
-        readUpdateState(s.file)?.registry,
-        scalar ?? 'https://mirror.test/npm/',
-      )
       fs.rmSync(`${s.file}.lock`)
-    }
-    t.equal(s.spawned.length, 2)
-  },
-)
+      time = now + backoff - 1
+      s.notifyUpdate(s.conf, version)
+      t.equal(s.spawned.length, 1)
+      time = now + backoff
+      s.notifyUpdate(s.conf, version)
+      t.equal(s.spawned.length, 2)
+    })
+  }
+})
+
+t.test('an invalid check interval uses the default', async t => {
+  for (const interval of [0, -1, NaN]) {
+    await t.test(String(interval), async t => {
+      const s = await setup(t)
+      const state = {
+        registry,
+        version,
+        lastCheck: now - 86_399_999,
+        latest: '2.0.0',
+        notifiedVersion: '2.0.0',
+        notifiedAt: now - 86_399_999,
+      }
+      writeUpdateState(s.file, state)
+      s.conf.values['update-check-interval'] = interval
+      s.notifyUpdate(s.conf, version)
+      t.strictSame(s.spawned, [])
+      t.strictSame(s.messages, [])
+      t.strictSame(readUpdateState(s.file), state)
+    })
+  }
+})
+
+t.test('always checks the public npm mirror', async t => {
+  const s = await setup(t)
+  for (const options of [
+    { registry: 'https://registry.npmjs.org/' },
+    {
+      registries: { npm: 'https://registry.vlt.io/acme/npm/' },
+      'default-registry-alias': 'npm',
+    },
+    { registries: {}, 'default-registry-alias': 'npm' },
+  ]) {
+    Object.assign(s.conf, { options })
+    s.notifyUpdate(s.conf, version)
+    fs.rmSync(`${s.file}.lock`, { force: true })
+  }
+  t.equal(s.spawned.length, 1)
+  t.equal(readUpdateState(s.file)?.registry, registry)
+})
 
 t.test(
   'registry and installed version changes discard cached notices',
@@ -342,14 +394,20 @@ t.test(
 )
 
 t.test(
-  'upgrade hint is the same for every install location',
+  'upgrade hint names the latest version for global installs',
   async t => {
     const s = await setup(t)
+    fs.mkdirSync(join(s.dir, 'npm'))
+    fs.writeFileSync(join(s.dir, 'npm/vlt.cmd'), '')
     for (const path of [
       '/opt/homebrew/Cellar/vlt/1/bin/vlt',
       '/home/user/.volta/tools/image/packages/vlt/bin/vlt',
       '/usr/lib/node_modules/vlt/bin/vlt',
-      'C:\\Users\\name\\AppData\\Roaming\\npm\\node_modules\\vlt\\vlt.js',
+      join(s.dir, 'npm/node_modules/vlt/vlt.js'),
+      join(
+        fs.realpathSync(s.globalDir),
+        'node_modules/.vlt/··vlt@1.0.0/node_modules/vlt/vlt.js',
+      ),
       '/usr/bin/vlt',
     ]) {
       s.runtime.executable = path
@@ -362,7 +420,8 @@ t.test(
       s.notifyUpdate(s.conf, version)
       t.equal(
         s.messages.pop(),
-        'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt',
+        'Update available: vlt 1.0.0 -> 2.0.0\nvlt install -g vlt@2.0.0',
+        path,
       )
     }
   },

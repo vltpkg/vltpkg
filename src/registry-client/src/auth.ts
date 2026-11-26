@@ -40,6 +40,10 @@ export const setRuntimeToken = (registry: string, token: Token) => {
   runtimeTokens.set(normalizeRegistryKey(registry), token)
 }
 
+export const deleteRuntimeToken = (registry: string) => {
+  runtimeTokens.delete(normalizeRegistryKey(registry))
+}
+
 export const clearRuntimeTokens = () => {
   runtimeTokens.clear()
 }

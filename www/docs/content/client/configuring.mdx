@@ -19,7 +19,7 @@ More documentation available at
 ## Subcommands
 
 ```
-access, bugs, build, cache, ci, config, create, deprecate, dist-tag, docs, exec, exec-cache, exec-local, help, init, add, install, list, login, logout, pack, ping, pkg, profile, publish, query, registry, repo, run-script, run, run-exec, setup, skills, token, uninstall, unpublish, update, version, view, whoami
+access, bugs, build, cache, ci, config, create, deprecate, dist-tag, docs, exec, exec-cache, exec-local, help, init, add, install, list, login, logout, pack, ping, pkg, profile, publish, query, registry, repo, run-script, run, run-exec, setup, skills, stage, token, uninstall, unpublish, update, version, view, whoami
 ```
 
 Run `vlt <cmd> --help` for more information about a specific command
@@ -111,6 +111,22 @@ rules.
 
 For information about catalog configuration and the `catalog:`
 protocol, see the [Catalogs documentation](/client/catalogs).
+
+### Certificate authorities
+
+By default vlt trusts the certificate authorities bundled with Node.
+These environment variables change that, for example behind a proxy
+that intercepts TLS:
+
+- `NODE_EXTRA_CA_CERTS=<file>` adds the certificates in a PEM file and
+  keeps the bundled ones. Use this to add a corporate root.
+- `NODE_USE_SYSTEM_CA=1` also trusts the operating system's
+  certificate store. Use this when the root is installed there.
+- `npm_config_cafile=<file>` (or `NPM_CONFIG_CAFILE`) trusts only the
+  certificates in a PEM file for registry connections, as npm's
+  `cafile` does. The bundled roots are dropped, so every registry host
+  needs its certificate authority in the file. A file that cannot be
+  read or holds no certificates is an error.
 
 ### `-c --color`
 
@@ -615,31 +631,50 @@ set multiple times. Each dir must be inside the project, not in
 ### `--update-notifier`
 
 On by default. Checks for newer vlt versions in a detached process, at
-most once every 24 hours. A later command prints a cached update
-notice to stderr after its output. The same notice is shown at most
-once per check interval.
+most once per check interval (24 hours by default). A later command
+prints a cached update notice to stderr after its output. The same
+notice is shown at most once per check interval.
+
+<Code
+  code={`Update available: vlt 1.8.0 -> 1.8.1
+vlt install -g vlt@1.8.1`}
+  title="Terminal"
+  lang="text"
+/>
+
+The second line is the command that updates vlt to that version, see
+[Updating vlt](/client/commands/install#updating-vlt).
 
 Disable with `--no-update-notifier`,
 `"config": { "update-notifier": false }` in `vlt.json`,
-`VLT_NO_UPDATE_NOTIFIER=1`, or `NO_UPDATE_NOTIFIER=1`.
-`VLT_UPDATE_NOTIFIER=false` also works through the normal config
-environment variables.
+`VLT_UPDATE_NOTIFIER=0`, or any non-empty `VLT_NO_UPDATE_NOTIFIER` or
+`NO_UPDATE_NOTIFIER` value (including `0`). `VLT_UPDATE_NOTIFIER=1`
+turns it on; any other value, including `true`, turns it off.
 
-Checks are skipped in CI, with non-TTY stderr, with any view other
-than `human`, and for development builds and ephemeral installs
-through `vlx` or `npx`. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
-`npm_config_offline=true` also suppress checks. This does not put
-other vlt commands into an offline mode.
+Checks and notices are skipped in CI, with non-TTY stderr, with any
+view other than `human` (the default view is `json` when stdout is
+piped or redirected), while `vlt install -g vlt` updates vlt, for
+commands run from a package script, for a vlt installed in a project's
+`node_modules`, and for development builds and ephemeral installs
+through `vlx` or `npx`. They are also skipped for `--help`,
+`--version`, failing commands, `vlt ci`, and `vlt exec` (`vlx`),
+whatever it runs. `VLT_OFFLINE=1`, `VLT_OFFLINE=true`, and
+`npm_config_offline=true` also suppress them. This does not put other
+vlt commands into an offline mode.
 
-The check uses the configured registry. Registries requiring
-authentication may decline the request; failures stay silent. State is
-stored in `update-check.json` under vlt's XDG state directory.
+The check asks vlt's [public npm mirror](/registry/public-mirror),
+`https://registry.vlt.io/upstream/npm/`, whatever registry is
+configured. Each check is one anonymous request to registry.vlt.io;
+failures stay silent, and a failed check is retried after an hour (or
+after the check interval, if shorter). State is stored in
+`update-check.json` under vlt's XDG state directory.
 
 ### `--update-check-interval`
 
 Seconds between update checks and repeated notices. Defaults to
 `86400` (24 hours); must be a positive number. Can also be set as
 `VLT_UPDATE_CHECK_INTERVAL` or in the `config` object in `vlt.json`.
+An invalid `VLT_UPDATE_CHECK_INTERVAL` uses the default.
 
 ### `-v --version`
 

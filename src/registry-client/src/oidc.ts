@@ -1,6 +1,6 @@
 import { request } from 'undici'
 import type { Token } from './auth.ts'
-import { setRuntimeToken } from './auth.ts'
+import { deleteRuntimeToken, setRuntimeToken } from './auth.ts'
 
 export type OidcOptions = {
   /** The package name being published, e.g. `@scope/name` */
@@ -73,6 +73,8 @@ const _oidc = async ({
   packageName,
   registry,
 }: OidcOptions): Promise<Token | undefined> => {
+  // a token exchanged for another package must not be reused
+  deleteRuntimeToken(registry)
   const isGitHub = process.env.GITHUB_ACTIONS === 'true'
   const isGitLab = process.env.GITLAB_CI === 'true'
   const isCircle = process.env.CIRCLECI === 'true'

@@ -272,6 +272,7 @@ t.test(
     const {
       getToken,
       setRuntimeToken,
+      deleteRuntimeToken,
       clearRuntimeTokens,
       runtimeTokens,
     } = await t.mockImport<typeof import('../src/auth.ts')>(
@@ -291,6 +292,11 @@ t.test(
     t.equal(
       await getToken('https://registry.vlt.io/vlt/', ''),
       'Bearer vlt-oidc',
+    )
+    deleteRuntimeToken('https://registry.vlt.io/luke')
+    t.strictSame(
+      [...runtimeTokens.keys()],
+      ['https://registry.vlt.io/vlt'],
     )
     clearRuntimeTokens()
   },

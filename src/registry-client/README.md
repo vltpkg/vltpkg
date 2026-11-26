@@ -88,6 +88,23 @@ A proxy that terminates TLS needs its certificate authority to be
 trusted. Point `NODE_EXTRA_CA_CERTS` at the CA file and node will
 trust it for the tunneled connection.
 
+## Certificate Authorities
+
+Set `npm_config_cafile` (or `NPM_CONFIG_CAFILE`) to the path of a PEM
+file to make registry connections trust only the certificates in that
+file. This is the same variable npm uses for its `cafile` setting.
+
+Node's bundled certificate authorities, the system store, and
+`NODE_EXTRA_CA_CERTS` are all ignored for registry connections once
+this is set. If a proxy needs its own CA, put it in the file too.
+Other TLS connections in the process are not affected.
+
+A file that cannot be read, or that holds no certificates, is a config
+error.
+
+To add a certificate authority and keep the defaults, use
+`NODE_EXTRA_CA_CERTS` instead.
+
 ## Integrity Options
 
 An `integrity` option may be specified in a `fetchOptions.context`

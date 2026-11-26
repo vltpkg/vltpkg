@@ -300,10 +300,11 @@ there.
 ## Targeting a specific registry
 
 Account and authentication commands (`whoami`, `logout`, `login`,
-`token`, `access`, `publish`, `unpublish`, `deprecate`, `dist-tag`,
-`profile`, `ping`) need to know which registry to act against. When
-you have more than one configured, scope a command to a single alias
-with [`vlt registry <alias> <command>`](/client/commands/registry):
+`token`, `access`, `publish`, `unpublish`, `stage`, `deprecate`,
+`dist-tag`, `profile`, `ping`) need to know which registry to act
+against. When you have more than one configured, scope a command to a
+single alias with
+[`vlt registry <alias> <command>`](/client/commands/registry):
 
 ```bash
 # act against the registry configured as `main`
@@ -318,11 +319,12 @@ way, when the target is ambiguous vlt prompts you to pick a registry
 on an interactive terminal, and otherwise falls back to
 [`--default-registry-alias`](#bare-specs-and---default-registry-alias).
 A `--registry=<url>` on the command line always takes precedence,
-except that `publish` (and `unpublish` of the package in the current
-directory) use the package's `publishConfig.registry` when set, with
-no other registry config needed. The built-in `npm` mirror is
-read-only, so these commands never select it, and
-`vlt registry npm <command>` needs a configured `registries.npm`.
+except that `publish`, every `stage` subcommand (and `unpublish` of
+the package in the current directory) use the package's
+`publishConfig.registry` when set, with no other registry config
+needed. The built-in `npm` mirror is read-only, so these commands
+never select it, and `vlt registry npm <command>` needs a configured
+`registries.npm`.
 
 ## Named Scope Registries (npm Compatibility)
 

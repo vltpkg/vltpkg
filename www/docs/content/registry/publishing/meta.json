@@ -8,6 +8,7 @@
     "bun",
     "deno",
     "ci",
-    "trusted-publishing"
+    "trusted-publishing",
+    "staged-publishing"
   ]
 }

@@ -1,7 +1,12 @@
 import t from 'tap'
 import type { Test } from 'tap'
 import { resolve } from 'node:path'
-import { command, views, usage } from '../../src/commands/publish.ts'
+import {
+  command,
+  publish,
+  views,
+  usage,
+} from '../../src/commands/publish.ts'
 import type {
   CommandResultSingle,
   CommandResultSkipped,
@@ -370,6 +375,11 @@ t.test('command', async t => {
       command(config),
       /Run `vlt whoami` to see who you are logged in as/,
       'should say how to check and change accounts',
+    )
+    await t.rejects(
+      command(config),
+      /If the account, token or trusted publisher only allows staged publishing, run `vlt stage publish` instead\./,
+      'should point at staging',
     )
   })
 
@@ -2274,5 +2284,241 @@ t.test('multi-package publish skips', async t => {
       }),
     )
     t.strictSame(calls(), [`PUT ${reg}/a`], 'no check, just the PUT')
+  })
+})
+
+t.test('stage publish', async t => {
+  const reg = 'https://registry.example.com/acme/main/'
+  const stageUrl = `${reg}-/stage/package/a`
+  const stageConfig = (
+    t: Test,
+    manifest: object = { name: 'a', version: '1.0.0' },
+    options: Partial<TestConfig['options']> = {},
+  ) => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify(manifest),
+      'vlt.json': '{}',
+    })
+    t.chdir(dir)
+    return makeTestConfig({
+      projectRoot: dir,
+      options: {
+        packageJson: new PackageJson(),
+        registry: reg,
+        tag: 'latest',
+        ...options,
+      },
+      positionals: ['publish'],
+    })
+  }
+  /** what each request sent, in order */
+  const sent = () => {
+    const opts: {
+      headers?: Record<string, string>
+      body?: string
+    }[] = []
+    const mocked = RegistryClient.prototype.request
+    RegistryClient.prototype.request = async function (
+      this: RegistryClient,
+      url: URL | string,
+      o?: { headers?: Record<string, string>; body?: string },
+    ) {
+      opts.push(o ?? {})
+      return mocked.call(this, url, o)
+    }
+    return opts
+  }
+  const stageId = '3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b'
+
+  t.test(
+    'POSTs the publish document to the staging route',
+    async t => {
+      const opts = sent()
+      mockResponses.set(stageUrl, { json: { stageId } })
+      const result = (await publish(
+        stageConfig(t, undefined, { access: 'public' }),
+        { stage: true },
+      )) as CommandResultSingle
+      t.strictSame(calls(), [`POST ${stageUrl}`])
+      t.match(opts[0]?.headers, {
+        'content-type': 'application/json',
+        'npm-command': 'stage',
+      })
+      t.match(JSON.parse(opts[0]?.body ?? ''), {
+        name: 'a',
+        'dist-tags': { latest: '1.0.0' },
+        versions: { '1.0.0': { name: 'a', version: '1.0.0' } },
+        access: 'public',
+        _attachments: { 'a-1.0.0.tgz': { data: String } },
+      })
+      t.match(result, {
+        id: 'a@1.0.0',
+        registry: 'https://registry.example.com',
+        staged: true,
+        stageId,
+      })
+    },
+  )
+
+  t.test('a scoped name, under publishConfig.registry', async t => {
+    await publish(
+      stageConfig(t, {
+        name: '@acme/w',
+        version: '1.0.0',
+        publishConfig: { registry: 'https://r.example/acme/main' },
+      }),
+      { stage: true },
+    )
+    t.strictSame(calls(), [
+      'POST https://r.example/acme/main/-/stage/package/@acme%2Fw',
+    ])
+  })
+
+  t.test('staged without a stage id in the answer', async t => {
+    const config = stageConfig(t)
+    for (const json of [{}, { stageId: 42 }]) {
+      mockResponses.set(stageUrl, { json })
+      const result = (await publish(config, {
+        stage: true,
+      })) as CommandResultSingle
+      t.equal(result.staged, true)
+      t.notOk('stageId' in result, JSON.stringify(json))
+    }
+    const mocked = RegistryClient.prototype.request
+    RegistryClient.prototype.request = async function (
+      this: RegistryClient,
+      url: URL | string,
+    ) {
+      return Object.assign(await mocked.call(this, url), {
+        json: () => {
+          throw new SyntaxError('Unexpected token')
+        },
+      })
+    }
+    const result = (await publish(config, {
+      stage: true,
+    })) as CommandResultSingle
+    t.equal(result.staged, true)
+    t.notOk('stageId' in result, 'not JSON')
+  })
+
+  t.test('--dry-run stages nothing', async t => {
+    const config = stageConfig(t)
+    config.options['dry-run'] = true
+    const result = (await publish(config, {
+      stage: true,
+    })) as CommandResultSingle
+    t.equal(result.staged, true)
+    t.notOk('stageId' in result)
+    t.strictSame(calls(), [])
+  })
+
+  t.test('a plain publish is unchanged', async t => {
+    const opts = sent()
+    const result = (await command(
+      stageConfig(t),
+    )) as CommandResultSingle
+    t.strictSame(calls(), [`PUT ${reg}a`])
+    t.equal(opts[0]?.headers?.['npm-command'], 'publish')
+    t.notOk('staged' in result)
+    t.notOk('stageId' in result)
+  })
+
+  t.test('errors name the staging request', async t => {
+    const config = stageConfig(t)
+    mockResponses.set(stageUrl, {
+      statusCode: 409,
+      text: JSON.stringify({
+        error: 'Version 1.0.0 is staged. Approve or reject it first.',
+      }),
+    })
+    await t.rejects(publish(config, { stage: true }), {
+      message:
+        /^Failed to stage package: 409 Conflict — Version 1\.0\.0 is staged/,
+      cause: {
+        code: 'EREQUEST',
+        method: 'POST',
+        url: new URL(stageUrl),
+      },
+    })
+  })
+
+  t.test('a 403 does not point at staging again', async t => {
+    const config = stageConfig(t)
+    mockResponses.set(stageUrl, {
+      statusCode: 403,
+      text: JSON.stringify({ error: 'forbidden' }),
+    })
+    const err = await publish(config, { stage: true }).then(
+      () => undefined,
+      (e: unknown) => e,
+    )
+    t.match(err, {
+      message: /^Failed to stage package: 403[\s\S]*Run `vlt whoami`/,
+      cause: { code: 'ENEEDAUTH', method: 'POST' },
+    })
+    t.notMatch(String(err), 'vlt stage publish')
+  })
+
+  t.test('a failed request names the staging request', async t => {
+    const config = stageConfig(t)
+    RegistryClient.prototype.request = async () => {
+      throw new Error('Network error')
+    }
+    await t.rejects(publish(config, { stage: true }), {
+      message: /^Failed to stage package: Network error/,
+      cause: { method: 'POST', url: new URL(stageUrl) },
+    })
+  })
+
+  t.test(
+    'a recursive run skips a version already staged',
+    async t => {
+      mockResponses.set(stageUrl, {
+        statusCode: 409,
+        text: JSON.stringify({
+          error:
+            'Version 1.0.0 is staged. Approve or reject it first.',
+        }),
+      })
+      const config = makeMonorepo(
+        t,
+        {
+          a: { name: 'a', version: '1.0.0' },
+          b: { name: 'b', version: '1.0.0' },
+        },
+        { registry: reg },
+      )
+      const [a, b] = (await publish(config, { stage: true })) as [
+        CommandResultSkipped,
+        CommandResultSingle,
+      ]
+      t.equal(a.skipped, 'already published')
+      t.equal(b.staged, true)
+      t.strictSame(calls(), [
+        `GET ${reg}a`,
+        `GET ${reg}b`,
+        `POST ${stageUrl}`,
+        `POST ${reg}-/stage/package/b`,
+      ])
+    },
+  )
+
+  t.test('views', async t => {
+    const result: CommandResultSingle = {
+      id: 'a@1.0.0',
+      name: 'a',
+      version: '1.0.0',
+      tag: 'latest',
+      registry: 'https://registry.example.com',
+      size: 1,
+      unpackedSize: 1,
+      files: [],
+    }
+    const staged = { ...result, staged: true as const, stageId }
+    t.match(views.human(staged), /\n🚦 Staged with id 3f2a1c9e-/)
+    t.match(views.human({ ...result, staged: true }), /\n🚦 Staged$/)
+    t.notMatch(views.human(result), '🚦')
+    t.equal(views.json(staged), staged)
   })
 })

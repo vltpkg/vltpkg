@@ -190,6 +190,30 @@ t.test('unknown config', async t => {
   t.matchSnapshot(logs.join('\n'))
 })
 
+t.test('invalid option value', async t => {
+  let exitCode = 0
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+  const { error, logs } = await run(t, {
+    argv: ['--update-check-interval=0'],
+  })
+  t.type(error, Error)
+  t.equal(exitCode, 1)
+  t.strictSame(logs, [
+    'Invalid Option Flag',
+    'Invalid value provided for --update-check-interval: 0',
+    '  Field: update-check-interval',
+    '  Found: 0',
+    "  Run 'vlt help' for more information about available options.",
+  ])
+})
+
 t.test('unknown config in file', async t => {
   let exitCode = 0
   const cwd = t.testdir({

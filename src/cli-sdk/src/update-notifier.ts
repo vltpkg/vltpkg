@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import {
+  existsSync,
   mkdirSync,
   realpathSync,
   rmSync,
@@ -10,11 +11,17 @@ import { dirname } from 'node:path'
 import { getCompileCacheDir } from 'node:module'
 import { parse } from '@vltpkg/semver'
 import { XDG } from '@vltpkg/xdg'
+import { defaultValues } from './config/definition.ts'
+import { expandHome } from './config/index.ts'
 import type { LoadedConfig } from './config/index.ts'
+import { isInside } from './global-project.ts'
 import { isCI, stderr } from './output.ts'
+import { isSelfUpdateArgs } from './self-update.ts'
 import { __CODE_SPLIT_SCRIPT_NAME } from './update-check.ts'
 import { readUpdateState, writeUpdateState } from './update-state.ts'
 import type { UpdateState } from './update-state.ts'
+
+const registry = 'https://registry.vlt.io/upstream/npm/'
 
 export const notifyUpdate = (conf: LoadedConfig, version: string) => {
   try {
@@ -32,17 +39,18 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
       process.env.VLT_OFFLINE === 'true' ||
       process.env.npm_config_offline === 'true' ||
       process.env.npm_command === 'exec' ||
+      process.env.npm_lifecycle_event ||
       conf.command === 'ci' ||
-      conf.command === 'exec'
+      conf.command === 'exec' ||
+      isSelfUpdateArgs(conf)
     )
       return
     const current = parse(version)
-    const registry =
-      conf.options.registry ??
-      conf.options.registries[conf.options['default-registry-alias']]
-    if (!current || !registry) return
+    if (!current) return
     const executable = realpathSync(process.argv[1] ?? '')
     const normalized = executable.replaceAll('\\', '/')
+    const nm = normalized.lastIndexOf('/node_modules/')
+    const prefix = normalized.slice(0, nm)
     if (
       normalized.includes('/_npx/') ||
       normalized.startsWith(
@@ -50,28 +58,33 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
       ) ||
       normalized.startsWith(
         new XDG('vlt/vlx-local').cache().replaceAll('\\', '/') + '/',
-      )
+      ) ||
+      // a project's node_modules: not npm's -g prefix (as in
+      // self-update.ts) or the global project
+      (nm !== -1 &&
+        !prefix.endsWith('/lib') &&
+        !existsSync(`${prefix}/vlt.cmd`) &&
+        !isInside(
+          realpathSync(expandHome(conf.values['global-dir'])),
+          executable,
+        ))
     )
       return
 
-    const url = new URL(registry)
-    if (
-      !['http:', 'https:'].includes(url.protocol) ||
-      url.username ||
-      url.password
-    )
-      return
-    url.pathname = url.pathname.replace(/\/?$/, '/')
     const file = new XDG('vlt').state('update-check.json')
-    const interval = conf.values['update-check-interval'] * 1000
+    const seconds = conf.values['update-check-interval']
+    const interval =
+      (Number.isFinite(seconds) && seconds > 0 ?
+        seconds
+      : Number(defaultValues['update-check-interval'])) * 1000
     const now = Date.now()
     const readState = (): UpdateState => {
       const saved = readUpdateState(file)
       return (
-          saved?.registry === url.href && saved.version === version
+          saved?.registry === registry && saved.version === version
         ) ?
           saved
-        : { registry: url.href, version, lastCheck: 0 }
+        : { registry, version, lastCheck: 0 }
     }
     const hasNotice = (state: UpdateState) => {
       const latest = state.latest && parse(state.latest)
@@ -101,11 +114,15 @@ export const notifyUpdate = (conf: LoadedConfig, version: string) => {
         state.notifiedAt = now
         writeUpdateState(file, state)
         stderr(
-          `Update available: vlt ${version} -> ${state.latest}\nvlt install -g vlt`,
+          `Update available: vlt ${version} -> ${state.latest}\nvlt install -g vlt@${state.latest}`,
         )
       }
       if (now - state.lastCheck < interval) return
-      writeUpdateState(file, { ...state, lastCheck: now })
+      // count the attempt as failed (retry within an hour); success resets it.
+      writeUpdateState(file, {
+        ...state,
+        lastCheck: now - Math.max(interval - 3_600_000, 0),
+      })
       const env = { ...process.env }
       const cache = getCompileCacheDir()
       if (cache) env.NODE_COMPILE_CACHE ??= cache

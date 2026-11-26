@@ -1,5 +1,5 @@
 import type { NormalizedManifest } from '@vltpkg/types'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import type { LoadedConfig } from './config/index.ts'
 
 type PublishConfig = {
@@ -32,4 +32,20 @@ export const getPublishDirectory = (
   return cliPublishDir ? publishDirectory : (
       join(dir, publishDirectory)
     )
+}
+
+/**
+ * `publishConfig.registry` of the package in the current directory,
+ * if that package is `name` (any package when no `name` is given).
+ */
+export const localPublishRegistry = (
+  conf: LoadedConfig,
+  name?: string,
+): string | undefined => {
+  const path = conf.options.packageJson.find(process.cwd())
+  if (!path) return undefined
+  const manifest = conf.options.packageJson.read(dirname(path))
+  return name === undefined || manifest.name === name ?
+      getPublishConfig(manifest)?.registry
+    : undefined
 }

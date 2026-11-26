@@ -7,6 +7,7 @@ const mockAuth = {
   setRuntimeToken: (registry: string, token: Token) => {
     runtimeTokensSet.push([registry, token])
   },
+  deleteRuntimeToken: () => {},
 }
 
 // Helper to create a mock undici module
@@ -521,5 +522,48 @@ t.test(
       registry: 'https://registry.npmjs.org/',
     })
     t.equal(result, 'Bearer scoped-tok')
+  },
+)
+
+t.test(
+  'a failed exchange falls back to the configured token',
+  async t => {
+    const registry = 'https://registry.example/acme/main/'
+    const envKey = 'VLT_TOKEN_https_registry_example_acme_main'
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.NPM_ID_TOKEN = 'some-token'
+    process.env[envKey] = 'configured'
+    t.teardown(() => {
+      delete process.env[envKey]
+    })
+
+    const auth =
+      await t.mockImport<typeof import('../src/auth.ts')>(
+        '../src/auth.ts',
+      )
+    const { oidc } = await t.mockImport<
+      typeof import('../src/oidc.ts')
+    >('../src/oidc.ts', {
+      '../src/auth.ts': auth,
+      undici: createMockUndici(async url =>
+        String(url).endsWith('/package/a') ?
+          {
+            statusCode: 200,
+            body: { json: async () => ({ token: 'a-token' }) },
+          }
+        : {
+            statusCode: 404,
+            body: { json: async () => ({ error: 'not found' }) },
+          },
+      ),
+    })
+
+    t.equal(
+      await oidc({ packageName: 'a', registry }),
+      'Bearer a-token',
+    )
+    t.equal(await auth.getToken(registry, ''), 'Bearer a-token')
+    t.equal(await oidc({ packageName: 'b', registry }), undefined)
+    t.equal(await auth.getToken(registry, ''), 'Bearer configured')
   },
 )

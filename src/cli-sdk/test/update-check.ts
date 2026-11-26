@@ -12,7 +12,7 @@ const { __CODE_SPLIT_SCRIPT_NAME, checkForUpdate } =
   )
 
 const state = {
-  registry: 'https://registry.npmjs.org/',
+  registry: 'https://registry.vlt.io/upstream/npm/',
   version: '1.0.0',
   lastCheck: 123,
 }
@@ -27,7 +27,7 @@ t.test(
       value: async (url: URL, init: RequestInit) => {
         t.equal(
           String(url),
-          'https://registry.npmjs.org/-/package/vlt/dist-tags',
+          'https://registry.vlt.io/upstream/npm/-/package/vlt/dist-tags',
         )
         t.equal(init.redirect, 'error')
         t.ok(init.signal)
@@ -43,9 +43,11 @@ t.test(
         })
       },
     })
+    t.intercept(Date, 'now', { value: () => 789 })
     await checkForUpdate(file)
     t.strictSame(readUpdateState(file), {
       ...state,
+      lastCheck: 789,
       latest: '2.0.0',
       notifiedVersion: '1.5.0',
       notifiedAt: 456,
@@ -118,6 +120,8 @@ t.test(
       })
       await checkForUpdate(file)
       t.equal(readUpdateState(file)?.latest, undefined, outcome)
+      if (['http', 'json', 'null', 'network'].includes(outcome))
+        t.equal(readUpdateState(file)?.lastCheck, 123, outcome)
       t.notOk(fs.existsSync(`${file}.lock`))
     }
     fs.rmSync(file, { force: true })
