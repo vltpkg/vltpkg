@@ -62,7 +62,7 @@ COMMANDS
                  stage        [publish|list... Stage a package for a person to approve and publish
 
                  token        [add|rm]         Manage authentication tokens
-                 trust        [list|revoke]    Manage the CI workflows trusted to publish a package
+                 trust        [github|list|... Manage the CI workflows trusted to publish a package
 
   rm,            uninstall    [<package>...]   Remove dependencies
                  unpublish    <pkg>[@<versi... Remove a package from the registry

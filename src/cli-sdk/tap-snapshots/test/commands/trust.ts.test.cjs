@@ -7,6 +7,8 @@
 'use strict'
 exports[`test/commands/trust.ts > TAP > usage > must match snapshot 1`] = `
 Usage:
+  vlt trust github [<pkg>] --file=<workflow> [--repository=<owner/repo>]
+  [--environment=<name>] [--allow-publish] [--allow-stage-publish]
   vlt trust list [<pkg>]
   vlt trust revoke [<pkg>] --id=<trust-id>
 
@@ -21,6 +23,13 @@ package is \`<pkg>\`, else the configured registry.
 
   Subcommands
 
+    github
+      Trust a GitHub Actions workflow to publish a package. Asks for
+      confirmation and needs a second factor.
+
+      ​vlt trust github [<pkg>] --file=<workflow> [--repository=<owner/repo>]
+      [--environment=<name>] [--allow-publish] [--allow-stage-publish]
+
     list
       List the trusted publishers of a package. Alias: \`ls\`.
 
@@ -33,21 +42,71 @@ package is \`<pkg>\`, else the configured registry.
 
   Options
 
+    file
+      Name of the workflow file in \`.github/workflows\`, such as \`release.yml\`.
+
+      ​--file=<workflow>
+
+    repository
+      GitHub repository of the workflow. Defaults to the \`repository\` of the
+      package in the current directory. Alias: \`--repo\`.
+
+      ​--repository=<owner/repo>
+
+    environment
+      GitHub environment the job of the workflow must run in.
+
+      ​--environment=<name>
+
+    allow-publish
+      Let the workflow run \`vlt publish\`.
+
+      ​--allow-publish
+
+    allow-stage-publish
+      Let the workflow run \`vlt stage publish\`. Alias: \`--allow-staged-publish\`.
+
+      ​--allow-stage-publish
+
+    yes
+      Create the trusted publisher without asking for confirmation.
+
+      ​--yes
+
     id
       Id of the trusted publisher to revoke, as \`vlt trust list\` prints it.
 
       ​--id=<trust-id>
 
     dry-run
-      Show what would be revoked without revoking it.
+      Show what would be created or revoked without sending it.
 
       ​--dry-run
 
     otp
-      One-time password to revoke a trusted publisher with.
+      One-time password to create or revoke a trusted publisher with.
 
       ​--otp=<otp>
 
+`
+
+exports[`test/commands/trust.ts > TAP > views > created 1`] = `
+Trusted publisher created for @acme/utils:
+type: github
+id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+file: release.yml
+repository: acme/utils
+environment: production
+permissions: publish, stage publish
+`
+
+exports[`test/commands/trust.ts > TAP > views > created dry run 1`] = `
+Would create this trusted publisher for @acme/utils (dry run):
+type: github
+file: release.yml
+repository: acme/utils
+environment: production
+permissions: publish, stage publish
 `
 
 exports[`test/commands/trust.ts > TAP > views > dry run 1`] = `
