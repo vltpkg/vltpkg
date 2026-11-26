@@ -40,9 +40,12 @@ The registry is resolved in this order:
 3. With no explicit target and a single configured registry, that one
    is used.
 4. With multiple configured registries and no explicit target:
-   - on an interactive terminal you are prompted to pick one (the
-     [`--default-registry-alias`](/client/registries#bare-specs-and---default-registry-alias)
-     is pre-selected);
+   - on an interactive terminal you are prompted to pick one. The
+     registry picked last time in the project is pre-selected, else
+     the
+     [`--default-registry-alias`](/client/registries#bare-specs-and---default-registry-alias).
+     The pick is kept in `node_modules/.vlt/cli-state.json` when vlt
+     installed `node_modules`;
    - otherwise (CI, pipes) it falls back to
      `--default-registry-alias`, erroring if that alias is not
      configured.

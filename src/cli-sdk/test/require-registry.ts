@@ -1,4 +1,7 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import t from 'tap'
+import type { Test } from 'tap'
 import type { LoadedConfig } from '../src/config/index.ts'
 
 type Opts = {
@@ -18,14 +21,20 @@ const mkConf = (options: Opts): LoadedConfig =>
 
 // Load require-registry with a mocked readline so the interactive
 // branch of resolveRegistry is deterministic.
-const load = async (answers: string[] = []) => {
+const load = async (
+  answers: string[] = [],
+  questions: string[] = [],
+) => {
   const queue = [...answers]
   return t.mockImport<typeof import('../src/require-registry.ts')>(
     '../src/require-registry.ts',
     {
       'node:readline/promises': {
         createInterface: () => ({
-          question: async () => queue.shift() ?? '',
+          question: async (q: string) => {
+            questions.push(q)
+            return queue.shift() ?? ''
+          },
           close: () => {},
         }),
       },
@@ -206,6 +215,110 @@ t.test('resolveRegistry (interactive prompt)', async t => {
     { interactive: true, output: { write: () => true } as never },
   )
   t.equal(url, 'https://m/', 'prompt selection honored')
+})
+
+t.test('resolveRegistry remembers the last pick', async t => {
+  const key = 'registry-select-default-value'
+  const stateFile = (dir: string) =>
+    resolve(dir, 'node_modules/.vlt/cli-state.json')
+  const run = async (
+    dir: string,
+    answer: string,
+    interactive = true,
+  ) => {
+    const questions: string[] = []
+    const written: string[] = []
+    const mod = await load([answer], questions)
+    const conf = mkConf({
+      registries: { npm: 'https://n/', main: 'https://m/' },
+    })
+    conf.projectRoot = dir
+    const url = await mod.resolveRegistry(conf, {
+      interactive,
+      output: {
+        write: (s: string) => {
+          written.push(s)
+          return true
+        },
+      } as unknown as NodeJS.WritableStream,
+    })
+    return { url, questions, out: written.join('') }
+  }
+  const withState = (t: Test, content?: string) =>
+    t.testdir({
+      node_modules: {
+        '.vlt':
+          content === undefined ? {} : { 'cli-state.json': content },
+      },
+    })
+
+  t.test('stored pick is pre-selected', async t => {
+    const dir = withState(t, JSON.stringify({ [key]: 'https://m/' }))
+    const { url, questions, out } = await run(dir, '')
+    t.match(out, 'main -> https://m/ (default)')
+    t.notMatch(out, 'npm -> https://n/ (default)')
+    t.strictSame(questions, ['Registry [2]: '])
+    t.equal(url, 'https://m/')
+  })
+
+  for (const [name, content] of [
+    ['no file', undefined],
+    ['malformed', '{'],
+    ['not an object', '[]'],
+    ['key missing', '{"other":1}'],
+    ['not a candidate', JSON.stringify({ [key]: 'https://gone/' })],
+  ] as const) {
+    t.test(`fallback: ${name}`, async t => {
+      const dir = withState(t, content)
+      const { url, questions, out } = await run(dir, '')
+      t.match(out, 'npm -> https://n/ (default)')
+      t.strictSame(questions, ['Registry [1]: '])
+      t.equal(url, 'https://n/')
+    })
+  }
+
+  t.test('answer is recorded, other keys kept', async t => {
+    const dir = withState(t, '{"other":true}')
+    t.equal((await run(dir, '2')).url, 'https://m/')
+    t.strictSame(JSON.parse(readFileSync(stateFile(dir), 'utf8')), {
+      other: true,
+      [key]: 'https://m/',
+    })
+  })
+
+  t.test('enter is recorded', async t => {
+    const dir = withState(t)
+    t.equal((await run(dir, '')).url, 'https://n/')
+    t.strictSame(JSON.parse(readFileSync(stateFile(dir), 'utf8')), {
+      [key]: 'https://n/',
+    })
+  })
+
+  t.test('no node_modules/.vlt: nothing created', async t => {
+    const dir = t.testdir({})
+    t.equal((await run(dir, '2')).url, 'https://m/')
+    t.notOk(existsSync(resolve(dir, 'node_modules')))
+  })
+
+  t.test('non-interactive ignores the file', async t => {
+    const content = JSON.stringify({ [key]: 'https://m/' })
+    const dir = withState(t, content)
+    t.equal((await run(dir, '', false)).url, 'https://n/')
+    t.equal(readFileSync(stateFile(dir), 'utf8'), content)
+  })
+
+  t.test('failed write does not fail the command', async t => {
+    const dir = t.testdir({
+      node_modules: { '.vlt': { 'cli-state.json': {} } },
+    })
+    t.equal((await run(dir, '2')).url, 'https://m/')
+  })
+
+  t.test('invalid answer: nothing recorded', async t => {
+    const dir = withState(t)
+    await t.rejects(run(dir, '9'), { cause: { code: 'EUSAGE' } })
+    t.notOk(existsSync(stateFile(dir)))
+  })
 })
 
 const ghDefaultURL = 'https://npm.pkg.github.com/'
