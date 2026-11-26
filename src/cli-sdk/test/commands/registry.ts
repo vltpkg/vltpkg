@@ -73,6 +73,17 @@ t.test('alias + subcommand dispatch', async t => {
   t.equal(conf.values.registry, 'https://m/')
 })
 
+t.test('stage publish dispatch', async t => {
+  const mod = await load()
+  const conf = mkConf(['main', 'stage', 'publish'], {
+    registries: { main: 'https://m/' },
+  })
+  await mod.dispatchRegistry(conf, { interactive: false })
+  t.equal(conf.command, 'stage')
+  t.strictSame(conf.positionals, ['publish'])
+  t.equal(conf.options.registry, 'https://m/')
+})
+
 t.test(
   'the built-in npm mirror is not an account target',
   async t => {

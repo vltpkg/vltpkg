@@ -18,6 +18,7 @@ export const registrySubcommands = [
   'access',
   'publish',
   'unpublish',
+  'stage',
   'deprecate',
   'dist-tag',
   'profile',
