@@ -1,6 +1,10 @@
 import { assertOk } from '@vltpkg/registry-client'
 import t from 'tap'
-import { defaultRegistries, defaultRegistryName } from '@vltpkg/spec'
+import {
+  currentDefaultRegistryName,
+  defaultRegistries,
+  defaultRegistryName,
+} from '@vltpkg/spec'
 import type { LoadedConfig } from '../../src/config/index.ts'
 
 let requestLog: {
@@ -41,6 +45,7 @@ const Command = await t.mockImport<
     },
   },
   '@vltpkg/spec': {
+    currentDefaultRegistryName,
     defaultRegistries,
     defaultRegistryName,
     Spec: {

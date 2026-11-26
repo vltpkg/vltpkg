@@ -6,6 +6,7 @@ import {
   Spec,
 } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { readCliState, setCliState } from './cli-state.ts'
 import { selectRegistry } from './select-registry.ts'
 import type { RegistryCandidate } from './select-registry.ts'
 import type { LoadedConfig } from './config/index.ts'
@@ -241,13 +242,17 @@ export const requireRegistry = (
   throw ambiguousRegistryError(candidates)
 }
 
+/** `cli-state.json` key of the registry picked in the prompt */
+const lastPickKey = 'registry-select-default-value'
+
 /**
  * Resolve the registry a command should act against.
  *
  * Precedence: explicit `alias` (from `vlt registry <alias> <cmd>`) >
  * `--registry` URL scalar > the single configured alias. When multiple
  * aliases are configured and none was chosen, prompt interactively on a
- * TTY, otherwise fall back to `default-registry-alias`, else error.
+ * TTY (pre-selecting the registry picked last time in the project),
+ * otherwise fall back to `default-registry-alias`, else error.
  */
 export const resolveRegistry = async (
   conf: LoadedConfig,
@@ -273,7 +278,15 @@ export const resolveRegistry = async (
 
   const defaultAlias = conf.options['default-registry-alias']
   if (interactive) {
-    return selectRegistry(candidates, { defaultAlias, input, output })
+    const state = await readCliState(conf.projectRoot)
+    const last = candidates.find(c => c.url === state[lastPickKey])
+    const url = await selectRegistry(candidates, {
+      defaultAlias: last?.alias ?? defaultAlias,
+      input,
+      output,
+    })
+    await setCliState(conf.projectRoot, lastPickKey, url)
+    return url
   }
   const defaultUrl = configuredDefaultUrl(conf)
   if (defaultUrl) return defaultUrl
