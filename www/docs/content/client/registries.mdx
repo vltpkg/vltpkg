@@ -326,6 +326,10 @@ needed. The built-in `npm` mirror is read-only, so these commands
 never select it, and `vlt registry npm <command>` needs a configured
 `registries.npm`.
 
+The prompt pre-selects the registry picked last time in the project,
+kept in `node_modules/.vlt/cli-state.json` when vlt installed
+`node_modules`.
+
 ## Named Scope Registries (npm Compatibility)
 
 Like the npm client, the vlt client allows you to map a given scope to
