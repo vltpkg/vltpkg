@@ -7,21 +7,25 @@ const file = (dir: string) =>
   resolve(dir, 'node_modules/.vlt/cli-state.json')
 
 t.test('readCliState', async t => {
-  const read = (content?: string) =>
-    readCliState(
-      t.testdir({
+  const cases: [string, string | undefined, unknown][] = [
+    ['missing', undefined, {}],
+    ['malformed', '{', {}],
+    ['array', '[]', {}],
+    ['object', '{"a":1}', { a: 1 }],
+  ]
+  for (const [name, content, expect] of cases) {
+    t.test(name, async t => {
+      const dir = t.testdir({
         node_modules: {
           '.vlt':
             content === undefined ?
               {}
             : { 'cli-state.json': content },
         },
-      }),
-    )
-  t.strictSame(await read(), {}, 'missing')
-  t.strictSame(await read('{'), {}, 'malformed')
-  t.strictSame(await read('[]'), {}, 'array')
-  t.strictSame(await read('{"a":1}'), { a: 1 })
+      })
+      t.strictSame(await readCliState(dir), expect)
+    })
+  }
 })
 
 t.test('setCliState', async t => {
