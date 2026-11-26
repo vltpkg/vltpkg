@@ -226,7 +226,7 @@ const commandHelp = {
     desc: 'Manage agent skills',
   },
   stage: {
-    args: '[publish]',
+    args: '[publish|list|view|approve|reject|download]',
     desc: 'Stage a package for a person to approve and publish',
   },
   token: {
