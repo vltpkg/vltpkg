@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
@@ -97,4 +97,9 @@ t.test('treat borked file as just not being there', async t => {
   writeFileSync(kc.file, 'not json')
   const kcbork = new Keychain('test/bork')
   t.equal(await kcbork.get('x'), undefined)
+  t.equal(
+    readFileSync(kc.file, 'utf8'),
+    'not json',
+    'a file that failed to parse is left as it was',
+  )
 })

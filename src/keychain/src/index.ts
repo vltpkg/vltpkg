@@ -38,15 +38,19 @@ export class Keychain<V extends string = string> {
 
   async #load(): Promise<this> {
     if (this.#data) return this
+    let missing = false
     try {
       this.#data = JSON.parse(
         await readFile(this.#file, 'utf8'),
       ) as Record<string, V>
-    } catch {}
+    } catch (er) {
+      missing = (er as NodeJS.ErrnoException).code === 'ENOENT'
+    }
     if (!this.#data) {
-      // just write the file if it failed in any way.
       this.#data = {}
-      await this.#writeFile().catch(() => {})
+      // only create the file when there is none. one that is there but
+      // could not be read or parsed may still hold tokens, leave it be.
+      if (missing) await this.#writeFile().catch(() => {})
     }
     return this
   }
