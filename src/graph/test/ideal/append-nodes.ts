@@ -1796,6 +1796,85 @@ t.test('modifiers sharing a path all apply', async t => {
   })
 })
 
+t.test(
+  'a nested modifier keeps its edge when a sibling needs the original version',
+  async t => {
+    const registry: Record<
+      string,
+      Record<string, Partial<Manifest>>
+    > = {
+      a: { '1.0.0': { dependencies: { b: '1.0.0', x: '1.0.0' } } },
+      b: { '1.0.0': { dependencies: { x: '1.0.0' } } },
+      x: { '2.0.0': {}, '1.0.0': {} },
+    }
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        const { name, range } = spec.final
+        const versions = registry[name] ?? {}
+        const version = Object.keys(versions).find(v => {
+          const parsed = parseVersion(v)
+          return !!parsed && !!range?.test(parsed)
+        })
+        return version ?
+            { name, version, ...versions[version] }
+          : null
+      },
+    } as PackageInfoClient
+
+    for (const key of [':root > #a > #x', '#a > #x']) {
+      await t.test(key, async t => {
+        const mainManifest = {
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: { a: '1.0.0' },
+        }
+        const dir = t.testdir({
+          'package.json': JSON.stringify(mainManifest),
+          'vlt.json': JSON.stringify({
+            modifiers: { [key]: '2.0.0' },
+          }),
+        })
+        const graph = new Graph({
+          projectRoot: dir,
+          ...configData,
+          mainManifest,
+        })
+        const deps = [
+          asDependency({
+            spec: Spec.parse('a', '1.0.0', configData),
+            type: 'prod',
+          }),
+        ]
+        t.chdir(dir)
+        reload('modifiers', 'project')
+        const graphModifier = GraphModifier.load(configData)
+        graphModifier.tryImporter(graph.mainImporter)
+        await appendNodes(
+          packageInfo,
+          graph,
+          graph.mainImporter,
+          deps,
+          new PathScurry(dir),
+          configData,
+          new Set<DepID>(),
+          new Map(deps.map(dep => [dep.spec.name, dep])),
+          graphModifier,
+          graphModifier.tryDependencies(graph.mainImporter, deps),
+        )
+        graph.gc()
+        const [a] = graph.nodesByName.get('a') ?? []
+        const [b] = graph.nodesByName.get('b') ?? []
+        const ax = a?.edgesOut.get('x')
+        t.equal(ax?.spec.bareSpec, '2.0.0', 'a -> x spec')
+        t.equal(ax?.to?.version, '2.0.0', 'a -> x version')
+        t.equal(ax?.to?.modifier, key, 'a -> x modifier')
+        t.equal(b?.edgesOut.get('x')?.to?.version, '1.0.0', 'b -> x')
+        t.equal(graph.nodesByName.get('x')?.size, 2, 'both x nodes')
+      })
+    }
+  },
+)
+
 t.test('early extraction during appendNodes', async t => {
   t.test(
     'extract nodes that do not exist in actual graph',
