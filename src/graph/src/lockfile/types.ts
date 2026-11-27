@@ -16,6 +16,7 @@ export type LockfilePlatform = {
   os?: string[] | string
   cpu?: string[] | string
   libc?: string[] | string
+  deprecated?: string
 }
 
 /**

@@ -39,7 +39,7 @@ alwaysApply: false
 
 **Flags**: `dev`, `optional` (cascade-clear to children), `detached`, `extracted`, `buildState: 'none'|'needed'|'built'|'failed'`
 
-**Platform/bins**: `platform?: { engines?, os?, cpu? }`, `bins?: Record<string, string>`
+**Platform/bins**: `platform?: { engines?, os?, cpu?, libc?, deprecated? }`, `bins?: Record<string, string>`
 
 **Peer**: `peerSetHash?: string` (format: `peer.<hash>[.role]`, appended to DepID as `extra`)
 

@@ -1510,6 +1510,25 @@ t.test('node platform data setting', async t => {
     },
   )
 
+  t.test('should set deprecated from manifest', async t => {
+    const node = graph.placePackage(
+      graph.mainImporter,
+      'prod',
+      Spec.parse('deprecated-pkg@^1.0.0', configData),
+      {
+        name: 'deprecated-pkg',
+        version: '1.0.0',
+        deprecated: 'no longer maintained',
+      },
+    )
+
+    t.strictSame(
+      node?.platform,
+      { deprecated: 'no longer maintained' },
+      'deprecated set on node.platform',
+    )
+  })
+
   t.test(
     'should set all platform properties when present',
     async t => {
