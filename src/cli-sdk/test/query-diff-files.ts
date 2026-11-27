@@ -1,3 +1,6 @@
+import { execFileSync } from 'node:child_process'
+import { renameSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import t from 'tap'
 import {
   createDiffFilesProvider,
@@ -72,25 +75,54 @@ t.test('createDiffFilesProvider', async t => {
     t.ok(files instanceof Set, 'should return a Set')
   })
 
-  t.test('returns non-empty set for actual diff', async t => {
-    // Compare HEAD~1 to current — should have at least
-    // some changed files in the repo. Skip in shallow
-    // clones (CI) where HEAD~1 may not exist.
-    const cwd = process.cwd()
-    const provider = createDiffFilesProvider(cwd)
-    let files: Set<string>
-    try {
-      files = provider('HEAD~1')
-    } catch {
-      t.pass('shallow clone — HEAD~1 not available, skipping')
-      return
-    }
-    t.ok(files instanceof Set, 'should return a Set')
-    t.ok(files.size > 0, 'should have at least one changed file')
-    // All files should be non-empty strings
-    for (const file of files) {
-      t.ok(file.length > 0, `file path should be non-empty: ${file}`)
-    }
+  t.test('paths are relative to the project root', async t => {
+    const dir = t.testdir({
+      other: { 'index.js': '' },
+      project: {
+        'package.json': '{}',
+        packages: {
+          a: { 'moved.js': 'export const moved = true\n' },
+          b: { 'index.js': '' },
+          c: { 'café.js': '', ' spaces .js': '' },
+          d: { 'index.js': '' },
+        },
+        // same name as the branch below
+        base: '',
+      },
+    })
+    const git = (...args: string[]) =>
+      execFileSync('git', args, { cwd: dir, stdio: 'pipe' })
+    git('init', '-q')
+    git('config', 'user.name', 'vlt')
+    git('config', 'user.email', 'vlt@example.com')
+    git('config', 'commit.gpgsign', 'false')
+    git('config', 'core.quotePath', 'true')
+    git('config', 'diff.renames', 'true')
+    git('add', '.')
+    git('commit', '-q', '-m', 'base')
+    git('branch', 'base')
+
+    const project = resolve(dir, 'project')
+    const packages = resolve(project, 'packages')
+    renameSync(
+      resolve(packages, 'a/moved.js'),
+      resolve(packages, 'b/moved.js'),
+    )
+    writeFileSync(resolve(packages, 'c/café.js'), '1')
+    writeFileSync(resolve(packages, 'c/ spaces .js'), '1')
+    writeFileSync(resolve(dir, 'other/index.js'), '1')
+    git('add', '.')
+    git('commit', '-q', '-m', 'change')
+
+    t.strictSame(
+      [...createDiffFilesProvider(project)('base')].sort(),
+      [
+        'packages/a/moved.js',
+        'packages/b/moved.js',
+        'packages/c/ spaces .js',
+        'packages/c/café.js',
+      ],
+    )
   })
 
   t.test('parses git output with mocked execSync', async t => {
@@ -99,8 +131,7 @@ t.test('createDiffFilesProvider', async t => {
         '../src/query-diff-files.ts',
         {
           'node:child_process': {
-            execSync: () =>
-              'src/index.ts\npackages/a/lib/util.ts\n\n',
+            execSync: () => 'src/index.ts\0packages/a/lib/util.ts\0',
           },
         },
       )
