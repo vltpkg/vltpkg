@@ -29,7 +29,9 @@ vlr --recursive prepare
 You do not need to run `vlt setup` to work on this repository. That
 command configures registry aliases and authentication for a vlt.io
 account. The checked-in [`vlt.json`](./vlt.json) already points this
-project at the public registry used to install its dependencies.
+project at vlt's public npm mirror
+(`https://registry.vlt.io/upstream/npm/`), which installs its
+dependencies with no account or token.
 
 ## Workspace Structure
 
