@@ -10,6 +10,9 @@ const mockAuth = {
   deleteRuntimeToken: () => {},
 }
 
+// `oidc.ts` loads `proxy.ts`, which cannot load against the undici mock.
+t.mockAll({ '../src/proxy.ts': { getDispatcher: () => ({}) } })
+
 // Helper to create a mock undici module
 const createMockUndici = (
   handler: (
@@ -17,6 +20,7 @@ const createMockUndici = (
     opts: {
       method: string
       headers: Record<string, string>
+      dispatcher?: unknown
     },
   ) => Promise<{
     statusCode: number
@@ -565,5 +569,49 @@ t.test(
     t.equal(await auth.getToken(registry, ''), 'Bearer a-token')
     t.equal(await oidc({ packageName: 'b', registry }), undefined)
     t.equal(await auth.getToken(registry, ''), 'Bearer configured')
+  },
+)
+
+t.test(
+  'both requests go through the registry dispatcher',
+  async t => {
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.ACTIONS_ID_TOKEN_REQUEST_URL =
+      'https://token.actions.githubusercontent.com/request'
+    process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN = 'gha-token'
+
+    const dispatcher = {}
+    let made = 0
+    const used: unknown[] = []
+    const { oidc } = await t.mockImport<
+      typeof import('../src/oidc.ts')
+    >('../src/oidc.ts', {
+      '../src/auth.ts': mockAuth,
+      '../src/proxy.ts': {
+        getDispatcher: () => {
+          made++
+          return dispatcher
+        },
+      },
+      undici: createMockUndici(async (_url, opts) => {
+        used.push(opts.dispatcher)
+        return {
+          statusCode: 200,
+          body: {
+            json: async () => ({ value: 'id-token', token: 'tok' }),
+          },
+        }
+      }),
+    })
+
+    const result = await oidc({
+      packageName: 'pkg',
+      registry: 'https://registry.npmjs.org/',
+    })
+    t.equal(result, 'Bearer tok')
+    t.equal(used.length, 2)
+    t.equal(used[0], dispatcher, 'id token request')
+    t.equal(used[1], dispatcher, 'token exchange')
+    t.equal(made, 1, 'one pool for both')
   },
 )
