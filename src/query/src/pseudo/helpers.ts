@@ -48,10 +48,10 @@ export const removeUnlinkedNodes = (state: ParserState) => {
 }
 
 /**
- * Removes quotes from a string value.
+ * Removes one pair of matching single or double quotes from a string value.
  */
 export const removeQuotes = (value: string) =>
-  value.replace(/^"(.*?)"$/, '$1')
+  value.replace(/^(["'])(.*?)\1$/, '$2')
 
 /**
  * Asserts that the security archive is present.

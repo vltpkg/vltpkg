@@ -55,6 +55,15 @@ t.test('select from semver definition', async t => {
     })
   })
 
+  await t.test('single quoted no spaces', async t => {
+    const res = await semverParser(getState(":semver('>=2')"))
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['b'],
+      'should have expected result using single quoted semver notation',
+    )
+  })
+
   await t.test('unquoted no spaces', async t => {
     const res = await semverParser(getState(':semver(>=2)'))
     t.strictSame(
@@ -357,6 +366,27 @@ t.test('select from semver definition', async t => {
       nodes: [...res.partial.nodes].map(n => n.name),
       edges: [...res.partial.edges].map(e => e.name),
     })
+  })
+
+  await t.test('single quoted custom semver function', async t => {
+    const res = await semverParser(
+      getState(":semver('2.3.4', 'neq')", getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      [
+        'semver-rich-project@1.0.0',
+        'a@1.0.1',
+        'b@2.2.1',
+        'c@3.4.0',
+        'e@120.0.0',
+        'f@4.5.6',
+        'g@1.2.3-rc.1+rev.2',
+        'e@1.3.4-beta.1',
+        'h@1.0.0',
+      ],
+      'should have expected result using single quoted custom semver function',
+    )
   })
 
   await t.test('unquoted custom semver function', async t => {
