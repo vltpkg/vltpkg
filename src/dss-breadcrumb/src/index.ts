@@ -182,6 +182,8 @@ export class Breadcrumb implements ModifierBreadcrumb {
 
     // Track whether we encountered a combinator since the last item
     let afterCombinator = true
+    // a `>` needs an item on both sides, comments don't count
+    let needsItem = true
 
     // iterates only at the first level of the AST since any
     // pseudo selectors that relies on nested nodes are invalid syntax
@@ -215,6 +217,8 @@ export class Breadcrumb implements ModifierBreadcrumb {
 
       // combinators and comments are skipped
       if (isCombinatorNode(item)) {
+        if (needsItem) throw error('Invalid query', { found: query })
+        needsItem = true
         afterCombinator = true
         continue
       } else if (isCommentNode(item)) {
@@ -321,6 +325,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
         }
 
         afterCombinator = false
+        needsItem = false
       }
     }
     // the parsed query should have at least one item
@@ -330,6 +335,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
         found: query,
       })
     }
+    if (needsItem) throw error('Invalid query', { found: query })
   }
 
   /**
