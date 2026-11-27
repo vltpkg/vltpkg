@@ -38,6 +38,11 @@ export class PackageJson {
   #errCache = new Map<string, ErrorCauseOptions>()
 
   /**
+   * `package.json` files read successfully, by filename
+   */
+  #read = new Set<string>()
+
+  /**
    * Reads and parses contents of a `package.json` file at a directory `dir`.
    * `reload` will optionally skip reading from the cache when set to `true`.
    */
@@ -72,6 +77,7 @@ export class PackageJson {
       )
       this.#cache.set(dir, res)
       this.#pathCache.set(res, dir)
+      this.#read.add(filename)
       return res
     } catch (err) {
       const ec: ErrorCauseOptions = {
@@ -112,7 +118,10 @@ export class PackageJson {
     try {
       // This assumes kIndent and kNewline are already present on the manifest because we would
       // only write a package.json after reading it which will set those properties.
-      writeFileSync(filename, stringify(manifest, undefined, indent))
+      writeFileSync(
+        filename,
+        stringify(this.#merge(filename, manifest), undefined, indent),
+      )
       this.#cache.set(dir, manifest)
       this.#pathCache.set(manifest, dir)
       // a read that failed before this write is no longer valid
@@ -131,6 +140,33 @@ export class PackageJson {
         this.write,
       )
     }
+  }
+
+  /**
+   * The file's own content, with the top-level keys whose normalized
+   * value the caller changed taken from `manifest`, so every other field
+   * keeps its shape. Files never read are written as given.
+   */
+  #merge(filename: string, manifest: NormalizedManifest) {
+    if (!this.#read.has(filename)) return manifest
+    const text = readFileSync(filename, { encoding: 'utf8' })
+    const data = parse(text) as Record<string, unknown>
+    const before: Record<string, unknown> = normalizeManifest(
+      asManifest(parse(text)),
+      filename,
+    )
+    const after: Record<string, unknown> = manifest
+    for (const key of new Set([
+      ...Object.keys(before),
+      ...Object.keys(after),
+    ])) {
+      const value = after[key]
+      if (JSON.stringify(value) === JSON.stringify(before[key]))
+        continue
+      if (value === undefined) delete data[key]
+      else data[key] = value
+    }
+    return data
   }
 
   save(manifest: NormalizedManifest): void {
