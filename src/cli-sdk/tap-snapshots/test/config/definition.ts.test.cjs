@@ -57,6 +57,7 @@ Object {
   "skills": "skills",
   "stage": "stage",
   "token": "token",
+  "trust": "trust",
   "u": "update",
   "uninstall": "uninstall",
   "unpublish": "unpublish",
@@ -264,6 +265,7 @@ Object {
       "skills",
       "stage",
       "token",
+      "trust",
       "uninstall",
       "unpublish",
       "update",
@@ -377,6 +379,11 @@ Object {
     "description": "Print helpful information",
     "short": "h",
     "type": "boolean",
+  },
+  "id": Object {
+    "description": "Id of the trusted publisher to revoke with \`vlt trust revoke\`.",
+    "hint": "trust-id",
+    "type": "string",
   },
   "identity": Object {
     "description": String(
@@ -784,6 +791,7 @@ Array [
   "--global-bin-dir=<path>",
   "--global-dir=<path>",
   "--help",
+  "--id=<trust-id>",
   "--identity=<name>",
   "--if-present",
   "--jsr-registries=<name=url>",
@@ -868,6 +876,7 @@ Array [
   "global-bin-dir",
   "global-dir",
   "help",
+  "id",
   "identity",
   "if-present",
   "jsr-registries",

@@ -82,6 +82,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --global-bin-dir=<path>
     --global-dir=<path>
     --help
+    --id=<trust-id>
     --identity=<name>
     --if-present
     --jsr-registries=<name=url>
@@ -169,6 +170,7 @@ Unknown config option: asdf
     global-bin-dir
     global-dir
     help
+    id
     identity
     if-present
     jsr-registries

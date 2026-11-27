@@ -233,6 +233,10 @@ const commandHelp = {
     args: '[add|rm]',
     desc: 'Manage authentication tokens',
   },
+  trust: {
+    args: '[list|revoke]',
+    desc: 'Manage the CI workflows trusted to publish a package',
+  },
   uninstall: {
     args: '[<package>...]',
     desc: 'Remove dependencies',

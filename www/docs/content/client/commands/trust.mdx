@@ -1,0 +1,98 @@
+---
+title: vlt trust
+sidebar:
+  label: trust
+---
+
+Usage:
+
+<Code
+  code="$ vlt trust list [<pkg>]
+$ vlt trust revoke [<pkg>] --id=<trust-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+Manage the CI workflows trusted to publish a package.
+
+A trusted publisher is a CI workflow the registry lets publish a
+package with no stored token: the job swaps its identity token for a
+short-lived registry token. Adding one is described in
+[Trusted publishing](/registry/publishing/trusted-publishing).
+
+`<pkg>` defaults to the `name` of the package in the current
+directory. A version or range (`<pkg>@1.0.0`) is ignored.
+
+The registry is the `publishConfig.registry` of the package in the
+current directory when that package is `<pkg>`, else `--registry`, a
+registry picked by alias with
+[`vlt registry <alias> trust <subcommand>`](/client/commands/registry),
+or the configured registry.
+
+## Subcommands
+
+### list
+
+List the trusted publishers of a package. Alias: `ls`.
+
+<Code code="$ vlt trust list [<pkg>]" title="Terminal" lang="bash" />
+
+Each trusted publisher prints as `key: value` lines, with a blank line
+between two of them:
+
+<Code
+  code="type: github
+id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+file: release.yml
+repository: acme/utils
+environment: production
+permissions: publish, stage publish"
+  title="Terminal"
+  lang="text"
+/>
+
+`file` is the workflow file and `environment`, when set, the
+environment its job must run in. `permissions` says what the workflow
+may run: `publish` for `vlt publish`, `stage publish` for
+`vlt stage publish`.
+
+With none, it prints `No trusted publishers found.`
+
+### revoke
+
+Remove a trusted publisher, by the id `vlt trust list` printed. It
+takes effect at once: the workflow's next publish is refused.
+
+Only an owner or admin can revoke, signed in as themselves, not with a
+service token. The registry asks for a second factor: pass
+`--otp=<code>`, or vlt opens the browser sign-in, as it does when a
+publish needs one.
+
+<Code
+  code="$ vlt trust revoke [<pkg>] --id=<trust-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="Revoked trusted publisher 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b of @acme/pkg."
+  title="Terminal"
+  lang="text"
+/>
+
+With `--dry-run`, nothing is sent:
+
+<Code
+  code="Would revoke trusted publisher 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b of @acme/pkg (dry run)."
+  title="Terminal"
+  lang="text"
+/>
+
+## Output
+
+With `--view=json`, `list` prints an array of trusted publishers (`[]`
+with none), each with the fields above and `permissions` as an array
+of the registry's names, `createPackage` and `createStagedPackage`.
+`revoke` prints
+`{ "package": "<pkg>", "id": "<trust-id>", "revoked": true }`, with
+`"revoked": false` under `--dry-run`.
