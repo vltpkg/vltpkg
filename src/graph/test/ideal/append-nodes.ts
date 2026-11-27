@@ -1003,6 +1003,59 @@ t.test('a 404 under a registry parent names it', async t => {
   t.strictSame(idsOf(graph, 'gear'), [], 'optional still skipped')
 })
 
+t.test(
+  'a failed fetch of a modifier spec names the modifier',
+  async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: { '#foo': '9.9.9', '#bar > #baz': '1' },
+      }),
+    })
+    t.chdir(dir)
+    reload('modifiers', 'project')
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        throw error('Could not resolve', { code: 'ERESOLVE', spec })
+      },
+    } as unknown as PackageInfoClient
+    const append = (name: string) => {
+      const graph = new Graph({
+        projectRoot: dir,
+        ...configData,
+        mainManifest: { name: 'my-project', version: '1.0.0' },
+      })
+      const dep = asDependency({
+        spec: Spec.parse(name, '^1'),
+        type: 'prod',
+      })
+      const modifiers = GraphModifier.load(configData)
+      return appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [dep],
+        new PathScurry(dir),
+        configData,
+        new Set<DepID>(),
+        new Map([[name, dep]]),
+        modifiers,
+        modifiers.tryDependencies(graph.mainImporter, [dep]),
+      )
+    }
+    await t.rejects(append('foo'), {
+      message:
+        'Could not resolve\n' +
+        'foo@9.9.9 comes from the graph modifier "#foo" in vlt.json',
+      cause: { code: 'ERESOLVE' },
+    })
+    await t.rejects(
+      append('bar'),
+      { message: /^Could not resolve$/ },
+      'a partial match keeps the manifest spec',
+    )
+  },
+)
+
 // Add a basic test for appendNodes that verifies it can handle
 // query modifiers correctly
 t.test('appendNodes with query modifier', async t => {
