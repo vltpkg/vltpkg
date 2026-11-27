@@ -67,6 +67,8 @@ type DepEntry = {
   spec: Spec
   type: DependencySaveType
   fileTypeInfo?: FileTypeInfo
+  /** the node a `file:` spec resolves from */
+  base: Node
   activeModifier?: ModifierActiveEntry
   queryModifier?: string
   /** the user named this dependency on the command line */
@@ -415,7 +417,7 @@ const fetchManifestsForDeps = async (
   const entries: DepEntry[] = []
   for (const { spec: originalSpec, type } of deps) {
     let spec = originalSpec
-    const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
+    let base = fromNode
     const activeModifier = modifierRefs?.get(spec.name)
     const isExplicit = !!explicit
       ?.get(fromNode.id)
@@ -434,6 +436,9 @@ const fetchManifestsForDeps = async (
       'spec' in activeModifier.modifier
     ) {
       spec = activeModifier.modifier.spec
+      // a modifier is written at the project root, so a `file:` value
+      // resolves from there
+      base = graph.mainImporter
       // bareSpec of '-' means "remove this dependency"
       if (spec.bareSpec === '-') {
         // nothing to install or save for an explicit request
@@ -449,7 +454,8 @@ const fetchManifestsForDeps = async (
     entries.push({
       spec,
       type,
-      fileTypeInfo,
+      fileTypeInfo: getFileTypeInfo(spec, base, scurry),
+      base,
       activeModifier,
       queryModifier,
       isExplicit,
@@ -523,6 +529,7 @@ const fetchManifestsForDeps = async (
     spec,
     type,
     fileTypeInfo,
+    base,
     activeModifier,
     queryModifier,
     isExplicit,
@@ -639,8 +646,11 @@ const fetchManifestsForDeps = async (
           .manifest(
             spec,
             isExplicit ?
-              { from }
-            : { from, backgroundRevalidate: true },
+              { from: base.resolvedLocation(scurry) }
+            : {
+                from: base.resolvedLocation(scurry),
+                backgroundRevalidate: true,
+              },
           )
           .then(manifest => manifest as Manifest | undefined)
           .catch((er: unknown) => {

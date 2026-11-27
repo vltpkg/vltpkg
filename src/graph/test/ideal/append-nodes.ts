@@ -10,7 +10,10 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { parse as parseVersion } from '@vltpkg/semver'
 import { asNormalizedManifest } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
+import { pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -1231,6 +1234,143 @@ t.test('spec edge removal', async t => {
     'an explicit add of a removed dep throws',
   )
 })
+
+t.test(
+  'a file: modifier value resolves from the project root',
+  async t => {
+    const minimistId = joinDepIDTuple(['file', 'vendor/minimist'])
+    const run = async (
+      t: Test,
+      rootDeps: Record<string, string>,
+      value: string,
+    ) => {
+      const mainManifest = {
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: rootDeps,
+      }
+      const dir = t.testdir({
+        'package.json': JSON.stringify(mainManifest),
+        'vlt.json': JSON.stringify({
+          modifiers: { '#minimist': value },
+        }),
+        vendor: {
+          minimist: {
+            'package.json': JSON.stringify({
+              name: 'minimist',
+              version: '9.9.9',
+              dependencies: { helper: 'file:./helper' },
+            }),
+            helper: {
+              'package.json': JSON.stringify({
+                name: 'helper',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      })
+      // reads file: specs from `from`, as package-info does
+      const packageInfo = {
+        async manifest(
+          spec: Spec,
+          opts: PackageInfoClientRequestOptions,
+        ) {
+          const f = spec.final
+          if (f.type === 'file') {
+            return JSON.parse(
+              readFileSync(
+                resolve(
+                  String(opts.from),
+                  String(f.file),
+                  'package.json',
+                ),
+                'utf8',
+              ),
+            ) as Manifest
+          }
+          if (f.name !== 'mkdirp') return null
+          return {
+            name: 'mkdirp',
+            version: '0.5.1',
+            dependencies: { minimist: '0.0.8' },
+          }
+        },
+      } as PackageInfoClient
+      const graph = new Graph({
+        projectRoot: dir,
+        ...configData,
+        mainManifest,
+      })
+      const deps = Object.entries(rootDeps).map(([name, bareSpec]) =>
+        asDependency({
+          spec: Spec.parse(name, bareSpec, configData),
+          type: 'prod',
+        }),
+      )
+      t.chdir(dir)
+      reload('modifiers', 'project')
+      const graphModifier = GraphModifier.load(configData)
+      graphModifier.tryImporter(graph.mainImporter)
+      await appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        deps,
+        new PathScurry(dir),
+        configData,
+        new Set<DepID>(),
+        new Map(deps.map(dep => [dep.spec.name, dep])),
+        graphModifier,
+        graphModifier.tryDependencies(graph.mainImporter, deps),
+      )
+      const [mkdirp] = graph.nodesByName.get('mkdirp') ?? []
+      return { graph, edge: mkdirp?.edgesOut.get('minimist') }
+    }
+
+    await t.test('relative path, transitive dep', async t => {
+      const { graph, edge } = await run(
+        t,
+        { mkdirp: '0.5.1' },
+        'file:./vendor/minimist',
+      )
+      t.equal(edge?.spec.bareSpec, 'file:./vendor/minimist')
+      t.equal(edge?.to?.id, minimistId)
+      t.equal(edge?.to?.location, 'vendor/minimist')
+      t.equal(edge?.to?.version, '9.9.9')
+      t.equal(
+        edge?.to?.edgesOut.get('helper')?.to?.id,
+        joinDepIDTuple(['file', 'vendor/minimist/helper']),
+        'a package.json file: dep resolves from its dependent',
+      )
+      t.equal(graph.nodesByName.get('minimist')?.size, 1)
+    })
+
+    await t.test('absolute path, transitive dep', async t => {
+      const { edge } = await run(
+        t,
+        { mkdirp: '0.5.1' },
+        pathToFileURL(resolve(t.testdirName, 'vendor/minimist')).href,
+      )
+      t.equal(edge?.to?.id, minimistId)
+      t.equal(edge?.to?.location, 'vendor/minimist')
+    })
+
+    await t.test('relative path, direct dep', async t => {
+      const { graph, edge } = await run(
+        t,
+        { mkdirp: '0.5.1', minimist: '^1.2.0' },
+        'file:./vendor/minimist',
+      )
+      t.equal(edge?.to?.id, minimistId)
+      t.equal(
+        graph.mainImporter.edgesOut.get('minimist')?.to,
+        edge?.to,
+        'the root and mkdirp share the linked node',
+      )
+    })
+  },
+)
 
 t.test('modifiers apply to peer edges', async t => {
   const versions: Record<string, string[]> = {
