@@ -339,6 +339,62 @@ t.test('do not walk up past a .git folder', async t => {
 })
 
 t.test(
+  'a workspace vlt.json defers to the project listing it',
+  async t => {
+    const dir = t.testdir({
+      '.git': {},
+      'vlt.json': JSON.stringify({
+        workspaces: {
+          packages: ['!packages/c', 'packages/*', '!packages/d/**'],
+          apps: './apps/*',
+          tools: 'tools/*/',
+        },
+      }),
+      packages: {
+        a: { 'vlt.json': '{}', src: {} },
+        c: { 'vlt.json': '{}' },
+        d: { 'vlt.json': '{}' },
+        g: { '.git': {}, 'vlt.json': '{}' },
+      },
+      apps: { x: { 'vlt.json': '{}' } },
+      tools: { t: { 'vlt.json': '{}', src: {} } },
+      other: {
+        'vlt.json': JSON.stringify({ workspaces: 'w/*' }),
+        w: { x: { 'vlt.json': '{}' } },
+      },
+      plain: { 'vlt.json': '{}', x: { 'vlt.json': '{}' } },
+      bad: { 'vlt.json': '{', x: { 'vlt.json': '{}' } },
+    })
+    const { find, unload } =
+      await t.mockImport<typeof import('../src/index.ts')>(
+        '../src/index.ts',
+      )
+    const cases: [from: string, project: string][] = [
+      ['packages/a/src', '.'],
+      ['apps/x', '.'],
+      ['tools/t/src', '.'],
+      // excluded
+      ['packages/c', 'packages/c'],
+      ['packages/d', 'packages/d'],
+      // its own repo
+      ['packages/g', 'packages/g'],
+      // the root does not list `other`
+      ['other/w/x', 'other'],
+      ['plain/x', 'plain/x'],
+      ['bad/x', 'bad/x'],
+    ]
+    for (const [from, project] of cases) {
+      t.equal(
+        find('project', resolve(dir, from)),
+        resolve(dir, project, 'vlt.json'),
+        from,
+      )
+      unload()
+    }
+  },
+)
+
+t.test(
   'create directories when saving user config to non-existent path',
   async t => {
     class MockXDG extends XDG {

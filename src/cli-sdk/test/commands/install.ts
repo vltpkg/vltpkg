@@ -645,6 +645,7 @@ t.test('migrates workspaces after install', async t => {
           calls.push(`migrate ${c === conf}`)
           return save ? migrated : undefined
         },
+        warnWorkspaceModifiers: () => {},
       },
     })
     const conf = {

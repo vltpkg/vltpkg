@@ -8,7 +8,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, resolve } from 'node:path'
+import { dirname, posix, relative, resolve, sep } from 'node:path'
 import { walkUp } from 'walk-up-path'
 
 import {
@@ -156,6 +156,35 @@ export const load = <T>(
   return value
 }
 
+// whether the `workspaces` of the vlt.json `file` list `dir`, with the
+// `!` rules of `splitNegatedPatterns` in @vltpkg/workspaces
+const listsWorkspace = (file: string, dir: string): boolean => {
+  let ws: unknown
+  try {
+    ws = maybeReadData(file)?.workspaces
+  } catch {
+    return false
+  }
+  const rel = relative(dirname(file), dir).split(sep).join('/')
+  const patterns: string[] = []
+  let ignore: string[] = []
+  const globs = isRecord(ws) ? Object.values(ws).flat() : [ws]
+  for (const orig of globs) {
+    if (typeof orig !== 'string') continue
+    const stripped = orig.replace(/^!+/, '')
+    const pattern = stripped.replace(/^\.?\/+/, '')
+    if ((orig.length - stripped.length) % 2) {
+      ignore.push(pattern)
+      continue
+    }
+    ignore = ignore.filter(i => !posix.matchesGlob(pattern, i))
+    patterns.push(pattern)
+  }
+  const matches = (p: string) =>
+    posix.matchesGlob(rel, p) || posix.matchesGlob(`${rel}/`, p)
+  return patterns.some(matches) && !ignore.some(matches)
+}
+
 export const find = (
   which: WhichConfig = 'project',
   cwd = process.cwd(),
@@ -169,6 +198,7 @@ export const find = (
 
   if (paths[which]) return paths[which]
   let lastKnownRoot = cwd
+  let found: string | undefined
   for (const dir of walkUp(cwd)) {
     // don't look in ~
     if (dir === home) break
@@ -178,9 +208,11 @@ export const find = (
     // don't let it match user config
     if (projectConfig === paths.user) break
 
-    // these mean we're done looking
+    // a workspace's vlt.json defers to the project listing it
     if (exists(projectConfig)) {
-      return (paths[which] = projectConfig)
+      if (found && !listsWorkspace(projectConfig, dirname(found)))
+        break
+      found = projectConfig
     }
 
     // these are likely candidates, come back if nothing else matches
@@ -194,7 +226,7 @@ export const find = (
     if (exists(resolve(dir, '.git'))) break
   }
 
-  return (paths[which] = resolve(lastKnownRoot, 'vlt.json'))
+  return (paths[which] = found ?? resolve(lastKnownRoot, 'vlt.json'))
 }
 
 export const save = (
