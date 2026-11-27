@@ -1059,6 +1059,41 @@ export const definition = j
       description: `Id of the trusted publisher to revoke with
                     \`vlt trust revoke\`.`,
     },
+    file: {
+      hint: 'workflow',
+      description: `Name of the workflow file, in
+                    \`.github/workflows\`, to trust with
+                    \`vlt trust github\`.`,
+    },
+    repository: {
+      hint: 'owner/repo',
+      description: `GitHub repository of the workflow to trust with
+                    \`vlt trust github\`. Defaults to the
+                    \`repository\` in \`package.json\`.`,
+    },
+    repo: {
+      hint: 'owner/repo',
+      description: 'Alias for `--repository`.',
+    },
+    environment: {
+      hint: 'name',
+      description: `GitHub environment the job of the workflow to
+                    trust with \`vlt trust github\` must run in.`,
+    },
+  })
+
+  .flag({
+    'allow-publish': {
+      description: `Let the workflow trusted with \`vlt trust github\`
+                    run \`vlt publish\`.`,
+    },
+    'allow-stage-publish': {
+      description: `Let the workflow trusted with \`vlt trust github\`
+                    run \`vlt stage publish\`.`,
+    },
+    'allow-staged-publish': {
+      description: 'Alias for `--allow-stage-publish`.',
+    },
   })
 
   .flag({

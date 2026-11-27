@@ -86,6 +86,10 @@ Object {
     "short": "a",
     "type": "boolean",
   },
+  "allow-publish": Object {
+    "description": "Let the workflow trusted with \`vlt trust github\` run \`vlt publish\`.",
+    "type": "boolean",
+  },
   "allow-scripts": Object {
     "description": String(
       Filter which packages are allowed to run lifecycle scripts using DSS query syntax. When provided, only packages matching the query will execute their install, preinstall, postinstall, prepare, preprepare, and postprepare scripts. Defaults to ':not(*)' which means no scripts will be run.
@@ -107,6 +111,14 @@ Object {
     ),
     "hint": "query",
     "type": "string",
+  },
+  "allow-stage-publish": Object {
+    "description": "Let the workflow trusted with \`vlt trust github\` run \`vlt stage publish\`.",
+    "type": "boolean",
+  },
+  "allow-staged-publish": Object {
+    "description": "Alias for \`--allow-stage-publish\`.",
+    "type": "boolean",
   },
   "arch": Object {
     "description": "CPU architecture to use as the selector when choosing packages based on their \`cpu\` value.",
@@ -197,6 +209,11 @@ Object {
       Defaults to the \`EDITOR\` or \`VISUAL\` env if set, or \`notepad.exe\` on Windows, or \`vi\` elsewhere.
     ),
     "hint": "program",
+    "type": "string",
+  },
+  "environment": Object {
+    "description": "GitHub environment the job of the workflow to trust with \`vlt trust github\` must run in.",
+    "hint": "name",
     "type": "string",
   },
   "expect-lockfile": Object {
@@ -294,6 +311,11 @@ Object {
     "description": "Number of milliseconds before starting first retry",
     "hint": "n",
     "type": "number",
+  },
+  "file": Object {
+    "description": "Name of the workflow file, in \`.github/workflows\`, to trust with \`vlt trust github\`.",
+    "hint": "workflow",
+    "type": "string",
   },
   "force": Object {
     "description": "Force potentially dangerous operations, such as unpublishing an entire package.",
@@ -546,6 +568,16 @@ Object {
     "hint": "url",
     "type": "string",
   },
+  "repo": Object {
+    "description": "Alias for \`--repository\`.",
+    "hint": "owner/repo",
+    "type": "string",
+  },
+  "repository": Object {
+    "description": "GitHub repository of the workflow to trust with \`vlt trust github\`. Defaults to the \`repository\` in \`package.json\`.",
+    "hint": "owner/repo",
+    "type": "string",
+  },
   "save-config": Object {
     "description": "Save the registry and git host options given on the command line or via \`VLT_*\` env (\`--registry\`, \`--registries\`, \`--default-registry-alias\`, \`--scoped-registries\`, \`--jsr-registries\`, \`--git-hosts\`, \`--git-host-archives\`) to the project \`vlt.json\` (or the user one with \`--config=user\`) after a successful \`install\`, \`add\` or \`update\`. Values a config file already has are left alone.",
     "type": "boolean",
@@ -759,8 +791,11 @@ exports[`test/config/definition.ts > TAP > getSortedCliDefinitions > sorted CLI 
 Array [
   "--access=<access>",
   "--all",
+  "--allow-publish",
   "--allow-scripts=<query>",
   "--allow-skills=<query>",
+  "--allow-stage-publish",
+  "--allow-staged-publish",
   "--arch=<arch>",
   "--bail",
   "--before=<date>",
@@ -774,6 +809,7 @@ Array [
   "--default-registry-alias=<name>",
   "--dry-run",
   "--editor=<program>",
+  "--environment=<name>",
   "--expect-lockfile",
   "--expect-results=<value>",
   "--fallback-command=<command>",
@@ -781,6 +817,7 @@ Array [
   "--fetch-retry-factor=<n>",
   "--fetch-retry-maxtimeout=<n>",
   "--fetch-retry-mintimeout=<n>",
+  "--file=<workflow>",
   "--force",
   "--frozen-lockfile",
   "--git-host-archives=<name=template>",
@@ -811,6 +848,8 @@ Array [
   "--recursive",
   "--registries=<name=url>",
   "--registry=<url>",
+  "--repo=<owner/repo>",
+  "--repository=<owner/repo>",
   "--save-config",
   "--save-dev",
   "--save-exact",
@@ -844,8 +883,11 @@ exports[`test/config/definition.ts > TAP > getSortedKeys > sorted keys 1`] = `
 Array [
   "access",
   "all",
+  "allow-publish",
   "allow-scripts",
   "allow-skills",
+  "allow-stage-publish",
+  "allow-staged-publish",
   "arch",
   "bail",
   "before",
@@ -859,6 +901,7 @@ Array [
   "default-registry-alias",
   "dry-run",
   "editor",
+  "environment",
   "expect-lockfile",
   "expect-results",
   "fallback-command",
@@ -866,6 +909,7 @@ Array [
   "fetch-retry-factor",
   "fetch-retry-maxtimeout",
   "fetch-retry-mintimeout",
+  "file",
   "force",
   "frozen-lockfile",
   "git-host-archives",
@@ -896,6 +940,8 @@ Array [
   "recursive",
   "registries",
   "registry",
+  "repo",
+  "repository",
   "save-config",
   "save-dev",
   "save-exact",
