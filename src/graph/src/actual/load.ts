@@ -150,14 +150,21 @@ const isPathBasedType = (
 /**
  * Returns a {@link DepID} for a given spec and path, if the spec is
  * path-based or a registry spec, otherwise returns `undefined`.
+ *
+ * A path that is a workspace folder is that workspace, whatever spec
+ * linked it there, e.g: a plain range on a sibling workspace name.
  */
 export const getPathBasedId = (
   spec: Spec,
   path: Path,
-): DepID | undefined =>
-  isPathBasedType(spec.type) ?
-    joinDepIDTuple([spec.type, path.relativePosix()])
-  : findDepID(path)
+  monorepo?: Monorepo,
+): DepID | undefined => {
+  if (isPathBasedType(spec.type)) {
+    return joinDepIDTuple([spec.type, path.relativePosix()])
+  }
+  const ws = monorepo?.get(path.relativePosix())
+  return ws?.path === path.relativePosix() ? ws.id : findDepID(path)
+}
 
 /**
  * Retrieve the {@link DepID} for a given package from its location.
@@ -413,7 +420,7 @@ const parseDir = (
         maybeApplyModifierToSpec(spec, alias, modifierRefs)
       spec = modifiedSpec
 
-      const maybeId = getPathBasedId(spec, realpath)
+      const maybeId = getPathBasedId(spec, realpath, graph.monorepo)
       let peerSetHash: string | undefined
       if (maybeId) {
         // parses extra info from depID to retrieve peerSetHash
