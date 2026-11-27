@@ -1063,9 +1063,15 @@ export class PackageInfoClient {
           response.fromCache &&
           (!found || (r.integrity && r.integrity !== found))
         ) {
+          // one delete at a time: both remove the same value and key
+          // files, and on windows the second unlink of a file the
+          // first one is still removing fails with EPERM
           rc.cache.delete(key, true, found)
-          if (r.integrity) rc.cache.delete(key, true, r.integrity)
           await rc.cache.promise()
+          if (r.integrity) {
+            rc.cache.delete(key, true, r.integrity)
+            await rc.cache.promise()
+          }
           response = await fetchTarball(false)
           found = storedIntegrity(response)
         }
@@ -1906,6 +1912,16 @@ export class PackageInfoClient {
         if (file === undefined)
           throw this.#resolveError(spec, options, 'no file path')
         const path = pathResolve(from, file)
+        // a link: target may have no package.json, or not exist yet
+        if (
+          f.bareSpec.startsWith('link:') &&
+          spec.name !== '(unknown)' &&
+          !lstatSync(pathResolve(path, 'package.json'), {
+            throwIfNoEntry: false,
+          })
+        ) {
+          return { name: spec.name }
+        }
         const st = await stat(path)
         if (st.isDirectory()) {
           return this.packageJson.read(path)

@@ -8,10 +8,11 @@ description:
   with vlt.json and vlt-lock.json, and pass Dependency Selector Syntax
   (DSS) queries to commands. Use when the user wants to use vlt in a
   project, add or update a dependency with vlt, fix "Missing registry
-  configuration" (ECONFIG), set up registries or tokens for vlt, work
-  with vlt workspaces, ship an agent skill from a package, install
-  vlt's agent skills in a project, or asks which vlt command or flag
-  does something or what `vlr` and `vlx` are.
+  configuration" (ECONFIG), set up registries or tokens for vlt,
+  publish or stage a package (`vlt stage`), set up trusted publishing
+  (`vlt trust`), work with vlt workspaces, ship an agent skill from a
+  package, install vlt's agent skills in a project, or asks which vlt
+  command or flag does something or what `vlr` and `vlx` are.
 ---
 
 # Using the vlt CLI
@@ -33,7 +34,8 @@ A map of the CLI, one line per command. For anything deeper, defer to
   string: add `--view=human` (`vlt <cmd> -h` is unaffected).
   `--view=json` works on every command.
 - Confirm with the user before publishing, unpublishing, deprecating,
-  changing access, or creating or revoking tokens.
+  changing access, or creating or revoking tokens or trusted
+  publishers. Never approve or reject a staged version yourself.
 
 ## Install management
 
@@ -62,7 +64,7 @@ A map of the CLI, one line per command. For anything deeper, defer to
   skill for the project to ship: `skills/<name>/SKILL.md`, or a root
   `SKILL.md` named after the package, added to package.json `files`
   when needed. It never overwrites and needs no registry.
-- Everything else (`init`, `create`, publishing, account and token
+- Everything else (`init`, `create`, other publish, account and token
   commands, `cache`, `bugs|docs|repo` openers): `vlt -a`.
 
 ## Project files
@@ -121,6 +123,30 @@ until a registry is configured.
 - Docs: <https://docs.vlt.io/client/registries.md>,
   <https://docs.vlt.io/client/auth.md>. Moving a repo and its CI onto
   vlt.io: the `vlt-registry-migration` skill.
+
+## Publishing
+
+Needs a configured registry (see above); a package's
+`publishConfig.registry` wins even over `--registry`.
+
+- `vlt publish` (`pub`; `-r`/`-w <path>` for workspaces): `--dry-run`
+  uploads nothing but still runs the lifecycle scripts.
+- `vlt stage publish` uploads a version the registry only serves once
+  a person approves it, and prints its stage id.
+  `vlt stage list|view|download` inspect staged versions;
+  `vlt stage approve|reject <stage-id>` need the user's second factor
+  (`--otp` or a browser sign-in), so hand them the command.
+- Trusted publishing: a GitHub Actions job with `id-token: write` runs
+  `vlt publish` or `vlt stage publish` with no stored token: vlt swaps
+  the job's OIDC token for a publish token. The job still sets the
+  registry (`--registry`, `VLT_REGISTRY` or `publishConfig.registry`).
+- `vlt trust github [<pkg>] --file=release.yml --allow-publish`
+  (and/or `--allow-stage-publish`) trusts that workflow;
+  `vlt trust list|revoke`. It needs a second factor and asks to
+  confirm: without a terminal, show the user the `--dry-run` output
+  and pass `--yes` once they agree. On vlt.io, an owner or admin first
+  connects GitHub in the dashboard:
+  <https://docs.vlt.io/registry/publishing/trusted-publishing.md>.
 
 ## vlt's agent skills
 

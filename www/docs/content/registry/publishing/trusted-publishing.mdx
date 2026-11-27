@@ -23,7 +23,8 @@ You need:
 - An owner or admin of the account, with two-factor authentication set
   up, to add the trusted publisher.
 - A package on your account's `main` registry. It doesn't have to be
-  published yet; see [`npm trust`](#with-npm-trust).
+  published yet; see [`npm trust`](#with-npm-trust) or
+  [`vlt trust`](#with-vlt-trust).
 
 ## 1. Connect GitHub
 
@@ -72,6 +73,33 @@ change opens your browser to confirm with your second factor.
 npm trust list @acme/utils --registry=https://registry.vlt.io/acme/main/
 npm trust revoke @acme/utils --id=<id> --registry=https://registry.vlt.io/acme/main/
 ```
+
+### With `vlt trust`
+
+[`vlt trust`](/client/commands/trust) does the same with vlt. Log in
+with [`vlt login`](/registry/tokens#log-in-from-the-cli) as an owner
+or admin, and pass your `main` registry:
+
+```sh
+vlt trust github @acme/utils --repository=acme/utils --file=release.yml \
+  --allow-publish --registry=https://registry.vlt.io/acme/main/
+```
+
+Add `--environment=<name>` to require a GitHub environment. Pass
+`--allow-publish` to let the workflow publish, `--allow-stage-publish`
+to let it stage versions with `vlt stage publish`, or both. vlt shows
+the trusted publisher and asks before creating it (`--yes` skips the
+question), and opens your browser when the registry asks for your
+second factor.
+
+```sh
+vlt trust list @acme/utils --registry=https://registry.vlt.io/acme/main/
+vlt trust revoke @acme/utils --id=<id> --registry=https://registry.vlt.io/acme/main/
+```
+
+vlt sends these to the `publishConfig.registry` of the package in the
+current directory when that package is `@acme/utils`, else to
+`--registry` or your configured registry.
 
 ## 3. Publish from the workflow
 

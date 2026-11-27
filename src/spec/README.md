@@ -75,6 +75,14 @@ The following specifier types are supported:
   gets unpacked into place. Relative paths are resolved from the
   package with the dependency.
 
+- `link:<path>` - A symbolic link to a local directory that vlt does
+  not manage: only its bins are linked, its dependencies are not
+  installed, its scripts never run and nothing is written inside it
+  apart from making its bins executable. It does not need a
+  `package.json` (the dependency name is used then), and a missing
+  directory is linked with a warning. Relative paths are resolved like
+  `file:`.
+
 - `registry:<registry url>#<name>[@version range or dist-tag]` - This
   will use the specified registry url, and look up the name and
   version on that registry.

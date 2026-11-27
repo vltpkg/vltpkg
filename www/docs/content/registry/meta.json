@@ -6,6 +6,7 @@
     "access",
     "dashboard",
     "tokens",
-    "publishing"
+    "publishing",
+    "agent-resources"
   ]
 }

@@ -84,6 +84,17 @@ t.test('stage publish dispatch', async t => {
   t.equal(conf.options.registry, 'https://m/')
 })
 
+t.test('trust list dispatch', async t => {
+  const mod = await load()
+  const conf = mkConf(['main', 'trust', 'list'], {
+    registries: { main: 'https://m/' },
+  })
+  await mod.dispatchRegistry(conf, { interactive: false })
+  t.equal(conf.command, 'trust')
+  t.strictSame(conf.positionals, ['list'])
+  t.equal(conf.options.registry, 'https://m/')
+})
+
 t.test(
   'the built-in npm mirror is not an account target',
   async t => {

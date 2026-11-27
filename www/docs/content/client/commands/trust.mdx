@@ -1,0 +1,163 @@
+---
+title: vlt trust
+sidebar:
+  label: trust
+---
+
+Usage:
+
+<Code
+  code="$ vlt trust github [<pkg>] --file=<workflow> [--repository=<owner/repo>] [--environment=<name>] [--allow-publish] [--allow-stage-publish]
+$ vlt trust list [<pkg>]
+$ vlt trust revoke [<pkg>] --id=<trust-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+Manage the CI workflows trusted to publish a package.
+
+A trusted publisher is a CI workflow the registry lets publish a
+package with no stored token: the job swaps its identity token for a
+short-lived registry token. Add one with
+[`vlt trust github`](#github);
+[Trusted publishing](/registry/publishing/trusted-publishing) covers
+the rest of the setup.
+
+`<pkg>` defaults to the `name` of the package in the current
+directory. A version or range (`<pkg>@1.0.0`) is ignored.
+
+The registry is the `publishConfig.registry` of the package in the
+current directory when that package is `<pkg>`, else `--registry`, a
+registry picked by alias with
+[`vlt registry <alias> trust <subcommand>`](/client/commands/registry),
+or the configured registry.
+
+## Subcommands
+
+### github
+
+Trust a GitHub Actions workflow to publish a package.
+
+<Code
+  code="$ vlt trust github [<pkg>] --file=<workflow> [--repository=<owner/repo>] [--environment=<name>] [--allow-publish] [--allow-stage-publish]"
+  title="Terminal"
+  lang="bash"
+/>
+
+- `--file=<workflow>`: the name of the workflow file in
+  `.github/workflows`, such as `release.yml`. It must end in `.yml` or
+  `.yaml` and be a file name, not a path.
+- `--repository=<owner/repo>` (alias `--repo`): the GitHub repository
+  of the workflow. It defaults to the `repository` of the package in
+  the current directory, when that package is `<pkg>` and the URL is a
+  GitHub one.
+- `--environment=<name>`: the GitHub environment the job of the
+  workflow must run in. Optional.
+- `--allow-publish` lets the workflow run `vlt publish`, and
+  `--allow-stage-publish` (alias `--allow-staged-publish`) lets it run
+  `vlt stage publish`. At least one of the two is required.
+
+Only an owner or admin can add a trusted publisher, signed in as
+themselves, not with a service token. The registry asks for a second
+factor: pass `--otp=<code>`, or vlt opens the browser sign-in, as it
+does when a publish needs one.
+
+vlt shows the trusted publisher it is about to create and asks
+`Do you want to proceed? (y/N)`. Any answer but `y` or `yes` cancels.
+`--yes` skips the question, and is required where there is no terminal
+to answer in.
+
+<Code
+  code="$ vlt trust github @acme/utils --file=release.yml --repository=acme/utils --environment=production --allow-publish --allow-stage-publish --yes"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="🤝 Trusted publisher created for @acme/utils:
+type: github
+id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+file: release.yml
+repository: acme/utils
+environment: production
+permissions: publish, stage publish"
+  title="Terminal"
+  lang="text"
+/>
+
+With `--dry-run`, nothing is asked or sent: it prints the trusted
+publisher that would be created, which has no `id` yet.
+
+### list
+
+List the trusted publishers of a package. Alias: `ls`.
+
+<Code code="$ vlt trust list [<pkg>]" title="Terminal" lang="bash" />
+
+Each trusted publisher prints as a branch of `key: value` lines,
+starting with its id:
+
+<Code
+  code="├─ 🤝 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+│    type: github
+│    file: release.yml
+│    repository: acme/utils
+│    environment: production
+│    permissions: publish
+│
+└─ 🤝 id: 7c1d2e3f-4a5b-4c6d-8e9f-0a1b2c3d4e5f
+     type: github
+     file: stage.yml
+     repository: acme/utils
+     permissions: stage publish"
+  title="Terminal"
+  lang="text"
+/>
+
+`file` is the workflow file and `environment`, when set, the
+environment its job must run in. `permissions` says what the workflow
+may run: `publish` for `vlt publish`, `stage publish` for
+`vlt stage publish`.
+
+With none, it prints `No trusted publishers found.`
+
+### revoke
+
+Remove a trusted publisher, by the id `vlt trust list` printed. It
+takes effect at once: the workflow's next publish is refused.
+
+Only an owner or admin can revoke, signed in as themselves, not with a
+service token. The registry asks for a second factor: pass
+`--otp=<code>`, or vlt opens the browser sign-in, as it does when a
+publish needs one.
+
+<Code
+  code="$ vlt trust revoke [<pkg>] --id=<trust-id>"
+  title="Terminal"
+  lang="bash"
+/>
+
+<Code
+  code="Revoked trusted publisher 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b of @acme/pkg."
+  title="Terminal"
+  lang="text"
+/>
+
+With `--dry-run`, nothing is sent:
+
+<Code
+  code="Would revoke trusted publisher 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b of @acme/pkg (dry run)."
+  title="Terminal"
+  lang="text"
+/>
+
+## Output
+
+With `--view=json`, `list` prints an array of trusted publishers (`[]`
+with none), each with the fields above and `permissions` as an array
+of the registry's names, `createPackage` and `createStagedPackage`.
+`github` prints the trusted publisher it created as one such object
+with a `package` field first, and without `id` under `--dry-run`.
+`revoke` prints
+`{ "package": "<pkg>", "id": "<trust-id>", "revoked": true }`, with
+`"revoked": false` under `--dry-run`.

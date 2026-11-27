@@ -48,6 +48,11 @@ export const removeSatisfiedSpecs = ({
       const edgeIsCatalog = edge.spec.type === 'catalog'
       const depIsCatalog = dependency.spec.type === 'catalog'
       if (edgeIsCatalog !== depIsCatalog) continue
+      // same for `link:`, which changes what is managed
+      const edgeIsLink = edge.spec.final.bareSpec.startsWith('link:')
+      const depIsLink =
+        dependency.spec.final.bareSpec.startsWith('link:')
+      if (edgeIsLink !== depIsLink) continue
 
       // a governed edge is checked against the modifier value (e.g.
       // `workspace:*` to a versionless workspace), not its own spec: one

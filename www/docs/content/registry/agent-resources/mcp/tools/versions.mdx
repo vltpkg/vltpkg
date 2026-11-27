@@ -1,0 +1,96 @@
+---
+title: Versions & Dist-tags
+description:
+  Deprecate or unpublish a single version, and move or remove
+  dist-tags.
+sidebar:
+  label: Versions & Dist-tags
+---
+
+A version's `$id` looks like
+`/account/<account>/registry/<registry>/package/<name>/v/<version>`,
+and a dist-tag's like `…/package/<name>/dist-tag/<tag>`, with the
+package name percent-encoded. Follow a package's `version-collection`
+and `dist-tag-collection` links to find them.
+
+```json title="Example call"
+{
+  "name": "distTag.set",
+  "arguments": {
+    "target": "/account/acme/registry/main/package/%40acme%2Futils/dist-tag/latest",
+    "input": { "version": "2.1.0" }
+  }
+}
+```
+
+## `version.deprecate`
+
+Mark the version as deprecated.
+
+- **Target:** a Version that is still served
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Untrusted content" />
+
+### Parameters
+
+| Parameter       | Type   | Required | Description                                            |
+| --------------- | ------ | -------- | ------------------------------------------------------ |
+| `target`        | string | Yes      | The `$id` of the version.                              |
+| `input.message` | string | Yes      | Deprecation message shown to users. Must not be empty. |
+
+## `version.undeprecate`
+
+Clear the deprecation of the version.
+
+- **Target:** a Version. Only offered while the version is deprecated.
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `target`  | string | Yes      | The `$id` of the version. |
+
+## `version.unpublish`
+
+Unpublish the version. This cannot be undone.
+
+- **Target:** a published Version
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description               |
+| --------- | ------ | -------- | ------------------------- |
+| `target`  | string | Yes      | The `$id` of the version. |
+
+## `distTag.set`
+
+Point the dist-tag at another version.
+
+- **Target:** a DistTag
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter       | Type   | Required | Description                                                                                   |
+| --------------- | ------ | -------- | --------------------------------------------------------------------------------------------- |
+| `target`        | string | Yes      | The `$id` of the dist-tag.                                                                    |
+| `input.version` | string | Yes      | The version string to point this dist-tag at. 1–255 characters. Other properties are ignored. |
+
+## `distTag.delete`
+
+Remove the dist-tag. The version it points at stays published.
+
+- **Target:** a DistTag. Not offered on `latest`.
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                |
+| --------- | ------ | -------- | -------------------------- |
+| `target`  | string | Yes      | The `$id` of the dist-tag. |

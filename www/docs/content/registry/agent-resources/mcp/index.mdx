@@ -1,0 +1,226 @@
+---
+title: MCP Quickstart
+description:
+  Connect your coding agent to vlt.io with the Model Context Protocol.
+sidebar:
+  label: Quickstart
+---
+
+The vlt.io MCP server gives your agent the same access to your account
+that your role gives you: search and inspect packages, approve staged
+versions, deprecate releases, manage projects, trusted publishers and
+members. It's a remote server at:
+
+```text
+https://mcp.vlt.io
+```
+
+There's no token to paste. Your agent signs in to vlt.io with OAuth
+the first time it connects, and you choose which account it can act
+in.
+
+You need:
+
+- A [vlt.io account](/registry).
+- A client that supports remote MCP servers over HTTP with OAuth
+  **Client ID Metadata Documents**. vlt.io doesn't offer Dynamic
+  Client Registration, so clients that rely on it can't sign in yet;
+  see [Other clients](#other-clients).
+
+## Agent setup
+
+Paste this into your agent. It reads this page as Markdown, sets up
+the server for the client it's running in, and tells you how to sign
+in:
+
+```text title="Prompt"
+Set up the vlt.io MCP server for me. Read https://docs.vlt.io/registry/agent-resources/mcp.md, find the section for the client you're running in, and run its setup. Use the URL exactly as written there. Then tell me in a sentence or two how to sign in.
+```
+
+## Manual setup
+
+Use the server URL exactly as written, `https://mcp.vlt.io`, with no
+trailing slash and no path. Clients compare it to the URL the server
+reports for itself.
+
+### Claude Code
+
+Claude Code 2.1.81 or later. Add the server, then sign in from the
+`/mcp` menu:
+
+<Tabs>
+  <TabItem label="CLI">
+
+```sh title="Terminal"
+claude mcp add --transport http vlt https://mcp.vlt.io
+```
+
+  </TabItem>
+  <TabItem label=".mcp.json">
+
+```json title=".mcp.json"
+{
+  "mcpServers": {
+    "vlt": {
+      "type": "http",
+      "url": "https://mcp.vlt.io"
+    }
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+Add `--scope user` to use it in every project. In Claude Code, run
+`/mcp`, choose **vlt**, then **Authenticate**. Your browser opens
+vlt.io.
+
+### Claude.ai and Claude Desktop
+
+Custom connectors work on claude.ai, Claude Desktop and the mobile
+apps.
+
+1. Open **Customize → Connectors** and choose **Add custom
+   connector**.
+2. Name it `vlt` and enter `https://mcp.vlt.io` as the URL. Leave the
+   authentication settings as detected.
+3. Choose **Add**, then **Connect**, and sign in to vlt.io.
+
+On Team and Enterprise plans, an owner adds the connector under
+**Organization settings → Connectors** first.
+
+### ChatGPT
+
+Available on Business, Enterprise and Edu plans; Pro can read but not
+act.
+
+1. Open **Plugins**, choose **+**, then **Add custom MCP server**.
+2. Enter `https://mcp.vlt.io` and choose **OAuth** for authentication.
+3. Create the plugin and sign in to vlt.io when prompted.
+
+### Codex
+
+The Codex CLI, IDE extension and desktop app share one config.
+
+<Tabs>
+  <TabItem label="CLI">
+
+```sh title="Terminal"
+codex mcp add vlt --url https://mcp.vlt.io
+codex mcp login vlt
+```
+
+  </TabItem>
+  <TabItem label="config.toml">
+
+```toml title="~/.codex/config.toml"
+[mcp_servers.vlt]
+url = "https://mcp.vlt.io"
+```
+
+  </TabItem>
+</Tabs>
+
+`codex mcp login vlt` opens vlt.io to sign in.
+
+### VS Code
+
+VS Code 1.106 or later with GitHub Copilot.
+
+<Tabs>
+  <TabItem label="CLI">
+
+```sh title="Terminal"
+code --add-mcp '{"name":"vlt","type":"http","url":"https://mcp.vlt.io"}'
+```
+
+  </TabItem>
+  <TabItem label="mcp.json">
+
+```json title=".vscode/mcp.json"
+{
+  "servers": {
+    "vlt": {
+      "type": "http",
+      "url": "https://mcp.vlt.io"
+    }
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+VS Code opens vlt.io to sign in the first time the server starts.
+
+### OpenCode
+
+```sh title="Terminal"
+opencode mcp add vlt --url https://mcp.vlt.io
+opencode mcp auth vlt
+```
+
+### Goose
+
+Goose 1.31 or later. Run `goose configure`, choose **Add Extension →
+Remote Extension (Streamable HTTP)**, and enter `https://mcp.vlt.io`.
+Goose opens vlt.io to sign in the first time it uses the extension.
+
+### Other clients
+
+These document Client ID Metadata Document support but we haven't
+verified them:
+
+- **Zed:** add
+  `"context_servers": { "vlt": { "url": "https://mcp.vlt.io" } }` to
+  your settings. Zed prompts you to sign in.
+- **Amp:** `amp mcp add vlt https://mcp.vlt.io`.
+- **GitHub Copilot CLI:** add `vlt` with `"type": "http"` and
+  `"url": "https://mcp.vlt.io"` under `mcpServers` in
+  `~/.copilot/mcp-config.json`.
+
+Cursor, Gemini CLI, Windsurf, Kiro, Warp, Raycast and Cline only
+support Dynamic Client Registration or a client ID you paste in, so
+they can't sign in to vlt.io yet.
+
+## Signing in
+
+The first time your client connects, it opens vlt.io in your browser
+and asks you to approve it:
+
+- **Choose one account.** The connection acts only in that account. To
+  use another account, connect again and choose it.
+- **Abilities follow your role.** The app can only ever do what your
+  role in that account allows.
+
+In other accounts, the agent sees only public data. The approval lasts
+90 days, then your client asks you to sign in again. Your client
+refreshes its access in the meantime.
+
+Some actions, like approving a staged version or adding a trusted
+publisher, ask you to confirm it's you with your second factor; see
+[Step-up verification](/registry/agent-resources/mcp/overview#step-up-verification).
+
+## Revoking access
+
+You can revoke an app's access from your vlt.io account at any time,
+and it loses access right away. An agent can also revoke its own
+access with
+[`oauthGrant.revoke`](/registry/agent-resources/mcp/tools/connected-apps).
+
+## Troubleshooting
+
+- **`invalid_token` / the client asks you to sign in again:** the
+  approval was revoked, it expired after 90 days, or you left the
+  account. Sign in again.
+- **"This app can't sign in":** the client doesn't publish a Client ID
+  Metadata Document. Use one of the clients above.
+- **A vlt.io token in an `Authorization` header doesn't work:** the
+  server only accepts tokens issued through its own sign-in. Remove
+  the header and let the client sign in.
+- **A tool reports it "does not offer the action":** your role in the
+  connected account doesn't allow it, or the resource is in another
+  account. Ask an owner or admin, or connect to the other account.
+- **A tool asks you to open a vlt.io link:** that action needs your
+  second factor. Open the link, confirm, then ask the agent to retry.

@@ -1,0 +1,39 @@
+---
+title: Connected Apps
+description: Revoke an app's access to your vlt.io account.
+sidebar:
+  label: Connected Apps
+---
+
+Each app you've connected, such as an MCP client, is an OAuth grant at
+`/user/<id>/oauth-grant/<grant>`. The grants are listed at
+`/user/<id>/oauth-grant`.
+
+```json title="Example call"
+{
+  "name": "oauthGrant.revoke",
+  "arguments": {
+    "target": "/user/2hR8kW4pQ1xZ7mT3vN9cLs/oauth-grant/6tB1yF5nK8wD2qJ7rX4gHe"
+  }
+}
+```
+
+## `oauthGrant.revoke`
+
+Revoke the app's access. Its tokens stop working, and it must ask
+again.
+
+- **Target:** an OAuthGrant that isn't revoked. Offered only to the
+  person who approved it.
+- **Privilege:** none
+- **Hints:** <Badge text="Destructive" />
+
+An agent can revoke any of your grants, including the one it's using:
+its next call then fails until you sign in again. See also
+[Revoking access](/registry/agent-resources/mcp#revoking-access).
+
+### Parameters
+
+| Parameter | Type   | Required | Description             |
+| --------- | ------ | -------- | ----------------------- |
+| `target`  | string | Yes      | The `$id` of the grant. |

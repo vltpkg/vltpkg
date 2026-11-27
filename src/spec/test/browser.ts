@@ -9,6 +9,7 @@ import {
   Spec,
   isSpec,
   currentDefaultRegistryName,
+  builtinProtocols,
 } from '../src/browser.ts'
 
 // the built-in `npm` alias is vlt's public npm mirror; most of these
@@ -1411,10 +1412,6 @@ t.test('undefined protocols', t => {
     protocolError('vlt', 'vlt:foo@1'),
   )
   t.throws(
-    () => Spec.parse('x', 'link:../x'),
-    protocolError('link', 'x@link:../x'),
-  )
-  t.throws(
     () => Spec.parse('x', 'portal:../x'),
     protocolError('portal', 'x@portal:../x'),
   )
@@ -1466,6 +1463,20 @@ t.test('undefined protocols', t => {
   })
 
   t.end()
+})
+
+t.test('link: specs', async t => {
+  t.ok(builtinProtocols.has('link'))
+  const link = Spec.parse('x', 'link:../x')
+  t.match(link, { type: 'file', file: '../x', bareSpec: 'link:../x' })
+  t.equal(String(link), 'x@link:../x')
+  t.equal(String(Spec.parse('x@link:x')), 'x@link:./x')
+  t.equal(String(Spec.parse('x', 'link:./x/')), 'x@link:./x')
+  t.match(Spec.parseArgs('link:../x'), {
+    name: '(unknown)',
+    type: 'file',
+    bareSpec: 'link:../x',
+  })
 })
 
 t.test('isSpec', async t => {

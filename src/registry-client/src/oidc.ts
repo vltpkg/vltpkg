@@ -1,6 +1,13 @@
 import { request } from 'undici'
+import type { Dispatcher } from 'undici'
 import type { Token } from './auth.ts'
 import { deleteRuntimeToken, setRuntimeToken } from './auth.ts'
+import { getDispatcher } from './proxy.ts'
+
+// one pool for both requests, with the proxy and CA file settings of
+// every other registry request
+let dispatcher: Dispatcher | undefined
+const oidcDispatcher = () => (dispatcher ??= getDispatcher({}))
 
 export type OidcOptions = {
   /** The package name being published, e.g. `@scope/name` */
@@ -143,6 +150,7 @@ const fetchGitHubIdToken = async (
 
   try {
     const res = await request(url, {
+      dispatcher: oidcDispatcher(),
       method: 'GET',
       headers: {
         accept: 'application/json',
@@ -191,6 +199,7 @@ const exchangeToken = async (
 
   try {
     const res = await request(exchangeUrl, {
+      dispatcher: oidcDispatcher(),
       method: 'POST',
       headers: {
         'content-type': 'application/json',

@@ -50,8 +50,11 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
   Valid Options:
     --access=<access>
     --all
+    --allow-publish
     --allow-scripts=<query>
     --allow-skills=<query>
+    --allow-stage-publish
+    --allow-staged-publish
     --arch=<arch>
     --bail
     --before=<date>
@@ -65,6 +68,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --default-registry-alias=<name>
     --dry-run
     --editor=<program>
+    --environment=<name>
     --expect-lockfile
     --expect-results=<value>
     --fallback-command=<command>
@@ -72,6 +76,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --fetch-retry-factor=<n>
     --fetch-retry-maxtimeout=<n>
     --fetch-retry-mintimeout=<n>
+    --file=<workflow>
     --force
     --frozen-lockfile
     --git-host-archives=<name=template>
@@ -82,6 +87,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --global-bin-dir=<path>
     --global-dir=<path>
     --help
+    --id=<trust-id>
     --identity=<name>
     --if-present
     --jsr-registries=<name=url>
@@ -101,6 +107,8 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --recursive
     --registries=<name=url>
     --registry=<url>
+    --repo=<owner/repo>
+    --repository=<owner/repo>
     --save-config
     --save-dev
     --save-exact
@@ -137,8 +145,11 @@ Unknown config option: asdf
   Valid Options:
     access
     all
+    allow-publish
     allow-scripts
     allow-skills
+    allow-stage-publish
+    allow-staged-publish
     arch
     bail
     before
@@ -152,6 +163,7 @@ Unknown config option: asdf
     default-registry-alias
     dry-run
     editor
+    environment
     expect-lockfile
     expect-results
     fallback-command
@@ -159,6 +171,7 @@ Unknown config option: asdf
     fetch-retry-factor
     fetch-retry-maxtimeout
     fetch-retry-mintimeout
+    file
     force
     frozen-lockfile
     git-host-archives
@@ -169,6 +182,7 @@ Unknown config option: asdf
     global-bin-dir
     global-dir
     help
+    id
     identity
     if-present
     jsr-registries
@@ -188,6 +202,8 @@ Unknown config option: asdf
     recursive
     registries
     registry
+    repo
+    repository
     save-config
     save-dev
     save-exact

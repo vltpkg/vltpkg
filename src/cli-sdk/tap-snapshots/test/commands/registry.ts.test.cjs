@@ -16,6 +16,6 @@ Run an account command against a specific configured registry, selected by its \
 
 For example, \`vlt registry main whoami\` runs \`whoami\` against the registry configured as \`main\`. Omit the alias (e.g. \`vlt registry whoami\`) to be prompted to choose from the configured registries, or to fall back to \`--default-registry-alias\` when non-interactive.
 
-\`<command>\` is one of: whoami, logout, login, token, access, publish, unpublish, stage, deprecate, dist-tag, profile, ping.
+\`<command>\` is one of: whoami, logout, login, token, access, publish, unpublish, stage, trust, deprecate, dist-tag, profile, ping.
 
 `

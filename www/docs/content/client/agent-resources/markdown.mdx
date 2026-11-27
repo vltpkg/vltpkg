@@ -1,0 +1,89 @@
+---
+title: Markdown Negotiation
+description:
+  How agents read these docs as Markdown, find pages, and search them.
+sidebar:
+  label: Markdown Negotiation
+---
+
+Every page of the vlt docs is also available as Markdown, so an agent
+can read it without parsing HTML. This page covers how to request it
+and where to start.
+
+## Start at llms.txt
+
+[`https://docs.vlt.io/llms.txt`](/llms.txt) indexes the whole site:
+where to start, the agent skills and how to install them, then every
+page, grouped like the sidebar, with a one-line description and a link
+to its Markdown version. Read it before anything else.
+
+[`https://docs.vlt.io/llms-full.txt`](/llms-full.txt) holds every page
+in one file, plus the agent skills. It leaves out the generated
+[API reference](/client/api-reference); request those pages one at a
+time.
+
+## Requesting Markdown
+
+Add `.md` to any page's URL:
+
+```sh title="Terminal"
+curl https://docs.vlt.io/client/auth.md
+```
+
+Or ask for `text/markdown` in the `Accept` header:
+
+```sh title="Terminal"
+curl -H 'Accept: text/markdown' https://docs.vlt.io/client/auth
+```
+
+Both return `Content-Type: text/markdown`, with frontmatter (`title`,
+`description`, `url`) followed by the page. Links to other pages point
+at their `.md` versions, and tabs keep their labels, so every
+alternative on the page survives.
+
+Every HTML page also advertises its Markdown version in a `Link`
+header, so an agent that fetched the HTML can find it:
+
+```http
+Link: </client/auth.md>; rel="alternate"; type="text/markdown"
+```
+
+A few URLs behave specially:
+
+- The home page's Markdown, `/index.md`, is the same as `llms.txt`.
+- A page that doesn't exist returns a Markdown 404 that links back to
+  `llms.txt` and the sitemap.
+
+## Searching
+
+The site's search is a public JSON API:
+
+```sh title="Terminal"
+curl 'https://docs.vlt.io/api/v1/search?query=trusted%20publishing'
+```
+
+It returns matching pages, headings and paragraphs, each with a `url`.
+Add `tag=registry` or `tag=client` to search one section.
+[`/openapi.json`](/openapi.json) describes the API.
+
+## Pointing your agent at the docs
+
+For one topic, give your agent a page's Markdown URL:
+
+```text title="Prompt"
+Read https://docs.vlt.io/client/workspaces.md and set up workspaces in this repository.
+```
+
+For anything broader, point it at the index and let it pick pages:
+
+```text title="Prompt"
+Read https://docs.vlt.io/llms.txt, then read the pages you need as Markdown. Only use commands and flags that appear in the docs.
+```
+
+Agents that support skills can load the
+[vlt skills](/client/agent-resources/skills) instead, which link to
+the pages they need. The [home page](/) has a ready-made setup prompt.
+
+The vlt.io website serves Markdown the same way; see
+[Markdown Negotiation](/registry/agent-resources/markdown) in the
+registry docs.

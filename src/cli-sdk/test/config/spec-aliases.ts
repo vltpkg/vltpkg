@@ -110,6 +110,7 @@ t.test('built-in protocol', async t => {
     ['git-hosts', 'https'],
     ['jsr-registries', 'workspace'],
     ['registries', 'git+ssh'],
+    ['git-hosts', 'link'],
   ] as const) {
     t.throws(() => assertSpecAliases({ [field]: { [key]: u } }), {
       message: `${field}.${key} shadows the built-in \`${key}:\` protocol`,

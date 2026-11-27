@@ -1774,6 +1774,39 @@ t.test('remote tarballs', async t => {
     },
   )
 
+  t.test(
+    'an evicted entry is deleted one hash at a time',
+    async t => {
+      // a delete under each hash removes the same value and key files.
+      // run together, the two unlink the same file at once, which fails
+      // with EPERM on windows for the one that loses the race.
+      const { dir, fresh, flush, tamper } = await primed(t)
+      await tamper(
+        entry => entry.setHeader('integrity', bogus),
+        bogus,
+      )
+      const p = fresh()
+      const { cache } = await p.getRegistryClient()
+      const del = cache.delete.bind(cache)
+      const pending: number[] = []
+      cache.delete = (...args: Parameters<typeof del>) => {
+        if (args[1]) pending.push(cache.pending.length)
+        return del(...args)
+      }
+      const res = await p.extract(spec, `${dir}/refetched`, {
+        resolved: url,
+        integrity,
+      })
+      await flush(p)
+      t.equal(res.integrity, integrity)
+      t.strictSame(
+        pending,
+        [0, 0],
+        'nothing pending at either delete',
+      )
+    },
+  )
+
   t.test('a legacy entry, rewritten un-gzipped', async t => {
     // stored before the hash was recorded and un-gzipped since: there
     // is nothing left to verify it by, so it is evicted and fetched
@@ -3865,6 +3898,26 @@ t.test('file spec must have file', async t => {
       final: { type: 'file' },
     } as Spec),
   )
+})
+
+t.test('link: spec manifests', async t => {
+  const from = t.testdir({
+    nopkg: {},
+    pkg: {
+      'package.json': JSON.stringify({
+        name: 'pkg',
+        version: '1.0.0',
+      }),
+    },
+  })
+  const o = { ...options, from }
+  t.strictSame(await manifest('x@link:./nopkg', o), { name: 'x' })
+  t.strictSame(await manifest('x@link:./missing', o), { name: 'x' })
+  t.match(await manifest('x@link:./pkg', o), {
+    name: 'pkg',
+    version: '1.0.0',
+  })
+  await t.rejects(manifest('link:./nopkg', o), 'nameless')
 })
 
 t.test('fails on non-200 response', async t => {
