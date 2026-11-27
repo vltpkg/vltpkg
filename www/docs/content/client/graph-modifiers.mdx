@@ -62,7 +62,9 @@ it:
 ```
 
 The keys are selectors that identify which dependency to override, and
-the values specify the versions to enforce.
+the values specify the versions to enforce. Each key holds a single
+selector: a selector list such as `"#a, #b"` is rejected, so add one
+entry per selector.
 
 ### Universal Selector
 
