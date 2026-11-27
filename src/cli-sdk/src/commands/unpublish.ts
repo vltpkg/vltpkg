@@ -113,7 +113,10 @@ export const command: CommandFn<CommandResult> = async conf => {
     ),
   )
 
-  const rc = new RegistryClient(conf.options)
+  const rc = new RegistryClient({
+    ...conf.options,
+    registry: registryUrl.href,
+  })
 
   const encodedName =
     name.startsWith('@') ? name.replace('/', '%2F') : name
