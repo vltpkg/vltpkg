@@ -1850,7 +1850,7 @@ t.test('human view with arrays', async t => {
   })
 })
 
-t.test('readme in publish metadata', async t => {
+t.test('publish metadata', async t => {
   /** Publish `files` from a testdir and hand back the version manifest sent. */
   const publishedManifest = async (
     t: Test,
@@ -1976,6 +1976,55 @@ t.test('readme in publish metadata', async t => {
       { 'publish-directory': 'dist' },
     )
     t.equal(manifest.readme, '# published')
+  })
+
+  t.test('sends the manifest fields as written', async t => {
+    const written = {
+      name: 'my-package',
+      version: '1.0.0',
+      keywords: 'one, two',
+      bugs: {
+        url: 'https://github.com/acme/my-package/issues',
+        email: 'bugs@example.com',
+      },
+      author: { name: 'Jane Doe', twitter: 'janedoe' },
+      contributors: [
+        'John Roe <john@example.com> (https://john.example.com)',
+        { name: 'Ann Poe', github: 'annpoe' },
+      ],
+      maintainers: [{ name: 'Max Moe', email: 'max@example.com' }],
+      funding: 'https://github.com/sponsors/acme',
+      bin: './cli.js',
+      os: 'linux',
+      cpu: 'x64',
+    }
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify(written),
+      'cli.js': '#!/usr/bin/env node\n',
+    })
+    for (const key of [
+      'keywords',
+      'bugs',
+      'author',
+      'contributors',
+      'funding',
+      'bin',
+      'os',
+      'cpu',
+    ] as const) {
+      t.strictSame(manifest[key], written[key], key)
+    }
+    t.equal(manifest.maintainers, undefined, 'maintainers left out')
+  })
+
+  t.test('sends the cleaned version', async t => {
+    const manifest = await publishedManifest(t, {
+      'package.json': JSON.stringify({
+        name: 'my-package',
+        version: 'v1.0.0',
+      }),
+    })
+    t.equal(manifest.version, '1.0.0')
   })
 })
 
