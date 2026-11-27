@@ -1592,6 +1592,82 @@ t.test('a "-" modifier keeps the dependency out of add', async t => {
   })
 })
 
+t.test('file-type directory deps placement leaves out', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { nested: 'file:./nested' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt.json': JSON.stringify({ modifiers: { '#removed': '-' } }),
+    nested: {
+      'package.json': JSON.stringify({
+        name: 'nested',
+        version: '1.0.0',
+        dependencies: {
+          added: '^1.0.0',
+          bundled: '^1.0.0',
+          empty: '',
+          modified: '^1.0.0',
+          ipsum: '^1.0.0',
+          removed: '^1.0.0',
+        },
+        devDependencies: { dev: '^1.0.0' },
+        peerDependencies: { foo: '^1.0.0', ipsum: '1' },
+        peerDependenciesMeta: { foo: { optional: true } },
+        bundleDependencies: ['bundled'],
+      }),
+    },
+  })
+  t.chdir(projectRoot)
+  reload('modifiers', 'project')
+  t.teardown(() => unload('project'))
+
+  // the edges placement left: a modifier set `modified`, the optional
+  // peer `foo` has no provider, `ipsum` is the regular dependency,
+  // `empty` keeps its empty spec as an actual graph loads it
+  const graph = new Graph({ projectRoot, mainManifest })
+  const nestedSpec = Spec.parse('nested', 'file:./nested')
+  const nested = graph.addNode(
+    joinDepIDTuple(['file', 'nested']),
+    { name: 'nested', version: '1.0.0' },
+    nestedSpec,
+  )
+  nested.location = './nested'
+  graph.addEdge('prod', nestedSpec, graph.mainImporter, nested)
+  for (const [name, bareSpec] of [
+    ['modified', '2.0.0'],
+    ['ipsum', '^1.0.0'],
+    ['empty', ''],
+  ] as const) {
+    const spec = Spec.parse(name, bareSpec)
+    const node = graph.addNode(
+      undefined,
+      { name, version: '2.0.0' },
+      spec,
+    )
+    if (name === 'modified') node.modifier = '#modified'
+    graph.addEdge('prod', spec, nested, node)
+  }
+  graph.addEdge('peerOptional', Spec.parse('foo', '^1.0.0'), nested)
+
+  const specs = getImporterSpecs({
+    add: new Map() as AddImportersDependenciesMap,
+    graph,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    modifiers: GraphModifier.load({}),
+  })
+  t.strictSame(
+    [...(specs.transientAdd.get(nested.id)?.keys() ?? [])],
+    ['added'],
+    'only the new dependency is queued',
+  )
+  t.equal(specs.transientRemove.size, 0, 'nothing to remove')
+})
+
 t.test('catalog spec errors point at the manifest', async t => {
   t.test('importer', async t => {
     const projectRoot = t.testdir({ 'vlt.json': '{}' })

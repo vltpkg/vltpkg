@@ -16,6 +16,11 @@ import type {
 import { Graph } from '../../src/graph.ts'
 import type { GraphModifier } from '../../src/modifiers.ts'
 import { refreshIdealGraph } from '../../src/ideal/refresh-ideal-graph.ts'
+import type { RefreshIdealGraphOptions } from '../../src/ideal/refresh-ideal-graph.ts'
+import type {
+  TransientAddMap,
+  TransientRemoveMap,
+} from '../../src/ideal/types.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { load } from '../../src/actual/load.ts'
@@ -971,7 +976,12 @@ t.test('rebuild re-places every edge', async t => {
     },
   } as unknown as PackageInfoClient
 
-  const build = async (rebuild: boolean) => {
+  const build = async (
+    opts: Pick<
+      RefreshIdealGraphOptions,
+      'rebuild' | 'transientAdd' | 'transientRemove'
+    >,
+  ) => {
     const graph = new Graph({
       projectRoot: t.testdirName,
       ...configData,
@@ -998,7 +1008,7 @@ t.test('rebuild re-places every edge', async t => {
       packageInfo,
       scurry: new PathScurry(t.testdirName),
       remover: new RollbackRemove(),
-      rebuild,
+      ...opts,
       ...configData,
     })
     return graph.nodes
@@ -1006,12 +1016,34 @@ t.test('rebuild re-places every edge', async t => {
       ?.edgesOut.get('bar')?.to?.id
   }
 
+  const bar = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+  t.equal(await build({ rebuild: true }), bar, 're-resolved')
+  // a file: directory dep whose manifest deps changed
+  const dir = joinDepIDTuple(['file', 'linked'])
   t.equal(
-    await build(true),
-    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
-    're-resolved',
+    await build({
+      transientAdd: new Map([[dir, new Map()]]) as TransientAddMap,
+    }),
+    bar,
+    're-resolved for a directory dep add',
   )
-  t.equal(await build(false), undefined, 'left dangling')
+  t.equal(
+    await build({
+      transientRemove: new Map([
+        [dir, new Set(['x'])],
+      ]) as TransientRemoveMap,
+    }),
+    bar,
+    're-resolved for a directory dep removal',
+  )
+  t.equal(
+    await build({
+      transientAdd: new Map() as TransientAddMap,
+      transientRemove: new Map() as TransientRemoveMap,
+    }),
+    undefined,
+    'left dangling',
+  )
 })
 
 t.test('an options change makes the lockfile stale', async t => {

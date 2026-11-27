@@ -149,12 +149,15 @@ export const refreshIdealGraph = async ({
     depsPerImporter.set(importer, deps)
   }
 
-  // removes all edges to start recalculating the graph
+  // removes all edges to start recalculating the graph. a `file:`
+  // directory dep whose manifest deps changed is only placed again then
   if (
     rebuild ||
     add.modifiedDependencies ||
     remove.modifiedDependencies ||
-    graph.optionsChanged
+    graph.optionsChanged ||
+    transientAdd?.size ||
+    transientRemove?.size
   ) {
     const locked = new Map<string, DepID>()
     const ambiguous = new Set<string>()
