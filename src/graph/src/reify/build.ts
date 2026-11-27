@@ -65,7 +65,9 @@ export const build = async (
 
       if (
         !node.importer &&
-        (!diff.nodes.add.has(node) || !shouldRunScripts(node))
+        (!diff.nodes.add.has(node) ||
+          !shouldRunScripts(node) ||
+          node.isLinkTarget())
       )
         return
 

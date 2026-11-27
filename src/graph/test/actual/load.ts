@@ -216,6 +216,33 @@ t.test('uninstalled dependencies', async t => {
   )
 })
 
+t.test('a link: target with no manifest file', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': '{}',
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { x: 'link:./nopkg' },
+    }),
+    nopkg: { 'index.js': '' },
+    node_modules: { x: t.fixture('symlink', '../nopkg') },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = load({
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    projectRoot,
+    loadManifests: true,
+    ...configData,
+  })
+  const node = graph.nodes.get(joinDepIDTuple(['file', 'nopkg']))
+  t.equal(node?.name, 'x')
+  t.equal(node?.location, './nopkg')
+  t.equal(graph.mainImporter.edgesOut.get('x')?.to, node)
+})
+
 t.test('getPathBasedId', async t => {
   t.matchSnapshot(
     [

@@ -178,6 +178,7 @@ export const builtinProtocols: ReadonlySet<string> = new Set([
   'workspace',
   'registry',
   'file',
+  'link',
   'http',
   'https',
   'git',
@@ -222,6 +223,7 @@ const startsWithSpecIdentifier = (
   spec.startsWith('./') ||
   spec.startsWith('../') ||
   spec.startsWith('file:') ||
+  spec.startsWith('link:') ||
   spec.startsWith('http:') ||
   spec.startsWith('https:') ||
   spec.startsWith('workspace:') ||
@@ -724,14 +726,15 @@ export class Spec implements SpecLike<Spec> {
       return
     }
 
-    // explicit file: url
-    if (this.bareSpec.startsWith('file:')) {
+    // explicit file: url, or link: (a directory vlt does not manage)
+    const prefix = this.bareSpec.substring(0, 5)
+    if (prefix === 'file:' || prefix === 'link:') {
       this.type = 'file'
       const [path, uri] = getNormalizeFile(
         this.constructor.nodejsDependencies,
-      )(this.bareSpec, this)
+      )(`file:${this.bareSpec.substring(5)}`, this)
       this.file = path
-      this.bareSpec = uri.replace(/\/+$/, '')
+      this.bareSpec = prefix + uri.replace(/\/+$/, '').substring(5)
       this.spec = `${this.name}@${this.bareSpec}`
       return
     }

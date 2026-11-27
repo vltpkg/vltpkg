@@ -638,6 +638,25 @@ $ vlt install file:../shared`}
   lang="bash"
 />
 
+### Unmanaged links (`link:`)
+
+<Code
+  code={`$ vlt install my-lib@link:../my-lib`}
+  title="Terminal"
+  lang="bash"
+/>
+
+A `link:` dependency is a symlink to a directory that vlt does not
+manage: only its bins are linked, its dependencies are not installed,
+its scripts never run and nothing is written inside it apart from
+making its bins executable. The directory does not need a
+`package.json` (the dependency name is used then), and a missing
+directory is linked with a warning.
+
+Use `file:` for a package you work on with the project, and `link:`
+for a directory managed elsewhere (by another package manager or a
+build step). `vlt install ../my-lib` saves `file:../my-lib`.
+
 ## Aliases
 
 ```

@@ -946,6 +946,39 @@ t.test(
   },
 )
 
+t.test('skips link: targets for transient processing', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { linked: 'link:./linked' },
+    }),
+    'vlt.json': '{}',
+    linked: {
+      'package.json': JSON.stringify({
+        name: 'linked',
+        version: '1.0.0',
+        dependencies: { bar: '^1.0.0' },
+      }),
+    },
+    node_modules: { linked: t.fixture('symlink', '../linked') },
+  })
+  t.chdir(projectRoot)
+  unload('project')
+  const scurry = new PathScurry(projectRoot)
+  const packageJson = new PackageJson()
+  const graph = load({ projectRoot, scurry, packageJson })
+  t.ok(graph.nodes.get(joinDepIDTuple(['file', 'linked'])))
+  const specs = getImporterSpecs({
+    add: new Map() as AddImportersDependenciesMap,
+    graph,
+    remove: new Map() as RemoveImportersDependenciesMap,
+    scurry,
+    packageJson,
+  })
+  t.equal(specs.transientAdd.size, 0)
+})
+
 t.test(
   'skips non-file type nodes for transient processing',
   async t => {

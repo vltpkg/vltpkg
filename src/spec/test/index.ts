@@ -672,10 +672,6 @@ t.test('undefined protocols', t => {
     protocolError('vlt', 'vlt:foo@1'),
   )
   t.throws(
-    () => Spec.parse('x', 'link:../x'),
-    protocolError('link', 'x@link:../x'),
-  )
-  t.throws(
     () => Spec.parse('x', 'portal:../x'),
     protocolError('portal', 'x@portal:../x'),
   )
@@ -727,4 +723,16 @@ t.test('undefined protocols', t => {
   })
 
   t.end()
+})
+
+t.test('link: specs', async t => {
+  t.match(Spec.parse('x', 'link:/a'), {
+    type: 'file',
+    file: '/a',
+    bareSpec: 'link:///a',
+  })
+  t.match(Spec.parse('x', 'link:~/a'), {
+    file: '/mock/home/a',
+    bareSpec: 'link:~/a',
+  })
 })

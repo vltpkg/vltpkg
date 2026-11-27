@@ -11,7 +11,7 @@ Parses dependency specifiers into typed `Spec` objects. Used throughout the grap
 
 - `registry` — `express@^1.0.0`, `npm:react@18`, `jsr:@am/foo@1`, `registry:URL#name@ver`
 - `git` — `github:user/repo#semver:^1`, `git+ssh://...#branch`
-- `file` — `file:./local-pkg`, `./my-lib`
+- `file` — `file:./local-pkg`, `./my-lib`, `link:../dir`
 - `remote` — `https://example.com/pkg.tgz`
 - `workspace` — `workspace:*`, `workspace:../path`
 
@@ -97,8 +97,9 @@ treat the result (and `spec.options`) as read-only.
 A `<scheme>:` prefix that is neither built-in nor configured throws
 `Protocol custom: is not defined`.
 
-**Built-in:** `catalog:`, `workspace:`, `registry:`, `file:`, `http:`,
-`https:`, `git:`, `git+ssh:`, `git+http:`, `git+https:`, `git+file:`.
+**Built-in:** `catalog:`, `workspace:`, `registry:`, `file:`, `link:`,
+`http:`, `https:`, `git:`, `git+ssh:`, `git+http:`, `git+https:`,
+`git+file:`.
 The `default-registry-alias` (default `npm`) is always treated as known.
 
 **Configured:** keys of `registries`, `git-hosts`, and `jsr-registries`
@@ -109,7 +110,7 @@ Windows drive letters (`C:/x`) and hostnames (`notgithub.com:user/repo`)
 are not schemes and keep their existing parse behavior. Dist-tags like
 `latest` / `next-9` are unchanged.
 
-pnpm/yarn protocols (`link:`, `portal:`, `patch:`) and unconfigured
+pnpm/yarn protocols (`portal:`, `patch:`) and unconfigured
 aliases (`custom:`, `vlt:`) throw.
 
 ## Defaults

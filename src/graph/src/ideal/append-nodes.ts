@@ -123,12 +123,20 @@ const getFileTypeInfo = (
   const target = scurry.cwd.resolve(fromNode.location).resolve(f.file)
   const path = target.relativePosix()
   const id = joinDepIDTuple(['file', path])
+  const st = target.lstatSync()
 
-  return {
-    path,
-    id,
-    isDirectory: !!target.lstatSync()?.isDirectory(),
+  // a link: target is always a directory, linked even if missing
+  if (f.bareSpec.startsWith('link:')) {
+    if (!st) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `warning: ${spec}: ${path} does not exist, linking it anyway`,
+      )
+    }
+    return { path, id, isDirectory: true }
   }
+
+  return { path, id, isDirectory: !!st?.isDirectory() }
 }
 
 const isStringArray = (a: unknown): a is string[] =>
@@ -558,6 +566,9 @@ const fetchManifestsForDeps = async (
     const validExistingNode =
       existingNode &&
       !existingNode.detached &&
+      // a non-link: dep manages a directory only linked so far
+      (spec.final.bareSpec.startsWith('link:') ||
+        !existingNode.isLinkTarget()) &&
       // Regular deps can always reuse.
       // Peer deps can reuse as well if their peer edges are compatible.
       /* c8 ignore start */
@@ -866,6 +877,9 @@ const processPlacementTasks = async (
       node.setResolved()
     }
 
+    // a link: target is symlinked as is, its deps are not installed
+    if (spec.final.bareSpec.startsWith('link:')) continue
+
     // collect child dependencies for processing in the next level
     const nextPeerDeps = new Map<string, Dependency>()
 
@@ -910,6 +924,15 @@ const processPlacementTasks = async (
           let depSpec: Spec
           try {
             depSpec = Spec.parse(name, bareSpec, options)
+            if (
+              node.inVltStore() &&
+              depSpec.final.bareSpec.startsWith('link:')
+            ) {
+              throw error(
+                '`link:` dependencies are only supported in local packages',
+                { code: 'ECONFIG', spec: depSpec },
+              )
+            }
           } catch (er) {
             throw asDependencySpecError(er, node, type)
           }

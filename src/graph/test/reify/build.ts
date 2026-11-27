@@ -460,6 +460,39 @@ t.test(
   },
 )
 
+t.test('a link: target is never built', async t => {
+  const mani = {
+    name: 'linked',
+    version: '1.2.3',
+    scripts: { install: 'true' },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'project',
+      version: '1.2.3',
+    }),
+    'vlt.json': '{}',
+    linked: { 'package.json': JSON.stringify(mani) },
+  })
+  const graph = loadProject(projectRoot)
+  const linked = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('linked', 'link:./linked'),
+    mani,
+    joinDepIDTuple(['file', 'linked']),
+  )
+  if (!linked) throw new Error('no linked node??')
+  const result = await build(
+    new Diff(loadProject(projectRoot), graph),
+    new PackageJson(),
+    new PathScurry(projectRoot),
+    new Set([linked.id]),
+  )
+  t.strictSame(runs, [])
+  t.strictSame(result, { success: [], failure: [] })
+})
+
 t.test(
   'an importer waits for the importer it depends on',
   async t => {

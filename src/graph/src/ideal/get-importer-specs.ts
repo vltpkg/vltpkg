@@ -160,6 +160,8 @@ export const getImporterSpecs = (
     // any non-file type dependencies
     if (graph.importers.has(node) || !node.id.startsWith('file'))
       continue
+    // link: targets are not managed, their manifest is not followed
+    if (node.isLinkTarget()) continue
 
     // check if this is a file type dependency that is a directory
     const nodePath = options.scurry.cwd.resolve(node.location)
