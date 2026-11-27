@@ -116,18 +116,27 @@ Would revoke trusted publisher 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b of @acme/pkg
 `
 
 exports[`test/commands/trust.ts > TAP > views > list 1`] = `
-type: github
-id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
-file: release.yml
-repository: acme/utils
-environment: production
-permissions: publish, stage publish
+├─ 🤝 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+│    type: github
+│    file: release.yml
+│    repository: acme/utils
+│    environment: production
+│    permissions: publish, stage publish
+│
+├─ 🤝 type: github
+│    file: ci.yaml
+│    permissions: other
+│
+└─ 🤝 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+`
 
-type: github
-file: ci.yaml
-permissions: other
-
-id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+exports[`test/commands/trust.ts > TAP > views > list one 1`] = `
+└─ 🤝 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
+     type: github
+     file: release.yml
+     repository: acme/utils
+     environment: production
+     permissions: publish, stage publish
 `
 
 exports[`test/commands/trust.ts > TAP > views > none 1`] = `

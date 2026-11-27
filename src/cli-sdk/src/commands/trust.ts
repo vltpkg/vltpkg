@@ -191,7 +191,7 @@ const viewStyles = ({ colors }: ViewOptions): Styles =>
 const itemLines = (
   { permissions, ...rest }: TrustItem,
   { bold, yellow }: Styles,
-): string =>
+): string[] =>
   Object.entries({
     ...rest,
     ...(permissions && {
@@ -199,8 +199,23 @@ const itemLines = (
         .map(p => permissionLabels[p] ?? p)
         .join(', '),
     }),
-  })
-    .map(([k, v]) => `${bold(`${k}:`)} ${k === 'id' ? yellow(v) : v}`)
+  }).map(([k, v]) => `${bold(`${k}:`)} ${k === 'id' ? yellow(v) : v}`)
+
+/** A branch per trusted publisher, its id first, like `vlt stage list`. */
+const itemTree = (items: TrustItem[], s: Styles): string =>
+  items
+    .flatMap(({ id, ...rest }, i) => {
+      const last = i === items.length - 1
+      const [first, ...lines] = itemLines(
+        id ? { id, ...rest } : rest,
+        s,
+      )
+      return [
+        `${last ? '└─' : '├─'} 🤝 ${first}`,
+        ...lines.map(line => `${last ? ' ' : '│'}    ${line}`),
+        ...(last ? [] : ['│']),
+      ]
+    })
     .join('\n')
 
 export const views = {
@@ -208,7 +223,7 @@ export const views = {
     const s = viewStyles(options)
     if (Array.isArray(result)) {
       return result.length ?
-          s.reset(result.map(i => itemLines(i, s)).join('\n\n'))
+          s.reset(itemTree(result, s))
         : 'No trusted publishers found.'
     }
     if ('revoked' in result) {
@@ -223,7 +238,7 @@ export const views = {
         `🤲 ${s.bold(`Would create this trusted publisher for ${pkg} (dry run):`)}`
       : `🤝 ${s.bold(`Trusted publisher created for ${pkg}:`)}`
     // a blank line apart from the question and sign-in printed before
-    return `\n${s.reset(`${heading}\n${itemLines(item, s)}`)}`
+    return `\n${s.reset([heading, ...itemLines(item, s)].join('\n'))}`
   },
   json: r => r,
 } as const satisfies Views<CommandResult>
@@ -388,7 +403,7 @@ const github = async (
           `Anyone with write access to ${repository} can ${permissions
             .map(p => permissionLabels[p])
             .join(' and ')} ${name}.`,
-          itemLines(toItem(config), s),
+          ...itemLines(toItem(config), s),
         ].join('\n'),
       )}`,
     )

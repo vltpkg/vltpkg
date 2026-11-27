@@ -138,6 +138,7 @@ t.test('views', async t => {
   const human = (result: CommandResult, options = {}) =>
     Trust.views.human(result, {}, mkConf([], options))
   t.matchSnapshot(human([]), 'none')
+  t.matchSnapshot(human([item]), 'list one')
   t.matchSnapshot(
     human([
       item,
@@ -184,19 +185,23 @@ t.test('human views use the vlt stage colors', async t => {
     `\x1b[0m🤲 ${bold('Would create this trusted publisher for @acme/utils (dry run):')}`,
   )
   t.equal(
-    human([item, { type: 'github', file: 'ci.yaml' }]),
+    human([item, { ...item, id: 'b' }]),
     [
-      `\x1b[0m${key('type')} github`,
-      id,
-      `${key('file')} release.yml`,
-      `${key('repository')} acme/utils`,
-      `${key('environment')} production`,
-      `${key('permissions')} publish, stage publish`,
-      '',
-      `${key('type')} github`,
-      `${key('file')} ci.yaml\x1b[0m`,
+      `\x1b[0m├─ 🤝 ${id}`,
+      `│    ${key('type')} github`,
+      `│    ${key('file')} release.yml`,
+      `│    ${key('repository')} acme/utils`,
+      `│    ${key('environment')} production`,
+      `│    ${key('permissions')} publish, stage publish`,
+      '│',
+      `└─ 🤝 ${key('id')} \x1b[33mb\x1b[39m`,
+      `     ${key('type')} github`,
+      `     ${key('file')} release.yml`,
+      `     ${key('repository')} acme/utils`,
+      `     ${key('environment')} production`,
+      `     ${key('permissions')} publish, stage publish\x1b[0m`,
     ].join('\n'),
-    'list: bold keys, highlighted id, reset',
+    'list: a tree like vlt stage list, bold keys, highlighted id, reset',
   )
   for (const result of [[item], { package: PKG, ...item }]) {
     t.notMatch(
