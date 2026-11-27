@@ -170,7 +170,9 @@ Details:
   runner. Own service token in that environment's secrets, committed
   routing, auth for both registry URLs as in step 4.
 - [Publishing from CI](https://docs.vlt.io/registry/publishing/ci.md#publishing-from-ci):
-  service token with `package:write`; a personal token fails with
+  a service token with `package:write`, or from GitHub Actions
+  [trusted publishing](https://docs.vlt.io/registry/publishing/trusted-publishing.md)
+  (installs still need `VLT_TOKEN`). A personal token fails with
   `EOTP`.
 
 ## Known limitations
@@ -199,6 +201,6 @@ Details:
 | Symptom                                                     | Cause                                                                                                                    |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `401` / `No authorization header was set`                   | token not reaching the tool (step 4): pnpm `${VLT_TOKEN}` in a project `.npmrc`, or secret unset in that job             |
-| `EOTP` when publishing from CI                              | personal token; use a service token                                                                                      |
+| `EOTP` when publishing from CI                              | personal token; use a service token, or trusted publishing from GitHub Actions                                           |
 | vlt still fetches from `registry.npmjs.org`                 | kept `vlt-lock.json` (step 3)                                                                                            |
 | pnpm 12 `no version found for the latest tag` on the mirror | mirror bug on pnpm 12: [pnpm guide](https://docs.vlt.io/registry/publishing/pnpm.md) pins `pnpm@11.26.0` (confirm first) |
