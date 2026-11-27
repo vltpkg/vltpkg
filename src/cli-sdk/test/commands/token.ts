@@ -34,7 +34,7 @@ const mockRegistryClient = {
 }
 
 const log: string[][] = []
-const { usage, command, views } = await t.mockImport<
+const { usage, command, views, needsRegistry } = await t.mockImport<
   typeof import('../../src/commands/token.ts')
 >('../../src/commands/token.ts', {
   '@vltpkg/registry-client': {
@@ -159,6 +159,93 @@ t.test('alias: remove works like rm', async t => {
   ])
 })
 
+t.test('rm without a target registry', async t => {
+  const removeLog: string[][] = []
+  const mockDelete = {
+    async deleteToken(reg: string) {
+      removeLog.push(['delete', reg])
+    },
+  }
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      ...mockDelete,
+      getKC() {
+        return {
+          async keys() {
+            return ['https://private.example.com']
+          },
+          async get() {
+            return undefined
+          },
+        }
+      },
+    },
+  })
+
+  for (const options of [
+    { registries: {}, identity: '' },
+    {
+      registries: {
+        a: 'https://a.example.com/',
+        b: 'https://b.example.com/',
+      },
+      'default-registry-alias': 'npm',
+      identity: '',
+    },
+  ]) {
+    await t.rejects(
+      cmd({
+        options,
+        positionals: ['rm'],
+      } as unknown as LoadedConfig),
+      {
+        cause: {
+          code: 'EUSAGE',
+          validOptions: ['https://private.example.com'],
+        },
+      },
+    )
+  }
+
+  const { command: emptyCmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      ...mockDelete,
+    },
+  })
+  const er = await emptyCmd({
+    options: { registries: {}, identity: '' },
+    positionals: ['rm'],
+  } as unknown as LoadedConfig).catch((e: unknown) => e)
+  t.match(er, { cause: { code: 'EUSAGE' } })
+  t.notOk(
+    (er as { cause: { validOptions?: unknown } }).cause.validOptions,
+  )
+  t.strictSame(removeLog, [], 'nothing deleted')
+})
+
+t.test('needsRegistry: only for add', async t => {
+  t.equal(
+    needsRegistry({ positionals: ['add'] } as LoadedConfig),
+    'write',
+  )
+  for (const positionals of [
+    [],
+    ['ls'],
+    ['list'],
+    ['rm'],
+    ['remove'],
+    ['bogus'],
+  ]) {
+    t.equal(needsRegistry({ positionals } as LoadedConfig), undefined)
+  }
+})
+
 t.test('invalid token sub command', async t => {
   await t.rejects(
     command({
@@ -167,6 +254,15 @@ t.test('invalid token sub command', async t => {
     } as LoadedConfig),
     { cause: { code: 'EUSAGE' } },
   )
+  for (const positionals of [[], ['bogus']]) {
+    await t.rejects(
+      command({
+        options: { registries: {} },
+        positionals,
+      } as unknown as LoadedConfig),
+      { cause: { code: 'EUSAGE' } },
+    )
+  }
 })
 
 t.test('list tokens from default registry', async t => {
@@ -370,13 +466,72 @@ t.test('list skips the built-in npm mirror', async t => {
   t.strictSame(
     result?.registries.map(r => [r.alias, r.registry]),
     [
-      ['default', 'https://registry.npmjs.org/'],
       ['gh', 'https://npm.pkg.github.com/'],
+      ['main', 'https://registry.npmjs.org/'],
     ],
   )
   t.notOk(
     scrolled.some(url => url.startsWith(mirror)),
     'the mirror token API is not queried',
+  )
+})
+
+t.test('list without a configured registry', async t => {
+  const { command: cmd } = await t.mockImport<
+    typeof import('../../src/commands/token.ts')
+  >('../../src/commands/token.ts', {
+    '@vltpkg/registry-client': {
+      ...mockRegistryClient,
+      getKC() {
+        return {
+          async keys() {
+            return ['https://private.example.com']
+          },
+          async get() {
+            return 'Bearer secret-token-123456'
+          },
+        }
+      },
+    },
+  })
+
+  const builtin = await cmd({
+    options: {
+      registries: {
+        gh: 'https://npm.pkg.github.com/',
+        npm: 'https://registry.vlt.io/upstream/npm/',
+      },
+      'default-registry-alias': 'npm',
+      identity: '',
+    },
+    positionals: ['ls'],
+  } as unknown as LoadedConfig)
+  t.strictSame(
+    builtin?.registries.map(r => [r.alias, r.registry]),
+    [
+      ['gh', 'https://npm.pkg.github.com/'],
+      [undefined, 'https://private.example.com'],
+    ],
+  )
+
+  const ambiguous = await cmd({
+    options: {
+      registries: {
+        a: 'https://a.example.com/',
+        b: 'https://b.example.com/',
+      },
+      'default-registry-alias': 'npm',
+      identity: '',
+    },
+    positionals: ['ls'],
+  } as unknown as LoadedConfig)
+  t.strictSame(
+    ambiguous?.registries.map(r => [r.alias, r.registry]),
+    [
+      ['a', 'https://a.example.com/'],
+      ['b', 'https://b.example.com/'],
+      [undefined, 'https://private.example.com'],
+    ],
   )
 })
 

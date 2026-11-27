@@ -15,6 +15,7 @@ import {
   requireRegistry,
 } from '../require-registry.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import type { LoadedConfig } from '../config/index.ts'
 import type { Views } from '../view.ts'
 
 export type TokenInfo = {
@@ -44,7 +45,9 @@ export type TokenListResult = {
   registries: RegistryTokens[]
 }
 
-export const needsRegistry = 'write'
+// only add needs a registry; ls and rm start from the keychain
+export const needsRegistry = ({ positionals }: LoadedConfig) =>
+  positionals[0] === 'add' ? 'write' : undefined
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -198,7 +201,6 @@ const listTokens = async (
 export const command: CommandFn<
   TokenListResult | void
 > = async conf => {
-  const reg = normalizeRegistryKey(requireRegistry(conf))
   switch (conf.positionals[0]) {
     case 'ls':
     case 'list': {
@@ -207,12 +209,14 @@ export const command: CommandFn<
       const registries: RegistryTokens[] = []
       const seen = new Set<string>()
 
-      // Always query the default registry first
-      const defaultReg = requireRegistry(conf)
-      seen.add(normalizeRegistryKey(defaultReg))
-      registries.push(
-        await listTokens(rc, defaultReg, identity, 'default'),
-      )
+      // Query the registry option first
+      const { registry } = conf.options
+      if (registry) {
+        seen.add(normalizeRegistryKey(registry))
+        registries.push(
+          await listTokens(rc, registry, identity, 'default'),
+        )
+      }
 
       // Then query all configured registry aliases, except the
       // read-only built-in mirror
@@ -249,6 +253,7 @@ export const command: CommandFn<
     }
 
     case 'add': {
+      const reg = normalizeRegistryKey(requireRegistry(conf))
       await setToken(
         reg,
         `Bearer ${await readPassword('Paste bearer token: ')}`,
@@ -259,7 +264,20 @@ export const command: CommandFn<
 
     case 'remove':
     case 'rm': {
-      await deleteToken(reg, conf.options.identity)
+      let reg: string
+      try {
+        reg = requireRegistry(conf)
+      } catch {
+        const keys = await getKC(conf.options.identity).keys()
+        throw error('Choose the token to remove with --registry', {
+          code: 'EUSAGE',
+          validOptions: keys.length ? keys : undefined,
+        })
+      }
+      await deleteToken(
+        normalizeRegistryKey(reg),
+        conf.options.identity,
+      )
       break
     }
 
