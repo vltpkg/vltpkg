@@ -1,0 +1,61 @@
+---
+title: Staging
+description: Approve or reject versions staged with npm stage publish.
+sidebar:
+  label: Staging
+---
+
+A staged version's `$id` looks like
+`/account/<account>/registry/<registry>/stage/<id>`. The registry's
+`stage` collection lists them; reading it takes `package:stage`.
+
+Both decisions are offered only to a person, not a service token, and
+each asks for a second factor from the last 10 minutes. The client
+shows a vlt.io link, or asks you to open one, where you confirm it's
+you; then the call goes through. See
+[Step-up verification](/registry/agent-resources/mcp/overview#step-up-verification).
+
+When the version is no longer staged, for example because someone
+already decided on it, the actions are listed with `available: false`
+and a `reason`.
+
+```json title="Example call"
+{
+  "name": "stageItem.approve",
+  "arguments": {
+    "target": "/account/acme/registry/main/stage/4b1Xq0cZ8n3tR7wPz2sKfA"
+  }
+}
+```
+
+## `stageItem.approve`
+
+Publish the staged version under its dist-tag.
+
+- **Target:** a StageItem
+- **Privilege:** `package:write`, plus `package:visibility` when the
+  staged version changes the package's visibility
+- **Hints:** <Badge text="Needs confirmation" />
+  <Badge text="Step-up" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                      |
+| --------- | ------ | -------- | -------------------------------- |
+| `target`  | string | Yes      | The `$id` of the staged version. |
+
+## `stageItem.reject`
+
+Delete the staged version and its files, so the version number can be
+staged again.
+
+- **Target:** a StageItem
+- **Privilege:** `package:write`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+  <Badge text="Needs confirmation" /> <Badge text="Step-up" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                      |
+| --------- | ------ | -------- | -------------------------------- |
+| `target`  | string | Yes      | The `$id` of the staged version. |

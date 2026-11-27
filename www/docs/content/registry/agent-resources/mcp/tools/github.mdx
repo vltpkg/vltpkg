@@ -1,0 +1,78 @@
+---
+title: GitHub
+description:
+  Link, refresh and unlink the GitHub App installations an account
+  uses.
+sidebar:
+  label: GitHub
+---
+
+An account's GitHub installations live at
+`/account/<account>/github/installation`, and each one at
+`…/github/installation/<id>`. They grant the repositories that
+[projects](/registry/agent-resources/mcp/tools/projects) and
+[trusted publishers](/registry/agent-resources/mcp/tools/trusted-publishers)
+use.
+
+```json title="Example call"
+{
+  "name": "github.installation.refresh",
+  "arguments": {
+    "target": "/account/acme/github/installation/9fQ2mL7xW1cR4tY8pZ3nBv"
+  }
+}
+```
+
+## `github.installation.link`
+
+Link a GitHub App installation to the account, after installing the
+App on GitHub.
+
+- **Target:** a GitHubInstallationCollection. Offered alongside its
+  `install` link.
+- **Privilege:** `connection:write`
+- **Hints:** none
+
+Every input comes from the query string of GitHub's redirect after the
+App is installed, which the agent never sees. Instead, send the person
+to the collection's `install` link.
+
+### Parameters
+
+| Parameter              | Type    | Required | Description                                                                                     |
+| ---------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `target`               | string  | Yes      | The `$id` of the account's installation collection.                                             |
+| `input.installationId` | integer | Yes      | GitHub's `installation_id`. At least 1.                                                         |
+| `input.code`           | string  | Yes      | The OAuth code GitHub issues when it authorizes the user during installation. 1–255 characters. |
+| `input.state`          | string  | Yes      | The state from the install link. 1–1024 characters.                                             |
+
+## `github.installation.unlink`
+
+Unlink the installation from the account. The App stays installed on
+GitHub.
+
+- **Target:** a GitHubInstallation
+- **Privilege:** `connection:write`
+- **Hints:** <Badge text="Destructive" /> <Badge text="Idempotent" />
+
+### Parameters
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `target`  | string | Yes      | The `$id` of the installation. |
+
+## `github.installation.refresh`
+
+Read the installation's repositories from GitHub again.
+
+- **Target:** a GitHubInstallation. While GitHub refuses to act as the
+  installation, the action is listed with `available: false` and a
+  `reason`.
+- **Privilege:** `connection:write`
+- **Hints:** none
+
+### Parameters
+
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `target`  | string | Yes      | The `$id` of the installation. |

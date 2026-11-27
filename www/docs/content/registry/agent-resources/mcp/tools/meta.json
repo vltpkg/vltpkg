@@ -1,0 +1,15 @@
+{
+  "title": "Tools",
+  "pages": [
+    "read",
+    "packages",
+    "versions",
+    "staging",
+    "trusted-publishers",
+    "projects",
+    "github",
+    "members",
+    "account",
+    "connected-apps"
+  ]
+}
