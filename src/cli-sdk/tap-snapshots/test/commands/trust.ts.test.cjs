@@ -91,7 +91,8 @@ package is \`<pkg>\`, else the configured registry.
 `
 
 exports[`test/commands/trust.ts > TAP > views > created 1`] = `
-Trusted publisher created for @acme/utils:
+
+🤝 Trusted publisher created for @acme/utils:
 type: github
 id: 3f2a1c9e-8b7d-4e6f-9a0b-1c2d3e4f5a6b
 file: release.yml
@@ -101,7 +102,8 @@ permissions: publish, stage publish
 `
 
 exports[`test/commands/trust.ts > TAP > views > created dry run 1`] = `
-Would create this trusted publisher for @acme/utils (dry run):
+
+🤲 Would create this trusted publisher for @acme/utils (dry run):
 type: github
 file: release.yml
 repository: acme/utils

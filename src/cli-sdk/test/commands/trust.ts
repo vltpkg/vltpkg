@@ -1,9 +1,11 @@
 import { PackageJson } from '@vltpkg/package-json'
 import * as RC from '@vltpkg/registry-client'
+import { styleText } from 'node:util'
 import t from 'tap'
 import type { Test } from 'tap'
 import type { CommandResult } from '../../src/commands/trust.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import * as Output from '../../src/output.ts'
 
 type Sent = {
   url: string
@@ -24,6 +26,8 @@ let reply: (url: string) => Reply
 let tty: boolean
 let answer: boolean | undefined
 const questions: string[] = []
+// whether stderr supports colors
+let stderrColors = false
 
 const Trust = await t.mockImport<
   typeof import('../../src/commands/trust.ts')
@@ -53,6 +57,16 @@ const Trust = await t.mockImport<
       questions.push(q)
       return answer
     },
+  },
+  '../../src/output.ts': {
+    ...Output,
+    styleTextStderr: (
+      format: Parameters<typeof styleText>[0],
+      s: string,
+    ) =>
+      stderrColors ?
+        styleText(format, s, { validateStream: false })
+      : s,
   },
 })
 
@@ -111,6 +125,7 @@ t.beforeEach(() => {
   questions.length = 0
   tty = false
   answer = undefined
+  stderrColors = false
   reply = () => ({ statusCode: 200, json: () => [] })
 })
 
@@ -140,6 +155,78 @@ t.test('views', async t => {
     human({ package: PKG, ...noId }, { 'dry-run': true }),
     'created dry run',
   )
+})
+
+t.test('human views use the vlt stage colors', async t => {
+  const bold = (s: string) => `\x1b[1m${s}\x1b[22m`
+  const key = (k: string) => bold(`${k}:`)
+  const id = `${key('id')} \x1b[33m${ID}\x1b[39m`
+  const human = (result: CommandResult, options = {}) =>
+    Trust.views.human(result, { colors: true }, mkConf([], options))
+  t.equal(
+    human({ package: PKG, ...item }),
+    [
+      '',
+      `\x1b[0m🤝 ${bold('Trusted publisher created for @acme/utils:')}`,
+      `${key('type')} github`,
+      id,
+      `${key('file')} release.yml`,
+      `${key('repository')} acme/utils`,
+      `${key('environment')} production`,
+      `${key('permissions')} publish, stage publish\x1b[0m`,
+    ].join('\n'),
+    'blank line, bold title and keys, highlighted id, reset',
+  )
+  t.equal(
+    human({ package: PKG, ...noId }, { 'dry-run': true }).split(
+      '\n',
+    )[1],
+    `\x1b[0m🤲 ${bold('Would create this trusted publisher for @acme/utils (dry run):')}`,
+  )
+  t.equal(
+    human([item, { type: 'github', file: 'ci.yaml' }]),
+    [
+      `\x1b[0m${key('type')} github`,
+      id,
+      `${key('file')} release.yml`,
+      `${key('repository')} acme/utils`,
+      `${key('environment')} production`,
+      `${key('permissions')} publish, stage publish`,
+      '',
+      `${key('type')} github`,
+      `${key('file')} ci.yaml\x1b[0m`,
+    ].join('\n'),
+    'list: bold keys, highlighted id, reset',
+  )
+  for (const result of [[item], { package: PKG, ...item }]) {
+    t.notMatch(
+      Trust.views.human(result, {}, mkConf([])),
+      '\x1b',
+      'no colors',
+    )
+  }
+
+  const errs = t.capture(console, 'error').args
+  tty = true
+  answer = false
+  stderrColors = true
+  const { exitCode } = process
+  t.teardown(() => {
+    process.exitCode = exitCode
+  })
+  await Trust.command(mkConf(['github', PKG], all))
+  const [[summary]] = errs() as [[string]]
+  t.equal(
+    summary.split('\n').slice(0, 4).join('\n'),
+    [
+      '',
+      `\x1b[0m🤲 ${bold('Establishing trust between @acme/utils and GitHub Actions.')}`,
+      'Anyone with write access to acme/utils can publish and stage publish @acme/utils.',
+      `${key('type')} github`,
+    ].join('\n'),
+    'the question is introduced like the result',
+  )
+  t.match(summary, /\x1b\[0m$/)
 })
 
 t.test('a subcommand is required', async t => {
@@ -398,7 +485,8 @@ t.test('github asks before sending', async t => {
   })
   const errs = t.capture(console, 'error').args
   const summary = [
-    'Establishing trust between @acme/utils and GitHub Actions.',
+    '',
+    '🤲 Establishing trust between @acme/utils and GitHub Actions.',
     'Anyone with write access to acme/utils can publish and stage publish @acme/utils.',
     'type: github',
     'file: release.yml',

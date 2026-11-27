@@ -9,14 +9,15 @@ import type { CacheEntry } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import hostedGitInfo from 'hosted-git-info'
 import { basename, dirname } from 'node:path'
+import { styleText } from 'node:util'
 import { commandUsage } from '../config/usage.ts'
 import type { LoadedConfig } from '../config/index.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { stderr } from '../output.ts'
+import { stderr, styleTextStderr } from '../output.ts'
 import { localPublishRegistry } from '../publish-config.ts'
 import { resolveRegistry } from '../require-registry.ts'
 import { confirm, interactive } from '../skills-prompt.ts'
-import type { Views } from '../view.ts'
+import type { ViewOptions, Views } from '../view.ts'
 
 const { fromUrl } = hostedGitInfo as unknown as {
   fromUrl: (
@@ -166,7 +167,31 @@ const permissionLabels: Record<string, string> = {
   createStagedPackage: 'stage publish',
 }
 
-const itemLines = ({ permissions, ...rest }: TrustItem): string =>
+type Style = (s: string) => string
+type Styles = Record<'bold' | 'reset' | 'yellow', Style>
+
+// colors as `vlt stage`: bold keys and titles, the id highlighted
+const styles = (
+  style: (format: 'bold' | 'reset' | 'yellow', s: string) => string,
+): Styles => ({
+  bold: s => style('bold', s),
+  reset: s => style('reset', s),
+  yellow: s => style('yellow', s),
+})
+
+const plain = styles((_, s) => s)
+
+const viewStyles = ({ colors }: ViewOptions): Styles =>
+  colors ?
+    styles((format, s) =>
+      styleText(format, s, { validateStream: false }),
+    )
+  : plain
+
+const itemLines = (
+  { permissions, ...rest }: TrustItem,
+  { bold, yellow }: Styles,
+): string =>
   Object.entries({
     ...rest,
     ...(permissions && {
@@ -175,14 +200,15 @@ const itemLines = ({ permissions, ...rest }: TrustItem): string =>
         .join(', '),
     }),
   })
-    .map(([k, v]) => `${k}: ${v}`)
+    .map(([k, v]) => `${bold(`${k}:`)} ${k === 'id' ? yellow(v) : v}`)
     .join('\n')
 
 export const views = {
-  human: (result, _, conf) => {
+  human: (result, options, conf) => {
+    const s = viewStyles(options)
     if (Array.isArray(result)) {
       return result.length ?
-          result.map(itemLines).join('\n\n')
+          s.reset(result.map(i => itemLines(i, s)).join('\n\n'))
         : 'No trusted publishers found.'
     }
     if ('revoked' in result) {
@@ -194,9 +220,10 @@ export const views = {
     const { package: pkg, ...item } = result
     const heading =
       conf.options['dry-run'] ?
-        `Would create this trusted publisher for ${pkg} (dry run):`
-      : `Trusted publisher created for ${pkg}:`
-    return `${heading}\n${itemLines(item)}`
+        `🤲 ${s.bold(`Would create this trusted publisher for ${pkg} (dry run):`)}`
+      : `🤝 ${s.bold(`Trusted publisher created for ${pkg}:`)}`
+    // a blank line apart from the question and sign-in printed before
+    return `\n${s.reset(`${heading}\n${itemLines(item, s)}`)}`
   },
   json: r => r,
 } as const satisfies Views<CommandResult>
@@ -353,14 +380,17 @@ const github = async (
   // the registry is resolved, or prompted for, before the question
   const url = await trustUrl(conf, name)
   if (!o.yes) {
+    const s = styles(styleTextStderr)
     stderr(
-      [
-        `Establishing trust between ${name} and GitHub Actions.`,
-        `Anyone with write access to ${repository} can ${permissions
-          .map(p => permissionLabels[p])
-          .join(' and ')} ${name}.`,
-        itemLines(toItem(config)),
-      ].join('\n'),
+      `\n${s.reset(
+        [
+          `🤲 ${s.bold(`Establishing trust between ${name} and GitHub Actions.`)}`,
+          `Anyone with write access to ${repository} can ${permissions
+            .map(p => permissionLabels[p])
+            .join(' and ')} ${name}.`,
+          itemLines(toItem(config), s),
+        ].join('\n'),
+      )}`,
     )
     if (!(await confirm('Do you want to proceed? (y/N) '))) {
       stderr('Cancelled: no trusted publisher was created.')
