@@ -6,7 +6,7 @@
       "src": "www/docs/package.json",
       "use": "@vercel/next",
       "config": {
-        "installCommand": "npm i -g vlt@1.8.2 && \"$(npm prefix -g)/bin/vlt\" --version && \"$(npm prefix -g)/bin/vlt\" install",
+        "installCommand": "npm i -g vlt@1.1.1 && \"$(npm prefix -g)/bin/vlt\" --version && \"$(npm prefix -g)/bin/vlt\" install",
         "buildCommand": "npm run build"
       }
     }

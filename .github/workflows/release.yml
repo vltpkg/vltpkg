@@ -362,9 +362,6 @@ jobs:
           done
         env:
           NPM_CONFIG_PROVENANCE: false
-          # vlt.json installs through vlt's read-only public npm mirror, so
-          # the publish target has to be set here
-          VLT_REGISTRY: https://registry.npmjs.org/
 
       - name: Create Git Tag
         if: needs.pre-check.outputs.dry-run != 'true'
