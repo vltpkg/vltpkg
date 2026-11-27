@@ -1235,6 +1235,79 @@ t.test('spec edge removal', async t => {
   )
 })
 
+t.test('an explicit add must match a modifier value', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+    'vlt.json': JSON.stringify({
+      modifiers: { ':root > #foo': '1.0.0' },
+    }),
+  })
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      return spec.final.name === 'foo' ?
+          { name: 'foo', version: '1.0.0' }
+        : null
+    },
+  } as PackageInfoClient
+  t.chdir(dir)
+  reload('modifiers', 'project')
+
+  const add = (arg: string) => {
+    const graph = new Graph({
+      projectRoot: dir,
+      ...configData,
+      mainManifest: { name: 'my-project', version: '1.0.0' },
+    })
+    const dep = asDependency({
+      spec: Spec.parseArgs(arg, configData),
+      type: 'prod',
+    })
+    const modifiers = GraphModifier.load(configData)
+    modifiers.tryImporter(graph.mainImporter)
+    return {
+      graph,
+      result: appendNodes(
+        packageInfo,
+        graph,
+        graph.mainImporter,
+        [dep],
+        new PathScurry(dir),
+        configData,
+        new Set<DepID>(),
+        new Map([['foo', dep]]),
+        modifiers,
+        modifiers.tryDependencies(graph.mainImporter, [dep]),
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        new Map([[graph.mainImporter.id, new Set(['foo'])]]),
+      ),
+    }
+  }
+
+  await t.rejects(add('foo@2.0.0').result, {
+    message:
+      'Cannot add foo@2.0.0: a graph modifier sets foo to 1.0.0',
+    cause: { code: 'ECONFIG', found: ':root > #foo' },
+  })
+
+  for (const arg of ['foo', 'foo@1.0.0']) {
+    const { graph, result } = add(arg)
+    await result
+    t.equal(
+      graph.mainImporter.edgesOut.get('foo')?.to?.version,
+      '1.0.0',
+      `${arg} installs the modifier value`,
+    )
+  }
+})
+
 t.test(
   'a file: modifier value resolves from the project root',
   async t => {

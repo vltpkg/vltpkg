@@ -450,6 +450,17 @@ const fetchManifestsForDeps = async (
         }
         continue
       }
+      // an explicit add the modifier would replace is never installed
+      if (
+        isExplicit &&
+        originalSpec.bareSpec &&
+        originalSpec.bareSpec !== spec.bareSpec
+      ) {
+        throw error(
+          `Cannot add ${originalSpec}: a graph modifier sets ${originalSpec.name} to ${spec.bareSpec}`,
+          { code: 'ECONFIG', found: queryModifier },
+        )
+      }
     }
     entries.push({
       spec,
