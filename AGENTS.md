@@ -78,16 +78,16 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
 1. **Format:** `vlr format`
 2. **Lint:** `vlr lint` — see
    `.cursor/rules/linting-error-handler.mdc` for common fixes
-3. **Test:** `vlr test -Rtap --disable-coverage` (single file: append
-   `test/foo.ts`)
-4. **Coverage:** `vlr test -Rsilent --coverage-report=text-lcov`
+3. **Test:** `vlr test -- -Rtap --disable-coverage` (single file:
+   append `test/foo.ts`)
+4. **Coverage:** `vlr test -- -Rsilent --coverage-report=text-lcov`
    (single file: append `test/foo.ts`)
 5. **Types:** `vlr posttest`
 
 ## Snapshots
 
 Update only when changes are intentional:
-`vlr snap -Rtap --disable-coverage test/foo.ts`
+`vlr snap -- -Rtap --disable-coverage test/foo.ts`
 
 ## Test Quality
 
