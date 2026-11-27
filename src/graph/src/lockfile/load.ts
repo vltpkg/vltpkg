@@ -14,7 +14,12 @@ import { resolve } from 'node:path'
 import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
 import { Graph } from '../graph.ts'
-import { LOCKFILE_VERSION, scopeRegistryDefaults } from './types.ts'
+import {
+  LOCKFILE_VERSION,
+  lockfileRegistryAliases,
+  scopeRegistryDefaults,
+  usedRegistries,
+} from './types.ts'
 import type { PathScurry } from 'path-scurry'
 import type { NormalizedManifest } from '@vltpkg/types'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -295,10 +300,15 @@ const unpinnedNpm = (
  * Compares the current config against the `options` block of a lockfile
  * and returns the entries that differ. The comparison is per entry, so
  * reordering keys in `vlt.json` is not a change.
+ *
+ * When `aliases` is given (see {@link lockfileRegistryAliases}), the
+ * `registries` entries that none of the lockfile's nodes and edges use
+ * are left out of the comparison.
  */
 export const diffLockfileOptions = (
   options: LoadOptions,
   lockfileOptions: LockfileData['options'] = {},
+  aliases?: Set<string>,
 ): OptionsChange[] => {
   const current = asRecord(buildCurrentOptions(options))
   const stored = asRecord(lockfileOptions)
@@ -337,17 +347,36 @@ export const diffLockfileOptions = (
         defaults && isRecordStringString(from) ?
           removeDefaultItems(defaults, from)
         : (from as Record<string, string> | undefined)
-      diffRecords(
-        section,
-        storedRecord,
-        section === 'registries' ?
-          withoutUnpinnedNpm(
-            to as Record<string, string> | undefined,
-            storedRecord,
-          )
-        : (to as Record<string, string>),
-        changes,
-      )
+      if (section === 'registries') {
+        // an alias nothing in the lockfile uses changes nothing, on
+        // either side (a lockfile may still store one from before)
+        const used = (record: Record<string, string> | undefined) =>
+          record && aliases ?
+            usedRegistries(
+              record,
+              aliases,
+              options['default-registry-alias'],
+            )
+          : record
+        diffRecords(
+          section,
+          used(storedRecord),
+          used(
+            withoutUnpinnedNpm(
+              to as Record<string, string> | undefined,
+              storedRecord,
+            ),
+          ),
+          changes,
+        )
+      } else {
+        diffRecords(
+          section,
+          storedRecord,
+          to as Record<string, string>,
+          changes,
+        )
+      }
     }
   }
   return changes
@@ -406,12 +435,11 @@ export const loadObject = (
       }
     )['scope-registries']
 
-  // Detect whether the current config options differ from those
-  // stored in the lockfile.  When they do the ideal builder must
-  // reset edges and rebuild the graph.
+  // the current config options are diffed against these once the
+  // edges are loaded; when they differ the ideal builder must reset
+  // edges and rebuild the graph.
   /* c8 ignore next */
   const lockfileOptions = lockfileData.options ?? {}
-  const optionsChanges = diffLockfileOptions(options, lockfileOptions)
 
   // Optimize options merging - only create new objects when needed
   const mergedOptions = {
@@ -449,8 +477,6 @@ export const loadObject = (
     mainManifest,
     monorepo,
   })
-  graph.optionsChanges = optionsChanges
-  graph.optionsChanged = optionsChanges.length > 0
   graph.unpinnedNpmRegistry = unpinnedNpm(
     options.registries,
     registries,
@@ -475,6 +501,19 @@ export const loadObject = (
         ]),
       }
   loadEdges(graph, lockfileData.edges, mergedOptions, specCache)
+
+  // compared after the edges load: the aliases in use come from their
+  // parsed specs, which resolve catalogs and nested registry specs
+  const optionsChanges = diffLockfileOptions(
+    options,
+    lockfileOptions,
+    lockfileRegistryAliases(
+      Object.keys(lockfileData.nodes),
+      [...graph.edges].map(edge => edge.spec),
+    ),
+  )
+  graph.optionsChanges = optionsChanges
+  graph.optionsChanged = optionsChanges.length > 0
 
   graph.sortNodes()
   return graph

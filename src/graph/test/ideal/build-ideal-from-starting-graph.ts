@@ -2831,11 +2831,24 @@ t.test('canonicalization only runs after a write', async t => {
     const projectRoot = await seed('options')
     const graph = await rebuild(projectRoot, {
       registries: {
-        npm: 'https://registry.npmjs.org/',
-        custom: 'http://example.com/other',
+        // `custom` routes nothing in this graph, so only an alias the
+        // nodes use is an options change
+        npm: 'https://registry.example.com/',
+        custom: 'http://example.com',
       },
     })
-    t.ok(graph.optionsChanges.length, 'options differ')
+    t.strictSame(
+      graph.optionsChanges,
+      [
+        {
+          section: 'registries',
+          key: 'npm',
+          from: 'https://registry.npmjs.org/',
+          to: 'https://registry.example.com/',
+        },
+      ],
+      'only the used alias differs',
+    )
     t.equal(calls, 1, 'the pass ran')
   })
 

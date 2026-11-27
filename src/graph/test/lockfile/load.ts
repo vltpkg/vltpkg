@@ -25,6 +25,7 @@ import {
   loadObject,
 } from '../../src/lockfile/load.ts'
 import { loadEdges } from '../../src/lockfile/load-edges.ts'
+import { lockfileRegistryAliases } from '../../src/lockfile/types.ts'
 import type {
   LockfileData,
   LockfileEdgeKey,
@@ -539,7 +540,17 @@ t.test(
           lorem: 'http://lorem',
         },
       },
-      nodes: {},
+      // nodes that use the aliases, so they are saved back
+      nodes: {
+        [joinDepIDTuple(['registry', 'example', 'foo@1.0.0'])]: [
+          0,
+          'foo',
+        ] satisfies LockfileNode,
+        [joinDepIDTuple(['registry', 'lorem', 'bar@1.0.0'])]: [
+          0,
+          'bar',
+        ] satisfies LockfileNode,
+      },
       edges: {},
     }
     t.matchSnapshot(
@@ -564,7 +575,13 @@ t.test('missing options object', async t => {
   const lockfileData = {
     lockfileVersion: 1,
     options: {},
-    nodes: {},
+    // a node that uses the alias, so it is saved back
+    nodes: {
+      [joinDepIDTuple(['registry', 'example', 'baz@1.0.0'])]: [
+        0,
+        'baz',
+      ],
+    },
     edges: {},
   } as LockfileData
   t.matchSnapshot(
@@ -2115,8 +2132,15 @@ t.test('diffLockfileOptions', async t => {
     ] as [SpecOptions, LockfileData['options']][]) {
       const loadOptions = { ...options, mainManifest, projectRoot }
       const lockfileData = { ...baseLockfileData, options: stored }
-      const changes = diffLockfileOptions(loadOptions, stored)
       const graph = loadObject(loadOptions, lockfileData)
+      const changes = diffLockfileOptions(
+        loadOptions,
+        stored,
+        lockfileRegistryAliases(
+          Object.keys(lockfileData.nodes),
+          [...graph.edges].map(edge => edge.spec),
+        ),
+      )
       t.strictSame(graph.optionsChanges, changes, 'same list')
       t.equal(
         graph.optionsChanged,
@@ -2279,6 +2303,145 @@ t.test('the built-in npm mirror and registries.npm', async t => {
     loaded.nodes.get(npmId)?.options.registries?.npm,
     npmjs,
     'its nodes too',
+  )
+})
+
+t.test('registries the lockfile does not use', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  // a user config alias the project never uses, vltpkg/vltpkg#2208
+  const main = 'https://registry.vlt.io/vltpkg/main/'
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const acmeId = joinDepIDTuple(['registry', 'acme', 'foo@1.0.0'])
+  const lockfileData = (options: LockfileData['options']) =>
+    ({
+      lockfileVersion: 1,
+      options,
+      nodes: { [acmeId]: [0, 'foo', 'sha512-abc=='] },
+      edges: {
+        [edgeKey(['file', '.'], 'foo')]:
+          `prod acme:foo@^1.0.0 ${acmeId}`,
+      },
+    }) as unknown as LockfileData
+  const current = (registries: Record<string, string>) => ({
+    registries,
+    mainManifest,
+    projectRoot,
+  })
+  const stored = { registries: { npm: npmjs, acme } }
+
+  t.equal(
+    loadObject(
+      current({ npm: npmjs, acme, main }),
+      lockfileData(stored),
+    ).optionsChanged,
+    false,
+    'an unused alias only the current config has is not a change',
+  )
+  t.equal(
+    loadObject(
+      current({ npm: npmjs, acme }),
+      lockfileData({ registries: { npm: npmjs, acme, main } }),
+    ).optionsChanged,
+    false,
+    'nor is one that an older lockfile stored, so a frozen install passes',
+  )
+  t.strictSame(
+    loadObject(current({ npm: npmjs }), lockfileData(stored))
+      .optionsChanges,
+    [
+      {
+        section: 'registries',
+        key: 'acme',
+        from: acme,
+        to: undefined,
+      },
+    ],
+    'a used alias that is gone is a change',
+  )
+  t.strictSame(
+    loadObject(
+      current({ npm: npmjs, acme: 'https://other.example.com/' }),
+      lockfileData(stored),
+    ).optionsChanges,
+    [
+      {
+        section: 'registries',
+        key: 'acme',
+        from: acme,
+        to: 'https://other.example.com/',
+      },
+    ],
+    'as is a used alias with a new URL',
+  )
+  t.strictSame(
+    diffLockfileOptions(
+      {
+        ...current({ npm: npmjs, main }),
+        'default-registry-alias': 'main',
+      },
+      { 'default-registry-alias': 'main' },
+      new Set(),
+    ),
+    [
+      {
+        section: 'registries',
+        key: 'main',
+        from: undefined,
+        to: main,
+      },
+    ],
+    'the default-registry-alias entry is compared while nothing uses it',
+  )
+  t.strictSame(
+    diffLockfileOptions(current({ npm: npmjs, acme, main }), stored),
+    [
+      {
+        section: 'registries',
+        key: 'main',
+        from: undefined,
+        to: main,
+      },
+    ],
+    'without the lockfile aliases, every entry is compared',
+  )
+
+  // an optional catalog: dep that failed to install stores no alias in
+  // its edge, only the catalog entry names it
+  const catalog = { bar: 'acme:bar@^1.0.0' }
+  const catalogLockfile = (options: LockfileData['options']) =>
+    ({
+      lockfileVersion: 1,
+      options,
+      nodes: {},
+      edges: {
+        [edgeKey(['file', '.'], 'bar')]: 'optional catalog: MISSING',
+      },
+    }) as unknown as LockfileData
+  t.strictSame(
+    loadObject(
+      { ...current({ npm: npmjs }), catalog },
+      catalogLockfile({ catalog, registries: { npm: npmjs, acme } }),
+    ).optionsChanges,
+    [
+      {
+        section: 'registries',
+        key: 'acme',
+        from: acme,
+        to: undefined,
+      },
+    ],
+    'the alias of a catalog: edge is used, so its removal is a change',
+  )
+  t.equal(
+    loadObject(
+      { ...current({ npm: npmjs, acme }), catalog },
+      catalogLockfile({ registries: { npm: npmjs, acme } }),
+    ).optionsChanges.find(c => c.section === 'registries'),
+    undefined,
+    'it is also used through the current catalog',
   )
 })
 

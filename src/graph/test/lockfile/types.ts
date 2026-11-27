@@ -1,6 +1,6 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { defaultScopeRegistries } from '@vltpkg/spec'
+import { defaultScopeRegistries, Spec } from '@vltpkg/spec'
 import type {
   LockfileData,
   LockfileNode,
@@ -24,7 +24,9 @@ import {
   BuildStateBuilt,
   BuildStateFailed,
   LOCKFILE_VERSION,
+  lockfileRegistryAliases,
   scopeRegistryDefaults,
+  usedRegistries,
 } from '../../src/lockfile/types.ts'
 
 t.test('lockfile type checks', t => {
@@ -494,5 +496,78 @@ t.test('scopeRegistryDefaults', async t => {
     scopeRegistryDefaults({ jsr: 'https://jsr.example.com/' }),
     { '@jsr': 'https://jsr.example.com/' },
     '@jsr follows the jsr alias',
+  )
+})
+
+t.test('lockfileRegistryAliases', async t => {
+  const acme = joinDepIDTuple(['registry', 'acme', 'foo@1.0.0'])
+  const npm = joinDepIDTuple(['registry', '', 'bar@1.0.0'])
+  const file = joinDepIDTuple(['file', './x'])
+  const options = {
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      acme: 'https://acme.example.com/',
+      other: 'https://other.example.com/',
+      deep: 'https://deep.example.com/',
+    },
+    catalog: { a: 'npm:a@deep:a@^1.0.0' },
+    catalogs: {
+      'team stable': { b: 'acme:b@^1.0.0' },
+      team: { c: 'other:c@^1.0.0' },
+    },
+  }
+  const spec = (name: string, bareSpec: string) =>
+    Spec.parse(name, bareSpec, options)
+
+  t.strictSame(
+    lockfileRegistryAliases(
+      [acme, npm, file],
+      [spec('bar', '>=1.0.0 <2.0.0'), spec('x', 'file:./x')],
+    ),
+    new Set(['acme', 'npm']),
+    'node ids name their registry, ranges and file specs nothing',
+  )
+  t.strictSame(lockfileRegistryAliases([], []), new Set())
+  t.strictSame(
+    lockfileRegistryAliases(
+      [],
+      [
+        spec('foo', 'npm:foo@acme:bar@1.0.0'),
+        spec('@s/c', 'npm:@s/c@other:@t/d@^1.0.0'),
+      ],
+    ),
+    new Set(['npm', 'acme', 'other']),
+    'every alias in a registry spec chain, scoped or not',
+  )
+  t.strictSame(
+    lockfileRegistryAliases(
+      [],
+      [
+        spec('a', 'catalog:'),
+        spec('b', 'catalog:team stable'),
+        spec('d', 'npm:c@catalog:team'),
+      ],
+    ),
+    new Set(['npm', 'deep', 'acme', 'other']),
+    'catalog entries, a catalog name with spaces, a catalog in a chain',
+  )
+})
+
+t.test('usedRegistries', async t => {
+  const registries = {
+    npm: 'https://registry.npmjs.org/',
+    acme: 'https://acme.example.com/',
+    internal: 'https://internal.example.com/',
+    main: 'https://registry.vlt.io/vltpkg/main/',
+  }
+  t.strictSame(
+    usedRegistries(registries, new Set(['acme'])),
+    { npm: registries.npm, acme: registries.acme },
+    'npm and the used aliases',
+  )
+  t.strictSame(
+    usedRegistries(registries, new Set(), 'internal'),
+    { npm: registries.npm, internal: registries.internal },
+    'and the default-registry-alias entry',
   )
 })

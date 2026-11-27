@@ -452,6 +452,189 @@ t.test('keeps registries.npm unpinned as it was loaded', async t => {
   )
 })
 
+t.test('leaves out registries no node or edge uses', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  const optional = 'https://optional.example.com/'
+  const internal = 'https://internal.example.com/'
+  const specOptions = {
+    registries: {
+      npm: npmjs,
+      acme,
+      optional,
+      internal,
+      // a user config alias the project never uses, vltpkg/vltpkg#2208
+      main: 'https://registry.vlt.io/vltpkg/main/',
+    },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { foo: 'acme:foo@^1.0.0' },
+      optionalDependencies: { bar: 'optional:bar@^1.0.0' },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo', 'acme:foo@^1.0.0', specOptions),
+    { name: 'foo', version: '1.0.0' },
+  )
+  // an optional dependency that failed to install has no node
+  graph.addEdge(
+    'optional',
+    Spec.parse('bar', 'optional:bar@^1.0.0', specOptions),
+    graph.mainImporter,
+  )
+
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options,
+    { registries: { npm: npmjs, acme, optional } },
+    'keeps npm, the alias of a node and the alias of a MISSING edge',
+  )
+  t.strictSame(
+    lockfileData({
+      ...specOptions,
+      'default-registry-alias': 'internal',
+      graph,
+    }).options,
+    {
+      'default-registry-alias': 'internal',
+      registries: { npm: npmjs, acme, optional, internal },
+    },
+    'keeps the default-registry-alias entry',
+  )
+})
+
+t.test('keeps the alias of a catalog: edge with no node', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  const specOptions = {
+    catalog: { bar: 'acme:bar@^1.0.0' },
+    registries: { npm: npmjs, acme },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      optionalDependencies: { bar: 'catalog:' },
+    },
+  })
+  // the edge stores `catalog:`, so only the catalog entry names `acme`
+  graph.addEdge(
+    'optional',
+    Spec.parse('bar', 'catalog:', specOptions),
+    graph.mainImporter,
+  )
+  const data = lockfileData({ ...specOptions, graph })
+  t.match(Object.values(data.edges), ['optional catalog: MISSING'])
+  t.strictSame(data.options.registries, { npm: npmjs, acme })
+})
+
+t.test('keeps every alias of a spec chain with no node', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  const specOptions = { registries: { npm: npmjs, acme } }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      optionalDependencies: { foo: 'npm:foo@acme:bar@1.0.0' },
+    },
+  })
+  // the inner `acme:` spec is parsed again on load
+  graph.addEdge(
+    'optional',
+    Spec.parse('foo', 'npm:foo@acme:bar@1.0.0', specOptions),
+    graph.mainImporter,
+  )
+  t.strictSame(
+    lockfileData({ ...specOptions, graph }).options.registries,
+    { npm: npmjs, acme },
+  )
+})
+
+t.test(
+  'keeps the alias of a catalog nested in a spec chain',
+  async t => {
+    const npmjs = 'https://registry.npmjs.org/'
+    const acme = 'https://acme.example.com/'
+    const specOptions = {
+      catalogs: { team: { foo: 'acme:bar@^1.0.0' } },
+      registries: { npm: npmjs, acme },
+    }
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
+    const graph = new Graph({
+      projectRoot,
+      ...specOptions,
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+        optionalDependencies: { foo: 'npm:foo@catalog:team' },
+      },
+    })
+    graph.addEdge(
+      'optional',
+      Spec.parse('foo', 'npm:foo@catalog:team', specOptions),
+      graph.mainImporter,
+    )
+    t.strictSame(
+      lockfileData({ ...specOptions, graph }).options.registries,
+      { npm: npmjs, acme },
+    )
+  },
+)
+
+t.test('keeps an alias that only a node id names', async t => {
+  const npmjs = 'https://registry.npmjs.org/'
+  const acme = 'https://acme.example.com/'
+  // a scoped registry whose URL matches an alias mints `~acme~` ids
+  const specOptions = {
+    registries: { npm: npmjs, acme },
+    'scoped-registries': { '@acme': acme },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: { '@acme/foo': '^1.0.0' },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('@acme/foo', '^1.0.0', specOptions),
+    { name: '@acme/foo', version: '1.0.0' },
+  )
+  const data = lockfileData({ ...specOptions, graph })
+  t.match(Object.keys(data.nodes), [/^~acme~/], 'the id names acme')
+  t.match(Object.values(data.edges), [/^prod \^1\.0\.0 /])
+  t.strictSame(data.options.registries, { npm: npmjs, acme })
+})
+
 t.test('persists a non-default default-registry-alias', async t => {
   const mainManifest = {
     name: 'my-project',

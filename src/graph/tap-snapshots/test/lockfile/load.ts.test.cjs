@@ -290,7 +290,14 @@ exports[`test/lockfile/load.ts > TAP > missing options object > should be able t
       "example": "http://foo"
     }
   },
-  "nodes": {},
+  "nodes": {
+    "~example~baz@1.0.0": [
+      0,
+      "baz",
+      null,
+      "http://foo/baz/-/baz-1.0.0.tgz"
+    ]
+  },
   "edges": {}
 }
 `
@@ -305,7 +312,20 @@ exports[`test/lockfile/load.ts > TAP > option-defined values should overwrite lo
       "lorem": "http://lorem"
     }
   },
-  "nodes": {},
+  "nodes": {
+    "~example~foo@1.0.0": [
+      0,
+      "foo",
+      null,
+      "http://bar/foo/-/foo-1.0.0.tgz"
+    ],
+    "~lorem~bar@1.0.0": [
+      0,
+      "bar",
+      null,
+      "http://lorem/bar/-/bar-1.0.0.tgz"
+    ]
+  },
   "edges": {}
 }
 `

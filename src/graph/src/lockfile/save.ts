@@ -20,7 +20,9 @@ import {
   getFlagNumFromNode,
   getBuildStateFromNode,
   LOCKFILE_VERSION,
+  lockfileRegistryAliases,
   scopeRegistryDefaults,
+  usedRegistries,
 } from './types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -224,9 +226,26 @@ export const lockfileData = ({
     modifiers && isRecordStringString(modifiers.config) ?
       modifiers.config
     : undefined
+  const nodes = formatNodes(
+    graph.nodes.values(),
+    saveManifests,
+    saveBuildData,
+    registry,
+    throwOnMissingManifest,
+  )
+  const edges = formatEdges(graph.edges)
+  // an alias no node or edge uses (e.g. one from the user config) is
+  // left out, so the lockfile does not depend on the machine writing it
   const cleanRegistries =
     isRecordStringString(registries) ?
-      removeDefaultItems(registryDefaults(graph), registries)
+      usedRegistries(
+        removeDefaultItems(registryDefaults(graph), registries),
+        lockfileRegistryAliases(
+          Object.keys(nodes),
+          [...graph.edges].map(edge => edge.spec),
+        ),
+        defaultRegistryAlias,
+      )
     : undefined
   const cleanScopeRegistries =
     isRecordStringString(scopeRegistries) ?
@@ -272,14 +291,8 @@ export const lockfileData = ({
         { 'git-host-archives': cleanGitHostArchives }
       : undefined),
     },
-    nodes: formatNodes(
-      graph.nodes.values(),
-      saveManifests,
-      saveBuildData,
-      registry,
-      throwOnMissingManifest,
-    ),
-    edges: formatEdges(graph.edges),
+    nodes,
+    edges,
   }
 }
 
