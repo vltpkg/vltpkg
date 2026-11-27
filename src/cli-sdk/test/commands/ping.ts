@@ -99,6 +99,7 @@ t.test(
           gh: 'https://npm.pkg.github.com/',
           npm: 'https://registry.vlt.io/upstream/npm/',
           main: 'https://registry.example.com/',
+          other: 'https://other.example.com/',
         },
       },
       positionals: [],
@@ -108,8 +109,9 @@ t.test(
     t.strictSame(
       result.map(r => [r.alias, r.registry]),
       [
-        ['default', 'https://registry.example.com/'],
         ['gh', 'https://npm.pkg.github.com/'],
+        ['main', 'https://registry.example.com/'],
+        ['other', 'https://other.example.com/'],
       ],
     )
   },
