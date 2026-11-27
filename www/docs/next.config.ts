@@ -8,6 +8,19 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: true,
   partialPrefetching: true,
+  // the Agent Skills Discovery index and the skill archives it lists
+  // (scripts/skills.mts) state their types instead of leaving them to
+  // the host's file extension table
+  headers: async () => [
+    {
+      source: '/.well-known/agent-skills/index.json',
+      headers: [{ key: 'Content-Type', value: 'application/json' }],
+    },
+    {
+      source: '/skills/:name.tar.gz',
+      headers: [{ key: 'Content-Type', value: 'application/gzip' }],
+    },
+  ],
   // the old Starlight site's URLs
   redirects: async () => [
     {

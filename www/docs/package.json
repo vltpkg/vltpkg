@@ -43,6 +43,8 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tailwindcss": "^4",
+    "tap": "catalog:",
+    "tar": "catalog:",
     "tw-animate-css": "^1.4.0",
     "typescript": "catalog:"
   },
@@ -51,9 +53,9 @@
     "node": "22.x"
   },
   "scripts": {
-    "prebuild": "node scripts/skills.mts && node scripts/typedoc.mts",
+    "prebuild": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/skills.mts && node scripts/typedoc.mts",
     "build": "next build",
-    "predev": "node scripts/skills.mts",
+    "predev": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/skills.mts",
     "dev": "next dev",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
@@ -62,14 +64,17 @@
     "lint:mdx": "node --experimental-strip-types --no-warnings ./scripts/lint-mdx.mts",
     "lint:skills": "node --experimental-strip-types --no-warnings ./scripts/lint-skills.mts",
     "prepare": "next typegen",
-    "snap": "true",
+    "snap": "tap",
     "start": "next start",
-    "test": "true",
+    "test": "tap",
     "posttest": "tsc --noEmit",
     "test:agents": "node scripts/check-agent-endpoints.mts",
     "typecheck": "tsc --noEmit",
     "typedoc": "node scripts/typedoc.mts",
     "typedoc:check": "node scripts/typedoc.mts --check"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.js",
   "bugs": {

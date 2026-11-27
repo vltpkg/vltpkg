@@ -60,11 +60,13 @@ published as `@vltpkg/*`, the built vlt CLI itself is published as
   `.claude-plugin/plugin.json` `skills` and in `skills.sh.json`. Each
   needs a `!/skills/<name>/` line in `.gitignore` and an entry in
   `www/docs/src/lib/skills.ts`. `www/docs` copies them into
-  `public/skills` at prebuild/predev, excluding `evals/`. CI Docs step
-  `lint:skills` checks their docs links and frontmatter. `src/skills`
-  (`@vltpkg/skills`) copies every root skill into `dist/skills` at
-  prepack; for the package, a new skill only needs its row in
-  `src/skills/README.md`.
+  `public/skills` at prebuild/predev, excluding `evals/`, and lists
+  them in an Agent Skills Discovery index at
+  `/.well-known/agent-skills/index.json` (`src/lib/publish-skills.ts`,
+  tested with tap). CI Docs step `lint:skills` checks their docs links
+  and frontmatter. `src/skills` (`@vltpkg/skills`) copies every root
+  skill into `dist/skills` at prepack; for the package, a new skill
+  only needs its row in `src/skills/README.md`.
 
 ## Development
 

@@ -58,6 +58,27 @@ void test('files keep their own type when markdown is preferred', async () => {
   }
 })
 
+void test('/.well-known/agent-skills/index.json lists every skill', async () => {
+  const res = await get('/.well-known/agent-skills/index.json')
+  assert.equal(res.status, 200)
+  assert.match(type(res), /^application\/json/)
+  const { skills } = (await res.json()) as {
+    skills: { name: string; type: string; url: string }[]
+  }
+  assert.ok(skills.length > 0)
+  for (const skill of skills) {
+    const file = await get(skill.url)
+    assert.equal(file.status, 200, skill.url)
+    assert.match(
+      type(file),
+      skill.type === 'archive' ?
+        /^application\/gzip/
+      : /^text\/markdown/,
+      skill.url,
+    )
+  }
+})
+
 void test('/openapi.json describes endpoints that exist', async () => {
   const spec = (await (await get('/openapi.json')).json()) as {
     openapi: string
